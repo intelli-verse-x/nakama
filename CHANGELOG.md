@@ -4,6 +4,15 @@ All notable changes to this project are documented below.
 The format is based on [keep a changelog](http://keepachangelog.com) and this project uses [semantic versioning](http://semver.org).
 
 ## [Unreleased]
+### Added
+- AWS Cognito authentication module with custodial wallet support
+  - JWT verification with JWKS caching for Cognito ID tokens
+  - RPC endpoint for Cognito login (rpc_cognito_login)
+  - RPC endpoint for linking Cognito accounts to existing users (rpc_link_cognito)
+  - RPC endpoint for retrieving user wallet information (rpc_get_wallet)
+  - RPC endpoint for custodial transaction signing (rpc_sign_and_send - placeholder)
+  - Deterministic wallet derivation for EVM and Solana chains
+  - Comprehensive integration guide and documentation
 
 ## [3.32.1] - 2025-10-17
 ### Fixed
