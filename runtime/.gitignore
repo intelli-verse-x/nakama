@@ -1,0 +1,23 @@
+# Go build artifacts
+*.so
+*.dylib
+*.dll
+
+# Go mod cache
+go.sum
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test
+coverage.txt
+*.out

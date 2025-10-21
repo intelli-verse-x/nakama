@@ -1,0 +1,5 @@
+# Ignore all .so files (built plugins)
+*.so
+
+# Keep this directory in git
+!.gitignore
