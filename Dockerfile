@@ -4,7 +4,7 @@
 FROM golang:1.25-alpine AS builder
 ENV GO111MODULE=on \
     CGO_ENABLED=0
-RUN apk add --no-cache git make
+RUN apk update && apk add --no-cache git make
 WORKDIR /go/src/github.com/heroiclabs/nakama
 COPY . .
 RUN go build -trimpath -mod=vendor -ldflags "-s -w" -o nakama .
@@ -35,7 +35,7 @@ RUN if ls *.ts 1> /dev/null 2>&1; then \
 # =========================
 FROM alpine:3.19
 
-RUN apk add --no-cache ca-certificates
+RUN apk update && apk add --no-cache ca-certificates
 
 # Nakama directory structure
 RUN mkdir -p /nakama/config /nakama/data/modules /nakama/logs
@@ -55,4 +55,7 @@ USER nakama
 EXPOSE 7349 7350 7351
 
 ENTRYPOINT ["/nakama/nakama"]
-CMD ["--name", "nakama", "--config", "/nakama/config/config.yaml", "--logger.level", "info"]
+CMD ["--name", "nakama", "--logger.level", "info"]
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD /nakama/nakama healthcheck || exit 1
