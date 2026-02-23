@@ -23128,11 +23128,6 @@ function rpcCompatibilityListSessions(ctx, logger, nk, payload) {
     }
 }
 
-        logger.error('[CompatibilityQuiz] List sessions error: ' + err.message);
-        return JSON.stringify({ success: false, message: err.message, data: [] });
-    }
-}
-
 // ============================================================================
 // ASYNC CHALLENGE SYSTEM - Universal Async Quiz Challenge (All Quiz Modes)
 // ============================================================================
@@ -26183,6 +26178,41 @@ function rpcClanJoin(ctx, logger, nk, payload) {
     }
 }
 
+// Game entry refund handling
+var GAME_ENTRY_REFUND_WINDOW_SECONDS = 300; // 5 minutes
+var GAME_ENTRY_TRANSACTION_COLLECTION = "game_entry_transactions";
+
+function makeGameEntryTransactionKey(entryToken) {
+    return "tx_" + entryToken;
+}
+
+function getGameEntryTransaction(nk, logger, userId, entryToken) {
+    try {
+        var records = nk.storageRead([{
+            collection: GAME_ENTRY_TRANSACTION_COLLECTION,
+            key: makeGameEntryTransactionKey(entryToken),
+            userId: userId
+        }]);
+        if (records && records.length > 0 && records[0].value) {
+            return records[0].value;
+        }
+    } catch (err) {
+        logger.warn("[GameEntry] Failed to read transaction: " + err.message);
+    }
+    return null;
+}
+
+function saveGameEntryTransaction(nk, logger, userId, entryToken, transaction) {
+    return writeStorage(
+        nk,
+        logger,
+        GAME_ENTRY_TRANSACTION_COLLECTION,
+        makeGameEntryTransactionKey(entryToken),
+        userId,
+        transaction
+    );
+}
+
 /**
  * RPC: clan_leave
  * Leave current clan
@@ -26497,6 +26527,102 @@ function rpcBadgesAward(ctx, logger, nk, payload) {
         return JSON.stringify({ success: false, error: err.message, errorCode: 'INTERNAL_ERROR' });
     }
 }
+
+/**
+ * RPC: game_entry_refund
+ * Refunds entry fee if game failed to start
+ */
+function rpcGameEntryRefund(ctx, logger, nk, payload) {
+    logger.info('[GameEntry] Processing entry refund');
+
+    try {
+        var data = JSON.parse(payload || '{}');
+        var userId = ctx.userId;
+        var entryToken = data.entryToken;
+        var reason = data.reason || "Refund requested";
+
+        if (!entryToken) {
+            return JSON.stringify({ success: false, error: "entryToken required" });
+        }
+
+        var tx = getGameEntryTransaction(nk, logger, userId, entryToken);
+        if (!tx) {
+            return JSON.stringify({ success: false, error: "Entry transaction not found" });
+        }
+
+        if (tx.status === "refunded") {
+            return JSON.stringify({
+                success: true,
+                alreadyRefunded: true,
+                entryToken: entryToken
+            });
+        }
+
+        if (tx.status === "completed") {
+            return JSON.stringify({ success: false, error: "Entry already completed" });
+        }
+
+        if (!tx.coinsDeducted || tx.coinsDeducted <= 0) {
+            return JSON.stringify({ success: false, error: "Entry not refundable" });
+        }
+
+        var now = new Date();
+        if (tx.refundEligibleUntil && now > new Date(tx.refundEligibleUntil)) {
+            tx.status = "expired";
+            tx.updatedAt = now.toISOString();
+            saveGameEntryTransaction(nk, logger, userId, entryToken, tx);
+            return JSON.stringify({ success: false, error: "Refund window expired" });
+        }
+
+        var gameId = tx.gameId || data.gameId || "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+        var walletKey = "wallet_" + userId + "_" + gameId;
+        var walletRecords = nk.storageRead([{
+            collection: "wallets",
+            key: walletKey,
+            userId: userId
+        }]);
+
+        var wallet = (walletRecords && walletRecords.length > 0) ? walletRecords[0].value : {
+            userId: userId,
+            currencies: { game: 0, tokens: 0 },
+            createdAt: new Date().toISOString()
+        };
+
+        wallet.currencies.game = (wallet.currencies.game || 0) + tx.coinsDeducted;
+        wallet.currencies.tokens = (wallet.currencies.tokens || 0) + tx.coinsDeducted;
+        wallet.updatedAt = now.toISOString();
+
+        nk.storageWrite([{
+            collection: "wallets",
+            key: walletKey,
+            userId: userId,
+            value: wallet,
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+
+        tx.status = "refunded";
+        tx.refundedAt = now.toISOString();
+        tx.refundReason = reason;
+        tx.updatedAt = tx.refundedAt;
+        saveGameEntryTransaction(nk, logger, userId, entryToken, tx);
+
+        return JSON.stringify({
+            success: true,
+            entryToken: entryToken,
+            refunded: tx.coinsDeducted,
+            newBalance: wallet.currencies.game
+        });
+    } catch (err) {
+        logger.error("[GameEntry] Refund error: " + err.message);
+        return JSON.stringify({ success: false, error: err.message });
+    }
+}
+
+/**
+ * RPC: game_entry_get_status
+ * Get entry status for all game modes
+ */
 
 /**
  * RPC: badges_set_display
@@ -27774,7 +27900,9 @@ function InitModule(ctx, logger, nk, initializer) {
         logger.info('[GameEntry] Registered RPC: game_entry_complete');
         initializer.registerRpc('game_entry_get_status', rpcGameEntryGetStatus);
         logger.info('[GameEntry] Registered RPC: game_entry_get_status');
-        logger.info('[GameEntry] Successfully registered 3 Game Entry Cost RPCs');
+        initializer.registerRpc('game_entry_refund', rpcGameEntryRefund);
+        logger.info('[GameEntry] Registered RPC: game_entry_refund');
+        logger.info('[GameEntry] Successfully registered 4 Game Entry Cost RPCs');
     } catch (err) {
         logger.error('[GameEntry] Failed to initialize: ' + err.message);
     }

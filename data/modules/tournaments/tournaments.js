@@ -153,12 +153,15 @@ var rpcTournamentJoin = function(ctx, logger, nk, payload) {
         }
         
         // Check and deduct entry fee
+        var entryFeeDeducted = 0;
+        var wallet = null;
+        var walletKey = null;
+        var walletCollection = tournament.game_id + "_wallets";
         if (tournament.entry_fee > 0) {
-            var walletKey = "wallet_" + userId + "_" + tournament.game_id;
-            var wallet = null;
-            
+            walletKey = "wallet_" + userId + "_" + tournament.game_id;
+
             var walletRecords = nk.storageRead([{
-                collection: tournament.game_id + "_wallets",
+                collection: walletCollection,
                 key: walletKey,
                 userId: userId
             }]);
@@ -174,9 +177,10 @@ var rpcTournamentJoin = function(ctx, logger, nk, payload) {
             // Deduct entry fee
             wallet.balance -= tournament.entry_fee;
             wallet.updated_at = new Date().toISOString();
+            entryFeeDeducted = tournament.entry_fee;
             
             nk.storageWrite([{
-                collection: tournament.game_id + "_wallets",
+                collection: walletCollection,
                 key: walletKey,
                 userId: userId,
                 value: wallet,
@@ -184,35 +188,53 @@ var rpcTournamentJoin = function(ctx, logger, nk, payload) {
                 permissionWrite: 0
             }]);
         }
-        
-        // Create entry
-        var entry = {
-            user_id: userId,
-            tournament_id: tournamentId,
-            joined_at: new Date().toISOString(),
-            entry_fee_paid: tournament.entry_fee
-        };
-        
-        nk.storageWrite([{
-            collection: TOURNAMENT_ENTRIES_COLLECTION,
-            key: entryKey,
-            userId: userId,
-            value: entry,
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-        
-        // Update tournament player count
-        tournament.players_joined += 1;
-        
-        nk.storageWrite([{
-            collection: TOURNAMENT_COLLECTION,
-            key: tournamentId,
-            userId: "00000000-0000-0000-0000-000000000000",
-            value: tournament,
-            permissionRead: 2,
-            permissionWrite: 0
-        }]);
+
+        try {
+            // Create entry
+            var entry = {
+                user_id: userId,
+                tournament_id: tournamentId,
+                joined_at: new Date().toISOString(),
+                entry_fee_paid: tournament.entry_fee
+            };
+
+            nk.storageWrite([{
+                collection: TOURNAMENT_ENTRIES_COLLECTION,
+                key: entryKey,
+                userId: userId,
+                value: entry,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+
+            // Update tournament player count
+            tournament.players_joined += 1;
+
+            nk.storageWrite([{
+                collection: TOURNAMENT_COLLECTION,
+                key: tournamentId,
+                userId: "00000000-0000-0000-0000-000000000000",
+                value: tournament,
+                permissionRead: 2,
+                permissionWrite: 0
+            }]);
+        } catch (err) {
+            // Roll back entry fee if any downstream operation failed
+            if (entryFeeDeducted > 0 && wallet && walletKey) {
+                wallet.balance += entryFeeDeducted;
+                wallet.updated_at = new Date().toISOString();
+                nk.storageWrite([{
+                    collection: walletCollection,
+                    key: walletKey,
+                    userId: userId,
+                    value: wallet,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                }]);
+                logger.warn("[Tournament] Join failed, refunded entry fee for user: " + userId);
+            }
+            throw err;
+        }
         
         logger.info("[Tournament] User joined: " + userId);
         
