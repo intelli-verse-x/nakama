@@ -36,6 +36,7 @@ Nakama's JavaScript runtime only supports **ES Modules (ESM)**:
 **Start Here:**
 - 📖 **[DOCS_INDEX.md](./DOCS_INDEX.md)** - Complete documentation index
 - 📖 **[NAKAMA_COMPLETE_DOCUMENTATION.md](./NAKAMA_COMPLETE_DOCUMENTATION.md)** - Master documentation
+- 🛠️ **[LOCAL_SETUP_GUIDE.md](./LOCAL_SETUP_GUIDE.md)** - Local setup, viewing logs, troubleshooting
 - 🎮 **[GAME_ONBOARDING_GUIDE.md](./GAME_ONBOARDING_GUIDE.md)** - Add new games
 - 🎯 **[UNITY_DEVELOPER_COMPLETE_GUIDE.md](./UNITY_DEVELOPER_COMPLETE_GUIDE.md)** - Unity integration
 
