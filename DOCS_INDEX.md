@@ -12,6 +12,7 @@
 | File | Purpose | Audience | Status |
 |------|---------|----------|--------|
 | **README.md** | Project overview, quick start, deployment | All contributors | ✅ Active |
+| **LOCAL_SETUP_GUIDE.md** | Local development setup, viewing logs, database access | All developers | ✅ Active |
 | **NAKAMA_COMPLETE_DOCUMENTATION.md** | Master documentation index for all Nakama features | All developers | ✅ Active |
 | **GAME_ONBOARDING_GUIDE.md** | How to add new games to the platform | Game integrators, backend devs | ✅ Active |
 | **UNITY_DEVELOPER_COMPLETE_GUIDE.md** | Complete Unity integration guide (3360 lines) | Unity developers | ✅ Active |
@@ -101,6 +102,22 @@ Located in `_archived_docs/feature_fixes/`:
 ## 🎯 Which Document to Read?
 
 ### I want to...
+
+**Check server logs:**
+→ Read `LOCAL_SETUP_GUIDE.md` (Section: "Viewing Logs")
+```bash
+# Real-time logs (all services)
+docker-compose logs -f
+
+# Nakama server logs only
+docker-compose logs -f nakama
+
+# Filter for errors (PowerShell)
+docker-compose logs nakama 2>&1 | Select-String -Pattern "error|ERROR|Error"
+
+# Filter for errors (Bash)
+docker-compose logs nakama 2>&1 | grep -i error
+```
 
 **Get started with Nakama:**
 → Read `README.md` → `NAKAMA_COMPLETE_DOCUMENTATION.md`
@@ -195,6 +212,7 @@ Located in `_archived_docs/feature_fixes/`:
 ```
 nakama/
 ├── README.md ✅
+├── LOCAL_SETUP_GUIDE.md ✅
 ├── NAKAMA_COMPLETE_DOCUMENTATION.md ✅
 ├── GAME_ONBOARDING_GUIDE.md ✅
 ├── UNITY_DEVELOPER_COMPLETE_GUIDE.md ✅
@@ -254,6 +272,7 @@ nakama/
 
 ## 📞 Questions?
 
+- **Server Logs:** See LOCAL_SETUP_GUIDE.md (Section: "Viewing Logs")
 - **Server Setup:** See README.md
 - **Game Integration:** See GAME_ONBOARDING_GUIDE.md
 - **Unity Development:** See UNITY_DEVELOPER_COMPLETE_GUIDE.md
