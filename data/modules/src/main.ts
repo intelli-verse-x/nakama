@@ -62,6 +62,21 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[BracketTournaments] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- v2.4.0 library format-agents gate (pack_complete event). The
+  //      n8n agents #20-25 (audio synth, video shorts, live scheduler,
+  //      sim ingest, widget refresh, pack bundler) emit completion state
+  //      via `n8n_pack_state_emit`; this module fires the bundler webhook
+  //      once #20+#21+#23 are all green for an exam. Same single-arg
+  //      register() pattern as BracketTournaments so the postbuild
+  //      auto-invokes at IIFE scope. See companion PR in
+  //      intelli-verse-kube-infra repo for the n8n workflow JSONs.
+  try {
+    N8nPackStatePlugin.register(initializer);
+    logger.info("[N8nPackState] RPCs registered (4): emit, query, list_ready, reset");
+  } catch (err: any) {
+    logger.error("[N8nPackState] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- Game plugins on top of MpKernel ----
   // QuizVerse runs on SyncTurnMatch (turn template registered above).
   // Mounted AFTER the kernel so the SyncTurn generator registry exists,
