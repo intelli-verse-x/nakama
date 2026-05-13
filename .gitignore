@@ -258,8 +258,6 @@ jspm_packages/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
-.env.test
 .env*.local
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -754,3 +752,4 @@ scripts/apple_data_cache.json
 
 # Firecrawl scraped content cache
 .firecrawl/
+config.bat
