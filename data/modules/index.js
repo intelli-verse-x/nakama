@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-13T22:47:48.143Z
-// RPC Count: 791
+// Generated: 2026-05-13T23:34:14.618Z
+// RPC Count: 795
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -417,6 +417,10 @@ var __rpc_library_countdown_subscribe;
 var __rpc_library_countdown_unsubscribe;
 var __rpc_library_countdown_list_mine;
 var __rpc_library_countdown_emit_due;
+var __rpc_n8n_pack_state_emit;
+var __rpc_n8n_pack_state_query;
+var __rpc_n8n_pack_state_list_ready;
+var __rpc_n8n_pack_state_reset;
 var __rpc_mp_agent_spawn;
 var __rpc_mp_agent_despawn;
 var __rpc_mp_agent_list_personas;
@@ -802,7 +806,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"bracket_tournament_create":true,"bracket_tournament_seed":true,"bracket_tournament_start":true,"bracket_tournament_submit_result":true,"bracket_tournament_status":true,"bracket_tournament_list":true,"bracket_tournament_cancel":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"quizverse_kb_get_context":true,"quizverse_kb_register_seen_questions":true,"quizverse_kb_filter_unseen_questions":true,"quizverse_chatbox_message":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_sub_achievements_reconcile":true,"hiro_sub_achievements_tree":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_integrations_get_config":true,"hiro_integrations_upsert_provider":true,"hiro_integrations_delete_provider":true,"hiro_integrations_attribution_log":true,"hiro_integrations_purchase_validated":true,"hiro_integrations_custom_event":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"hiro_publishers_list":true,"hiro_publishers_get":true,"hiro_publishers_upsert":true,"hiro_publishers_add_app_key":true,"hiro_publishers_revoke_app_key":true,"hiro_publishers_delete":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_team_inventory_list":true,"hiro_team_inventory_grant":true,"hiro_team_inventory_consume":true,"hiro_team_mailbox_list":true,"hiro_team_mailbox_send":true,"hiro_team_mailbox_claim":true,"hiro_team_store_list":true,"hiro_team_store_upsert_offer":true,"hiro_team_store_purchase":true,"hiro_team_gifts_send":true,"hiro_team_gifts_claim":true,"hiro_team_gifts_list":true,"hiro_team_event_leaderboard_start":true,"hiro_team_event_leaderboard_submit":true,"hiro_team_event_leaderboard_get":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_managed_audiences_list":true,"satori_managed_audiences_upsert":true,"satori_managed_audiences_delete":true,"satori_managed_audiences_replace":true,"satori_managed_audiences_refresh":true,"satori_audience_snapshot_status":true,"satori_audience_recompute":true,"satori_audience_snapshot_members":true,"satori_audience_recompute_set_interval":true,"satori_category_labels_list":true,"satori_category_labels_upsert":true,"satori_category_labels_delete":true,"satori_category_labels_assign":true,"satori_category_labels_get_for_entity":true,"satori_category_labels_search":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_experiments_phases_list":true,"satori_experiments_phase_add":true,"satori_experiments_phase_remove":true,"satori_experiments_lock_enrollment":true,"satori_experiments_current_phase":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnel_list":true,"satori_funnel_upsert":true,"satori_funnel_delete":true,"satori_funnel_run":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_messaging_get_config":true,"satori_messaging_upsert_provider":true,"satori_messaging_delete_provider":true,"satori_messaging_set_channel_routing":true,"satori_messaging_register_token":true,"satori_messaging_dispatch_test":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_retention_get_config":true,"satori_retention_set_config":true,"satori_retention_run":true,"satori_roas_spend_upsert":true,"satori_roas_spend_list":true,"satori_roas_run":true,"satori_sessions_get":true,"satori_sessions_start":true,"satori_sessions_end":true,"satori_sessions_summary":true,"satori_sessions_config_get":true,"satori_sessions_config_set":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"bracket_tournament_create":true,"bracket_tournament_seed":true,"bracket_tournament_start":true,"bracket_tournament_submit_result":true,"bracket_tournament_status":true,"bracket_tournament_list":true,"bracket_tournament_cancel":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"quizverse_kb_get_context":true,"quizverse_kb_register_seen_questions":true,"quizverse_kb_filter_unseen_questions":true,"quizverse_chatbox_message":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_sub_achievements_reconcile":true,"hiro_sub_achievements_tree":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_integrations_get_config":true,"hiro_integrations_upsert_provider":true,"hiro_integrations_delete_provider":true,"hiro_integrations_attribution_log":true,"hiro_integrations_purchase_validated":true,"hiro_integrations_custom_event":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"hiro_publishers_list":true,"hiro_publishers_get":true,"hiro_publishers_upsert":true,"hiro_publishers_add_app_key":true,"hiro_publishers_revoke_app_key":true,"hiro_publishers_delete":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_team_inventory_list":true,"hiro_team_inventory_grant":true,"hiro_team_inventory_consume":true,"hiro_team_mailbox_list":true,"hiro_team_mailbox_send":true,"hiro_team_mailbox_claim":true,"hiro_team_store_list":true,"hiro_team_store_upsert_offer":true,"hiro_team_store_purchase":true,"hiro_team_gifts_send":true,"hiro_team_gifts_claim":true,"hiro_team_gifts_list":true,"hiro_team_event_leaderboard_start":true,"hiro_team_event_leaderboard_submit":true,"hiro_team_event_leaderboard_get":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_managed_audiences_list":true,"satori_managed_audiences_upsert":true,"satori_managed_audiences_delete":true,"satori_managed_audiences_replace":true,"satori_managed_audiences_refresh":true,"satori_audience_snapshot_status":true,"satori_audience_recompute":true,"satori_audience_snapshot_members":true,"satori_audience_recompute_set_interval":true,"satori_category_labels_list":true,"satori_category_labels_upsert":true,"satori_category_labels_delete":true,"satori_category_labels_assign":true,"satori_category_labels_get_for_entity":true,"satori_category_labels_search":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_experiments_phases_list":true,"satori_experiments_phase_add":true,"satori_experiments_phase_remove":true,"satori_experiments_lock_enrollment":true,"satori_experiments_current_phase":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnel_list":true,"satori_funnel_upsert":true,"satori_funnel_delete":true,"satori_funnel_run":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_messaging_get_config":true,"satori_messaging_upsert_provider":true,"satori_messaging_delete_provider":true,"satori_messaging_set_channel_routing":true,"satori_messaging_register_token":true,"satori_messaging_dispatch_test":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_retention_get_config":true,"satori_retention_set_config":true,"satori_retention_run":true,"satori_roas_spend_upsert":true,"satori_roas_spend_list":true,"satori_roas_run":true,"satori_sessions_get":true,"satori_sessions_start":true,"satori_sessions_end":true,"satori_sessions_summary":true,"satori_sessions_config_get":true,"satori_sessions_config_set":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (80 files) ---
 
@@ -65775,6 +65779,21 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[BracketTournaments] failed to mount: " + (err && err.message ? err.message : String(err)));
     }
+    // ---- v2.4.0 library format-agents gate (pack_complete event). The
+    //      n8n agents #20-25 (audio synth, video shorts, live scheduler,
+    //      sim ingest, widget refresh, pack bundler) emit completion state
+    //      via `n8n_pack_state_emit`; this module fires the bundler webhook
+    //      once #20+#21+#23 are all green for an exam. Same single-arg
+    //      register() pattern as BracketTournaments so the postbuild
+    //      auto-invokes at IIFE scope. See companion PR in
+    //      intelli-verse-kube-infra repo for the n8n workflow JSONs.
+    try {
+        N8nPackStatePlugin.register(initializer);
+        logger.info("[N8nPackState] RPCs registered (4): emit, query, list_ready, reset");
+    }
+    catch (err) {
+        logger.error("[N8nPackState] failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- Game plugins on top of MpKernel ----
     // QuizVerse runs on SyncTurnMatch (turn template registered above).
     // Mounted AFTER the kernel so the SyncTurn generator registry exists,
@@ -81645,6 +81664,326 @@ var LibraryCountdownPlugin;
     }
     LibraryCountdownPlugin.register = register;
 })(LibraryCountdownPlugin || (LibraryCountdownPlugin = {}));
+/**
+ * n8n-pack-state.ts — pack_complete gate for the v2.4.0 library format-agents.
+ *
+ * Spec lives in Quizverse-web-frontend `QUIZVERSE_LIBRARY_10X_PLAN.md` §19.6 and
+ * the companion `intelli-verse-kube-infra` repo PR (n8n workflows #20-25).
+ *
+ * Purpose
+ * -------
+ * Six n8n agents (#20 audio synth, #21 video shorts, #22 live scheduler,
+ * #23 sim ingest, #24 widget refresh, #25 pack bundler) produce content
+ * for a single exam in parallel. Agent #25 (the bundler) is the GATE —
+ * it should only compose the 3 one-time IAP SKUs once #20 + #21 + #23
+ * have all completed successfully for that exam.
+ *
+ * This module tracks per-exam agent completion state and emits an HTTP
+ * webhook to agent #25's trigger URL when the gate condition flips true.
+ *
+ * RPCs registered
+ * ---------------
+ *   n8n_pack_state_emit       — called by agents #20-24 with { examTag, agent, status }
+ *   n8n_pack_state_query      — returns full state for an examTag
+ *   n8n_pack_state_list_ready — admin/system — lists exams ready for bundling
+ *   n8n_pack_state_reset      — admin — resets state for an examTag
+ *                               (used to re-trigger bundling after content edits)
+ *
+ * Storage
+ * -------
+ * Collection "n8n_pack_state", key = examTag. System-write, owner=system,
+ * readPermission=2 so n8n service-account can poll.
+ *
+ * Gate transition behaviour
+ * -------------------------
+ * On every emit, if status === "success" we mark the agent as green.
+ * When the green set ⊇ { audio_synth, video_shorts, sim_ingest } and the
+ * exam has not previously been bundled, we:
+ *   1. Set bundleSignaledAt to now (locks against double-fire)
+ *   2. POST to {{N8N_PACK_BUNDLER_WEBHOOK}} with { examTag, audioPackId,
+ *      videoShortsPackId, interactiveSimPackId, liveSessionPackId? }
+ *
+ * Re-bundling is opt-in via `n8n_pack_state_reset`.
+ *
+ * Wiring
+ * ------
+ * Uses the same single-arg `register(initializer)` signature as
+ * BracketTournaments so the postbuild auto-invokes the module at IIFE
+ * scope and populates the __rpc_* globals in pooled Goja VMs.
+ */
+var N8nPackStatePlugin;
+(function (N8nPackStatePlugin) {
+    // ---------------------------------------------------------------------------
+    // Constants
+    // ---------------------------------------------------------------------------
+    var COLLECTION = "n8n_pack_state";
+    var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+    /** Agents that MUST be green before the bundler fires. */
+    var GATING_AGENTS = ["audio_synth", "video_shorts", "sim_ingest"];
+    /** Mapping from the human-readable agent string clients send to AgentId. */
+    function normalizeAgent(s) {
+        if (!s)
+            return null;
+        var t = ("" + s).toLowerCase();
+        if (t.indexOf("20") === 0 || t.indexOf("audio") >= 0)
+            return "audio_synth";
+        if (t.indexOf("21") === 0 || t.indexOf("video") >= 0 || t.indexOf("short") >= 0)
+            return "video_shorts";
+        if (t.indexOf("22") === 0 || t.indexOf("live") >= 0)
+            return "live_scheduler";
+        if (t.indexOf("23") === 0 || t.indexOf("sim") >= 0)
+            return "sim_ingest";
+        if (t.indexOf("24") === 0 || t.indexOf("widget") >= 0)
+            return "widget_refresh";
+        if (t.indexOf("25") === 0 || t.indexOf("bundler") >= 0)
+            return "pack_bundler";
+        return null;
+    }
+    // examTag is used as a Sanity slug & storage key — restrict to safe chars.
+    var EXAM_TAG_RE = /^[A-Za-z0-9_\-]{1,64}$/;
+    // ---------------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------------
+    function nakamaError(msg, code) {
+        return { message: msg, code: code };
+    }
+    function readState(nk, examTag) {
+        var read = nk.storageRead([{ collection: COLLECTION, key: examTag, userId: SYSTEM_USER_ID }]);
+        if (!read || read.length === 0)
+            return { state: null, version: "" };
+        var v = read[0].value;
+        return { state: v || null, version: read[0].version || "" };
+    }
+    function writeState(nk, state, prevVersion) {
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: state.examTag,
+                userId: SYSTEM_USER_ID,
+                value: state,
+                version: prevVersion || undefined,
+                permissionRead: 2,
+                permissionWrite: 0,
+            }]);
+    }
+    function isAdmin(ctx) {
+        // Admin-only RPCs are invoked from server jobs / ops tools via http_key.
+        var u = ctx.userId || "";
+        return u === "" || u === SYSTEM_USER_ID;
+    }
+    function isGatingReady(state) {
+        for (var i = 0; i < GATING_AGENTS.length; i++) {
+            var entry = state.agents[GATING_AGENTS[i]];
+            if (!entry || entry.status !== "success")
+                return false;
+        }
+        return true;
+    }
+    function fireBundlerWebhook(nk, logger, state) {
+        // Webhook URL comes from environment via Nakama config →
+        // env.N8N_PACK_BUNDLER_WEBHOOK. If absent, log + skip (allows the
+        // bundler to poll list_ready instead).
+        var env = nk.getRuntimeEnvironment ? nk.getRuntimeEnvironment() : {};
+        var url = (env && env.N8N_PACK_BUNDLER_WEBHOOK) || "";
+        if (!url) {
+            logger.warn("[n8n_pack_state] no N8N_PACK_BUNDLER_WEBHOOK configured; bundler must poll list_ready");
+            return false;
+        }
+        var payload = {
+            examTag: state.examTag,
+            audioPackId: (state.agents["audio_synth"] || {}).artifactId || null,
+            videoShortsPackId: (state.agents["video_shorts"] || {}).artifactId || null,
+            interactiveSimPackId: (state.agents["sim_ingest"] || {}).artifactId || null,
+            liveSessionPackId: (state.agents["live_scheduler"] || {}).artifactId || null,
+            widgetPackId: (state.agents["widget_refresh"] || {}).artifactId || null,
+            signaledAt: state.bundleSignaledAt,
+        };
+        try {
+            nk.httpRequest(url, "post", { "content-type": "application/json" }, JSON.stringify(payload), 8000);
+            logger.info("[n8n_pack_state] bundler webhook fired for examTag=" + state.examTag);
+            return true;
+        }
+        catch (e) {
+            logger.error("[n8n_pack_state] bundler webhook failed: " + (e && e.message ? e.message : String(e)));
+            return false;
+        }
+    }
+    // ---------------------------------------------------------------------------
+    // RPC: emit — called by agents #20-25 after each run
+    // ---------------------------------------------------------------------------
+    var rpcEmit = function (ctx, logger, nk, payload) {
+        var body = {};
+        try {
+            body = payload ? JSON.parse(payload) : {};
+        }
+        catch (_) {
+            throw nakamaError("payload must be JSON", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var examTag = ("" + (body.examTag || "")).trim();
+        if (!examTag)
+            throw nakamaError("examTag is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        if (!EXAM_TAG_RE.test(examTag)) {
+            throw nakamaError("examTag must match /^[A-Za-z0-9_\\-]{1,64}$/", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var agentId = normalizeAgent("" + (body.agent || ""));
+        if (!agentId)
+            throw nakamaError("agent is required (one of 20-audio-synth, 21-video-shorts, 22-live-scheduler, 23-sim-ingest, 24-widget-refresh, 25-pack-bundler)", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        var status = "" + (body.status || "pending");
+        if (status !== "pending" && status !== "success" && status !== "failed") {
+            throw nakamaError("status must be one of pending|success|failed", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var now = Math.floor(Date.now() / 1000);
+        var existing = readState(nk, examTag);
+        var state = existing.state || { examTag: examTag, createdAt: now, updatedAt: now, agents: {} };
+        var entry = {
+            status: status,
+            completedAt: status === "success" || status === "failed" ? now : undefined,
+            cost: typeof body.cost === "number" ? body.cost : undefined,
+            error: body.error ? ("" + body.error).slice(0, 500) : undefined,
+            artifactId: body.artifactId ? ("" + body.artifactId) : undefined,
+        };
+        state.agents[agentId] = entry;
+        state.updatedAt = now;
+        // Special handling for the bundler itself reporting completion.
+        if (agentId === "pack_bundler" && status === "success") {
+            state.bundleCompletedAt = now;
+            if (body.bundleSkus && typeof body.bundleSkus === "object") {
+                state.bundleSkus = body.bundleSkus;
+            }
+        }
+        writeState(nk, state, existing.version);
+        // Gate check: fire bundler webhook once if all gating agents are green
+        // and we haven't signaled yet (or we have but a reset cleared it).
+        var fired = false;
+        if (!state.bundleSignaledAt && isGatingReady(state) && agentId !== "pack_bundler") {
+            // Reserve the signal slot BEFORE firing — prevents double-fire on race.
+            state.bundleSignaledAt = now;
+            writeState(nk, state, "");
+            fired = fireBundlerWebhook(nk, logger, state);
+            if (!fired) {
+                // Webhook missing or failed — clear signal so list_ready surfaces it.
+                delete state.bundleSignaledAt;
+                writeState(nk, state, "");
+            }
+        }
+        return JSON.stringify({
+            success: true,
+            examTag: examTag,
+            agent: agentId,
+            status: entry.status,
+            gatingReady: isGatingReady(state),
+            bundlerSignaled: !!state.bundleSignaledAt,
+            bundlerFired: fired,
+        });
+    };
+    // ---------------------------------------------------------------------------
+    // RPC: query — returns full state for one examTag
+    // ---------------------------------------------------------------------------
+    var rpcQuery = function (ctx, _logger, nk, payload) {
+        var body = {};
+        try {
+            body = payload ? JSON.parse(payload) : {};
+        }
+        catch (_) { }
+        var examTag = ("" + (body.examTag || "")).trim();
+        if (!examTag)
+            throw nakamaError("examTag is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        var s = readState(nk, examTag);
+        if (!s.state)
+            return JSON.stringify({ success: true, state: null });
+        return JSON.stringify({
+            success: true,
+            state: s.state,
+            gatingReady: isGatingReady(s.state),
+            bundlerSignaled: !!s.state.bundleSignaledAt,
+            bundlerCompleted: !!s.state.bundleCompletedAt,
+        });
+    };
+    // ---------------------------------------------------------------------------
+    // RPC: list_ready — admin/system — exams ready for bundling
+    // ---------------------------------------------------------------------------
+    var rpcListReady = function (ctx, _logger, nk, payload) {
+        if (!isAdmin(ctx))
+            throw nakamaError("admin/system only", 7 /* nkruntime.Codes.PERMISSION_DENIED */);
+        var body = {};
+        try {
+            body = payload ? JSON.parse(payload) : {};
+        }
+        catch (_) { }
+        var includeCompleted = body.includeCompleted === true;
+        var limit = Math.min(Math.max(parseInt("" + (body.limit || 100), 10) || 100, 1), 200);
+        var out = [];
+        var cursor = "";
+        var scanned = 0;
+        do {
+            var page = nk.storageList(null, COLLECTION, 200, cursor);
+            cursor = page.cursor || "";
+            var records = page.objects || [];
+            for (var i = 0; i < records.length; i++) {
+                scanned++;
+                var v = records[i].value;
+                if (!v)
+                    continue;
+                if (!isGatingReady(v))
+                    continue;
+                if (!includeCompleted && v.bundleCompletedAt)
+                    continue;
+                out.push({
+                    examTag: v.examTag,
+                    signaledAt: v.bundleSignaledAt || null,
+                    completedAt: v.bundleCompletedAt || null,
+                });
+                if (out.length >= limit)
+                    break;
+            }
+        } while (cursor !== "" && out.length < limit);
+        return JSON.stringify({ success: true, count: out.length, scanned: scanned, ready: out });
+    };
+    // ---------------------------------------------------------------------------
+    // RPC: reset — admin — clear state (used to re-bundle after content edits)
+    // ---------------------------------------------------------------------------
+    var rpcReset = function (ctx, logger, nk, payload) {
+        if (!isAdmin(ctx))
+            throw nakamaError("admin/system only", 7 /* nkruntime.Codes.PERMISSION_DENIED */);
+        var body = {};
+        try {
+            body = payload ? JSON.parse(payload) : {};
+        }
+        catch (_) { }
+        var examTag = ("" + (body.examTag || "")).trim();
+        if (!examTag || !EXAM_TAG_RE.test(examTag)) {
+            throw nakamaError("examTag is required and must match safe-chars", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var clearAgents = body.clearAgents === true;
+        var existing = readState(nk, examTag);
+        if (!existing.state)
+            return JSON.stringify({ success: true, examTag: examTag, action: "noop" });
+        if (clearAgents) {
+            nk.storageDelete([{ collection: COLLECTION, key: examTag, userId: SYSTEM_USER_ID, version: existing.version }]);
+            logger.info("[n8n_pack_state] reset full clear examTag=" + examTag);
+            return JSON.stringify({ success: true, examTag: examTag, action: "deleted" });
+        }
+        var next = existing.state;
+        delete next.bundleSignaledAt;
+        delete next.bundleCompletedAt;
+        delete next.bundleSkus;
+        next.updatedAt = Math.floor(Date.now() / 1000);
+        writeState(nk, next, existing.version);
+        logger.info("[n8n_pack_state] reset signal-only examTag=" + examTag);
+        return JSON.stringify({ success: true, examTag: examTag, action: "signal_reset" });
+    };
+    // ---------------------------------------------------------------------------
+    // Register — single-arg so the postbuild auto-invokes at IIFE scope.
+    // (See bracket-tournaments.ts comment for the postbuild quirk.)
+    // ---------------------------------------------------------------------------
+    function register(initializer) {
+        __rpc_n8n_pack_state_emit = rpcEmit;
+        __rpc_n8n_pack_state_query = rpcQuery;
+        __rpc_n8n_pack_state_list_ready = rpcListReady;
+        __rpc_n8n_pack_state_reset = rpcReset;
+    }
+    N8nPackStatePlugin.register = register;
+    register();
+})(N8nPackStatePlugin || (N8nPackStatePlugin = {}));
 // IIVXAgent — first-class AI-agent kernel service.
 //
 // Wire contract: schemas/multiplayer/services/agent.proto. Agents appear
@@ -97824,6 +98163,10 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("library.countdown.unsubscribe", __rpc_library_countdown_unsubscribe); } catch(e) {}
   try { initializer.registerRpc("library.countdown.list_mine", __rpc_library_countdown_list_mine); } catch(e) {}
   try { initializer.registerRpc("library.countdown.emit_due", __rpc_library_countdown_emit_due); } catch(e) {}
+  try { initializer.registerRpc("n8n_pack_state_emit", __rpc_n8n_pack_state_emit); } catch(e) {}
+  try { initializer.registerRpc("n8n_pack_state_query", __rpc_n8n_pack_state_query); } catch(e) {}
+  try { initializer.registerRpc("n8n_pack_state_list_ready", __rpc_n8n_pack_state_list_ready); } catch(e) {}
+  try { initializer.registerRpc("n8n_pack_state_reset", __rpc_n8n_pack_state_reset); } catch(e) {}
   try { initializer.registerRpc("mp_interest_size", __rpc_mp_interest_size); } catch(e) {}
   try { initializer.registerRpc("mp_mod_get_params", __rpc_mp_mod_get_params); } catch(e) {}
   try { initializer.registerRpc("mp_mod_set_params", __rpc_mp_mod_set_params); } catch(e) {}
@@ -98200,5 +98543,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 791 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 795 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }
