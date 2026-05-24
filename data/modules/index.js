@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-23T17:45:46.689Z
-// RPC Count: 813
+// Generated: 2026-05-24T18:37:47.119Z
+// RPC Count: 817
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -285,6 +285,10 @@ var __rpc_hiro_unlockables_start;
 var __rpc_hiro_unlockables_claim;
 var __rpc_hiro_unlockables_buy_slot;
 var __rpc_hiro_unlockables_list;
+var __rpc_identity_resolve;
+var __rpc_identity_link;
+var __rpc_identity_unlink;
+var __rpc_identity_list_mine;
 var __rpc_analytics_cohort_retention;
 var __rpc_analytics_track_retention_event;
 var __rpc_analytics_arpu;
@@ -824,7 +828,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (100 files) ---
 
@@ -82776,6 +82780,14 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
         SatoriEventCapture.register(initializer);
         logger.info("[Satori] Registering Identities RPCs...");
         SatoriIdentities.register(initializer);
+        logger.info("[Identity] Registering Identity Resolver RPCs (cross-channel sub linking)...");
+        try {
+            IdentityResolver.register(initializer);
+            logger.info("[Identity] identity_resolve, identity_link, identity_unlink, identity_list_mine registered");
+        }
+        catch (err) {
+            logger.error("[Identity] failed to register IdentityResolver: " + (err && err.message ? err.message : String(err)));
+        }
         logger.info("[Satori] Registering Audiences RPCs...");
         SatoriAudiences.register(initializer);
         logger.info("[Satori] Registering Feature Flags RPCs...");
@@ -93545,6 +93557,386 @@ var HiroUnlockables;
     HiroUnlockables.register = register;
     register();
 })(HiroUnlockables || (HiroUnlockables = {}));
+// identity_resolver.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Identity Resolver — maps inbound channel identifiers (phone, telegram_id,
+// discord_id, beehiiv_id, apple_wallet pass serial, imessage_id, livekit_id)
+// to the canonical Cognito `sub` (which equals the Nakama userId after the
+// cognito_wallet_mapper bootstrap).
+//
+// Why this exists:
+//   Every channel surfaced in PLAN-CONVERSATIONAL_HUB_AND_REWARDS.md (WhatsApp,
+//   SMS, Telegram, Discord, iMessage Business, Apple Wallet pass, Beehiiv, voice)
+//   delivers an external identifier rather than a Nakama userId. Without a
+//   resolver every per-channel agent must invent its own bookkeeping. With this
+//   module each channel has one tiny adapter (~1 dev-day) over a shared spine.
+//
+// Storage shape (Nakama storageWrite, system-owned):
+//   collection: "identity_links"
+//   key:        "<channel>:<external_id_lower>"     // e.g. "whatsapp:+919876543210"
+//   value:      { cognito_sub, channel, external_id, linked_at, source, confidence, last_seen }
+//   userId:     SYSTEM_USER_ID                       // resolver index is system-owned
+//
+//   collection: "identity_links_user"
+//   key:        "<channel>:<external_id_lower>"
+//   value:      { channel, external_id, linked_at, source, confidence }
+//   userId:     <cognito_sub>                        // per-user reverse index for /me/reveal
+//
+// RPCs registered:
+//   identity_resolve   — read-only: external id → cognito_sub (used by Channel Personalizer)
+//   identity_link      — opt-in write: caller's cognito_sub ← external id (used by web /api/identity/link)
+//   identity_unlink    — caller-owned removal of a binding (privacy escape hatch)
+//   identity_list_mine — caller-owned read of all their bindings (powers /me/reveal)
+//
+// Cross-references:
+//   - PLAN-CONVERSATIONAL_HUB_AND_REWARDS.md §C.1 (Identity Resolver Service)
+//   - cognito_wallet_mapper.js (bootstraps cognito_sub → Nakama userId on first auth)
+//   - PLAN-USER_INTELLIGENCE_LOOP.md §7.3 ("/me/reveal" trust anchor)
+//   - CATALOG-DEDUCIBLE_INSIGHTS.md (every linked external id must be deducible
+//     from a user-initiated action — never inferred)
+//
+// Privacy contract:
+//   - Linking ALWAYS requires the caller to be authenticated as the cognito_sub
+//     they want to bind to (prevents impersonation).
+//   - identity_resolve refuses to return cognito_sub to unauthenticated callers
+//     by default; service-account callers (e.g. n8n channel adapters) must
+//     supply IDENTITY_RESOLVER_SERVICE_TOKEN as the `service_token` payload
+//     field. Token is rotated via env var; see ops runbook.
+//   - identity_unlink immediately invalidates the binding — there is no soft-
+//     delete; we re-link on next opt-in if the user comes back.
+var IdentityResolver;
+(function (IdentityResolver) {
+    // ── Constants ────────────────────────────────────────────────────────────
+    var IDENTITY_LINKS_COLLECTION = "identity_links"; // system-owned forward index
+    var IDENTITY_LINKS_USER_COLLECTION = "identity_links_user"; // per-user reverse index
+    var SUPPORTED_CHANNELS = {
+        "whatsapp": true,
+        "sms": true,
+        "telegram": true,
+        "discord": true,
+        "imessage": true,
+        "beehiiv": true,
+        "apple_wallet": true,
+        "livekit": true,
+        "fonoster": true,
+        "email": true,
+    };
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function normalizeExternalId(channel, externalId) {
+        // Channel-specific normalization rules. Phones get + prefix and digits only;
+        // emails lowercase + trim; everything else lowercase.
+        var trimmed = ("" + externalId).trim();
+        if (channel === "whatsapp" || channel === "sms") {
+            // E.164: keep digits + leading + (if present)
+            var hasPlus = trimmed.charAt(0) === "+";
+            var digits = trimmed.replace(/[^0-9]/g, "");
+            if (digits.length === 0)
+                return "";
+            return (hasPlus ? "+" : "") + digits;
+        }
+        if (channel === "email" || channel === "beehiiv") {
+            return trimmed.toLowerCase();
+        }
+        return trimmed.toLowerCase();
+    }
+    function buildKey(channel, externalId) {
+        return channel + ":" + externalId;
+    }
+    function readLink(nk, channel, externalId) {
+        var key = buildKey(channel, externalId);
+        try {
+            var records = nk.storageRead([{
+                    collection: IDENTITY_LINKS_COLLECTION,
+                    key: key,
+                    userId: Constants.SYSTEM_USER_ID,
+                }]);
+            if (records && records.length > 0 && records[0].value) {
+                return records[0].value;
+            }
+        }
+        catch (err) {
+            // Read failures yield "not linked" — never throw to caller.
+        }
+        return null;
+    }
+    function writeLink(nk, channel, externalId, cognitoSub, source, confidence) {
+        var key = buildKey(channel, externalId);
+        var now = Math.floor(Date.now() / 1000);
+        var forward = {
+            cognito_sub: cognitoSub,
+            channel: channel,
+            external_id: externalId,
+            linked_at: now,
+            source: source,
+            confidence: confidence,
+            last_seen: now,
+        };
+        var reverse = {
+            channel: channel,
+            external_id: externalId,
+            linked_at: now,
+            source: source,
+            confidence: confidence,
+        };
+        nk.storageWrite([
+            {
+                collection: IDENTITY_LINKS_COLLECTION,
+                key: key,
+                userId: Constants.SYSTEM_USER_ID,
+                value: forward,
+                permissionRead: 1,
+                permissionWrite: 0,
+            },
+            {
+                collection: IDENTITY_LINKS_USER_COLLECTION,
+                key: key,
+                userId: cognitoSub,
+                value: reverse,
+                permissionRead: 2,
+                permissionWrite: 0,
+            },
+        ]);
+    }
+    function deleteLink(nk, channel, externalId, cognitoSub) {
+        var key = buildKey(channel, externalId);
+        try {
+            nk.storageDelete([
+                { collection: IDENTITY_LINKS_COLLECTION, key: key, userId: Constants.SYSTEM_USER_ID },
+                { collection: IDENTITY_LINKS_USER_COLLECTION, key: key, userId: cognitoSub },
+            ]);
+        }
+        catch (err) {
+            // Idempotent delete; if already gone, that's fine.
+        }
+    }
+    function isServiceCaller(payload) {
+        var token = payload && payload.service_token;
+        if (!token)
+            return false;
+        // Goja exposes process.env via the postbuild shim that rewrites every
+        // `process.env.X` reference to a guarded lookup. We declare process as
+        // any-typed locally so TS doesn't require @types/node (the runtime
+        // bundle has zero Node deps).
+        var proc = (typeof globalThis !== "undefined") ? globalThis["process"] : undefined;
+        var expected = "" + ((proc && proc.env && proc.env.IDENTITY_RESOLVER_SERVICE_TOKEN) || "");
+        return expected.length > 0 && token === expected;
+    }
+    // ── RPC: identity_resolve ────────────────────────────────────────────────
+    // Read-only. Looks up the cognito_sub bound to a (channel, external_id) pair.
+    // Authentication: either (a) ctx.userId is set (Nakama session), or
+    // (b) payload.service_token matches IDENTITY_RESOLVER_SERVICE_TOKEN.
+    //
+    // Request:
+    //   { "channel": "whatsapp", "external_id": "+919876543210", "service_token": "..." }
+    //
+    // Response (linked):
+    //   { "success": true, "data": {
+    //       "cognito_sub": "...",
+    //       "channel": "whatsapp", "external_id": "+919876543210",
+    //       "linked_at": 1735000000, "confidence": "high"
+    //   }}
+    //
+    // Response (unlinked):
+    //   { "success": true, "data": null }
+    function rpcResolve(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var channel = ("" + (data.channel || "")).toLowerCase();
+            var externalIdRaw = data.external_id || data.externalId;
+            if (!channel || !SUPPORTED_CHANNELS[channel]) {
+                return RpcHelpers.errorResponse("unsupported channel", 400);
+            }
+            if (!externalIdRaw) {
+                return RpcHelpers.errorResponse("external_id is required", 400);
+            }
+            var externalId = normalizeExternalId(channel, "" + externalIdRaw);
+            if (!externalId) {
+                return RpcHelpers.errorResponse("external_id failed normalisation", 400);
+            }
+            // Authentication: must be either Nakama-authenticated or a trusted service.
+            if (!ctx.userId && !isServiceCaller(data)) {
+                return RpcHelpers.errorResponse("not authorised", 401);
+            }
+            var record = readLink(nk, channel, externalId);
+            if (!record) {
+                return RpcHelpers.successResponse(null);
+            }
+            // Last-seen update is best-effort and does not block the read.
+            try {
+                record.last_seen = Math.floor(Date.now() / 1000);
+                nk.storageWrite([{
+                        collection: IDENTITY_LINKS_COLLECTION,
+                        key: buildKey(channel, externalId),
+                        userId: Constants.SYSTEM_USER_ID,
+                        value: record,
+                    }]);
+            }
+            catch (e) { /* swallow */ }
+            return RpcHelpers.successResponse({
+                cognito_sub: record.cognito_sub,
+                channel: channel,
+                external_id: externalId,
+                linked_at: record.linked_at,
+                confidence: record.confidence || "medium",
+            });
+        }
+        catch (err) {
+            logger.error("identity_resolve failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    // ── RPC: identity_link ───────────────────────────────────────────────────
+    // Caller MUST be authenticated as the cognito_sub being linked. We do not
+    // permit "link this stranger's whatsapp to my account" — see privacy contract.
+    //
+    // Request:
+    //   { "channel": "whatsapp", "external_id": "+919876543210",
+    //     "source": "wa_magic_link", "confidence": "high" }
+    //
+    // Response:
+    //   { "success": true, "data": { "linked": true, "channel": "whatsapp", ... }}
+    function rpcLink(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var channel = ("" + (data.channel || "")).toLowerCase();
+            var externalIdRaw = data.external_id || data.externalId;
+            if (!channel || !SUPPORTED_CHANNELS[channel]) {
+                return RpcHelpers.errorResponse("unsupported channel", 400);
+            }
+            if (!externalIdRaw) {
+                return RpcHelpers.errorResponse("external_id is required", 400);
+            }
+            var externalId = normalizeExternalId(channel, "" + externalIdRaw);
+            if (!externalId) {
+                return RpcHelpers.errorResponse("external_id failed normalisation", 400);
+            }
+            // If a binding already exists to a DIFFERENT user, refuse and surface the
+            // collision. The web layer will then show "this channel is already linked
+            // to another account; contact support to merge."
+            var existing = readLink(nk, channel, externalId);
+            if (existing && existing.cognito_sub && existing.cognito_sub !== userId) {
+                logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + userId);
+                return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
+            }
+            var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
+            var confidence = ("" + (data.confidence || "high")).slice(0, 16);
+            writeLink(nk, channel, externalId, userId, source, confidence);
+            logger.info("identity_link ok: user=" + userId + " channel=" + channel + " ext=" + externalId);
+            return RpcHelpers.successResponse({
+                linked: true,
+                channel: channel,
+                external_id: externalId,
+                cognito_sub: userId,
+                confidence: confidence,
+            });
+        }
+        catch (err) {
+            logger.error("identity_link failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    // ── RPC: identity_unlink ─────────────────────────────────────────────────
+    // Caller MUST own the binding. Idempotent.
+    //
+    // Request:  { "channel": "whatsapp", "external_id": "+919876543210" }
+    // Response: { "success": true, "data": { "unlinked": true }}
+    function rpcUnlink(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var channel = ("" + (data.channel || "")).toLowerCase();
+            var externalIdRaw = data.external_id || data.externalId;
+            if (!channel || !SUPPORTED_CHANNELS[channel]) {
+                return RpcHelpers.errorResponse("unsupported channel", 400);
+            }
+            if (!externalIdRaw) {
+                return RpcHelpers.errorResponse("external_id is required", 400);
+            }
+            var externalId = normalizeExternalId(channel, "" + externalIdRaw);
+            var existing = readLink(nk, channel, externalId);
+            if (!existing) {
+                return RpcHelpers.successResponse({ unlinked: true });
+            }
+            if (existing.cognito_sub !== userId) {
+                return RpcHelpers.errorResponse("not authorised to unlink this binding", 403);
+            }
+            deleteLink(nk, channel, externalId, userId);
+            logger.info("identity_unlink ok: user=" + userId + " channel=" + channel + " ext=" + externalId);
+            return RpcHelpers.successResponse({ unlinked: true });
+        }
+        catch (err) {
+            logger.error("identity_unlink failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    // ── RPC: identity_list_mine ──────────────────────────────────────────────
+    // Powers the /me/reveal "Connected channels" panel. Caller-owned read.
+    //
+    // Response: { "success": true, "data": { "links": [ {channel, external_id_masked, linked_at, ...}, ...] }}
+    function rpcListMine(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var records = [];
+            try {
+                var page = nk.storageList(userId, IDENTITY_LINKS_USER_COLLECTION, 100);
+                if (page && page.objects) {
+                    records = page.objects;
+                }
+            }
+            catch (e) {
+                // empty
+            }
+            var links = [];
+            for (var i = 0; i < records.length; i++) {
+                var v = records[i].value;
+                if (!v)
+                    continue;
+                links.push({
+                    channel: v.channel,
+                    external_id_masked: maskExternalId(v.channel, v.external_id),
+                    linked_at: v.linked_at,
+                    source: v.source,
+                    confidence: v.confidence,
+                });
+            }
+            return RpcHelpers.successResponse({ links: links, count: links.length });
+        }
+        catch (err) {
+            logger.error("identity_list_mine failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    // Privacy: never echo back full phone numbers / emails / pass serials.
+    function maskExternalId(channel, externalId) {
+        if (!externalId)
+            return "";
+        if (channel === "whatsapp" || channel === "sms") {
+            // Show country code + last 2 digits: "+91 ******10"
+            if (externalId.length <= 4)
+                return externalId;
+            return externalId.substr(0, 3) + " ****" + externalId.substr(externalId.length - 2);
+        }
+        if (channel === "email" || channel === "beehiiv") {
+            var atIdx = externalId.indexOf("@");
+            if (atIdx <= 1)
+                return externalId;
+            return externalId.charAt(0) + "***" + externalId.substr(atIdx);
+        }
+        if (externalId.length <= 6)
+            return externalId;
+        return externalId.substr(0, 3) + "***" + externalId.substr(externalId.length - 2);
+    }
+    // ── Registration ─────────────────────────────────────────────────────────
+    function register(initializer) {
+        __rpc_identity_resolve = rpcResolve;
+        __rpc_identity_link = rpcLink;
+        __rpc_identity_unlink = rpcUnlink;
+        __rpc_identity_list_mine = rpcListMine;
+    }
+    IdentityResolver.register = register;
+    register();
+})(IdentityResolver || (IdentityResolver = {}));
 var LegacyAnalyticsRetention;
 (function (LegacyAnalyticsRetention) {
     function readAggStorage(nk, collection, key) {
@@ -113764,6 +114156,10 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("hiro_unlockables_claim", __rpc_hiro_unlockables_claim); } catch(e) {}
   try { initializer.registerRpc("hiro_unlockables_buy_slot", __rpc_hiro_unlockables_buy_slot); } catch(e) {}
   try { initializer.registerRpc("hiro_unlockables_list", __rpc_hiro_unlockables_list); } catch(e) {}
+  try { initializer.registerRpc("identity_resolve", __rpc_identity_resolve); } catch(e) {}
+  try { initializer.registerRpc("identity_link", __rpc_identity_link); } catch(e) {}
+  try { initializer.registerRpc("identity_unlink", __rpc_identity_unlink); } catch(e) {}
+  try { initializer.registerRpc("identity_list_mine", __rpc_identity_list_mine); } catch(e) {}
   try { initializer.registerRpc("analytics_cohort_retention", __rpc_analytics_cohort_retention); } catch(e) {}
   try { initializer.registerRpc("analytics_track_retention_event", __rpc_analytics_track_retention_event); } catch(e) {}
   try { initializer.registerRpc("analytics_arpu", __rpc_analytics_arpu); } catch(e) {}
@@ -114301,5 +114697,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 813 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 817 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }

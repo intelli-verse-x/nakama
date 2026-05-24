@@ -289,6 +289,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[Satori] Registering Identities RPCs...");
     SatoriIdentities.register(initializer);
 
+    logger.info("[Identity] Registering Identity Resolver RPCs (cross-channel sub linking)...");
+    try {
+      IdentityResolver.register(initializer);
+      logger.info("[Identity] identity_resolve, identity_link, identity_unlink, identity_list_mine registered");
+    } catch (err: any) {
+      logger.error("[Identity] failed to register IdentityResolver: " + (err && err.message ? err.message : String(err)));
+    }
+
     logger.info("[Satori] Registering Audiences RPCs...");
     SatoriAudiences.register(initializer);
 

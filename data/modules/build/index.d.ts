@@ -876,6 +876,9 @@ declare namespace HiroUnlockables {
     function getConfig(nk: nkruntime.Nakama): Hiro.UnlockablesConfig;
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace IdentityResolver {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace LegacyAnalyticsRetention {
     function register(initializer: nkruntime.Initializer): void;
 }
