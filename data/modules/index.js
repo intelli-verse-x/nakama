@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-24T19:26:34.028Z
+// Generated: 2026-05-24T20:17:17.758Z
 // RPC Count: 823
 // ============================================================
 
@@ -114368,9 +114368,30 @@ var WowMoments;
     // ── RPC: wow_moments_state_get ──────────────────────────────────────────
     // Caller-owned read of the user's wow timeline (last_shown / clicked /
     // dismissed per wow_id). Powers `/me/reveal` + the admin "wow inspector".
-    function rpcStateGet(ctx, logger, nk, _payload) {
+    //
+    // Auth model
+    // ----------
+    // - Authenticated user calls (ctx.userId set) read their OWN timeline.
+    // - Trusted service callers may pass `service_token` + `user_id` in the
+    //   payload to fetch any user's timeline. This is required for inbound
+    //   channel webhook adapters (`/api/wow/whatsapp-webhook`,
+    //   `/api/sms/redirect/[linkid]`, `/api/wow/beehiiv-click`,
+    //   `/api/wow/telegram-webhook`, `/api/wow/discord-webhook`) so the
+    //   adapter can read a user's wow state by `cognito_sub` resolved from
+    //   the channel-side identifier — exactly mirroring the pattern in
+    //   `rpcSelect` and `rpcReact` above.
+    function rpcStateGet(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = ctx.userId || "";
+            if (!userId) {
+                if (!isServiceCaller(ctx, data)) {
+                    return RpcHelpers.errorResponse("not authorised", 401);
+                }
+                userId = "" + (data.user_id || "");
+                if (!userId)
+                    return RpcHelpers.errorResponse("user_id required for service caller", 400);
+            }
             var rows = [];
             try {
                 var page = nk.storageList(userId, WOW_STATE_COLLECTION, 100);
