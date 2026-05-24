@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-24T18:52:40.829Z
+// Generated: 2026-05-24T19:26:34.028Z
 // RPC Count: 823
 // ============================================================
 
@@ -93731,16 +93731,15 @@ var IdentityResolver;
             // Idempotent delete; if already gone, that's fine.
         }
     }
-    function isServiceCaller(payload) {
+    function isServiceCaller(ctx, payload) {
         var token = payload && payload.service_token;
         if (!token)
             return false;
-        // Goja exposes process.env via the postbuild shim that rewrites every
-        // `process.env.X` reference to a guarded lookup. We declare process as
-        // any-typed locally so TS doesn't require @types/node (the runtime
-        // bundle has zero Node deps).
-        var proc = (typeof globalThis !== "undefined") ? globalThis["process"] : undefined;
-        var expected = "" + ((proc && proc.env && proc.env.IDENTITY_RESOLVER_SERVICE_TOKEN) || "");
+        // Nakama's Goja runtime exposes runtime.env (set in nakama config.yaml
+        // under runtime.env) via ctx.env. Container-level env vars are NOT
+        // visible inside Goja — see data/modules/src/legacy/daily-rewards.ts
+        // and library/n8n-pack-state.ts for the canonical pattern.
+        var expected = "" + ((ctx.env && ctx.env["IDENTITY_RESOLVER_SERVICE_TOKEN"]) || "");
         return expected.length > 0 && token === expected;
     }
     // ── RPC: identity_resolve ────────────────────────────────────────────────
@@ -93776,7 +93775,7 @@ var IdentityResolver;
                 return RpcHelpers.errorResponse("external_id failed normalisation", 400);
             }
             // Authentication: must be either Nakama-authenticated or a trusted service.
-            if (!ctx.userId && !isServiceCaller(data)) {
+            if (!ctx.userId && !isServiceCaller(ctx, data)) {
                 return RpcHelpers.errorResponse("not authorised", 401);
             }
             var record = readLink(nk, channel, externalId);
@@ -113424,12 +113423,13 @@ var KbEnrichment;
     var ENRICHMENT_INDEX_COLLECTION = "kb_enrichment_index"; // tracks last-enriched-cursor for tick pagination
     var ANALYTICS_GAME_ID = "quizverse";
     function nowSec() { return Math.floor(Date.now() / 1000); }
-    function isServiceCaller(payload) {
+    function isServiceCaller(ctx, payload) {
         var token = payload && payload.service_token;
         if (!token)
             return false;
-        var proc = (typeof globalThis !== "undefined") ? globalThis["process"] : undefined;
-        var expected = "" + ((proc && proc.env && proc.env.KB_ENRICHMENT_SERVICE_TOKEN) || "");
+        // Nakama Goja runtime exposes runtime.env via ctx.env (config.yaml
+        // runtime.env block); container env vars are NOT visible inside Goja.
+        var expected = "" + ((ctx.env && ctx.env["KB_ENRICHMENT_SERVICE_TOKEN"]) || "");
         return expected.length > 0 && token === expected;
     }
     function emitAnalyticsEvent(nk, logger, userId, eventName, properties) {
@@ -113651,7 +113651,7 @@ var KbEnrichment;
             var profile = ("" + (data.profile || "full")).toLowerCase(); // "hot" | "full"
             var userId = ctx.userId || "";
             if (!userId) {
-                if (!isServiceCaller(data))
+                if (!isServiceCaller(ctx, data))
                     return RpcHelpers.errorResponse("not authorised", 401);
                 userId = "" + (data.user_id || "");
                 if (!userId)
@@ -113660,7 +113660,7 @@ var KbEnrichment;
             else {
                 // Caller-as-themselves can request only the "hot" profile (cheap).
                 // Heavy "full" profile needs a service token to keep abuse contained.
-                if (profile === "full" && !isServiceCaller(data))
+                if (profile === "full" && !isServiceCaller(ctx, data))
                     profile = "hot";
             }
             var startMs = Date.now();
@@ -113745,10 +113745,10 @@ var KbEnrichment;
     // calls resume from there. A full sweep of 50k MAU takes ~100 hourly ticks
     // at 500/tick if we kept it serial — in practice the cron runs every minute
     // for the largest tier so the window stays fresh.
-    function rpcTick(_ctx, logger, nk, payload) {
+    function rpcTick(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
-            if (!isServiceCaller(data))
+            if (!isServiceCaller(ctx, data))
                 return RpcHelpers.errorResponse("service token required", 401);
             var profile = ("" + (data.profile || "hot")).toLowerCase();
             var limit = Math.min(Math.max(parseInt(data.limit || "500") || 500, 1), 2000);
@@ -113801,7 +113801,9 @@ var KbEnrichment;
                         continue;
                     }
                     // Recurse via the same handler — keeps the logic in one place.
-                    rpcRunForUser({ userId: "" }, logger, nk, JSON.stringify({
+                    // The synthetic context MUST forward ctx.env so the inner
+                    // service-token check has access to KB_ENRICHMENT_SERVICE_TOKEN.
+                    rpcRunForUser({ userId: "", env: ctx.env }, logger, nk, JSON.stringify({
                         user_id: uid,
                         profile: profile,
                         service_token: data.service_token,
@@ -113853,7 +113855,7 @@ var KbEnrichment;
             var data = RpcHelpers.parseRpcPayload(payload);
             var userId = ctx.userId || "";
             if (!userId) {
-                if (!isServiceCaller(data))
+                if (!isServiceCaller(ctx, data))
                     return RpcHelpers.errorResponse("not authorised", 401);
                 userId = "" + (data.user_id || "");
                 if (!userId)
@@ -114138,12 +114140,13 @@ var WowMoments;
         catch (e) { /* swallow — heuristic still works without */ }
         return kb;
     }
-    function isServiceCaller(payload) {
+    function isServiceCaller(ctx, payload) {
         var token = payload && payload.service_token;
         if (!token)
             return false;
-        var proc = (typeof globalThis !== "undefined") ? globalThis["process"] : undefined;
-        var expected = "" + ((proc && proc.env && proc.env.WOW_RUNTIME_SERVICE_TOKEN) || "");
+        // Nakama Goja runtime exposes runtime.env via ctx.env (config.yaml
+        // runtime.env block); container env vars are NOT visible inside Goja.
+        var expected = "" + ((ctx.env && ctx.env["WOW_RUNTIME_SERVICE_TOKEN"]) || "");
         return expected.length > 0 && token === expected;
     }
     // Mirrors the dashboard write convention from analytics.js so wow events
@@ -114199,7 +114202,7 @@ var WowMoments;
             // Auth: caller is the user OR a trusted service that supplies user_id.
             var userId = ctx.userId || "";
             if (!userId) {
-                if (!isServiceCaller(data)) {
+                if (!isServiceCaller(ctx, data)) {
                     return RpcHelpers.errorResponse("not authorised", 401);
                 }
                 userId = "" + (data.user_id || "");
@@ -114308,7 +114311,7 @@ var WowMoments;
             var data = RpcHelpers.parseRpcPayload(payload);
             var userId = ctx.userId || "";
             if (!userId) {
-                if (!isServiceCaller(data))
+                if (!isServiceCaller(ctx, data))
                     return RpcHelpers.errorResponse("not authorised", 401);
                 userId = "" + (data.user_id || "");
                 if (!userId)
