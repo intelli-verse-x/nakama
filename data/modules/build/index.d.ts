@@ -3660,3 +3660,9 @@ declare namespace Satori {
         };
     }
 }
+declare namespace KbEnrichment {
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace WowMoments {
+    function register(initializer: nkruntime.Initializer): void;
+}
