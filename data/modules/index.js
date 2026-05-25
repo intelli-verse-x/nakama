@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-25T05:59:03.603Z
-// RPC Count: 867
+// Generated: 2026-05-25T06:11:07.346Z
+// RPC Count: 870
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -326,6 +326,9 @@ var __rpc_lt_school_get_user_school;
 var __rpc_lt_school_freetext_submit;
 var __rpc_lt_chat_quota_check;
 var __rpc_lt_chat_quota_consume;
+var __rpc_lt_learner_state_get;
+var __rpc_lt_learner_insights_get;
+var __rpc_lt_learner_soft_cta_check;
 var __rpc_analytics_cohort_retention;
 var __rpc_analytics_track_retention_event;
 var __rpc_analytics_arpu;
@@ -878,7 +881,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (100 files) ---
 
@@ -95259,6 +95262,7 @@ var IdentityResolver;
 // • Service-only RPCs accept either (a) ctx.userId from a Nakama session,
 //   or (b) service_token + user_id in payload matching ctx.env["LT_SERVICE_TOKEN"].
 // RPCs registered (15)
+// RPCs registered (16)
 // --------------------
 //   lt_score_predict                  service-only (auth) — § 3 of plan
 //   lt_exam_countdown_get             service-only        — § 4 of plan
@@ -95275,6 +95279,32 @@ var IdentityResolver;
 //   lt_school_freetext_submit         service-only        — § 6
 //   lt_chat_quota_check               service-only        — § 3.11 (anon/auth/pro tier)
 //   lt_chat_quota_consume             service-only        — § 3.11 (atomic decrement)
+//   lt_learner_state_get              service-only (auth) — § 2.5 / § 3.13.1
+//   lt_learner_insights_get           service-only (auth) — § 3.13.2
+//   lt_learner_soft_cta_check         service-only (auth) — § 3.13.4
+//
+// No-exam fallback (§ 2.5 / § 3.13)
+// --------------------------------
+// Most QuizVerse visitors are not exam candidates — trivia browsers, parents,
+// students without a declared target. Exam-prep terminology is a wall to them,
+// not a draw. This module ships the learner-mindset surface so the same web
+// route renders elegantly for both modes:
+//   - lt_learner_state_get      → resolves which of the 4 modes (§ 2.5.1)
+//                                 a user is in (deterministic, cached 6h)
+//   - lt_learner_insights_get   → returns Learner-Insights payload — uses
+//                                 ONLY learner-mode vocabulary from § 2.5.3
+//                                 (no "predicted score", "AIR", "scaled
+//                                 score", "grade boundary", "cutoff").
+//   - lt_score_predict          → returns a graceful redirect when
+//                                 exam_id is missing or sentinel
+//                                 "learner_general" (§ 3.13.3) so the
+//                                 route never errors on visitors without a
+//                                 declared exam.
+//   - lt_learner_soft_cta_check → 14-day soft exam-CTA gate (§ 3.13.4) —
+//                                 only fires for users who meet the
+//                                 engagement floor (≥10 quizzes/wk × 2 wks
+//                                 AND ≥10 active days in last 14d) AND
+//                                 have not been nudged in the prior 14 days.
 //
 // Storage shapes (real now)
 // -------------------------
@@ -95295,6 +95325,15 @@ var IdentityResolver;
 //   collection: "qv_lt_predictor_context" key: "<exam_id>" → PredictorContextBlock
 //   collection: "qv_lt_school_pending" key: "<provisional_id>" → freetext queue
 //   collection: "qv_lt_chat_quota"   key: see § 3.11.3       → ChatQuotaRecord
+//   collection: "qv_lt_school"             key: "current"     → UserSchoolRecord
+//   collection: "qv_lt_countdown"          key: "doc"         → ExamCountdownDoc
+//   collection: "qv_lt_gpa"                key: "current"     → GpaSnapshot
+//   collection: "qv_lt_predictor_context"  key: "<exam_id>"   → PredictorContextBlock
+//   collection: "qv_lt_school_pending"     key: "<provisional_id>" → freetext queue
+//   collection: "qv_lt_learner_state_cache" key: "v1"         → LearnerStateCache (TTL 6h)
+//   collection: "qv_lt_soft_cta_state"     key: "v1"          → { lastNudgeUnix }
+//   collection: "qv_user_exam"             key: "declared"    → declared exam (Wave 4-5)
+//   collection: "qv_user_quiz_history"     key: "30d_summary" → quiz aggregates (Wave 4-5)
 // All permissionRead/Write = 0 (server-only).
 var LearnerToolbelt;
 (function (LearnerToolbelt) {
@@ -95311,9 +95350,13 @@ var LearnerToolbelt;
     var MAX_HISTORY_ROWS = 200;
     var MAX_COUNTDOWN_ENTRIES = 20;
     var COLLECTION_CHAT_QUOTA = "qv_lt_chat_quota";
-    var ANALYTICS_GAME_ID = "quizverse";
+    var COLLECTION_LEARNER_STATE_CACHE = "qv_lt_learner_state_cache";
+    var COLLECTION_SOFT_CTA_STATE = "qv_lt_soft_cta_state";
+    // Placeholder keys consumed in Phase A — Wave 4-5 subagent rewires these
+    // against the live qv_u_<sub>_exam / qv_u_<sub>_quiz_history surfaces.
+    var COLLECTION_USER_EXAM = "qv_user_exam";
+    var COLLECTION_USER_QUIZ_HISTORY = "qv_user_quiz_history";
     var SKELETON_PHASE = "skeleton-A";
-    var MODULE_VERSION = "learner-toolbelt/0.2.0";
     // ── Chat-quota limits (plan §3.11) ─────────────────────────────────────────
     // Defaults below match PLAN-LEARNER_TOOLBELT.md §3.11.1. Each may be
     // overridden at runtime via ctx.env.LT_QUOTA_<NAME> (lifted into k8s
@@ -95332,6 +95375,10 @@ var LearnerToolbelt;
     // gateway; this RPC just gates the "is the supplied user_id plausible"
     // path before reading the per-exam ledger.
     var COGNITO_SUB_RE = /^[A-Za-z0-9_\-:.]{8,128}$/;
+    // 6-hour cache for lt_learner_state_get (§ 3.13.1).
+    var LEARNER_STATE_CACHE_TTL_SEC = 6 * 60 * 60;
+    // 14-day soft exam-CTA cooldown (§ 3.13.4).
+    var SOFT_CTA_COOLDOWN_SEC = 14 * 86400;
     // ── Helpers ────────────────────────────────────────────────────────────────
     function nowSec() {
         return Math.floor(Date.now() / 1000);
@@ -95493,6 +95540,252 @@ var LearnerToolbelt;
         }
         return getQuotaLimit(ctx, "LT_QUOTA_AUTH_CHAT_PER_DAY", DEFAULT_QUOTA_AUTH_CHAT_PER_DAY);
     }
+    // § 3.13.1 deterministic state derivation. Same input → same mode.
+    //
+    //   if declared_intent == 'parent'                          → 'parent'
+    //   else if declared_intent == 'exam_prep'
+    //         OR has_exam_declared                              → 'exam'
+    //   else if has_school_declared OR has_history              → 'learner'
+    //   else                                                    → 'cold_start'
+    //
+    // `has_history` is `quiz_count_last_30d >= 5` (matches § 2.5.1 state D
+    // threshold — "auth'd with <5 quizzes" stays cold-start).
+    function deriveLearnerMode(inputs) {
+        var declared = inputs.declared_intent || null;
+        var hasHistory = (inputs.quiz_count_last_30d || 0) >= 5;
+        var mode;
+        if (declared === "parent") {
+            mode = "parent";
+        }
+        else if (declared === "exam_prep" || inputs.has_exam_declared) {
+            mode = "exam";
+        }
+        else if (inputs.has_school_declared || hasHistory) {
+            mode = "learner";
+        }
+        else {
+            mode = "cold_start";
+        }
+        var recommendedTool;
+        var displayName;
+        if (mode === "parent") {
+            recommendedTool = "/tools/parent-dashboard";
+            displayName = "parent";
+        }
+        else if (mode === "exam") {
+            recommendedTool = "/tools/score-predictor";
+            displayName = "exam candidate";
+        }
+        else if (mode === "learner") {
+            recommendedTool = "/tools/learn";
+            displayName = "learner";
+        }
+        else {
+            recommendedTool = "/tools/learn";
+            displayName = "new explorer";
+        }
+        return {
+            mode: mode,
+            has_history: hasHistory,
+            copy_namespace: mode === "cold_start" ? "cold_start" : mode,
+            recommended_tool: recommendedTool,
+            display_name_for_user: displayName,
+        };
+    }
+    LearnerToolbelt.deriveLearnerMode = deriveLearnerMode;
+    // § 3.13.4 — 14-day soft exam-CTA gate. We only nudge a learner-mode user
+    // toward an exam when they have demonstrably high engagement AND have not
+    // been nudged within the cooldown window.
+    //
+    // Floor (per plan): ≥10 quizzes/week × 2 weeks  → 20 quizzes in 2w
+    //                   AND ≥10 active days in last 14 days
+    // Cooldown:         never nudge twice within 14 days
+    //
+    // Exposed as a pure function so the gateway / unit tests can call it
+    // without an RPC round-trip.
+    function shouldShowSoftExamCta(metrics, lastNudgeUnix) {
+        if (!metrics)
+            return false;
+        if ((metrics.quizzes_played_last_2w || 0) < 20)
+            return false;
+        if ((metrics.daysActive_last_2w || 0) < 10)
+            return false;
+        if (lastNudgeUnix && (Date.now() / 1000 - lastNudgeUnix) < SOFT_CTA_COOLDOWN_SEC)
+            return false;
+        return true;
+    }
+    LearnerToolbelt.shouldShowSoftExamCta = shouldShowSoftExamCta;
+    // § 3.13.2 — Learner Insights payload.
+    //
+    // Phase A: returns representative mock metrics (status='mock_data') so the
+    // web route can render the full layout while Wave 4-5 wires real reads
+    // against qv_u_<sub>_quiz_history. The CRITICAL Phase-A contract is the
+    // no-exam-jargon guarantee — every string in this payload is restricted to
+    // the learner-mode vocabulary from § 2.5.3. The lint test in
+    // __tests__/skeleton.test.ts verifies (§ 3.13.6 A25).
+    //
+    // TODO(Wave 4-5): replace mock metrics with real engagement-data reads
+    //   - quizzes_played / accuracy from qv_u_<sub>_quiz_history
+    //   - streak data from qv_user_streaks
+    //   - favorite_topics from existing topic-mastery derivation in user-model
+    //   - peer_percentile_* from a nightly cohort aggregate
+    function buildLearnerInsightsResponse(args) {
+        var coldStart = args.mode === "cold_start";
+        var zeroMetrics = {
+            quizzes_played: 0,
+            total_questions: 0,
+            correct_questions: 0,
+            overall_accuracy: 0,
+            accuracy_trend_30d: 0,
+            longest_streak_days: 0,
+            current_streak_days: 0,
+            favorite_topics: [],
+            weakest_topics: [],
+            peer_percentile_overall: 0,
+            peer_percentile_per_topic: {},
+        };
+        // Representative-but-mocked metrics — every string label uses
+        // learner-mode vocabulary only. NO forbidden tokens (predicted score /
+        // AIR / scaled score / grade boundary / cutoff / percentile rank).
+        var mockMetrics = {
+            quizzes_played: 12,
+            total_questions: 144,
+            correct_questions: 98,
+            overall_accuracy: 0.68,
+            accuracy_trend_30d: 0.04,
+            longest_streak_days: 5,
+            current_streak_days: 3,
+            favorite_topics: [
+                { topic_id: "history_world", topic_display: "World History", mastery_pct: 78 },
+                { topic_id: "biology_cells", topic_display: "Cell Biology", mastery_pct: 72 },
+                { topic_id: "math_algebra", topic_display: "Algebra", mastery_pct: 65 },
+            ],
+            weakest_topics: [
+                { topic_id: "math_geometry", topic_display: "Geometry", mastery_pct: 41 },
+                { topic_id: "physics_waves", topic_display: "Waves and Sound", mastery_pct: 38 },
+                { topic_id: "chemistry_organic", topic_display: "Organic Chemistry", mastery_pct: 33 },
+            ],
+            peer_percentile_overall: 64,
+            peer_percentile_per_topic: {
+                "history_world": 81,
+                "biology_cells": 73,
+                "math_algebra": 58,
+            },
+        };
+        var cta;
+        if (coldStart) {
+            // § 3.13.2 — cold-start CTA hard-coded per plan.
+            cta = {
+                kind: "try_a_topic",
+                copy_key: "cta.cold_start.play_5_quizzes",
+                target_route: "/tools/learn",
+            };
+        }
+        else {
+            cta = {
+                kind: "try_a_topic",
+                copy_key: "cta.learner.try_a_topic",
+                target_route: "/tools/learn",
+            };
+        }
+        return {
+            ok: true,
+            state: args.state,
+            mode: coldStart ? "cold_start" : "learner",
+            metrics: coldStart ? zeroMetrics : mockMetrics,
+            cta: cta,
+            // Explicit contract guarantee — see § 3.13.2 last bullet. The lint
+            // test asserts this field is the literal boolean `false` in every
+            // response.
+            forbidden_copy: false,
+            status: "mock_data",
+            phase: "A",
+            locale: args.locale,
+            module_version: LearnerToolbelt.MODULE_VERSION,
+            generated_unix: nowSec(),
+        };
+    }
+    LearnerToolbelt.buildLearnerInsightsResponse = buildLearnerInsightsResponse;
+    // Storage helpers for the learner-state RPCs. Wrapped in try/catch so a
+    // missing storage object (the common case in Phase A — quiz history isn't
+    // wired yet) degrades to "no data" rather than throwing.
+    function readStorageBool(nk, collection, key, userId) {
+        try {
+            var rows = nk.storageRead([{ collection: collection, key: key, userId: userId }]);
+            return !!(rows && rows.length > 0 && rows[0].value);
+        }
+        catch (_e) {
+            return false;
+        }
+    }
+    function readQuizCount30d(nk, userId) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: COLLECTION_USER_QUIZ_HISTORY,
+                    key: "30d_summary",
+                    userId: userId,
+                }]);
+            if (rows && rows.length > 0 && rows[0].value) {
+                var v = rows[0].value;
+                var n = parseInt("" + (v.quiz_count_last_30d || v.count || 0), 10);
+                return isNaN(n) ? 0 : n;
+            }
+        }
+        catch (_e) { /* no history yet */ }
+        return 0;
+    }
+    function readCachedLearnerState(nk, userId) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: COLLECTION_LEARNER_STATE_CACHE,
+                    key: "v1",
+                    userId: userId,
+                }]);
+            if (rows && rows.length > 0 && rows[0].value) {
+                var v = rows[0].value;
+                var cachedAt = parseInt("" + (v.cachedAt || 0), 10);
+                if (!isNaN(cachedAt) && (nowSec() - cachedAt) < LEARNER_STATE_CACHE_TTL_SEC) {
+                    return v;
+                }
+            }
+        }
+        catch (_e) { /* cache miss */ }
+        return null;
+    }
+    function writeCachedLearnerState(nk, userId, value) {
+        try {
+            var entry = { cachedAt: nowSec() };
+            for (var k in value) {
+                if (Object.prototype.hasOwnProperty.call(value, k))
+                    entry[k] = value[k];
+            }
+            nk.storageWrite([{
+                    collection: COLLECTION_LEARNER_STATE_CACHE,
+                    key: "v1",
+                    userId: userId,
+                    value: entry,
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+        }
+        catch (_e) { /* best-effort cache; failure is non-fatal */ }
+    }
+    function readLastNudgeUnix(nk, userId) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: COLLECTION_SOFT_CTA_STATE,
+                    key: "v1",
+                    userId: userId,
+                }]);
+            if (rows && rows.length > 0 && rows[0].value) {
+                var v = rows[0].value;
+                var ts = parseInt("" + (v.lastNudgeUnix || 0), 10);
+                return isNaN(ts) || ts <= 0 ? null : ts;
+            }
+        }
+        catch (_e) { /* never nudged */ }
+        return null;
+    }
     function emitAnalytics(nk, logger, userId, eventName, properties) {
         try {
             var unixTs = nowSec();
@@ -95592,7 +95885,17 @@ var LearnerToolbelt;
         return view;
     }
     // ────────────────────────────────────────────────────────────────────────
-    // RPC: lt_score_predict (Wave 5 — Bayes fallback only)
+    // RPC: lt_score_predict
+    //
+    // Implementation: Wave 5 — IRT/percentile Bayes posterior over recent quiz
+    // history. See plan § 3.
+    //
+    // No-exam fallback (§ 3.13.3) — when called without an exam_id or with the
+    // sentinel "learner_general", we return a structured redirect payload
+    // instead of erroring. The gateway respects this and silently invokes
+    // lt_learner_insights_get; the visitor sees a Learner Insights card, not an
+    // error. This is the contract that makes /tools/score-predictor degrade
+    // gracefully for state-B/C/D users (§ 2.5.1).
     // ────────────────────────────────────────────────────────────────────────
     function rpcScorePredict(ctx, logger, nk, payload) {
         try {
@@ -95601,9 +95904,19 @@ var LearnerToolbelt;
             if (auth.error)
                 return RpcHelpers.errorResponse(auth.error, auth.code);
             var examId = "" + (data.exam_id || "");
-            if (!examId)
-                return RpcHelpers.errorResponse("exam_id required", 400);
             var locale = "" + (data.locale || "en");
+            // § 3.13.3: no exam declared OR sentinel → redirect, never error.
+            if (!examId || examId === "learner_general") {
+                return RpcHelpers.successResponse({
+                    ok: true,
+                    redirect_to: "lt_learner_insights_get",
+                    reason: "no_exam_declared",
+                    suggested_action: "call lt_learner_insights_get for this user",
+                    locale: locale,
+                    module_version: LearnerToolbelt.MODULE_VERSION,
+                    generated_unix: nowSec(),
+                });
+            }
             var windowDays = parseInt("" + (data.recent_quiz_window_days || DEFAULT_PREDICT_WINDOW_DAYS), 10);
             if (!(windowDays > 0))
                 windowDays = DEFAULT_PREDICT_WINDOW_DAYS;
@@ -96153,6 +96466,85 @@ var LearnerToolbelt;
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
+    // ── RPC: lt_learner_state_get ──────────────────────────────────────────────
+    // § 3.13.1 — Single source of truth for "what mode is this user in?".
+    // Called at every web route mount + every chat turn. Caches the result on
+    // qv_lt_learner_state_cache for 6h so high-traffic pages don't re-derive
+    // on every request.
+    //
+    // Wire shape:
+    //   input  { service_token, user_id, declared_intent? }
+    //   output { ok, mode, has_exam_declared, has_school_declared,
+    //            quiz_count_last_30d, has_history, recommended_tool,
+    //            display_name_for_user, copy_namespace, ... }
+    function rpcLearnerStateGet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var auth = resolveServiceUserId(ctx, data);
+            if (auth.error)
+                return RpcHelpers.errorResponse(auth.error, auth.code);
+            var declaredIntent = data.declared_intent ? "" + data.declared_intent : null;
+            // Cache-hit short-circuit. Cache invalidation is purely TTL-based;
+            // declared_intent changes flow through immediately because we KEY by
+            // userId and rebuild on stale.
+            var cached = readCachedLearnerState(nk, auth.userId);
+            if (cached && (!declaredIntent || cached.declared_intent_at === declaredIntent)) {
+                return RpcHelpers.successResponse({
+                    ok: true,
+                    mode: cached.mode,
+                    has_exam_declared: !!cached.has_exam_declared,
+                    has_school_declared: !!cached.has_school_declared,
+                    quiz_count_last_30d: cached.quiz_count_last_30d || 0,
+                    has_history: !!cached.has_history,
+                    recommended_tool: cached.recommended_tool,
+                    display_name_for_user: cached.display_name_for_user,
+                    copy_namespace: cached.copy_namespace,
+                    cached: true,
+                    cached_at: cached.cachedAt,
+                    module_version: LearnerToolbelt.MODULE_VERSION,
+                    generated_unix: nowSec(),
+                });
+            }
+            // Storage probes — all best-effort, default to "no data".
+            var hasExam = readStorageBool(nk, COLLECTION_USER_EXAM, "declared", auth.userId);
+            var hasSchool = readStorageBool(nk, COLLECTION_SCHOOL, "current", auth.userId);
+            var quizCount = readQuizCount30d(nk, auth.userId);
+            var derived = deriveLearnerMode({
+                declared_intent: declaredIntent,
+                has_exam_declared: hasExam,
+                has_school_declared: hasSchool,
+                quiz_count_last_30d: quizCount,
+            });
+            var responseBody = {
+                ok: true,
+                mode: derived.mode,
+                has_exam_declared: hasExam,
+                has_school_declared: hasSchool,
+                quiz_count_last_30d: quizCount,
+                has_history: derived.has_history,
+                recommended_tool: derived.recommended_tool,
+                display_name_for_user: derived.display_name_for_user,
+                copy_namespace: derived.copy_namespace,
+                cached: false,
+                declared_intent_at: declaredIntent,
+                module_version: LearnerToolbelt.MODULE_VERSION,
+                generated_unix: nowSec(),
+            };
+            writeCachedLearnerState(nk, auth.userId, responseBody);
+            emitAnalytics(nk, logger, auth.userId, "lt_learner_state_get", {
+                mode: derived.mode,
+                has_exam: hasExam,
+                has_school: hasSchool,
+                quiz_count: quizCount,
+            });
+            return RpcHelpers.successResponse(responseBody);
+        }
+        catch (err) {
+            logger.error("lt_learner_state_get failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    LearnerToolbelt.rpcLearnerStateGet = rpcLearnerStateGet;
     // ── RPC: lt_chat_quota_consume ────────────────────────────────────────────
     // Atomic decrement (read-then-write) called by gateway AFTER it has decided
     // to forward a turn. Returns the post-consume state.
@@ -96235,6 +96627,123 @@ var LearnerToolbelt;
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
+    // ── RPC: lt_learner_insights_get ───────────────────────────────────────────
+    // § 3.13.2 — Returns the Learner Insights payload. For Phase A we ship
+    // representative mock metrics (status="mock_data") so the web route can
+    // render the full layout; Wave 4-5 wires the real engagement-data reads.
+    //
+    // CRITICAL CONTRACT — no-exam-jargon guard:
+    // Every string in the response MUST exclude exam-specific vocabulary
+    // ("predicted score", "AIR", "scaled score", "grade boundary", "cutoff",
+    // "percentile rank"). The lint test in __tests__/skeleton.test.ts
+    // (§ 3.13.6 A25) scans the JSON recursively and fails the build if any
+    // forbidden token appears. The response also carries an explicit
+    // `forbidden_copy: false` field as the wire-level guarantee.
+    function rpcLearnerInsightsGet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var auth = resolveServiceUserId(ctx, data);
+            if (auth.error)
+                return RpcHelpers.errorResponse(auth.error, auth.code);
+            var locale = "" + (data.locale || "en");
+            // Resolve mode without re-running the full state derivation — we
+            // accept either an explicit `mode` from the gateway (which has just
+            // called lt_learner_state_get) or a quick local probe. For Phase A
+            // the quick probe uses the same heuristic as deriveLearnerMode but
+            // with degraded inputs (no declared_intent on this path — that's a
+            // state_get concern, not an insights concern).
+            var explicitMode = "" + (data.mode || "");
+            var mode;
+            if (explicitMode === "cold_start" || explicitMode === "learner") {
+                mode = explicitMode;
+            }
+            else {
+                var hasSchool = readStorageBool(nk, COLLECTION_SCHOOL, "current", auth.userId);
+                var quizCount = readQuizCount30d(nk, auth.userId);
+                var derived = deriveLearnerMode({
+                    declared_intent: null,
+                    has_exam_declared: false,
+                    has_school_declared: hasSchool,
+                    quiz_count_last_30d: quizCount,
+                });
+                // If the user is an exam candidate we still degrade to 'learner'
+                // here — by construction insights_get is the no-exam surface, so
+                // exam users who reach this RPC are by definition treated like a
+                // learner for this turn (the gateway should have routed them to
+                // lt_score_predict instead).
+                mode = derived.mode === "exam" || derived.mode === "parent" ? "learner" : derived.mode;
+            }
+            var state = data.ip_hash && !data.user_id ? "anon" : "authed";
+            var body = buildLearnerInsightsResponse({
+                state: state,
+                mode: mode,
+                locale: locale,
+            });
+            emitAnalytics(nk, logger, auth.userId, "lt_learner_insights_get", {
+                mode: mode,
+                state: state,
+                locale: locale,
+            });
+            return RpcHelpers.successResponse(body);
+        }
+        catch (err) {
+            logger.error("lt_learner_insights_get failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    LearnerToolbelt.rpcLearnerInsightsGet = rpcLearnerInsightsGet;
+    // ── RPC: lt_learner_soft_cta_check ─────────────────────────────────────────
+    // § 3.13.4 — 14-day soft exam-CTA gate. Called by the gateway before each
+    // chat turn so it can decide whether to surface "you've been crushing
+    // Grade 10 Math — heads up, your pattern often leads to SAT/AP/JEE".
+    //
+    // Returns the decision + suggested exams + the copy key to render. The
+    // gateway is responsible for writing the lastNudgeUnix after the user
+    // actually SEES the nudge (so denials of service don't burn the cooldown).
+    function rpcLearnerSoftCtaCheck(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var auth = resolveServiceUserId(ctx, data);
+            if (auth.error)
+                return RpcHelpers.errorResponse(auth.error, auth.code);
+            // For Phase A we accept metrics either inline (gateway already
+            // computed them) or via a stub read against qv_user_quiz_history.
+            // Wave 4-5 will collapse this to a single canonical read.
+            var inlineMetrics = data.metrics || null;
+            var metrics;
+            if (inlineMetrics) {
+                metrics = {
+                    quizzes_played_last_2w: parseInt("" + (inlineMetrics.quizzes_played_last_2w || 0), 10) || 0,
+                    daysActive_last_2w: parseInt("" + (inlineMetrics.daysActive_last_2w || 0), 10) || 0,
+                };
+            }
+            else {
+                // Stub — Wave 4-5 wires the real 2-week aggregate.
+                metrics = { quizzes_played_last_2w: 0, daysActive_last_2w: 0 };
+            }
+            var lastNudge = readLastNudgeUnix(nk, auth.userId);
+            var shouldShow = shouldShowSoftExamCta(metrics, lastNudge);
+            // Suggested exams — Phase A returns a small static list; Wave 4-5
+            // derives them from the user's strongest topics + school board.
+            var suggestedExams = shouldShow ? ["sat", "ap_calculus", "jee_main"] : [];
+            return RpcHelpers.successResponse({
+                ok: true,
+                should_show: shouldShow,
+                suggested_exams: suggestedExams,
+                copy_key: "cta.learner.soft_exam_nudge",
+                metrics_used: metrics,
+                last_nudge_unix: lastNudge,
+                cooldown_sec: SOFT_CTA_COOLDOWN_SEC,
+                module_version: LearnerToolbelt.MODULE_VERSION,
+                generated_unix: nowSec(),
+            });
+        }
+        catch (err) {
+            logger.error("lt_learner_soft_cta_check failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    LearnerToolbelt.rpcLearnerSoftCtaCheck = rpcLearnerSoftCtaCheck;
     // ── Registration ───────────────────────────────────────────────────────────
     // Every registerRpc call uses a STRING-LITERAL id (per PHASE-ROADMAP lesson
     // #2: postbuild.js auto-hoists ONLY string-literal registerRpc calls).
@@ -96254,6 +96763,9 @@ var LearnerToolbelt;
         __rpc_lt_school_freetext_submit = rpcSchoolFreetextSubmit;
         __rpc_lt_chat_quota_check = rpcChatQuotaCheck;
         __rpc_lt_chat_quota_consume = rpcChatQuotaConsume;
+        __rpc_lt_learner_state_get = rpcLearnerStateGet;
+        __rpc_lt_learner_insights_get = rpcLearnerInsightsGet;
+        __rpc_lt_learner_soft_cta_check = rpcLearnerSoftCtaCheck;
     }
     LearnerToolbelt.register = register;
     register();
@@ -119928,6 +120440,9 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("lt_school_freetext_submit", __rpc_lt_school_freetext_submit); } catch(e) {}
   try { initializer.registerRpc("lt_chat_quota_check", __rpc_lt_chat_quota_check); } catch(e) {}
   try { initializer.registerRpc("lt_chat_quota_consume", __rpc_lt_chat_quota_consume); } catch(e) {}
+  try { initializer.registerRpc("lt_learner_state_get", __rpc_lt_learner_state_get); } catch(e) {}
+  try { initializer.registerRpc("lt_learner_insights_get", __rpc_lt_learner_insights_get); } catch(e) {}
+  try { initializer.registerRpc("lt_learner_soft_cta_check", __rpc_lt_learner_soft_cta_check); } catch(e) {}
   try { initializer.registerRpc("analytics_cohort_retention", __rpc_analytics_cohort_retention); } catch(e) {}
   try { initializer.registerRpc("analytics_track_retention_event", __rpc_analytics_track_retention_event); } catch(e) {}
   try { initializer.registerRpc("analytics_arpu", __rpc_analytics_arpu); } catch(e) {}
@@ -120478,5 +120993,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 867 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 870 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }
