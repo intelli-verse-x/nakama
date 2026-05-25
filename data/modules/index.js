@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-25T07:47:00.921Z
+// Generated: 2026-05-25T08:09:15.742Z
 // RPC Count: 885
 // ============================================================
 
@@ -90806,9 +90806,11 @@ var QuizVerseMigration;
         }
         // Leaderboard: per-(exam,utc_day). Reset cron 00:00 UTC matches the
         // daily puzzle reset, so each leaderboard is a single calendar day.
+        // SortOrder/Operator are nakama-common const-enums — must pass the
+        // enum *value* string ("descending" / "best"), not a free-form alias.
         try {
             var lbId = "qv_duel_" + exam + "_" + day;
-            nk.leaderboardCreate(lbId, false, "desc", "best", "0 0 * * *");
+            nk.leaderboardCreate(lbId, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "0 0 * * *");
             nk.leaderboardRecordWrite(lbId, userId, "", score, 0, { exam: exam, utc_day: day });
         }
         catch (e) {
@@ -90844,7 +90846,7 @@ var QuizVerseMigration;
         var entries = [];
         try {
             // Idempotent — leaderboardCreate returns existing if it already exists.
-            nk.leaderboardCreate(lbId, false, "desc", "best", "0 0 * * *");
+            nk.leaderboardCreate(lbId, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "0 0 * * *");
             var records = nk.leaderboardRecordsList(lbId, [], limit);
             if (records && records.records) {
                 for (var i = 0; i < records.records.length; i++) {
