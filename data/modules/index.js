@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-25T07:33:39.313Z
-// RPC Count: 882
+// Generated: 2026-05-25T07:47:00.921Z
+// RPC Count: 885
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -136,6 +136,9 @@ var __rpc_asset_catalog_get;
 var __rpc_quizverse_analytics_fanout;
 var __rpc_quizverse_livekit_token_mint;
 var __rpc_quizverse_words_daily_seed;
+var __rpc_quizverse_words_duel_get;
+var __rpc_quizverse_words_duel_submit;
+var __rpc_quizverse_words_duel_leaderboard;
 var __rpc_hiro_achievements_list;
 var __rpc_hiro_achievements_progress;
 var __rpc_hiro_achievements_claim;
@@ -893,7 +896,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (100 files) ---
 
@@ -89183,6 +89186,10 @@ var QuizVerseMigration;
     var COL_QUESTION_PACK = "qv_question_pack"; // P1 issued pack ledger for v2 scoring
     var COL_WORDS_DAILY = "qv_words_daily"; // PWords daily-puzzle dedupe ledger
     // (one row per user × mode × skin × utc_day)
+    var COL_DUEL_ATTEMPT = "qv_duel_attempt"; // PWords-Duel per-user attempt ledger
+    // (one row per user × exam × utc_day)
+    var COL_DUEL_PAIR = "qv_duel_pair"; // PWords-Duel public pairing queue +
+    // match ledger (one row per exam × utc_day)
     function nakamaError(msg, code) {
         return { message: msg, code: code };
     }
@@ -90408,6 +90415,477 @@ var QuizVerseMigration;
         });
     }
     // ─────────────────────────────────────────────────────────────────────
+    // PWords Vocab Duel — Phase 4 of PLAN-LEARNER_TOOLBELT § 3
+    // ─────────────────────────────────────────────────────────────────────
+    // Async PvP. Each day a fixed 10-word multiple-choice quiz is generated
+    // server-side from the per-exam wordbank (GRE / GMAT / IELTS). Picks +
+    // option order are deterministic in (utc_day, exam) so every player on a
+    // given day sees the same questions. Pairing: first user to submit on a
+    // given day for a given exam is enqueued; the second user is paired with
+    // the first; the cycle resets every UTC day.
+    //
+    // Anti-cheat:
+    //   - Server holds the answer key. Client only ever sees the question +
+    //     options; correctness is decided here on submit.
+    //   - First-submit-wins idempotency. A second submit for the same
+    //     (user, exam, utc_day) returns the original score — no replays.
+    //   - Storage permissions: OWNER_READ / NO_WRITE on attempt rows; pair
+    //     row is PUBLIC_READ / NO_WRITE for global queue visibility.
+    //
+    // Bonus mechanic (per the plan table):
+    //   - When paired, the response surfaces opponent.missed[] (their wrong
+    //     question indices). The SPA renders these as a "study these" list
+    //     for spaced-repetition export in Phase 3.
+    var DUEL_VALID_EXAMS = {
+        "gre": true, "gmat": true, "ielts": true
+    };
+    // Wordbanks: ~25 words/exam. Picks are 10/day so the rotation cycles
+    // cleanly every 25 days without repeating the same 10. Each entry has
+    // canonical word + 1-line definition; distractors are drawn from the
+    // remaining 15 entries' definitions, also deterministically.
+    //
+    // Provenance:
+    //   GRE  — Magoosh top-1200 frequent picks (synonym-test material)
+    //   GMAT — Manhattan GMAT verbal "tough" word list
+    //   IELTS— Coxhead Academic Word List (sublist 1-3 high-frequency)
+    var DUEL_BANK_GRE = [
+        { w: "ABATE", d: "To lessen in intensity or amount." },
+        { w: "ABSCOND", d: "To leave secretly to avoid arrest." },
+        { w: "AESTHETIC", d: "Concerned with beauty or art." },
+        { w: "ALACRITY", d: "Brisk and cheerful readiness." },
+        { w: "AMBIGUOUS", d: "Open to more than one interpretation." },
+        { w: "ANOMALY", d: "A deviation from the normal." },
+        { w: "APATHY", d: "Lack of interest, enthusiasm, or concern." },
+        { w: "ARDUOUS", d: "Involving strenuous effort; difficult." },
+        { w: "AUSTERE", d: "Severe or strict in manner; without comfort." },
+        { w: "BOLSTER", d: "Support or strengthen." },
+        { w: "CACOPHONY", d: "A harsh, discordant mixture of sounds." },
+        { w: "CAPRICIOUS", d: "Given to sudden, unaccountable changes of mood." },
+        { w: "DELETERIOUS", d: "Causing harm or damage." },
+        { w: "DOGMATIC", d: "Inclined to lay down principles as undeniably true." },
+        { w: "EBULLIENT", d: "Cheerful and full of energy." },
+        { w: "EPHEMERAL", d: "Lasting for a very short time." },
+        { w: "FASTIDIOUS", d: "Very attentive to and concerned about accuracy." },
+        { w: "GARRULOUS", d: "Excessively talkative, especially on trivial matters." },
+        { w: "HACKNEYED", d: "Lacking significance through having been overused." },
+        { w: "INDIGENT", d: "Poor; needy." },
+        { w: "LACONIC", d: "Using very few words; terse." },
+        { w: "MENDACIOUS", d: "Not telling the truth; lying." },
+        { w: "OBSEQUIOUS", d: "Obedient or attentive to an excessive degree." },
+        { w: "PERFIDIOUS", d: "Deceitful and untrustworthy." },
+        { w: "QUIESCENT", d: "In a state of quiet inactivity; dormant." }
+    ];
+    var DUEL_BANK_GMAT = [
+        { w: "ABROGATE", d: "Repeal or do away with (a law or formal agreement)." },
+        { w: "ACQUIESCE", d: "Accept something reluctantly but without protest." },
+        { w: "ANATHEMA", d: "Something or someone that one vehemently dislikes." },
+        { w: "BELIE", d: "Fail to give a true notion or impression of; contradict." },
+        { w: "CAVIL", d: "Make petty or unnecessary objections." },
+        { w: "COGENT", d: "Clear, logical, and convincing." },
+        { w: "CONCOMITANT", d: "Naturally accompanying or associated." },
+        { w: "DERIDE", d: "Express contempt for; ridicule." },
+        { w: "DIDACTIC", d: "Intended to teach; morally instructive." },
+        { w: "EQUIVOCATE", d: "Use ambiguous language to conceal the truth." },
+        { w: "EXCULPATE", d: "Show or declare that someone is not guilty of wrongdoing." },
+        { w: "FATUOUS", d: "Silly and pointless." },
+        { w: "FECKLESS", d: "Lacking initiative or strength of character; irresponsible." },
+        { w: "FORTUITOUS", d: "Happening by chance rather than design." },
+        { w: "GRATUITOUS", d: "Uncalled for; unwarranted." },
+        { w: "INCHOATE", d: "Just begun; not yet fully formed." },
+        { w: "INVEIGH", d: "Speak or write about with great hostility." },
+        { w: "OSTENSIBLE", d: "Stated or appearing to be true, but not necessarily so." },
+        { w: "PARAGON", d: "A person or thing regarded as a perfect example." },
+        { w: "PERFUNCTORY", d: "Carried out with minimum effort or reflection." },
+        { w: "PROPITIATE", d: "Win or regain the favor of by doing something pleasing." },
+        { w: "REPUDIATE", d: "Refuse to accept or be associated with." },
+        { w: "SAGACIOUS", d: "Having or showing keen mental discernment." },
+        { w: "TENDENTIOUS", d: "Expressing a strong viewpoint that one has firm views on." },
+        { w: "VENERATE", d: "Regard with great respect; revere." }
+    ];
+    var DUEL_BANK_IELTS = [
+        { w: "ANALYZE", d: "Examine in detail to discover essential features." },
+        { w: "APPROACH", d: "Come near or nearer to; a way of dealing with something." },
+        { w: "ASSESS", d: "Evaluate or estimate the nature, ability, or quality of." },
+        { w: "BENEFIT", d: "An advantage or profit gained from something." },
+        { w: "CONCEPT", d: "An abstract idea; a general notion." },
+        { w: "CONSIST", d: "Be composed or made up of." },
+        { w: "CONTEXT", d: "The circumstances that form the setting for an event." },
+        { w: "DERIVE", d: "Obtain something from a specified source." },
+        { w: "DISTRIBUTE", d: "Give shares of something; spread or arrange." },
+        { w: "ECONOMIC", d: "Relating to economics or the economy." },
+        { w: "ENVIRONMENT", d: "The surroundings or conditions in which one lives." },
+        { w: "ESTABLISH", d: "Set up on a firm or permanent basis." },
+        { w: "EVIDENT", d: "Plain or obvious; clearly seen or understood." },
+        { w: "FACTOR", d: "A circumstance, fact, or influence contributing to a result." },
+        { w: "FUNCTION", d: "An activity that is natural to or the purpose of a thing." },
+        { w: "IDENTIFY", d: "Establish or indicate who or what something is." },
+        { w: "INDICATE", d: "Point out; show." },
+        { w: "INTERPRET", d: "Explain the meaning of information or actions." },
+        { w: "MAINTAIN", d: "Cause or enable a condition to continue." },
+        { w: "OCCUR", d: "Happen; take place." },
+        { w: "POLICY", d: "A course or principle of action adopted by an organization." },
+        { w: "PRINCIPLE", d: "A fundamental truth that serves as the foundation." },
+        { w: "PROCEDURE", d: "An established or official way of doing something." },
+        { w: "REQUIRE", d: "Need for a particular purpose." },
+        { w: "SIGNIFICANT", d: "Sufficiently great or important to be worthy of attention." }
+    ];
+    function duelBank(exam) {
+        if (exam === "gmat")
+            return DUEL_BANK_GMAT;
+        if (exam === "ielts")
+            return DUEL_BANK_IELTS;
+        return DUEL_BANK_GRE;
+    }
+    // Same Lehmer LCG the SPA uses (lib/words/seed.ts → seededShuffle). This
+    // function is the reason the web client and the server agree on which 10
+    // words a given (utc_day, exam) maps to — change either implementation
+    // and the daily puzzle goes out of sync.
+    function duelShuffle(arr, seed) {
+        var out = arr.slice();
+        var s = seed >>> 0;
+        for (var i = out.length - 1; i > 0; i--) {
+            s = ((s * 1664525) + 1013904223) >>> 0;
+            var j = s % (i + 1);
+            var t = out[i];
+            out[i] = out[j];
+            out[j] = t;
+        }
+        return out;
+    }
+    function duelDailyPuzzle(exam, utcDay) {
+        var bank = duelBank(exam);
+        var seed = wordsSeedHash("duel:" + exam + ":" + utcDay);
+        var words = duelShuffle(bank, seed);
+        var picks = words.slice(0, 10);
+        var rest = words.slice(10);
+        var qs = [];
+        for (var i = 0; i < picks.length; i++) {
+            var p = picks[i];
+            // Per-question subseed; multiply by golden-ratio prime to spread bits.
+            var sub = (seed ^ (((i + 1) * 2654435761) >>> 0)) >>> 0;
+            var distractors = duelShuffle(rest, sub).slice(0, 3);
+            var optDefs = [p.d, distractors[0].d, distractors[1].d, distractors[2].d];
+            var optsShuffled = duelShuffle(optDefs, (sub * 31) >>> 0);
+            var correctIdx = -1;
+            for (var k = 0; k < optsShuffled.length; k++) {
+                if (optsShuffled[k] === p.d) {
+                    correctIdx = k;
+                    break;
+                }
+            }
+            qs.push({
+                idx: i,
+                word: p.w,
+                opts: optsShuffled,
+                correct_idx: correctIdx
+            });
+        }
+        return { questions: qs, seed: seed };
+    }
+    function rpcWordsDuelGetPuzzle(ctx, _logger, _nk, payload) {
+        // Anonymous-friendly: the puzzle is the same for everyone today, so we
+        // return it without auth. Auth is required on submit (we need a stable
+        // user_id to record + pair).
+        var req = parseJson(payload);
+        var exam = String(req.exam || "gre").toLowerCase();
+        if (!DUEL_VALID_EXAMS[exam]) {
+            throw nakamaError("invalid exam: " + exam, 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var now = nowMs();
+        var day = wordsUtcDay(now);
+        var puzzle = duelDailyPuzzle(exam, day);
+        // Strip the answer key on the wire.
+        var qs = [];
+        for (var i = 0; i < puzzle.questions.length; i++) {
+            var q = puzzle.questions[i];
+            qs.push({ idx: q.idx, word: q.word, opts: q.opts });
+        }
+        var userId = ctx.userId || "";
+        var alreadySubmitted = false;
+        var prevScore = 0;
+        if (userId) {
+            try {
+                var existing = _nk.storageRead([{
+                        collection: COL_DUEL_ATTEMPT, key: exam + ":" + day, userId: userId
+                    }]);
+                if (existing && existing.length > 0 && existing[0].value && existing[0].value.score !== undefined) {
+                    alreadySubmitted = true;
+                    prevScore = existing[0].value.score;
+                }
+            }
+            catch (_e) { /* ignore */ }
+        }
+        return JSON.stringify({
+            ok: true,
+            utc_day: day,
+            exam: exam,
+            seed: puzzle.seed,
+            questions: qs,
+            already_submitted: alreadySubmitted,
+            previous_score: prevScore
+        });
+    }
+    function rpcWordsDuelSubmit(ctx, logger, nk, payload) {
+        var userId = requireAuth(ctx);
+        var req = parseJson(payload);
+        var exam = String(req.exam || "gre").toLowerCase();
+        if (!DUEL_VALID_EXAMS[exam]) {
+            throw nakamaError("invalid exam: " + exam, 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var answers = req.answers;
+        if (!answers || answers.length !== 10) {
+            throw nakamaError("answers must be a length-10 array of option indices", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var elapsedMs = Number(req.elapsed_ms || 0);
+        var now = nowMs();
+        var day = wordsUtcDay(now);
+        var puzzle = duelDailyPuzzle(exam, day);
+        var attemptKey = exam + ":" + day;
+        var pairKey = exam + ":" + day;
+        // Idempotency: first submit wins. Replay returns the same envelope.
+        try {
+            var existing = nk.storageRead([{
+                    collection: COL_DUEL_ATTEMPT, key: attemptKey, userId: userId
+                }]);
+            if (existing && existing.length > 0 && existing[0].value &&
+                existing[0].value.score !== undefined) {
+                var prev = existing[0].value;
+                return JSON.stringify({
+                    ok: true,
+                    already_submitted: true,
+                    score: prev.score,
+                    total: 10,
+                    missed: prev.missed || [],
+                    opponent: prev.opponent || null,
+                    status: prev.opponent ? "paired" : "queued",
+                    utc_day: day,
+                    exam: exam
+                });
+            }
+        }
+        catch (_e) { /* ignore — first submit */ }
+        // Score
+        var score = 0;
+        var missed = [];
+        var detail = [];
+        for (var i = 0; i < 10; i++) {
+            var q = puzzle.questions[i];
+            var ans = Number(answers[i]);
+            var ok = ans === q.correct_idx;
+            if (ok)
+                score++;
+            else
+                missed.push(i);
+            detail.push({ idx: i, word: q.word, picked: ans, correct: ok, correct_idx: q.correct_idx });
+        }
+        // Pair attempt — read pair row, dequeue any waiting non-self user.
+        var opponent = null;
+        var pair = { waiting: [], matches: [] };
+        try {
+            var pairList = nk.storageRead([{
+                    collection: COL_DUEL_PAIR, key: pairKey, userId: "" // global owner-less row
+                }]);
+            if (pairList && pairList.length > 0 && pairList[0].value) {
+                pair = pairList[0].value;
+                if (!pair.waiting)
+                    pair.waiting = [];
+                if (!pair.matches)
+                    pair.matches = [];
+            }
+        }
+        catch (_e) { /* ignore — first match of the day */ }
+        // Try to dequeue an opponent (skip self if somehow already in queue).
+        var paired = false;
+        while (pair.waiting.length > 0 && !paired) {
+            var oppId = pair.waiting.shift();
+            if (oppId === userId)
+                continue;
+            try {
+                var oppAttemptList = nk.storageRead([{
+                        collection: COL_DUEL_ATTEMPT, key: attemptKey, userId: oppId
+                    }]);
+                if (oppAttemptList && oppAttemptList.length > 0 && oppAttemptList[0].value) {
+                    var oppAttempt = oppAttemptList[0].value;
+                    opponent = {
+                        user_id: oppId,
+                        score: oppAttempt.score || 0,
+                        missed: oppAttempt.missed || []
+                    };
+                    pair.matches.push({
+                        a: oppId, b: userId,
+                        a_score: oppAttempt.score || 0,
+                        b_score: score,
+                        finished_at_ms: now
+                    });
+                    // Back-fill the opponent's row with this user as their match.
+                    oppAttempt.opponent = { user_id: userId, score: score, missed: missed };
+                    nk.storageWrite([{
+                            collection: COL_DUEL_ATTEMPT,
+                            key: attemptKey,
+                            userId: oppId,
+                            value: oppAttempt,
+                            permissionRead: 1, // OWNER_READ
+                            permissionWrite: 0 // NO_WRITE
+                        }]);
+                    paired = true;
+                }
+            }
+            catch (e) {
+                logger.warn("[Duel] opponent attempt read failed: " +
+                    (e && e.message ? e.message : String(e)));
+            }
+        }
+        if (!paired) {
+            pair.waiting.push(userId);
+        }
+        // Persist self-attempt
+        var myAttempt = {
+            score: score,
+            total: 10,
+            answers: answers,
+            missed: missed,
+            elapsed_ms: elapsedMs,
+            finished_at_ms: now,
+            opponent: opponent,
+            exam: exam,
+            utc_day: day
+        };
+        nk.storageWrite([{
+                collection: COL_DUEL_ATTEMPT,
+                key: attemptKey,
+                userId: userId,
+                value: myAttempt,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+        // Persist pair row (PUBLIC_READ so the global queue is visible to ops).
+        nk.storageWrite([{
+                collection: COL_DUEL_PAIR,
+                key: pairKey,
+                userId: "", // Goja runtime maps "" → null owner = system row.
+                value: pair,
+                permissionRead: 2, // PUBLIC_READ
+                permissionWrite: 0
+            }]);
+        // Bump the same dedupe ledger PR #78 introduced — Vocab Duel counts
+        // toward the user's daily-played streak, so the existing landing-page
+        // streak counter shows duel attempts under "duel:<exam>" key.
+        try {
+            var ledgerKey = "duel:" + exam + ":" + day;
+            var prevLedger = nk.storageRead([{ collection: COL_WORDS_DAILY, key: ledgerKey, userId: userId }]);
+            var attemptCount = 1;
+            var firstAttemptMs = now;
+            if (prevLedger && prevLedger.length > 0 && prevLedger[0].value) {
+                var pv = prevLedger[0].value;
+                attemptCount = (typeof pv.attempt_count === "number" ? pv.attempt_count : 0) + 1;
+                firstAttemptMs = (typeof pv.first_attempt_ms === "number" && pv.first_attempt_ms > 0)
+                    ? pv.first_attempt_ms : now;
+            }
+            nk.storageWrite([{
+                    collection: COL_WORDS_DAILY,
+                    key: ledgerKey,
+                    userId: userId,
+                    value: {
+                        mode: "duel",
+                        skin: exam,
+                        utc_day: day,
+                        day_index: wordsDayIndex(now),
+                        seed: puzzle.seed,
+                        attempt_count: attemptCount,
+                        first_attempt_ms: firstAttemptMs,
+                        last_attempt_ms: now,
+                        last_score: score
+                    },
+                    permissionRead: 1,
+                    permissionWrite: 0
+                }]);
+        }
+        catch (e) {
+            logger.warn("[Duel] dedupe-ledger bump failed: " +
+                (e && e.message ? e.message : String(e)));
+        }
+        // Leaderboard: per-(exam,utc_day). Reset cron 00:00 UTC matches the
+        // daily puzzle reset, so each leaderboard is a single calendar day.
+        try {
+            var lbId = "qv_duel_" + exam + "_" + day;
+            nk.leaderboardCreate(lbId, false, "desc", "best", "0 0 * * *");
+            nk.leaderboardRecordWrite(lbId, userId, "", score, 0, { exam: exam, utc_day: day });
+        }
+        catch (e) {
+            logger.warn("[Duel] leaderboard write failed: " +
+                (e && e.message ? e.message : String(e)));
+        }
+        return JSON.stringify({
+            ok: true,
+            score: score,
+            total: 10,
+            missed: missed,
+            detail: detail,
+            opponent: opponent,
+            status: paired ? "paired" : "queued",
+            utc_day: day,
+            exam: exam
+        });
+    }
+    function rpcWordsDuelLeaderboard(ctx, logger, nk, payload) {
+        var req = parseJson(payload);
+        var exam = String(req.exam || "gre").toLowerCase();
+        if (!DUEL_VALID_EXAMS[exam]) {
+            throw nakamaError("invalid exam: " + exam, 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var limit = Number(req.limit || 10);
+        if (limit < 1)
+            limit = 1;
+        if (limit > 50)
+            limit = 50;
+        var now = nowMs();
+        var day = wordsUtcDay(now);
+        var lbId = "qv_duel_" + exam + "_" + day;
+        var entries = [];
+        try {
+            // Idempotent — leaderboardCreate returns existing if it already exists.
+            nk.leaderboardCreate(lbId, false, "desc", "best", "0 0 * * *");
+            var records = nk.leaderboardRecordsList(lbId, [], limit);
+            if (records && records.records) {
+                for (var i = 0; i < records.records.length; i++) {
+                    var r = records.records[i];
+                    entries.push({
+                        user_id: r.ownerId,
+                        username: r.username || "",
+                        score: r.score,
+                        rank: i + 1,
+                        update_at: r.updateTime || 0
+                    });
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[Duel] leaderboard read failed: " +
+                (e && e.message ? e.message : String(e)));
+        }
+        // Caller's own score (if any) — useful for "you ranked X of Y" UI.
+        var myScore = -1;
+        var userId = ctx.userId || "";
+        if (userId) {
+            try {
+                var mine = nk.storageRead([{
+                        collection: COL_DUEL_ATTEMPT, key: exam + ":" + day, userId: userId
+                    }]);
+                if (mine && mine.length > 0 && mine[0].value) {
+                    myScore = mine[0].value.score;
+                }
+            }
+            catch (_e) { /* ignore */ }
+        }
+        return JSON.stringify({
+            ok: true,
+            utc_day: day,
+            exam: exam,
+            entries: entries,
+            my_score: myScore
+        });
+    }
+    // ─────────────────────────────────────────────────────────────────────
     // Registration
     // ─────────────────────────────────────────────────────────────────────
     function register(initializer, _nk, logger) {
@@ -90443,8 +90921,14 @@ var QuizVerseMigration;
         // server-decided seed and bump the dedupe ledger. See the handler
         // body for the wire-format contract.
         __rpc_quizverse_words_daily_seed = rpcWordsDailySeed;
+        // PWords Vocab Duel — async PvP across GRE / GMAT / IELTS. Three RPCs
+        // form the full game loop: get-puzzle (anonymous OK), submit (auth
+        // required, idempotent), leaderboard (scoped per exam × utc_day).
+        __rpc_quizverse_words_duel_get = rpcWordsDuelGetPuzzle;
+        __rpc_quizverse_words_duel_submit = rpcWordsDuelSubmit;
+        __rpc_quizverse_words_duel_leaderboard = rpcWordsDuelLeaderboard;
         if (logger && logger.info) {
-            logger.info("[QuizVerseMigration] registered 23 RPCs (P0-P8 live + PWords daily seed)");
+            logger.info("[QuizVerseMigration] registered 26 RPCs (P0-P8 live + PWords daily seed + Vocab Duel)");
         }
     }
     QuizVerseMigration.register = register;
@@ -121546,6 +122030,9 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("quizverse_analytics_fanout", __rpc_quizverse_analytics_fanout); } catch(e) {}
   try { initializer.registerRpc("quizverse_livekit_token_mint", __rpc_quizverse_livekit_token_mint); } catch(e) {}
   try { initializer.registerRpc("quizverse_words_daily_seed", __rpc_quizverse_words_daily_seed); } catch(e) {}
+  try { initializer.registerRpc("quizverse_words_duel_get", __rpc_quizverse_words_duel_get); } catch(e) {}
+  try { initializer.registerRpc("quizverse_words_duel_submit", __rpc_quizverse_words_duel_submit); } catch(e) {}
+  try { initializer.registerRpc("quizverse_words_duel_leaderboard", __rpc_quizverse_words_duel_leaderboard); } catch(e) {}
   try { initializer.registerRpc("hiro_achievements_list", __rpc_hiro_achievements_list); } catch(e) {}
   try { initializer.registerRpc("hiro_achievements_progress", __rpc_hiro_achievements_progress); } catch(e) {}
   try { initializer.registerRpc("hiro_achievements_claim", __rpc_hiro_achievements_claim); } catch(e) {}
@@ -122301,5 +122788,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 882 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 885 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }
