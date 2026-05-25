@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-25T04:59:07.522Z
-// RPC Count: 865
+// Generated: 2026-05-25T05:59:03.603Z
+// RPC Count: 867
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -324,6 +324,8 @@ var __rpc_lt_school_get_detail;
 var __rpc_lt_school_set_user_school;
 var __rpc_lt_school_get_user_school;
 var __rpc_lt_school_freetext_submit;
+var __rpc_lt_chat_quota_check;
+var __rpc_lt_chat_quota_consume;
 var __rpc_analytics_cohort_retention;
 var __rpc_analytics_track_retention_event;
 var __rpc_analytics_arpu;
@@ -876,7 +878,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (100 files) ---
 
@@ -95256,6 +95258,23 @@ var IdentityResolver;
 //   lt_school_get_detail) — no auth.
 // • Service-only RPCs accept either (a) ctx.userId from a Nakama session,
 //   or (b) service_token + user_id in payload matching ctx.env["LT_SERVICE_TOKEN"].
+// RPCs registered (15)
+// --------------------
+//   lt_score_predict                  service-only (auth) — § 3 of plan
+//   lt_exam_countdown_get             service-only        — § 4 of plan
+//   lt_exam_countdown_set             service-only        — § 4 of plan
+//   lt_exam_countdown_clear           service-only        — § 4 of plan
+//   lt_exam_calendar_get              public (anonymous OK)— § 4.5
+//   lt_gpa_compute                    public               — § 5 stateless
+//   lt_gpa_save                       service-only        — § 5
+//   lt_gpa_get                        service-only        — § 5
+//   lt_school_search                  public               — § 6
+//   lt_school_get_detail              public               — § 6
+//   lt_school_set_user_school         service-only        — § 6
+//   lt_school_get_user_school         service-only        — § 6
+//   lt_school_freetext_submit         service-only        — § 6
+//   lt_chat_quota_check               service-only        — § 3.11 (anon/auth/pro tier)
+//   lt_chat_quota_consume             service-only        — § 3.11 (atomic decrement)
 //
 // Storage shapes (real now)
 // -------------------------
@@ -95268,6 +95287,15 @@ var IdentityResolver;
 // Quiz-history source: `quiz_results` collection (legacy, see
 // src/legacy/quiz.ts). Each row is `result_<userId>_<unix>` with shape
 // { score, totalQuestions, correctAnswers, category, timestamp }.
+// Storage shapes (defined here, populated in wave 4-5)
+// ----------------------------------------------------
+//   collection: "qv_lt_school"      key: "current"  → UserSchoolRecord
+//   collection: "qv_lt_countdown"   key: "doc"      → ExamCountdownDoc
+//   collection: "qv_lt_gpa"         key: "current"  → GpaSnapshot
+//   collection: "qv_lt_predictor_context" key: "<exam_id>" → PredictorContextBlock
+//   collection: "qv_lt_school_pending" key: "<provisional_id>" → freetext queue
+//   collection: "qv_lt_chat_quota"   key: see § 3.11.3       → ChatQuotaRecord
+// All permissionRead/Write = 0 (server-only).
 var LearnerToolbelt;
 (function (LearnerToolbelt) {
     // ── Constants ──────────────────────────────────────────────────────────────
@@ -95282,6 +95310,28 @@ var LearnerToolbelt;
     var MAX_PREDICT_WINDOW_DAYS = 365;
     var MAX_HISTORY_ROWS = 200;
     var MAX_COUNTDOWN_ENTRIES = 20;
+    var COLLECTION_CHAT_QUOTA = "qv_lt_chat_quota";
+    var ANALYTICS_GAME_ID = "quizverse";
+    var SKELETON_PHASE = "skeleton-A";
+    var MODULE_VERSION = "learner-toolbelt/0.2.0";
+    // ── Chat-quota limits (plan §3.11) ─────────────────────────────────────────
+    // Defaults below match PLAN-LEARNER_TOOLBELT.md §3.11.1. Each may be
+    // overridden at runtime via ctx.env.LT_QUOTA_<NAME> (lifted into k8s
+    // deploy config to support promo bursts / penny-cost A-B tests without a
+    // rebuild). Predictor caps are kept here for the parallel anon-tier
+    // predictor RPC even though the consumer for predictor quota lands in a
+    // later PR — staging the constant here means consumers can read the
+    // canonical value via lt_chat_quota_check's diagnostics shape.
+    var DEFAULT_QUOTA_ANON_PREDICTOR_PER_DAY = 3;
+    var DEFAULT_QUOTA_ANON_CHAT_PER_DAY = 5;
+    var DEFAULT_QUOTA_AUTH_PREDICTOR_PER_DAY = -1; // -1 sentinel = unlimited
+    var DEFAULT_QUOTA_AUTH_CHAT_PER_DAY = 30;
+    var DEFAULT_QUOTA_PRO_CHAT_PER_DAY = 200;
+    // Cognito sub format — base-36 / hex / uuid-ish. We accept anything that
+    // looks like a non-trivial token. Strict format checks happen at the
+    // gateway; this RPC just gates the "is the supplied user_id plausible"
+    // path before reading the per-exam ledger.
+    var COGNITO_SUB_RE = /^[A-Za-z0-9_\-:.]{8,128}$/;
     // ── Helpers ────────────────────────────────────────────────────────────────
     function nowSec() {
         return Math.floor(Date.now() / 1000);
@@ -95308,6 +95358,140 @@ var LearnerToolbelt;
             return { userId: "", error: "user_id required for service caller", code: 400 };
         }
         return { userId: u };
+    }
+    // Stub envelope — same shape Wave 4-5 will return at status: "ok".
+    // Front-ends (web routes, gateway ToolDispatcher) MUST be tolerant of
+    // status: "not_implemented" so they can ship before the algos land.
+    function stubResponse(rpcId, extra) {
+        var body = {
+            ok: true,
+            status: "not_implemented",
+            phase: SKELETON_PHASE,
+            rpc: rpcId,
+            module_version: LearnerToolbelt.MODULE_VERSION,
+            generated_unix: nowSec(),
+        };
+        if (extra) {
+            for (var k in extra) {
+                if (Object.prototype.hasOwnProperty.call(extra, k))
+                    body[k] = extra[k];
+            }
+        }
+        return RpcHelpers.successResponse(body);
+    }
+    // ── Quota helpers (§3.11) ──────────────────────────────────────────────────
+    //
+    // The reset window is the wall-clock UTC date (YYYY-MM-DD). Keys naturally
+    // expire at 00:00 UTC because the next call lands under a new date string.
+    // We do NOT set a Nakama-side TTL — storage cleanup is a future cron job.
+    //
+    // Three identity buckets:
+    //   anon → key = ip:<sha-truncated>:<date>:<exam_id>
+    //   auth → TWO keys:
+    //          (1) user:<sub>:<date>           — global per-day cap
+    //          (2) user:<sub>:<date>:<exam_id> — per-exam visibility for
+    //                                             cohort dashboards
+    //
+    // tier resolution:
+    //   user_id supplied + matches COGNITO_SUB_RE → "free" (Phase A)
+    //   ip_hash only                              → "anon"
+    //   "pro" detection deferred to Phase D — we always return "free" for
+    //   authenticated users until billing wires up
+    function getQuotaLimit(ctx, envKey, fallback) {
+        var raw = ctx.env && ctx.env[envKey];
+        if (!raw)
+            return fallback;
+        var parsed = parseInt("" + raw, 10);
+        if (isNaN(parsed))
+            return fallback;
+        return parsed;
+    }
+    function utcDateStr() {
+        return new Date().toISOString().slice(0, 10);
+    }
+    function midnightUtcNextUnix() {
+        var d = new Date();
+        var next = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0);
+        return Math.floor(next / 1000);
+    }
+    function hashIpShort(nk, ipHash) {
+        // The CALLER (gateway) is responsible for the first sha256 over the raw
+        // IP — we never see the raw IP. We re-hash here so storage keys are not
+        // a 1:1 mapping back to whatever the gateway hashed (defence-in-depth).
+        try {
+            var h = nk.sha256Hash(ipHash);
+            return h.slice(0, 16);
+        }
+        catch (_e) {
+            // Fallback: keep first 16 chars of whatever the gateway passed.
+            return ("" + ipHash).slice(0, 16);
+        }
+    }
+    function quotaKey(args) {
+        if (args.tier === "anon") {
+            return "ip:" + args.ipShort + ":" + args.date + ":" + args.examId;
+        }
+        if (args.scope === "global") {
+            return "user:" + args.sub + ":" + args.date;
+        }
+        return "user:" + args.sub + ":" + args.date + ":" + args.examId;
+    }
+    function readUsed(nk, key) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: COLLECTION_CHAT_QUOTA,
+                    key: key,
+                    userId: Constants.SYSTEM_USER_ID,
+                }]);
+            if (rows && rows.length > 0 && rows[0].value) {
+                var v = rows[0].value;
+                var used = parseInt("" + (v.used || 0), 10);
+                return isNaN(used) ? 0 : used;
+            }
+        }
+        catch (_e) { /* empty bucket */ }
+        return 0;
+    }
+    function writeUsed(nk, key, used) {
+        nk.storageWrite([{
+                collection: COLLECTION_CHAT_QUOTA,
+                key: key,
+                userId: Constants.SYSTEM_USER_ID,
+                value: { used: used, updated_unix: nowSec() },
+                permissionRead: 0,
+                permissionWrite: 0,
+            }]);
+    }
+    function resolveQuotaIdentity(data) {
+        var kbScope = data && data.kb_scope ? data.kb_scope : {};
+        var examId = "" + (kbScope.exam_id || data.exam_id || "");
+        var locale = "" + (kbScope.locale || data.locale || "en");
+        var userId = "" + (data.user_id || "");
+        var ipHash = "" + (data.ip_hash || "");
+        if (!examId) {
+            return { tier: "anon", sub: "", ipShort: "", examId: "", locale: locale, error: "kb_scope.exam_id required" };
+        }
+        if (userId) {
+            if (!COGNITO_SUB_RE.test(userId)) {
+                return { tier: "anon", sub: "", ipShort: "", examId: examId, locale: locale, error: "invalid user_id format" };
+            }
+            // Phase A: every authenticated caller is "free". Phase D will compare
+            // user_id against the billing entitlement store and promote to "pro".
+            return { tier: "free", sub: userId, ipShort: "", examId: examId, locale: locale };
+        }
+        if (ipHash) {
+            return { tier: "anon", sub: "", ipShort: ipHash, examId: examId, locale: locale };
+        }
+        return { tier: "anon", sub: "", ipShort: "", examId: examId, locale: locale, error: "missing_identity" };
+    }
+    function limitForTier(ctx, tier) {
+        if (tier === "anon") {
+            return getQuotaLimit(ctx, "LT_QUOTA_ANON_CHAT_PER_DAY", DEFAULT_QUOTA_ANON_CHAT_PER_DAY);
+        }
+        if (tier === "pro") {
+            return getQuotaLimit(ctx, "LT_QUOTA_PRO_CHAT_PER_DAY", DEFAULT_QUOTA_PRO_CHAT_PER_DAY);
+        }
+        return getQuotaLimit(ctx, "LT_QUOTA_AUTH_CHAT_PER_DAY", DEFAULT_QUOTA_AUTH_CHAT_PER_DAY);
     }
     function emitAnalytics(nk, logger, userId, eventName, properties) {
         try {
@@ -95884,6 +96068,173 @@ var LearnerToolbelt;
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
+    // ── RPC: lt_chat_quota_check ──────────────────────────────────────────────
+    // Plan §3.11.3. Gateway calls this BEFORE forwarding a chat turn to the
+    // LLM so the widget can show "remaining N turns" + the "sign in to get more"
+    // CTA without burning a model call.
+    //
+    // Service-token gated — gateway only path (anonymous browsers never hit
+    // this RPC directly; the gateway already holds the user-id / ip-hash from
+    // its session cookie + viewer-IP header).
+    //
+    // Request:
+    //   {
+    //     "service_token": "<LT_SERVICE_TOKEN>",
+    //     "kb_scope": { "exam_id": "sat", "locale": "en" },
+    //     "user_id":  "<cognito-sub>",   // optional
+    //     "ip_hash":  "<sha256(raw_ip)>" // optional — required if user_id absent
+    //   }
+    // Response:
+    //   {
+    //     "ok": true,
+    //     "allowed": true,
+    //     "remaining": 4,
+    //     "reset_unix": 1716595200,
+    //     "tier": "anon"|"free"|"pro",
+    //     "limit": 5,
+    //     "exam_id": "sat"
+    //   }
+    function rpcChatQuotaCheck(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            if (!isServiceCaller(ctx, data)) {
+                return RpcHelpers.errorResponse("not authorised", 401);
+            }
+            var ident = resolveQuotaIdentity(data);
+            if (ident.error) {
+                return RpcHelpers.errorResponse(ident.error, 400);
+            }
+            var limit = limitForTier(ctx, ident.tier);
+            // Sentinel: -1 → unlimited. The wire shape stays the same; we return
+            // remaining = Number.MAX_SAFE_INTEGER (encoded as a large but safe int)
+            // so clients can keep showing "∞" without branching on -1.
+            var unlimited = limit < 0;
+            var dateStr = utcDateStr();
+            var resetUnix = midnightUtcNextUnix();
+            var ipShort = ident.tier === "anon" ? hashIpShort(nk, ident.ipShort) : "";
+            var perExamKey = quotaKey({
+                tier: ident.tier,
+                sub: ident.sub,
+                ipShort: ipShort,
+                examId: ident.examId,
+                date: dateStr,
+                scope: "per_exam",
+            });
+            var globalKey = ident.tier === "anon" ? "" : quotaKey({
+                tier: ident.tier,
+                sub: ident.sub,
+                ipShort: ipShort,
+                examId: ident.examId,
+                date: dateStr,
+                scope: "global",
+            });
+            var usedPerExam = readUsed(nk, perExamKey);
+            var usedGlobal = globalKey ? readUsed(nk, globalKey) : 0;
+            // Authenticated users are capped on the GLOBAL daily limit — per-exam
+            // counters exist for cohort reporting, not enforcement (plan §3.11.3).
+            var used = ident.tier === "anon" ? usedPerExam : usedGlobal;
+            var remaining = unlimited ? 999999 : Math.max(0, limit - used);
+            var allowed = unlimited ? true : (used < limit);
+            return RpcHelpers.successResponse({
+                ok: true,
+                allowed: allowed,
+                remaining: remaining,
+                reset_unix: resetUnix,
+                tier: ident.tier,
+                limit: unlimited ? -1 : limit,
+                used: used,
+                exam_id: ident.examId,
+                locale: ident.locale,
+                date: dateStr,
+            });
+        }
+        catch (err) {
+            logger.error("lt_chat_quota_check failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
+    // ── RPC: lt_chat_quota_consume ────────────────────────────────────────────
+    // Atomic decrement (read-then-write) called by gateway AFTER it has decided
+    // to forward a turn. Returns the post-consume state.
+    //
+    // Request: identical to lt_chat_quota_check.
+    // Response:
+    //   {
+    //     "ok": true,
+    //     "consumed": true|false,   // false if quota was already exhausted
+    //     "remaining": 3,
+    //     "reset_unix": 1716595200,
+    //     "tier": "anon"|"free"|"pro"
+    //   }
+    function rpcChatQuotaConsume(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            if (!isServiceCaller(ctx, data)) {
+                return RpcHelpers.errorResponse("not authorised", 401);
+            }
+            var ident = resolveQuotaIdentity(data);
+            if (ident.error) {
+                return RpcHelpers.errorResponse(ident.error, 400);
+            }
+            var limit = limitForTier(ctx, ident.tier);
+            var unlimited = limit < 0;
+            var dateStr = utcDateStr();
+            var resetUnix = midnightUtcNextUnix();
+            var ipShort = ident.tier === "anon" ? hashIpShort(nk, ident.ipShort) : "";
+            var perExamKey = quotaKey({
+                tier: ident.tier,
+                sub: ident.sub,
+                ipShort: ipShort,
+                examId: ident.examId,
+                date: dateStr,
+                scope: "per_exam",
+            });
+            var globalKey = ident.tier === "anon" ? "" : quotaKey({
+                tier: ident.tier,
+                sub: ident.sub,
+                ipShort: ipShort,
+                examId: ident.examId,
+                date: dateStr,
+                scope: "global",
+            });
+            var usedPerExam = readUsed(nk, perExamKey);
+            var usedGlobal = globalKey ? readUsed(nk, globalKey) : 0;
+            var used = ident.tier === "anon" ? usedPerExam : usedGlobal;
+            if (!unlimited && used >= limit) {
+                return RpcHelpers.successResponse({
+                    ok: true,
+                    consumed: false,
+                    remaining: 0,
+                    reset_unix: resetUnix,
+                    tier: ident.tier,
+                    limit: limit,
+                    exam_id: ident.examId,
+                });
+            }
+            // Write per-exam counter (always — gives cohort signal even for auth).
+            writeUsed(nk, perExamKey, usedPerExam + 1);
+            // Write global counter for auth tiers only — anon's per-IP/per-exam
+            // bucket IS the global bucket.
+            if (globalKey)
+                writeUsed(nk, globalKey, usedGlobal + 1);
+            var newUsed = ident.tier === "anon" ? usedPerExam + 1 : usedGlobal + 1;
+            var remaining = unlimited ? 999999 : Math.max(0, limit - newUsed);
+            return RpcHelpers.successResponse({
+                ok: true,
+                consumed: true,
+                remaining: remaining,
+                reset_unix: resetUnix,
+                tier: ident.tier,
+                limit: unlimited ? -1 : limit,
+                used: newUsed,
+                exam_id: ident.examId,
+            });
+        }
+        catch (err) {
+            logger.error("lt_chat_quota_consume failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
     // ── Registration ───────────────────────────────────────────────────────────
     // Every registerRpc call uses a STRING-LITERAL id (per PHASE-ROADMAP lesson
     // #2: postbuild.js auto-hoists ONLY string-literal registerRpc calls).
@@ -95901,6 +96252,8 @@ var LearnerToolbelt;
         __rpc_lt_school_set_user_school = rpcSchoolSetUserSchool;
         __rpc_lt_school_get_user_school = rpcSchoolGetUserSchool;
         __rpc_lt_school_freetext_submit = rpcSchoolFreetextSubmit;
+        __rpc_lt_chat_quota_check = rpcChatQuotaCheck;
+        __rpc_lt_chat_quota_consume = rpcChatQuotaConsume;
     }
     LearnerToolbelt.register = register;
     register();
@@ -97245,6 +97598,418 @@ var LearnerToolbelt;
     }
     LearnerToolbelt.getSchoolById = getSchoolById;
 })(LearnerToolbelt || (LearnerToolbelt = {}));
+// per-exam-config.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// QuizVerse Learner Toolbelt — per-exam predictor configuration table.
+//
+// This table is the dispatcher metadata consumed by lt_score_predict so that
+// every USA + India high-volume exam returns the right { method, phase,
+// score_range } envelope BEFORE the wave-4/5 algorithm work lands. Web routes
+// (Wave-3) and the gateway ToolDispatcher (Wave-6) wire against this contract
+// and never need to change again once individual algorithms ship.
+//
+// Plan source of truth:
+//   intelliverse-x-games-platform-2/games/quiz-verse/Docs/plans/
+//     PLAN-LEARNER_TOOLBELT.md  §3.10 (per-exam coverage matrix)
+//                               §12   (Firecrawl-verified citations)
+//
+// Coverage (21 exams)
+// -------------------
+//   USA (10):  sat · act · ap_exams · psat · gre · gmat · mcat · lsat ·
+//              amc · bar_exam
+//   IN  (11):  jee_main · jee_advanced · neet · cat · gate · upsc_cse ·
+//              clat · cuet · nda · ssc_cgl · rbi_grade_b
+//
+// Phase labelling (per PLAN-LEARNER_TOOLBELT §3.10):
+//   A — Week-4 launch    (SAT, AP Bio/Calc, JEE Main, JEE Advanced, NEET)
+//   B — Weeks 5-8        (ACT, PSAT, GRE, GMAT, +remaining AP × 36, CAT,
+//                         GATE, UPSC, CLAT, CUET)
+//   C — Q4 2026          (MCAT, LSAT, AMC, Bar, NDA, SSC CGL, RBI Grade-B)
+//
+// Long-tail exams not in this table fall through to the Bayes fallback
+// predictor (method: 'bayes-fallback') — so the predictor is NEVER silent.
+//
+// Use TypeScript namespaces here (NOT ES modules) because the modules/
+// tsconfig outputs a single concatenated bundle (outFile mode). Every public
+// symbol must live under a namespace to participate in the global scope the
+// Nakama Goja runtime sees at boot.
+var PerExamConfig;
+(function (PerExamConfig) {
+    // ── 21 supported exams (USA × 10 + India × 11) ───────────────────────────
+    PerExamConfig.CONFIG = {
+        // ============================================================== USA (10)
+        sat: {
+            method: 'irt-2pl',
+            phase: 'A',
+            countryDefault: 'US',
+            scoreRange: [400, 1600],
+            sections: [
+                { id: 'math', max: 800 },
+                { id: 'reading_writing', max: 800 },
+            ],
+            citations: [
+                'https://satsuite.collegeboard.org/scores/what-scores-mean/how-scores-calculated',
+                'https://mathchops.substack.com/p/item-response-theory-and-the-digital-sat',
+                'https://mindfish.com/blog/what-is-item-response-theory/',
+            ],
+            goalTiers: ['ivy', 't20', 't50', 'state-flagship', 'community-college'],
+        },
+        act: {
+            method: 'concordance',
+            phase: 'B',
+            countryDefault: 'US',
+            scoreRange: [1, 36],
+            sections: [
+                { id: 'english', max: 36 },
+                { id: 'math', max: 36 },
+                { id: 'reading', max: 36 },
+                { id: 'science', max: 36 },
+            ],
+            citations: [
+                'https://www.act.org/content/act/en/products-and-services/the-act/scores/act-sat-concordance.html',
+                'https://www.albert.io/blog/act-score-calculator/',
+                'https://test-ninjas.com/act-score-calculator',
+            ],
+            goalTiers: ['ivy', 't20', 't50', 'state-flagship', 'community-college'],
+        },
+        ap_exams: {
+            method: 'ap-composite',
+            phase: 'A',
+            countryDefault: 'US',
+            scoreRange: [1, 5],
+            // AP papers vary by subject but every paper has MCQ + FRQ. Per-subject
+            // section weights are looked up at runtime from the wave-5 ap-curves S3
+            // blob; the sections list here is the generic skeleton.
+            sections: [
+                { id: 'mcq', max: 100, weight: 0.5 },
+                { id: 'frq', max: 100, weight: 0.5 },
+            ],
+            citations: [
+                'https://test-ninjas.com/ap-score-calculators',
+                'https://www.albert.io/blog/ap-calculus-bc-score-calculator/',
+                'https://knowt.com/exams/AP/score-calculator',
+            ],
+            goalTiers: ['5', '4', '3', '2', '1'],
+        },
+        psat: {
+            method: 'irt-2pl',
+            phase: 'B',
+            countryDefault: 'US',
+            scoreRange: [320, 1520],
+            sections: [
+                { id: 'math', max: 760 },
+                { id: 'reading_writing', max: 760 },
+            ],
+            citations: [
+                'https://satsuite.collegeboard.org/scores/what-scores-mean/how-scores-calculated',
+                'https://mindfish.com/blog/what-is-item-response-theory/',
+            ],
+            goalTiers: ['national-merit', 'commended', 'state-recognized', 'practice'],
+        },
+        gre: {
+            method: 'irt-section-adaptive',
+            phase: 'B',
+            countryDefault: 'US',
+            scoreRange: [130, 170],
+            sections: [
+                { id: 'verbal', max: 170 },
+                { id: 'quant', max: 170 },
+                { id: 'awa', max: 6 },
+            ],
+            citations: [
+                'https://magoosh.com/gre/score-calculator-how-to-predict-your-gre-score/',
+                'https://www.kaptest.com/study/gre/gre-score-predictor-whats-your-gre-score/',
+                'https://www.prepscholar.com/gre/blog/gre-score-range/',
+            ],
+            goalTiers: ['t10-grad', 't25-grad', 't50-grad', 'regional-grad'],
+        },
+        gmat: {
+            method: 'irt-focus-edition',
+            phase: 'B',
+            countryDefault: 'US',
+            scoreRange: [205, 805],
+            sections: [
+                { id: 'quant', max: 90 },
+                { id: 'verbal', max: 90 },
+                { id: 'data_insights', max: 90 },
+            ],
+            citations: [
+                'https://test-ninjas.com/gmat-focus-edition-score-calculator',
+                'https://www.gmac.com/gmat-other-assessments/about-the-gmat-focus-edition/exam-scores',
+                'https://gmat.targettestprep.com/gmat_focus_score_chart_and_calculator',
+            ],
+            goalTiers: ['m7', 't10-mba', 't25-mba', 't50-mba', 'regional-mba'],
+        },
+        mcat: {
+            method: 'percentile-4section',
+            phase: 'C',
+            countryDefault: 'US',
+            scoreRange: [472, 528],
+            sections: [
+                { id: 'cpbs', max: 132 }, // Chem/Phys Bio Systems
+                { id: 'cars', max: 132 }, // Critical Analysis/Reasoning
+                { id: 'bbls', max: 132 }, // Bio/Biochem Living Systems
+                { id: 'psbb', max: 132 }, // Psych/Soc Behaviour
+            ],
+            citations: [
+                'https://bootcamp.com/mcat/mcat-score-calculator',
+                'https://www.kaptest.com/study/mcat/whats-a-good-mcat-score/',
+                'https://www.reddit.com/r/Mcat/comments/uwmkow/comprehensive_mcat_score_prediction_tool/',
+            ],
+            goalTiers: ['t10-med', 't25-med', 't50-med', 'do-school', 'caribbean'],
+        },
+        lsat: {
+            method: 'raw-to-scaled-120-180',
+            phase: 'C',
+            countryDefault: 'US',
+            scoreRange: [120, 180],
+            sections: [
+                { id: 'logical_reasoning', max: 25 },
+                { id: 'reading_comprehension', max: 27 },
+                { id: 'analytical_reasoning', max: 23 },
+            ],
+            citations: [
+                'https://7sage.com/lsat-resources/lsat-score-calculator',
+                'https://magoosh.com/lsat/lsat-score-conversion-table/',
+            ],
+            goalTiers: ['t14-law', 't50-law', 't100-law', 'regional-law'],
+        },
+        amc: {
+            method: 'cutoff-band',
+            phase: 'C',
+            countryDefault: 'US',
+            scoreRange: [0, 150],
+            sections: [
+                { id: 'amc_10_12', max: 150 },
+                { id: 'aime', max: 15 },
+            ],
+            citations: [
+                'https://maa.org/news/2025-26-aime-thresholds-are-now-available/',
+                'https://artofproblemsolving.com/wiki/index.php/AMC_historical_results',
+            ],
+            goalTiers: ['usamo', 'usajmo', 'aime-qual', 'amc-distinguished', 'participant'],
+        },
+        bar_exam: {
+            method: 'mbe-mee-mpt-composite',
+            phase: 'C',
+            countryDefault: 'US',
+            scoreRange: [200, 400],
+            sections: [
+                { id: 'mbe', max: 200, weight: 0.5 },
+                { id: 'mee', max: 200, weight: 0.3 },
+                { id: 'mpt', max: 200, weight: 0.2 },
+            ],
+            citations: [
+                'https://www.ncbex.org/exams/ube/ube-minimum-scores',
+                'https://jdadvising.com/what-mbe-raw-score-is-passing/',
+            ],
+            goalTiers: ['pass-strict-280', 'pass-typical-266-275', 'pass-low-260', 'fail'],
+        },
+        // ============================================================== IN  (11)
+        jee_main: {
+            method: 'nta-percentile-to-air',
+            phase: 'A',
+            countryDefault: 'IN',
+            scoreRange: [0, 300],
+            sections: [
+                { id: 'physics', max: 100 },
+                { id: 'chemistry', max: 100 },
+                { id: 'mathematics', max: 100 },
+            ],
+            citations: [
+                'https://www.vedantu.com/jee-main/rank-predictor',
+                'https://allen.in/jee-main/percentile-predictor',
+                'https://cracku.in/jee-advanced-score-calculator',
+            ],
+            goalTiers: ['iit-eligible', 'nit-top10', 'nit', 'iiit', 'gfti', 'private'],
+        },
+        jee_advanced: {
+            method: 'marks-vs-rank-curve',
+            phase: 'A',
+            countryDefault: 'IN',
+            scoreRange: [0, 360],
+            sections: [
+                { id: 'paper1_physics', max: 60 },
+                { id: 'paper1_chemistry', max: 60 },
+                { id: 'paper1_mathematics', max: 60 },
+                { id: 'paper2_physics', max: 60 },
+                { id: 'paper2_chemistry', max: 60 },
+                { id: 'paper2_mathematics', max: 60 },
+            ],
+            citations: [
+                'https://my.newtonschool.co/jee-college-predictor-by-iit-roorkee-alumni-and-nst-students/jee-college-predictor',
+                'https://cracku.in/jee-advanced-score-calculator',
+            ],
+            goalTiers: ['iit-bombay-cs', 'iit-top5', 'iit-newer', 'iiser'],
+        },
+        neet: {
+            method: 'nta-percentile-to-air',
+            phase: 'A',
+            countryDefault: 'IN',
+            scoreRange: [0, 720],
+            sections: [
+                { id: 'physics', max: 180 },
+                { id: 'chemistry', max: 180 },
+                { id: 'biology', max: 360 }, // Botany + Zoology combined
+            ],
+            citations: [
+                'https://www.vedantu.com/jee-main/rank-predictor',
+                'https://allen.in/jee-main/percentile-predictor',
+            ],
+            goalTiers: ['aiims-delhi', 'aiims-other', 'jipmer', 'state-govt-mbbs', 'private-mbbs', 'bds'],
+        },
+        cat: {
+            method: 'section-percentile-to-oa',
+            phase: 'B',
+            countryDefault: 'IN',
+            scoreRange: [0, 198],
+            sections: [
+                { id: 'varc', max: 66 },
+                { id: 'dilr', max: 66 },
+                { id: 'qa', max: 66 },
+            ],
+            citations: [
+                'https://cracku.in/iim-call-predictor',
+                'https://www.toprankers.com/cat-cut-off-for-iim',
+            ],
+            goalTiers: ['iim-abc', 'iim-blackjack', 'new-iim', 'tier1-private', 'tier2-private'],
+        },
+        gate: {
+            method: 'gate-score-formula',
+            phase: 'B',
+            countryDefault: 'IN',
+            scoreRange: [0, 1000],
+            sections: [
+                { id: 'general_aptitude', max: 15 },
+                { id: 'engineering_math', max: 13 },
+                { id: 'subject', max: 72 },
+            ],
+            citations: [
+                'https://margdarshanprep.com/Collegepredictor/collegepredictor.html',
+                'https://testbook.com/gate/minimum-gate-score-for-iit',
+            ],
+            goalTiers: ['iit-mtech', 'iisc', 'nit-mtech', 'psu-recruitment', 'phd-eligible'],
+        },
+        upsc_cse: {
+            method: 'prelims-cutoff-band',
+            phase: 'B',
+            countryDefault: 'IN',
+            scoreRange: [0, 200],
+            sections: [
+                { id: 'gs_paper_1', max: 200 },
+                { id: 'csat_paper_2', max: 200 }, // qualifying (33%)
+            ],
+            citations: [
+                'https://www.pw.live/upsc/exams/upsc-prelims-expected-cut-off-2026',
+                'https://www.nextias.com/prelims-cut-off-predictor',
+            ],
+            goalTiers: ['ias', 'ips', 'ifs', 'irs', 'group-b'],
+        },
+        clat: {
+            method: 'marks-to-nlu-rank',
+            phase: 'B',
+            countryDefault: 'IN',
+            scoreRange: [0, 150],
+            sections: [
+                { id: 'english', max: 30 },
+                { id: 'gk_current_affairs', max: 38 },
+                { id: 'legal_reasoning', max: 38 },
+                { id: 'logical_reasoning', max: 28 },
+                { id: 'quantitative_techniques', max: 16 },
+            ],
+            citations: [
+                'https://law.careers360.com/clat-college-predictor',
+                'https://www.clatnlti.com/blog-details/397/clat-2026-marks-cut-off-expected-cut-off-for-top-nlus',
+            ],
+            goalTiers: ['nlsiu-bangalore', 'nalsar-nujs', 'top5-nlu', 'top10-nlu', 'other-nlu', 'private-law'],
+        },
+        cuet: {
+            method: 'nta-percentile-multisubject',
+            phase: 'B',
+            countryDefault: 'IN',
+            scoreRange: [0, 800],
+            sections: [
+                { id: 'language', max: 200 },
+                { id: 'domain_1', max: 200 },
+                { id: 'domain_2', max: 200 },
+                { id: 'general_test', max: 200 },
+            ],
+            citations: [
+                'https://collegedunia.com/articles/e-1361-cuet-2026-rank-predictor',
+                'https://university.careers360.com/articles/cuet-cut-off',
+            ],
+            goalTiers: ['du', 'jnu', 'bhu', 'central-univ', 'state-univ'],
+        },
+        nda: {
+            method: 'written-cutoff-only',
+            phase: 'C',
+            countryDefault: 'IN',
+            scoreRange: [0, 900],
+            sections: [
+                { id: 'mathematics', max: 300 },
+                { id: 'gat_general_ability', max: 600 },
+            ],
+            citations: [
+                'https://ncaacademy.com/cds-cut-off-marks-2026-entry-wise-expected-cutoff/',
+            ],
+            goalTiers: ['ssb-qualifying', 'army', 'navy', 'air-force'],
+        },
+        ssc_cgl: {
+            method: 'tier-1-2-composite',
+            phase: 'C',
+            countryDefault: 'IN',
+            scoreRange: [0, 800],
+            sections: [
+                { id: 'tier_1', max: 200 },
+                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English
+                { id: 'tier_2_paper_2', max: 150 }, // Statistics (optional post-group)
+            ],
+            citations: [
+                'https://testbook.com/ssc-cgl-exam/rank-predictor',
+                'https://prepgrind.com/blog/ssc-cgl-expected-cutoff',
+            ],
+            goalTiers: ['group-a-inspector', 'group-b-assistant', 'group-c-auditor', 'lower-division'],
+        },
+        rbi_grade_b: {
+            method: 'phase-1-2-cutoff',
+            phase: 'C',
+            countryDefault: 'IN',
+            scoreRange: [0, 300],
+            sections: [
+                { id: 'phase_1', max: 200 },
+                { id: 'phase_2_paper_1', max: 100 }, // Economic & Social Issues
+                { id: 'phase_2_paper_2', max: 100 }, // English Writing
+                { id: 'phase_2_paper_3', max: 100 }, // Finance & Management
+            ],
+            citations: [
+                'https://www.oliveboard.in/rbi-grade-b-cut-off/',
+            ],
+            goalTiers: ['officer-general', 'depr', 'dsim'],
+        },
+    };
+    /** Returns the supported exam_id list (alphabetical) — used by /tools/score-predictor for the dropdown. */
+    function listSupportedExamIds() {
+        var ids = [];
+        for (var k in PerExamConfig.CONFIG) {
+            if (Object.prototype.hasOwnProperty.call(PerExamConfig.CONFIG, k))
+                ids.push(k);
+        }
+        ids.sort();
+        return ids;
+    }
+    PerExamConfig.listSupportedExamIds = listSupportedExamIds;
+    /** Returns the config for a given exam_id, or null if not in the supported set
+     *  (in which case the caller MUST fall through to the Bayes fallback). */
+    function lookup(examId) {
+        if (!examId)
+            return null;
+        if (Object.prototype.hasOwnProperty.call(PerExamConfig.CONFIG, examId)) {
+            return PerExamConfig.CONFIG[examId];
+        }
+        return null;
+    }
+    PerExamConfig.lookup = lookup;
+})(PerExamConfig || (PerExamConfig = {}));
 var LegacyAnalyticsRetention;
 (function (LegacyAnalyticsRetention) {
     function readAggStorage(nk, collection, key) {
@@ -119161,6 +119926,8 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("lt_school_set_user_school", __rpc_lt_school_set_user_school); } catch(e) {}
   try { initializer.registerRpc("lt_school_get_user_school", __rpc_lt_school_get_user_school); } catch(e) {}
   try { initializer.registerRpc("lt_school_freetext_submit", __rpc_lt_school_freetext_submit); } catch(e) {}
+  try { initializer.registerRpc("lt_chat_quota_check", __rpc_lt_chat_quota_check); } catch(e) {}
+  try { initializer.registerRpc("lt_chat_quota_consume", __rpc_lt_chat_quota_consume); } catch(e) {}
   try { initializer.registerRpc("analytics_cohort_retention", __rpc_analytics_cohort_retention); } catch(e) {}
   try { initializer.registerRpc("analytics_track_retention_event", __rpc_analytics_track_retention_event); } catch(e) {}
   try { initializer.registerRpc("analytics_arpu", __rpc_analytics_arpu); } catch(e) {}
@@ -119711,5 +120478,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 865 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 867 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }
