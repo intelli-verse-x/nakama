@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-25T08:09:15.742Z
+// Generated: 2026-05-25T08:51:22.675Z
 // RPC Count: 885
 // ============================================================
 
@@ -90679,11 +90679,17 @@ var QuizVerseMigration;
             detail.push({ idx: i, word: q.word, picked: ans, correct: ok, correct_idx: q.correct_idx });
         }
         // Pair attempt — read pair row, dequeue any waiting non-self user.
+        // The pair row is a "system" storage row, not owned by any user. Nakama
+        // requires a valid UUID for `userId`, so we use the canonical system
+        // sentinel (00000000-0000-0000-0000-000000000000) which is reserved
+        // for plugin-owned global rows. Empty string here yields:
+        //   "TypeError: expects 'userId' value to be a valid id"
+        var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
         var opponent = null;
         var pair = { waiting: [], matches: [] };
         try {
             var pairList = nk.storageRead([{
-                    collection: COL_DUEL_PAIR, key: pairKey, userId: "" // global owner-less row
+                    collection: COL_DUEL_PAIR, key: pairKey, userId: SYSTEM_USER_ID
                 }]);
             if (pairList && pairList.length > 0 && pairList[0].value) {
                 pair = pairList[0].value;
@@ -90759,10 +90765,12 @@ var QuizVerseMigration;
                 permissionWrite: 0
             }]);
         // Persist pair row (PUBLIC_READ so the global queue is visible to ops).
+        // SYSTEM_USER_ID owns the row — see comment at the top of this RPC for
+        // why empty-string is invalid.
         nk.storageWrite([{
                 collection: COL_DUEL_PAIR,
                 key: pairKey,
-                userId: "", // Goja runtime maps "" → null owner = system row.
+                userId: SYSTEM_USER_ID,
                 value: pair,
                 permissionRead: 2, // PUBLIC_READ
                 permissionWrite: 0
