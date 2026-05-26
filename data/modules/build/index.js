@@ -137,6 +137,18 @@ function InitModule(ctx, logger, nk, initializer) {
         // and keeps the AI svc consent-gate cache in sync (COPPA / GDPR / CCPA).
         logger.info("[QvPrivacy] Registering privacy_erase_user / privacy_erase_discord / consent_upsert / consent_invalidate RPCs...");
         QvPrivacy.register(initializer);
+        // AI content-factory pipeline RPCs (weekly_recap / monthly_recap /
+        // motion_graphics / poll). Unity calls these and Nakama signs +
+        // forwards to the AI svc's /content-factory/from-nakama/* routes
+        // using the existing IVX_INSIGHTS_SHARED_SECRET. Acting user id is
+        // stamped from `ctx.userId` so the SDK can never spoof identities.
+        try {
+            logger.info("[AiPipelines] Registering ai_pipeline_weekly_recap / monthly_recap / motion_graphics / poll RPCs...");
+            AiPipelines.register(initializer, logger);
+        }
+        catch (err) {
+            logger.error("[AiPipelines] failed to register: " + (err && err.message ? err.message : String(err)));
+        }
         logger.info("[Legacy] Registering friends RPCs...");
         LegacyFriends.register(initializer);
         // ── First-class IntelliVerse friend search (replaces the historical
@@ -512,6 +524,327 @@ function InitModule(ctx, logger, nk, initializer) {
     logger.info("IntelliVerse-X Runtime initialized!");
     logger.info("========================================");
 }
+// ai_pipelines.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Nakama-side proxy RPCs for the AI service's content-factory endpoints.
+//
+// Architecture
+// ────────────
+//   Unity SDK ── Nakama RPC ── HTTP (HMAC) ── AI svc ── content-factory
+//
+// Why proxy through Nakama (vs. Unity → AI svc direct)?
+//   • Single auth surface for Unity (Nakama session token only).
+//   • Server-side rate limiting per `ctx.userId` — the SDK can't spoof.
+//   • `cognitoSub` is stamped from the authenticated session — never
+//     trusted from client payload, which means identity-proofing is
+//     identical to all other Nakama-proxied AI calls
+//     (personalization-rpc, cross-sell-rpc, etc.).
+//   • Lets us add Nakama-side caching / coalescing later without
+//     touching Unity.
+//
+// RPCs registered (4)
+// -------------------
+//   ai_pipeline_weekly_recap        — kick off a 7-day personalized recap
+//   ai_pipeline_monthly_recap       — kick off a 30-day personalized recap
+//   ai_pipeline_motion_graphics     — kick off a prompt → motion-graphics job
+//   ai_pipeline_poll                — poll any job by id (covers all kinds)
+//
+// All 4 are session-authenticated (require `ctx.userId`) — there is no
+// service-only path because Nakama is the *only* legitimate caller of
+// the AI svc /content-factory/from-nakama/* routes.
+//
+// Forward shape (Nakama → AI svc)
+// ────────────────────────────────
+//   POST https://${IVX_AI_SVC_BASE_URL}/api/ai/content-factory/from-nakama/jobs/{kind}
+//   Headers:
+//     X-IVX-Service:   "nakama"
+//     X-IVX-Timestamp: <unix-ms>
+//     X-IVX-Signature: hex(hmac-sha256(secret, "${ts}:${path}:${body}"))
+//     Content-Type:    application/json
+//   Body:
+//     { cognitoSub: ctx.userId, ...userPayload }
+//
+// The HmacAuthGuard on the AI svc validates the signature and pulls
+// `cognitoSub` out of the body. Nakama is the source of truth for
+// user identity.
+//
+// Cross-references
+// ----------------
+//   src/analytics/personalization-rpc.ts   — same HMAC pattern
+//   src/analytics/cross-sell-rpc.ts        — same HMAC pattern
+//   intelli-verse-x/Intelliverse-X-AI#273  — AI svc /from-nakama/* endpoints
+//   intelli-verse-x/content-factory#34/35  — underlying pipelines
+var AiPipelines;
+(function (AiPipelines) {
+    // ── Constants ──────────────────────────────────────────────────────────────
+    var SERVICE_NAME = "nakama";
+    var ROUTE_BASE = "/api/ai/content-factory/from-nakama/jobs";
+    var REQUEST_TIMEOUT_MS = 6500;
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function aiSvcBase(ctx, logger) {
+        var base = (ctx.env && ctx.env["IVX_AI_SVC_BASE_URL"]) || "";
+        if (!base) {
+            logger.warn("[AiPipelines] IVX_AI_SVC_BASE_URL unset");
+            return null;
+        }
+        return base.replace(/\/$/, "");
+    }
+    function computeSignature(ctx, nk, ts, path, body, logger) {
+        var secret = (ctx.env && ctx.env["IVX_INSIGHTS_SHARED_SECRET"]) || "";
+        if (!secret) {
+            logger.warn("[AiPipelines] IVX_INSIGHTS_SHARED_SECRET unset");
+            return "";
+        }
+        var msg = ts + ":" + path + ":" + body;
+        try {
+            var raw = nk.hmacSha256Hash(msg, secret);
+            return nk.base16Encode(raw, false).toLowerCase();
+        }
+        catch (e) {
+            logger.warn("[AiPipelines] hmac failed: " + ((e && e.message) ? e.message : String(e)));
+            return "";
+        }
+    }
+    /**
+     * Sign + POST a JSON payload to the AI service, returning the parsed body
+     * or null on any transport-level failure. The HTTP code is included in
+     * the result envelope so RPC handlers can distinguish 4xx (caller error)
+     * from 5xx (transient).
+     */
+    function postSigned(ctx, nk, logger, path, payload) {
+        var base = aiSvcBase(ctx, logger);
+        if (!base)
+            return null;
+        var bodyString = JSON.stringify(payload || {});
+        var ts = String(Date.now());
+        var sig = computeSignature(ctx, nk, ts, path, bodyString, logger);
+        try {
+            var resp = nk.httpRequest(base + path, "post", {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "X-IVX-Service": SERVICE_NAME,
+                "X-IVX-Timestamp": ts,
+                "X-IVX-Signature": sig,
+            }, bodyString, REQUEST_TIMEOUT_MS);
+            if (!resp)
+                return null;
+            var parsed = null;
+            try {
+                parsed = JSON.parse(resp.body || "{}");
+            }
+            catch (_) {
+                parsed = { _raw: resp.body || "" };
+            }
+            return { code: resp.code, body: parsed };
+        }
+        catch (e) {
+            logger.warn("[AiPipelines] post " + path + " threw: " + ((e && e.message) ? e.message : String(e)));
+            return null;
+        }
+    }
+    function errEnvelope(code, message) {
+        return JSON.stringify({
+            ok: false,
+            error: code,
+            message: message || code,
+        });
+    }
+    function okEnvelope(data) {
+        return JSON.stringify({
+            ok: true,
+            data: data || null,
+        });
+    }
+    // ── Validation ─────────────────────────────────────────────────────────────
+    function sanitizePlatform(p) {
+        var allowed = ["youtube_shorts", "tiktok", "instagram_reels", "in_app"];
+        if (!p)
+            return "youtube_shorts";
+        for (var i = 0; i < allowed.length; i++) {
+            if (allowed[i] === p)
+                return p;
+        }
+        return "youtube_shorts";
+    }
+    function clampDuration(v, min, max, fallback) {
+        var n = Number(v);
+        if (isNaN(n) || !isFinite(n))
+            return fallback;
+        if (n < min)
+            return min;
+        if (n > max)
+            return max;
+        return n;
+    }
+    function safeBool(v, fallback) {
+        if (typeof v === "boolean")
+            return v;
+        if (v === "true" || v === 1)
+            return true;
+        if (v === "false" || v === 0)
+            return false;
+        return fallback;
+    }
+    function safeStr(v, max) {
+        if (typeof v !== "string")
+            return undefined;
+        var s = v.trim();
+        if (!s)
+            return undefined;
+        return s.length > max ? s.substring(0, max) : s;
+    }
+    // ── RPC: ai_pipeline_weekly_recap ───────────────────────────────────────────
+    function rpcWeeklyRecap(ctx, logger, nk, payload) {
+        var userId = ctx.userId || "";
+        if (!userId)
+            return errEnvelope("no_user", "Authentication required");
+        var data;
+        try {
+            data = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return errEnvelope("invalid_json", "Invalid JSON payload");
+        }
+        var body = {
+            cognitoSub: userId,
+            concept: safeStr(data.concept, 200),
+            targetDurationSec: clampDuration(data.targetDurationSec, 10, 90, 20),
+            platform: sanitizePlatform(data.platform),
+            withVoiceover: safeBool(data.withVoiceover, true),
+            personalize: safeBool(data.personalize, true),
+            playerId: userId,
+            language: safeStr(data.language, 8) || "en",
+        };
+        var resp = postSigned(ctx, nk, logger, ROUTE_BASE + "/weekly-recap", body);
+        if (!resp)
+            return errEnvelope("ai_svc_unreachable", "AI service unreachable");
+        if (resp.code >= 400) {
+            return errEnvelope("ai_svc_error_" + resp.code, JSON.stringify(resp.body));
+        }
+        return okEnvelope(resp.body);
+    }
+    // ── RPC: ai_pipeline_monthly_recap ──────────────────────────────────────────
+    function rpcMonthlyRecap(ctx, logger, nk, payload) {
+        var userId = ctx.userId || "";
+        if (!userId)
+            return errEnvelope("no_user", "Authentication required");
+        var data;
+        try {
+            data = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return errEnvelope("invalid_json", "Invalid JSON payload");
+        }
+        var body = {
+            cognitoSub: userId,
+            concept: safeStr(data.concept, 200),
+            targetDurationSec: clampDuration(data.targetDurationSec, 20, 180, 60),
+            platform: sanitizePlatform(data.platform),
+            withVoiceover: safeBool(data.withVoiceover, true),
+            personalize: safeBool(data.personalize, true),
+            playerId: userId,
+            language: safeStr(data.language, 8) || "en",
+        };
+        var resp = postSigned(ctx, nk, logger, ROUTE_BASE + "/monthly-recap", body);
+        if (!resp)
+            return errEnvelope("ai_svc_unreachable", "AI service unreachable");
+        if (resp.code >= 400) {
+            return errEnvelope("ai_svc_error_" + resp.code, JSON.stringify(resp.body));
+        }
+        return okEnvelope(resp.body);
+    }
+    // ── RPC: ai_pipeline_motion_graphics ────────────────────────────────────────
+    function rpcMotionGraphics(ctx, logger, nk, payload) {
+        var userId = ctx.userId || "";
+        if (!userId)
+            return errEnvelope("no_user", "Authentication required");
+        var data;
+        try {
+            data = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return errEnvelope("invalid_json", "Invalid JSON payload");
+        }
+        var prompt = safeStr(data.prompt, 2000);
+        if (!prompt || prompt.length < 4) {
+            return errEnvelope("invalid_prompt", "Prompt must be 4-2000 chars");
+        }
+        // The AI svc accepts a few values; map free-form Unity strings down.
+        var styleHint = safeStr(data.styleHint, 40);
+        var allowedStyle = [
+            "kinetic_typography",
+            "data_explainer",
+            "product_demo",
+            "social_cut",
+            "tutorial",
+        ];
+        var styleHintFinal = undefined;
+        if (styleHint) {
+            for (var i = 0; i < allowedStyle.length; i++) {
+                if (allowedStyle[i] === styleHint) {
+                    styleHintFinal = styleHint;
+                    break;
+                }
+            }
+        }
+        var aspect = safeStr(data.aspectRatio, 5);
+        if (aspect !== "9:16" && aspect !== "16:9" && aspect !== "1:1") {
+            aspect = "9:16";
+        }
+        var body = {
+            cognitoSub: userId,
+            prompt: prompt,
+            platform: sanitizePlatform(data.platform),
+            styleHint: styleHintFinal,
+            targetDurationSec: clampDuration(data.targetDurationSec, 5, 120, 30),
+            aspectRatio: aspect,
+            withVoiceover: safeBool(data.withVoiceover, true),
+            language: safeStr(data.language, 8) || "en",
+            accentColorOverride: safeStr(data.accentColorOverride, 9),
+        };
+        var resp = postSigned(ctx, nk, logger, ROUTE_BASE + "/motion-graphics-from-prompt", body);
+        if (!resp)
+            return errEnvelope("ai_svc_unreachable", "AI service unreachable");
+        if (resp.code >= 400) {
+            return errEnvelope("ai_svc_error_" + resp.code, JSON.stringify(resp.body));
+        }
+        return okEnvelope(resp.body);
+    }
+    // ── RPC: ai_pipeline_poll ───────────────────────────────────────────────────
+    function rpcPoll(ctx, logger, nk, payload) {
+        var userId = ctx.userId || "";
+        if (!userId)
+            return errEnvelope("no_user", "Authentication required");
+        var data;
+        try {
+            data = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return errEnvelope("invalid_json", "Invalid JSON payload");
+        }
+        var jobId = safeStr(data.jobId, 200);
+        if (!jobId)
+            return errEnvelope("invalid_job_id", "jobId required");
+        var resp = postSigned(ctx, nk, logger, ROUTE_BASE + "/" + encodeURIComponent(jobId) + "/poll", { cognitoSub: userId });
+        if (!resp)
+            return errEnvelope("ai_svc_unreachable", "AI service unreachable");
+        if (resp.code === 404)
+            return errEnvelope("not_found", "Job not found");
+        if (resp.code >= 400) {
+            return errEnvelope("ai_svc_error_" + resp.code, JSON.stringify(resp.body));
+        }
+        return okEnvelope(resp.body);
+    }
+    // ── Registration ───────────────────────────────────────────────────────────
+    function register(initializer, logger) {
+        initializer.registerRpc("ai_pipeline_weekly_recap", rpcWeeklyRecap);
+        initializer.registerRpc("ai_pipeline_monthly_recap", rpcMonthlyRecap);
+        initializer.registerRpc("ai_pipeline_motion_graphics", rpcMotionGraphics);
+        initializer.registerRpc("ai_pipeline_poll", rpcPoll);
+        logger.info("[AiPipelines] Registered ai_pipeline_weekly_recap / monthly_recap / motion_graphics / poll");
+    }
+    AiPipelines.register = register;
+})(AiPipelines || (AiPipelines = {}));
 // Phase 3 (qv-insights-loop) — Crash log RPC + pattern summariser.
 //
 // Receives crash payloads from `IVXCrashUploader` (Unity SDK), persists
@@ -22464,6 +22797,216 @@ var LibraryCountdownPlugin;
     }
     LibraryCountdownPlugin.register = register;
 })(LibraryCountdownPlugin || (LibraryCountdownPlugin = {}));
+/**
+ * library-intent.ts — User intent + target-exam capture for the Library plane.
+ *
+ * Companion to library-countdown.ts. Every QuizVerse user is exactly one of:
+ *   • LEARNER → declared an upcoming exam, gets the countdown hero on home
+ *   • PLAYER  → here for fun, gets the casual home (no countdown card)
+ *   • UNSURE  → answered "not sure" / skipped → treated as PLAYER but flagged
+ *
+ * The Unity client (Trivia.Library.Intent.IntentNakamaClient) calls these RPCs
+ * during the Onboarding V2 flow at the IntentChooserStep + ExamPickerStep, and
+ * later from Settings if the user toggles Learner mode.
+ *
+ * RPCs registered:
+ *   library.intent.set    — { is_exam_intent, target_exam_id?, target_exam_date?, unsure? }
+ *   library.intent.get    — returns the caller's IntentRecord
+ *   library.intent.clear  — wipes the record (back to default)
+ *
+ * Storage:
+ *   collection "library_user_intent", key "intent" (single-row per user).
+ *   Owner-read + system-read (perm 2), owner-only write (perm 1) — same as
+ *   library_countdown_subs so Settings + analytics can both read it.
+ *
+ * Side-effect: setting an exam intent with both id+date queues a system-side
+ *   library.countdown.subscribe so the countdown notifications start firing
+ *   without the client needing two round-trips. This is idempotent — the
+ *   countdown record is keyed by exam_id:exam_date and overwrite-safe.
+ *
+ * Wiring: add `LibraryIntentPlugin.register(initializer, nk, logger)` to
+ *   `src/main.ts` next to LibraryCountdownPlugin.register(...).
+ */
+var LibraryIntentPlugin;
+(function (LibraryIntentPlugin) {
+    // ---------------------------------------------------------------------------
+    // Constants
+    // ---------------------------------------------------------------------------
+    var COLLECTION = "library_user_intent";
+    var KEY = "intent";
+    var COUNTDOWN_COLLECTION = "library_countdown_subs";
+    // Default channels + milestones — must match library-countdown.ts so that the
+    // auto-subscribe side-effect produces a record indistinguishable from one a
+    // user creates manually via library.countdown.subscribe.
+    var DEFAULT_CHANNELS = ["push", "inapp", "email"];
+    var DEFAULT_MILESTONES = ["d-30", "d-7", "d-1", "d0"];
+    // Canonical exam-id allowlist. Mirrors `web/lib/library/types.ts:ExamTag` and
+    // the pinned list in ExamPickerStepV2.cs. Keep in sync — server is the source
+    // of truth and rejects ids that aren't on this list.
+    var ALLOWED_EXAM_IDS = {
+        "in.jee.main": true, "in.jee.advanced": true, "in.neet.ug": true,
+        "in.cat": true, "in.gate": true, "in.upsc.cse": true,
+        "in.cuet.ug": true, "in.clat": true, "in.ssc.cgl": true,
+        "in.cbse.12": true, "in.cbse.10": true, "in.icse.10": true,
+        "in.nda": true, "in.rbi.gb": true,
+        "us.sat": true, "us.act": true, "us.ap": true, "us.gre": true,
+        "us.gmat": true, "us.mcat": true, "us.lsat": true, "us.bar": true,
+        "us.amc": true, "us.fe": true, "us.cpa": true, "us.usmle.s1": true,
+        "uk.gcse": true, "uk.alevel": true, "uk.ucat": true, "uk.bmat": true,
+        "uk.lnat": true, "uk.satq": true, "uk.tsa": true, "uk.cfa.l1": true,
+        "uk.gre": true, "uk.gmat": true, "uk.acca.f1": true, "uk.cima.bA1": true,
+    };
+    // ---------------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------------
+    function nakamaError(msg, code) {
+        return { message: msg, code: code };
+    }
+    function parseIsoDate(iso) {
+        if (typeof iso !== "string" || iso.length < 10)
+            return null;
+        var y = parseInt(iso.substr(0, 4), 10);
+        var m = parseInt(iso.substr(5, 2), 10);
+        var d = parseInt(iso.substr(8, 2), 10);
+        if (!y || !m || !d)
+            return null;
+        return Math.floor(Date.UTC(y, m - 1, d) / 1000);
+    }
+    function parseJson(payload) {
+        try {
+            return JSON.parse(payload || "{}");
+        }
+        catch (_e) {
+            return null;
+        }
+    }
+    function emptyRecord() {
+        return {
+            is_exam_intent: false,
+            target_exam_id: "",
+            target_exam_date: "",
+            unsure: false,
+            updated_at: 0,
+        };
+    }
+    function readIntent(nk, userId) {
+        var rows = nk.storageRead([{ collection: COLLECTION, key: KEY, userId: userId }]);
+        if (!rows || rows.length === 0)
+            return emptyRecord();
+        var v = rows[0].value;
+        if (!v)
+            return emptyRecord();
+        return v;
+    }
+    function writeIntent(nk, userId, record) {
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: KEY,
+                userId: userId,
+                value: record,
+                permissionRead: 2,
+                permissionWrite: 1,
+            }]);
+    }
+    /**
+     * Side-effect: when a user declares Learner intent with a known date, also
+     * write a library_countdown_subs record so notifications start firing on the
+     * next emit_due sweep. Idempotent — overwrites the existing record.
+     */
+    function ensureCountdownSubscription(nk, logger, userId, examId, examDate) {
+        if (!examId || !examDate)
+            return;
+        if (parseIsoDate(examDate) === null)
+            return;
+        var subKey = examId + ":" + examDate;
+        var subRecord = {
+            exam_id: examId,
+            exam_date: examDate,
+            custom: false,
+            channels: DEFAULT_CHANNELS,
+            milestones: DEFAULT_MILESTONES,
+            created_at: Math.floor(Date.now() / 1000),
+            last_emitted: {},
+        };
+        try {
+            nk.storageWrite([{
+                    collection: COUNTDOWN_COLLECTION,
+                    key: subKey,
+                    userId: userId,
+                    value: subRecord,
+                    permissionRead: 2,
+                    permissionWrite: 1,
+                }]);
+        }
+        catch (e) {
+            logger.warn("[library_intent] auto-subscribe countdown failed: " + (e && e.message ? e.message : "unknown"));
+        }
+    }
+    // ---------------------------------------------------------------------------
+    // RPC: library.intent.set
+    // ---------------------------------------------------------------------------
+    var rpcSet = function (ctx, logger, nk, payload) {
+        if (!ctx.userId)
+            throw nakamaError("unauthenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        var data = parseJson(payload);
+        if (!data)
+            throw nakamaError("invalid payload", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        var isExam = data.is_exam_intent === true;
+        var examId = data.target_exam_id ? String(data.target_exam_id) : "";
+        var examDate = data.target_exam_date ? String(data.target_exam_date) : "";
+        var unsure = data.unsure === true;
+        if (isExam && examId && !ALLOWED_EXAM_IDS[examId]) {
+            throw nakamaError("unknown target_exam_id: " + examId, 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        if (isExam && examDate && parseIsoDate(examDate) === null) {
+            throw nakamaError("target_exam_date must be ISO YYYY-MM-DD", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var record = {
+            is_exam_intent: isExam,
+            target_exam_id: isExam ? examId : "",
+            target_exam_date: isExam ? examDate : "",
+            unsure: unsure,
+            updated_at: Math.floor(Date.now() / 1000),
+        };
+        writeIntent(nk, ctx.userId, record);
+        // Auto-subscribe to countdown when both id+date are present.
+        if (isExam && examId && examDate) {
+            ensureCountdownSubscription(nk, logger, ctx.userId, examId, examDate);
+        }
+        logger.info("[library_intent] set userId=" + ctx.userId
+            + " is_exam=" + isExam + " exam_id=" + examId + " unsure=" + unsure);
+        return JSON.stringify({ success: true, intent: record });
+    };
+    // ---------------------------------------------------------------------------
+    // RPC: library.intent.get
+    // ---------------------------------------------------------------------------
+    var rpcGet = function (ctx, _logger, nk, _payload) {
+        if (!ctx.userId)
+            throw nakamaError("unauthenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        var record = readIntent(nk, ctx.userId);
+        return JSON.stringify(record);
+    };
+    // ---------------------------------------------------------------------------
+    // RPC: library.intent.clear
+    // ---------------------------------------------------------------------------
+    var rpcClear = function (ctx, logger, nk, _payload) {
+        if (!ctx.userId)
+            throw nakamaError("unauthenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        nk.storageDelete([{ collection: COLLECTION, key: KEY, userId: ctx.userId }]);
+        logger.info("[library_intent] cleared userId=" + ctx.userId);
+        return JSON.stringify({ success: true });
+    };
+    // ---------------------------------------------------------------------------
+    // register — call from src/main.ts next to LibraryCountdownPlugin.register(...)
+    // ---------------------------------------------------------------------------
+    function register(initializer, _nk, logger) {
+        initializer.registerRpc("library.intent.set", rpcSet);
+        initializer.registerRpc("library.intent.get", rpcGet);
+        initializer.registerRpc("library.intent.clear", rpcClear);
+        logger.info("[LibraryIntent] 3 RPCs registered (set/get/clear)");
+    }
+    LibraryIntentPlugin.register = register;
+})(LibraryIntentPlugin || (LibraryIntentPlugin = {}));
 /**
  * n8n-pack-state.ts — pack_complete gate for the v2.4.0 library format-agents.
  *
