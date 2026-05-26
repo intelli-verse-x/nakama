@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-26T03:23:05.974Z
+// Generated: 2026-05-26T04:30:14.177Z
 // RPC Count: 895
 // ============================================================
 
@@ -82826,9 +82826,14 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
         // forwards to the AI svc's /content-factory/from-nakama/* routes
         // using the existing IVX_INSIGHTS_SHARED_SECRET. Acting user id is
         // stamped from `ctx.userId` so the SDK can never spoof identities.
+        //
+        // Note: AiPipelines.register() takes ONLY `(initializer)` so that
+        // data/modules/postbuild.js auto-invokes it at IIFE scope and the
+        // `__rpc_*` globals are visible to the generated InitModule
+        // wrapper. See comments in src/ai-content/ai_pipelines.ts.
         try {
             logger.info("[AiPipelines] Registering ai_pipeline_weekly_recap / monthly_recap / motion_graphics / poll RPCs...");
-            AiPipelines.register(initializer, logger);
+            AiPipelines.register(initializer);
         }
         catch (err) {
             logger.error("[AiPipelines] failed to register: " + (err && err.message ? err.message : String(err)));
@@ -83262,7 +83267,11 @@ var AiPipelines;
 (function (AiPipelines) {
     // ── Constants ──────────────────────────────────────────────────────────────
     var SERVICE_NAME = "nakama";
-    var ROUTE_BASE = "/api/ai/content-factory/from-nakama/jobs";
+    // NOTE: IVX_AI_SVC_BASE_URL already terminates in `/api/ai` (matches every
+    // other Nakama → AI-svc consumer: personalization-rpc, cross-sell-rpc,
+    // privacy-rpc). Route paths here MUST NOT re-include `/api/ai` or the
+    // upstream returns 404.
+    var ROUTE_BASE = "/content-factory/from-nakama/jobs";
     var REQUEST_TIMEOUT_MS = 6500;
     // ── Helpers ────────────────────────────────────────────────────────────────
     function aiSvcBase(ctx, logger) {
@@ -83520,14 +83529,19 @@ var AiPipelines;
         return okEnvelope(resp.body);
     }
     // ── Registration ───────────────────────────────────────────────────────────
-    function register(initializer, logger) {
+    // Note: this register() takes ONLY `(initializer)` — that single-arg shape is
+    // required by data/modules/postbuild.js so the `__rpc_*` globals populated by
+    // `initializer.registerRpc(...)` are visible to the auto-generated InitModule
+    // wrapper. A second parameter would silently disable auto-invoke and the
+    // runtime would fail every dispatch with "JavaScript runtime function invalid".
+    function register(initializer) {
         __rpc_ai_pipeline_weekly_recap = rpcWeeklyRecap;
         __rpc_ai_pipeline_monthly_recap = rpcMonthlyRecap;
         __rpc_ai_pipeline_motion_graphics = rpcMotionGraphics;
         __rpc_ai_pipeline_poll = rpcPoll;
-        logger.info("[AiPipelines] Registered ai_pipeline_weekly_recap / monthly_recap / motion_graphics / poll");
     }
     AiPipelines.register = register;
+    register();
 })(AiPipelines || (AiPipelines = {}));
 // Phase 3 (qv-insights-loop) — Crash log RPC + pattern summariser.
 //
