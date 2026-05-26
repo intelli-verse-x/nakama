@@ -12896,6 +12896,9 @@ function rpcAnalyticsGetPlayerProfile(ctx, logger, nk, payload) {
         var gameId = appResolveGameId(data.gameId || data.game_id || DEFAULT_GAME_ID);
         var userId = ctx.userId;
         if (!userId) {
+            userId = (data && (data.user_id || data.userId)) || "";
+        }
+        if (!userId) {
             return JSON.stringify({ success: false, error: "no_session" });
         }
 
@@ -54735,13 +54738,14 @@ function rpcSmartReviewGetState(ctx, logger, nk, payload) {
 // → weaker. Returns a list sorted by weakness descending.
 
 function rpcSmartReviewGetWeaknessMap(ctx, logger, nk, payload) {
-    if (!ctx.userId) return srErrorResponse('User not authenticated');
-
     var data = srValidatePayload(payload);
     if (data === null) return srErrorResponse('Invalid JSON payload');
 
+    var userId = ctx.userId || (data && (data.user_id || data.userId)) || '';
+    if (!userId) return srErrorResponse('User not authenticated');
+
     var gameId = data.gameId || 'quizverse';
-    var reviewData = readSmartReviewData(nk, logger, ctx.userId, gameId);
+    var reviewData = readSmartReviewData(nk, logger, userId, gameId);
     if (!reviewData || !reviewData.cards) {
         return JSON.stringify({
             success: true,
@@ -80279,7 +80283,17 @@ function rpcStreakShieldRepair(ctx, logger, nk, payload) {
 
 function rpcWeeklyRecapGet(ctx, logger, nk, payload) {
     try {
-        var storage = nk.storageRead([{ collection: 'weekly_recap', key: 'latest', userId: ctx.userId }]);
+        var userId = ctx.userId;
+        if (!userId) {
+            try {
+                var _d = payload ? JSON.parse(payload) : {};
+                userId = (_d && (_d.user_id || _d.userId)) || '';
+            } catch (_e) { /* ignore */ }
+        }
+        if (!userId) {
+            return JSON.stringify({ success: false, error: "no_session" });
+        }
+        var storage = nk.storageRead([{ collection: 'weekly_recap', key: 'latest', userId: userId }]);
         var recap = (storage && storage.length > 0) ? JSON.parse(storage[0].value) : { weekStart: null, quizzesPlayed: 0, correctAnswers: 0, totalAnswers: 0, xpEarned: 0, coinsEarned: 0, streakDays: 0, topCategory: null };
         return JSON.stringify({ success: true, recap: recap });
     } catch(e) { return JSON.stringify({ success: false, error: e.message }); }
@@ -89905,8 +89919,18 @@ var QuizVerseMigration;
         catch (_e) { }
         return pack;
     }
-    function rpcGetPlayerContext(ctx, logger, nk, _payload) {
-        var userId = requireAuth(ctx);
+    function rpcGetPlayerContext(ctx, logger, nk, payload) {
+        var userId = ctx.userId;
+        if (!userId) {
+            try {
+                var _d = payload ? JSON.parse(payload) : {};
+                userId = (_d && (_d.user_id || _d.userId)) || "";
+            }
+            catch (_e) { /* ignore */ }
+        }
+        if (!userId) {
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        }
         try {
             return JSON.stringify({ ok: true, pack: readPlayerContext(nk, userId) });
         }
