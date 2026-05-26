@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-26T04:38:03.258Z
+// Generated: 2026-05-26T04:46:31.676Z
 // RPC Count: 893
 // ============================================================
 
@@ -83297,6 +83297,28 @@ var AiPipelines;
         }
     }
     /**
+     * Pull the path portion (everything from the first `/` after the host) out
+     * of an absolute URL. We need this so the HMAC signature we send covers
+     * exactly the same path the AI-svc HmacAuthGuard sees via `req.originalUrl`
+     * — including any global prefix (`/api/ai`) baked into IVX_AI_SVC_BASE_URL.
+     * Signing only the route suffix (e.g. `/content-factory/...`) without the
+     * prefix yields "signature mismatch" on the receiver. Reference:
+     * src/_lib/guards/hmac-auth.guard.ts.
+     */
+    function extractUrlPath(absUrl) {
+        // absUrl like "http://host:3000/api/ai" → return "/api/ai".
+        // No regex with `://` since the postbuild's syntax-check has tripped on
+        // raw `:`-glob patterns historically; this hand-rolled scan is trivial.
+        var schemeIdx = absUrl.indexOf("://");
+        if (schemeIdx === -1)
+            return absUrl; // already a path
+        var afterScheme = absUrl.substring(schemeIdx + 3);
+        var slashIdx = afterScheme.indexOf("/");
+        if (slashIdx === -1)
+            return ""; // no path component
+        return afterScheme.substring(slashIdx);
+    }
+    /**
      * Sign + POST a JSON payload to the AI service, returning the parsed body
      * or null on any transport-level failure. The HTTP code is included in
      * the result envelope so RPC handlers can distinguish 4xx (caller error)
@@ -83308,7 +83330,10 @@ var AiPipelines;
             return null;
         var bodyString = JSON.stringify(payload || {});
         var ts = String(Date.now());
-        var sig = computeSignature(ctx, nk, ts, path, bodyString, logger);
+        // Sign the FULL receiver-side path (`/api/ai` prefix + route) — see
+        // extractUrlPath() above.
+        var signedPath = extractUrlPath(base) + path;
+        var sig = computeSignature(ctx, nk, ts, signedPath, bodyString, logger);
         try {
             var resp = nk.httpRequest(base + path, "post", {
                 "Accept": "application/json",
