@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-26T17:51:41.949Z
-// RPC Count: 896
+// Generated: 2026-05-26T23:55:38.319Z
+// RPC Count: 965
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -802,6 +802,64 @@ var __rpc_quizverse_chatbox_message;
 var __rpc_quizverse_kb_get_context;
 var __rpc_quizverse_kb_register_seen_questions;
 var __rpc_quizverse_kb_filter_unseen_questions;
+var __rpc_cricket_create_ai_note;
+var __rpc_cricket_generate_quiz_from_note;
+var __rpc_cricket_generate_match_trivia;
+var __rpc_cricket_generate_player_trivia;
+var __rpc_cricket_get_user_notes;
+var __rpc_cricket_generate_debate;
+var __rpc_cricket_get_daily_challenges;
+var __rpc_cricket_update_challenge_progress;
+var __rpc_cricket_claim_challenge_reward;
+var __rpc_cricket_get_challenge_history;
+var __rpc_cricket_get_weekly_summary;
+var __rpc_cricket_get_wallet;
+var __rpc_cricket_spend_coins;
+var __rpc_cricket_add_coins;
+var __rpc_cricket_process_iap;
+var __rpc_cricket_purchase_voice_access;
+var __rpc_cricket_check_voice_access;
+var __rpc_cricket_get_transactions;
+var __rpc_cricket_convert_guest;
+var __rpc_cricket_track_engagement;
+var __rpc_cricket_get_buildup_status;
+var __rpc_cricket_claim_daily_login;
+var __rpc_cricket_get_engagement_summary;
+var __rpc_cricket_start_session;
+var __rpc_cricket_end_session;
+var __rpc_cricket_load_schedules;
+var __rpc_cricket_get_upcoming_matches;
+var __rpc_cricket_get_match_details;
+var __rpc_cricket_start_live_match;
+var __rpc_cricket_update_ball_event;
+var __rpc_cricket_trigger_strategic_timeout;
+var __rpc_cricket_claim_flash_drop;
+var __rpc_cricket_end_match;
+var __rpc_cricket_submit_prediction;
+var __rpc_cricket_process_match_results;
+var __rpc_cricket_get_user_predictions;
+var __rpc_cricket_get_match_leaderboard;
+var __rpc_cricket_get_tournament_leaderboard;
+var __rpc_cricket_process_daily_login;
+var __rpc_cricket_claim_trigger_reward;
+var __rpc_cricket_get_retention_status;
+var __rpc_cricket_activate_bonus_hour;
+var __rpc_cricket_record_rank_snapshot;
+var __rpc_cricket_get_season_pass;
+var __rpc_cricket_add_season_xp;
+var __rpc_cricket_claim_season_reward;
+var __rpc_cricket_upgrade_to_premium;
+var __rpc_cricket_start_trivia;
+var __rpc_cricket_submit_answer;
+var __rpc_cricket_generate_ai_trivia;
+var __rpc_cricket_get_trivia_leaderboard;
+var __rpc_cricket_get_trivia_history;
+var __rpc_cricket_init_leaderboards;
+var __rpc_cricket_submit_score;
+var __rpc_cricket_get_all_leaderboards;
+var __rpc_cricket_get_missions;
+var __rpc_cricket_track_share;
+var __rpc_cricket_track_rate_app;
 var __rpc_analytics_appodeal;
 var __rpc_analytics_apple_appstore;
 var __rpc_apple_appstore_import;
@@ -846,6 +904,17 @@ var __rpc_offer_upsert;
 var __rpc_offer_list;
 var __rpc_offer_status;
 var __rpc_onboarding_grant_streak_shield;
+var __rpc_get_platform_leaderboard;
+var __rpc_get_platform_leaderboard_multi;
+var __rpc_submit_platform_score;
+var __rpc_get_user_leaderboard_stats;
+var __rpc_get_leaderboard_around_user;
+var __rpc_delete_leaderboard_record;
+var __rpc_sync_profile_from_user_management;
+var __rpc_update_profile_picture;
+var __rpc_get_user_profile;
+var __rpc_batch_get_user_profiles;
+var __rpc_get_profile_sync_status;
 var __rpc_qe_player_full_profile;
 var __rpc_qe_stale_sessions;
 var __rpc_qe_cohort_export;
@@ -909,7 +978,7 @@ var __rpc_visual_path_skip_day_with_ad;
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
 var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
-// --- Discovered Modules (100 files) ---
+// --- Discovered Modules (114 files) ---
 
 // --- Module: achievements/achievements.js ---
 /**
@@ -12896,6 +12965,13 @@ function rpcAnalyticsGetPlayerProfile(ctx, logger, nk, payload) {
         var gameId = appResolveGameId(data.gameId || data.game_id || DEFAULT_GAME_ID);
         var userId = ctx.userId;
         if (!userId) {
+            // Server-to-server (http_key) callers — e.g. content-factory's
+            // NakamaMasterAgent generating personalized recaps — can supply
+            // user_id explicitly. http_key is an admin-level credential
+            // (same trust boundary as qe_player_full_profile) and is only
+            // empty-ctx.userId-bypass-eligible because this RPC is READ-ONLY.
+            // Real Unity clients always have ctx.userId set, so this branch
+            // is a no-op for them.
             userId = (data && (data.user_id || data.userId)) || "";
         }
         if (!userId) {
@@ -23714,6 +23790,7788 @@ function handleWalletError(logger, operation, error) {
 
 
 
+// --- Module: cricket/cricket_ai_integration.js ---
+/**
+ * Cricket AI Integration Module
+ * 
+ * Integrates with IntelliVerse-X AI APIs for dynamic content:
+ * - ai-notes: Quiz generation from cricket content
+ * - ai-prompts: Trivia question generation
+ * - ai-studio: Content processing and analysis
+ * - ai-enhancement: Content improvement
+ * 
+ * Features:
+ * - Generate trivia from YouTube cricket videos
+ * - Create match-specific questions using AI
+ * - Generate debate topics for cricket discussions
+ * - Enhance question quality with AI
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// AI API Configuration
+var AI_CONFIG = {
+    baseUrl: "https://api.intelliversex.com",
+    endpoints: {
+        createNote: "/ai-notes/notes/create-from-url",
+        generateQuiz: "/ai-notes/notes/{noteId}/generate-quiz",
+        generateTrivia: "/ai-prompts/trivia/generate",
+        enhanceContent: "/ai-enhancement/improve",
+        analyzeContent: "/ai-studio/analyze"
+    },
+    // These would be environment variables in production
+    apiKey: "INTELLIVERSEX_API_KEY"
+};
+
+// Collections
+var COLLECTIONS = {
+    AI_NOTES: "cricket_ai_notes",
+    AI_QUIZZES: "cricket_ai_quizzes",
+    AI_REQUESTS: "cricket_ai_requests",
+    AI_CACHE: "cricket_ai_cache"
+};
+
+// Supported link types for cricket content
+var LINK_TYPES = {
+    YOUTUBE: "youtube",
+    IPL_OFFICIAL: "ipl_official",
+    ICC_OFFICIAL: "icc_official",
+    CRICINFO: "cricinfo",
+    CRICBUZZ: "cricbuzz",
+    TWITTER: "twitter",
+    REDDIT: "reddit",
+    ARTICLE: "article"
+};
+
+// Cricket-specific prompt templates
+var PROMPT_TEMPLATES = {
+    MATCH_TRIVIA: `Generate {count} trivia questions about the cricket match between {team1} and {team2}.
+Focus on:
+- Player statistics and records
+- Historical head-to-head data
+- Venue information
+- Key moments and turning points
+- Team strategies
+
+Format: JSON array with question, options (4), correctIndex, explanation, difficulty, category`,
+
+    VIDEO_QUIZ: `Based on this cricket video content: {content}
+Generate {count} engaging trivia questions.
+Include questions about:
+- Specific moments and timestamps
+- Player performances
+- Commentary insights
+- Match statistics
+
+Format: JSON array with question, options (4), correctIndex, explanation, timestamp (if applicable)`,
+
+    PLAYER_TRIVIA: `Generate {count} trivia questions about {playerName}.
+Include:
+- Career statistics
+- Notable achievements
+- Records held
+- Team history
+- Playing style
+
+Format: JSON array with question, options (4), correctIndex, explanation, difficulty`,
+
+    TOURNAMENT_TRIVIA: `Generate {count} trivia questions about {tournamentName}.
+Cover:
+- Tournament history
+- Previous winners
+- Records and statistics
+- Memorable moments
+- Format and rules
+
+Format: JSON array with question, options (4), correctIndex, explanation`
+};
+
+/**
+ * RPC: Create AI note from cricket URL
+ * 
+ * Payload: {
+ *   url: string,
+ *   linkType: string,
+ *   title: string (optional)
+ * }
+ */
+function rpcCreateAINote(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { url, linkType = LINK_TYPES.ARTICLE, title } = data;
+
+    if (!url) {
+        throw new Error("URL is required");
+    }
+
+    // Validate URL and detect link type
+    const detectedType = detectLinkType(url);
+    const finalLinkType = linkType || detectedType;
+
+    // Create note ID
+    const noteId = `note_${userId}_${Date.now()}`;
+
+    // For now, simulate AI note creation
+    // In production, this would call the actual AI API
+    const note = {
+        noteId,
+        userId,
+        url,
+        linkType: finalLinkType,
+        title: title || generateTitleFromUrl(url),
+        status: "processing",
+        createdAt: Date.now(),
+        content: null,
+        summary: null,
+        questions: []
+    };
+
+    // Store note
+    nk.storageWrite([{
+        collection: COLLECTIONS.AI_NOTES,
+        key: noteId,
+        userId: userId,
+        value: note,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Log request
+    logAIRequest(nk, userId, "create_note", { url, linkType: finalLinkType });
+
+    // Simulate async processing (in production, this would be a job)
+    processNoteAsync(nk, logger, noteId, userId, url, finalLinkType);
+
+    logger.info(`User ${userId} created AI note: ${noteId} from ${url}`);
+
+    return JSON.stringify({
+        success: true,
+        noteId,
+        status: "processing",
+        message: "Note creation started. Quiz will be available shortly."
+    });
+}
+
+/**
+ * RPC: Generate quiz from AI note
+ * 
+ * Payload: {
+ *   noteId: string,
+ *   questionCount: number,
+ *   difficulty: string
+ * }
+ */
+function rpcGenerateQuizFromNote(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { noteId, questionCount = 10, difficulty = "medium" } = data;
+
+    if (!noteId) {
+        throw new Error("noteId is required");
+    }
+
+    // Get note
+    const notes = nk.storageRead([{
+        collection: COLLECTIONS.AI_NOTES,
+        key: noteId,
+        userId: userId
+    }]);
+
+    if (notes.length === 0) {
+        throw new Error("Note not found");
+    }
+
+    const note = notes[0].value;
+
+    if (note.status !== "ready") {
+        return JSON.stringify({
+            success: false,
+            status: note.status,
+            message: note.status === "processing" ? "Note is still processing" : "Note processing failed"
+        });
+    }
+
+    // Generate questions based on note content
+    const questions = generateQuestionsFromNote(note, questionCount, difficulty);
+
+    // Create quiz record
+    const quizId = `quiz_${noteId}_${Date.now()}`;
+    const quiz = {
+        quizId,
+        noteId,
+        userId,
+        questions,
+        questionCount: questions.length,
+        difficulty,
+        createdAt: Date.now()
+    };
+
+    // Store quiz
+    nk.storageWrite([{
+        collection: COLLECTIONS.AI_QUIZZES,
+        key: quizId,
+        userId: userId,
+        value: quiz,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Update note with quiz reference
+    note.latestQuizId = quizId;
+    note.totalQuizzes = (note.totalQuizzes || 0) + 1;
+    
+    nk.storageWrite([{
+        collection: COLLECTIONS.AI_NOTES,
+        key: noteId,
+        userId: userId,
+        value: note,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} generated quiz ${quizId} from note ${noteId}`);
+
+    return JSON.stringify({
+        success: true,
+        quizId,
+        questionCount: questions.length,
+        questions: questions.map(q => ({
+            id: q.id,
+            question: q.question,
+            options: q.options,
+            difficulty: q.difficulty,
+            category: q.category
+        }))
+    });
+}
+
+/**
+ * RPC: Generate AI trivia for match
+ * 
+ * Payload: {
+ *   matchId: string,
+ *   team1: string,
+ *   team2: string,
+ *   questionCount: number,
+ *   categories: string[]
+ * }
+ */
+function rpcGenerateMatchTrivia(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, team1, team2, questionCount = 10, categories } = data;
+
+    if (!team1 || !team2) {
+        throw new Error("team1 and team2 are required");
+    }
+
+    // Check cache first
+    const cacheKey = `match_trivia_${team1}_${team2}_${questionCount}`;
+    const cached = checkCache(nk, cacheKey);
+    
+    if (cached) {
+        return JSON.stringify({
+            success: true,
+            cached: true,
+            questions: cached.questions
+        });
+    }
+
+    // Generate match-specific questions
+    const questions = generateMatchSpecificQuestions(team1, team2, questionCount, categories);
+
+    // Cache the result
+    cacheResult(nk, cacheKey, { questions }, 3600000); // 1 hour cache
+
+    // Log request
+    logAIRequest(nk, userId, "generate_match_trivia", { matchId, team1, team2, questionCount });
+
+    logger.info(`Generated ${questions.length} AI trivia questions for ${team1} vs ${team2}`);
+
+    return JSON.stringify({
+        success: true,
+        cached: false,
+        questionCount: questions.length,
+        questions
+    });
+}
+
+/**
+ * RPC: Generate player trivia
+ * 
+ * Payload: {
+ *   playerName: string,
+ *   team: string,
+ *   questionCount: number
+ * }
+ */
+function rpcGeneratePlayerTrivia(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { playerName, team, questionCount = 5 } = data;
+
+    if (!playerName) {
+        throw new Error("playerName is required");
+    }
+
+    // Generate player-specific questions
+    const questions = generatePlayerQuestions(playerName, team, questionCount);
+
+    // Log request
+    logAIRequest(nk, userId, "generate_player_trivia", { playerName, team, questionCount });
+
+    logger.info(`Generated ${questions.length} AI trivia questions for ${playerName}`);
+
+    return JSON.stringify({
+        success: true,
+        playerName,
+        questionCount: questions.length,
+        questions
+    });
+}
+
+/**
+ * RPC: Get user's AI notes
+ */
+function rpcGetUserNotes(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { limit = 20 } = data;
+
+    const notes = nk.storageList(userId, COLLECTIONS.AI_NOTES, limit, null);
+
+    const result = (notes.objects || []).map(obj => ({
+        noteId: obj.key,
+        title: obj.value.title,
+        url: obj.value.url,
+        linkType: obj.value.linkType,
+        status: obj.value.status,
+        createdAt: obj.value.createdAt,
+        totalQuizzes: obj.value.totalQuizzes || 0
+    }));
+
+    return JSON.stringify({
+        notes: result,
+        total: result.length
+    });
+}
+
+/**
+ * RPC: Generate debate topic
+ * 
+ * Payload: {
+ *   topic: string,
+ *   context: string
+ * }
+ */
+function rpcGenerateDebateTopic(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { topic, context: topicContext } = data;
+
+    if (!topic) {
+        throw new Error("topic is required");
+    }
+
+    // Generate debate topic
+    const debateTopic = generateDebateTopic(topic, topicContext);
+
+    // Log request
+    logAIRequest(nk, userId, "generate_debate", { topic });
+
+    return JSON.stringify({
+        success: true,
+        debate: debateTopic
+    });
+}
+
+// Helper functions
+function detectLinkType(url) {
+    const lowerUrl = url.toLowerCase();
+    
+    if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) {
+        return LINK_TYPES.YOUTUBE;
+    }
+    if (lowerUrl.includes("iplt20.com")) {
+        return LINK_TYPES.IPL_OFFICIAL;
+    }
+    if (lowerUrl.includes("icc-cricket.com")) {
+        return LINK_TYPES.ICC_OFFICIAL;
+    }
+    if (lowerUrl.includes("espncricinfo.com") || lowerUrl.includes("cricinfo.com")) {
+        return LINK_TYPES.CRICINFO;
+    }
+    if (lowerUrl.includes("cricbuzz.com")) {
+        return LINK_TYPES.CRICBUZZ;
+    }
+    if (lowerUrl.includes("twitter.com") || lowerUrl.includes("x.com")) {
+        return LINK_TYPES.TWITTER;
+    }
+    if (lowerUrl.includes("reddit.com")) {
+        return LINK_TYPES.REDDIT;
+    }
+    
+    return LINK_TYPES.ARTICLE;
+}
+
+function generateTitleFromUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/').filter(p => p);
+        if (pathParts.length > 0) {
+            return pathParts[pathParts.length - 1]
+                .replace(/-/g, ' ')
+                .replace(/_/g, ' ')
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+    } catch (e) {
+        // ignore
+    }
+    return "Cricket Content";
+}
+
+function processNoteAsync(nk, logger, noteId, userId, url, linkType) {
+    // In production, this would be a background job
+    // For now, we'll simulate processing
+    
+    setTimeout(() => {
+        try {
+            const notes = nk.storageRead([{
+                collection: COLLECTIONS.AI_NOTES,
+                key: noteId,
+                userId: userId
+            }]);
+
+            if (notes.length === 0) return;
+
+            const note = notes[0].value;
+
+            // Simulate content extraction based on link type
+            note.content = generateMockContent(url, linkType);
+            note.summary = `AI-generated summary of cricket content from ${linkType}`;
+            note.status = "ready";
+            note.processedAt = Date.now();
+
+            nk.storageWrite([{
+                collection: COLLECTIONS.AI_NOTES,
+                key: noteId,
+                userId: userId,
+                value: note,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+
+            logger.info(`Note ${noteId} processing complete`);
+        } catch (e) {
+            logger.error(`Failed to process note ${noteId}: ${e.message}`);
+        }
+    }, 2000); // 2 second simulated delay
+}
+
+function generateMockContent(url, linkType) {
+    const contents = {
+        [LINK_TYPES.YOUTUBE]: "Cricket video analysis covering match highlights, player performances, and expert commentary.",
+        [LINK_TYPES.IPL_OFFICIAL]: "Official IPL content with team statistics, player profiles, and match reports.",
+        [LINK_TYPES.ICC_OFFICIAL]: "ICC official content covering international cricket, rankings, and tournament updates.",
+        [LINK_TYPES.CRICINFO]: "Comprehensive cricket analysis with ball-by-ball commentary and statistical insights.",
+        [LINK_TYPES.CRICBUZZ]: "Live cricket updates, news, and match analysis.",
+        [LINK_TYPES.TWITTER]: "Cricket community discussions and real-time reactions.",
+        [LINK_TYPES.REDDIT]: "Fan discussions and in-depth cricket analysis.",
+        [LINK_TYPES.ARTICLE]: "General cricket news and analysis."
+    };
+    
+    return contents[linkType] || contents[LINK_TYPES.ARTICLE];
+}
+
+function generateQuestionsFromNote(note, count, difficulty) {
+    const questions = [];
+    
+    // Generate questions based on link type
+    const questionTemplates = getQuestionTemplatesForLinkType(note.linkType);
+    
+    for (let i = 0; i < count && i < questionTemplates.length; i++) {
+        const template = questionTemplates[i];
+        questions.push({
+            id: `ai_q_${Date.now()}_${i}`,
+            question: template.question,
+            options: template.options,
+            correctIndex: template.correctIndex,
+            explanation: template.explanation,
+            difficulty,
+            category: template.category,
+            source: note.url
+        });
+    }
+    
+    return questions;
+}
+
+function getQuestionTemplatesForLinkType(linkType) {
+    // In production, this would use actual AI-generated questions
+    // For now, return cricket-specific templates
+    return [
+        {
+            question: "Based on the content, which aspect of cricket was most emphasized?",
+            options: ["Batting technique", "Bowling strategy", "Fielding positions", "Match statistics"],
+            correctIndex: 3,
+            explanation: "The content primarily focused on match statistics and performance data.",
+            category: "analysis"
+        },
+        {
+            question: "What key insight can be drawn from this cricket content?",
+            options: ["Team selection importance", "Weather impact", "Pitch conditions", "Player fitness"],
+            correctIndex: 0,
+            explanation: "Team selection was highlighted as a crucial factor.",
+            category: "strategy"
+        },
+        // Add more templates as needed
+    ];
+}
+
+function generateMatchSpecificQuestions(team1, team2, count, categories) {
+    const questions = [];
+    
+    // Team captains
+    questions.push({
+        id: `match_q_captain_${team1}`,
+        question: `Who is the current captain of ${team1}?`,
+        options: getCaptainOptions(team1),
+        correctIndex: 0,
+        explanation: `The current captain leads ${team1} in international cricket.`,
+        difficulty: "easy",
+        category: "teams"
+    });
+
+    questions.push({
+        id: `match_q_captain_${team2}`,
+        question: `Who is the current captain of ${team2}?`,
+        options: getCaptainOptions(team2),
+        correctIndex: 0,
+        explanation: `The current captain leads ${team2} in international cricket.`,
+        difficulty: "easy",
+        category: "teams"
+    });
+
+    // Head-to-head
+    questions.push({
+        id: `match_q_h2h_${team1}_${team2}`,
+        question: `Which team has won more T20I matches between ${team1} and ${team2}?`,
+        options: [team1, team2, "Equal", "Never played"],
+        correctIndex: Math.floor(Math.random() * 2),
+        explanation: "Head-to-head records show competitive history between these teams.",
+        difficulty: "medium",
+        category: "head_to_head"
+    });
+
+    // Records
+    questions.push({
+        id: `match_q_record_1`,
+        question: `What is the highest T20I score ever made by ${team1}?`,
+        options: ["180-200", "200-220", "220-240", "240+"],
+        correctIndex: 1,
+        explanation: "Team scoring records vary based on batting conditions.",
+        difficulty: "hard",
+        category: "records"
+    });
+
+    // Fill remaining with general questions
+    while (questions.length < count) {
+        questions.push(...getGeneralMatchQuestions(team1, team2).slice(0, count - questions.length));
+    }
+
+    return questions.slice(0, count);
+}
+
+function generatePlayerQuestions(playerName, team, count) {
+    return [
+        {
+            id: `player_q_1_${playerName}`,
+            question: `What is ${playerName}'s primary role in the team?`,
+            options: ["Batsman", "Bowler", "All-rounder", "Wicket-keeper"],
+            correctIndex: 0,
+            explanation: `${playerName} is known for their contribution in this role.`,
+            difficulty: "easy",
+            category: "players"
+        },
+        {
+            id: `player_q_2_${playerName}`,
+            question: `In which year did ${playerName} make their international debut?`,
+            options: ["2018", "2019", "2020", "2021"],
+            correctIndex: 1,
+            explanation: `${playerName} began their international career in this year.`,
+            difficulty: "medium",
+            category: "players"
+        }
+    ].slice(0, count);
+}
+
+function getGeneralMatchQuestions(team1, team2) {
+    return [
+        {
+            id: `general_match_1`,
+            question: "What is the maximum number of overs in a T20 match for one team?",
+            options: ["15", "18", "20", "25"],
+            correctIndex: 2,
+            explanation: "T20 stands for Twenty20, meaning 20 overs per side.",
+            difficulty: "easy",
+            category: "rules"
+        },
+        {
+            id: `general_match_2`,
+            question: "What happens in a Super Over?",
+            options: [
+                "Extra 5 overs for each team",
+                "1 over each to break tie",
+                "Match declared draw",
+                "Coin toss decides winner"
+            ],
+            correctIndex: 1,
+            explanation: "A Super Over is a tiebreaker format using 1 over per team.",
+            difficulty: "medium",
+            category: "rules"
+        }
+    ];
+}
+
+function generateDebateTopic(topic, context) {
+    const debateTopics = {
+        "best_batsman": {
+            title: "Greatest T20 Batsman of All Time",
+            proposition: "Virat Kohli is the greatest T20 batsman",
+            opposition: "Other players have better T20 records",
+            points: [
+                "Consistency across formats",
+                "Performance in pressure situations",
+                "Strike rate and average comparison",
+                "Impact on team success"
+            ]
+        },
+        "best_bowler": {
+            title: "Most Impactful T20 Bowler",
+            proposition: "Death bowling is more crucial than powerplay bowling",
+            opposition: "Powerplay wickets set the tone for the match",
+            points: [
+                "Economy rate in different phases",
+                "Wicket-taking ability",
+                "Performance against top batsmen",
+                "Pressure handling"
+            ]
+        },
+        default: {
+            title: `Cricket Debate: ${topic}`,
+            proposition: "One perspective on the topic",
+            opposition: "Alternative viewpoint",
+            points: [
+                "Statistical evidence",
+                "Historical context",
+                "Current form",
+                "Future potential"
+            ]
+        }
+    };
+
+    return debateTopics[topic.toLowerCase().replace(/ /g, '_')] || debateTopics.default;
+}
+
+function getCaptainOptions(team) {
+    const captains = {
+        "India": ["Suryakumar Yadav", "Rohit Sharma", "Hardik Pandya", "KL Rahul"],
+        "Australia": ["Mitchell Marsh", "Pat Cummins", "Steve Smith", "David Warner"],
+        "England": ["Jos Buttler", "Ben Stokes", "Harry Brook", "Joe Root"],
+        "Pakistan": ["Babar Azam", "Shaheen Afridi", "Mohammad Rizwan", "Shadab Khan"],
+        "South Africa": ["Aiden Markram", "David Miller", "Quinton de Kock", "Temba Bavuma"],
+        "New Zealand": ["Kane Williamson", "Mitchell Santner", "Glenn Phillips", "Tim Southee"]
+    };
+    return captains[team] || ["Captain A", "Captain B", "Captain C", "Captain D"];
+}
+
+function checkCache(nk, cacheKey) {
+    try {
+        const cached = nk.storageRead([{
+            collection: COLLECTIONS.AI_CACHE,
+            key: cacheKey,
+            userId: null
+        }]);
+        
+        if (cached.length > 0) {
+            const data = cached[0].value;
+            if (Date.now() - data.cachedAt < data.ttl) {
+                return data.data;
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+    return null;
+}
+
+function cacheResult(nk, cacheKey, data, ttl) {
+    try {
+        nk.storageWrite([{
+            collection: COLLECTIONS.AI_CACHE,
+            key: cacheKey,
+            userId: null,
+            value: {
+                data,
+                cachedAt: Date.now(),
+                ttl
+            },
+            permissionRead: 2,
+            permissionWrite: 0
+        }]);
+    } catch (e) {
+        // ignore
+    }
+}
+
+function logAIRequest(nk, userId, requestType, data) {
+    try {
+        nk.storageWrite([{
+            collection: COLLECTIONS.AI_REQUESTS,
+            key: `${requestType}_${Date.now()}`,
+            userId: userId,
+            value: {
+                requestType,
+                data,
+                timestamp: Date.now()
+            },
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+    } catch (e) {
+        // ignore
+    }
+}
+
+// Register RPCs
+function __ModuleInit_34(ctx, logger, nk, initializer) {
+    logger.info("Cricket AI Integration Module loaded");
+
+    __rpc_cricket_create_ai_note = __rpc_cricket_create_ai_note || (rpcCreateAINote);
+    __rpc_cricket_generate_quiz_from_note = __rpc_cricket_generate_quiz_from_note || (rpcGenerateQuizFromNote);
+    __rpc_cricket_generate_match_trivia = __rpc_cricket_generate_match_trivia || (rpcGenerateMatchTrivia);
+    __rpc_cricket_generate_player_trivia = __rpc_cricket_generate_player_trivia || (rpcGeneratePlayerTrivia);
+    __rpc_cricket_get_user_notes = __rpc_cricket_get_user_notes || (rpcGetUserNotes);
+    __rpc_cricket_generate_debate = __rpc_cricket_generate_debate || (rpcGenerateDebateTopic);
+
+    logger.info("Cricket AI Integration Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_daily_challenges.js ---
+/**
+ * Cricket Daily Challenges Module
+ * 
+ * Manages daily challenges, missions, and rewards:
+ * - Daily challenge generation
+ * - Progress tracking
+ * - Reward distribution
+ * - Streak bonuses
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Collections
+var COLLECTIONS = {
+    DAILY_CHALLENGES: "cricket_daily_challenges",
+    CHALLENGE_PROGRESS: "cricket_challenge_progress",
+    CHALLENGE_HISTORY: "cricket_challenge_history"
+};
+
+// Challenge types
+var CHALLENGE_TYPES = {
+    TRIVIA_SCORE: "trivia_score",
+    TRIVIA_ACCURACY: "trivia_accuracy",
+    PREDICTIONS_MADE: "predictions_made",
+    MATCHES_VIEWED: "matches_viewed",
+    STREAK_DAYS: "streak_days",
+    CORRECT_PREDICTIONS: "correct_predictions",
+    PLAY_TIME: "play_time",
+    SHARE_MATCHES: "share_matches"
+};
+
+// Challenge templates
+var CHALLENGE_TEMPLATES = [
+    {
+        type: CHALLENGE_TYPES.TRIVIA_SCORE,
+        title: "Trivia Master",
+        description: "Score {target} points in trivia today",
+        targets: [500, 750, 1000],
+        rewards: [50, 100, 200],
+        xp: [25, 50, 100]
+    },
+    {
+        type: CHALLENGE_TYPES.TRIVIA_ACCURACY,
+        title: "Accuracy Challenge",
+        description: "Achieve {target}% accuracy in trivia",
+        targets: [70, 80, 90],
+        rewards: [30, 75, 150],
+        xp: [15, 35, 75]
+    },
+    {
+        type: CHALLENGE_TYPES.PREDICTIONS_MADE,
+        title: "Prediction Pro",
+        description: "Make {target} match prediction(s) today",
+        targets: [1, 2, 3],
+        rewards: [25, 50, 100],
+        xp: [10, 25, 50]
+    },
+    {
+        type: CHALLENGE_TYPES.MATCHES_VIEWED,
+        title: "Match Explorer",
+        description: "View {target} upcoming match(es)",
+        targets: [3, 5, 10],
+        rewards: [20, 40, 80],
+        xp: [10, 20, 40]
+    },
+    {
+        type: CHALLENGE_TYPES.STREAK_DAYS,
+        title: "Streak Keeper",
+        description: "Maintain a {target}-day login streak",
+        targets: [3, 7, 14],
+        rewards: [100, 300, 500],
+        xp: [50, 150, 250]
+    },
+    {
+        type: CHALLENGE_TYPES.SHARE_MATCHES,
+        title: "Cricket Ambassador",
+        description: "Share {target} match(es) with friends",
+        targets: [1, 2, 3],
+        rewards: [50, 100, 150],
+        xp: [25, 50, 75]
+    }
+];
+
+/**
+ * RPC: Get today's challenges
+ */
+function rpcGetDailyChallenges(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const today = getTodayKey();
+
+    // Get or generate daily challenges
+    let challenges = nk.storageRead([{
+        collection: COLLECTIONS.DAILY_CHALLENGES,
+        key: today,
+        userId: null
+    }]);
+
+    if (challenges.length === 0) {
+        // Generate new daily challenges
+        const newChallenges = generateDailyChallenges();
+        nk.storageWrite([{
+            collection: COLLECTIONS.DAILY_CHALLENGES,
+            key: today,
+            userId: null,
+            value: { challenges: newChallenges, generatedAt: Date.now() },
+            permissionRead: 2,
+            permissionWrite: 0
+        }]);
+        challenges = [{ value: { challenges: newChallenges } }];
+    }
+
+    const dailyChallenges = challenges[0].value.challenges;
+
+    // Get user's progress
+    const progress = nk.storageRead([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId
+    }]);
+
+    const userProgress = progress.length > 0 ? progress[0].value : {
+        progress: {},
+        completed: [],
+        claimed: []
+    };
+
+    // Merge progress with challenges
+    const result = dailyChallenges.map(challenge => ({
+        ...challenge,
+        currentProgress: userProgress.progress[challenge.id] || 0,
+        isCompleted: userProgress.completed.includes(challenge.id),
+        isClaimed: userProgress.claimed.includes(challenge.id)
+    }));
+
+    return JSON.stringify({
+        date: today,
+        challenges: result,
+        totalCompleted: userProgress.completed.length,
+        totalClaimed: userProgress.claimed.length,
+        timeUntilReset: getTimeUntilReset()
+    });
+}
+
+/**
+ * RPC: Update challenge progress
+ * 
+ * Payload: {
+ *   challengeType: string,
+ *   value: number
+ * }
+ */
+function rpcUpdateChallengeProgress(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { challengeType, value } = data;
+
+    if (!challengeType || value === undefined) {
+        throw new Error("challengeType and value are required");
+    }
+
+    const today = getTodayKey();
+
+    // Get daily challenges
+    const challenges = nk.storageRead([{
+        collection: COLLECTIONS.DAILY_CHALLENGES,
+        key: today,
+        userId: null
+    }]);
+
+    if (challenges.length === 0) {
+        return JSON.stringify({ success: false, message: "No challenges available today" });
+    }
+
+    const dailyChallenges = challenges[0].value.challenges;
+
+    // Get user's progress
+    const progressRecords = nk.storageRead([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId
+    }]);
+
+    const userProgress = progressRecords.length > 0 ? progressRecords[0].value : {
+        progress: {},
+        completed: [],
+        claimed: []
+    };
+
+    // Update progress for matching challenges
+    const updatedChallenges = [];
+    const newlyCompleted = [];
+
+    for (const challenge of dailyChallenges) {
+        if (challenge.type === challengeType && !userProgress.completed.includes(challenge.id)) {
+            const currentProgress = userProgress.progress[challenge.id] || 0;
+            const newProgress = challengeType === CHALLENGE_TYPES.TRIVIA_ACCURACY 
+                ? value // Accuracy is a direct value, not cumulative
+                : currentProgress + value;
+
+            userProgress.progress[challenge.id] = newProgress;
+
+            // Check if completed
+            if (newProgress >= challenge.target) {
+                if (!userProgress.completed.includes(challenge.id)) {
+                    userProgress.completed.push(challenge.id);
+                    newlyCompleted.push(challenge);
+                }
+            }
+
+            updatedChallenges.push({
+                id: challenge.id,
+                title: challenge.title,
+                currentProgress: Math.min(newProgress, challenge.target),
+                target: challenge.target,
+                isCompleted: newProgress >= challenge.target
+            });
+        }
+    }
+
+    // Save progress
+    nk.storageWrite([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId,
+        value: userProgress,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} updated challenge progress: ${challengeType} += ${value}`);
+
+    return JSON.stringify({
+        success: true,
+        updatedChallenges,
+        newlyCompleted: newlyCompleted.map(c => ({
+            id: c.id,
+            title: c.title,
+            reward: c.reward,
+            xp: c.xp
+        }))
+    });
+}
+
+/**
+ * RPC: Claim challenge reward
+ * 
+ * Payload: {
+ *   challengeId: string
+ * }
+ */
+function rpcClaimChallengeReward(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { challengeId } = data;
+
+    if (!challengeId) {
+        throw new Error("challengeId is required");
+    }
+
+    const today = getTodayKey();
+
+    // Get daily challenges
+    const challenges = nk.storageRead([{
+        collection: COLLECTIONS.DAILY_CHALLENGES,
+        key: today,
+        userId: null
+    }]);
+
+    if (challenges.length === 0) {
+        return JSON.stringify({ success: false, message: "No challenges available today" });
+    }
+
+    const dailyChallenges = challenges[0].value.challenges;
+    const challenge = dailyChallenges.find(c => c.id === challengeId);
+
+    if (!challenge) {
+        return JSON.stringify({ success: false, message: "Challenge not found" });
+    }
+
+    // Get user's progress
+    const progressRecords = nk.storageRead([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId
+    }]);
+
+    const userProgress = progressRecords.length > 0 ? progressRecords[0].value : {
+        progress: {},
+        completed: [],
+        claimed: []
+    };
+
+    // Check if completed
+    if (!userProgress.completed.includes(challengeId)) {
+        return JSON.stringify({ success: false, message: "Challenge not completed yet" });
+    }
+
+    // Check if already claimed
+    if (userProgress.claimed.includes(challengeId)) {
+        return JSON.stringify({ success: false, message: "Reward already claimed" });
+    }
+
+    // Award reward
+    const changeset = {
+        coins: challenge.reward
+    };
+    const metadata = {
+        reason: `daily_challenge_${challengeId}`,
+        timestamp: Date.now()
+    };
+
+    try {
+        nk.walletUpdate(userId, changeset, metadata, true);
+    } catch (e) {
+        logger.error(`Failed to award coins: ${e.message}`);
+    }
+
+    // Mark as claimed
+    userProgress.claimed.push(challengeId);
+
+    // Save progress
+    nk.storageWrite([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId,
+        value: userProgress,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Store in history
+    storeChallengeHistory(nk, userId, challengeId, challenge);
+
+    logger.info(`User ${userId} claimed challenge reward: ${challengeId} (${challenge.reward} coins)`);
+
+    return JSON.stringify({
+        success: true,
+        challengeId,
+        coinsEarned: challenge.reward,
+        xpEarned: challenge.xp,
+        totalCompleted: userProgress.completed.length,
+        totalClaimed: userProgress.claimed.length
+    });
+}
+
+/**
+ * RPC: Get challenge history
+ */
+function rpcGetChallengeHistory(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { limit = 30 } = data;
+
+    const history = nk.storageList(userId, COLLECTIONS.CHALLENGE_HISTORY, limit, null);
+
+    const records = (history.objects || []).map(obj => obj.value);
+
+    // Calculate stats
+    const stats = {
+        totalChallengesCompleted: records.length,
+        totalCoinsEarned: records.reduce((sum, r) => sum + (r.reward || 0), 0),
+        totalXPEarned: records.reduce((sum, r) => sum + (r.xp || 0), 0),
+        streakDays: calculateStreakDays(records)
+    };
+
+    return JSON.stringify({
+        history: records.slice(0, 20),
+        stats
+    });
+}
+
+/**
+ * RPC: Get weekly summary
+ */
+function rpcGetWeeklySummary(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    // Get last 7 days of progress
+    const summaryDays = [];
+    const now = new Date();
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dayKey = date.toISOString().split('T')[0];
+
+        const progress = nk.storageRead([{
+            collection: COLLECTIONS.CHALLENGE_PROGRESS,
+            key: dayKey,
+            userId: userId
+        }]);
+
+        const dayProgress = progress.length > 0 ? progress[0].value : {
+            completed: [],
+            claimed: []
+        };
+
+        summaryDays.push({
+            date: dayKey,
+            completed: dayProgress.completed.length,
+            claimed: dayProgress.claimed.length
+        });
+    }
+
+    // Calculate weekly stats
+    const weeklyStats = {
+        totalDaysPlayed: summaryDays.filter(d => d.completed > 0).length,
+        totalChallengesCompleted: summaryDays.reduce((sum, d) => sum + d.completed, 0),
+        totalChallengesClaimed: summaryDays.reduce((sum, d) => sum + d.claimed, 0),
+        perfectDays: summaryDays.filter(d => d.completed >= 3).length
+    };
+
+    return JSON.stringify({
+        days: summaryDays,
+        stats: weeklyStats
+    });
+}
+
+// Helper functions
+function getTodayKey() {
+    return new Date().toISOString().split('T')[0];
+}
+
+function getTimeUntilReset() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return tomorrow.getTime() - now.getTime();
+}
+
+function generateDailyChallenges() {
+    const challenges = [];
+    const usedTypes = new Set();
+
+    // Generate 3 challenges of different types
+    const shuffled = [...CHALLENGE_TEMPLATES].sort(() => Math.random() - 0.5);
+
+    for (const template of shuffled) {
+        if (challenges.length >= 3) break;
+        if (usedTypes.has(template.type)) continue;
+
+        // Pick a random difficulty (0=easy, 1=medium, 2=hard)
+        const difficulty = Math.floor(Math.random() * 3);
+        
+        const challenge = {
+            id: `${template.type}_${getTodayKey()}_${difficulty}`,
+            type: template.type,
+            title: template.title,
+            description: template.description.replace('{target}', template.targets[difficulty]),
+            target: template.targets[difficulty],
+            reward: template.rewards[difficulty],
+            xp: template.xp[difficulty],
+            difficulty: ['easy', 'medium', 'hard'][difficulty]
+        };
+
+        challenges.push(challenge);
+        usedTypes.add(template.type);
+    }
+
+    return challenges;
+}
+
+function storeChallengeHistory(nk, userId, challengeId, challenge) {
+    const historyKey = `${challengeId}_${Date.now()}`;
+    
+    nk.storageWrite([{
+        collection: COLLECTIONS.CHALLENGE_HISTORY,
+        key: historyKey,
+        userId: userId,
+        value: {
+            challengeId,
+            title: challenge.title,
+            type: challenge.type,
+            target: challenge.target,
+            reward: challenge.reward,
+            xp: challenge.xp,
+            completedAt: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function calculateStreakDays(records) {
+    if (records.length === 0) return 0;
+
+    const sortedDates = records
+        .map(r => new Date(r.completedAt).toISOString().split('T')[0])
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .sort()
+        .reverse();
+
+    if (sortedDates.length === 0) return 0;
+
+    const today = getTodayKey();
+    let streak = 0;
+
+    for (let i = 0; i < sortedDates.length; i++) {
+        const expectedDate = new Date(today);
+        expectedDate.setDate(expectedDate.getDate() - i);
+        const expectedKey = expectedDate.toISOString().split('T')[0];
+
+        if (sortedDates.includes(expectedKey)) {
+            streak++;
+        } else {
+            break;
+        }
+    }
+
+    return streak;
+}
+
+// Register RPCs
+function __ModuleInit_35(ctx, logger, nk, initializer) {
+    logger.info("Cricket Daily Challenges Module loaded");
+
+    __rpc_cricket_get_daily_challenges = __rpc_cricket_get_daily_challenges || (rpcGetDailyChallenges);
+    __rpc_cricket_update_challenge_progress = __rpc_cricket_update_challenge_progress || (rpcUpdateChallengeProgress);
+    __rpc_cricket_claim_challenge_reward = __rpc_cricket_claim_challenge_reward || (rpcClaimChallengeReward);
+    __rpc_cricket_get_challenge_history = __rpc_cricket_get_challenge_history || (rpcGetChallengeHistory);
+    __rpc_cricket_get_weekly_summary = __rpc_cricket_get_weekly_summary || (rpcGetWeeklySummary);
+
+    logger.info("Cricket Daily Challenges Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_economy.js ---
+/**
+ * Cricket Economy Module
+ * 
+ * Server-side economy management for Cricket VR Mob:
+ * 
+ * 💰 COIN MANAGEMENT
+ * - Wallet operations (add, spend, transfer)
+ * - Transaction history
+ * - Anti-cheat validation
+ * 
+ * 🛒 IAP VALIDATION
+ * - Receipt verification
+ * - Coin grants on purchase
+ * - Subscription management
+ * 
+ * 📊 ANALYTICS
+ * - Spending patterns
+ * - ARPU tracking
+ * - IAP conversion
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Collections
+var COLLECTIONS = {
+    WALLETS: "cricket_wallets",
+    TRANSACTIONS: "cricket_transactions",
+    IAP_HISTORY: "cricket_iap_history",
+    SUBSCRIPTIONS: "cricket_subscriptions",
+    VOICE_ACCESS: "cricket_voice_access"
+};
+
+// Coin costs (server-authoritative)
+var COSTS = {
+    // Tournament
+    tournament_entry: 50,
+    tournament_premium_entry: 200,
+    tournament_reentry: 100,
+    bracket_prediction: 25,
+    
+    // Multiplayer
+    ranked_1v1: 50,
+    casual_1v1: 10,
+    team_2v2: 75,
+    team_3v3: 100,
+    team_5v5: 150,
+    battle_boost: 15,
+    revenge_match: 50,
+    
+    // Solo
+    continue_game: 25,
+    power_up_5050: 15,
+    power_up_extra_time: 10,
+    power_up_skip: 20,
+    power_up_hint: 15,
+    power_up_double_points: 30,
+    category_unlock: 100,
+    
+    // Local Multiplayer
+    premium_theme: 50,
+    extra_rounds: 20,
+    local_power_pack: 25,
+    
+    // Link and Play
+    create_custom_room: 30,
+    ai_question_generation: 40,
+    shareable_quiz: 25,
+    youtube_quiz: 50,
+    
+    // Voice Features
+    voice_trivia_session: 15,
+    commentary_mode: 25,
+    tournament_voice_pass: 100,
+    voice_power_shot: 5,
+    voice_field_placement: 10
+};
+
+// IAP Packages (must match client)
+var IAP_PACKAGES = {
+    coins_starter: { coins: 100, bonus: 0 },
+    coins_basic: { coins: 500, bonus: 50 },
+    coins_popular: { coins: 1200, bonus: 200 },
+    coins_mega: { coins: 3000, bonus: 750 },
+    coins_legend: { coins: 8000, bonus: 2500 },
+    coins_ultimate: { coins: 20000, bonus: 8000 }
+};
+
+// Coin earning limits (anti-cheat)
+var DAILY_LIMITS = {
+    ad_rewards: 50, // Max coins from ads per day
+    daily_login_max: 50,
+    referral_max: 500 // Per day
+};
+
+/**
+ * RPC: Get wallet balance
+ */
+function rpcGetWallet(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const wallet = getWallet(nk, userId);
+    
+    return JSON.stringify({
+        coins: wallet.coins || 0,
+        totalEarned: wallet.totalEarned || 0,
+        totalSpent: wallet.totalSpent || 0,
+        isGuest: wallet.isGuest || false,
+        guestLimit: 500,
+        voicePremium: wallet.voicePremium || false,
+        tournamentVoicePass: wallet.tournamentVoicePass || false
+    });
+}
+
+/**
+ * RPC: Spend coins (server-validated)
+ */
+function rpcSpendCoins(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { category, itemId, amount } = data;
+
+    if (!category) {
+        throw new Error("category is required");
+    }
+
+    // Get server-defined cost (prevent client manipulation)
+    let cost = COSTS[category];
+    if (cost === undefined) {
+        // Allow custom amounts for certain categories
+        if (amount && amount > 0 && amount <= 1000) {
+            cost = amount;
+        } else {
+            throw new Error(`Invalid category: ${category}`);
+        }
+    }
+
+    // Check and deduct
+    const wallet = getWallet(nk, userId);
+    
+    if ((wallet.coins || 0) < cost) {
+        return JSON.stringify({
+            success: false,
+            error: "insufficient_coins",
+            needed: cost,
+            have: wallet.coins || 0,
+            deficit: cost - (wallet.coins || 0)
+        });
+    }
+
+    // Deduct coins
+    wallet.coins = (wallet.coins || 0) - cost;
+    wallet.totalSpent = (wallet.totalSpent || 0) + cost;
+    
+    saveWallet(nk, userId, wallet);
+
+    // Log transaction
+    logTransaction(nk, userId, -cost, category, itemId);
+
+    logger.info(`User ${userId} spent ${cost} coins on ${category}`);
+
+    return JSON.stringify({
+        success: true,
+        spent: cost,
+        category,
+        newBalance: wallet.coins
+    });
+}
+
+/**
+ * RPC: Add coins (server-validated sources only)
+ */
+function rpcAddCoins(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { source, amount } = data;
+
+    if (!source || !amount || amount <= 0) {
+        throw new Error("source and positive amount required");
+    }
+
+    // Validate source and apply limits
+    const validationResult = validateCoinSource(nk, userId, source, amount);
+    if (!validationResult.valid) {
+        return JSON.stringify({
+            success: false,
+            error: validationResult.error,
+            message: validationResult.message
+        });
+    }
+
+    const finalAmount = validationResult.amount;
+    const wallet = getWallet(nk, userId);
+
+    // Guest user limit
+    if (wallet.isGuest && (wallet.coins || 0) + finalAmount > 500) {
+        const overflow = ((wallet.coins || 0) + finalAmount) - 500;
+        wallet.coins = 500;
+        
+        saveWallet(nk, userId, wallet);
+        logTransaction(nk, userId, finalAmount - overflow, source, null);
+
+        return JSON.stringify({
+            success: true,
+            added: finalAmount - overflow,
+            newBalance: wallet.coins,
+            guestLimitReached: true,
+            overflow
+        });
+    }
+
+    wallet.coins = (wallet.coins || 0) + finalAmount;
+    wallet.totalEarned = (wallet.totalEarned || 0) + finalAmount;
+    
+    saveWallet(nk, userId, wallet);
+    logTransaction(nk, userId, finalAmount, source, null);
+
+    logger.info(`User ${userId} earned ${finalAmount} coins from ${source}`);
+
+    return JSON.stringify({
+        success: true,
+        added: finalAmount,
+        source,
+        newBalance: wallet.coins
+    });
+}
+
+/**
+ * RPC: Process IAP purchase
+ */
+function rpcProcessIAPPurchase(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { packageId, receipt, platform } = data;
+
+    if (!packageId) {
+        throw new Error("packageId is required");
+    }
+
+    // Validate package exists
+    const packageDef = IAP_PACKAGES[packageId];
+    if (!packageDef) {
+        throw new Error(`Unknown package: ${packageId}`);
+    }
+
+    // In production, validate receipt with Apple/Google
+    // For now, trust the client
+    const isValid = true; // validateReceipt(receipt, platform);
+
+    if (!isValid) {
+        return JSON.stringify({
+            success: false,
+            error: "invalid_receipt"
+        });
+    }
+
+    // Grant coins
+    const totalCoins = packageDef.coins + packageDef.bonus;
+    const wallet = getWallet(nk, userId);
+    
+    wallet.coins = (wallet.coins || 0) + totalCoins;
+    wallet.totalEarned = (wallet.totalEarned || 0) + totalCoins;
+    wallet.isGuest = false; // IAP removes guest status
+    
+    saveWallet(nk, userId, wallet);
+
+    // Log IAP
+    nk.storageWrite([{
+        collection: COLLECTIONS.IAP_HISTORY,
+        key: `${packageId}_${Date.now()}`,
+        userId: userId,
+        value: {
+            packageId,
+            coins: packageDef.coins,
+            bonus: packageDef.bonus,
+            totalCoins,
+            platform,
+            timestamp: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logTransaction(nk, userId, totalCoins, `iap_${packageId}`, packageId);
+
+    logger.info(`User ${userId} purchased ${packageId}: +${totalCoins} coins`);
+
+    return JSON.stringify({
+        success: true,
+        packageId,
+        coinsAdded: totalCoins,
+        baseCoins: packageDef.coins,
+        bonusCoins: packageDef.bonus,
+        newBalance: wallet.coins
+    });
+}
+
+/**
+ * RPC: Purchase voice feature access
+ */
+function rpcPurchaseVoiceAccess(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { feature, method } = data;
+
+    const validFeatures = ['voice_trivia_session', 'commentary_mode', 'tournament_voice_pass', 
+                          'voice_power_shot', 'voice_field_placement'];
+    
+    if (!validFeatures.includes(feature)) {
+        throw new Error(`Invalid voice feature: ${feature}`);
+    }
+
+    const cost = COSTS[feature];
+    const wallet = getWallet(nk, userId);
+
+    if ((wallet.coins || 0) < cost) {
+        return JSON.stringify({
+            success: false,
+            error: "insufficient_coins",
+            needed: cost,
+            have: wallet.coins || 0
+        });
+    }
+
+    // Deduct and grant access
+    wallet.coins -= cost;
+    wallet.totalSpent = (wallet.totalSpent || 0) + cost;
+    
+    // Tournament voice pass is persistent
+    if (feature === 'tournament_voice_pass') {
+        wallet.tournamentVoicePass = true;
+    }
+
+    saveWallet(nk, userId, wallet);
+    logTransaction(nk, userId, -cost, feature, null);
+
+    // Store access grant
+    const accessExpiry = feature === 'tournament_voice_pass' 
+        ? Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+        : Date.now() + (60 * 60 * 1000); // 1 hour for others
+
+    nk.storageWrite([{
+        collection: COLLECTIONS.VOICE_ACCESS,
+        key: feature,
+        userId: userId,
+        value: {
+            feature,
+            grantedAt: Date.now(),
+            expiresAt: accessExpiry
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} purchased voice feature: ${feature}`);
+
+    return JSON.stringify({
+        success: true,
+        feature,
+        cost,
+        newBalance: wallet.coins,
+        expiresAt: accessExpiry
+    });
+}
+
+/**
+ * RPC: Check voice access
+ */
+function rpcCheckVoiceAccess(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {}
+
+    const { feature } = data;
+
+    const wallet = getWallet(nk, userId);
+    
+    // Check premium
+    if (wallet.voicePremium) {
+        return JSON.stringify({
+            hasAccess: true,
+            reason: "premium"
+        });
+    }
+
+    // Check tournament pass
+    if (wallet.tournamentVoicePass) {
+        return JSON.stringify({
+            hasAccess: true,
+            reason: "tournament_pass"
+        });
+    }
+
+    // Check specific feature access
+    if (feature) {
+        const access = nk.storageRead([{
+            collection: COLLECTIONS.VOICE_ACCESS,
+            key: feature,
+            userId: userId
+        }]);
+
+        if (access.length > 0 && access[0].value.expiresAt > Date.now()) {
+            return JSON.stringify({
+                hasAccess: true,
+                reason: "feature_purchase",
+                expiresAt: access[0].value.expiresAt
+            });
+        }
+    }
+
+    return JSON.stringify({
+        hasAccess: false,
+        reason: "not_purchased"
+    });
+}
+
+/**
+ * RPC: Get transaction history
+ */
+function rpcGetTransactionHistory(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {}
+
+    const { limit = 50, cursor } = data;
+
+    const result = nk.storageList(userId, COLLECTIONS.TRANSACTIONS, limit, cursor);
+
+    const transactions = (result.objects || []).map(obj => obj.value);
+
+    return JSON.stringify({
+        transactions,
+        cursor: result.cursor
+    });
+}
+
+/**
+ * RPC: Convert guest to registered
+ */
+function rpcConvertGuestToRegistered(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const wallet = getWallet(nk, userId);
+    
+    if (!wallet.isGuest) {
+        return JSON.stringify({
+            success: true,
+            message: "Already a registered user"
+        });
+    }
+
+    wallet.isGuest = false;
+    
+    // Bonus for converting
+    const conversionBonus = 50;
+    wallet.coins = (wallet.coins || 0) + conversionBonus;
+    wallet.totalEarned = (wallet.totalEarned || 0) + conversionBonus;
+    
+    saveWallet(nk, userId, wallet);
+    logTransaction(nk, userId, conversionBonus, 'account_conversion_bonus', null);
+
+    logger.info(`User ${userId} converted from guest - granted ${conversionBonus} bonus coins`);
+
+    return JSON.stringify({
+        success: true,
+        bonusCoins: conversionBonus,
+        newBalance: wallet.coins,
+        message: "Account upgraded! Coin limit removed."
+    });
+}
+
+// Helper functions
+function getWallet(nk, userId) {
+    const data = nk.storageRead([{
+        collection: COLLECTIONS.WALLETS,
+        key: "wallet",
+        userId: userId
+    }]);
+
+    if (data.length > 0) {
+        return data[0].value;
+    }
+
+    // Initialize new wallet
+    return {
+        coins: 100, // Starting coins
+        totalEarned: 100,
+        totalSpent: 0,
+        isGuest: true,
+        voicePremium: false,
+        tournamentVoicePass: false,
+        createdAt: Date.now()
+    };
+}
+
+function saveWallet(nk, userId, wallet) {
+    wallet.updatedAt = Date.now();
+    
+    nk.storageWrite([{
+        collection: COLLECTIONS.WALLETS,
+        key: "wallet",
+        userId: userId,
+        value: wallet,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function logTransaction(nk, userId, amount, category, itemId) {
+    nk.storageWrite([{
+        collection: COLLECTIONS.TRANSACTIONS,
+        key: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: userId,
+        value: {
+            amount,
+            category,
+            itemId,
+            timestamp: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function validateCoinSource(nk, userId, source, requestedAmount) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Get today's earnings for this source
+    const todayKey = `daily_${source}_${today}`;
+    const dailyData = nk.storageRead([{
+        collection: "cricket_daily_limits",
+        key: todayKey,
+        userId: userId
+    }]);
+
+    let todayTotal = dailyData.length > 0 ? dailyData[0].value.total : 0;
+
+    // Apply limits based on source
+    let maxDaily = 1000; // Default
+    let maxPerAction = 100;
+
+    if (source === 'ad_reward') {
+        maxDaily = DAILY_LIMITS.ad_rewards;
+        maxPerAction = 5;
+    } else if (source === 'daily_login') {
+        maxDaily = DAILY_LIMITS.daily_login_max;
+        maxPerAction = 50;
+    } else if (source.startsWith('referral')) {
+        maxDaily = DAILY_LIMITS.referral_max;
+        maxPerAction = 100;
+    }
+
+    // Check limits
+    if (requestedAmount > maxPerAction) {
+        return {
+            valid: false,
+            error: "amount_exceeds_max",
+            message: `Max per action: ${maxPerAction}`
+        };
+    }
+
+    if (todayTotal + requestedAmount > maxDaily) {
+        return {
+            valid: false,
+            error: "daily_limit_reached",
+            message: `Daily limit for ${source}: ${maxDaily}`,
+            remaining: Math.max(0, maxDaily - todayTotal)
+        };
+    }
+
+    // Update daily total
+    nk.storageWrite([{
+        collection: "cricket_daily_limits",
+        key: todayKey,
+        userId: userId,
+        value: {
+            total: todayTotal + requestedAmount,
+            lastUpdate: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    return {
+        valid: true,
+        amount: requestedAmount
+    };
+}
+
+// Register RPCs
+function __ModuleInit_36(ctx, logger, nk, initializer) {
+    logger.info("Cricket Economy Module loaded");
+
+    __rpc_cricket_get_wallet = __rpc_cricket_get_wallet || (rpcGetWallet);
+    __rpc_cricket_spend_coins = __rpc_cricket_spend_coins || (rpcSpendCoins);
+    __rpc_cricket_add_coins = __rpc_cricket_add_coins || (rpcAddCoins);
+    __rpc_cricket_process_iap = __rpc_cricket_process_iap || (rpcProcessIAPPurchase);
+    __rpc_cricket_purchase_voice_access = __rpc_cricket_purchase_voice_access || (rpcPurchaseVoiceAccess);
+    __rpc_cricket_check_voice_access = __rpc_cricket_check_voice_access || (rpcCheckVoiceAccess);
+    __rpc_cricket_get_transactions = __rpc_cricket_get_transactions || (rpcGetTransactionHistory);
+    __rpc_cricket_convert_guest = __rpc_cricket_convert_guest || (rpcConvertGuestToRegistered);
+
+    logger.info("Cricket Economy Module initialized - 8 RPCs registered");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_engagement.js ---
+/**
+ * Cricket Engagement Module
+ * 
+ * Tracks and rewards user engagement for Cricket VR Mob:
+ * - Match build-up engagement
+ * - Trivia completion tracking
+ * - Daily login streaks
+ * - Engagement-based rewards
+ * - Session analytics
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Collections
+var COLLECTIONS = {
+    ENGAGEMENT: "cricket_engagement",
+    DAILY_STREAKS: "cricket_daily_streaks",
+    SESSION_DATA: "cricket_sessions",
+    REWARDS: "cricket_rewards",
+    BUILD_UP: "cricket_match_buildup"
+};
+
+// Engagement point values
+var ENGAGEMENT_POINTS = {
+    VIEW_MATCH: 5,
+    VIEW_LINEUP: 10,
+    WATCH_HIGHLIGHT: 15,
+    SHARE_MATCH: 20,
+    SET_REMINDER: 10,
+    TAP_NOTIFICATION: 5,
+    START_TRIVIA: 10,
+    COMPLETE_TRIVIA: 25,
+    MAKE_PREDICTION: 30,
+    CORRECT_PREDICTION: 50,
+    FULL_ENGAGEMENT: 50, // Bonus for all actions
+    DAILY_LOGIN: 10,
+    STREAK_BONUS_PER_DAY: 5
+};
+
+// Engagement thresholds for rewards
+var ENGAGEMENT_TIERS = {
+    BRONZE: 25,
+    SILVER: 50,
+    GOLD: 100,
+    PLATINUM: 200
+};
+
+// Rewards for engagement tiers
+var TIER_REWARDS = {
+    BRONZE: { coins: 50, xp: 25 },
+    SILVER: { coins: 100, xp: 50, item: "bronze_cap" },
+    GOLD: { coins: 200, xp: 100, item: "silver_cap" },
+    PLATINUM: { coins: 500, xp: 250, item: "gold_cap" }
+};
+
+/**
+ * RPC: Track engagement event
+ * 
+ * Payload: {
+ *   eventType: string,
+ *   matchId: string,
+ *   data: object
+ * }
+ */
+function rpcTrackEngagement(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { eventType, matchId, data: eventData } = data;
+
+    if (!eventType) {
+        throw new Error("eventType is required");
+    }
+
+    const engagementKey = matchId ? `${userId}_${matchId}` : `${userId}_general`;
+    
+    // Get existing engagement
+    const existing = nk.storageRead([{
+        collection: COLLECTIONS.ENGAGEMENT,
+        key: engagementKey,
+        userId: userId
+    }]);
+
+    const engagement = existing.length > 0 ? existing[0].value : {
+        matchId,
+        events: [],
+        score: 0,
+        completedActions: [],
+        unlockedTiers: [],
+        rewards: []
+    };
+
+    // Calculate points for this event
+    const eventKey = eventType.toUpperCase().replace(/-/g, "_");
+    const points = ENGAGEMENT_POINTS[eventKey] || 5;
+
+    // Check if this is a new action type
+    const isNewAction = !engagement.completedActions.includes(eventType);
+
+    // Add event
+    engagement.events.push({
+        type: eventType,
+        data: eventData,
+        points,
+        timestamp: Date.now()
+    });
+
+    // Update score
+    engagement.score += points;
+
+    // Track unique actions
+    if (isNewAction) {
+        engagement.completedActions.push(eventType);
+    }
+
+    // Check for full engagement bonus
+    const requiredActions = ["view_match", "start_trivia", "complete_trivia", "make_prediction"];
+    const hasAllActions = requiredActions.every(action => 
+        engagement.completedActions.includes(action) || 
+        engagement.completedActions.includes(action.replace(/_/g, "-"))
+    );
+
+    if (hasAllActions && !engagement.fullEngagementClaimed) {
+        engagement.score += ENGAGEMENT_POINTS.FULL_ENGAGEMENT;
+        engagement.fullEngagementClaimed = true;
+        engagement.events.push({
+            type: "full_engagement_bonus",
+            points: ENGAGEMENT_POINTS.FULL_ENGAGEMENT,
+            timestamp: Date.now()
+        });
+    }
+
+    // Check for tier unlocks
+    const newRewards = [];
+    for (const [tier, threshold] of Object.entries(ENGAGEMENT_TIERS)) {
+        if (engagement.score >= threshold && !engagement.unlockedTiers.includes(tier)) {
+            engagement.unlockedTiers.push(tier);
+            const reward = TIER_REWARDS[tier];
+            engagement.rewards.push({
+                tier,
+                reward,
+                unlockedAt: Date.now()
+            });
+            newRewards.push({ tier, reward });
+
+            // Award coins to wallet
+            if (reward.coins) {
+                awardCoins(nk, userId, reward.coins, `engagement_${tier.toLowerCase()}`);
+            }
+        }
+    }
+
+    // Calculate multiplier based on engagement score
+    engagement.bonusMultiplier = 1 + Math.floor(engagement.score / 50) * 0.1;
+
+    // Save engagement
+    nk.storageWrite([{
+        collection: COLLECTIONS.ENGAGEMENT,
+        key: engagementKey,
+        userId: userId,
+        value: engagement,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} engagement: ${eventType} = ${points}pts, total: ${engagement.score}`);
+
+    return JSON.stringify({
+        matchId,
+        eventType,
+        pointsEarned: points,
+        totalScore: engagement.score,
+        completedActions: engagement.completedActions,
+        bonusMultiplier: engagement.bonusMultiplier,
+        unlockedRewards: newRewards,
+        fullEngagementClaimed: engagement.fullEngagementClaimed
+    });
+}
+
+/**
+ * RPC: Get match build-up status
+ * 
+ * Payload: {
+ *   matchId: string
+ * }
+ */
+function rpcGetBuildUpStatus(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId } = data;
+
+    if (!matchId) {
+        throw new Error("matchId is required");
+    }
+
+    // Get user's engagement for this match
+    const engagementKey = `${userId}_${matchId}`;
+    const existing = nk.storageRead([{
+        collection: COLLECTIONS.ENGAGEMENT,
+        key: engagementKey,
+        userId: userId
+    }]);
+
+    const userEngagement = existing.length > 0 ? existing[0].value : {
+        score: 0,
+        completedActions: []
+    };
+
+    // Get match info
+    const matchInfo = nk.storageRead([{
+        collection: "cricket_schedules",
+        key: matchId,
+        userId: null
+    }]);
+
+    const match = matchInfo.length > 0 ? matchInfo[0].value : null;
+
+    // Get prediction stats for this match
+    const query = `+value.matchId:${matchId}`;
+    let totalPredictions = 0;
+    let team1Predictions = 0;
+    let team2Predictions = 0;
+
+    try {
+        const predictions = nk.storageIndexList("cricket_predictions_idx", query, 1000, null, null);
+        if (predictions && predictions.objects) {
+            totalPredictions = predictions.objects.length;
+            for (const pred of predictions.objects) {
+                if (pred.value.predictedWinner === match?.team1) {
+                    team1Predictions++;
+                } else if (pred.value.predictedWinner === match?.team2) {
+                    team2Predictions++;
+                }
+            }
+        }
+    } catch (e) {
+        // Index might not exist yet
+    }
+
+    // Check if user has predicted
+    const userPrediction = nk.storageRead([{
+        collection: "cricket_predictions",
+        key: `${userId}_${matchId}`,
+        userId: userId
+    }]);
+
+    const hasPredicted = userPrediction.length > 0;
+
+    // Calculate hours until match
+    let hoursUntilMatch = 0;
+    if (match?.matchTime) {
+        const matchTime = new Date(match.matchTime).getTime();
+        hoursUntilMatch = Math.max(0, (matchTime - Date.now()) / (1000 * 60 * 60));
+    }
+
+    return JSON.stringify({
+        matchId,
+        team1: match?.team1,
+        team2: match?.team2,
+        matchTime: match?.matchTime,
+        hoursUntilMatch: Math.floor(hoursUntilMatch),
+        totalPredictions,
+        team1PredictionPercent: totalPredictions > 0 ? (team1Predictions / totalPredictions * 100) : 50,
+        team2PredictionPercent: totalPredictions > 0 ? (team2Predictions / totalPredictions * 100) : 50,
+        triviaQuestionsAvailable: 10, // Default
+        userHasPredicted: hasPredicted,
+        userEngagementScore: userEngagement.score,
+        userCompletedActions: userEngagement.completedActions,
+        bonusMultiplier: userEngagement.bonusMultiplier || 1
+    });
+}
+
+/**
+ * RPC: Claim daily login reward
+ */
+function rpcClaimDailyLogin(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const now = Date.now();
+    const today = new Date(now).toISOString().split('T')[0];
+
+    // Get streak data
+    const streakData = nk.storageRead([{
+        collection: COLLECTIONS.DAILY_STREAKS,
+        key: "streak",
+        userId: userId
+    }]);
+
+    let streak = streakData.length > 0 ? streakData[0].value : {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastLoginDate: null,
+        totalLogins: 0,
+        rewards: []
+    };
+
+    // Check if already claimed today
+    if (streak.lastLoginDate === today) {
+        return JSON.stringify({
+            success: false,
+            message: "Already claimed today's reward",
+            currentStreak: streak.currentStreak,
+            nextRewardIn: getTimeUntilNextDay()
+        });
+    }
+
+    // Check if streak continues
+    const yesterday = new Date(now - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    if (streak.lastLoginDate === yesterday) {
+        streak.currentStreak++;
+    } else {
+        streak.currentStreak = 1; // Reset streak
+    }
+
+    streak.lastLoginDate = today;
+    streak.totalLogins++;
+    streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+
+    // Calculate reward
+    const baseCoins = ENGAGEMENT_POINTS.DAILY_LOGIN;
+    const streakBonus = (streak.currentStreak - 1) * ENGAGEMENT_POINTS.STREAK_BONUS_PER_DAY;
+    const totalCoins = baseCoins + streakBonus;
+
+    // Check for milestone rewards
+    let milestoneReward = null;
+    const milestones = {
+        3: { item: "country_cap_common", name: "3-Day Streak Cap" },
+        7: { item: "flag_helmet", name: "Flag Helmet" },
+        14: { item: "team_jersey_common", name: "Team Jersey" },
+        30: { item: "legendary_kit_shard", name: "Legendary Kit Shard" }
+    };
+
+    if (milestones[streak.currentStreak]) {
+        milestoneReward = milestones[streak.currentStreak];
+        streak.rewards.push({
+            day: streak.currentStreak,
+            reward: milestoneReward,
+            claimedAt: now
+        });
+    }
+
+    // Award coins
+    awardCoins(nk, userId, totalCoins, "daily_login");
+
+    // Save streak data
+    nk.storageWrite([{
+        collection: COLLECTIONS.DAILY_STREAKS,
+        key: "streak",
+        userId: userId,
+        value: streak,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} claimed daily login: day ${streak.currentStreak}, ${totalCoins} coins`);
+
+    return JSON.stringify({
+        success: true,
+        currentStreak: streak.currentStreak,
+        longestStreak: streak.longestStreak,
+        coinsEarned: totalCoins,
+        streakBonus,
+        milestoneReward,
+        totalLogins: streak.totalLogins,
+        nextRewardIn: getTimeUntilNextDay()
+    });
+}
+
+/**
+ * RPC: Get engagement summary
+ */
+function rpcGetEngagementSummary(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    // Get streak data
+    const streakData = nk.storageRead([{
+        collection: COLLECTIONS.DAILY_STREAKS,
+        key: "streak",
+        userId: userId
+    }]);
+
+    const streak = streakData.length > 0 ? streakData[0].value : {
+        currentStreak: 0,
+        longestStreak: 0,
+        totalLogins: 0
+    };
+
+    // Get all engagement records
+    const engagements = nk.storageList(userId, COLLECTIONS.ENGAGEMENT, 100, null);
+    
+    let totalEngagementScore = 0;
+    let matchesEngaged = 0;
+    let fullEngagementCount = 0;
+
+    for (const engagement of (engagements.objects || [])) {
+        totalEngagementScore += engagement.value.score || 0;
+        matchesEngaged++;
+        if (engagement.value.fullEngagementClaimed) {
+            fullEngagementCount++;
+        }
+    }
+
+    // Calculate engagement tier
+    let currentTier = null;
+    let nextTier = "BRONZE";
+    let progressToNextTier = 0;
+
+    for (const [tier, threshold] of Object.entries(ENGAGEMENT_TIERS)) {
+        if (totalEngagementScore >= threshold) {
+            currentTier = tier;
+        } else {
+            nextTier = tier;
+            progressToNextTier = (totalEngagementScore / threshold) * 100;
+            break;
+        }
+    }
+
+    return JSON.stringify({
+        dailyStreak: {
+            current: streak.currentStreak,
+            longest: streak.longestStreak,
+            totalLogins: streak.totalLogins
+        },
+        engagement: {
+            totalScore: totalEngagementScore,
+            matchesEngaged,
+            fullEngagementCount,
+            currentTier,
+            nextTier,
+            progressToNextTier: Math.floor(progressToNextTier)
+        },
+        rewards: streak.rewards || []
+    });
+}
+
+/**
+ * RPC: Start session tracking
+ */
+function rpcStartSession(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const sessionId = context.sessionId || `session_${Date.now()}`;
+    const now = Date.now();
+
+    const session = {
+        sessionId,
+        startTime: now,
+        events: [],
+        isActive: true
+    };
+
+    nk.storageWrite([{
+        collection: COLLECTIONS.SESSION_DATA,
+        key: sessionId,
+        userId: userId,
+        value: session,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} started session: ${sessionId}`);
+
+    return JSON.stringify({
+        success: true,
+        sessionId,
+        startTime: now
+    });
+}
+
+/**
+ * RPC: End session tracking
+ */
+function rpcEndSession(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { sessionId } = data;
+    const sessionKey = sessionId || context.sessionId;
+
+    if (!sessionKey) {
+        return JSON.stringify({ success: false, message: "No session to end" });
+    }
+
+    const sessions = nk.storageRead([{
+        collection: COLLECTIONS.SESSION_DATA,
+        key: sessionKey,
+        userId: userId
+    }]);
+
+    if (sessions.length === 0) {
+        return JSON.stringify({ success: false, message: "Session not found" });
+    }
+
+    const session = sessions[0].value;
+    const now = Date.now();
+    const duration = now - session.startTime;
+
+    session.endTime = now;
+    session.duration = duration;
+    session.isActive = false;
+
+    nk.storageWrite([{
+        collection: COLLECTIONS.SESSION_DATA,
+        key: sessionKey,
+        userId: userId,
+        value: session,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} ended session: ${sessionKey}, duration: ${Math.floor(duration / 1000)}s`);
+
+    return JSON.stringify({
+        success: true,
+        sessionId: sessionKey,
+        duration: Math.floor(duration / 1000)
+    });
+}
+
+// Helper functions
+function awardCoins(nk, userId, amount, reason) {
+    try {
+        const changeset = {
+            coins: amount
+        };
+        const metadata = {
+            reason,
+            timestamp: Date.now()
+        };
+        nk.walletUpdate(userId, changeset, metadata, true);
+    } catch (e) {
+        // Wallet error
+    }
+}
+
+function getTimeUntilNextDay() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return tomorrow.getTime() - now.getTime();
+}
+
+// Register RPCs
+function __ModuleInit_37(ctx, logger, nk, initializer) {
+    logger.info("Cricket Engagement Module loaded");
+
+    __rpc_cricket_track_engagement = __rpc_cricket_track_engagement || (rpcTrackEngagement);
+    __rpc_cricket_get_buildup_status = __rpc_cricket_get_buildup_status || (rpcGetBuildUpStatus);
+    __rpc_cricket_claim_daily_login = __rpc_cricket_claim_daily_login || (rpcClaimDailyLogin);
+    __rpc_cricket_get_engagement_summary = __rpc_cricket_get_engagement_summary || (rpcGetEngagementSummary);
+    __rpc_cricket_start_session = __rpc_cricket_start_session || (rpcStartSession);
+    __rpc_cricket_end_session = __rpc_cricket_end_session || (rpcEndSession);
+
+    logger.info("Cricket Engagement Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_live_match.js ---
+/**
+ * Cricket Live Match Module
+ * 
+ * Handles live match features:
+ * - Match schedule management
+ * - Live score updates (from JSON)
+ * - Ball-by-ball tracking
+ * - Flash drops during live matches
+ * - Strategic timeout rewards
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Collections
+var COLLECTIONS = {
+    SCHEDULES: "cricket_schedules",
+    LIVE_MATCHES: "cricket_live_matches",
+    FLASH_DROPS: "cricket_flash_drops",
+    MATCH_EVENTS: "cricket_match_events",
+    USER_FLASH_CLAIMS: "cricket_user_flash_claims"
+};
+
+// Flash drop configuration
+var FLASH_DROPS = {
+    OVER_6: {
+        id: "powerplay_end",
+        name: "Powerplay Bonus",
+        over: 6,
+        reward: { type: "coins", amount: 50 },
+        duration: 180000, // 3 minutes
+        message: "Powerplay complete! Claim your bonus now!"
+    },
+    OVER_10: {
+        id: "middle_overs",
+        name: "Middle Overs Shard",
+        over: 10,
+        reward: { type: "jersey_shard", amount: 1 },
+        duration: 180000,
+        message: "Middle overs bonus! Claim your shard!"
+    },
+    OVER_15: {
+        id: "death_overs_start",
+        name: "Death Overs Cap",
+        over: 15,
+        reward: { type: "cap_shard", amount: 1 },
+        duration: 180000,
+        message: "Death overs starting! Special cap shard available!"
+    },
+    OVER_20: {
+        id: "innings_end",
+        name: "Innings Complete",
+        over: 20,
+        reward: { type: "coins", amount: 100 },
+        duration: 300000, // 5 minutes
+        message: "Innings complete! Claim your bonus!"
+    },
+    STRATEGIC_TIMEOUT: {
+        id: "strategic_timeout",
+        name: "Timeout Treasure",
+        reward: { type: "mystery_box", amount: 1 },
+        duration: 120000, // 2 minutes
+        message: "Strategic timeout! Quick claim your treasure!"
+    },
+    WICKET: {
+        id: "wicket_bonus",
+        name: "Wicket Bonus",
+        reward: { type: "coins", amount: 25 },
+        duration: 60000, // 1 minute
+        message: "Wicket! Quick claim your bonus!"
+    },
+    BOUNDARY_4: {
+        id: "four_bonus",
+        name: "Four Bonus",
+        reward: { type: "coins", amount: 10 },
+        duration: 30000, // 30 seconds
+        message: "Four! Tap to claim!"
+    },
+    BOUNDARY_6: {
+        id: "six_bonus",
+        name: "Six Bonus",
+        reward: { type: "coins", amount: 20 },
+        duration: 30000,
+        message: "Six! Tap to claim!"
+    }
+};
+
+/**
+ * RPC: Load match schedules
+ * 
+ * Loads schedules from JSON data into Nakama storage
+ */
+function rpcLoadSchedules(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { tournamentId, matches } = data;
+
+    if (!tournamentId || !matches || !Array.isArray(matches)) {
+        throw new Error("tournamentId and matches array are required");
+    }
+
+    const writes = [];
+
+    for (const match of matches) {
+        const matchData = {
+            matchId: match.matchId || `${tournamentId}_${match.team1}_${match.team2}_${match.date}`,
+            tournamentId,
+            team1: match.team1,
+            team2: match.team2,
+            matchTime: `${match.date}T${match.time || "14:00"}:00`,
+            venue: match.venue,
+            city: match.city,
+            stage: match.stage || "group",
+            group: match.group,
+            description: match.description,
+            featured: match.featured || false,
+            megaMatch: match.megaMatch || false,
+            status: "scheduled",
+            createdAt: Date.now()
+        };
+
+        writes.push({
+            collection: COLLECTIONS.SCHEDULES,
+            key: matchData.matchId,
+            userId: null,
+            value: matchData,
+            permissionRead: 2,
+            permissionWrite: 0
+        });
+    }
+
+    nk.storageWrite(writes);
+
+    logger.info(`Loaded ${matches.length} matches for ${tournamentId}`);
+
+    return JSON.stringify({
+        success: true,
+        tournamentId,
+        matchesLoaded: matches.length
+    });
+}
+
+/**
+ * RPC: Get upcoming matches
+ * 
+ * Payload: {
+ *   tournamentId: string (optional),
+ *   days: number,
+ *   limit: number
+ * }
+ */
+function rpcGetUpcomingMatches(context, logger, nk, payload) {
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { tournamentId, days = 7, limit = 20 } = data;
+
+    const now = Date.now();
+    const cutoff = now + (days * 24 * 60 * 60 * 1000);
+
+    // Query all schedules
+    const schedules = nk.storageList(null, COLLECTIONS.SCHEDULES, 100, null);
+    
+    let matches = (schedules.objects || [])
+        .map(obj => obj.value)
+        .filter(match => {
+            const matchTime = new Date(match.matchTime).getTime();
+            const isUpcoming = matchTime > now && matchTime < cutoff;
+            const matchesTournament = !tournamentId || match.tournamentId === tournamentId;
+            return isUpcoming && matchesTournament;
+        })
+        .sort((a, b) => new Date(a.matchTime).getTime() - new Date(b.matchTime).getTime())
+        .slice(0, limit);
+
+    // Calculate time until each match
+    matches = matches.map(match => ({
+        ...match,
+        hoursUntilMatch: Math.floor((new Date(match.matchTime).getTime() - now) / (1000 * 60 * 60)),
+        minutesUntilMatch: Math.floor((new Date(match.matchTime).getTime() - now) / (1000 * 60))
+    }));
+
+    return JSON.stringify({
+        matches,
+        count: matches.length,
+        timestamp: now
+    });
+}
+
+/**
+ * RPC: Get match details
+ */
+function rpcGetMatchDetails(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId } = data;
+
+    if (!matchId) {
+        throw new Error("matchId is required");
+    }
+
+    // Get schedule
+    const schedules = nk.storageRead([{
+        collection: COLLECTIONS.SCHEDULES,
+        key: matchId,
+        userId: null
+    }]);
+
+    if (schedules.length === 0) {
+        return JSON.stringify({ success: false, message: "Match not found" });
+    }
+
+    const match = schedules[0].value;
+
+    // Get live match data if exists
+    const liveData = nk.storageRead([{
+        collection: COLLECTIONS.LIVE_MATCHES,
+        key: matchId,
+        userId: null
+    }]);
+
+    const liveMatch = liveData.length > 0 ? liveData[0].value : null;
+
+    // Get active flash drops
+    const activeDrops = getActiveFlashDrops(nk, matchId);
+
+    return JSON.stringify({
+        success: true,
+        match,
+        liveData: liveMatch,
+        activeFlashDrops: activeDrops,
+        isLive: liveMatch?.status === "live"
+    });
+}
+
+/**
+ * RPC: Start live match
+ * Called when a match goes live
+ */
+function rpcStartLiveMatch(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, tossWinner, tossDecision } = data;
+
+    if (!matchId) {
+        throw new Error("matchId is required");
+    }
+
+    // Get match schedule
+    const schedules = nk.storageRead([{
+        collection: COLLECTIONS.SCHEDULES,
+        key: matchId,
+        userId: null
+    }]);
+
+    if (schedules.length === 0) {
+        throw new Error("Match not found");
+    }
+
+    const match = schedules[0].value;
+
+    // Create live match record
+    const liveMatch = {
+        matchId,
+        team1: match.team1,
+        team2: match.team2,
+        status: "live",
+        tossWinner,
+        tossDecision,
+        currentInnings: 1,
+        battingTeam: tossDecision === "bat" ? tossWinner : (tossWinner === match.team1 ? match.team2 : match.team1),
+        bowlingTeam: tossDecision === "bowl" ? tossWinner : (tossWinner === match.team1 ? match.team2 : match.team1),
+        innings1: {
+            runs: 0,
+            wickets: 0,
+            overs: 0,
+            balls: 0,
+            runRate: 0
+        },
+        innings2: null,
+        startedAt: Date.now(),
+        lastUpdateAt: Date.now()
+    };
+
+    nk.storageWrite([{
+        collection: COLLECTIONS.LIVE_MATCHES,
+        key: matchId,
+        userId: null,
+        value: liveMatch,
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    // Update schedule status
+    match.status = "live";
+    nk.storageWrite([{
+        collection: COLLECTIONS.SCHEDULES,
+        key: matchId,
+        userId: null,
+        value: match,
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`Match ${matchId} started: ${match.team1} vs ${match.team2}`);
+
+    return JSON.stringify({
+        success: true,
+        matchId,
+        status: "live",
+        liveMatch
+    });
+}
+
+/**
+ * RPC: Update ball event
+ * Called for each ball in a live match
+ */
+function rpcUpdateBallEvent(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, innings, over, ball, runs, wicket, extras, batter, bowler, description } = data;
+
+    if (!matchId || innings === undefined || over === undefined || ball === undefined) {
+        throw new Error("matchId, innings, over, and ball are required");
+    }
+
+    // Get live match
+    const liveData = nk.storageRead([{
+        collection: COLLECTIONS.LIVE_MATCHES,
+        key: matchId,
+        userId: null
+    }]);
+
+    if (liveData.length === 0) {
+        throw new Error("Live match not found");
+    }
+
+    const liveMatch = liveData[0].value;
+
+    // Update innings data
+    const inningsKey = `innings${innings}`;
+    if (!liveMatch[inningsKey]) {
+        liveMatch[inningsKey] = {
+            runs: 0,
+            wickets: 0,
+            overs: 0,
+            balls: 0,
+            runRate: 0
+        };
+    }
+
+    const inningsData = liveMatch[inningsKey];
+    inningsData.runs += (runs || 0) + (extras?.total || 0);
+    if (wicket) {
+        inningsData.wickets++;
+    }
+    inningsData.balls++;
+    if (inningsData.balls >= 6) {
+        inningsData.overs++;
+        inningsData.balls = 0;
+    }
+    
+    const totalOvers = inningsData.overs + (inningsData.balls / 6);
+    inningsData.runRate = totalOvers > 0 ? (inningsData.runs / totalOvers).toFixed(2) : 0;
+
+    liveMatch.lastUpdateAt = Date.now();
+
+    // Save updated match
+    nk.storageWrite([{
+        collection: COLLECTIONS.LIVE_MATCHES,
+        key: matchId,
+        userId: null,
+        value: liveMatch,
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    // Store ball event
+    const eventKey = `${matchId}_${innings}_${over}_${ball}`;
+    nk.storageWrite([{
+        collection: COLLECTIONS.MATCH_EVENTS,
+        key: eventKey,
+        userId: null,
+        value: {
+            matchId,
+            innings,
+            over,
+            ball,
+            runs,
+            wicket,
+            extras,
+            batter,
+            bowler,
+            description,
+            timestamp: Date.now()
+        },
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    // Trigger flash drops based on events
+    const triggeredDrops = [];
+
+    // Check for over-based flash drops
+    if (inningsData.balls === 0) { // Over just completed
+        const overDrop = getOverBasedFlashDrop(inningsData.overs);
+        if (overDrop) {
+            triggerFlashDrop(nk, matchId, overDrop);
+            triggeredDrops.push(overDrop);
+        }
+    }
+
+    // Check for wicket flash drop
+    if (wicket) {
+        triggerFlashDrop(nk, matchId, FLASH_DROPS.WICKET);
+        triggeredDrops.push(FLASH_DROPS.WICKET);
+    }
+
+    // Check for boundary flash drops
+    if (runs === 4) {
+        triggerFlashDrop(nk, matchId, FLASH_DROPS.BOUNDARY_4);
+        triggeredDrops.push(FLASH_DROPS.BOUNDARY_4);
+    } else if (runs === 6) {
+        triggerFlashDrop(nk, matchId, FLASH_DROPS.BOUNDARY_6);
+        triggeredDrops.push(FLASH_DROPS.BOUNDARY_6);
+    }
+
+    logger.info(`Ball event: ${matchId} - ${innings}.${over}.${ball}: ${runs} runs${wicket ? ' + wicket' : ''}`);
+
+    return JSON.stringify({
+        success: true,
+        innings: inningsData,
+        triggeredDrops: triggeredDrops.map(d => d.id)
+    });
+}
+
+/**
+ * RPC: Trigger strategic timeout
+ */
+function rpcTriggerStrategicTimeout(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, team } = data;
+
+    if (!matchId || !team) {
+        throw new Error("matchId and team are required");
+    }
+
+    triggerFlashDrop(nk, matchId, FLASH_DROPS.STRATEGIC_TIMEOUT);
+
+    logger.info(`Strategic timeout triggered for ${matchId} by ${team}`);
+
+    return JSON.stringify({
+        success: true,
+        flashDrop: FLASH_DROPS.STRATEGIC_TIMEOUT
+    });
+}
+
+/**
+ * RPC: Claim flash drop
+ */
+function rpcClaimFlashDrop(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, dropId } = data;
+
+    if (!matchId || !dropId) {
+        throw new Error("matchId and dropId are required");
+    }
+
+    // Check if drop is still active
+    const drops = nk.storageRead([{
+        collection: COLLECTIONS.FLASH_DROPS,
+        key: `${matchId}_${dropId}`,
+        userId: null
+    }]);
+
+    if (drops.length === 0) {
+        return JSON.stringify({ success: false, message: "Flash drop not found or expired" });
+    }
+
+    const drop = drops[0].value;
+
+    if (Date.now() > drop.expiresAt) {
+        return JSON.stringify({ success: false, message: "Flash drop expired" });
+    }
+
+    // Check if user already claimed
+    const claims = nk.storageRead([{
+        collection: COLLECTIONS.USER_FLASH_CLAIMS,
+        key: `${userId}_${matchId}_${dropId}`,
+        userId: userId
+    }]);
+
+    if (claims.length > 0) {
+        return JSON.stringify({ success: false, message: "Already claimed this flash drop" });
+    }
+
+    // Award reward
+    const reward = drop.reward;
+    let awardedItem = null;
+
+    switch (reward.type) {
+        case 'coins':
+            try {
+                nk.walletUpdate(userId, { coins: reward.amount }, { reason: `flash_drop_${dropId}` }, true);
+                awardedItem = { type: 'coins', amount: reward.amount };
+            } catch (e) {
+                logger.error(`Failed to award coins: ${e.message}`);
+            }
+            break;
+
+        case 'jersey_shard':
+        case 'cap_shard':
+        case 'mystery_box':
+            nk.storageWrite([{
+                collection: 'cricket_inventory',
+                key: `${reward.type}_${Date.now()}`,
+                userId: userId,
+                value: {
+                    type: reward.type,
+                    amount: reward.amount,
+                    source: `flash_drop_${dropId}`,
+                    matchId,
+                    acquiredAt: Date.now()
+                },
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+            awardedItem = { type: reward.type, amount: reward.amount };
+            break;
+    }
+
+    // Record claim
+    nk.storageWrite([{
+        collection: COLLECTIONS.USER_FLASH_CLAIMS,
+        key: `${userId}_${matchId}_${dropId}`,
+        userId: userId,
+        value: {
+            dropId,
+            matchId,
+            reward: awardedItem,
+            claimedAt: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Update drop stats
+    drop.claimCount = (drop.claimCount || 0) + 1;
+    nk.storageWrite([{
+        collection: COLLECTIONS.FLASH_DROPS,
+        key: `${matchId}_${dropId}`,
+        userId: null,
+        value: drop,
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} claimed flash drop ${dropId} from match ${matchId}`);
+
+    return JSON.stringify({
+        success: true,
+        dropId,
+        reward: awardedItem
+    });
+}
+
+/**
+ * RPC: End match
+ */
+function rpcEndMatch(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, winner, manOfTheMatch, summary } = data;
+
+    if (!matchId || !winner) {
+        throw new Error("matchId and winner are required");
+    }
+
+    // Get live match
+    const liveData = nk.storageRead([{
+        collection: COLLECTIONS.LIVE_MATCHES,
+        key: matchId,
+        userId: null
+    }]);
+
+    if (liveData.length === 0) {
+        throw new Error("Live match not found");
+    }
+
+    const liveMatch = liveData[0].value;
+    liveMatch.status = "completed";
+    liveMatch.winner = winner;
+    liveMatch.manOfTheMatch = manOfTheMatch;
+    liveMatch.summary = summary;
+    liveMatch.endedAt = Date.now();
+
+    // Save final match state
+    nk.storageWrite([{
+        collection: COLLECTIONS.LIVE_MATCHES,
+        key: matchId,
+        userId: null,
+        value: liveMatch,
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    // Update schedule
+    const schedules = nk.storageRead([{
+        collection: COLLECTIONS.SCHEDULES,
+        key: matchId,
+        userId: null
+    }]);
+
+    if (schedules.length > 0) {
+        const match = schedules[0].value;
+        match.status = "completed";
+        match.winner = winner;
+        
+        nk.storageWrite([{
+            collection: COLLECTIONS.SCHEDULES,
+            key: matchId,
+            userId: null,
+            value: match,
+            permissionRead: 2,
+            permissionWrite: 0
+        }]);
+    }
+
+    logger.info(`Match ${matchId} ended. Winner: ${winner}`);
+
+    return JSON.stringify({
+        success: true,
+        matchId,
+        winner,
+        finalScore: {
+            innings1: liveMatch.innings1,
+            innings2: liveMatch.innings2
+        }
+    });
+}
+
+// Helper functions
+function getOverBasedFlashDrop(over) {
+    switch (over) {
+        case 6: return FLASH_DROPS.OVER_6;
+        case 10: return FLASH_DROPS.OVER_10;
+        case 15: return FLASH_DROPS.OVER_15;
+        case 20: return FLASH_DROPS.OVER_20;
+        default: return null;
+    }
+}
+
+function triggerFlashDrop(nk, matchId, dropConfig) {
+    const now = Date.now();
+    const drop = {
+        id: dropConfig.id,
+        matchId,
+        name: dropConfig.name,
+        reward: dropConfig.reward,
+        message: dropConfig.message,
+        triggeredAt: now,
+        expiresAt: now + dropConfig.duration,
+        claimCount: 0
+    };
+
+    nk.storageWrite([{
+        collection: COLLECTIONS.FLASH_DROPS,
+        key: `${matchId}_${dropConfig.id}`,
+        userId: null,
+        value: drop,
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+}
+
+function getActiveFlashDrops(nk, matchId) {
+    const now = Date.now();
+    const drops = nk.storageList(null, COLLECTIONS.FLASH_DROPS, 50, null);
+    
+    return (drops.objects || [])
+        .map(obj => obj.value)
+        .filter(drop => drop.matchId === matchId && drop.expiresAt > now)
+        .map(drop => ({
+            id: drop.id,
+            name: drop.name,
+            message: drop.message,
+            reward: drop.reward,
+            expiresIn: drop.expiresAt - now
+        }));
+}
+
+// Register RPCs
+function __ModuleInit_38(ctx, logger, nk, initializer) {
+    logger.info("Cricket Live Match Module loaded");
+
+    __rpc_cricket_load_schedules = __rpc_cricket_load_schedules || (rpcLoadSchedules);
+    __rpc_cricket_get_upcoming_matches = __rpc_cricket_get_upcoming_matches || (rpcGetUpcomingMatches);
+    __rpc_cricket_get_match_details = __rpc_cricket_get_match_details || (rpcGetMatchDetails);
+    __rpc_cricket_start_live_match = __rpc_cricket_start_live_match || (rpcStartLiveMatch);
+    __rpc_cricket_update_ball_event = __rpc_cricket_update_ball_event || (rpcUpdateBallEvent);
+    __rpc_cricket_trigger_strategic_timeout = __rpc_cricket_trigger_strategic_timeout || (rpcTriggerStrategicTimeout);
+    __rpc_cricket_claim_flash_drop = __rpc_cricket_claim_flash_drop || (rpcClaimFlashDrop);
+    __rpc_cricket_end_match = __rpc_cricket_end_match || (rpcEndMatch);
+
+    logger.info("Cricket Live Match Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_predictions.js ---
+/**
+ * Cricket Predictions Module
+ * 
+ * Handles all match prediction functionality for Cricket VR Mob:
+ * - Submit match predictions
+ * - Process match results
+ * - Award points based on prediction accuracy
+ * - Manage prediction leaderboards
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Leaderboard IDs
+var LEADERBOARDS = {
+    DAILY_TRIVIA: "cricket_daily_trivia",
+    WEEKLY_TOURNAMENT: "cricket_weekly_tournament",
+    WORLDCUP_2026: "cricket_worldcup_2026",
+    IPL_2026: "cricket_ipl_2026",
+    ALL_TIME: "cricket_all_time_master",
+    PREDICTIONS_ACCURACY: "cricket_prediction_accuracy"
+};
+
+// Collection names
+var COLLECTIONS = {
+    PREDICTIONS: "cricket_predictions",
+    MATCH_RESULTS: "cricket_match_results",
+    USER_STATS: "cricket_user_stats",
+    ENGAGEMENT: "cricket_engagement",
+    TRIVIA_SCORES: "cricket_trivia_scores"
+};
+
+// Points configuration
+var POINTS = {
+    CORRECT_WINNER: 100,
+    CORRECT_SCORE_EXACT: 500,
+    CORRECT_SCORE_CLOSE: 200, // Within 10 runs
+    CORRECT_MOM: 150,
+    CORRECT_TOP_SCORER: 100,
+    CORRECT_TOP_BOWLER: 100,
+    EARLY_PREDICTION_BONUS: 50, // 24h+ before match
+    STREAK_BONUS_MULTIPLIER: 0.1, // 10% per streak day
+    TRIVIA_COMPLETION_BONUS: 25,
+    FULL_ENGAGEMENT_BONUS: 200
+};
+
+/**
+ * RPC: Submit a match prediction
+ * 
+ * Payload: {
+ *   matchId: string,
+ *   tournamentId: "WC2026" | "IPL2026",
+ *   predictedWinner: string,
+ *   predictedScore1: number,
+ *   predictedScore2: number,
+ *   manOfTheMatch: string,
+ *   topScorerRuns: number,
+ *   topBowlerWickets: number,
+ *   additionalPredictions: object
+ * }
+ */
+function rpcSubmitPrediction(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, tournamentId, predictedWinner, predictedScore1, predictedScore2, 
+            manOfTheMatch, topScorerRuns, topBowlerWickets, additionalPredictions } = data;
+
+    if (!matchId || !predictedWinner) {
+        throw new Error("matchId and predictedWinner are required");
+    }
+
+    // Check if prediction already exists
+    const existingPredictions = nk.storageRead([{
+        collection: COLLECTIONS.PREDICTIONS,
+        key: `${userId}_${matchId}`,
+        userId: userId
+    }]);
+
+    if (existingPredictions.length > 0) {
+        return JSON.stringify({
+            success: false,
+            message: "You have already made a prediction for this match",
+            existingPrediction: existingPredictions[0].value
+        });
+    }
+
+    // Calculate bonus for early prediction
+    const now = Date.now();
+    const matchTime = getMatchTime(nk, matchId);
+    const hoursUntilMatch = matchTime ? (matchTime - now) / (1000 * 60 * 60) : 0;
+    const earlyBonus = hoursUntilMatch >= 24 ? POINTS.EARLY_PREDICTION_BONUS : 0;
+
+    // Create prediction record
+    const prediction = {
+        matchId,
+        tournamentId,
+        predictedWinner,
+        predictedScore1: predictedScore1 || 0,
+        predictedScore2: predictedScore2 || 0,
+        manOfTheMatch: manOfTheMatch || null,
+        topScorerRuns: topScorerRuns || 0,
+        topBowlerWickets: topBowlerWickets || 0,
+        additionalPredictions: additionalPredictions || {},
+        submittedAt: now,
+        hoursBeforeMatch: hoursUntilMatch,
+        earlyBonus,
+        isProcessed: false,
+        pointsEarned: 0
+    };
+
+    // Store prediction
+    nk.storageWrite([{
+        collection: COLLECTIONS.PREDICTIONS,
+        key: `${userId}_${matchId}`,
+        userId: userId,
+        value: prediction,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Update user stats
+    updateUserStats(nk, userId, "predictionsMade", 1);
+
+    // Track engagement
+    trackEngagement(nk, userId, matchId, "prediction_submitted", { earlyBonus });
+
+    logger.info(`User ${userId} submitted prediction for match ${matchId}`);
+
+    return JSON.stringify({
+        success: true,
+        matchId,
+        earlyBonus,
+        message: "Prediction submitted successfully!",
+        hoursUntilMatch: Math.floor(hoursUntilMatch)
+    });
+}
+
+/**
+ * RPC: Process match results and award points
+ * 
+ * Payload: {
+ *   matchId: string,
+ *   tournamentId: string,
+ *   winner: string,
+ *   team1Score: number,
+ *   team2Score: number,
+ *   manOfTheMatch: string,
+ *   topScorer: string,
+ *   topScorerRuns: number,
+ *   topBowler: string,
+ *   topBowlerWickets: number
+ * }
+ */
+function rpcProcessMatchResults(context, logger, nk, payload) {
+    // This should be called by admin/server only
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, tournamentId, winner, team1Score, team2Score, 
+            manOfTheMatch, topScorer, topScorerRuns, topBowler, topBowlerWickets } = data;
+
+    if (!matchId || !winner) {
+        throw new Error("matchId and winner are required");
+    }
+
+    // Store match result
+    nk.storageWrite([{
+        collection: COLLECTIONS.MATCH_RESULTS,
+        key: matchId,
+        userId: null,
+        value: {
+            matchId,
+            tournamentId,
+            winner,
+            team1Score,
+            team2Score,
+            manOfTheMatch,
+            topScorer,
+            topScorerRuns,
+            topBowler,
+            topBowlerWickets,
+            processedAt: Date.now()
+        },
+        permissionRead: 2,
+        permissionWrite: 0
+    }]);
+
+    // Get all predictions for this match
+    const cursor = null;
+    const limit = 1000;
+    let predictions = [];
+    
+    // Query all predictions for this match
+    const query = `+value.matchId:${matchId} +value.isProcessed:false`;
+    const results = nk.storageIndexList("cricket_predictions_idx", query, limit, null, cursor);
+    
+    if (results && results.objects) {
+        predictions = results.objects;
+    }
+
+    let processedCount = 0;
+    let totalPointsAwarded = 0;
+    const topPredictors = [];
+
+    for (const pred of predictions) {
+        const prediction = pred.value;
+        const predUserId = pred.userId;
+        
+        let points = 0;
+        let bonuses = [];
+
+        // Check winner prediction
+        if (prediction.predictedWinner === winner) {
+            points += POINTS.CORRECT_WINNER;
+            bonuses.push("correct_winner");
+        }
+
+        // Check score prediction
+        const actualTotal = team1Score + team2Score;
+        const predictedTotal = prediction.predictedScore1 + prediction.predictedScore2;
+        
+        if (predictedTotal === actualTotal) {
+            points += POINTS.CORRECT_SCORE_EXACT;
+            bonuses.push("exact_score");
+        } else if (Math.abs(predictedTotal - actualTotal) <= 10) {
+            points += POINTS.CORRECT_SCORE_CLOSE;
+            bonuses.push("close_score");
+        }
+
+        // Check Man of the Match
+        if (prediction.manOfTheMatch && prediction.manOfTheMatch === manOfTheMatch) {
+            points += POINTS.CORRECT_MOM;
+            bonuses.push("correct_mom");
+        }
+
+        // Add early prediction bonus
+        if (prediction.earlyBonus) {
+            points += prediction.earlyBonus;
+            bonuses.push("early_bird");
+        }
+
+        // Calculate streak bonus
+        const userStats = getUserStats(nk, predUserId);
+        const streakBonus = Math.floor(points * (userStats.predictionStreak || 0) * POINTS.STREAK_BONUS_MULTIPLIER);
+        points += streakBonus;
+
+        // Update prediction record
+        nk.storageWrite([{
+            collection: COLLECTIONS.PREDICTIONS,
+            key: `${predUserId}_${matchId}`,
+            userId: predUserId,
+            value: {
+                ...prediction,
+                isProcessed: true,
+                pointsEarned: points,
+                bonuses,
+                streakBonus,
+                processedAt: Date.now()
+            },
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+
+        // Update leaderboards
+        if (points > 0) {
+            // Tournament leaderboard
+            const leaderboardId = tournamentId === "IPL2026" ? LEADERBOARDS.IPL_2026 : LEADERBOARDS.WORLDCUP_2026;
+            nk.leaderboardRecordWrite(leaderboardId, predUserId, null, points, null, {
+                matchId,
+                bonuses: bonuses.join(",")
+            });
+
+            // All-time leaderboard
+            nk.leaderboardRecordWrite(LEADERBOARDS.ALL_TIME, predUserId, null, points, null, null);
+
+            // Update user stats
+            updateUserStats(nk, predUserId, "totalPredictionPoints", points);
+            if (prediction.predictedWinner === winner) {
+                updateUserStats(nk, predUserId, "correctPredictions", 1);
+                updateUserStats(nk, predUserId, "predictionStreak", 1);
+            } else {
+                resetUserStat(nk, predUserId, "predictionStreak");
+            }
+
+            topPredictors.push({
+                userId: predUserId,
+                points,
+                bonuses,
+                isPerfect: bonuses.includes("exact_score") && bonuses.includes("correct_mom")
+            });
+        }
+
+        totalPointsAwarded += points;
+        processedCount++;
+    }
+
+    // Sort top predictors
+    topPredictors.sort((a, b) => b.points - a.points);
+
+    logger.info(`Processed ${processedCount} predictions for match ${matchId}, awarded ${totalPointsAwarded} total points`);
+
+    return JSON.stringify({
+        success: true,
+        matchId,
+        predictionsProcessed: processedCount,
+        totalPointsAwarded,
+        topPredictors: topPredictors.slice(0, 10)
+    });
+}
+
+/**
+ * RPC: Get user's predictions
+ */
+function rpcGetUserPredictions(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { tournamentId, limit = 50 } = data;
+
+    // Get user's predictions
+    const predictions = nk.storageList(userId, COLLECTIONS.PREDICTIONS, limit, null);
+
+    let filteredPredictions = predictions.objects || [];
+    
+    if (tournamentId) {
+        filteredPredictions = filteredPredictions.filter(p => p.value.tournamentId === tournamentId);
+    }
+
+    // Calculate stats
+    const stats = {
+        totalPredictions: filteredPredictions.length,
+        correctPredictions: filteredPredictions.filter(p => p.value.bonuses && p.value.bonuses.includes("correct_winner")).length,
+        totalPoints: filteredPredictions.reduce((sum, p) => sum + (p.value.pointsEarned || 0), 0),
+        pendingPredictions: filteredPredictions.filter(p => !p.value.isProcessed).length
+    };
+
+    return JSON.stringify({
+        predictions: filteredPredictions.map(p => p.value),
+        stats
+    });
+}
+
+/**
+ * Helper: Get user profile data including profile picture
+ */
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) { /* ignore */ }
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+    
+    return { profilePicture, displayName };
+}
+
+/**
+ * RPC: Get match leaderboard
+ */
+function rpcGetMatchLeaderboard(context, logger, nk, payload) {
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { matchId, limit = 50 } = data;
+
+    if (!matchId) {
+        throw new Error("matchId is required");
+    }
+
+    // Query predictions for this match
+    const query = `+value.matchId:${matchId} +value.isProcessed:true`;
+    const results = nk.storageIndexList("cricket_predictions_idx", query, limit, null, null);
+
+    const entries = (results?.objects || [])
+        .map(obj => {
+            const profile = getUserProfileData(nk, logger, obj.userId);
+            return {
+                userId: obj.userId,
+                username: getUserDisplayName(nk, obj.userId),
+                displayName: profile.displayName || getUserDisplayName(nk, obj.userId),
+                profilePicture: profile.profilePicture,
+                predictedWinner: obj.value.predictedWinner,
+                points: obj.value.pointsEarned,
+                bonuses: obj.value.bonuses
+            };
+        })
+        .sort((a, b) => b.points - a.points)
+        .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
+
+    // Get match info
+    const matchResults = nk.storageRead([{
+        collection: COLLECTIONS.MATCH_RESULTS,
+        key: matchId,
+        userId: null
+    }]);
+
+    const matchInfo = matchResults.length > 0 ? matchResults[0].value : null;
+
+    return JSON.stringify({
+        matchId,
+        matchInfo,
+        predictions: entries,
+        totalPredictions: entries.length
+    });
+}
+
+/**
+ * RPC: Get tournament leaderboard
+ */
+function rpcGetTournamentLeaderboard(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { tournamentId = "WC2026", limit = 100 } = data;
+
+    const leaderboardId = tournamentId === "IPL2026" ? LEADERBOARDS.IPL_2026 : LEADERBOARDS.WORLDCUP_2026;
+
+    // Get leaderboard records
+    const records = nk.leaderboardRecordsList(leaderboardId, null, limit, null, 0);
+    
+    const entries = (records.records || []).map(record => {
+        const profile = getUserProfileData(nk, logger, record.ownerId);
+        return {
+            rank: record.rank,
+            userId: record.ownerId,
+            username: record.username?.value || "Anonymous",
+            displayName: profile.displayName || record.username?.value || "Anonymous",
+            profilePicture: profile.profilePicture,
+            score: record.score,
+            metadata: record.metadata ? JSON.parse(record.metadata) : null
+        };
+    });
+
+    // Get user's own rank
+    let userRank = null;
+    let userScore = 0;
+    
+    if (userId) {
+        const aroundOwner = nk.leaderboardRecordsList(leaderboardId, [userId], 1, null, 0);
+        if (aroundOwner.records && aroundOwner.records.length > 0) {
+            userRank = aroundOwner.records[0].rank;
+            userScore = aroundOwner.records[0].score;
+        }
+    }
+
+    return JSON.stringify({
+        leaderboardId,
+        tournamentId,
+        entries,
+        userRank,
+        userScore,
+        totalEntries: records.records?.length || 0
+    });
+}
+
+// Helper functions
+function getMatchTime(nk, matchId) {
+    // Try to get match time from stored schedule
+    const schedules = nk.storageRead([{
+        collection: "cricket_schedules",
+        key: matchId,
+        userId: null
+    }]);
+    
+    if (schedules.length > 0) {
+        return new Date(schedules[0].value.matchTime).getTime();
+    }
+    return null;
+}
+
+function getUserStats(nk, userId) {
+    const stats = nk.storageRead([{
+        collection: COLLECTIONS.USER_STATS,
+        key: "stats",
+        userId: userId
+    }]);
+    
+    return stats.length > 0 ? stats[0].value : {
+        predictionsMade: 0,
+        correctPredictions: 0,
+        predictionStreak: 0,
+        totalPredictionPoints: 0
+    };
+}
+
+function updateUserStats(nk, userId, field, increment) {
+    const stats = getUserStats(nk, userId);
+    stats[field] = (stats[field] || 0) + increment;
+    stats.lastUpdated = Date.now();
+    
+    nk.storageWrite([{
+        collection: COLLECTIONS.USER_STATS,
+        key: "stats",
+        userId: userId,
+        value: stats,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function resetUserStat(nk, userId, field) {
+    const stats = getUserStats(nk, userId);
+    stats[field] = 0;
+    stats.lastUpdated = Date.now();
+    
+    nk.storageWrite([{
+        collection: COLLECTIONS.USER_STATS,
+        key: "stats",
+        userId: userId,
+        value: stats,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function trackEngagement(nk, userId, matchId, eventType, data) {
+    const engagementKey = `${userId}_${matchId}`;
+    
+    const existing = nk.storageRead([{
+        collection: COLLECTIONS.ENGAGEMENT,
+        key: engagementKey,
+        userId: userId
+    }]);
+    
+    const engagement = existing.length > 0 ? existing[0].value : {
+        matchId,
+        events: [],
+        score: 0
+    };
+    
+    engagement.events.push({
+        type: eventType,
+        data,
+        timestamp: Date.now()
+    });
+    
+    // Update engagement score
+    const pointsMap = {
+        "prediction_submitted": 30,
+        "trivia_completed": 25,
+        "match_viewed": 5,
+        "lineup_viewed": 10,
+        "notification_tapped": 5,
+        "shared_match": 20
+    };
+    
+    engagement.score += pointsMap[eventType] || 5;
+    
+    nk.storageWrite([{
+        collection: COLLECTIONS.ENGAGEMENT,
+        key: engagementKey,
+        userId: userId,
+        value: engagement,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function getUserDisplayName(nk, userId) {
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users.length > 0) {
+            return users[0].displayName || users[0].username || "Anonymous";
+        }
+    } catch (e) {
+        // ignore
+    }
+    return "Anonymous";
+}
+
+// Register RPCs
+function __ModuleInit_39(ctx, logger, nk, initializer) {
+    logger.info("Cricket Predictions Module loaded");
+
+    // Register RPCs
+    __rpc_cricket_submit_prediction = __rpc_cricket_submit_prediction || (rpcSubmitPrediction);
+    __rpc_cricket_process_match_results = __rpc_cricket_process_match_results || (rpcProcessMatchResults);
+    __rpc_cricket_get_user_predictions = __rpc_cricket_get_user_predictions || (rpcGetUserPredictions);
+    __rpc_cricket_get_match_leaderboard = __rpc_cricket_get_match_leaderboard || (rpcGetMatchLeaderboard);
+    __rpc_cricket_get_tournament_leaderboard = __rpc_cricket_get_tournament_leaderboard || (rpcGetTournamentLeaderboard);
+
+    // Create leaderboards if they don't exist
+    const leaderboardConfigs = [
+        { id: LEADERBOARDS.DAILY_TRIVIA, sortOrder: 1, operator: 2, resetSchedule: "0 0 * * *" }, // Daily reset
+        { id: LEADERBOARDS.WEEKLY_TOURNAMENT, sortOrder: 1, operator: 2, resetSchedule: "0 0 * * 1" }, // Weekly reset
+        { id: LEADERBOARDS.WORLDCUP_2026, sortOrder: 1, operator: 2, resetSchedule: null }, // No reset
+        { id: LEADERBOARDS.IPL_2026, sortOrder: 1, operator: 2, resetSchedule: null }, // No reset
+        { id: LEADERBOARDS.ALL_TIME, sortOrder: 1, operator: 2, resetSchedule: null } // No reset
+    ];
+
+    for (const config of leaderboardConfigs) {
+        try {
+            nk.leaderboardCreate(config.id, false, config.sortOrder, config.operator, config.resetSchedule, null);
+            logger.info(`Created leaderboard: ${config.id}`);
+        } catch (e) {
+            // Leaderboard already exists
+        }
+    }
+
+    // Create storage index for predictions
+    try {
+        nk.storageIndexList("cricket_predictions_idx", "", 1, null, null);
+    } catch (e) {
+        // Index doesn't exist, will be created on first use
+    }
+
+    logger.info("Cricket Predictions Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_retention.js ---
+/**
+ * Cricket Retention Module
+ * 
+ * Implements psychological daily return triggers:
+ * 
+ * Day 1:  Login streak counter ("You're on fire - 1 day!")
+ * Day 3:  Leaderboard decay ("You've dropped to #52!")
+ * Day 5:  Squad pressure ("Your squad needs you - join war!")
+ * Day 7:  Bonus hour notification ("2x coins for 60 min - NOW!")
+ * Day 14: Tier progression ("You're close to Silver Expert!")
+ * Day 30: Monthly reset ("Fresh season starts - compete again!")
+ * 
+ * Additional triggers:
+ * - Loss aversion ("Don't lose your streak!")
+ * - Social proof ("Your friend just passed you!")
+ * - FOMO ("Match in 2 hours - predict now!")
+ * - Near-miss ("1 more correct = next reward tier!")
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Collections
+var COLLECTIONS = {
+    RETENTION_DATA: "cricket_retention_data",
+    STREAK_HISTORY: "cricket_streak_history",
+    TRIGGER_HISTORY: "cricket_trigger_history",
+    BONUS_HOURS: "cricket_bonus_hours",
+    RANK_SNAPSHOTS: "cricket_rank_snapshots"
+};
+
+// Trigger types
+var TRIGGER_TYPES = {
+    STREAK_START: "streak_start",
+    LEADERBOARD_DECAY: "leaderboard_decay",
+    SQUAD_PRESSURE: "squad_pressure",
+    BONUS_HOUR: "bonus_hour",
+    TIER_PROGRESSION: "tier_progression",
+    MONTHLY_RESET: "monthly_reset",
+    LOSS_AVERSION: "loss_aversion",
+    SOCIAL_PROOF: "social_proof",
+    FOMO: "fomo",
+    NEAR_MISS: "near_miss",
+    COMEBACK_BONUS: "comeback_bonus"
+};
+
+// Streak milestone configurations
+var STREAK_MILESTONES = {
+    1: {
+        type: TRIGGER_TYPES.STREAK_START,
+        title: "🔥 You're On Fire!",
+        message: "Day 1 streak started! Keep it going for awesome rewards!",
+        reward: { coins: 10, xp: 25 }
+    },
+    3: {
+        type: TRIGGER_TYPES.LEADERBOARD_DECAY,
+        title: "📉 Rank Protection Active!",
+        message: "Your 3-day streak shields your rank from decay!",
+        reward: { coins: 25, xp: 50, effect: "rank_shield" }
+    },
+    5: {
+        type: TRIGGER_TYPES.SQUAD_PRESSURE,
+        title: "⚔️ Squad Commander!",
+        message: "5-day streak! You can now lead squad battles!",
+        reward: { coins: 50, xp: 100, effect: "squad_leader" }
+    },
+    7: {
+        type: TRIGGER_TYPES.BONUS_HOUR,
+        title: "🚀 2X COINS ACTIVATED!",
+        message: "WEEK STREAK! Enjoy 60 minutes of double earnings!",
+        reward: { coins: 100, xp: 150, bonusMultiplier: 2.0, bonusDuration: 60 }
+    },
+    14: {
+        type: TRIGGER_TYPES.TIER_PROGRESSION,
+        title: "⬆️ Tier Boost Token!",
+        message: "2 WEEK STREAK! Use your token for instant tier progress!",
+        reward: { coins: 200, xp: 250, item: "tier_boost_token" }
+    },
+    30: {
+        type: TRIGGER_TYPES.MONTHLY_RESET,
+        title: "🏆 Season Champion!",
+        message: "MONTH STREAK! You've earned the Season Starter Pack!",
+        reward: { coins: 500, xp: 500, item: "season_starter_pack" }
+    }
+};
+
+// Tier configuration
+var TIERS = {
+    BRONZE: { name: "Bronze", xpRequired: 0, multiplier: 1.0 },
+    SILVER: { name: "Silver", xpRequired: 1000, multiplier: 1.1 },
+    GOLD: { name: "Gold", xpRequired: 2500, multiplier: 1.2 },
+    PLATINUM: { name: "Platinum", xpRequired: 5000, multiplier: 1.3 },
+    DIAMOND: { name: "Diamond", xpRequired: 10000, multiplier: 1.4 },
+    MASTER: { name: "Master", xpRequired: 25000, multiplier: 1.5 },
+    LEGEND: { name: "Legend", xpRequired: 50000, multiplier: 2.0 }
+};
+
+/**
+ * RPC: Process daily login and return triggers
+ * 
+ * Returns all applicable triggers for the user's current state
+ */
+function rpcProcessDailyLogin(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const now = Date.now();
+    const today = new Date(now).toISOString().split('T')[0];
+
+    // Get user's retention data
+    const retentionData = getRetentionData(nk, userId);
+
+    // Calculate streak
+    const lastLoginDate = retentionData.lastLoginDate;
+    const yesterday = new Date(now - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    let streakResult = {
+        continued: false,
+        broken: false,
+        isNew: false,
+        daysAway: 0
+    };
+
+    if (lastLoginDate === today) {
+        // Already logged in today
+        return JSON.stringify({
+            success: true,
+            alreadyLoggedIn: true,
+            currentStreak: retentionData.currentStreak,
+            triggers: [],
+            message: "Welcome back!"
+        });
+    } else if (lastLoginDate === yesterday) {
+        // Streak continues
+        retentionData.currentStreak++;
+        streakResult.continued = true;
+    } else if (lastLoginDate && lastLoginDate < yesterday) {
+        // Streak broken
+        const lastDate = new Date(lastLoginDate);
+        const nowDate = new Date(today);
+        streakResult.daysAway = Math.floor((nowDate - lastDate) / (1000 * 60 * 60 * 24));
+        streakResult.broken = true;
+        
+        retentionData.previousStreak = retentionData.currentStreak;
+        retentionData.currentStreak = 1;
+    } else {
+        // First login ever
+        retentionData.currentStreak = 1;
+        streakResult.isNew = true;
+    }
+
+    retentionData.lastLoginDate = today;
+    retentionData.highestStreak = Math.max(retentionData.highestStreak || 0, retentionData.currentStreak);
+    retentionData.totalLogins = (retentionData.totalLogins || 0) + 1;
+
+    // Process triggers
+    const triggers = [];
+
+    // 1. Streak milestone triggers
+    const milestoneTrigger = processStreakMilestone(nk, userId, retentionData, now);
+    if (milestoneTrigger) {
+        triggers.push(milestoneTrigger);
+    }
+
+    // 2. Comeback bonus (if was away 3+ days)
+    if (streakResult.broken && streakResult.daysAway >= 3) {
+        const comebackTrigger = createComebackTrigger(streakResult.daysAway, now);
+        triggers.push(comebackTrigger);
+    }
+
+    // 3. Leaderboard decay check
+    const rankDecayTrigger = checkLeaderboardDecay(nk, userId, retentionData, now);
+    if (rankDecayTrigger) {
+        triggers.push(rankDecayTrigger);
+    }
+
+    // 4. Tier progression check
+    const tierTrigger = checkTierProgress(nk, userId, retentionData, now);
+    if (tierTrigger) {
+        triggers.push(tierTrigger);
+    }
+
+    // 5. FOMO trigger (upcoming matches)
+    const fomoTrigger = checkUpcomingMatches(nk, userId, now);
+    if (fomoTrigger) {
+        triggers.push(fomoTrigger);
+    }
+
+    // 6. Social proof trigger (friends passing)
+    const socialTrigger = checkFriendProgress(nk, userId, retentionData, now);
+    if (socialTrigger) {
+        triggers.push(socialTrigger);
+    }
+
+    // Save updated retention data
+    saveRetentionData(nk, userId, retentionData);
+
+    // Log streak history
+    logStreakHistory(nk, userId, retentionData.currentStreak, streakResult);
+
+    // Sort triggers by priority
+    triggers.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    logger.info(`User ${userId} daily login: Day ${retentionData.currentStreak}, ${triggers.length} triggers`);
+
+    return JSON.stringify({
+        success: true,
+        currentStreak: retentionData.currentStreak,
+        highestStreak: retentionData.highestStreak,
+        previousStreak: retentionData.previousStreak,
+        totalLogins: retentionData.totalLogins,
+        currentTier: retentionData.currentTier || "Bronze",
+        tierProgress: retentionData.tierProgress || 0,
+        triggers,
+        streakResult,
+        bonusMultiplier: getActiveMultiplier(nk, userId)
+    });
+}
+
+/**
+ * RPC: Claim trigger reward
+ */
+function rpcClaimTriggerReward(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { triggerId, triggerType } = data;
+
+    if (!triggerId) {
+        throw new Error("triggerId is required");
+    }
+
+    // Check if already claimed
+    const claimKey = `claim_${triggerId}`;
+    const existing = nk.storageRead([{
+        collection: COLLECTIONS.TRIGGER_HISTORY,
+        key: claimKey,
+        userId: userId
+    }]);
+
+    if (existing.length > 0) {
+        return JSON.stringify({
+            success: false,
+            message: "Reward already claimed"
+        });
+    }
+
+    // Get retention data for reward calculation
+    const retentionData = getRetentionData(nk, userId);
+
+    // Determine reward based on trigger type
+    let reward = { coins: 0, xp: 0 };
+    let effects = [];
+
+    // Check streak milestones
+    if (STREAK_MILESTONES[retentionData.currentStreak]) {
+        const milestone = STREAK_MILESTONES[retentionData.currentStreak];
+        reward = { ...milestone.reward };
+        
+        // Handle special effects
+        if (reward.bonusDuration) {
+            activateBonusHour(nk, userId, reward.bonusMultiplier || 2.0, reward.bonusDuration);
+            effects.push("bonus_hour_activated");
+        }
+        
+        if (reward.effect) {
+            effects.push(reward.effect);
+        }
+    }
+
+    // Apply comeback bonus
+    if (triggerType === TRIGGER_TYPES.COMEBACK_BONUS) {
+        const daysAway = data.daysAway || 3;
+        reward.coins = Math.min(daysAway * 50, 500);
+        reward.xp = reward.coins / 2;
+    }
+
+    // Award coins
+    if (reward.coins > 0) {
+        const multiplier = getActiveMultiplier(nk, userId);
+        const finalCoins = Math.floor(reward.coins * multiplier);
+        
+        try {
+            nk.walletUpdate(userId, { coins: finalCoins }, { 
+                reason: `trigger_${triggerType}`,
+                triggerId: triggerId
+            }, true);
+            reward.coinsAwarded = finalCoins;
+        } catch (e) {
+            logger.error(`Failed to award coins: ${e.message}`);
+        }
+    }
+
+    // Award XP (to season pass)
+    if (reward.xp > 0) {
+        updateUserXP(nk, userId, reward.xp);
+    }
+
+    // Award items
+    if (reward.item) {
+        awardItem(nk, userId, reward.item, `trigger_${triggerId}`);
+        effects.push(`item_${reward.item}`);
+    }
+
+    // Record claim
+    nk.storageWrite([{
+        collection: COLLECTIONS.TRIGGER_HISTORY,
+        key: claimKey,
+        userId: userId,
+        value: {
+            triggerId,
+            triggerType,
+            reward,
+            effects,
+            claimedAt: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} claimed trigger ${triggerId}: ${JSON.stringify(reward)}`);
+
+    return JSON.stringify({
+        success: true,
+        reward,
+        effects,
+        message: getRewardMessage(triggerType, reward)
+    });
+}
+
+/**
+ * RPC: Get retention status
+ */
+function rpcGetRetentionStatus(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const retentionData = getRetentionData(nk, userId);
+    const now = Date.now();
+
+    // Calculate time until streak breaks
+    const lastLogin = retentionData.lastLoginDate;
+    let hoursUntilStreakBreaks = 24;
+    
+    if (lastLogin) {
+        const lastLoginTime = new Date(lastLogin).getTime();
+        const breakTime = lastLoginTime + (24 * 60 * 60 * 1000);
+        hoursUntilStreakBreaks = Math.max(0, (breakTime - now) / (1000 * 60 * 60));
+    }
+
+    // Get bonus hour status
+    const bonusHour = getBonusHourStatus(nk, userId);
+
+    // Get next milestone
+    const nextMilestone = getNextMilestone(retentionData.currentStreak);
+
+    // Get tier info
+    const tierInfo = getTierInfo(retentionData.totalXP || 0);
+
+    return JSON.stringify({
+        currentStreak: retentionData.currentStreak || 0,
+        highestStreak: retentionData.highestStreak || 0,
+        totalLogins: retentionData.totalLogins || 0,
+        lastLoginDate: retentionData.lastLoginDate,
+        hoursUntilStreakBreaks,
+        isStreakInDanger: hoursUntilStreakBreaks <= 4,
+        nextMilestone,
+        daysToNextMilestone: nextMilestone ? nextMilestone.day - retentionData.currentStreak : 0,
+        bonusHour,
+        tier: tierInfo,
+        currentRank: retentionData.currentRank || 0,
+        previousRank: retentionData.previousRank || 0
+    });
+}
+
+/**
+ * RPC: Activate bonus hour manually (for testing or purchases)
+ */
+function rpcActivateBonusHour(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { multiplier = 2.0, duration = 60 } = data;
+
+    activateBonusHour(nk, userId, multiplier, duration);
+
+    logger.info(`User ${userId} activated bonus hour: ${multiplier}x for ${duration}min`);
+
+    return JSON.stringify({
+        success: true,
+        multiplier,
+        duration,
+        expiresAt: Date.now() + (duration * 60 * 1000)
+    });
+}
+
+/**
+ * RPC: Record rank snapshot (called periodically or after ranking changes)
+ */
+function rpcRecordRankSnapshot(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { leaderboardId, rank, score } = data;
+
+    const retentionData = getRetentionData(nk, userId);
+    
+    // Store previous rank
+    retentionData.previousRank = retentionData.currentRank || rank;
+    retentionData.currentRank = rank;
+    retentionData.lastRankUpdate = Date.now();
+
+    saveRetentionData(nk, userId, retentionData);
+
+    // Store snapshot
+    nk.storageWrite([{
+        collection: COLLECTIONS.RANK_SNAPSHOTS,
+        key: `${leaderboardId}_${Date.now()}`,
+        userId: userId,
+        value: {
+            leaderboardId,
+            rank,
+            score,
+            timestamp: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    return JSON.stringify({
+        success: true,
+        currentRank: rank,
+        previousRank: retentionData.previousRank,
+        rankChange: retentionData.previousRank - rank
+    });
+}
+
+// Helper functions
+function getRetentionData(nk, userId) {
+    const data = nk.storageRead([{
+        collection: COLLECTIONS.RETENTION_DATA,
+        key: "data",
+        userId: userId
+    }]);
+
+    return data.length > 0 ? data[0].value : {
+        currentStreak: 0,
+        highestStreak: 0,
+        previousStreak: 0,
+        totalLogins: 0,
+        lastLoginDate: null,
+        currentTier: "Bronze",
+        tierProgress: 0,
+        totalXP: 0,
+        currentRank: 0,
+        previousRank: 0
+    };
+}
+
+function saveRetentionData(nk, userId, data) {
+    nk.storageWrite([{
+        collection: COLLECTIONS.RETENTION_DATA,
+        key: "data",
+        userId: userId,
+        value: data,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function processStreakMilestone(nk, userId, retentionData, now) {
+    const streak = retentionData.currentStreak;
+    const milestone = STREAK_MILESTONES[streak];
+
+    if (!milestone) return null;
+
+    // Check if already claimed today
+    const claimKey = `milestone_${streak}_${new Date(now).toISOString().split('T')[0]}`;
+    const existing = nk.storageRead([{
+        collection: COLLECTIONS.TRIGGER_HISTORY,
+        key: claimKey,
+        userId: userId
+    }]);
+
+    if (existing.length > 0) return null;
+
+    return {
+        id: `${milestone.type}_${streak}_${now}`,
+        type: milestone.type,
+        title: milestone.title,
+        message: milestone.message,
+        emoji: milestone.title.split(' ')[0],
+        reward: milestone.reward,
+        priority: streak >= 7 ? 5 : streak >= 3 ? 3 : 1,
+        streakDay: streak,
+        expiresAt: now + (24 * 60 * 60 * 1000)
+    };
+}
+
+function createComebackTrigger(daysAway, now) {
+    const bonusCoins = Math.min(daysAway * 50, 500);
+
+    return {
+        id: `comeback_${now}`,
+        type: TRIGGER_TYPES.COMEBACK_BONUS,
+        title: "🎉 Welcome Back Champion!",
+        message: `We missed you for ${daysAway} days! Here's your comeback bonus!`,
+        emoji: "🎉",
+        reward: { coins: bonusCoins, xp: bonusCoins / 2 },
+        priority: 5,
+        daysAway,
+        expiresAt: now + (24 * 60 * 60 * 1000)
+    };
+}
+
+function checkLeaderboardDecay(nk, userId, retentionData, now) {
+    const currentRank = retentionData.currentRank || 0;
+    const previousRank = retentionData.previousRank || 0;
+
+    if (currentRank <= 0 || previousRank <= 0) return null;
+
+    const rankDrop = currentRank - previousRank;
+
+    if (rankDrop >= 5) {
+        return {
+            id: `decay_${now}`,
+            type: TRIGGER_TYPES.LEADERBOARD_DECAY,
+            title: "📉 Your Rank is Slipping!",
+            message: `You've dropped from #${previousRank} to #${currentRank}! Play now to reclaim your spot!`,
+            emoji: "📉",
+            reward: { coins: 25, bonusMultiplier: 1.25 },
+            priority: 3,
+            oldRank: previousRank,
+            newRank: currentRank,
+            expiresAt: now + (12 * 60 * 60 * 1000)
+        };
+    }
+
+    return null;
+}
+
+function checkTierProgress(nk, userId, retentionData, now) {
+    const tierProgress = retentionData.tierProgress || 0;
+
+    if (tierProgress >= 0.8 && tierProgress < 1.0) {
+        const currentTier = retentionData.currentTier || "Bronze";
+        const nextTier = getNextTier(currentTier);
+        const remaining = Math.floor((1.0 - tierProgress) * getTierXPRequirement(nextTier));
+
+        return {
+            id: `tier_${now}`,
+            type: TRIGGER_TYPES.TIER_PROGRESSION,
+            title: `⬆️ ${nextTier} is Within Reach!`,
+            message: `Just ${remaining} XP away from ${nextTier}! Complete a quick trivia!`,
+            emoji: "⬆️",
+            reward: { xp: 50 },
+            priority: 4,
+            currentTier,
+            nextTier,
+            remaining,
+            expiresAt: now + (24 * 60 * 60 * 1000)
+        };
+    }
+
+    return null;
+}
+
+function checkUpcomingMatches(nk, userId, now) {
+    // Check for matches in the next 2-6 hours
+    const schedules = nk.storageList(null, "cricket_schedules", 50, null);
+    
+    for (const schedule of (schedules.objects || [])) {
+        const match = schedule.value;
+        const matchTime = new Date(match.matchTime).getTime();
+        const hoursUntil = (matchTime - now) / (1000 * 60 * 60);
+
+        if (hoursUntil >= 2 && hoursUntil <= 6) {
+            // Check if user has predicted
+            const prediction = nk.storageRead([{
+                collection: "cricket_predictions",
+                key: `${userId}_${match.matchId}`,
+                userId: userId
+            }]);
+
+            if (prediction.length === 0) {
+                return {
+                    id: `fomo_${match.matchId}_${now}`,
+                    type: TRIGGER_TYPES.FOMO,
+                    title: `🏏 Match in ${Math.floor(hoursUntil)} Hours!`,
+                    message: `${match.team1} vs ${match.team2} - Predict NOW for max points!`,
+                    emoji: "🏏",
+                    reward: { xp: 25 },
+                    priority: 4,
+                    matchId: match.matchId,
+                    team1: match.team1,
+                    team2: match.team2,
+                    expiresAt: matchTime
+                };
+            }
+        }
+    }
+
+    return null;
+}
+
+function checkFriendProgress(nk, userId, retentionData, now) {
+    // This would check friend leaderboard standings
+    // For now, return null - would need friend system integration
+    return null;
+}
+
+function activateBonusHour(nk, userId, multiplier, duration) {
+    const now = Date.now();
+    const expiresAt = now + (duration * 60 * 1000);
+
+    nk.storageWrite([{
+        collection: COLLECTIONS.BONUS_HOURS,
+        key: "active",
+        userId: userId,
+        value: {
+            multiplier,
+            startedAt: now,
+            expiresAt,
+            duration
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function getBonusHourStatus(nk, userId) {
+    const bonus = nk.storageRead([{
+        collection: COLLECTIONS.BONUS_HOURS,
+        key: "active",
+        userId: userId
+    }]);
+
+    if (bonus.length === 0) return null;
+
+    const data = bonus[0].value;
+    const now = Date.now();
+
+    if (now >= data.expiresAt) {
+        // Expired, clean up
+        nk.storageDelete([{
+            collection: COLLECTIONS.BONUS_HOURS,
+            key: "active",
+            userId: userId
+        }]);
+        return null;
+    }
+
+    return {
+        active: true,
+        multiplier: data.multiplier,
+        remainingMinutes: Math.floor((data.expiresAt - now) / (1000 * 60)),
+        expiresAt: data.expiresAt
+    };
+}
+
+function getActiveMultiplier(nk, userId) {
+    const bonusHour = getBonusHourStatus(nk, userId);
+    return bonusHour?.multiplier || 1.0;
+}
+
+function getNextMilestone(currentStreak) {
+    const milestones = [3, 7, 14, 30, 60, 90, 180, 365];
+    
+    for (const day of milestones) {
+        if (currentStreak < day) {
+            return {
+                day,
+                daysRemaining: day - currentStreak,
+                reward: STREAK_MILESTONES[day]
+            };
+        }
+    }
+    return null;
+}
+
+function getNextTier(currentTier) {
+    const tierOrder = ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Legend"];
+    const index = tierOrder.indexOf(currentTier);
+    return index < tierOrder.length - 1 ? tierOrder[index + 1] : currentTier;
+}
+
+function getTierXPRequirement(tier) {
+    const requirements = {
+        Silver: 1000,
+        Gold: 2500,
+        Platinum: 5000,
+        Diamond: 10000,
+        Master: 25000,
+        Legend: 50000
+    };
+    return requirements[tier] || 1000;
+}
+
+function getTierInfo(totalXP) {
+    const tiers = [
+        { name: "Bronze", min: 0 },
+        { name: "Silver", min: 1000 },
+        { name: "Gold", min: 2500 },
+        { name: "Platinum", min: 5000 },
+        { name: "Diamond", min: 10000 },
+        { name: "Master", min: 25000 },
+        { name: "Legend", min: 50000 }
+    ];
+
+    let current = tiers[0];
+    let next = tiers[1];
+
+    for (let i = 0; i < tiers.length; i++) {
+        if (totalXP >= tiers[i].min) {
+            current = tiers[i];
+            next = tiers[i + 1] || current;
+        }
+    }
+
+    const progress = next ? (totalXP - current.min) / (next.min - current.min) : 1.0;
+
+    return {
+        current: current.name,
+        next: next?.name || current.name,
+        totalXP,
+        progress: Math.min(progress, 1.0),
+        xpToNext: next ? next.min - totalXP : 0
+    };
+}
+
+function updateUserXP(nk, userId, xpGained) {
+    const retentionData = getRetentionData(nk, userId);
+    retentionData.totalXP = (retentionData.totalXP || 0) + xpGained;
+    
+    // Update tier progress
+    const tierInfo = getTierInfo(retentionData.totalXP);
+    retentionData.currentTier = tierInfo.current;
+    retentionData.tierProgress = tierInfo.progress;
+
+    saveRetentionData(nk, userId, retentionData);
+}
+
+function awardItem(nk, userId, itemId, source) {
+    nk.storageWrite([{
+        collection: "cricket_inventory",
+        key: `${itemId}_${Date.now()}`,
+        userId: userId,
+        value: {
+            itemId,
+            source,
+            awardedAt: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function logStreakHistory(nk, userId, streak, result) {
+    nk.storageWrite([{
+        collection: COLLECTIONS.STREAK_HISTORY,
+        key: `${Date.now()}`,
+        userId: userId,
+        value: {
+            streak,
+            continued: result.continued,
+            broken: result.broken,
+            isNew: result.isNew,
+            daysAway: result.daysAway,
+            timestamp: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function getRewardMessage(triggerType, reward) {
+    const coinMsg = reward.coins ? `+${reward.coinsAwarded || reward.coins} coins` : "";
+    const xpMsg = reward.xp ? `+${reward.xp} XP` : "";
+    
+    const parts = [coinMsg, xpMsg].filter(p => p);
+    return parts.length > 0 ? `Claimed: ${parts.join(", ")}!` : "Reward claimed!";
+}
+
+// Register RPCs
+function __ModuleInit_40(ctx, logger, nk, initializer) {
+    logger.info("Cricket Retention Module loaded");
+
+    __rpc_cricket_process_daily_login = __rpc_cricket_process_daily_login || (rpcProcessDailyLogin);
+    __rpc_cricket_claim_trigger_reward = __rpc_cricket_claim_trigger_reward || (rpcClaimTriggerReward);
+    __rpc_cricket_get_retention_status = __rpc_cricket_get_retention_status || (rpcGetRetentionStatus);
+    __rpc_cricket_activate_bonus_hour = __rpc_cricket_activate_bonus_hour || (rpcActivateBonusHour);
+    __rpc_cricket_record_rank_snapshot = __rpc_cricket_record_rank_snapshot || (rpcRecordRankSnapshot);
+
+    logger.info("Cricket Retention Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_season_pass.js ---
+/**
+ * Cricket Season Pass Module
+ * 
+ * Manages the IPL/World Cup 2026 Season Pass:
+ * - XP progression
+ * - Tier rewards
+ * - Premium pass benefits
+ * - Season-specific content
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Collections
+var COLLECTIONS = {
+    SEASON_PASS: "cricket_season_pass",
+    XP_HISTORY: "cricket_xp_history",
+    CLAIMED_REWARDS: "cricket_claimed_rewards"
+};
+
+// Season configuration
+var SEASONS = {
+    WORLDCUP_2026: {
+        id: "worldcup_2026",
+        name: "ICC T20 World Cup 2026",
+        startDate: "2026-02-01",
+        endDate: "2026-03-15",
+        maxLevel: 50,
+        xpPerLevel: 1000,
+        theme: "national_pride"
+    },
+    IPL_2026: {
+        id: "ipl_2026",
+        name: "IPL 2026 Season",
+        startDate: "2026-04-01",
+        endDate: "2026-05-31",
+        maxLevel: 50,
+        xpPerLevel: 1000,
+        theme: "franchise_glory"
+    }
+};
+
+// XP sources
+var XP_SOURCES = {
+    DAILY_LOGIN: 50,
+    TRIVIA_COMPLETION: 100,
+    PREDICTION_MADE: 75,
+    CORRECT_PREDICTION: 200,
+    PERFECT_PREDICTION: 500,
+    DAILY_CHALLENGE: 150,
+    WEEKLY_TOURNAMENT: 300,
+    SHARE_MATCH: 50,
+    STREAK_BONUS_PER_DAY: 25,
+    MATCH_ENGAGEMENT: 100
+};
+
+// Tier rewards (every 5 levels)
+var TIER_REWARDS = {
+    FREE: [
+        { level: 1, reward: { type: "cap", id: "basic_cap", name: "Basic Cap" } },
+        { level: 5, reward: { type: "coins", amount: 100 } },
+        { level: 10, reward: { type: "cap", id: "team_cap_common", name: "Team Cap" } },
+        { level: 15, reward: { type: "coins", amount: 200 } },
+        { level: 20, reward: { type: "avatar", id: "cricket_avatar_1", name: "Cricket Avatar" } },
+        { level: 25, reward: { type: "cap", id: "country_cap", name: "Country Cap" } },
+        { level: 30, reward: { type: "coins", amount: 500 } },
+        { level: 35, reward: { type: "jersey_shard", amount: 1 } },
+        { level: 40, reward: { type: "cap", id: "gold_cap", name: "Gold Cap" } },
+        { level: 45, reward: { type: "coins", amount: 1000 } },
+        { level: 50, reward: { type: "title", id: "cricket_master", name: "Cricket Master" } }
+    ],
+    PREMIUM: [
+        { level: 1, reward: { type: "jersey", id: "premium_jersey_1", name: "Premium Jersey" } },
+        { level: 5, reward: { type: "coins", amount: 250 } },
+        { level: 10, reward: { type: "cap", id: "animated_cap", name: "Animated Cap" } },
+        { level: 15, reward: { type: "coins", amount: 500 } },
+        { level: 20, reward: { type: "jersey", id: "premium_jersey_2", name: "Elite Jersey" } },
+        { level: 25, reward: { type: "cap", id: "legendary_cap", name: "Legendary Cap" } },
+        { level: 30, reward: { type: "coins", amount: 1000 } },
+        { level: 35, reward: { type: "jersey", id: "champion_jersey", name: "Champion Jersey" } },
+        { level: 40, reward: { type: "cap", id: "champion_cap", name: "Champion Cap" } },
+        { level: 45, reward: { type: "coins", amount: 2000 } },
+        { level: 50, reward: { type: "jersey", id: "legendary_kit", name: "Legendary Complete Kit" } }
+    ]
+};
+
+/**
+ * RPC: Get season pass status
+ */
+function rpcGetSeasonPassStatus(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const currentSeason = getCurrentSeason();
+    
+    if (!currentSeason) {
+        return JSON.stringify({
+            active: false,
+            message: "No active season",
+            nextSeason: getNextSeason()
+        });
+    }
+
+    // Get user's season pass data
+    const passData = nk.storageRead([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId
+    }]);
+
+    const userPass = passData.length > 0 ? passData[0].value : {
+        seasonId: currentSeason.id,
+        currentXP: 0,
+        currentLevel: 1,
+        isPremium: false,
+        claimedFreeRewards: [],
+        claimedPremiumRewards: [],
+        createdAt: Date.now()
+    };
+
+    // Calculate level progress
+    const xpForCurrentLevel = (userPass.currentLevel - 1) * currentSeason.xpPerLevel;
+    const xpInCurrentLevel = userPass.currentXP - xpForCurrentLevel;
+    const xpToNextLevel = currentSeason.xpPerLevel;
+    const progressPercent = Math.floor((xpInCurrentLevel / xpToNextLevel) * 100);
+
+    // Get available rewards
+    const availableRewards = getAvailableRewards(userPass);
+
+    return JSON.stringify({
+        active: true,
+        season: {
+            id: currentSeason.id,
+            name: currentSeason.name,
+            theme: currentSeason.theme,
+            endDate: currentSeason.endDate,
+            daysRemaining: getDaysRemaining(currentSeason.endDate)
+        },
+        progress: {
+            currentLevel: userPass.currentLevel,
+            currentXP: userPass.currentXP,
+            xpInCurrentLevel,
+            xpToNextLevel,
+            progressPercent,
+            maxLevel: currentSeason.maxLevel,
+            isPremium: userPass.isPremium
+        },
+        rewards: {
+            available: availableRewards,
+            claimedFree: userPass.claimedFreeRewards,
+            claimedPremium: userPass.claimedPremiumRewards
+        },
+        tiers: {
+            free: TIER_REWARDS.FREE,
+            premium: TIER_REWARDS.PREMIUM
+        }
+    });
+}
+
+/**
+ * RPC: Add XP to season pass
+ * 
+ * Payload: {
+ *   source: string,
+ *   amount: number (optional, uses default if not provided),
+ *   metadata: object (optional)
+ * }
+ */
+function rpcAddSeasonXP(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { source, amount, metadata } = data;
+
+    if (!source) {
+        throw new Error("source is required");
+    }
+
+    const currentSeason = getCurrentSeason();
+    
+    if (!currentSeason) {
+        return JSON.stringify({ success: false, message: "No active season" });
+    }
+
+    // Get XP amount from source or use provided amount
+    const xpAmount = amount || XP_SOURCES[source.toUpperCase()] || 0;
+
+    if (xpAmount <= 0) {
+        return JSON.stringify({ success: false, message: "Invalid XP amount" });
+    }
+
+    // Get user's season pass data
+    const passData = nk.storageRead([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId
+    }]);
+
+    const userPass = passData.length > 0 ? passData[0].value : {
+        seasonId: currentSeason.id,
+        currentXP: 0,
+        currentLevel: 1,
+        isPremium: false,
+        claimedFreeRewards: [],
+        claimedPremiumRewards: [],
+        createdAt: Date.now()
+    };
+
+    // Apply premium bonus if applicable
+    const finalXP = userPass.isPremium ? Math.floor(xpAmount * 1.5) : xpAmount;
+
+    const previousLevel = userPass.currentLevel;
+    userPass.currentXP += finalXP;
+
+    // Calculate new level
+    const newLevel = Math.min(
+        Math.floor(userPass.currentXP / currentSeason.xpPerLevel) + 1,
+        currentSeason.maxLevel
+    );
+    userPass.currentLevel = newLevel;
+
+    const levelsGained = newLevel - previousLevel;
+
+    // Save updated pass
+    nk.storageWrite([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId,
+        value: userPass,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Log XP gain
+    nk.storageWrite([{
+        collection: COLLECTIONS.XP_HISTORY,
+        key: `${currentSeason.id}_${Date.now()}`,
+        userId: userId,
+        value: {
+            source,
+            amount: finalXP,
+            previousXP: userPass.currentXP - finalXP,
+            newXP: userPass.currentXP,
+            previousLevel,
+            newLevel,
+            metadata,
+            timestamp: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} gained ${finalXP} XP (${source}), now level ${newLevel}`);
+
+    // Check for newly available rewards
+    const newRewards = [];
+    if (levelsGained > 0) {
+        for (let level = previousLevel + 1; level <= newLevel; level++) {
+            const freeReward = TIER_REWARDS.FREE.find(r => r.level === level);
+            if (freeReward) {
+                newRewards.push({ tier: 'free', ...freeReward });
+            }
+            if (userPass.isPremium) {
+                const premiumReward = TIER_REWARDS.PREMIUM.find(r => r.level === level);
+                if (premiumReward) {
+                    newRewards.push({ tier: 'premium', ...premiumReward });
+                }
+            }
+        }
+    }
+
+    return JSON.stringify({
+        success: true,
+        xpGained: finalXP,
+        premiumBonus: userPass.isPremium ? Math.floor(xpAmount * 0.5) : 0,
+        currentXP: userPass.currentXP,
+        currentLevel: userPass.currentLevel,
+        previousLevel,
+        levelsGained,
+        newRewards
+    });
+}
+
+/**
+ * RPC: Claim season pass reward
+ * 
+ * Payload: {
+ *   level: number,
+ *   tier: "free" | "premium"
+ * }
+ */
+function rpcClaimSeasonReward(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { level, tier } = data;
+
+    if (!level || !tier) {
+        throw new Error("level and tier are required");
+    }
+
+    const currentSeason = getCurrentSeason();
+    
+    if (!currentSeason) {
+        return JSON.stringify({ success: false, message: "No active season" });
+    }
+
+    // Get user's season pass data
+    const passData = nk.storageRead([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId
+    }]);
+
+    if (passData.length === 0) {
+        return JSON.stringify({ success: false, message: "No season pass data found" });
+    }
+
+    const userPass = passData[0].value;
+
+    // Check level requirement
+    if (userPass.currentLevel < level) {
+        return JSON.stringify({ 
+            success: false, 
+            message: `Level ${level} required, you are level ${userPass.currentLevel}` 
+        });
+    }
+
+    // Check premium requirement
+    if (tier === 'premium' && !userPass.isPremium) {
+        return JSON.stringify({ success: false, message: "Premium pass required" });
+    }
+
+    // Find reward
+    const rewardList = tier === 'premium' ? TIER_REWARDS.PREMIUM : TIER_REWARDS.FREE;
+    const rewardEntry = rewardList.find(r => r.level === level);
+
+    if (!rewardEntry) {
+        return JSON.stringify({ success: false, message: "Reward not found for this level" });
+    }
+
+    // Check if already claimed
+    const claimedList = tier === 'premium' ? userPass.claimedPremiumRewards : userPass.claimedFreeRewards;
+    if (claimedList.includes(level)) {
+        return JSON.stringify({ success: false, message: "Reward already claimed" });
+    }
+
+    // Award reward
+    const reward = rewardEntry.reward;
+    let awardedItem = null;
+
+    switch (reward.type) {
+        case 'coins':
+            try {
+                nk.walletUpdate(userId, { coins: reward.amount }, { reason: `season_pass_${tier}_${level}` }, true);
+                awardedItem = { type: 'coins', amount: reward.amount };
+            } catch (e) {
+                logger.error(`Failed to award coins: ${e.message}`);
+            }
+            break;
+
+        case 'cap':
+        case 'jersey':
+        case 'avatar':
+        case 'title':
+            // Store item in user's inventory
+            nk.storageWrite([{
+                collection: 'cricket_inventory',
+                key: `${reward.type}_${reward.id}`,
+                userId: userId,
+                value: {
+                    type: reward.type,
+                    id: reward.id,
+                    name: reward.name,
+                    source: `season_pass_${tier}_${level}`,
+                    acquiredAt: Date.now()
+                },
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+            awardedItem = { type: reward.type, id: reward.id, name: reward.name };
+            break;
+
+        case 'jersey_shard':
+            // Store shard
+            nk.storageWrite([{
+                collection: 'cricket_shards',
+                key: `shard_${Date.now()}`,
+                userId: userId,
+                value: {
+                    type: 'jersey_shard',
+                    amount: reward.amount,
+                    source: `season_pass_${tier}_${level}`,
+                    acquiredAt: Date.now()
+                },
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+            awardedItem = { type: 'jersey_shard', amount: reward.amount };
+            break;
+    }
+
+    // Mark as claimed
+    claimedList.push(level);
+    
+    if (tier === 'premium') {
+        userPass.claimedPremiumRewards = claimedList;
+    } else {
+        userPass.claimedFreeRewards = claimedList;
+    }
+
+    // Save updated pass
+    nk.storageWrite([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId,
+        value: userPass,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} claimed ${tier} reward at level ${level}: ${JSON.stringify(awardedItem)}`);
+
+    return JSON.stringify({
+        success: true,
+        level,
+        tier,
+        reward: awardedItem,
+        claimedCount: {
+            free: userPass.claimedFreeRewards.length,
+            premium: userPass.claimedPremiumRewards.length
+        }
+    });
+}
+
+/**
+ * RPC: Upgrade to premium pass
+ * 
+ * Called after IAP verification
+ */
+function rpcUpgradeToPremium(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    const currentSeason = getCurrentSeason();
+    
+    if (!currentSeason) {
+        return JSON.stringify({ success: false, message: "No active season" });
+    }
+
+    // Get user's season pass data
+    const passData = nk.storageRead([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId
+    }]);
+
+    const userPass = passData.length > 0 ? passData[0].value : {
+        seasonId: currentSeason.id,
+        currentXP: 0,
+        currentLevel: 1,
+        isPremium: false,
+        claimedFreeRewards: [],
+        claimedPremiumRewards: [],
+        createdAt: Date.now()
+    };
+
+    if (userPass.isPremium) {
+        return JSON.stringify({ success: false, message: "Already premium" });
+    }
+
+    userPass.isPremium = true;
+    userPass.premiumUpgradeDate = Date.now();
+
+    // Calculate retroactive rewards (premium rewards for already reached levels)
+    const retroactiveRewards = [];
+    for (const rewardEntry of TIER_REWARDS.PREMIUM) {
+        if (rewardEntry.level <= userPass.currentLevel && !userPass.claimedPremiumRewards.includes(rewardEntry.level)) {
+            retroactiveRewards.push({
+                level: rewardEntry.level,
+                reward: rewardEntry.reward
+            });
+        }
+    }
+
+    // Save updated pass
+    nk.storageWrite([{
+        collection: COLLECTIONS.SEASON_PASS,
+        key: currentSeason.id,
+        userId: userId,
+        value: userPass,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} upgraded to premium pass`);
+
+    return JSON.stringify({
+        success: true,
+        isPremium: true,
+        currentLevel: userPass.currentLevel,
+        retroactiveRewards,
+        message: `Welcome to Premium! You have ${retroactiveRewards.length} rewards waiting to be claimed!`
+    });
+}
+
+// Helper functions
+function getCurrentSeason() {
+    const now = new Date();
+    
+    for (const season of Object.values(SEASONS)) {
+        const start = new Date(season.startDate);
+        const end = new Date(season.endDate);
+        
+        if (now >= start && now <= end) {
+            return season;
+        }
+    }
+    
+    // For development, return World Cup if before any season
+    return SEASONS.WORLDCUP_2026;
+}
+
+function getNextSeason() {
+    const now = new Date();
+    
+    for (const season of Object.values(SEASONS)) {
+        const start = new Date(season.startDate);
+        
+        if (now < start) {
+            return {
+                id: season.id,
+                name: season.name,
+                startDate: season.startDate,
+                daysUntilStart: Math.ceil((start - now) / (1000 * 60 * 60 * 24))
+            };
+        }
+    }
+    
+    return null;
+}
+
+function getDaysRemaining(endDate) {
+    const end = new Date(endDate);
+    const now = new Date();
+    return Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+}
+
+function getAvailableRewards(userPass) {
+    const available = [];
+    
+    for (const rewardEntry of TIER_REWARDS.FREE) {
+        if (rewardEntry.level <= userPass.currentLevel && !userPass.claimedFreeRewards.includes(rewardEntry.level)) {
+            available.push({ tier: 'free', level: rewardEntry.level, reward: rewardEntry.reward });
+        }
+    }
+    
+    if (userPass.isPremium) {
+        for (const rewardEntry of TIER_REWARDS.PREMIUM) {
+            if (rewardEntry.level <= userPass.currentLevel && !userPass.claimedPremiumRewards.includes(rewardEntry.level)) {
+                available.push({ tier: 'premium', level: rewardEntry.level, reward: rewardEntry.reward });
+            }
+        }
+    }
+    
+    return available;
+}
+
+// Register RPCs
+function __ModuleInit_41(ctx, logger, nk, initializer) {
+    logger.info("Cricket Season Pass Module loaded");
+
+    __rpc_cricket_get_season_pass = __rpc_cricket_get_season_pass || (rpcGetSeasonPassStatus);
+    __rpc_cricket_add_season_xp = __rpc_cricket_add_season_xp || (rpcAddSeasonXP);
+    __rpc_cricket_claim_season_reward = __rpc_cricket_claim_season_reward || (rpcClaimSeasonReward);
+    __rpc_cricket_upgrade_to_premium = __rpc_cricket_upgrade_to_premium || (rpcUpgradeToPremium);
+
+    logger.info("Cricket Season Pass Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket/cricket_trivia.js ---
+/**
+ * Cricket Trivia Module
+ * 
+ * Handles AI-powered trivia generation and scoring for Cricket VR Mob:
+ * - Generate trivia questions using AI APIs
+ * - Score trivia responses
+ * - Submit scores to leaderboards
+ * - Track trivia history
+ * 
+ * Integrates with IntelliVerse-X AI APIs:
+ * - ai-prompts for question generation
+ * - ai-enhancement for content enhancement
+ * 
+ * Game ID: 78244246-1e9e-4e0f-a8a2-7447d5b0284e
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// AI API Configuration (would be environment variables in production)
+var AI_API_BASE = "https://api.intelliversex.com";
+var AI_API_ENDPOINTS = {
+    GENERATE_QUIZ: "/ai-prompts/cricket/quiz",
+    GENERATE_TRIVIA: "/ai-prompts/cricket/trivia",
+    ENHANCE_QUESTION: "/ai-enhancement/improve",
+    CREATE_FROM_URL: "/ai-notes/create-from-url"
+};
+
+// Collections
+var COLLECTIONS = {
+    TRIVIA_SESSIONS: "cricket_trivia_sessions",
+    TRIVIA_QUESTIONS: "cricket_trivia_questions",
+    TRIVIA_HISTORY: "cricket_trivia_history",
+    AI_GENERATED: "cricket_ai_generated"
+};
+
+// Leaderboard
+var LEADERBOARDS = {
+    DAILY_TRIVIA: "cricket_daily_trivia",
+    ALL_TIME: "cricket_all_time_master"
+};
+
+// Scoring configuration
+var SCORING = {
+    CORRECT_ANSWER: 100,
+    SPEED_BONUS_MAX: 50,
+    STREAK_MULTIPLIER: 0.1,
+    DIFFICULTY_MULTIPLIER: {
+        easy: 1.0,
+        medium: 1.5,
+        hard: 2.0,
+        expert: 3.0
+    }
+};
+
+// Question categories for cricket
+var QUESTION_CATEGORIES = {
+    GENERAL: "general_cricket",
+    WORLD_CUP: "world_cup",
+    IPL: "ipl",
+    PLAYERS: "players",
+    RECORDS: "records",
+    RULES: "rules",
+    HISTORY: "history",
+    TEAMS: "teams",
+    VENUES: "venues",
+    HEAD_TO_HEAD: "head_to_head"
+};
+
+/**
+ * RPC: Start a trivia session
+ * 
+ * Payload: {
+ *   matchId: string (optional - for match-specific trivia),
+ *   category: string,
+ *   difficulty: string,
+ *   questionCount: number
+ * }
+ */
+function rpcStartTriviaSession(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        matchId, 
+        category = QUESTION_CATEGORIES.GENERAL, 
+        difficulty = "medium",
+        questionCount = 10 
+    } = data;
+
+    const sessionId = `trivia_${userId}_${Date.now()}`;
+    const now = Date.now();
+
+    // Generate questions
+    let questions = [];
+    
+    if (matchId) {
+        // Generate match-specific questions
+        questions = generateMatchQuestions(nk, matchId, questionCount, difficulty);
+    } else {
+        // Generate category questions
+        questions = generateCategoryQuestions(nk, category, questionCount, difficulty);
+    }
+
+    const session = {
+        sessionId,
+        userId,
+        matchId,
+        category,
+        difficulty,
+        questions: questions.map(q => ({
+            ...q,
+            answeredCorrectly: null,
+            answerTime: null,
+            pointsEarned: 0
+        })),
+        currentIndex: 0,
+        score: 0,
+        correctCount: 0,
+        streak: 0,
+        maxStreak: 0,
+        startTime: now,
+        isComplete: false
+    };
+
+    // Store session
+    nk.storageWrite([{
+        collection: COLLECTIONS.TRIVIA_SESSIONS,
+        key: sessionId,
+        userId: userId,
+        value: session,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} started trivia session: ${sessionId}`);
+
+    // Return first question only
+    return JSON.stringify({
+        sessionId,
+        totalQuestions: questions.length,
+        currentQuestion: 1,
+        question: sanitizeQuestion(questions[0]),
+        category,
+        difficulty,
+        matchId
+    });
+}
+
+/**
+ * RPC: Submit trivia answer
+ * 
+ * Payload: {
+ *   sessionId: string,
+ *   questionIndex: number,
+ *   answerIndex: number,
+ *   answerTime: number (ms)
+ * }
+ */
+function rpcSubmitTriviaAnswer(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { sessionId, questionIndex, answerIndex, answerTime } = data;
+
+    if (!sessionId || answerIndex === undefined) {
+        throw new Error("sessionId and answerIndex are required");
+    }
+
+    // Get session
+    const sessions = nk.storageRead([{
+        collection: COLLECTIONS.TRIVIA_SESSIONS,
+        key: sessionId,
+        userId: userId
+    }]);
+
+    if (sessions.length === 0) {
+        throw new Error("Session not found");
+    }
+
+    const session = sessions[0].value;
+
+    if (session.isComplete) {
+        throw new Error("Session is already complete");
+    }
+
+    const qIndex = questionIndex !== undefined ? questionIndex : session.currentIndex;
+    const question = session.questions[qIndex];
+
+    if (!question) {
+        throw new Error("Invalid question index");
+    }
+
+    if (question.answeredCorrectly !== null) {
+        throw new Error("Question already answered");
+    }
+
+    // Check answer
+    const isCorrect = answerIndex === question.correctIndex;
+    
+    // Calculate points
+    let points = 0;
+    if (isCorrect) {
+        points = SCORING.CORRECT_ANSWER;
+        
+        // Speed bonus (max 50 points for answers under 5 seconds)
+        const speedBonus = Math.max(0, SCORING.SPEED_BONUS_MAX - Math.floor(answerTime / 100));
+        points += speedBonus;
+        
+        // Difficulty multiplier
+        const diffMultiplier = SCORING.DIFFICULTY_MULTIPLIER[session.difficulty] || 1.0;
+        points = Math.floor(points * diffMultiplier);
+        
+        // Streak bonus
+        session.streak++;
+        const streakBonus = Math.floor(points * session.streak * SCORING.STREAK_MULTIPLIER);
+        points += streakBonus;
+        
+        session.correctCount++;
+        session.maxStreak = Math.max(session.maxStreak, session.streak);
+    } else {
+        session.streak = 0;
+    }
+
+    // Update question
+    question.answeredCorrectly = isCorrect;
+    question.answerTime = answerTime;
+    question.pointsEarned = points;
+    question.userAnswer = answerIndex;
+
+    session.score += points;
+    session.currentIndex++;
+
+    // Check if session is complete
+    const isLastQuestion = session.currentIndex >= session.questions.length;
+    if (isLastQuestion) {
+        session.isComplete = true;
+        session.endTime = Date.now();
+        session.duration = session.endTime - session.startTime;
+        
+        // Submit score to leaderboard
+        submitTriviaScore(nk, userId, session);
+        
+        // Track engagement if match-specific
+        if (session.matchId) {
+            trackTriviaEngagement(nk, userId, session);
+        }
+        
+        // Store in history
+        storeTriviaHistory(nk, userId, session);
+    }
+
+    // Save session
+    nk.storageWrite([{
+        collection: COLLECTIONS.TRIVIA_SESSIONS,
+        key: sessionId,
+        userId: userId,
+        value: session,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    // Prepare response
+    const response = {
+        isCorrect,
+        correctIndex: question.correctIndex,
+        pointsEarned: points,
+        totalScore: session.score,
+        streak: session.streak,
+        explanation: question.explanation
+    };
+
+    if (!isLastQuestion) {
+        response.nextQuestion = sanitizeQuestion(session.questions[session.currentIndex]);
+        response.currentQuestion = session.currentIndex + 1;
+        response.totalQuestions = session.questions.length;
+    } else {
+        response.sessionComplete = true;
+        response.finalScore = session.score;
+        response.correctCount = session.correctCount;
+        response.totalQuestions = session.questions.length;
+        response.maxStreak = session.maxStreak;
+        response.duration = session.duration;
+        response.accuracy = Math.floor((session.correctCount / session.questions.length) * 100);
+    }
+
+    return JSON.stringify(response);
+}
+
+/**
+ * RPC: Generate AI trivia from URL
+ * 
+ * Payload: {
+ *   url: string,
+ *   linkType: string (youtube, article, etc),
+ *   questionCount: number
+ * }
+ */
+function rpcGenerateAITrivia(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { url, linkType = "article", questionCount = 10 } = data;
+
+    if (!url) {
+        throw new Error("URL is required");
+    }
+
+    // For now, generate mock AI questions based on URL type
+    // In production, this would call the actual AI API
+    const questions = generateAIQuestionsFromUrl(url, linkType, questionCount);
+
+    // Store generated questions
+    const generationId = `ai_${Date.now()}`;
+    nk.storageWrite([{
+        collection: COLLECTIONS.AI_GENERATED,
+        key: generationId,
+        userId: userId,
+        value: {
+            url,
+            linkType,
+            questions,
+            generatedAt: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} generated ${questions.length} AI trivia questions from ${url}`);
+
+    return JSON.stringify({
+        success: true,
+        generationId,
+        questionCount: questions.length,
+        questions: questions.map(sanitizeQuestion)
+    });
+}
+
+/**
+ * Helper: Get user profile data including profile picture
+ */
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) { /* ignore */ }
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+    
+    return { profilePicture, displayName };
+}
+
+/**
+ * RPC: Get trivia leaderboard
+ */
+function rpcGetTriviaLeaderboard(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { timeframe = "daily", limit = 50 } = data;
+
+    const leaderboardId = timeframe === "daily" ? LEADERBOARDS.DAILY_TRIVIA : LEADERBOARDS.ALL_TIME;
+
+    const records = nk.leaderboardRecordsList(leaderboardId, null, limit, null, 0);
+    
+    const entries = (records.records || []).map(record => {
+        const profile = getUserProfileData(nk, logger, record.ownerId);
+        return {
+            rank: record.rank,
+            userId: record.ownerId,
+            username: record.username?.value || "Anonymous",
+            displayName: profile.displayName || record.username?.value || "Anonymous",
+            profilePicture: profile.profilePicture,
+            score: record.score,
+            metadata: record.metadata ? JSON.parse(record.metadata) : null
+        };
+    });
+
+    // Get user's rank
+    let userRank = null;
+    let userScore = 0;
+    
+    if (userId) {
+        const aroundOwner = nk.leaderboardRecordsList(leaderboardId, [userId], 1, null, 0);
+        if (aroundOwner.records && aroundOwner.records.length > 0) {
+            userRank = aroundOwner.records[0].rank;
+            userScore = aroundOwner.records[0].score;
+        }
+    }
+
+    return JSON.stringify({
+        leaderboardId,
+        timeframe,
+        entries,
+        userRank,
+        userScore
+    });
+}
+
+/**
+ * RPC: Get trivia history
+ */
+function rpcGetTriviaHistory(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        // ignore
+    }
+
+    const { limit = 20 } = data;
+
+    const history = nk.storageList(userId, COLLECTIONS.TRIVIA_HISTORY, limit, null);
+
+    const sessions = (history.objects || []).map(obj => ({
+        sessionId: obj.key,
+        ...obj.value
+    }));
+
+    // Calculate stats
+    const stats = {
+        totalSessions: sessions.length,
+        totalScore: sessions.reduce((sum, s) => sum + (s.score || 0), 0),
+        totalCorrect: sessions.reduce((sum, s) => sum + (s.correctCount || 0), 0),
+        totalQuestions: sessions.reduce((sum, s) => sum + (s.totalQuestions || 0), 0),
+        averageAccuracy: 0,
+        bestScore: 0,
+        longestStreak: 0
+    };
+
+    if (stats.totalQuestions > 0) {
+        stats.averageAccuracy = Math.floor((stats.totalCorrect / stats.totalQuestions) * 100);
+    }
+    
+    for (const session of sessions) {
+        stats.bestScore = Math.max(stats.bestScore, session.score || 0);
+        stats.longestStreak = Math.max(stats.longestStreak, session.maxStreak || 0);
+    }
+
+    return JSON.stringify({
+        history: sessions,
+        stats
+    });
+}
+
+// Question generation functions
+function generateMatchQuestions(nk, matchId, count, difficulty) {
+    // Get match info
+    const matchInfo = nk.storageRead([{
+        collection: "cricket_schedules",
+        key: matchId,
+        userId: null
+    }]);
+
+    const match = matchInfo.length > 0 ? matchInfo[0].value : null;
+
+    const questions = [];
+
+    if (match) {
+        const team1 = match.team1;
+        const team2 = match.team2;
+        const venue = match.venue;
+
+        // Team 1 captain question
+        questions.push({
+            id: `q_captain_${team1}`,
+            question: `Who is the captain of ${team1}?`,
+            options: getCaptainOptions(team1),
+            correctIndex: 0,
+            category: "teams",
+            difficulty,
+            points: SCORING.CORRECT_ANSWER,
+            explanation: `The current captain leads ${team1} in this tournament.`
+        });
+
+        // Team 2 captain question
+        questions.push({
+            id: `q_captain_${team2}`,
+            question: `Who is the captain of ${team2}?`,
+            options: getCaptainOptions(team2),
+            correctIndex: 0,
+            category: "teams",
+            difficulty,
+            points: SCORING.CORRECT_ANSWER,
+            explanation: `The current captain leads ${team2} in this tournament.`
+        });
+
+        // Head-to-head question
+        questions.push({
+            id: `q_h2h_${team1}_${team2}`,
+            question: `In T20 internationals, which team has a better head-to-head record between ${team1} and ${team2}?`,
+            options: [team1, team2, "Equal records", "Never played in T20I"],
+            correctIndex: 0, // Would need real data
+            category: "head_to_head",
+            difficulty,
+            points: SCORING.CORRECT_ANSWER,
+            explanation: "Head-to-head records provide insight into historical performance."
+        });
+
+        // Venue question
+        if (venue) {
+            questions.push({
+                id: `q_venue_${venue}`,
+                question: `What is the approximate seating capacity of ${venue}?`,
+                options: ["30,000-40,000", "40,000-50,000", "50,000-60,000", "60,000+"],
+                correctIndex: 1, // Would need real data
+                category: "venues",
+                difficulty,
+                points: SCORING.CORRECT_ANSWER,
+                explanation: `${venue} is one of the iconic cricket stadiums.`
+            });
+        }
+
+        // Tournament question
+        const tournamentId = match.tournamentId || "WC2026";
+        questions.push({
+            id: `q_tournament_${tournamentId}`,
+            question: tournamentId.includes("IPL") 
+                ? "Which team won the most IPL titles?"
+                : "Which country has won the most T20 World Cups?",
+            options: tournamentId.includes("IPL")
+                ? ["Mumbai Indians", "Chennai Super Kings", "Kolkata Knight Riders", "Royal Challengers Bangalore"]
+                : ["West Indies", "India", "England", "Australia"],
+            correctIndex: 0,
+            category: "history",
+            difficulty,
+            points: SCORING.CORRECT_ANSWER,
+            explanation: "Historical knowledge helps predict future performances."
+        });
+    }
+
+    // Fill remaining with general cricket questions
+    while (questions.length < count) {
+        questions.push(...getGeneralCricketQuestions(difficulty, count - questions.length));
+    }
+
+    // Shuffle and return requested count
+    return shuffleArray(questions).slice(0, count);
+}
+
+function generateCategoryQuestions(nk, category, count, difficulty) {
+    const questions = [];
+
+    switch (category) {
+        case QUESTION_CATEGORIES.WORLD_CUP:
+            questions.push(...getWorldCupQuestions(difficulty, count));
+            break;
+        case QUESTION_CATEGORIES.IPL:
+            questions.push(...getIPLQuestions(difficulty, count));
+            break;
+        case QUESTION_CATEGORIES.PLAYERS:
+            questions.push(...getPlayerQuestions(difficulty, count));
+            break;
+        case QUESTION_CATEGORIES.RECORDS:
+            questions.push(...getRecordQuestions(difficulty, count));
+            break;
+        default:
+            questions.push(...getGeneralCricketQuestions(difficulty, count));
+    }
+
+    return shuffleArray(questions).slice(0, count);
+}
+
+function generateAIQuestionsFromUrl(url, linkType, count) {
+    // This would call the AI API in production
+    // For now, generate contextual questions based on URL patterns
+    
+    const questions = [];
+    
+    if (url.includes("youtube")) {
+        questions.push({
+            id: `ai_yt_${Date.now()}_1`,
+            question: "Based on the video, what was the key turning point in the match?",
+            options: ["First powerplay wickets", "Middle overs run rate", "Death over boundaries", "Final over drama"],
+            correctIndex: 3,
+            category: "analysis",
+            difficulty: "medium",
+            points: 150,
+            explanation: "Video analysis helps understand match dynamics.",
+            source: url
+        });
+    }
+
+    // Add more AI-style questions
+    for (let i = questions.length; i < count; i++) {
+        questions.push({
+            id: `ai_gen_${Date.now()}_${i}`,
+            question: `Cricket trivia question ${i + 1} from content analysis`,
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correctIndex: Math.floor(Math.random() * 4),
+            category: "ai_generated",
+            difficulty: "medium",
+            points: 100,
+            explanation: "AI-generated based on content analysis.",
+            source: url
+        });
+    }
+
+    return questions;
+}
+
+// Question bank functions
+function getGeneralCricketQuestions(difficulty, count) {
+    const questions = [
+        {
+            id: "general_1",
+            question: "How many players are there in a cricket team on the field?",
+            options: ["9", "10", "11", "12"],
+            correctIndex: 2,
+            category: "rules",
+            difficulty: "easy",
+            explanation: "Each team has 11 players on the field."
+        },
+        {
+            id: "general_2",
+            question: "What is a 'yorker' in cricket?",
+            options: ["A ball that bounces twice", "A full-pitched ball at the batsman's feet", "A ball that goes over the batsman's head", "A slow delivery"],
+            correctIndex: 1,
+            category: "rules",
+            difficulty: "easy",
+            explanation: "A yorker is aimed at the base of the stumps."
+        },
+        {
+            id: "general_3",
+            question: "Which country hosted the first ever Cricket World Cup in 1975?",
+            options: ["India", "Australia", "England", "West Indies"],
+            correctIndex: 2,
+            category: "history",
+            difficulty: "medium",
+            explanation: "England hosted the first Cricket World Cup in 1975."
+        },
+        {
+            id: "general_4",
+            question: "What is the maximum number of overs in a T20 match for one team?",
+            options: ["15", "18", "20", "25"],
+            correctIndex: 2,
+            category: "rules",
+            difficulty: "easy",
+            explanation: "T20 stands for Twenty20, meaning 20 overs per side."
+        },
+        {
+            id: "general_5",
+            question: "Who holds the record for the highest individual score in T20 internationals?",
+            options: ["Chris Gayle", "Rohit Sharma", "Aaron Finch", "Hazratullah Zazai"],
+            correctIndex: 1,
+            category: "records",
+            difficulty: "hard",
+            explanation: "Rohit Sharma scored 118 runs against Sri Lanka in 2017."
+        }
+    ];
+
+    return questions.filter(q => {
+        if (difficulty === "easy") return q.difficulty === "easy";
+        if (difficulty === "hard") return q.difficulty !== "easy";
+        return true;
+    }).slice(0, count);
+}
+
+function getWorldCupQuestions(difficulty, count) {
+    const questions = [
+        {
+            id: "wc_1",
+            question: "Which team won the T20 World Cup 2024?",
+            options: ["India", "England", "Pakistan", "Australia"],
+            correctIndex: 0,
+            category: "world_cup",
+            difficulty: "easy",
+            explanation: "India won their second T20 World Cup in 2024."
+        },
+        {
+            id: "wc_2",
+            question: "Who was the Player of the Tournament in T20 World Cup 2024?",
+            options: ["Virat Kohli", "Jasprit Bumrah", "Rohit Sharma", "Rashid Khan"],
+            correctIndex: 1,
+            category: "world_cup",
+            difficulty: "medium",
+            explanation: "Jasprit Bumrah's exceptional bowling earned him the award."
+        },
+        {
+            id: "wc_3",
+            question: "Which countries are co-hosting the T20 World Cup 2026?",
+            options: ["India & Sri Lanka", "USA & West Indies", "England & Ireland", "Australia & New Zealand"],
+            correctIndex: 0,
+            category: "world_cup",
+            difficulty: "medium",
+            explanation: "India and Sri Lanka will co-host the 2026 edition."
+        }
+    ];
+
+    return questions.slice(0, count);
+}
+
+function getIPLQuestions(difficulty, count) {
+    const questions = [
+        {
+            id: "ipl_1",
+            question: "Which team won IPL 2024?",
+            options: ["Chennai Super Kings", "Mumbai Indians", "Kolkata Knight Riders", "Sunrisers Hyderabad"],
+            correctIndex: 2,
+            category: "ipl",
+            difficulty: "easy",
+            explanation: "KKR won their third IPL title in 2024."
+        },
+        {
+            id: "ipl_2",
+            question: "Who is the all-time leading run scorer in IPL history?",
+            options: ["Rohit Sharma", "Virat Kohli", "David Warner", "Shikhar Dhawan"],
+            correctIndex: 1,
+            category: "ipl",
+            difficulty: "medium",
+            explanation: "Virat Kohli holds the record for most IPL runs."
+        },
+        {
+            id: "ipl_3",
+            question: "Which bowler has taken the most wickets in IPL history?",
+            options: ["Lasith Malinga", "Amit Mishra", "Yuzvendra Chahal", "Dwayne Bravo"],
+            correctIndex: 2,
+            category: "ipl",
+            difficulty: "hard",
+            explanation: "Yuzvendra Chahal holds the purple cap record."
+        }
+    ];
+
+    return questions.slice(0, count);
+}
+
+function getPlayerQuestions(difficulty, count) {
+    return [
+        {
+            id: "player_1",
+            question: "Which cricketer is known as the 'God of Cricket'?",
+            options: ["Virat Kohli", "Sachin Tendulkar", "Brian Lara", "Ricky Ponting"],
+            correctIndex: 1,
+            category: "players",
+            difficulty: "easy",
+            explanation: "Sachin Tendulkar earned this title for his legendary career."
+        },
+        {
+            id: "player_2",
+            question: "Who hit the fastest century in T20 international cricket?",
+            options: ["David Miller", "Rohit Sharma", "Chris Gayle", "Aaron Finch"],
+            correctIndex: 0,
+            category: "players",
+            difficulty: "hard",
+            explanation: "David Miller scored the fastest T20I century in 35 balls."
+        }
+    ].slice(0, count);
+}
+
+function getRecordQuestions(difficulty, count) {
+    return [
+        {
+            id: "record_1",
+            question: "What is the highest team score in T20 international cricket?",
+            options: ["260/5", "278/3", "263/3", "281/3"],
+            correctIndex: 1,
+            category: "records",
+            difficulty: "hard",
+            explanation: "Afghanistan scored 278/3 against Ireland in 2019."
+        }
+    ].slice(0, count);
+}
+
+function getCaptainOptions(team) {
+    const captains = {
+        "India": ["Suryakumar Yadav", "Rohit Sharma", "Hardik Pandya", "KL Rahul"],
+        "Australia": ["Mitchell Marsh", "Pat Cummins", "Steve Smith", "David Warner"],
+        "England": ["Jos Buttler", "Ben Stokes", "Harry Brook", "Joe Root"],
+        "Pakistan": ["Babar Azam", "Shaheen Afridi", "Mohammad Rizwan", "Shadab Khan"],
+        "South Africa": ["Aiden Markram", "David Miller", "Quinton de Kock", "Temba Bavuma"],
+        "New Zealand": ["Kane Williamson", "Mitchell Santner", "Glenn Phillips", "Tim Southee"],
+        "West Indies": ["Rovman Powell", "Nicholas Pooran", "Shai Hope", "Jason Holder"],
+        "Sri Lanka": ["Wanindu Hasaranga", "Charith Asalanka", "Kusal Mendis", "Dasun Shanaka"],
+        "CSK": ["Ruturaj Gaikwad", "MS Dhoni", "Ravindra Jadeja", "Devon Conway"],
+        "MI": ["Hardik Pandya", "Rohit Sharma", "Suryakumar Yadav", "Ishan Kishan"],
+        "RCB": ["Virat Kohli", "Faf du Plessis", "Glenn Maxwell", "Rajat Patidar"],
+        "KKR": ["Shreyas Iyer", "Nitish Rana", "Andre Russell", "Sunil Narine"]
+    };
+    return captains[team] || ["Captain A", "Captain B", "Captain C", "Captain D"];
+}
+
+// Helper functions
+function sanitizeQuestion(question) {
+    // Remove correctIndex from returned question for client
+    const { correctIndex, explanation, ...safeQuestion } = question;
+    return safeQuestion;
+}
+
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function submitTriviaScore(nk, userId, session) {
+    const metadata = {
+        category: session.category,
+        difficulty: session.difficulty,
+        correctCount: session.correctCount,
+        totalQuestions: session.questions.length,
+        maxStreak: session.maxStreak,
+        accuracy: Math.floor((session.correctCount / session.questions.length) * 100)
+    };
+
+    // Submit to daily leaderboard
+    nk.leaderboardRecordWrite(LEADERBOARDS.DAILY_TRIVIA, userId, null, session.score, null, JSON.stringify(metadata));
+    
+    // Submit to all-time leaderboard
+    nk.leaderboardRecordWrite(LEADERBOARDS.ALL_TIME, userId, null, session.score, null, JSON.stringify(metadata));
+}
+
+function trackTriviaEngagement(nk, userId, session) {
+    // Track engagement for match-specific trivia
+    const engagementKey = `${userId}_${session.matchId}`;
+    
+    const existing = nk.storageRead([{
+        collection: "cricket_engagement",
+        key: engagementKey,
+        userId: userId
+    }]);
+    
+    const engagement = existing.length > 0 ? existing[0].value : {
+        matchId: session.matchId,
+        events: [],
+        score: 0,
+        completedActions: []
+    };
+    
+    engagement.events.push({
+        type: "complete_trivia",
+        score: session.score,
+        accuracy: Math.floor((session.correctCount / session.questions.length) * 100),
+        timestamp: Date.now()
+    });
+    
+    engagement.score += 25;
+    if (!engagement.completedActions.includes("complete_trivia")) {
+        engagement.completedActions.push("complete_trivia");
+    }
+    
+    nk.storageWrite([{
+        collection: "cricket_engagement",
+        key: engagementKey,
+        userId: userId,
+        value: engagement,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+function storeTriviaHistory(nk, userId, session) {
+    nk.storageWrite([{
+        collection: COLLECTIONS.TRIVIA_HISTORY,
+        key: session.sessionId,
+        userId: userId,
+        value: {
+            category: session.category,
+            difficulty: session.difficulty,
+            matchId: session.matchId,
+            score: session.score,
+            correctCount: session.correctCount,
+            totalQuestions: session.questions.length,
+            maxStreak: session.maxStreak,
+            duration: session.duration,
+            completedAt: session.endTime
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+}
+
+// Register RPCs
+function __ModuleInit_42(ctx, logger, nk, initializer) {
+    logger.info("Cricket Trivia Module loaded");
+
+    __rpc_cricket_start_trivia = __rpc_cricket_start_trivia || (rpcStartTriviaSession);
+    __rpc_cricket_submit_answer = __rpc_cricket_submit_answer || (rpcSubmitTriviaAnswer);
+    __rpc_cricket_generate_ai_trivia = __rpc_cricket_generate_ai_trivia || (rpcGenerateAITrivia);
+    __rpc_cricket_get_trivia_leaderboard = __rpc_cricket_get_trivia_leaderboard || (rpcGetTriviaLeaderboard);
+    __rpc_cricket_get_trivia_history = __rpc_cricket_get_trivia_history || (rpcGetTriviaHistory);
+
+    logger.info("Cricket Trivia Module initialized successfully");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
+
+// --- Module: cricket_worldcup/engagement.js ---
+/**
+ * Cricket Engagement Module for Nakama
+ * 
+ * Features:
+ * - Daily/Weekly/All-Time Leaderboards
+ * - Cricket-specific missions
+ * - Share tracking
+ * - Rate app tracking
+ * - Super sticky engagement loops
+ */
+
+var CRICKET_GAME_ID = "78244246-1e9e-4e0f-a8a2-7447d5b0284e";
+
+// Leaderboard IDs
+var LEADERBOARDS = {
+    daily: "cricket_daily",
+    weekly: "cricket_weekly",
+    allTime: "cricket_all_time",
+    trivia: "cricket_trivia",
+    predictions: "cricket_predictions",
+    worldcup: "cricket_worldcup_2026"
+};
+
+// Cricket-specific mission templates
+var CRICKET_MISSIONS = [
+    {
+        id: "daily_login",
+        name: "Daily Login",
+        description: "Log in to the game",
+        objective: "login",
+        targetValue: 1,
+        rewards: { coins: 50, xp: 25 }
+    },
+    {
+        id: "play_trivia",
+        name: "Cricket Brain",
+        description: "Answer 10 trivia questions",
+        objective: "trivia_answered",
+        targetValue: 10,
+        rewards: { coins: 100, xp: 50 }
+    },
+    {
+        id: "trivia_streak",
+        name: "On Fire!",
+        description: "Get 5 correct answers in a row",
+        objective: "trivia_streak",
+        targetValue: 5,
+        rewards: { coins: 150, xp: 75 }
+    },
+    {
+        id: "make_prediction",
+        name: "Fortune Teller",
+        description: "Make a World Cup prediction",
+        objective: "predictions_made",
+        targetValue: 1,
+        rewards: { coins: 75, xp: 35 }
+    },
+    {
+        id: "score_runs",
+        name: "Run Machine",
+        description: "Score 500 runs in gameplay",
+        objective: "runs_scored",
+        targetValue: 500,
+        rewards: { coins: 150, xp: 75 }
+    },
+    {
+        id: "win_match",
+        name: "Champion",
+        description: "Win a match",
+        objective: "matches_won",
+        targetValue: 1,
+        rewards: { coins: 200, xp: 100, gems: 1 }
+    },
+    {
+        id: "share_score",
+        name: "Social Star",
+        description: "Share your score with friends",
+        objective: "shares",
+        targetValue: 1,
+        rewards: { coins: 100, xp: 50 }
+    },
+    {
+        id: "perfect_over",
+        name: "Perfect Over",
+        description: "Score 36 runs in a single over",
+        objective: "perfect_over",
+        targetValue: 1,
+        rewards: { coins: 500, xp: 250, gems: 3 }
+    }
+];
+
+// Weekly special missions
+var WEEKLY_MISSIONS = [
+    {
+        id: "weekly_trivia_master",
+        name: "Trivia Master",
+        description: "Answer 100 trivia questions correctly this week",
+        objective: "weekly_trivia_correct",
+        targetValue: 100,
+        rewards: { coins: 1000, xp: 500, gems: 10 }
+    },
+    {
+        id: "weekly_predictor",
+        name: "Crystal Ball",
+        description: "Make 5 correct predictions this week",
+        objective: "weekly_predictions_correct",
+        targetValue: 5,
+        rewards: { coins: 1500, xp: 750, gems: 15 }
+    },
+    {
+        id: "weekly_champion",
+        name: "Weekly Champion",
+        description: "Win 10 matches this week",
+        objective: "weekly_wins",
+        targetValue: 10,
+        rewards: { coins: 2000, xp: 1000, gems: 20, specialReward: "gold_cap" }
+    }
+];
+
+// ============================================================================
+// RPC: Initialize Cricket Leaderboards
+// ============================================================================
+function rpcCricketInitLeaderboards(ctx, logger, nk, payload) {
+    logger.info("[CricketEngagement] Initializing leaderboards...");
+    
+    // Create daily leaderboard (resets at midnight UTC)
+    try {
+        nk.leaderboardCreate(
+            LEADERBOARDS.daily,
+            false,  // authoritative
+            "desc", // sort order
+            "best", // operator
+            "0 0 * * *", // reset daily at midnight
+            { game: "cricket", type: "daily" }
+        );
+        logger.info("[CricketEngagement] Created daily leaderboard");
+    } catch (e) {
+        // Already exists
+    }
+    
+    // Create weekly leaderboard (resets on Monday)
+    try {
+        nk.leaderboardCreate(
+            LEADERBOARDS.weekly,
+            false,
+            "desc",
+            "best",
+            "0 0 * * 1", // reset every Monday
+            { game: "cricket", type: "weekly" }
+        );
+        logger.info("[CricketEngagement] Created weekly leaderboard");
+    } catch (e) {}
+    
+    // Create all-time leaderboard (never resets)
+    try {
+        nk.leaderboardCreate(
+            LEADERBOARDS.allTime,
+            false,
+            "desc",
+            "best",
+            "", // never reset
+            { game: "cricket", type: "all_time" }
+        );
+        logger.info("[CricketEngagement] Created all-time leaderboard");
+    } catch (e) {}
+    
+    // Create trivia leaderboard
+    try {
+        nk.leaderboardCreate(
+            LEADERBOARDS.trivia,
+            false,
+            "desc",
+            "incr", // accumulate
+            "0 0 * * *", // reset daily
+            { game: "cricket", type: "trivia" }
+        );
+        logger.info("[CricketEngagement] Created trivia leaderboard");
+    } catch (e) {}
+    
+    // Create prediction leaderboard
+    try {
+        nk.leaderboardCreate(
+            LEADERBOARDS.predictions,
+            false,
+            "desc",
+            "incr",
+            "", // never reset
+            { game: "cricket", type: "predictions" }
+        );
+        logger.info("[CricketEngagement] Created predictions leaderboard");
+    } catch (e) {}
+    
+    return JSON.stringify({
+        success: true,
+        leaderboards: Object.values(LEADERBOARDS)
+    });
+}
+
+// ============================================================================
+// RPC: Submit Score to All Relevant Leaderboards
+// ============================================================================
+function rpcCricketSubmitScore(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    
+    if (!payload) {
+        return JSON.stringify({ success: false, error: "Payload required" });
+    }
+    
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        return JSON.stringify({ success: false, error: "Invalid JSON" });
+    }
+    
+    const { score, gameType, metadata } = data;
+    
+    if (score === undefined) {
+        return JSON.stringify({ success: false, error: "score required" });
+    }
+    
+    const results = {};
+    
+    // Submit to daily leaderboard
+    try {
+        nk.leaderboardRecordWrite(LEADERBOARDS.daily, userId, "", score, 0, metadata || {}, "best");
+        results.daily = true;
+    } catch (e) {
+        results.daily = false;
+    }
+    
+    // Submit to weekly leaderboard
+    try {
+        nk.leaderboardRecordWrite(LEADERBOARDS.weekly, userId, "", score, 0, metadata || {}, "best");
+        results.weekly = true;
+    } catch (e) {
+        results.weekly = false;
+    }
+    
+    // Submit to all-time leaderboard
+    try {
+        nk.leaderboardRecordWrite(LEADERBOARDS.allTime, userId, "", score, 0, metadata || {}, "best");
+        results.allTime = true;
+    } catch (e) {
+        results.allTime = false;
+    }
+    
+    logger.info(`[CricketEngagement] Score ${score} submitted for user ${userId}`);
+    
+    return JSON.stringify({
+        success: true,
+        score: score,
+        submitted: results
+    });
+}
+
+// ============================================================================
+// Helper: Get user profile data including profile picture
+// ============================================================================
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) { /* ignore */ }
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+    
+    return { profilePicture, displayName };
+}
+
+// ============================================================================
+// Helper: Enrich leaderboard records with profile pictures
+// ============================================================================
+function enrichRecordsWithProfiles(nk, logger, records) {
+    if (!records || records.length === 0) return [];
+    
+    return records.map(record => {
+        const profile = getUserProfileData(nk, logger, record.ownerId);
+        return {
+            ...record,
+            displayName: profile.displayName || record.username?.value || record.username || "Anonymous",
+            profilePicture: profile.profilePicture
+        };
+    });
+}
+
+// ============================================================================
+// RPC: Get All Leaderboards
+// ============================================================================
+function rpcCricketGetAllLeaderboards(ctx, logger, nk, payload) {
+    let limit = 20;
+    if (payload) {
+        try {
+            const data = JSON.parse(payload);
+            limit = data.limit || 20;
+        } catch (e) {}
+    }
+    
+    const userId = ctx.userId;
+    const result = {};
+    
+    // Daily leaderboard
+    try {
+        const daily = nk.leaderboardRecordsList(LEADERBOARDS.daily, [userId], limit, "", 0);
+        const enrichedRecords = enrichRecordsWithProfiles(nk, logger, daily.records || []);
+        const enrichedOwnerRecord = (daily.ownerRecords && daily.ownerRecords.length > 0) 
+            ? enrichRecordsWithProfiles(nk, logger, [daily.ownerRecords[0]])[0] 
+            : null;
+        result.daily = {
+            records: enrichedRecords,
+            ownerRecord: enrichedOwnerRecord
+        };
+    } catch (e) {
+        result.daily = { records: [], ownerRecord: null };
+    }
+    
+    // Weekly leaderboard
+    try {
+        const weekly = nk.leaderboardRecordsList(LEADERBOARDS.weekly, [userId], limit, "", 0);
+        const enrichedRecords = enrichRecordsWithProfiles(nk, logger, weekly.records || []);
+        const enrichedOwnerRecord = (weekly.ownerRecords && weekly.ownerRecords.length > 0) 
+            ? enrichRecordsWithProfiles(nk, logger, [weekly.ownerRecords[0]])[0] 
+            : null;
+        result.weekly = {
+            records: enrichedRecords,
+            ownerRecord: enrichedOwnerRecord
+        };
+    } catch (e) {
+        result.weekly = { records: [], ownerRecord: null };
+    }
+    
+    // All-time leaderboard
+    try {
+        const allTime = nk.leaderboardRecordsList(LEADERBOARDS.allTime, [userId], limit, "", 0);
+        const enrichedRecords = enrichRecordsWithProfiles(nk, logger, allTime.records || []);
+        const enrichedOwnerRecord = (allTime.ownerRecords && allTime.ownerRecords.length > 0) 
+            ? enrichRecordsWithProfiles(nk, logger, [allTime.ownerRecords[0]])[0] 
+            : null;
+        result.allTime = {
+            records: enrichedRecords,
+            ownerRecord: enrichedOwnerRecord
+        };
+    } catch (e) {
+        result.allTime = { records: [], ownerRecord: null };
+    }
+    
+    // Trivia leaderboard
+    try {
+        const trivia = nk.leaderboardRecordsList(LEADERBOARDS.trivia, [userId], limit, "", 0);
+        const enrichedRecords = enrichRecordsWithProfiles(nk, logger, trivia.records || []);
+        const enrichedOwnerRecord = (trivia.ownerRecords && trivia.ownerRecords.length > 0) 
+            ? enrichRecordsWithProfiles(nk, logger, [trivia.ownerRecords[0]])[0] 
+            : null;
+        result.trivia = {
+            records: enrichedRecords,
+            ownerRecord: enrichedOwnerRecord
+        };
+    } catch (e) {
+        result.trivia = { records: [], ownerRecord: null };
+    }
+    
+    return JSON.stringify({
+        success: true,
+        leaderboards: result
+    });
+}
+
+// ============================================================================
+// RPC: Get Cricket Missions
+// ============================================================================
+function rpcCricketGetMissions(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Get user's mission progress
+    let progressData = null;
+    try {
+        const stored = nk.storageRead([{
+            collection: "cricket_missions",
+            key: `missions_${today}`,
+            userId: userId
+        }]);
+        
+        if (stored && stored.length > 0) {
+            progressData = stored[0].value;
+        }
+    } catch (e) {}
+    
+    // Initialize progress if needed
+    if (!progressData || progressData.date !== today) {
+        progressData = {
+            date: today,
+            missions: {}
+        };
+        
+        for (const mission of CRICKET_MISSIONS) {
+            progressData.missions[mission.id] = {
+                currentValue: 0,
+                completed: false,
+                claimed: false
+            };
+        }
+        
+        // Save initial progress
+        try {
+            nk.storageWrite([{
+                collection: "cricket_missions",
+                key: `missions_${today}`,
+                userId: userId,
+                value: progressData,
+                permissionRead: 1,
+                permissionWrite: 1
+            }]);
+        } catch (e) {}
+    }
+    
+    // Build response with mission details
+    const missions = CRICKET_MISSIONS.map(mission => ({
+        ...mission,
+        currentValue: progressData.missions[mission.id]?.currentValue || 0,
+        completed: progressData.missions[mission.id]?.completed || false,
+        claimed: progressData.missions[mission.id]?.claimed || false
+    }));
+    
+    return JSON.stringify({
+        success: true,
+        date: today,
+        missions: missions
+    });
+}
+
+// ============================================================================
+// RPC: Track Share Event
+// ============================================================================
+function rpcCricketTrackShare(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    
+    let data = {};
+    if (payload) {
+        try {
+            data = JSON.parse(payload);
+        } catch (e) {}
+    }
+    
+    const shareType = data.shareType || "generic";
+    const timestamp = Date.now();
+    
+    // Log share event
+    try {
+        nk.storageWrite([{
+            collection: "cricket_shares",
+            key: `share_${timestamp}`,
+            userId: userId,
+            value: {
+                shareType: shareType,
+                platform: data.platform || "unknown",
+                content: data.content || "",
+                timestamp: timestamp
+            },
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+    } catch (e) {}
+    
+    // Update mission progress for share
+    updateMissionProgress(nk, logger, userId, "share_score", 1);
+    
+    // Award coins for sharing
+    try {
+        nk.walletUpdate(userId, { coins: 25 }, { reason: "share_reward" }, true);
+    } catch (e) {}
+    
+    logger.info(`[CricketEngagement] Share tracked for user ${userId}: ${shareType}`);
+    
+    return JSON.stringify({
+        success: true,
+        coinsAwarded: 25,
+        shareType: shareType
+    });
+}
+
+// ============================================================================
+// RPC: Track Rate App Event
+// ============================================================================
+function rpcCricketTrackRateApp(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    
+    let data = {};
+    if (payload) {
+        try {
+            data = JSON.parse(payload);
+        } catch (e) {}
+    }
+    
+    const action = data.action || "shown"; // shown, rated, later, never
+    const timestamp = Date.now();
+    
+    // Log rate event
+    try {
+        nk.storageWrite([{
+            collection: "cricket_rate_events",
+            key: `rate_${timestamp}`,
+            userId: userId,
+            value: {
+                action: action,
+                timestamp: timestamp
+            },
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+    } catch (e) {}
+    
+    // Award bonus coins if user rated
+    let coinsAwarded = 0;
+    if (action === "rated") {
+        coinsAwarded = 500;
+        try {
+            nk.walletUpdate(userId, { coins: coinsAwarded, gems: 5 }, { reason: "rate_app_bonus" }, true);
+        } catch (e) {}
+    }
+    
+    logger.info(`[CricketEngagement] Rate app event: ${action} for user ${userId}`);
+    
+    return JSON.stringify({
+        success: true,
+        action: action,
+        coinsAwarded: coinsAwarded,
+        gemsAwarded: action === "rated" ? 5 : 0
+    });
+}
+
+// ============================================================================
+// RPC: Get Engagement Summary
+// ============================================================================
+function rpcCricketGetEngagementSummary(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    
+    // Get all engagement data
+    const summary = {
+        dailyStreak: 0,
+        totalGames: 0,
+        totalWins: 0,
+        triviaCorrect: 0,
+        predictionsCorrect: 0,
+        shares: 0,
+        coinsEarned: 0,
+        leaderboardRanks: {}
+    };
+    
+    // Get streak data
+    try {
+        const streakData = nk.storageRead([{
+            collection: "daily_streaks",
+            key: `user_daily_streak_${userId}_${CRICKET_GAME_ID}`,
+            userId: userId
+        }]);
+        
+        if (streakData && streakData.length > 0) {
+            summary.dailyStreak = streakData[0].value.currentStreak || 0;
+        }
+    } catch (e) {}
+    
+    // Get leaderboard ranks
+    for (const [name, id] of Object.entries(LEADERBOARDS)) {
+        try {
+            const records = nk.leaderboardRecordsList(id, [userId], 1, "", 0);
+            if (records.ownerRecords && records.ownerRecords.length > 0) {
+                summary.leaderboardRanks[name] = records.ownerRecords[0].rank;
+            }
+        } catch (e) {}
+    }
+    
+    return JSON.stringify({
+        success: true,
+        summary: summary
+    });
+}
+
+// ============================================================================
+// Helper: Update Mission Progress
+// ============================================================================
+function updateMissionProgress(nk, logger, userId, missionId, value) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        const stored = nk.storageRead([{
+            collection: "cricket_missions",
+            key: `missions_${today}`,
+            userId: userId
+        }]);
+        
+        if (stored && stored.length > 0) {
+            const progressData = stored[0].value;
+            
+            if (progressData.missions[missionId]) {
+                progressData.missions[missionId].currentValue += value;
+                
+                const mission = CRICKET_MISSIONS.find(m => m.id === missionId);
+                if (mission && progressData.missions[missionId].currentValue >= mission.targetValue) {
+                    progressData.missions[missionId].completed = true;
+                }
+                
+                nk.storageWrite([{
+                    collection: "cricket_missions",
+                    key: `missions_${today}`,
+                    userId: userId,
+                    value: progressData,
+                    permissionRead: 1,
+                    permissionWrite: 1
+                }]);
+            }
+        }
+    } catch (e) {
+        logger.warn(`[CricketEngagement] Failed to update mission progress: ${e.message}`);
+    }
+}
+
+// ============================================================================
+// Initialize Cricket Engagement Module
+// ============================================================================
+function initCricketEngagementModule(ctx, logger, nk, initializer) {
+    logger.info('[CricketEngagement] Initializing Cricket Engagement Module...');
+    
+    __rpc_cricket_init_leaderboards = __rpc_cricket_init_leaderboards || (rpcCricketInitLeaderboards);
+    logger.info('[CricketEngagement] Registered: cricket_init_leaderboards');
+    
+    __rpc_cricket_submit_score = __rpc_cricket_submit_score || (rpcCricketSubmitScore);
+    logger.info('[CricketEngagement] Registered: cricket_submit_score');
+    
+    __rpc_cricket_get_all_leaderboards = __rpc_cricket_get_all_leaderboards || (rpcCricketGetAllLeaderboards);
+    logger.info('[CricketEngagement] Registered: cricket_get_all_leaderboards');
+    
+    __rpc_cricket_get_missions = __rpc_cricket_get_missions || (rpcCricketGetMissions);
+    logger.info('[CricketEngagement] Registered: cricket_get_missions');
+    
+    __rpc_cricket_track_share = __rpc_cricket_track_share || (rpcCricketTrackShare);
+    logger.info('[CricketEngagement] Registered: cricket_track_share');
+    
+    __rpc_cricket_track_rate_app = __rpc_cricket_track_rate_app || (rpcCricketTrackRateApp);
+    logger.info('[CricketEngagement] Registered: cricket_track_rate_app');
+    
+    __rpc_cricket_get_engagement_summary = __rpc_cricket_get_engagement_summary || (rpcCricketGetEngagementSummary);
+    logger.info('[CricketEngagement] Registered: cricket_get_engagement_summary');
+    
+    logger.info('[CricketEngagement] Successfully registered 7 Cricket Engagement RPCs');
+}
+
+// Export for inclusion in main index.js
+
+
+
+// --- Module: cricket_worldcup/predictions.js ---
+/**
+ * Cricket Prediction System - Nakama Server Module
+ * Handles match predictions, trivia boosts, and point calculations
+ */
+
+// Collections
+var PREDICTIONS_COLLECTION = 'cricket_predictions';
+var RESULTS_COLLECTION = 'cricket_results';
+var LEADERBOARD_PREDICTION = 'cricket_prediction_leaderboard';
+var LEADERBOARD_DAILY = 'cricket_daily_prediction';
+
+// Point values
+var POINTS = {
+    CORRECT_WINNER: 100,
+    EXACT_SCORE: 200,
+    CLOSE_SCORE: 50,        // Within 10 runs
+    CORRECT_MOTM: 50,
+    CORRECT_TOP_SCORER: 30,
+    CORRECT_TOP_BOWLER: 30,
+    MEGA_MATCH_MULTIPLIER: 2,
+    TRIVIA_BONUS_PER_CORRECT: 50,
+    STREAK_BONUS_MULTIPLIER: 1.5
+};
+
+/**
+ * Submit a match prediction
+ * Called when user makes prediction from notification or app
+ */
+function rpcSubmitPrediction(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    const data = JSON.parse(payload);
+    
+    const { 
+        matchId, 
+        team1, 
+        team2, 
+        predictedWinner, 
+        predictedTeam1Score, 
+        predictedTeam2Score,
+        predictedMOTM,
+        predictedTopScorer,
+        predictedTopBowler,
+        tournament,
+        isMegaMatch
+    } = data;
+
+    if (!matchId || !predictedWinner) {
+        throw new Error('Missing required prediction data');
+    }
+
+    // Check if prediction already exists
+    const existingPredictions = nk.storageRead([{
+        collection: PREDICTIONS_COLLECTION,
+        key: matchId,
+        userId: userId
+    }]);
+
+    if (existingPredictions.length > 0) {
+        // Update existing prediction (if not locked)
+        const existing = JSON.parse(existingPredictions[0].value);
+        if (existing.locked) {
+            throw new Error('Prediction is locked - match has started');
+        }
+    }
+
+    const prediction = {
+        matchId,
+        team1,
+        team2,
+        predictedWinner,
+        predictedTeam1Score: predictedTeam1Score || 0,
+        predictedTeam2Score: predictedTeam2Score || 0,
+        predictedMOTM: predictedMOTM || '',
+        predictedTopScorer: predictedTopScorer || '',
+        predictedTopBowler: predictedTopBowler || '',
+        tournament: tournament || 'unknown',
+        isMegaMatch: isMegaMatch || false,
+        bonusPoints: 0,
+        triviaCorrect: 0,
+        triviaTotal: 0,
+        submittedAt: Date.now(),
+        locked: false,
+        processed: false
+    };
+
+    // Save prediction
+    nk.storageWrite([{
+        collection: PREDICTIONS_COLLECTION,
+        key: matchId,
+        userId: userId,
+        value: JSON.stringify(prediction),
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`[Prediction] User ${userId} predicted ${predictedWinner} for match ${matchId}`);
+
+    return JSON.stringify({
+        success: true,
+        prediction,
+        message: 'Prediction submitted successfully!'
+    });
+}
+
+/**
+ * Add trivia boost to a prediction
+ */
+function rpcAddTriviaBoost(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    const data = JSON.parse(payload);
+    
+    const { matchId, triviaCorrect, triviaTotal } = data;
+
+    if (!matchId) {
+        throw new Error('Missing matchId');
+    }
+
+    // Get existing prediction
+    const predictions = nk.storageRead([{
+        collection: PREDICTIONS_COLLECTION,
+        key: matchId,
+        userId: userId
+    }]);
+
+    if (predictions.length === 0) {
+        throw new Error('No prediction found for this match');
+    }
+
+    const prediction = JSON.parse(predictions[0].value);
+    
+    if (prediction.locked) {
+        throw new Error('Cannot add trivia boost - prediction is locked');
+    }
+
+    // Calculate bonus
+    const bonusPoints = triviaCorrect * POINTS.TRIVIA_BONUS_PER_CORRECT;
+    
+    prediction.triviaCorrect = triviaCorrect;
+    prediction.triviaTotal = triviaTotal;
+    prediction.bonusPoints = bonusPoints;
+
+    // Save updated prediction
+    nk.storageWrite([{
+        collection: PREDICTIONS_COLLECTION,
+        key: matchId,
+        userId: userId,
+        value: JSON.stringify(prediction),
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`[Prediction] User ${userId} earned ${bonusPoints} trivia bonus for match ${matchId}`);
+
+    return JSON.stringify({
+        success: true,
+        bonusPoints,
+        totalBonus: prediction.bonusPoints
+    });
+}
+
+/**
+ * Lock predictions for a match (called before match starts)
+ */
+function rpcLockMatchPredictions(ctx, logger, nk, payload) {
+    const data = JSON.parse(payload);
+    const { matchId, adminKey } = data;
+
+    // Simple admin check (in production, use proper auth)
+    if (adminKey !== 'cricket_admin_2026') {
+        throw new Error('Unauthorized');
+    }
+
+    // List all predictions for this match
+    const cursor = '';
+    const predictions = nk.storageList(userId = null, PREDICTIONS_COLLECTION, 100, cursor);
+
+    let lockedCount = 0;
+    const writes = [];
+
+    for (const pred of predictions) {
+        if (pred.key === matchId) {
+            const predData = JSON.parse(pred.value);
+            predData.locked = true;
+            writes.push({
+                collection: PREDICTIONS_COLLECTION,
+                key: matchId,
+                userId: pred.userId,
+                value: JSON.stringify(predData),
+                permissionRead: 1,
+                permissionWrite: 0
+            });
+            lockedCount++;
+        }
+    }
+
+    if (writes.length > 0) {
+        nk.storageWrite(writes);
+    }
+
+    logger.info(`[Prediction] Locked ${lockedCount} predictions for match ${matchId}`);
+
+    return JSON.stringify({
+        success: true,
+        lockedCount
+    });
+}
+
+/**
+ * Process match results and calculate points
+ */
+function rpcProcessMatchResults(ctx, logger, nk, payload) {
+    const data = JSON.parse(payload);
+    const { 
+        matchId, 
+        winner, 
+        team1Score, 
+        team2Score, 
+        motm, 
+        topScorer, 
+        topBowler,
+        adminKey 
+    } = data;
+
+    // Admin check
+    if (adminKey !== 'cricket_admin_2026') {
+        throw new Error('Unauthorized');
+    }
+
+    // Get all predictions for this match
+    const predictions = [];
+    // Note: In production, implement proper pagination
+    const results = nk.storageList(null, PREDICTIONS_COLLECTION, 1000, '');
+    
+    for (const pred of results) {
+        if (pred.key === matchId) {
+            predictions.push({
+                userId: pred.userId,
+                data: JSON.parse(pred.value)
+            });
+        }
+    }
+
+    logger.info(`[Prediction] Processing ${predictions.length} predictions for match ${matchId}`);
+
+    const leaderboardWrites = [];
+
+    for (const pred of predictions) {
+        const { userId, data: predData } = pred;
+        let points = 0;
+        const breakdown = [];
+
+        // Correct winner
+        if (predData.predictedWinner === winner) {
+            let winnerPoints = POINTS.CORRECT_WINNER;
+            if (predData.isMegaMatch) {
+                winnerPoints *= POINTS.MEGA_MATCH_MULTIPLIER;
+            }
+            points += winnerPoints;
+            breakdown.push({ type: 'winner', points: winnerPoints });
+        }
+
+        // Score prediction
+        const predTeam1Diff = Math.abs(predData.predictedTeam1Score - team1Score);
+        const predTeam2Diff = Math.abs(predData.predictedTeam2Score - team2Score);
+        
+        if (predTeam1Diff === 0 && predTeam2Diff === 0) {
+            points += POINTS.EXACT_SCORE;
+            breakdown.push({ type: 'exact_score', points: POINTS.EXACT_SCORE });
+        } else if (predTeam1Diff <= 10 && predTeam2Diff <= 10) {
+            points += POINTS.CLOSE_SCORE;
+            breakdown.push({ type: 'close_score', points: POINTS.CLOSE_SCORE });
+        }
+
+        // MOTM
+        if (predData.predictedMOTM && predData.predictedMOTM === motm) {
+            points += POINTS.CORRECT_MOTM;
+            breakdown.push({ type: 'motm', points: POINTS.CORRECT_MOTM });
+        }
+
+        // Top scorer
+        if (predData.predictedTopScorer && predData.predictedTopScorer === topScorer) {
+            points += POINTS.CORRECT_TOP_SCORER;
+            breakdown.push({ type: 'top_scorer', points: POINTS.CORRECT_TOP_SCORER });
+        }
+
+        // Top bowler
+        if (predData.predictedTopBowler && predData.predictedTopBowler === topBowler) {
+            points += POINTS.CORRECT_TOP_BOWLER;
+            breakdown.push({ type: 'top_bowler', points: POINTS.CORRECT_TOP_BOWLER });
+        }
+
+        // Add trivia bonus
+        points += predData.bonusPoints || 0;
+        if (predData.bonusPoints > 0) {
+            breakdown.push({ type: 'trivia_bonus', points: predData.bonusPoints });
+        }
+
+        // Save result
+        const result = {
+            matchId,
+            userId,
+            totalPoints: points,
+            breakdown,
+            winnerCorrect: predData.predictedWinner === winner,
+            processedAt: Date.now()
+        };
+
+        nk.storageWrite([{
+            collection: RESULTS_COLLECTION,
+            key: matchId,
+            userId: userId,
+            value: JSON.stringify(result),
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+
+        // Update leaderboard
+        leaderboardWrites.push({
+            id: LEADERBOARD_PREDICTION,
+            owner: userId,
+            score: points,
+            subscore: predData.bonusPoints || 0
+        });
+
+        logger.info(`[Prediction] User ${userId} earned ${points} points for match ${matchId}`);
+    }
+
+    // Submit leaderboard scores
+    if (leaderboardWrites.length > 0) {
+        for (const write of leaderboardWrites) {
+            nk.leaderboardRecordWrite(write.id, write.owner, '', write.score, write.subscore, null);
+        }
+    }
+
+    return JSON.stringify({
+        success: true,
+        processedCount: predictions.length
+    });
+}
+
+/**
+ * Get user's prediction for a match
+ */
+function rpcGetPrediction(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+    const data = JSON.parse(payload);
+    const { matchId } = data;
+
+    const predictions = nk.storageRead([{
+        collection: PREDICTIONS_COLLECTION,
+        key: matchId,
+        userId: userId
+    }]);
+
+    if (predictions.length === 0) {
+        return JSON.stringify({ hasPrediction: false });
+    }
+
+    const prediction = JSON.parse(predictions[0].value);
+
+    // Check for result
+    const results = nk.storageRead([{
+        collection: RESULTS_COLLECTION,
+        key: matchId,
+        userId: userId
+    }]);
+
+    let result = null;
+    if (results.length > 0) {
+        result = JSON.parse(results[0].value);
+    }
+
+    return JSON.stringify({
+        hasPrediction: true,
+        prediction,
+        result
+    });
+}
+
+/**
+ * Helper: Get user profile data including profile picture
+ */
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) { /* ignore */ }
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+    
+    return { profilePicture, displayName };
+}
+
+/**
+ * Enrich leaderboard records with profile pictures
+ */
+function enrichRecordsWithProfiles(nk, logger, records) {
+    if (!records || records.length === 0) return [];
+    
+    return records.map(record => {
+        const profile = getUserProfileData(nk, logger, record.ownerId);
+        return {
+            ...record,
+            displayName: profile.displayName || record.username?.value || record.username || "Anonymous",
+            profilePicture: profile.profilePicture
+        };
+    });
+}
+
+/**
+ * Get prediction leaderboard
+ */
+function rpcGetPredictionLeaderboard(ctx, logger, nk, payload) {
+    const data = JSON.parse(payload);
+    const { limit = 100, cursor = '' } = data;
+
+    const records = nk.leaderboardRecordsList(
+        LEADERBOARD_PREDICTION,
+        [],
+        limit,
+        cursor,
+        0
+    );
+
+    // Enrich records with profile pictures
+    const enrichedRecords = enrichRecordsWithProfiles(nk, logger, records.records || []);
+
+    // Get user's own record
+    const userId = ctx.userId;
+    let userRecord = null;
+    
+    const userRecords = nk.leaderboardRecordsList(
+        LEADERBOARD_PREDICTION,
+        [userId],
+        1,
+        '',
+        userId
+    );
+
+    if (userRecords.records && userRecords.records.length > 0) {
+        const enrichedUserRecords = enrichRecordsWithProfiles(nk, logger, userRecords.records);
+        userRecord = enrichedUserRecords[0];
+    }
+
+    return JSON.stringify({
+        records: enrichedRecords,
+        nextCursor: records.nextCursor || '',
+        userRecord
+    });
+}
+
+/**
+ * Get user's prediction stats
+ */
+function rpcGetPredictionStats(ctx, logger, nk, payload) {
+    const userId = ctx.userId;
+
+    // Get all user's results
+    const results = nk.storageList(userId, RESULTS_COLLECTION, 100, '');
+
+    let totalPredictions = 0;
+    let correctPredictions = 0;
+    let totalPoints = 0;
+    let totalTriviaBonus = 0;
+    let currentStreak = 0;
+    let maxStreak = 0;
+
+    for (const res of results) {
+        const result = JSON.parse(res.value);
+        totalPredictions++;
+        totalPoints += result.totalPoints;
+
+        if (result.winnerCorrect) {
+            correctPredictions++;
+            currentStreak++;
+            maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+            currentStreak = 0;
+        }
+
+        // Get trivia bonus from breakdown
+        const triviaBonus = result.breakdown?.find(b => b.type === 'trivia_bonus');
+        if (triviaBonus) {
+            totalTriviaBonus += triviaBonus.points;
+        }
+    }
+
+    const accuracy = totalPredictions > 0 ? 
+        Math.round((correctPredictions / totalPredictions) * 100) : 0;
+
+    return JSON.stringify({
+        totalPredictions,
+        correctPredictions,
+        accuracy,
+        totalPoints,
+        totalTriviaBonus,
+        currentStreak,
+        maxStreak
+    });
+}
+
+/**
+ * Get community prediction stats for a match
+ */
+function rpcGetCommunityPredictions(ctx, logger, nk, payload) {
+    const data = JSON.parse(payload);
+    const { matchId } = data;
+
+    // Get all predictions for this match
+    const predictions = nk.storageList(null, PREDICTIONS_COLLECTION, 1000, '');
+    
+    let team1Votes = 0;
+    let team2Votes = 0;
+    let totalPredictions = 0;
+    let avgTeam1Score = 0;
+    let avgTeam2Score = 0;
+
+    for (const pred of predictions) {
+        if (pred.key === matchId) {
+            const predData = JSON.parse(pred.value);
+            totalPredictions++;
+
+            if (predData.predictedWinner === predData.team1) {
+                team1Votes++;
+            } else {
+                team2Votes++;
+            }
+
+            avgTeam1Score += predData.predictedTeam1Score || 0;
+            avgTeam2Score += predData.predictedTeam2Score || 0;
+        }
+    }
+
+    if (totalPredictions > 0) {
+        avgTeam1Score = Math.round(avgTeam1Score / totalPredictions);
+        avgTeam2Score = Math.round(avgTeam2Score / totalPredictions);
+    }
+
+    return JSON.stringify({
+        matchId,
+        totalPredictions,
+        team1Percentage: totalPredictions > 0 ? Math.round((team1Votes / totalPredictions) * 100) : 50,
+        team2Percentage: totalPredictions > 0 ? Math.round((team2Votes / totalPredictions) * 100) : 50,
+        avgTeam1Score,
+        avgTeam2Score
+    });
+}
+
+// Register RPCs
+var rpcFunctions = {
+    'cricket_submit_prediction': rpcSubmitPrediction,
+    'cricket_add_trivia_boost': rpcAddTriviaBoost,
+    'cricket_lock_predictions': rpcLockMatchPredictions,
+    'cricket_process_results': rpcProcessMatchResults,
+    'cricket_get_prediction': rpcGetPrediction,
+    'cricket_get_prediction_leaderboard': rpcGetPredictionLeaderboard,
+    'cricket_get_prediction_stats': rpcGetPredictionStats,
+    'cricket_get_community_predictions': rpcGetCommunityPredictions
+};
+
+// Export for Nakama
+for (var name in rpcFunctions) {
+    var InitModule = function(ctx, logger, nk, initializer) {
+        initializer.registerRpc(name, rpcFunctions[name]);
+    };
+}
+
+
 // --- Module: cross_game/cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
@@ -25981,7 +33839,7 @@ function rpcUnityAnalyticsImport(ctx, logger, nk, payload) {
 // ─── Registration ─────────────────────────────────────────
 // postbuild.js scans for initializer.registerRpc() calls
 
-function __ModuleInit_39(ctx, logger, nk, initializer) {
+function __ModuleInit_50(ctx, logger, nk, initializer) {
     __rpc_analytics_appodeal = __rpc_analytics_appodeal || (rpcAnalyticsAppodeal);
     __rpc_analytics_apple_appstore = __rpc_analytics_apple_appstore || (rpcAnalyticsAppleAppstore);
     __rpc_apple_appstore_import = __rpc_apple_appstore_import || (rpcAppleImport);
@@ -26369,7 +34227,7 @@ function rpcExternalPollStatus(ctx, logger, nk, payload) {
 
 // ─── Registration ─────────────────────────────────────────
 
-function __ModuleInit_40(ctx, logger, nk, initializer) {
+function __ModuleInit_51(ctx, logger, nk, initializer) {
     __rpc_external_poll_appodeal = __rpc_external_poll_appodeal || (rpcExternalPollAppodeal);
     __rpc_external_poll_appstore = __rpc_external_poll_appstore || (rpcExternalPollAppstore);
     __rpc_external_poll_ugs = __rpc_external_poll_ugs || (rpcExternalPollUgs);
@@ -27393,7 +35251,7 @@ function rpcFriendQuestRecordProgress(ctx, logger, nk, payload) {
 // ============================================================================
 // Module Init — register Friend Quest RPCs
 // ============================================================================
-function __ModuleInit_42(ctx, logger, nk, initializer) {
+function __ModuleInit_53(ctx, logger, nk, initializer) {
     __rpc_friend_quest_get_state = __rpc_friend_quest_get_state || (rpcFriendQuestGetState);
     __rpc_friend_quest_complete = __rpc_friend_quest_complete || (rpcFriendQuestComplete);
     __rpc_friend_quest_record_progress = __rpc_friend_quest_record_progress || (rpcFriendQuestRecordProgress);
@@ -28006,7 +35864,7 @@ function rpcFriendStreakRepair(ctx, logger, nk, payload) {
 // Registers all 5 friend-streak RPCs. Existing 3 (get_state, record_contribution,
 // send_nudge) are also registered by legacy_runtime.js; postbuild's `||` guard
 // + module-first concat order means our handler wins.
-function __ModuleInit_43(ctx, logger, nk, initializer) {
+function __ModuleInit_54(ctx, logger, nk, initializer) {
     __rpc_friend_streak_get_state = __rpc_friend_streak_get_state || (rpcFriendStreakGetState);
     __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contribution || (rpcFriendStreakRecordContribution);
     __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge);
@@ -29055,7 +36913,7 @@ function rpcFriendsSpectate(ctx, logger, nk, payload) {
 //
 // IMPORTANT: legacy_runtime.js's `friends_challenge_user` registration must
 // stay removed / commented so it doesn't compete with our handler.
-function __ModuleInit_44(ctx, logger, nk, initializer) {
+function __ModuleInit_55(ctx, logger, nk, initializer) {
     __rpc_send_friend_challenge = __rpc_send_friend_challenge || (rpcSendFriendChallenge);
     __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcSendFriendChallenge); // legacy alias
     __rpc_accept_friend_challenge = __rpc_accept_friend_challenge || (rpcAcceptFriendChallenge);
@@ -29847,7 +37705,7 @@ function rpcFriendsListPendingInvites(ctx, logger, nk, payload) {
 // assignment, then replays it at module-load time. The legacy
 // registrations for these same RPC ids in legacy_runtime.js have been
 // commented out so this module wins the "first to set the stub" race.
-function __ModuleInit_45(ctx, logger, nk, initializer) {
+function __ModuleInit_56(ctx, logger, nk, initializer) {
     __rpc_send_friend_invite = __rpc_send_friend_invite || (rpcFriendsSendInvite);
     __rpc_accept_friend_invite = __rpc_accept_friend_invite || (rpcFriendsAcceptInvite);
     __rpc_decline_friend_invite = __rpc_decline_friend_invite || (rpcFriendsDeclineInvite);
@@ -30616,7 +38474,7 @@ function rpcFriendInviteWithReward(ctx, logger, nk, payload) {
 // ============================================================================
 // Module Init — register Friends Extras RPCs
 // ============================================================================
-function __ModuleInit_47(ctx, logger, nk, initializer) {
+function __ModuleInit_58(ctx, logger, nk, initializer) {
     __rpc_friends_get_online_count = __rpc_friends_get_online_count || (rpcFriendsGetOnlineCount);
     __rpc_social_pressure_get_today_summary = __rpc_social_pressure_get_today_summary || (rpcSocialPressureGetTodaySummary);
     __rpc_friend_battle_create = __rpc_friend_battle_create || (rpcFriendBattleCreate);
@@ -33333,7 +41191,7 @@ function rpcIvxQuestClaim(ctx, logger, nk, payload) {
 
 // ── Module init ───────────────────────────────────────────────────
 
-function __ModuleInit_55(ctx, logger, nk, initializer) {
+function __ModuleInit_66(ctx, logger, nk, initializer) {
     __rpc_ivx_quest_config = __rpc_ivx_quest_config || (rpcIvxQuestConfig);
     __rpc_ivx_quest_get = __rpc_ivx_quest_get || (rpcIvxQuestGet);
     __rpc_ivx_quest_progress = __rpc_ivx_quest_progress || (rpcIvxQuestProgress);
@@ -34079,6 +41937,276 @@ function writeToAllLeaderboards(nk, logger, userId, username, gameId, score) {
     logger.info("[NAKAMA] Total leaderboards updated: " + leaderboardsUpdated.length);
     return leaderboardsUpdated;
 }
+
+
+// --- Module: leaderboard_utils.js ---
+/**
+ * Leaderboard Utilities Module
+ * 
+ * Provides shared utilities for enriching leaderboard records with user profile data
+ * including profile pictures from the UserManagement service.
+ * 
+ * This module is used by all game-specific leaderboard RPCs to add profile pictures
+ * without requiring changes to game clients.
+ * 
+ * @version 1.0.0
+ * @author IntelliVerse-X
+ */
+
+// UserManagement API Configuration
+var USER_MANAGEMENT_API_URL = "https://api.intelli-verse-x.ai/api/user";
+
+/**
+ * Enrich a single leaderboard record with profile picture
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {string} userId - User ID (ownerId from leaderboard record)
+ * @returns {object} Profile data { profilePicture, displayName }
+ */
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            
+            // Primary: Use avatar_url (synced from UserManagement)
+            if (user.avatarUrl) {
+                profilePicture = user.avatarUrl;
+            }
+            
+            // Fallback: Check user metadata
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) {
+                    // Metadata parse failed, ignore
+                }
+            }
+        }
+    } catch (e) {
+        logger.warn(`[LeaderboardUtils] Failed to get profile for ${userId}: ${e.message}`);
+    }
+    
+    return { profilePicture, displayName };
+}
+
+/**
+ * Enrich an array of leaderboard records with profile pictures
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {array} records - Array of leaderboard records from nk.leaderboardRecordsList()
+ * @returns {array} Enriched records with profilePicture field
+ */
+function enrichLeaderboardRecords(nk, logger, records) {
+    if (!records || records.length === 0) {
+        return [];
+    }
+    
+    return records.map(record => {
+        const profileData = getUserProfileData(nk, logger, record.ownerId);
+        
+        return {
+            rank: record.rank,
+            userId: record.ownerId,
+            username: record.username?.value || record.username || "Anonymous",
+            displayName: profileData.displayName || record.username?.value || record.username || "Anonymous",
+            score: record.score,
+            subscore: record.subscore,
+            numScore: record.numScore,
+            metadata: record.metadata ? (typeof record.metadata === 'string' ? JSON.parse(record.metadata) : record.metadata) : null,
+            updateTime: record.updateTime,
+            // Profile Picture - THE KEY ADDITION
+            profilePicture: profileData.profilePicture
+        };
+    });
+}
+
+/**
+ * Enrich custom leaderboard entries (for storage-based leaderboards)
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {array} entries - Array of custom entries with userId field
+ * @returns {array} Enriched entries with profilePicture field
+ */
+function enrichCustomEntries(nk, logger, entries) {
+    if (!entries || entries.length === 0) {
+        return [];
+    }
+    
+    return entries.map(entry => {
+        const profileData = getUserProfileData(nk, logger, entry.userId);
+        
+        return {
+            ...entry,
+            displayName: profileData.displayName || entry.username || "Anonymous",
+            profilePicture: profileData.profilePicture
+        };
+    });
+}
+
+/**
+ * Batch fetch profile pictures for multiple user IDs
+ * More efficient when you need profiles for many users
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {array} userIds - Array of user IDs
+ * @returns {object} Map of userId -> { profilePicture, displayName }
+ */
+function batchGetUserProfiles(nk, logger, userIds) {
+    const profiles = {};
+    
+    if (!userIds || userIds.length === 0) {
+        return profiles;
+    }
+    
+    // Deduplicate user IDs
+    const uniqueUserIds = [...new Set(userIds)];
+    
+    try {
+        const users = nk.usersGetId(uniqueUserIds);
+        
+        for (const user of users) {
+            let profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) {
+                    // ignore
+                }
+            }
+            
+            profiles[user.id] = {
+                profilePicture: profilePicture,
+                displayName: user.displayName || user.username || null
+            };
+        }
+    } catch (e) {
+        logger.warn(`[LeaderboardUtils] Batch profile fetch failed: ${e.message}`);
+    }
+    
+    // Fill in missing entries with nulls
+    for (const userId of uniqueUserIds) {
+        if (!profiles[userId]) {
+            profiles[userId] = { profilePicture: null, displayName: null };
+        }
+    }
+    
+    return profiles;
+}
+
+/**
+ * Get a complete leaderboard with profile pictures
+ * This is a convenience function that wraps leaderboardRecordsList
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {string} leaderboardId - Leaderboard ID
+ * @param {number} limit - Number of records to fetch
+ * @param {string|null} cursor - Pagination cursor
+ * @returns {object} { records, prevCursor, nextCursor }
+ */
+function getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor) {
+    limit = limit || 10;
+    cursor = cursor || null;
+    
+    const result = nk.leaderboardRecordsList(leaderboardId, null, limit, cursor, 0);
+    
+    const enrichedRecords = enrichLeaderboardRecords(nk, logger, result.records || []);
+    
+    return {
+        records: enrichedRecords,
+        prevCursor: result.prevCursor || null,
+        nextCursor: result.nextCursor || null
+    };
+}
+
+/**
+ * Get user's leaderboard position with profile picture
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {string} leaderboardId - Leaderboard ID
+ * @param {string} userId - User ID
+ * @returns {object|null} User's record with profile picture, or null if not found
+ */
+function getUserLeaderboardPosition(nk, logger, leaderboardId, userId) {
+    if (!userId) {
+        return null;
+    }
+    
+    try {
+        const result = nk.leaderboardRecordsList(leaderboardId, [userId], 1, null, 0);
+        
+        if (result.records && result.records.length > 0) {
+            const enriched = enrichLeaderboardRecords(nk, logger, result.records);
+            return enriched[0];
+        }
+    } catch (e) {
+        logger.warn(`[LeaderboardUtils] Failed to get user position for ${userId}: ${e.message}`);
+    }
+    
+    return null;
+}
+
+// Export functions for use in other modules
+// Note: In Nakama JS runtime, we expose these as global functions
+var LeaderboardUtils = {
+    getUserProfileData: getUserProfileData,
+    enrichLeaderboardRecords: enrichLeaderboardRecords,
+    enrichCustomEntries: enrichCustomEntries,
+    batchGetUserProfiles: batchGetUserProfiles,
+    getLeaderboardWithProfiles: getLeaderboardWithProfiles,
+    getUserLeaderboardPosition: getUserLeaderboardPosition
+};
+
+// Make functions globally available
+function _getUserProfileData(nk, logger, userId) {
+    return getUserProfileData(nk, logger, userId);
+}
+
+function _enrichLeaderboardRecords(nk, logger, records) {
+    return enrichLeaderboardRecords(nk, logger, records);
+}
+
+function _enrichCustomEntries(nk, logger, entries) {
+    return enrichCustomEntries(nk, logger, entries);
+}
+
+function _batchGetUserProfiles(nk, logger, userIds) {
+    return batchGetUserProfiles(nk, logger, userIds);
+}
+
+function _getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor) {
+    return getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor);
+}
+
+function _getUserLeaderboardPosition(nk, logger, leaderboardId, userId) {
+    return getUserLeaderboardPosition(nk, logger, leaderboardId, userId);
+}
+
+// Module initialization (empty - this is a utility module)
+function __ModuleInit_69(ctx, logger, nk, initializer) {
+    logger.info("📊 Leaderboard Utils Module loaded");
+    logger.info("   Available functions:");
+    logger.info("   - getUserProfileData(nk, logger, userId)");
+    logger.info("   - enrichLeaderboardRecords(nk, logger, records)");
+    logger.info("   - enrichCustomEntries(nk, logger, entries)");
+    logger.info("   - batchGetUserProfiles(nk, logger, userIds)");
+    logger.info("   - getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor)");
+    logger.info("   - getUserLeaderboardPosition(nk, logger, leaderboardId, userId)");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
 
 
 // --- Module: leaderboards_timeperiod.js ---
@@ -40070,7 +48198,7 @@ function oeSeedDefaultOffers(nk, logger) {
     if (seeded > 0) logger.info("[offer_engine] Seeded " + seeded + " default offer(s) into catalog.");
 }
 
-function __ModuleInit_67(ctx, logger, nk, initializer) {
+function __ModuleInit_79(ctx, logger, nk, initializer) {
     // Player-facing
     __rpc_offer_get_eligible = __rpc_offer_get_eligible || (rpcOfferGetEligible);
     __rpc_offer_record_view = __rpc_offer_record_view || (rpcOfferRecordView);
@@ -41770,6 +49898,734 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
+// --- Module: platform_leaderboard.js ---
+/**
+ * Platform Leaderboard Module
+ * 
+ * Generic leaderboard system that works for ALL games on the platform.
+ * Supports Daily, Weekly, Monthly, and All-Time leaderboards with automatic
+ * profile picture enrichment.
+ * 
+ * @version 1.0.0
+ * @author IntelliVerse-X
+ * @date 2026-01-10
+ * 
+ * RPCs Registered:
+ * - get_platform_leaderboard       : Generic leaderboard with profile pictures
+ * - get_platform_leaderboard_multi : Multiple timeframes at once
+ * - submit_platform_score          : Submit score to any game leaderboard
+ * - get_user_leaderboard_stats     : Get user's stats across all timeframes
+ */
+
+// ============================================================================
+// LEADERBOARD ID PATTERNS
+// ============================================================================
+// Format: {gameId}_{timeframe}_{type}
+// Examples:
+//   - quiz_daily_score
+//   - quiz_weekly_score
+//   - quiz_monthly_score
+//   - quiz_alltime_score
+//   - cricket_daily_predictions
+//   - cricket_weekly_trivia
+
+// Reset schedules (cron format)
+var RESET_SCHEDULES = {
+    daily: "0 0 * * *",      // Every day at midnight UTC
+    weekly: "0 0 * * 1",      // Every Monday at midnight UTC
+    monthly: "0 0 1 * *",     // First of every month at midnight UTC
+    alltime: ""               // Never resets
+};
+
+// Sort orders
+var LEADERBOARD_CONFIG = {
+    descending: "desc",
+    ascending: "asc",
+    best: "best",     // Keep best score
+    incr: "incr",     // Sum/increment scores
+    set: "set"        // Replace score
+};
+
+// ============================================================================
+// HELPER: Get User Profile Data (Profile Picture + Display Name)
+// ============================================================================
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            
+            // Primary: Use avatarUrl (synced from UserManagement)
+            if (user.avatarUrl) {
+                profilePicture = user.avatarUrl;
+            }
+            
+            // Fallback: Check user metadata
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) {
+                    // Metadata parse failed, ignore
+                }
+            }
+        }
+    } catch (e) {
+        logger.warn(`[PlatformLeaderboard] Failed to get profile for ${userId}: ${e.message}`);
+    }
+    
+    return { profilePicture, displayName };
+}
+
+// ============================================================================
+// HELPER: Enrich Leaderboard Records with Profile Pictures
+// ============================================================================
+function enrichLeaderboardRecords(nk, logger, records) {
+    if (!records || records.length === 0) {
+        return [];
+    }
+    
+    return records.map(record => {
+        const profileData = getUserProfileData(nk, logger, record.ownerId);
+        
+        // Parse metadata if it's a string
+        let parsedMetadata = null;
+        if (record.metadata) {
+            try {
+                parsedMetadata = typeof record.metadata === 'string' 
+                    ? JSON.parse(record.metadata) 
+                    : record.metadata;
+            } catch (e) {
+                parsedMetadata = null;
+            }
+        }
+        
+        return {
+            rank: record.rank,
+            userId: record.ownerId,
+            username: record.username?.value || record.username || "Anonymous",
+            displayName: profileData.displayName || record.username?.value || record.username || "Anonymous",
+            score: record.score,
+            subscore: record.subscore,
+            numScore: record.numScore,
+            metadata: parsedMetadata,
+            updateTime: record.updateTime,
+            // Profile Picture - THE KEY ADDITION
+            profilePicture: profileData.profilePicture
+        };
+    });
+}
+
+// ============================================================================
+// HELPER: Build Leaderboard ID
+// ============================================================================
+function buildLeaderboardId(gameId, timeframe, type) {
+    type = type || "score";
+    return `${gameId}_${timeframe}_${type}`;
+}
+
+// ============================================================================
+// HELPER: Ensure Leaderboard Exists
+// ============================================================================
+function ensureLeaderboardExists(nk, logger, leaderboardId, timeframe, sortOrder, operator) {
+    sortOrder = sortOrder || "desc";
+    operator = operator || "best";
+    
+    const resetSchedule = RESET_SCHEDULES[timeframe] || "";
+    
+    try {
+        nk.leaderboardCreate(
+            leaderboardId,
+            false,           // authoritative
+            sortOrder,       // sort order
+            operator,        // operator
+            resetSchedule,   // reset schedule
+            null             // metadata
+        );
+        logger.debug(`[PlatformLeaderboard] Created/ensured leaderboard: ${leaderboardId}`);
+    } catch (e) {
+        // Already exists, which is fine
+    }
+}
+
+// ============================================================================
+// RPC: Get Platform Leaderboard (Generic for ALL Games)
+// ============================================================================
+/**
+ * Generic leaderboard RPC that works for any game.
+ * Automatically includes profile pictures for all entries.
+ * 
+ * Payload:
+ * {
+ *   "gameId": "quiz",           // Required: Game identifier
+ *   "timeframe": "daily",       // Required: daily | weekly | monthly | alltime
+ *   "type": "score",            // Optional: leaderboard type (default: "score")
+ *   "leaderboardId": "...",     // Optional: Override full leaderboard ID
+ *   "limit": 100,               // Optional: Max records (default: 100)
+ *   "cursor": null              // Optional: Pagination cursor
+ * }
+ * 
+ * Response includes profilePicture field for each entry.
+ */
+function rpcGetPlatformLeaderboard(context, logger, nk, payload) {
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        gameId,
+        timeframe,
+        type = "score",
+        leaderboardId: customLeaderboardId,
+        limit = 100,
+        cursor = null
+    } = data;
+
+    // Determine leaderboard ID
+    let leaderboardId = customLeaderboardId;
+    if (!leaderboardId) {
+        if (!gameId || !timeframe) {
+            throw new Error("Either leaderboardId OR (gameId + timeframe) is required");
+        }
+        leaderboardId = buildLeaderboardId(gameId, timeframe, type);
+    }
+
+    const userId = context.userId;
+
+    // Ensure leaderboard exists
+    ensureLeaderboardExists(nk, logger, leaderboardId, timeframe || "alltime");
+
+    // Get leaderboard records
+    let records;
+    try {
+        records = nk.leaderboardRecordsList(leaderboardId, null, limit, cursor || "", 0);
+    } catch (e) {
+        logger.error(`[PlatformLeaderboard] Failed to get leaderboard ${leaderboardId}: ${e.message}`);
+        throw new Error(`Leaderboard not found: ${leaderboardId}`);
+    }
+
+    // Enrich with profile pictures
+    const enrichedRecords = enrichLeaderboardRecords(nk, logger, records.records || []);
+
+    // Get user's own position
+    let userRecord = null;
+    if (userId) {
+        try {
+            const userRecords = nk.leaderboardRecordsList(leaderboardId, [userId], 1, "", 0);
+            if (userRecords.records && userRecords.records.length > 0) {
+                const enriched = enrichLeaderboardRecords(nk, logger, userRecords.records);
+                userRecord = enriched[0];
+            }
+        } catch (e) {
+            logger.warn(`[PlatformLeaderboard] Failed to get user record: ${e.message}`);
+        }
+    }
+
+    return JSON.stringify({
+        success: true,
+        leaderboardId: leaderboardId,
+        gameId: gameId,
+        timeframe: timeframe,
+        type: type,
+        records: enrichedRecords,
+        userRecord: userRecord,
+        nextCursor: records.nextCursor || null,
+        prevCursor: records.prevCursor || null,
+        totalRecords: enrichedRecords.length
+    });
+}
+
+// ============================================================================
+// RPC: Get Multiple Timeframes at Once
+// ============================================================================
+/**
+ * Get leaderboards for multiple timeframes in a single call.
+ * Useful for showing daily/weekly/alltime tabs simultaneously.
+ * 
+ * Payload:
+ * {
+ *   "gameId": "quiz",                           // Required
+ *   "timeframes": ["daily", "weekly", "alltime"], // Required
+ *   "type": "score",                            // Optional
+ *   "limit": 10                                 // Optional (per timeframe)
+ * }
+ */
+function rpcGetPlatformLeaderboardMulti(context, logger, nk, payload) {
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        gameId,
+        timeframes = ["daily", "weekly", "alltime"],
+        type = "score",
+        limit = 10
+    } = data;
+
+    if (!gameId) {
+        throw new Error("gameId is required");
+    }
+
+    const userId = context.userId;
+    const result = {};
+
+    for (const timeframe of timeframes) {
+        const leaderboardId = buildLeaderboardId(gameId, timeframe, type);
+        
+        // Ensure leaderboard exists
+        ensureLeaderboardExists(nk, logger, leaderboardId, timeframe);
+
+        try {
+            const records = nk.leaderboardRecordsList(leaderboardId, null, limit, "", 0);
+            const enrichedRecords = enrichLeaderboardRecords(nk, logger, records.records || []);
+
+            // Get user's position in this timeframe
+            let userRecord = null;
+            if (userId) {
+                try {
+                    const userRecords = nk.leaderboardRecordsList(leaderboardId, [userId], 1, "", 0);
+                    if (userRecords.records && userRecords.records.length > 0) {
+                        const enriched = enrichLeaderboardRecords(nk, logger, userRecords.records);
+                        userRecord = enriched[0];
+                    }
+                } catch (e) { }
+            }
+
+            result[timeframe] = {
+                leaderboardId: leaderboardId,
+                records: enrichedRecords,
+                userRecord: userRecord
+            };
+        } catch (e) {
+            result[timeframe] = {
+                leaderboardId: leaderboardId,
+                records: [],
+                userRecord: null,
+                error: e.message
+            };
+        }
+    }
+
+    return JSON.stringify({
+        success: true,
+        gameId: gameId,
+        type: type,
+        leaderboards: result
+    });
+}
+
+// ============================================================================
+// RPC: Submit Score to Platform Leaderboard
+// ============================================================================
+/**
+ * Submit a score to any game leaderboard.
+ * Automatically updates all relevant timeframes.
+ * 
+ * Payload:
+ * {
+ *   "gameId": "quiz",           // Required
+ *   "score": 1500,              // Required
+ *   "subscore": 0,              // Optional
+ *   "type": "score",            // Optional
+ *   "metadata": {},             // Optional: Additional data
+ *   "timeframes": ["daily", "weekly", "monthly", "alltime"] // Optional
+ * }
+ */
+function rpcSubmitPlatformScore(context, logger, nk, payload) {
+    const userId = context.userId;
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        gameId,
+        score,
+        subscore = 0,
+        type = "score",
+        metadata = {},
+        timeframes = ["daily", "weekly", "monthly", "alltime"],
+        operator = "best"
+    } = data;
+
+    if (!gameId) {
+        throw new Error("gameId is required");
+    }
+    if (score === undefined || score === null) {
+        throw new Error("score is required");
+    }
+
+    const results = {};
+    const metadataStr = JSON.stringify(metadata);
+
+    for (const timeframe of timeframes) {
+        const leaderboardId = buildLeaderboardId(gameId, timeframe, type);
+        
+        // Ensure leaderboard exists
+        ensureLeaderboardExists(nk, logger, leaderboardId, timeframe, "desc", operator);
+
+        try {
+            const record = nk.leaderboardRecordWrite(
+                leaderboardId,
+                userId,
+                "",           // username (optional, will use account username)
+                score,
+                subscore,
+                metadataStr,
+                operator
+            );
+
+            results[timeframe] = {
+                success: true,
+                leaderboardId: leaderboardId,
+                rank: record.rank,
+                score: record.score
+            };
+        } catch (e) {
+            results[timeframe] = {
+                success: false,
+                error: e.message
+            };
+        }
+    }
+
+    logger.info(`[PlatformLeaderboard] Score ${score} submitted for ${userId} in ${gameId}`);
+
+    return JSON.stringify({
+        success: true,
+        gameId: gameId,
+        score: score,
+        results: results
+    });
+}
+
+// ============================================================================
+// RPC: Get User's Leaderboard Stats Across All Timeframes
+// ============================================================================
+/**
+ * Get user's rank and score across all timeframes for a game.
+ * 
+ * Payload:
+ * {
+ *   "gameId": "quiz",    // Required
+ *   "type": "score"      // Optional
+ * }
+ */
+function rpcGetUserLeaderboardStats(context, logger, nk, payload) {
+    const userId = context.userId;
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        gameId,
+        type = "score"
+    } = data;
+
+    if (!gameId) {
+        throw new Error("gameId is required");
+    }
+
+    const timeframes = ["daily", "weekly", "monthly", "alltime"];
+    const stats = {};
+
+    // Get user profile data once
+    const profileData = getUserProfileData(nk, logger, userId);
+
+    for (const timeframe of timeframes) {
+        const leaderboardId = buildLeaderboardId(gameId, timeframe, type);
+        
+        try {
+            const records = nk.leaderboardRecordsList(leaderboardId, [userId], 1, "", 0);
+            
+            if (records.records && records.records.length > 0) {
+                const record = records.records[0];
+                stats[timeframe] = {
+                    rank: record.rank,
+                    score: record.score,
+                    subscore: record.subscore,
+                    numScore: record.numScore,
+                    updateTime: record.updateTime
+                };
+            } else {
+                stats[timeframe] = {
+                    rank: null,
+                    score: 0,
+                    message: "No record in this timeframe"
+                };
+            }
+        } catch (e) {
+            stats[timeframe] = {
+                rank: null,
+                score: 0,
+                error: e.message
+            };
+        }
+    }
+
+    return JSON.stringify({
+        success: true,
+        userId: userId,
+        gameId: gameId,
+        displayName: profileData.displayName,
+        profilePicture: profileData.profilePicture,
+        stats: stats
+    });
+}
+
+// ============================================================================
+// RPC: Get Leaderboard Around User
+// ============================================================================
+/**
+ * Get leaderboard entries around the current user's position.
+ * 
+ * Payload:
+ * {
+ *   "gameId": "quiz",       // Required
+ *   "timeframe": "daily",   // Required
+ *   "type": "score",        // Optional
+ *   "limit": 10             // Optional: entries above and below user
+ * }
+ */
+function rpcGetLeaderboardAroundUser(context, logger, nk, payload) {
+    const userId = context.userId;
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        gameId,
+        timeframe,
+        type = "score",
+        limit = 10
+    } = data;
+
+    if (!gameId || !timeframe) {
+        throw new Error("gameId and timeframe are required");
+    }
+
+    const leaderboardId = buildLeaderboardId(gameId, timeframe, type);
+
+    // Get records around user
+    try {
+        const records = nk.leaderboardRecordsList(leaderboardId, [userId], limit, "", userId);
+        const enrichedRecords = enrichLeaderboardRecords(nk, logger, records.records || []);
+
+        // Find user in the enriched records
+        let userRecord = null;
+        for (const record of enrichedRecords) {
+            if (record.userId === userId) {
+                userRecord = record;
+                break;
+            }
+        }
+
+        return JSON.stringify({
+            success: true,
+            leaderboardId: leaderboardId,
+            gameId: gameId,
+            timeframe: timeframe,
+            records: enrichedRecords,
+            userRecord: userRecord
+        });
+    } catch (e) {
+        throw new Error(`Failed to get leaderboard: ${e.message}`);
+    }
+}
+
+// ============================================================================
+// RPC: Get All Leaderboards (Generic for ANY Game)
+// ============================================================================
+/**
+ * Get ALL leaderboards (daily, weekly, monthly, alltime) for any game in one call.
+ * All records include profilePicture field.
+ * 
+ * Payload:
+ * {
+ *   "gameId": "quiz",    // Required: Any game ID (quiz, cricket, trivia, etc.)
+ *   "type": "score",     // Optional: leaderboard type (default: "score")
+ *   "limit": 20          // Optional: records per timeframe (default: 20)
+ * }
+ * 
+ * Response:
+ * {
+ *   "success": true,
+ *   "gameId": "quiz",
+ *   "leaderboards": {
+ *     "daily": { "records": [...], "ownerRecord": {...} },
+ *     "weekly": { "records": [...], "ownerRecord": {...} },
+ *     "monthly": { "records": [...], "ownerRecord": {...} },
+ *     "alltime": { "records": [...], "ownerRecord": {...} }
+ *   }
+ * }
+ * 
+ * Each record includes: rank, userId, username, displayName, score, profilePicture
+ */
+function rpcGetAllLeaderboards(context, logger, nk, payload) {
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { 
+        gameId,
+        type = "score",
+        limit = 20
+    } = data;
+
+    if (!gameId) {
+        throw new Error("gameId is required");
+    }
+
+    const userId = context.userId;
+    const timeframes = ["daily", "weekly", "monthly", "alltime"];
+    const result = {};
+
+    for (const timeframe of timeframes) {
+        const leaderboardId = buildLeaderboardId(gameId, timeframe, type);
+        
+        // Ensure leaderboard exists
+        ensureLeaderboardExists(nk, logger, leaderboardId, timeframe);
+
+        try {
+            const records = nk.leaderboardRecordsList(leaderboardId, userId ? [userId] : [], limit, "", 0);
+            
+            // Enrich with profile pictures
+            const enrichedRecords = enrichLeaderboardRecords(nk, logger, records.records || []);
+            
+            // Get owner record if user is authenticated
+            let ownerRecord = null;
+            if (userId && records.ownerRecords && records.ownerRecords.length > 0) {
+                const enrichedOwner = enrichLeaderboardRecords(nk, logger, [records.ownerRecords[0]]);
+                ownerRecord = enrichedOwner[0];
+            }
+
+            result[timeframe] = {
+                leaderboardId: leaderboardId,
+                records: enrichedRecords,
+                ownerRecord: ownerRecord
+            };
+        } catch (e) {
+            result[timeframe] = {
+                leaderboardId: leaderboardId,
+                records: [],
+                ownerRecord: null,
+                error: e.message
+            };
+        }
+    }
+
+    return JSON.stringify({
+        success: true,
+        gameId: gameId,
+        type: type,
+        leaderboards: result
+    });
+}
+
+// ============================================================================
+// RPC: Delete User from Leaderboard (Admin)
+// ============================================================================
+function rpcDeleteLeaderboardRecord(context, logger, nk, payload) {
+    let data = {};
+    try {
+        data = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { leaderboardId, userId: targetUserId } = data;
+
+    if (!leaderboardId || !targetUserId) {
+        throw new Error("leaderboardId and userId are required");
+    }
+
+    try {
+        nk.leaderboardRecordDelete(leaderboardId, targetUserId);
+        logger.info(`[PlatformLeaderboard] Deleted record for ${targetUserId} from ${leaderboardId}`);
+        
+        return JSON.stringify({
+            success: true,
+            message: `Record deleted from ${leaderboardId}`
+        });
+    } catch (e) {
+        throw new Error(`Failed to delete record: ${e.message}`);
+    }
+}
+
+// ============================================================================
+// Initialize Platform Leaderboard Module
+// ============================================================================
+function __ModuleInit_82(ctx, logger, nk, initializer) {
+    logger.info("🏆 Platform Leaderboard Module loading...");
+    logger.info("   Supports: Daily, Weekly, Monthly, All-Time leaderboards");
+    logger.info("   Feature: Automatic profile picture enrichment");
+
+    // Register RPCs
+    __rpc_get_platform_leaderboard = __rpc_get_platform_leaderboard || (rpcGetPlatformLeaderboard);
+    logger.info("   ✅ Registered: get_platform_leaderboard");
+
+    __rpc_get_platform_leaderboard_multi = __rpc_get_platform_leaderboard_multi || (rpcGetPlatformLeaderboardMulti);
+    logger.info("   ✅ Registered: get_platform_leaderboard_multi");
+
+    // Generic "get_all_leaderboards" - works for ANY gameId
+    __rpc_get_all_leaderboards = __rpc_get_all_leaderboards || (rpcGetAllLeaderboards);
+    logger.info("   ✅ Registered: get_all_leaderboards (ANY game)");
+
+    __rpc_submit_platform_score = __rpc_submit_platform_score || (rpcSubmitPlatformScore);
+    logger.info("   ✅ Registered: submit_platform_score");
+
+    __rpc_get_user_leaderboard_stats = __rpc_get_user_leaderboard_stats || (rpcGetUserLeaderboardStats);
+    logger.info("   ✅ Registered: get_user_leaderboard_stats");
+
+    __rpc_get_leaderboard_around_user = __rpc_get_leaderboard_around_user || (rpcGetLeaderboardAroundUser);
+    logger.info("   ✅ Registered: get_leaderboard_around_user");
+
+    __rpc_delete_leaderboard_record = __rpc_delete_leaderboard_record || (rpcDeleteLeaderboardRecord);
+    logger.info("   ✅ Registered: delete_leaderboard_record (admin)");
+
+    logger.info("🏆 Platform Leaderboard Module initialized successfully!");
+    logger.info("   Games can use: quiz, cricket, trivia, or any custom gameId");
+    logger.info("   📷 ALL leaderboards include profilePicture field!");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
+
+
 // --- Module: player/player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
@@ -42852,6 +51708,462 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 
 // Export functions for registration
 // These will be registered in the main index.js
+
+
+// --- Module: profile_sync.js ---
+/**
+ * Profile Sync Module
+ * 
+ * Handles syncing user profile data (including profile pictures) from
+ * the UserManagement service to Nakama user accounts.
+ * 
+ * This enables leaderboards to display profile pictures without
+ * requiring changes to game clients.
+ * 
+ * RPCs:
+ * - sync_profile_from_user_management: Sync profile using Cognito token
+ * - update_profile_picture: Direct update of profile picture URL
+ * - get_user_profile: Get profile with picture from Nakama
+ * 
+ * @version 1.0.0
+ * @author IntelliVerse-X
+ */
+
+// UserManagement API Configuration
+var USER_MANAGEMENT_API_URL = "https://api.intelli-verse-x.ai/api/user";
+
+// Collection for storing profile sync metadata
+var PROFILE_SYNC_COLLECTION = "profile_sync";
+
+/**
+ * RPC: Sync profile from UserManagement API to Nakama
+ * 
+ * Call this after user login or when profile is updated in UserManagement.
+ * 
+ * Payload: { "authToken": "<cognito_jwt>" }
+ * Response: { "success": true, "profilePicture": "...", "displayName": "...", "syncedAt": ... }
+ */
+function rpcSyncProfileFromUserManagement(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+    
+    let request = {};
+    try {
+        request = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+    
+    const authToken = request.authToken;
+    
+    if (!authToken) {
+        throw new Error("authToken is required");
+    }
+    
+    logger.info(`[ProfileSync] Syncing profile for user ${userId}`);
+    
+    try {
+        // Call UserManagement API to get profile
+        const response = nk.httpRequest(
+            `${USER_MANAGEMENT_API_URL}/auth/me`,
+            "GET",
+            {
+                "Authorization": `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            null
+        );
+        
+        if (response.code === 200) {
+            const result = JSON.parse(response.body);
+            
+            if (result.status && result.data) {
+                const profile = result.data;
+                const profilePicture = profile.profilePicture || null;
+                const firstName = profile.firstName || "";
+                const lastName = profile.lastName || "";
+                const userName = profile.userName || "";
+                
+                // Determine display name
+                let displayName = userName;
+                if (firstName && lastName) {
+                    displayName = `${firstName} ${lastName}`;
+                } else if (firstName) {
+                    displayName = firstName;
+                } else if (lastName) {
+                    displayName = lastName;
+                }
+                
+                // Get current user metadata
+                let currentMetadata = {};
+                try {
+                    const users = nk.usersGetId([userId]);
+                    if (users && users.length > 0 && users[0].metadata) {
+                        currentMetadata = typeof users[0].metadata === 'string'
+                            ? JSON.parse(users[0].metadata)
+                            : users[0].metadata;
+                    }
+                } catch (e) {
+                    // ignore
+                }
+                
+                // Update metadata with profile data
+                currentMetadata.profilePicture = profilePicture;
+                currentMetadata.externalUserId = profile.id;
+                currentMetadata.email = profile.email;
+                currentMetadata.firstName = firstName;
+                currentMetadata.lastName = lastName;
+                currentMetadata.userName = userName;
+                currentMetadata.lastSyncedAt = Date.now();
+                
+                // Update Nakama account with avatar_url and display name
+                nk.accountUpdateId(
+                    userId,
+                    null,                            // username (keep current)
+                    displayName || null,             // displayName
+                    null,                            // timezone
+                    null,                            // location
+                    null,                            // langTag
+                    profilePicture,                  // avatarUrl - THIS IS THE KEY FIELD
+                    JSON.stringify(currentMetadata)  // metadata
+                );
+                
+                // Store sync record
+                nk.storageWrite([{
+                    collection: PROFILE_SYNC_COLLECTION,
+                    key: "last_sync",
+                    userId: userId,
+                    value: {
+                        syncedAt: Date.now(),
+                        profilePicture: profilePicture,
+                        displayName: displayName,
+                        externalUserId: profile.id
+                    },
+                    permissionRead: 1,
+                    permissionWrite: 0
+                }]);
+                
+                logger.info(`[ProfileSync] ✅ Synced profile for ${userId}: profilePicture=${profilePicture ? 'yes' : 'no'}`);
+                
+                return JSON.stringify({
+                    success: true,
+                    profilePicture: profilePicture,
+                    displayName: displayName,
+                    syncedAt: Date.now()
+                });
+            }
+            
+            throw new Error("Invalid response structure from UserManagement API");
+        } else if (response.code === 401) {
+            throw new Error("Invalid or expired auth token");
+        } else {
+            logger.error(`[ProfileSync] API error: ${response.code} - ${response.body}`);
+            throw new Error(`UserManagement API error: ${response.code}`);
+        }
+        
+    } catch (e) {
+        logger.error(`[ProfileSync] Failed to sync profile for ${userId}: ${e.message}`);
+        throw e;
+    }
+}
+
+/**
+ * RPC: Direct update of profile picture URL in Nakama
+ * 
+ * Use this when you already have the profile picture URL
+ * (e.g., after a successful upload to UserManagement)
+ * 
+ * Payload: { "profilePictureUrl": "https://..." }
+ * Response: { "success": true, "profilePicture": "..." }
+ */
+function rpcUpdateProfilePicture(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+    
+    let request = {};
+    try {
+        request = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+    
+    const profilePictureUrl = request.profilePictureUrl;
+    
+    if (!profilePictureUrl) {
+        throw new Error("profilePictureUrl is required");
+    }
+    
+    // Validate URL format (basic check)
+    if (!profilePictureUrl.startsWith('http://') && !profilePictureUrl.startsWith('https://')) {
+        throw new Error("profilePictureUrl must be a valid HTTP/HTTPS URL");
+    }
+    
+    logger.info(`[ProfileSync] Updating profile picture for user ${userId}`);
+    
+    // Get current user metadata
+    let currentMetadata = {};
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0 && users[0].metadata) {
+            currentMetadata = typeof users[0].metadata === 'string'
+                ? JSON.parse(users[0].metadata)
+                : users[0].metadata;
+        }
+    } catch (e) {
+        // ignore
+    }
+    
+    // Update metadata
+    currentMetadata.profilePicture = profilePictureUrl;
+    currentMetadata.profilePictureUpdatedAt = Date.now();
+    
+    // Update Nakama account with avatar_url
+    nk.accountUpdateId(
+        userId,
+        null,                            // username
+        null,                            // displayName
+        null,                            // timezone
+        null,                            // location
+        null,                            // langTag
+        profilePictureUrl,               // avatarUrl
+        JSON.stringify(currentMetadata)  // metadata
+    );
+    
+    // Store update record
+    nk.storageWrite([{
+        collection: PROFILE_SYNC_COLLECTION,
+        key: "last_picture_update",
+        userId: userId,
+        value: {
+            updatedAt: Date.now(),
+            profilePicture: profilePictureUrl
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+    
+    logger.info(`[ProfileSync] ✅ Updated profile picture for ${userId}`);
+    
+    return JSON.stringify({
+        success: true,
+        profilePicture: profilePictureUrl,
+        updatedAt: Date.now()
+    });
+}
+
+/**
+ * RPC: Get user profile with profile picture from Nakama
+ * 
+ * Payload: { "userId": "optional-user-id" } (defaults to current user)
+ * Response: { "userId": "...", "username": "...", "displayName": "...", "profilePicture": "..." }
+ */
+function rpcGetUserProfile(context, logger, nk, payload) {
+    let targetUserId = context.userId;
+    
+    // Allow fetching other user's public profile
+    if (payload) {
+        try {
+            const request = JSON.parse(payload);
+            if (request.userId) {
+                targetUserId = request.userId;
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+    
+    if (!targetUserId) {
+        throw new Error("userId is required");
+    }
+    
+    try {
+        const users = nk.usersGetId([targetUserId]);
+        
+        if (!users || users.length === 0) {
+            throw new Error("User not found");
+        }
+        
+        const user = users[0];
+        let profilePicture = user.avatarUrl || null;
+        
+        // Check metadata if no avatar_url
+        if (!profilePicture && user.metadata) {
+            try {
+                const metadata = typeof user.metadata === 'string'
+                    ? JSON.parse(user.metadata)
+                    : user.metadata;
+                profilePicture = metadata.profilePicture || null;
+            } catch (e) {
+                // ignore
+            }
+        }
+        
+        return JSON.stringify({
+            userId: user.id,
+            username: user.username,
+            displayName: user.displayName || user.username,
+            profilePicture: profilePicture,
+            createTime: user.createTime,
+            updateTime: user.updateTime
+        });
+        
+    } catch (e) {
+        logger.error(`[ProfileSync] Failed to get profile for ${targetUserId}: ${e.message}`);
+        throw e;
+    }
+}
+
+/**
+ * RPC: Batch get user profiles with profile pictures
+ * 
+ * Useful for fetching profiles for multiple users at once
+ * (e.g., for displaying in a friends list or leaderboard)
+ * 
+ * Payload: { "userIds": ["id1", "id2", ...] }
+ * Response: { "profiles": { "id1": {...}, "id2": {...} } }
+ */
+function rpcBatchGetUserProfiles(context, logger, nk, payload) {
+    let request = {};
+    try {
+        request = payload ? JSON.parse(payload) : {};
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+    
+    const userIds = request.userIds;
+    
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        throw new Error("userIds array is required");
+    }
+    
+    // Limit batch size to prevent abuse
+    if (userIds.length > 100) {
+        throw new Error("Maximum 100 user IDs per request");
+    }
+    
+    const profiles = {};
+    
+    try {
+        const users = nk.usersGetId(userIds);
+        
+        for (const user of users) {
+            let profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string'
+                        ? JSON.parse(user.metadata)
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) {
+                    // ignore
+                }
+            }
+            
+            profiles[user.id] = {
+                userId: user.id,
+                username: user.username,
+                displayName: user.displayName || user.username,
+                profilePicture: profilePicture
+            };
+        }
+        
+    } catch (e) {
+        logger.error(`[ProfileSync] Batch fetch failed: ${e.message}`);
+    }
+    
+    // Fill in missing entries
+    for (const userId of userIds) {
+        if (!profiles[userId]) {
+            profiles[userId] = {
+                userId: userId,
+                username: null,
+                displayName: null,
+                profilePicture: null
+            };
+        }
+    }
+    
+    return JSON.stringify({
+        profiles: profiles,
+        fetchedCount: Object.keys(profiles).length
+    });
+}
+
+/**
+ * RPC: Get profile sync status
+ * 
+ * Check when the profile was last synced from UserManagement
+ * 
+ * Response: { "lastSyncedAt": ..., "profilePicture": "..." }
+ */
+function rpcGetProfileSyncStatus(context, logger, nk, payload) {
+    const userId = context.userId;
+    
+    if (!userId) {
+        throw new Error("User must be authenticated");
+    }
+    
+    const syncRecords = nk.storageRead([{
+        collection: PROFILE_SYNC_COLLECTION,
+        key: "last_sync",
+        userId: userId
+    }]);
+    
+    if (syncRecords && syncRecords.length > 0) {
+        return JSON.stringify({
+            synced: true,
+            ...syncRecords[0].value
+        });
+    }
+    
+    return JSON.stringify({
+        synced: false,
+        lastSyncedAt: null,
+        profilePicture: null
+    });
+}
+
+// Register RPCs
+function __ModuleInit_86(ctx, logger, nk, initializer) {
+    logger.info("👤 Profile Sync Module loading...");
+    
+    // Register RPC endpoints
+    __rpc_sync_profile_from_user_management = __rpc_sync_profile_from_user_management || (rpcSyncProfileFromUserManagement);
+    __rpc_update_profile_picture = __rpc_update_profile_picture || (rpcUpdateProfilePicture);
+    __rpc_get_user_profile = __rpc_get_user_profile || (rpcGetUserProfile);
+    __rpc_batch_get_user_profiles = __rpc_batch_get_user_profiles || (rpcBatchGetUserProfiles);
+    __rpc_get_profile_sync_status = __rpc_get_profile_sync_status || (rpcGetProfileSyncStatus);
+    
+    logger.info("✅ Profile Sync Module initialized!");
+    logger.info(`
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                    👤 PROFILE SYNC MODULE                                 ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║ RPCs Available:                                                           ║
+║   • sync_profile_from_user_management - Sync from UserManagement API      ║
+║   • update_profile_picture            - Direct URL update                 ║
+║   • get_user_profile                  - Get profile with picture          ║
+║   • batch_get_user_profiles           - Batch fetch profiles              ║
+║   • get_profile_sync_status           - Check last sync time              ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║ Integration:                                                              ║
+║   1. Call sync_profile_from_user_management after login                   ║
+║   2. Call update_profile_picture after profile pic upload                 ║
+║   3. Leaderboards will auto-include profilePicture field                  ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+`);
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
 
 
 // --- Module: progression/mastery_system.js ---
@@ -46010,7 +55322,7 @@ function rpcQuizCheckDailyCompletion(ctx, logger, nk, payload) {
 // version wins at the global scope when the guarded `||` assignments are
 // replayed (modules first, legacy fallback second).
 // ============================================================================
-function __ModuleInit_78(ctx, logger, nk, initializer) {
+function __ModuleInit_92(ctx, logger, nk, initializer) {
     __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult);
     __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory);
     __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats);
@@ -47327,7 +56639,7 @@ function rpcQuizverseFetchNewsQuiz(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_80(ctx, logger, nk, initializer) {
+function __ModuleInit_94(ctx, logger, nk, initializer) {
     __rpc_quizverse_fetch_news_quiz = __rpc_quizverse_fetch_news_quiz || (rpcQuizverseFetchNewsQuiz);
     logger.info("[NewsQuiz] Registered RPC: quizverse_fetch_news_quiz");
 }
@@ -47916,7 +57228,7 @@ function registerQuizverseQuizGenerateRPCs(initializer, logger) {
 // ============================================================================
 // MODULE INIT (postbuild AST hook — see quizverse_seen.js for full rationale)
 // ============================================================================
-function __ModuleInit_81(ctx, logger, nk, initializer) {
+function __ModuleInit_95(ctx, logger, nk, initializer) {
     __rpc_quizverse_quiz_generate = __rpc_quizverse_quiz_generate || (rpcQuizverseQuizGenerate);
     __rpc_quizverse_seen_resolve = __rpc_quizverse_seen_resolve || (rpcQuizverseSeenResolve);
     logger.info("[QuizGen] Module InitModule registered: 2 RPCs");
@@ -48395,7 +57707,7 @@ function registerQuizverseSeenRPCs(initializer, logger) {
 //   3) Replay those assignments at IIFE/global scope so every Goja VM has them
 //   4) Emit `__rpc__id_ = __rpc__id_ || (__rpc_<id>)` inside the master InitModule
 // ============================================================================
-function __ModuleInit_82(ctx, logger, nk, initializer) {
+function __ModuleInit_96(ctx, logger, nk, initializer) {
     __rpc_quizverse_seen_get = __rpc_quizverse_seen_get || (rpcQuizverseSeenGet);
     __rpc_quizverse_seen_merge = __rpc_quizverse_seen_merge || (rpcQuizverseSeenMerge);
     __rpc_quizverse_seen_purge = __rpc_quizverse_seen_purge || (rpcQuizverseSeenPurge);
@@ -52459,7 +61771,7 @@ var rewardedAdsModule = {
  */
 
 // AWS Signature Version 4 implementation for S3 pre-signed URLs
-const ALGORITHM = 'AWS4-HMAC-SHA256';
+var ALGORITHM = 'AWS4-HMAC-SHA256';
 
 /**
  * Get AWS configuration from environment
@@ -52830,7 +62142,7 @@ function isAdmin(ctx, nk) {
 }
 
 // Register RPCs
-function __ModuleInit_90(ctx, logger, nk, initializer) {
+function __ModuleInit_104(ctx, logger, nk, initializer) {
     logger.info('Initializing S3 Assets module...');
 
     const config = getAwsConfig(ctx);
@@ -53027,7 +62339,7 @@ function rpcSatoriFlagsGetAll(ctx, logger, nk, payload) {
 }
 
 // ── Module init ───────────────────────────────────────────
-function __ModuleInit_91(ctx, logger, nk, initializer) {
+function __ModuleInit_105(ctx, logger, nk, initializer) {
     __rpc_satori_event = __rpc_satori_event || (rpcSatoriEvent);
     __rpc_satori_events_batch = __rpc_satori_events_batch || (rpcSatoriEventsBatch);
     __rpc_satori_identity_get = __rpc_satori_identity_get || (rpcSatoriIdentityGet);
@@ -53998,7 +63310,7 @@ function rpcSatoriFlush(ctx, logger, nk, payload) {
     });
 }
 
-function __ModuleInit_92(ctx, logger, nk, initializer) {
+function __ModuleInit_106(ctx, logger, nk, initializer) {
     __rpc_satori_diag = __rpc_satori_diag || (rpcSatoriDiag);
     __rpc_satori_flush = __rpc_satori_flush || (rpcSatoriFlush);
     if (logger && logger.info) {
@@ -54094,7 +63406,7 @@ function _stubFriendBattlesGetActive() { return JSON.stringify({ success: true, 
 
 // ── Module init ───────────────────────────────────────────────────
 
-function __ModuleInit_93(ctx, logger, nk, initializer) {
+function __ModuleInit_107(ctx, logger, nk, initializer) {
     // ─── Hiro naming aliases (singular/plural + verb-position swaps) ──
     __rpc_hiro_get_streaks = __rpc_hiro_get_streaks || (__rpc_hiro_streaks_get);
     __rpc_hiro_streak_get = __rpc_hiro_streak_get || (__rpc_hiro_streaks_get);
@@ -54741,6 +64053,10 @@ function rpcSmartReviewGetWeaknessMap(ctx, logger, nk, payload) {
     var data = srValidatePayload(payload);
     if (data === null) return srErrorResponse('Invalid JSON payload');
 
+    // Resolve caller — Unity clients use ctx.userId from their session;
+    // server-to-server (http_key) callers may supply user_id in the payload.
+    // Same trust boundary as qe_player_full_profile; safe because this RPC
+    // is READ-ONLY and the http_key is admin-level.
     var userId = ctx.userId || (data && (data.user_id || data.userId)) || '';
     if (!userId) return srErrorResponse('User not authenticated');
 
@@ -54916,7 +64232,7 @@ function rpcSmartReviewGetForecast(ctx, logger, nk, payload) {
 // legacy_runtime.js, the module-level handler wins — even if legacy still
 // has its own registration for `smart_review_get_cards` /
 // `smart_review_rate_card`, our handler is what actually fires.
-function __ModuleInit_94(ctx, logger, nk, initializer) {
+function __ModuleInit_108(ctx, logger, nk, initializer) {
     __rpc_smart_review_get_cards = __rpc_smart_review_get_cards || (rpcSmartReviewGetCards);
     __rpc_smart_review_rate_card = __rpc_smart_review_rate_card || (rpcSmartReviewRateCard);
     __rpc_smart_review_add_card = __rpc_smart_review_add_card || (rpcSmartReviewAddCard);
@@ -56474,7 +65790,7 @@ function rpcVisualPathSkipDayWithAd(ctx, logger, nk, payload) {
 // ============================================================================
 // Module Init — register Visual Path RPCs
 // ============================================================================
-function __ModuleInit_97(ctx, logger, nk, initializer) {
+function __ModuleInit_111(ctx, logger, nk, initializer) {
     __rpc_visual_path_get_state = __rpc_visual_path_get_state || (rpcVisualPathGetState);
     __rpc_visual_path_get_schedule = __rpc_visual_path_get_schedule || (rpcVisualPathGetSchedule);
     __rpc_visual_path_skip_day_with_ad = __rpc_visual_path_skip_day_with_ad || (rpcVisualPathSkipDayWithAd);
@@ -80283,12 +89599,16 @@ function rpcStreakShieldRepair(ctx, logger, nk, payload) {
 
 function rpcWeeklyRecapGet(ctx, logger, nk, payload) {
     try {
+        // Resolve caller. Unity uses ctx.userId from session auth; server-to-
+        // server (http_key) callers — content-factory's NakamaMasterAgent —
+        // can supply user_id explicitly in the payload. Same trust boundary
+        // as qe_player_full_profile; safe because this RPC is READ-ONLY.
         var userId = ctx.userId;
         if (!userId) {
             try {
                 var _d = payload ? JSON.parse(payload) : {};
                 userId = (_d && (_d.user_id || _d.userId)) || '';
-            } catch (_e) { /* ignore */ }
+            } catch (_e) { /* ignore parse — userId stays '' */ }
         }
         if (!userId) {
             return JSON.stringify({ success: false, error: "no_session" });
@@ -89920,11 +99240,16 @@ var QuizVerseMigration;
         return pack;
     }
     function rpcGetPlayerContext(ctx, logger, nk, payload) {
+        // Resolve caller. Unity uses ctx.userId from session auth; server-to-
+        // server (http_key) callers — e.g. content-factory's NakamaMasterAgent
+        // building personalized recaps — can supply user_id in the payload.
+        // Safe because this RPC is READ-ONLY and http_key is admin-level
+        // (same trust boundary as qe_player_full_profile).
         var userId = ctx.userId;
         if (!userId) {
             try {
-                var _d = payload ? JSON.parse(payload) : {};
-                userId = (_d && (_d.user_id || _d.userId)) || "";
+                var data = payload ? JSON.parse(payload) : {};
+                userId = (data && (data.user_id || data.userId)) || "";
             }
             catch (_e) { /* ignore */ }
         }
@@ -122827,6 +132152,65 @@ try { __rpc_quizverse_chatbox_message = __rpc_quizverse_chatbox_message || (rpcQ
 try { __rpc_quizverse_kb_get_context = __rpc_quizverse_kb_get_context || (rpcQuizverseKbGetContext); } catch(e) {}
 try { __rpc_quizverse_kb_register_seen_questions = __rpc_quizverse_kb_register_seen_questions || (rpcQuizverseKbRegisterSeen); } catch(e) {}
 try { __rpc_quizverse_kb_filter_unseen_questions = __rpc_quizverse_kb_filter_unseen_questions || (rpcQuizverseKbFilterUnseen); } catch(e) {}
+try { __rpc_cricket_create_ai_note = __rpc_cricket_create_ai_note || (rpcCreateAINote); } catch(e) {}
+try { __rpc_cricket_generate_quiz_from_note = __rpc_cricket_generate_quiz_from_note || (rpcGenerateQuizFromNote); } catch(e) {}
+try { __rpc_cricket_generate_match_trivia = __rpc_cricket_generate_match_trivia || (rpcGenerateMatchTrivia); } catch(e) {}
+try { __rpc_cricket_generate_player_trivia = __rpc_cricket_generate_player_trivia || (rpcGeneratePlayerTrivia); } catch(e) {}
+try { __rpc_cricket_get_user_notes = __rpc_cricket_get_user_notes || (rpcGetUserNotes); } catch(e) {}
+try { __rpc_cricket_generate_debate = __rpc_cricket_generate_debate || (rpcGenerateDebateTopic); } catch(e) {}
+try { __rpc_cricket_get_daily_challenges = __rpc_cricket_get_daily_challenges || (rpcGetDailyChallenges); } catch(e) {}
+try { __rpc_cricket_update_challenge_progress = __rpc_cricket_update_challenge_progress || (rpcUpdateChallengeProgress); } catch(e) {}
+try { __rpc_cricket_claim_challenge_reward = __rpc_cricket_claim_challenge_reward || (rpcClaimChallengeReward); } catch(e) {}
+try { __rpc_cricket_get_challenge_history = __rpc_cricket_get_challenge_history || (rpcGetChallengeHistory); } catch(e) {}
+try { __rpc_cricket_get_weekly_summary = __rpc_cricket_get_weekly_summary || (rpcGetWeeklySummary); } catch(e) {}
+try { __rpc_cricket_get_wallet = __rpc_cricket_get_wallet || (rpcGetWallet); } catch(e) {}
+try { __rpc_cricket_spend_coins = __rpc_cricket_spend_coins || (rpcSpendCoins); } catch(e) {}
+try { __rpc_cricket_add_coins = __rpc_cricket_add_coins || (rpcAddCoins); } catch(e) {}
+try { __rpc_cricket_process_iap = __rpc_cricket_process_iap || (rpcProcessIAPPurchase); } catch(e) {}
+try { __rpc_cricket_purchase_voice_access = __rpc_cricket_purchase_voice_access || (rpcPurchaseVoiceAccess); } catch(e) {}
+try { __rpc_cricket_check_voice_access = __rpc_cricket_check_voice_access || (rpcCheckVoiceAccess); } catch(e) {}
+try { __rpc_cricket_get_transactions = __rpc_cricket_get_transactions || (rpcGetTransactionHistory); } catch(e) {}
+try { __rpc_cricket_convert_guest = __rpc_cricket_convert_guest || (rpcConvertGuestToRegistered); } catch(e) {}
+try { __rpc_cricket_track_engagement = __rpc_cricket_track_engagement || (rpcTrackEngagement); } catch(e) {}
+try { __rpc_cricket_get_buildup_status = __rpc_cricket_get_buildup_status || (rpcGetBuildUpStatus); } catch(e) {}
+try { __rpc_cricket_claim_daily_login = __rpc_cricket_claim_daily_login || (rpcClaimDailyLogin); } catch(e) {}
+try { __rpc_cricket_get_engagement_summary = __rpc_cricket_get_engagement_summary || (rpcGetEngagementSummary); } catch(e) {}
+try { __rpc_cricket_start_session = __rpc_cricket_start_session || (rpcStartSession); } catch(e) {}
+try { __rpc_cricket_end_session = __rpc_cricket_end_session || (rpcEndSession); } catch(e) {}
+try { __rpc_cricket_load_schedules = __rpc_cricket_load_schedules || (rpcLoadSchedules); } catch(e) {}
+try { __rpc_cricket_get_upcoming_matches = __rpc_cricket_get_upcoming_matches || (rpcGetUpcomingMatches); } catch(e) {}
+try { __rpc_cricket_get_match_details = __rpc_cricket_get_match_details || (rpcGetMatchDetails); } catch(e) {}
+try { __rpc_cricket_start_live_match = __rpc_cricket_start_live_match || (rpcStartLiveMatch); } catch(e) {}
+try { __rpc_cricket_update_ball_event = __rpc_cricket_update_ball_event || (rpcUpdateBallEvent); } catch(e) {}
+try { __rpc_cricket_trigger_strategic_timeout = __rpc_cricket_trigger_strategic_timeout || (rpcTriggerStrategicTimeout); } catch(e) {}
+try { __rpc_cricket_claim_flash_drop = __rpc_cricket_claim_flash_drop || (rpcClaimFlashDrop); } catch(e) {}
+try { __rpc_cricket_end_match = __rpc_cricket_end_match || (rpcEndMatch); } catch(e) {}
+try { __rpc_cricket_submit_prediction = __rpc_cricket_submit_prediction || (rpcSubmitPrediction); } catch(e) {}
+try { __rpc_cricket_process_match_results = __rpc_cricket_process_match_results || (rpcProcessMatchResults); } catch(e) {}
+try { __rpc_cricket_get_user_predictions = __rpc_cricket_get_user_predictions || (rpcGetUserPredictions); } catch(e) {}
+try { __rpc_cricket_get_match_leaderboard = __rpc_cricket_get_match_leaderboard || (rpcGetMatchLeaderboard); } catch(e) {}
+try { __rpc_cricket_get_tournament_leaderboard = __rpc_cricket_get_tournament_leaderboard || (rpcGetTournamentLeaderboard); } catch(e) {}
+try { __rpc_cricket_process_daily_login = __rpc_cricket_process_daily_login || (rpcProcessDailyLogin); } catch(e) {}
+try { __rpc_cricket_claim_trigger_reward = __rpc_cricket_claim_trigger_reward || (rpcClaimTriggerReward); } catch(e) {}
+try { __rpc_cricket_get_retention_status = __rpc_cricket_get_retention_status || (rpcGetRetentionStatus); } catch(e) {}
+try { __rpc_cricket_activate_bonus_hour = __rpc_cricket_activate_bonus_hour || (rpcActivateBonusHour); } catch(e) {}
+try { __rpc_cricket_record_rank_snapshot = __rpc_cricket_record_rank_snapshot || (rpcRecordRankSnapshot); } catch(e) {}
+try { __rpc_cricket_get_season_pass = __rpc_cricket_get_season_pass || (rpcGetSeasonPassStatus); } catch(e) {}
+try { __rpc_cricket_add_season_xp = __rpc_cricket_add_season_xp || (rpcAddSeasonXP); } catch(e) {}
+try { __rpc_cricket_claim_season_reward = __rpc_cricket_claim_season_reward || (rpcClaimSeasonReward); } catch(e) {}
+try { __rpc_cricket_upgrade_to_premium = __rpc_cricket_upgrade_to_premium || (rpcUpgradeToPremium); } catch(e) {}
+try { __rpc_cricket_start_trivia = __rpc_cricket_start_trivia || (rpcStartTriviaSession); } catch(e) {}
+try { __rpc_cricket_submit_answer = __rpc_cricket_submit_answer || (rpcSubmitTriviaAnswer); } catch(e) {}
+try { __rpc_cricket_generate_ai_trivia = __rpc_cricket_generate_ai_trivia || (rpcGenerateAITrivia); } catch(e) {}
+try { __rpc_cricket_get_trivia_leaderboard = __rpc_cricket_get_trivia_leaderboard || (rpcGetTriviaLeaderboard); } catch(e) {}
+try { __rpc_cricket_get_trivia_history = __rpc_cricket_get_trivia_history || (rpcGetTriviaHistory); } catch(e) {}
+try { __rpc_cricket_init_leaderboards = __rpc_cricket_init_leaderboards || (rpcCricketInitLeaderboards); } catch(e) {}
+try { __rpc_cricket_submit_score = __rpc_cricket_submit_score || (rpcCricketSubmitScore); } catch(e) {}
+try { __rpc_cricket_get_all_leaderboards = __rpc_cricket_get_all_leaderboards || (rpcCricketGetAllLeaderboards); } catch(e) {}
+try { __rpc_cricket_get_missions = __rpc_cricket_get_missions || (rpcCricketGetMissions); } catch(e) {}
+try { __rpc_cricket_track_share = __rpc_cricket_track_share || (rpcCricketTrackShare); } catch(e) {}
+try { __rpc_cricket_track_rate_app = __rpc_cricket_track_rate_app || (rpcCricketTrackRateApp); } catch(e) {}
+try { __rpc_cricket_get_engagement_summary = __rpc_cricket_get_engagement_summary || (rpcCricketGetEngagementSummary); } catch(e) {}
 try { __rpc_analytics_appodeal = __rpc_analytics_appodeal || (rpcAnalyticsAppodeal); } catch(e) {}
 try { __rpc_analytics_apple_appstore = __rpc_analytics_apple_appstore || (rpcAnalyticsAppleAppstore); } catch(e) {}
 try { __rpc_apple_appstore_import = __rpc_apple_appstore_import || (rpcAppleImport); } catch(e) {}
@@ -122886,6 +132270,18 @@ try { __rpc_onboarding_get_tomorrow_preview = __rpc_onboarding_get_tomorrow_prev
 try { __rpc_onboarding_track_session = __rpc_onboarding_track_session || (rpcTrackSession); } catch(e) {}
 try { __rpc_onboarding_get_retention_data = __rpc_onboarding_get_retention_data || (rpcGetRetentionData); } catch(e) {}
 try { __rpc_onboarding_grant_streak_shield = __rpc_onboarding_grant_streak_shield || (rpcGrantStreakShield); } catch(e) {}
+try { __rpc_get_platform_leaderboard = __rpc_get_platform_leaderboard || (rpcGetPlatformLeaderboard); } catch(e) {}
+try { __rpc_get_platform_leaderboard_multi = __rpc_get_platform_leaderboard_multi || (rpcGetPlatformLeaderboardMulti); } catch(e) {}
+try { __rpc_get_all_leaderboards = __rpc_get_all_leaderboards || (rpcGetAllLeaderboards); } catch(e) {}
+try { __rpc_submit_platform_score = __rpc_submit_platform_score || (rpcSubmitPlatformScore); } catch(e) {}
+try { __rpc_get_user_leaderboard_stats = __rpc_get_user_leaderboard_stats || (rpcGetUserLeaderboardStats); } catch(e) {}
+try { __rpc_get_leaderboard_around_user = __rpc_get_leaderboard_around_user || (rpcGetLeaderboardAroundUser); } catch(e) {}
+try { __rpc_delete_leaderboard_record = __rpc_delete_leaderboard_record || (rpcDeleteLeaderboardRecord); } catch(e) {}
+try { __rpc_sync_profile_from_user_management = __rpc_sync_profile_from_user_management || (rpcSyncProfileFromUserManagement); } catch(e) {}
+try { __rpc_update_profile_picture = __rpc_update_profile_picture || (rpcUpdateProfilePicture); } catch(e) {}
+try { __rpc_get_user_profile = __rpc_get_user_profile || (rpcGetUserProfile); } catch(e) {}
+try { __rpc_batch_get_user_profiles = __rpc_batch_get_user_profiles || (rpcBatchGetUserProfiles); } catch(e) {}
+try { __rpc_get_profile_sync_status = __rpc_get_profile_sync_status || (rpcGetProfileSyncStatus); } catch(e) {}
 try { __rpc_qe_player_full_profile = __rpc_qe_player_full_profile || (rpcQePlayerFullProfile); } catch(e) {}
 try { __rpc_qe_stale_sessions = __rpc_qe_stale_sessions || (rpcQeStaleSessions); } catch(e) {}
 try { __rpc_qe_cohort_export = __rpc_qe_cohort_export || (rpcQeCohortExport); } catch(e) {}
@@ -124067,6 +133463,64 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("quizverse_kb_get_context", __rpc_quizverse_kb_get_context); } catch(e) {}
   try { initializer.registerRpc("quizverse_kb_register_seen_questions", __rpc_quizverse_kb_register_seen_questions); } catch(e) {}
   try { initializer.registerRpc("quizverse_kb_filter_unseen_questions", __rpc_quizverse_kb_filter_unseen_questions); } catch(e) {}
+  try { initializer.registerRpc("cricket_create_ai_note", __rpc_cricket_create_ai_note); } catch(e) {}
+  try { initializer.registerRpc("cricket_generate_quiz_from_note", __rpc_cricket_generate_quiz_from_note); } catch(e) {}
+  try { initializer.registerRpc("cricket_generate_match_trivia", __rpc_cricket_generate_match_trivia); } catch(e) {}
+  try { initializer.registerRpc("cricket_generate_player_trivia", __rpc_cricket_generate_player_trivia); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_user_notes", __rpc_cricket_get_user_notes); } catch(e) {}
+  try { initializer.registerRpc("cricket_generate_debate", __rpc_cricket_generate_debate); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_daily_challenges", __rpc_cricket_get_daily_challenges); } catch(e) {}
+  try { initializer.registerRpc("cricket_update_challenge_progress", __rpc_cricket_update_challenge_progress); } catch(e) {}
+  try { initializer.registerRpc("cricket_claim_challenge_reward", __rpc_cricket_claim_challenge_reward); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_challenge_history", __rpc_cricket_get_challenge_history); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_weekly_summary", __rpc_cricket_get_weekly_summary); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_wallet", __rpc_cricket_get_wallet); } catch(e) {}
+  try { initializer.registerRpc("cricket_spend_coins", __rpc_cricket_spend_coins); } catch(e) {}
+  try { initializer.registerRpc("cricket_add_coins", __rpc_cricket_add_coins); } catch(e) {}
+  try { initializer.registerRpc("cricket_process_iap", __rpc_cricket_process_iap); } catch(e) {}
+  try { initializer.registerRpc("cricket_purchase_voice_access", __rpc_cricket_purchase_voice_access); } catch(e) {}
+  try { initializer.registerRpc("cricket_check_voice_access", __rpc_cricket_check_voice_access); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_transactions", __rpc_cricket_get_transactions); } catch(e) {}
+  try { initializer.registerRpc("cricket_convert_guest", __rpc_cricket_convert_guest); } catch(e) {}
+  try { initializer.registerRpc("cricket_track_engagement", __rpc_cricket_track_engagement); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_buildup_status", __rpc_cricket_get_buildup_status); } catch(e) {}
+  try { initializer.registerRpc("cricket_claim_daily_login", __rpc_cricket_claim_daily_login); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_engagement_summary", __rpc_cricket_get_engagement_summary); } catch(e) {}
+  try { initializer.registerRpc("cricket_start_session", __rpc_cricket_start_session); } catch(e) {}
+  try { initializer.registerRpc("cricket_end_session", __rpc_cricket_end_session); } catch(e) {}
+  try { initializer.registerRpc("cricket_load_schedules", __rpc_cricket_load_schedules); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_upcoming_matches", __rpc_cricket_get_upcoming_matches); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_match_details", __rpc_cricket_get_match_details); } catch(e) {}
+  try { initializer.registerRpc("cricket_start_live_match", __rpc_cricket_start_live_match); } catch(e) {}
+  try { initializer.registerRpc("cricket_update_ball_event", __rpc_cricket_update_ball_event); } catch(e) {}
+  try { initializer.registerRpc("cricket_trigger_strategic_timeout", __rpc_cricket_trigger_strategic_timeout); } catch(e) {}
+  try { initializer.registerRpc("cricket_claim_flash_drop", __rpc_cricket_claim_flash_drop); } catch(e) {}
+  try { initializer.registerRpc("cricket_end_match", __rpc_cricket_end_match); } catch(e) {}
+  try { initializer.registerRpc("cricket_submit_prediction", __rpc_cricket_submit_prediction); } catch(e) {}
+  try { initializer.registerRpc("cricket_process_match_results", __rpc_cricket_process_match_results); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_user_predictions", __rpc_cricket_get_user_predictions); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_match_leaderboard", __rpc_cricket_get_match_leaderboard); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_tournament_leaderboard", __rpc_cricket_get_tournament_leaderboard); } catch(e) {}
+  try { initializer.registerRpc("cricket_process_daily_login", __rpc_cricket_process_daily_login); } catch(e) {}
+  try { initializer.registerRpc("cricket_claim_trigger_reward", __rpc_cricket_claim_trigger_reward); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_retention_status", __rpc_cricket_get_retention_status); } catch(e) {}
+  try { initializer.registerRpc("cricket_activate_bonus_hour", __rpc_cricket_activate_bonus_hour); } catch(e) {}
+  try { initializer.registerRpc("cricket_record_rank_snapshot", __rpc_cricket_record_rank_snapshot); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_season_pass", __rpc_cricket_get_season_pass); } catch(e) {}
+  try { initializer.registerRpc("cricket_add_season_xp", __rpc_cricket_add_season_xp); } catch(e) {}
+  try { initializer.registerRpc("cricket_claim_season_reward", __rpc_cricket_claim_season_reward); } catch(e) {}
+  try { initializer.registerRpc("cricket_upgrade_to_premium", __rpc_cricket_upgrade_to_premium); } catch(e) {}
+  try { initializer.registerRpc("cricket_start_trivia", __rpc_cricket_start_trivia); } catch(e) {}
+  try { initializer.registerRpc("cricket_submit_answer", __rpc_cricket_submit_answer); } catch(e) {}
+  try { initializer.registerRpc("cricket_generate_ai_trivia", __rpc_cricket_generate_ai_trivia); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_trivia_leaderboard", __rpc_cricket_get_trivia_leaderboard); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_trivia_history", __rpc_cricket_get_trivia_history); } catch(e) {}
+  try { initializer.registerRpc("cricket_init_leaderboards", __rpc_cricket_init_leaderboards); } catch(e) {}
+  try { initializer.registerRpc("cricket_submit_score", __rpc_cricket_submit_score); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_all_leaderboards", __rpc_cricket_get_all_leaderboards); } catch(e) {}
+  try { initializer.registerRpc("cricket_get_missions", __rpc_cricket_get_missions); } catch(e) {}
+  try { initializer.registerRpc("cricket_track_share", __rpc_cricket_track_share); } catch(e) {}
+  try { initializer.registerRpc("cricket_track_rate_app", __rpc_cricket_track_rate_app); } catch(e) {}
   try { initializer.registerRpc("analytics_appodeal", __rpc_analytics_appodeal); } catch(e) {}
   try { initializer.registerRpc("analytics_apple_appstore", __rpc_analytics_apple_appstore); } catch(e) {}
   try { initializer.registerRpc("apple_appstore_import", __rpc_apple_appstore_import); } catch(e) {}
@@ -124111,6 +133565,17 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("offer_list", __rpc_offer_list); } catch(e) {}
   try { initializer.registerRpc("offer_status", __rpc_offer_status); } catch(e) {}
   try { initializer.registerRpc("onboarding_grant_streak_shield", __rpc_onboarding_grant_streak_shield); } catch(e) {}
+  try { initializer.registerRpc("get_platform_leaderboard", __rpc_get_platform_leaderboard); } catch(e) {}
+  try { initializer.registerRpc("get_platform_leaderboard_multi", __rpc_get_platform_leaderboard_multi); } catch(e) {}
+  try { initializer.registerRpc("submit_platform_score", __rpc_submit_platform_score); } catch(e) {}
+  try { initializer.registerRpc("get_user_leaderboard_stats", __rpc_get_user_leaderboard_stats); } catch(e) {}
+  try { initializer.registerRpc("get_leaderboard_around_user", __rpc_get_leaderboard_around_user); } catch(e) {}
+  try { initializer.registerRpc("delete_leaderboard_record", __rpc_delete_leaderboard_record); } catch(e) {}
+  try { initializer.registerRpc("sync_profile_from_user_management", __rpc_sync_profile_from_user_management); } catch(e) {}
+  try { initializer.registerRpc("update_profile_picture", __rpc_update_profile_picture); } catch(e) {}
+  try { initializer.registerRpc("get_user_profile", __rpc_get_user_profile); } catch(e) {}
+  try { initializer.registerRpc("batch_get_user_profiles", __rpc_batch_get_user_profiles); } catch(e) {}
+  try { initializer.registerRpc("get_profile_sync_status", __rpc_get_profile_sync_status); } catch(e) {}
   try { initializer.registerRpc("qe_player_full_profile", __rpc_qe_player_full_profile); } catch(e) {}
   try { initializer.registerRpc("qe_stale_sessions", __rpc_qe_stale_sessions); } catch(e) {}
   try { initializer.registerRpc("qe_cohort_export", __rpc_qe_cohort_export); } catch(e) {}
@@ -124170,5 +133635,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 896 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 965 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }
