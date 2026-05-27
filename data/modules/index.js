@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-27T02:21:02.913Z
-// RPC Count: 995
+// Generated: 2026-05-27T03:53:17.404Z
+// RPC Count: 1010
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -558,6 +558,8 @@ var __rpc_tournament_cron_tick;
 var __rpc_tournament_cron_pregen;
 var __rpc_tournament_list;
 var __rpc_tournament_get;
+var __rpc_tournament_caller_status;
+var __rpc_tournament_bracket_state;
 var __rpc_tournament_pre_enroll;
 var __rpc_tournament_enter;
 var __rpc_tournament_submit_pack_result;
@@ -570,15 +572,28 @@ var __rpc_tournament_leaderboard_country;
 var __rpc_tournament_leaderboard_tier_league;
 var __rpc_tournament_leaderboard_activity_feed;
 var __rpc_tournament_claim_cert;
+var __rpc_tournament_claim_certificate;
+var __rpc_certificate_get;
 var __rpc_tournament_content_get_pack;
+var __rpc_tournament_get_pick_n_questions;
 var __rpc_tournament_video_get_url;
+var __rpc_learning_track_video_url;
+var __rpc_learning_track_get;
+var __rpc_learning_track_progress_get;
+var __rpc_learning_video_record_watch;
+var __rpc_learning_check_submit;
 var __rpc_tournament_learning_check_submit;
 var __rpc_tournament_referral_get_mine;
+var __rpc_referral_my_code;
+var __rpc_referral_lookup;
+var __rpc_referral_pre_enroll_with_code;
 var __rpc_tournament_admin_create;
 var __rpc_tournament_content_request_generation;
 var __rpc_tournament_settle;
 var __rpc_tournament_eliminate_round;
 var __rpc_tournament_referral_settle_topN;
+var __rpc_tournament_bracket_seed_topN;
+var __rpc_tournament_bracket_advance_round;
 var __rpc_user_model_get;
 var __rpc_user_model_signal_ingest;
 var __rpc_user_model_consent_set;
@@ -1006,7 +1021,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_content_get_pack":true,"tournament_video_get_url":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"friends_list":true,"list_blocked_users":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"daily_rewards_get_status":true,"daily_rewards_claim":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"get_daily_missions":true,"submit_mission_progress":true,"claim_mission_reward":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"notif_cron_daily_quiz":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_identity_get":true,"satori_identity_update_properties":true,"creator_event_list":true,"creator_event_join":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (115 files) ---
 
@@ -132398,6 +132413,90 @@ var TournamentCrons;
                             permissionWrite: 0,
                         }]);
                     actions.push({ slug: cfg.slug, action: "eliminated_round", round: c + 1, result: elim });
+                    // Bracket handoff (plan §3): at the FIRST cut, seed top-64 into the
+                    // Bracket service. On every subsequent cut, advance the bracket
+                    // by one round (postMatchResult for every match in the open
+                    // round). Both calls are idempotent against bracket_seeded_at /
+                    // bracket_round on the meta row.
+                    var bMetaAny = TournamentsStorage.readMeta(nk, cfg.slug) || {};
+                    var bracketId = bMetaAny.bracket_id;
+                    if (bracketId) {
+                        if (c === 0 && !bMetaAny.bracket_seeded_at) {
+                            // First cut → seed players
+                            var lb = TournamentLeaderboard.listTop(nk, cfg.slug, 64, null);
+                            var lbRecs = (lb && lb.records) ? lb.records : [];
+                            var seedPlayers = [];
+                            for (var pi = 0; pi < lbRecs.length; pi++) {
+                                var lbr = lbRecs[pi];
+                                seedPlayers.push({
+                                    user_id: lbr.ownerId || "",
+                                    username: lbr.username || ("Player_" + (pi + 1)),
+                                    seed_score: lbr.score | 0,
+                                });
+                            }
+                            if (seedPlayers.length > 0) {
+                                var seed = BracketClient.seedPlayers(ctx, nk, bracketId, seedPlayers);
+                                if (seed.ok) {
+                                    bMetaAny.bracket_seeded_at = now;
+                                    bMetaAny.bracket_seeded_count = seedPlayers.length;
+                                    var rds = 1, nn = seedPlayers.length;
+                                    while (nn > 1) {
+                                        rds++;
+                                        nn = Math.ceil(nn / 2);
+                                    }
+                                    if (rds > 6)
+                                        rds = 6;
+                                    bMetaAny.bracket_total_rounds = rds;
+                                    bMetaAny.bracket_round = 1;
+                                    TournamentsStorage.writeMeta(nk, cfg.slug, bMetaAny);
+                                    actions.push({ slug: cfg.slug, action: "bracket_seeded", count: seedPlayers.length, rounds: rds });
+                                }
+                                else {
+                                    actions.push({ slug: cfg.slug, action: "bracket_seed_failed", error: seed.error });
+                                }
+                            }
+                        }
+                        else if (c > 0 && bMetaAny.bracket_seeded_at) {
+                            // Subsequent cut → advance bracket round via S2S to Bracket
+                            var st = BracketClient.getBracketState(ctx, nk, bracketId);
+                            if (st.ok && st.state) {
+                                var bState = st.state;
+                                var bMatches = bState.current_round_matches || bState.matches || [];
+                                var advancedCount = 0;
+                                for (var mi = 0; mi < bMatches.length; mi++) {
+                                    var bm = bMatches[mi];
+                                    var bMatchId = "" + (bm.id || bm.match_id || "");
+                                    if (!bMatchId || bm.winner_user_id || bm.status === "COMPLETED")
+                                        continue;
+                                    var bp1 = "" + (bm.player1_user_id || (bm.players && bm.players[0] && bm.players[0].user_id) || "");
+                                    var bp2 = "" + (bm.player2_user_id || (bm.players && bm.players[1] && bm.players[1].user_id) || "");
+                                    if (!bp1 || !bp2)
+                                        continue;
+                                    var bs1 = 0, bs2 = 0;
+                                    try {
+                                        var rec2 = nk.leaderboardRecordsList(TournamentLeaderboard.lbId(cfg.slug), [bp1, bp2], 2, undefined);
+                                        for (var rrr = 0; rrr < (rec2.records || []).length; rrr++) {
+                                            var rrow2 = rec2.records[rrr];
+                                            if (rrow2.ownerId === bp1)
+                                                bs1 = rrow2.score | 0;
+                                            if (rrow2.ownerId === bp2)
+                                                bs2 = rrow2.score | 0;
+                                        }
+                                    }
+                                    catch (_) { }
+                                    var bwinner = bs1 >= bs2 ? bp1 : bp2;
+                                    var post = BracketClient.postMatchResult(ctx, nk, bracketId, bMatchId, bwinner, { p1: bs1, p2: bs2 });
+                                    if (post.ok)
+                                        advancedCount++;
+                                }
+                                if (advancedCount > 0) {
+                                    bMetaAny.bracket_round = (bMetaAny.bracket_round || 1) + 1;
+                                    TournamentsStorage.writeMeta(nk, cfg.slug, bMetaAny);
+                                    actions.push({ slug: cfg.slug, action: "bracket_advanced", round: bMetaAny.bracket_round, matches: advancedCount });
+                                }
+                            }
+                        }
+                    }
                 }
             }
             // End → SETTLING → SETTLED transition
@@ -133897,11 +133996,441 @@ var TournamentRpcs;
         var result = Referrals.settleTopN(ctx, logger, nk);
         return RpcHelpers.successResponse(result);
     }
+    // ── RPC: tournament_caller_status ──────────────────────────────────────────
+    // Per-tournament eligibility snapshot for the calling user. Web detail
+    // page + Unity entry flow both depend on this; returning a flat shape
+    // (state_blocked / age_blocked / amoe_unlocked / balance_bc) keeps the
+    // entry modal logic trivial on both clients.
+    function rpcCallerStatus(ctx, _l, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var slug = "" + (data.slug || "");
+        if (!slug)
+            return RpcHelpers.errorResponse("slug required", 400);
+        var cfg = TournamentEconomy.getBySlug(slug);
+        if (!cfg)
+            return RpcHelpers.errorResponse("tournament not found", 404);
+        var userId = ctx.userId || "";
+        var country = userId ? readUserCountry(nk, userId) : "";
+        var state = userId && country === "US" ? readUserState(nk, userId) : "";
+        var ageInfo = userId ? readUserDob(nk, userId) : { age: 0 };
+        var balance = userId ? readBcBalance(nk, userId) : { balance: 0, lifetime_earned: 0 };
+        var entry = userId ? TournamentsStorage.readEntry(nk, slug, userId) : null;
+        var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, slug, userId) : null;
+        var amoe = userId ? LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, cfg.amoe.learning_series_required_videos) : false;
+        var countryAllowed = TournamentEconomy.isCountryAllowed(cfg, country);
+        var stateBlocked = country === "US" && !!state && TournamentEconomy.isUsStateEntryBlocked(state);
+        var ageBlocked = userId ? ageInfo.age < cfg.min_age : false;
+        return RpcHelpers.successResponse({
+            ok: true,
+            user_id: userId,
+            country: country || null,
+            state: state || null,
+            eligible: !!userId && countryAllowed && !stateBlocked && !ageBlocked,
+            age_blocked: ageBlocked,
+            state_blocked: stateBlocked,
+            country_blocked: !countryAllowed,
+            entered: !!entry,
+            pre_enrolled: !!preEnroll,
+            founder_rank: preEnroll && preEnroll.founder_rank ? preEnroll.founder_rank : null,
+            amoe_unlocked: amoe,
+            balance_bc: balance.balance,
+            served_at: nowSec(),
+        });
+    }
+    // ── RPC: tournament_bracket_seed_topN (service-only) ────────────────────────
+    // Pushes the top-N entrants from the qualifier leaderboard into the Bracket
+    // service as players. Called once per tournament when the qualifying round
+    // ends — typically by the cron `tick` at the first elimination cut for
+    // elimination-format tournaments, or by ops via http_key for classic
+    // tournaments that have a separate playoff phase.
+    //
+    // Idempotency: writes a `bracket_seeded_at` marker on the meta row. If
+    // present, the call short-circuits with `{ idempotent: true }`.
+    function rpcBracketSeed(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!isServiceCaller(ctx, data))
+            return RpcHelpers.errorResponse("service-only", 401);
+        var slug = "" + (data.slug || "");
+        var topN = parseInt("" + (data.top_n || 64), 10);
+        if (!slug)
+            return RpcHelpers.errorResponse("slug required", 400);
+        var meta = TournamentsStorage.readMeta(nk, slug);
+        if (!meta)
+            return RpcHelpers.errorResponse("meta missing", 404);
+        var anyMeta = meta;
+        var bracketId = anyMeta.bracket_id;
+        if (!bracketId)
+            return RpcHelpers.errorResponse("bracket not yet created", 409);
+        if (anyMeta.bracket_seeded_at) {
+            return RpcHelpers.successResponse({ ok: true, idempotent: true, seeded_count: anyMeta.bracket_seeded_count || 0 });
+        }
+        var lb = TournamentLeaderboard.listTop(nk, slug, topN, null);
+        var records = (lb && lb.records) ? lb.records : [];
+        var players = [];
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            players.push({
+                user_id: r.ownerId || r.owner_id || "",
+                username: r.username || ("Player_" + (i + 1)),
+                seed_score: r.score || 0,
+            });
+        }
+        if (players.length === 0) {
+            return RpcHelpers.errorResponse("no qualifier entries", 409);
+        }
+        var seed = BracketClient.seedPlayers(ctx, nk, bracketId, players);
+        if (!seed.ok)
+            return RpcHelpers.errorResponse("bracket seed failed: " + (seed.error || ""), 502);
+        anyMeta.bracket_seeded_at = nowSec();
+        anyMeta.bracket_seeded_count = players.length;
+        // total_rounds = ceil(log2(playerCount)) — clamped to [1, 6] (64-bracket max)
+        var rounds = 1;
+        var n = players.length;
+        while (n > 1) {
+            rounds++;
+            n = Math.ceil(n / 2);
+        }
+        if (rounds > 6)
+            rounds = 6;
+        anyMeta.bracket_total_rounds = rounds;
+        anyMeta.bracket_round = 1; // round 1 starts immediately after seed
+        TournamentsStorage.writeMeta(nk, slug, meta);
+        logger.info("[Bracket] seeded slug=" + slug + " bracket_id=" + bracketId + " players=" + players.length + " rounds=" + rounds);
+        return RpcHelpers.successResponse({ ok: true, seeded_count: players.length, total_rounds: rounds });
+    }
+    // ── RPC: tournament_bracket_advance_round (service-only) ────────────────────
+    // Pulls the current open round's matches from the Bracket service,
+    // computes winners by comparing each pair's tournament leaderboard scores,
+    // and posts results back via `postMatchResult`. Bracket service then
+    // advances the bracket tree internally and exposes the next round on its
+    // own `/state` endpoint.
+    function rpcBracketAdvanceRound(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!isServiceCaller(ctx, data))
+            return RpcHelpers.errorResponse("service-only", 401);
+        var slug = "" + (data.slug || "");
+        if (!slug)
+            return RpcHelpers.errorResponse("slug required", 400);
+        var meta = TournamentsStorage.readMeta(nk, slug);
+        if (!meta)
+            return RpcHelpers.errorResponse("meta missing", 404);
+        var anyMeta = meta;
+        var bracketId = anyMeta.bracket_id;
+        if (!bracketId)
+            return RpcHelpers.errorResponse("bracket not yet created", 409);
+        var st = BracketClient.getBracketState(ctx, nk, bracketId);
+        if (!st.ok || !st.state)
+            return RpcHelpers.errorResponse("bracket state fetch failed: " + (st.error || ""), 502);
+        var bracketState = st.state;
+        var matches = (bracketState.current_round_matches || bracketState.matches || []);
+        var advanced = 0;
+        var skipped = 0;
+        for (var i = 0; i < matches.length; i++) {
+            var m = matches[i];
+            var matchId = "" + (m.id || m.match_id || "");
+            if (!matchId) {
+                skipped++;
+                continue;
+            }
+            if (m.winner_user_id || m.status === "COMPLETED") {
+                skipped++;
+                continue;
+            }
+            var p1 = "" + (m.player1_user_id || (m.players && m.players[0] && m.players[0].user_id) || "");
+            var p2 = "" + (m.player2_user_id || (m.players && m.players[1] && m.players[1].user_id) || "");
+            if (!p1 || !p2) {
+                skipped++;
+                continue;
+            }
+            // Score lookup: use the qualifier leaderboard score as the per-match
+            // proxy. Production: switch to per-round score by reading a
+            // round-scoped leaderboard. For MVP the qualifier score is
+            // monotonic so the higher score always wins.
+            var s1 = 0, s2 = 0;
+            try {
+                var rec = nk.leaderboardRecordsList(TournamentLeaderboard.lbId(slug), [p1, p2], 2, undefined);
+                for (var rr = 0; rr < (rec.records || []).length; rr++) {
+                    var rrow = rec.records[rr];
+                    if (rrow.ownerId === p1)
+                        s1 = rrow.score | 0;
+                    if (rrow.ownerId === p2)
+                        s2 = rrow.score | 0;
+                }
+            }
+            catch (_) { }
+            var winner = s1 >= s2 ? p1 : p2;
+            var post = BracketClient.postMatchResult(ctx, nk, bracketId, matchId, winner, { p1: s1, p2: s2 });
+            if (post.ok)
+                advanced++;
+            else
+                skipped++;
+        }
+        if (advanced > 0) {
+            anyMeta.bracket_round = (anyMeta.bracket_round || 1) + 1;
+            TournamentsStorage.writeMeta(nk, slug, meta);
+        }
+        logger.info("[Bracket] advance slug=" + slug + " round=" + anyMeta.bracket_round + " advanced=" + advanced + " skipped=" + skipped);
+        return RpcHelpers.successResponse({ ok: true, advanced: advanced, skipped: skipped, new_round: anyMeta.bracket_round || 0 });
+    }
+    // ── RPC: tournament_bracket_state ──────────────────────────────────────────
+    // Lightweight read of the playoff bracket — proxies to the cached
+    // Bracket service state stored on the tournament meta row. Returns
+    // `exists: false` until the qualifying round closes and Nakama has
+    // pre-created the bracket shell.
+    function rpcBracketState(_ctx, _l, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var slug = "" + (data.slug || "");
+        if (!slug)
+            return RpcHelpers.errorResponse("slug required", 400);
+        var meta = TournamentsStorage.readMeta(nk, slug);
+        var anyMeta = meta || {};
+        var bracketId = anyMeta.bracket_id;
+        if (!meta || !bracketId) {
+            return RpcHelpers.successResponse({ exists: false });
+        }
+        var cfg = TournamentEconomy.getBySlug(slug);
+        var publicUrl = anyMeta.bracket_public_url || null;
+        if (!publicUrl) {
+            // Default to the canonical Bracket dashboard URL pattern.
+            publicUrl = "https://bracket.intelli-verse-x.ai/tournament/" + bracketId;
+        }
+        return RpcHelpers.successResponse({
+            exists: true,
+            bracket_id: bracketId,
+            public_dashboard_url: publicUrl,
+            round: anyMeta.bracket_round || 0,
+            total_rounds: anyMeta.bracket_total_rounds || 6,
+            tournament_name: cfg ? cfg.name : slug,
+        });
+    }
+    // ── RPC: referral_pre_enroll_with_code ─────────────────────────────────────
+    // Convenience wrapper used by the web /r/[code] landing page. Looks up
+    // the referrer for the code, then forwards to rpcPreEnroll with the
+    // referred_by field already populated. Keeps the web flow to a single
+    // RPC call (vs. lookup-then-enroll) and ensures the attribution write
+    // happens server-side in the same call.
+    function rpcReferralPreEnrollWithCode(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var code = "" + (data.code || "");
+        var slug = "" + (data.slug || "");
+        if (!code)
+            return RpcHelpers.errorResponse("code required", 400);
+        if (!slug)
+            return RpcHelpers.errorResponse("slug required", 400);
+        var referrerId = null;
+        try {
+            referrerId = Referrals.resolveCodeToOwner(nk, code);
+        }
+        catch (_) {
+            referrerId = null;
+        }
+        var fwd = JSON.stringify({ slug: slug, referred_by: referrerId || "", idempotency_key: data.idempotency_key || "" });
+        return rpcPreEnroll(ctx, logger, nk, fwd);
+    }
+    // ── RPC: referral_lookup ────────────────────────────────────────────────────
+    // Public lookup for the web /r/[code] landing — returns the referrer's
+    // display username + country (so the landing page can show "Invited by
+    // @alex · US") and the recommended slug to pre-enroll into.
+    function rpcReferralLookup(_ctx, _l, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var code = "" + (data.code || "");
+        if (!code)
+            return RpcHelpers.errorResponse("code required", 400);
+        var referrerId = null;
+        try {
+            referrerId = Referrals.resolveCodeToOwner(nk, code);
+        }
+        catch (_) {
+            referrerId = null;
+        }
+        if (!referrerId)
+            return RpcHelpers.successResponse({ valid: false });
+        var username = null;
+        var country = null;
+        try {
+            var accts = nk.usersGetId([referrerId]);
+            if (accts && accts.length > 0) {
+                username = accts[0].username || null;
+                // Try to pull country from metadata; fall back to null.
+                try {
+                    var md = accts[0].metadata;
+                    if (typeof md === "string")
+                        md = JSON.parse(md);
+                    if (md && md.country)
+                        country = "" + md.country;
+                }
+                catch (_) { /* metadata may not be JSON */ }
+            }
+        }
+        catch (_) { /* lookup failed — return minimal */ }
+        return RpcHelpers.successResponse({
+            valid: true,
+            referrer_username: username,
+            referrer_country: country,
+            recommended_tournament_slug: "" + (data.slug || "gk_royale_daily"),
+        });
+    }
+    // ── RPC: certificate_get ────────────────────────────────────────────────────
+    // Public read for the web /certificate/[id] page. Returns the cert
+    // metadata + computed OG image URL. The PDF is rendered lazily by the
+    // tournament_certificate Lambda on first access.
+    function rpcCertificateGet(_ctx, _l, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var certId = "" + (data.id || "");
+        if (!certId)
+            return RpcHelpers.errorResponse("id required", 400);
+        var rows = [];
+        try {
+            rows = nk.storageRead([{ collection: TournamentsStorage.COL_CERTS, key: certId, userId: "" }]);
+        }
+        catch (_) {
+            rows = [];
+        }
+        if (!rows || rows.length === 0)
+            return RpcHelpers.successResponse({ certificate: null });
+        var row = rows[0].value;
+        if (!row)
+            return RpcHelpers.successResponse({ certificate: null });
+        // Resolve display fields.
+        var username = "Player";
+        var tournamentName = row.tournament_slug;
+        try {
+            var accts = nk.usersGetId([row.user_id]);
+            if (accts && accts.length > 0 && accts[0].username)
+                username = accts[0].username;
+        }
+        catch (_) { /* keep default */ }
+        var cfg = TournamentEconomy.getBySlug(row.tournament_slug);
+        if (cfg)
+            tournamentName = cfg.name;
+        var ogBase = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com";
+        return RpcHelpers.successResponse({
+            certificate: {
+                id: row.cert_id,
+                tier: row.tier,
+                player_username: username,
+                tournament_name: tournamentName,
+                tournament_slug: row.tournament_slug,
+                final_rank: row.rank || 0,
+                final_score: row.score || 0,
+                issued_iso: new Date((row.claimed_at || nowSec()) * 1000).toISOString(),
+                pdf_url: row.s3_url || (ogBase + "/tournaments/certificates/" + row.cert_id + ".pdf"),
+                og_image_url: ogBase + "/tournaments/certificates/" + row.cert_id + "-og.png",
+                verify_hash: row.cert_id,
+            },
+        });
+    }
+    // ── RPC: learning_track_get / _progress_get / _video_record_watch ──────────
+    // These are aliases that mirror the existing tournament_video_get_url +
+    // tournament_learning_check_submit RPCs but with the names the web /
+    // Unity clients use. Keeping the alias layer here means the server
+    // contract stays stable even if we rename internal helpers.
+    function rpcLearningTrackGet(_ctx, _l, _nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var trackId = "" + (data.track_id || "");
+        if (!trackId)
+            return RpcHelpers.errorResponse("track_id required", 400);
+        var cfg = TournamentEconomy.getBySlug(trackId);
+        if (!cfg)
+            return RpcHelpers.successResponse({ ok: false, error: "track not found" });
+        var threshold = cfg.amoe && cfg.amoe.learning_series_required_videos
+            ? cfg.amoe.learning_series_required_videos : 6;
+        // Build the video manifest from the topic catalog. Video URLs follow
+        // the canonical S3 path
+        //   s3://intelli-verse-x-media/tournaments/learning/{topic_tag}/v{idx}.mp4
+        // which content-factory pre-generates during the pregeneration cron
+        // (§1G). When the file is missing the player falls back to a coming-
+        // soon placeholder client-side.
+        var entry = TournamentTopicCatalog.getEntry(cfg.topic_tag);
+        var prompts = entry && entry.learning_series_prompts ? entry.learning_series_prompts : [];
+        var s3Base = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com/tournaments/learning/" + cfg.topic_tag;
+        var videos = [];
+        var videoCount = Math.max(threshold, prompts.length);
+        for (var i = 0; i < videoCount; i++) {
+            videos.push({
+                id: "v" + i,
+                title: prompts[i] || ("Lesson " + (i + 1)),
+                url: s3Base + "/v" + i + ".mp4",
+                duration_sec: 90,
+                check_question_count: 5,
+            });
+        }
+        return RpcHelpers.successResponse({
+            ok: true,
+            track: {
+                track_id: cfg.slug,
+                tournament_slug: cfg.slug,
+                topic_label: cfg.name,
+                videos: videos,
+                amoe_unlock_threshold: threshold,
+            },
+        });
+    }
+    function rpcLearningTrackProgressGet(ctx, _l, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var trackId = "" + (data.track_id || "");
+        if (!trackId)
+            return RpcHelpers.errorResponse("track_id required", 400);
+        var cfg = TournamentEconomy.getBySlug(trackId);
+        if (!cfg)
+            return RpcHelpers.successResponse({ ok: false, error: "track not found" });
+        var threshold = cfg.amoe && cfg.amoe.learning_series_required_videos
+            ? cfg.amoe.learning_series_required_videos : 6;
+        var progress = LearningSeries.getProgress(nk, userId, cfg.topic_tag);
+        var amoe = LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, threshold);
+        // Reshape `checks` (numeric index) into rows the clients consume by
+        // string `video_id` — we synthesize "v{index}" so the web/Unity views
+        // stay simple. When prod videos move to stable string IDs this is the
+        // only line that changes.
+        var rows = [];
+        if (progress.checks && progress.checks.length > 0) {
+            for (var i = 0; i < progress.checks.length; i++) {
+                var c = progress.checks[i];
+                rows.push({ video_id: "v" + c.video_index, watched: true, check_passed: !!c.passed });
+            }
+        }
+        return RpcHelpers.successResponse({ ok: true, progress: rows, amoe_unlocked: amoe });
+    }
+    function rpcLearningVideoRecordWatch(ctx, _l, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var trackId = "" + (data.track_id || "");
+        var videoId = "" + (data.video_id || "");
+        if (!trackId || !videoId)
+            return RpcHelpers.errorResponse("track_id + video_id required", 400);
+        var cfg = TournamentEconomy.getBySlug(trackId);
+        if (!cfg)
+            return RpcHelpers.successResponse({ ok: false, error: "track not found" });
+        // video_id convention: "v{index}" (matches rpcLearningTrackProgressGet).
+        var vidx = 0;
+        if (videoId.charAt(0) === "v") {
+            var n = parseInt(videoId.substring(1), 10);
+            if (!isNaN(n))
+                vidx = n;
+        }
+        else {
+            var n2 = parseInt(videoId, 10);
+            if (!isNaN(n2))
+                vidx = n2;
+        }
+        // Mark the video as watched without a check result — the actual check
+        // pass/fail flows through learning_check_submit. We record 0/0 here
+        // which won't count toward amoe_unlocked until the user passes the
+        // 5-question check.
+        LearningSeries.recordVideoCheck(nk, userId, cfg.topic_tag, vidx, 0, 0);
+        var threshold = cfg.amoe && cfg.amoe.learning_series_required_videos
+            ? cfg.amoe.learning_series_required_videos : 6;
+        var amoe = LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, threshold);
+        return RpcHelpers.successResponse({ ok: true, amoe_unlocked: amoe });
+    }
     // ── Registration ───────────────────────────────────────────────────────────
     function register(initializer) {
         // User-callable
         __rpc_tournament_list = rpcList;
         __rpc_tournament_get = rpcGet;
+        __rpc_tournament_caller_status = rpcCallerStatus;
+        __rpc_tournament_bracket_state = rpcBracketState;
         __rpc_tournament_pre_enroll = rpcPreEnroll;
         __rpc_tournament_enter = rpcEnter;
         __rpc_tournament_submit_pack_result = rpcSubmitPackResult;
@@ -133914,16 +134443,29 @@ var TournamentRpcs;
         __rpc_tournament_leaderboard_tier_league = rpcLbTierLeague;
         __rpc_tournament_leaderboard_activity_feed = rpcLbActivityFeed;
         __rpc_tournament_claim_cert = rpcClaimCert;
+        __rpc_tournament_claim_certificate = rpcClaimCert; // alias used by web/Unity clients
+        __rpc_certificate_get = rpcCertificateGet;
         __rpc_tournament_content_get_pack = rpcContentGetPack;
+        __rpc_tournament_get_pick_n_questions = rpcContentGetPack; // alias for Pick-N flow
         __rpc_tournament_video_get_url = rpcVideoGetUrl;
+        __rpc_learning_track_video_url = rpcVideoGetUrl; // alias for Unity gateway
+        __rpc_learning_track_get = rpcLearningTrackGet;
+        __rpc_learning_track_progress_get = rpcLearningTrackProgressGet;
+        __rpc_learning_video_record_watch = rpcLearningVideoRecordWatch;
+        __rpc_learning_check_submit = rpcLearningCheckSubmit;
         __rpc_tournament_learning_check_submit = rpcLearningCheckSubmit;
         __rpc_tournament_referral_get_mine = rpcReferralGetMine;
+        __rpc_referral_my_code = rpcReferralGetMine; // alias
+        __rpc_referral_lookup = rpcReferralLookup;
+        __rpc_referral_pre_enroll_with_code = rpcReferralPreEnrollWithCode;
         // Service-only
         __rpc_tournament_admin_create = rpcAdminCreate;
         __rpc_tournament_content_request_generation = rpcContentRequestGeneration;
         __rpc_tournament_settle = rpcSettle;
         __rpc_tournament_eliminate_round = rpcEliminateRound;
         __rpc_tournament_referral_settle_topN = rpcReferralSettleTopN;
+        __rpc_tournament_bracket_seed_topN = rpcBracketSeed;
+        __rpc_tournament_bracket_advance_round = rpcBracketAdvanceRound;
     }
     TournamentRpcs.register = register;
     register();
@@ -137410,6 +137952,8 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("tournament_cron_pregen", __rpc_tournament_cron_pregen); } catch(e) {}
   try { initializer.registerRpc("tournament_list", __rpc_tournament_list); } catch(e) {}
   try { initializer.registerRpc("tournament_get", __rpc_tournament_get); } catch(e) {}
+  try { initializer.registerRpc("tournament_caller_status", __rpc_tournament_caller_status); } catch(e) {}
+  try { initializer.registerRpc("tournament_bracket_state", __rpc_tournament_bracket_state); } catch(e) {}
   try { initializer.registerRpc("tournament_pre_enroll", __rpc_tournament_pre_enroll); } catch(e) {}
   try { initializer.registerRpc("tournament_enter", __rpc_tournament_enter); } catch(e) {}
   try { initializer.registerRpc("tournament_submit_pack_result", __rpc_tournament_submit_pack_result); } catch(e) {}
@@ -137422,15 +137966,28 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("tournament_leaderboard_tier_league", __rpc_tournament_leaderboard_tier_league); } catch(e) {}
   try { initializer.registerRpc("tournament_leaderboard_activity_feed", __rpc_tournament_leaderboard_activity_feed); } catch(e) {}
   try { initializer.registerRpc("tournament_claim_cert", __rpc_tournament_claim_cert); } catch(e) {}
+  try { initializer.registerRpc("tournament_claim_certificate", __rpc_tournament_claim_certificate); } catch(e) {}
+  try { initializer.registerRpc("certificate_get", __rpc_certificate_get); } catch(e) {}
   try { initializer.registerRpc("tournament_content_get_pack", __rpc_tournament_content_get_pack); } catch(e) {}
+  try { initializer.registerRpc("tournament_get_pick_n_questions", __rpc_tournament_get_pick_n_questions); } catch(e) {}
   try { initializer.registerRpc("tournament_video_get_url", __rpc_tournament_video_get_url); } catch(e) {}
+  try { initializer.registerRpc("learning_track_video_url", __rpc_learning_track_video_url); } catch(e) {}
+  try { initializer.registerRpc("learning_track_get", __rpc_learning_track_get); } catch(e) {}
+  try { initializer.registerRpc("learning_track_progress_get", __rpc_learning_track_progress_get); } catch(e) {}
+  try { initializer.registerRpc("learning_video_record_watch", __rpc_learning_video_record_watch); } catch(e) {}
+  try { initializer.registerRpc("learning_check_submit", __rpc_learning_check_submit); } catch(e) {}
   try { initializer.registerRpc("tournament_learning_check_submit", __rpc_tournament_learning_check_submit); } catch(e) {}
   try { initializer.registerRpc("tournament_referral_get_mine", __rpc_tournament_referral_get_mine); } catch(e) {}
+  try { initializer.registerRpc("referral_my_code", __rpc_referral_my_code); } catch(e) {}
+  try { initializer.registerRpc("referral_lookup", __rpc_referral_lookup); } catch(e) {}
+  try { initializer.registerRpc("referral_pre_enroll_with_code", __rpc_referral_pre_enroll_with_code); } catch(e) {}
   try { initializer.registerRpc("tournament_admin_create", __rpc_tournament_admin_create); } catch(e) {}
   try { initializer.registerRpc("tournament_content_request_generation", __rpc_tournament_content_request_generation); } catch(e) {}
   try { initializer.registerRpc("tournament_settle", __rpc_tournament_settle); } catch(e) {}
   try { initializer.registerRpc("tournament_eliminate_round", __rpc_tournament_eliminate_round); } catch(e) {}
   try { initializer.registerRpc("tournament_referral_settle_topN", __rpc_tournament_referral_settle_topN); } catch(e) {}
+  try { initializer.registerRpc("tournament_bracket_seed_topN", __rpc_tournament_bracket_seed_topN); } catch(e) {}
+  try { initializer.registerRpc("tournament_bracket_advance_round", __rpc_tournament_bracket_advance_round); } catch(e) {}
   try { initializer.registerRpc("user_model_get", __rpc_user_model_get); } catch(e) {}
   try { initializer.registerRpc("user_model_signal_ingest", __rpc_user_model_signal_ingest); } catch(e) {}
   try { initializer.registerRpc("user_model_consent_set", __rpc_user_model_consent_set); } catch(e) {}
@@ -137856,5 +138413,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 995 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 1010 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }

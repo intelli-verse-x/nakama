@@ -76,6 +76,79 @@ namespace TournamentCrons {
             permissionWrite: 0,
           }]);
           actions.push({ slug: cfg.slug, action: "eliminated_round", round: c + 1, result: elim });
+
+          // Bracket handoff (plan §3): at the FIRST cut, seed top-64 into the
+          // Bracket service. On every subsequent cut, advance the bracket
+          // by one round (postMatchResult for every match in the open
+          // round). Both calls are idempotent against bracket_seeded_at /
+          // bracket_round on the meta row.
+          var bMetaAny: any = TournamentsStorage.readMeta(nk, cfg.slug) || {};
+          var bracketId = bMetaAny.bracket_id;
+          if (bracketId) {
+            if (c === 0 && !bMetaAny.bracket_seeded_at) {
+              // First cut → seed players
+              var lb = TournamentLeaderboard.listTop(nk, cfg.slug, 64, null);
+              var lbRecs = (lb && lb.records) ? lb.records : [];
+              var seedPlayers: { user_id: string; username: string; seed_score: number }[] = [];
+              for (var pi = 0; pi < lbRecs.length; pi++) {
+                var lbr = lbRecs[pi];
+                seedPlayers.push({
+                  user_id: lbr.ownerId || "",
+                  username: lbr.username || ("Player_" + (pi + 1)),
+                  seed_score: lbr.score | 0,
+                });
+              }
+              if (seedPlayers.length > 0) {
+                var seed = BracketClient.seedPlayers(ctx, nk, bracketId, seedPlayers);
+                if (seed.ok) {
+                  bMetaAny.bracket_seeded_at = now;
+                  bMetaAny.bracket_seeded_count = seedPlayers.length;
+                  var rds = 1, nn = seedPlayers.length;
+                  while (nn > 1) { rds++; nn = Math.ceil(nn / 2); }
+                  if (rds > 6) rds = 6;
+                  bMetaAny.bracket_total_rounds = rds;
+                  bMetaAny.bracket_round = 1;
+                  TournamentsStorage.writeMeta(nk, cfg.slug, bMetaAny);
+                  actions.push({ slug: cfg.slug, action: "bracket_seeded", count: seedPlayers.length, rounds: rds });
+                } else {
+                  actions.push({ slug: cfg.slug, action: "bracket_seed_failed", error: seed.error });
+                }
+              }
+            } else if (c > 0 && bMetaAny.bracket_seeded_at) {
+              // Subsequent cut → advance bracket round via S2S to Bracket
+              var st = BracketClient.getBracketState(ctx, nk, bracketId);
+              if (st.ok && st.state) {
+                var bState: any = st.state;
+                var bMatches: any[] = bState.current_round_matches || bState.matches || [];
+                var advancedCount = 0;
+                for (var mi = 0; mi < bMatches.length; mi++) {
+                  var bm = bMatches[mi];
+                  var bMatchId = "" + (bm.id || bm.match_id || "");
+                  if (!bMatchId || bm.winner_user_id || bm.status === "COMPLETED") continue;
+                  var bp1 = "" + (bm.player1_user_id || (bm.players && bm.players[0] && bm.players[0].user_id) || "");
+                  var bp2 = "" + (bm.player2_user_id || (bm.players && bm.players[1] && bm.players[1].user_id) || "");
+                  if (!bp1 || !bp2) continue;
+                  var bs1 = 0, bs2 = 0;
+                  try {
+                    var rec2 = nk.leaderboardRecordsList(TournamentLeaderboard.lbId(cfg.slug), [bp1, bp2], 2, undefined);
+                    for (var rrr = 0; rrr < (rec2.records || []).length; rrr++) {
+                      var rrow2: any = rec2.records[rrr];
+                      if (rrow2.ownerId === bp1) bs1 = rrow2.score | 0;
+                      if (rrow2.ownerId === bp2) bs2 = rrow2.score | 0;
+                    }
+                  } catch (_) { }
+                  var bwinner = bs1 >= bs2 ? bp1 : bp2;
+                  var post = BracketClient.postMatchResult(ctx, nk, bracketId, bMatchId, bwinner, { p1: bs1, p2: bs2 });
+                  if (post.ok) advancedCount++;
+                }
+                if (advancedCount > 0) {
+                  bMetaAny.bracket_round = (bMetaAny.bracket_round || 1) + 1;
+                  TournamentsStorage.writeMeta(nk, cfg.slug, bMetaAny);
+                  actions.push({ slug: cfg.slug, action: "bracket_advanced", round: bMetaAny.bracket_round, matches: advancedCount });
+                }
+              }
+            }
+          }
         }
       }
 

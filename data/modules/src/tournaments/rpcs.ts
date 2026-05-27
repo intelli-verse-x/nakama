@@ -788,11 +788,404 @@ namespace TournamentRpcs {
     return RpcHelpers.successResponse(result);
   }
 
+  // ── RPC: tournament_caller_status ──────────────────────────────────────────
+  // Per-tournament eligibility snapshot for the calling user. Web detail
+  // page + Unity entry flow both depend on this; returning a flat shape
+  // (state_blocked / age_blocked / amoe_unlocked / balance_bc) keeps the
+  // entry modal logic trivial on both clients.
+  function rpcCallerStatus(ctx: nkruntime.Context, _l: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var slug = "" + (data.slug || "");
+    if (!slug) return RpcHelpers.errorResponse("slug required", 400);
+    var cfg = TournamentEconomy.getBySlug(slug);
+    if (!cfg) return RpcHelpers.errorResponse("tournament not found", 404);
+
+    var userId = ctx.userId || "";
+    var country = userId ? readUserCountry(nk, userId) : "";
+    var state = userId && country === "US" ? readUserState(nk, userId) : "";
+    var ageInfo = userId ? readUserDob(nk, userId) : { age: 0 };
+    var balance = userId ? readBcBalance(nk, userId) : { balance: 0, lifetime_earned: 0 };
+    var entry = userId ? TournamentsStorage.readEntry(nk, slug, userId) : null;
+    var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, slug, userId) : null;
+    var amoe = userId ? LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, cfg.amoe.learning_series_required_videos) : false;
+
+    var countryAllowed = TournamentEconomy.isCountryAllowed(cfg, country);
+    var stateBlocked = country === "US" && !!state && TournamentEconomy.isUsStateEntryBlocked(state);
+    var ageBlocked = userId ? ageInfo.age < cfg.min_age : false;
+
+    return RpcHelpers.successResponse({
+      ok: true,
+      user_id: userId,
+      country: country || null,
+      state: state || null,
+      eligible: !!userId && countryAllowed && !stateBlocked && !ageBlocked,
+      age_blocked: ageBlocked,
+      state_blocked: stateBlocked,
+      country_blocked: !countryAllowed,
+      entered: !!entry,
+      pre_enrolled: !!preEnroll,
+      founder_rank: preEnroll && preEnroll.founder_rank ? preEnroll.founder_rank : null,
+      amoe_unlocked: amoe,
+      balance_bc: balance.balance,
+      served_at: nowSec(),
+    });
+  }
+
+  // ── RPC: tournament_bracket_seed_topN (service-only) ────────────────────────
+  // Pushes the top-N entrants from the qualifier leaderboard into the Bracket
+  // service as players. Called once per tournament when the qualifying round
+  // ends — typically by the cron `tick` at the first elimination cut for
+  // elimination-format tournaments, or by ops via http_key for classic
+  // tournaments that have a separate playoff phase.
+  //
+  // Idempotency: writes a `bracket_seeded_at` marker on the meta row. If
+  // present, the call short-circuits with `{ idempotent: true }`.
+  function rpcBracketSeed(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    if (!isServiceCaller(ctx, data)) return RpcHelpers.errorResponse("service-only", 401);
+    var slug = "" + (data.slug || "");
+    var topN = parseInt("" + (data.top_n || 64), 10);
+    if (!slug) return RpcHelpers.errorResponse("slug required", 400);
+
+    var meta = TournamentsStorage.readMeta(nk, slug);
+    if (!meta) return RpcHelpers.errorResponse("meta missing", 404);
+    var anyMeta: any = meta;
+    var bracketId = anyMeta.bracket_id;
+    if (!bracketId) return RpcHelpers.errorResponse("bracket not yet created", 409);
+    if (anyMeta.bracket_seeded_at) {
+      return RpcHelpers.successResponse({ ok: true, idempotent: true, seeded_count: anyMeta.bracket_seeded_count || 0 });
+    }
+
+    var lb = TournamentLeaderboard.listTop(nk, slug, topN, null);
+    var records = (lb && lb.records) ? lb.records : [];
+    var players: { user_id: string; username: string; seed_score: number }[] = [];
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i];
+      players.push({
+        user_id: r.ownerId || r.owner_id || "",
+        username: r.username || ("Player_" + (i + 1)),
+        seed_score: r.score || 0,
+      });
+    }
+    if (players.length === 0) {
+      return RpcHelpers.errorResponse("no qualifier entries", 409);
+    }
+
+    var seed = BracketClient.seedPlayers(ctx, nk, bracketId, players);
+    if (!seed.ok) return RpcHelpers.errorResponse("bracket seed failed: " + (seed.error || ""), 502);
+
+    anyMeta.bracket_seeded_at = nowSec();
+    anyMeta.bracket_seeded_count = players.length;
+    // total_rounds = ceil(log2(playerCount)) — clamped to [1, 6] (64-bracket max)
+    var rounds = 1;
+    var n = players.length;
+    while (n > 1) { rounds++; n = Math.ceil(n / 2); }
+    if (rounds > 6) rounds = 6;
+    anyMeta.bracket_total_rounds = rounds;
+    anyMeta.bracket_round = 1;  // round 1 starts immediately after seed
+    TournamentsStorage.writeMeta(nk, slug, meta);
+
+    logger.info("[Bracket] seeded slug=" + slug + " bracket_id=" + bracketId + " players=" + players.length + " rounds=" + rounds);
+    return RpcHelpers.successResponse({ ok: true, seeded_count: players.length, total_rounds: rounds });
+  }
+
+  // ── RPC: tournament_bracket_advance_round (service-only) ────────────────────
+  // Pulls the current open round's matches from the Bracket service,
+  // computes winners by comparing each pair's tournament leaderboard scores,
+  // and posts results back via `postMatchResult`. Bracket service then
+  // advances the bracket tree internally and exposes the next round on its
+  // own `/state` endpoint.
+  function rpcBracketAdvanceRound(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    if (!isServiceCaller(ctx, data)) return RpcHelpers.errorResponse("service-only", 401);
+    var slug = "" + (data.slug || "");
+    if (!slug) return RpcHelpers.errorResponse("slug required", 400);
+
+    var meta = TournamentsStorage.readMeta(nk, slug);
+    if (!meta) return RpcHelpers.errorResponse("meta missing", 404);
+    var anyMeta: any = meta;
+    var bracketId = anyMeta.bracket_id;
+    if (!bracketId) return RpcHelpers.errorResponse("bracket not yet created", 409);
+
+    var st = BracketClient.getBracketState(ctx, nk, bracketId);
+    if (!st.ok || !st.state) return RpcHelpers.errorResponse("bracket state fetch failed: " + (st.error || ""), 502);
+    var bracketState: any = st.state;
+    var matches: any[] = (bracketState.current_round_matches || bracketState.matches || []);
+    var advanced = 0;
+    var skipped = 0;
+
+    for (var i = 0; i < matches.length; i++) {
+      var m = matches[i];
+      var matchId = "" + (m.id || m.match_id || "");
+      if (!matchId) { skipped++; continue; }
+      if (m.winner_user_id || m.status === "COMPLETED") { skipped++; continue; }
+      var p1 = "" + (m.player1_user_id || (m.players && m.players[0] && m.players[0].user_id) || "");
+      var p2 = "" + (m.player2_user_id || (m.players && m.players[1] && m.players[1].user_id) || "");
+      if (!p1 || !p2) { skipped++; continue; }
+      // Score lookup: use the qualifier leaderboard score as the per-match
+      // proxy. Production: switch to per-round score by reading a
+      // round-scoped leaderboard. For MVP the qualifier score is
+      // monotonic so the higher score always wins.
+      var s1 = 0, s2 = 0;
+      try {
+        var rec = nk.leaderboardRecordsList(TournamentLeaderboard.lbId(slug), [p1, p2], 2, undefined);
+        for (var rr = 0; rr < (rec.records || []).length; rr++) {
+          var rrow: any = rec.records[rr];
+          if (rrow.ownerId === p1) s1 = rrow.score | 0;
+          if (rrow.ownerId === p2) s2 = rrow.score | 0;
+        }
+      } catch (_) { }
+      var winner = s1 >= s2 ? p1 : p2;
+      var post = BracketClient.postMatchResult(ctx, nk, bracketId, matchId, winner, { p1: s1, p2: s2 });
+      if (post.ok) advanced++;
+      else skipped++;
+    }
+
+    if (advanced > 0) {
+      anyMeta.bracket_round = (anyMeta.bracket_round || 1) + 1;
+      TournamentsStorage.writeMeta(nk, slug, meta);
+    }
+    logger.info("[Bracket] advance slug=" + slug + " round=" + anyMeta.bracket_round + " advanced=" + advanced + " skipped=" + skipped);
+    return RpcHelpers.successResponse({ ok: true, advanced: advanced, skipped: skipped, new_round: anyMeta.bracket_round || 0 });
+  }
+
+  // ── RPC: tournament_bracket_state ──────────────────────────────────────────
+  // Lightweight read of the playoff bracket — proxies to the cached
+  // Bracket service state stored on the tournament meta row. Returns
+  // `exists: false` until the qualifying round closes and Nakama has
+  // pre-created the bracket shell.
+  function rpcBracketState(_ctx: nkruntime.Context, _l: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var slug = "" + (data.slug || "");
+    if (!slug) return RpcHelpers.errorResponse("slug required", 400);
+    var meta = TournamentsStorage.readMeta(nk, slug);
+    var anyMeta: any = meta || {};
+    var bracketId = anyMeta.bracket_id;
+    if (!meta || !bracketId) {
+      return RpcHelpers.successResponse({ exists: false });
+    }
+    var cfg = TournamentEconomy.getBySlug(slug);
+    var publicUrl: string | null = anyMeta.bracket_public_url || null;
+    if (!publicUrl) {
+      // Default to the canonical Bracket dashboard URL pattern.
+      publicUrl = "https://bracket.intelli-verse-x.ai/tournament/" + bracketId;
+    }
+    return RpcHelpers.successResponse({
+      exists: true,
+      bracket_id: bracketId,
+      public_dashboard_url: publicUrl,
+      round: anyMeta.bracket_round || 0,
+      total_rounds: anyMeta.bracket_total_rounds || 6,
+      tournament_name: cfg ? cfg.name : slug,
+    });
+  }
+
+  // ── RPC: referral_pre_enroll_with_code ─────────────────────────────────────
+  // Convenience wrapper used by the web /r/[code] landing page. Looks up
+  // the referrer for the code, then forwards to rpcPreEnroll with the
+  // referred_by field already populated. Keeps the web flow to a single
+  // RPC call (vs. lookup-then-enroll) and ensures the attribution write
+  // happens server-side in the same call.
+  function rpcReferralPreEnrollWithCode(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var code = "" + (data.code || "");
+    var slug = "" + (data.slug || "");
+    if (!code) return RpcHelpers.errorResponse("code required", 400);
+    if (!slug) return RpcHelpers.errorResponse("slug required", 400);
+    var referrerId: string | null = null;
+    try { referrerId = Referrals.resolveCodeToOwner(nk, code); }
+    catch (_) { referrerId = null; }
+    var fwd = JSON.stringify({ slug: slug, referred_by: referrerId || "", idempotency_key: data.idempotency_key || "" });
+    return rpcPreEnroll(ctx, logger, nk, fwd);
+  }
+
+  // ── RPC: referral_lookup ────────────────────────────────────────────────────
+  // Public lookup for the web /r/[code] landing — returns the referrer's
+  // display username + country (so the landing page can show "Invited by
+  // @alex · US") and the recommended slug to pre-enroll into.
+  function rpcReferralLookup(_ctx: nkruntime.Context, _l: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var code = "" + (data.code || "");
+    if (!code) return RpcHelpers.errorResponse("code required", 400);
+    var referrerId: string | null = null;
+    try { referrerId = Referrals.resolveCodeToOwner(nk, code); }
+    catch (_) { referrerId = null; }
+    if (!referrerId) return RpcHelpers.successResponse({ valid: false });
+
+    var username: string | null = null;
+    var country: string | null = null;
+    try {
+      var accts = nk.usersGetId([referrerId]);
+      if (accts && accts.length > 0) {
+        username = accts[0].username || null;
+        // Try to pull country from metadata; fall back to null.
+        try {
+          var md: any = (accts[0] as any).metadata;
+          if (typeof md === "string") md = JSON.parse(md);
+          if (md && md.country) country = "" + md.country;
+        } catch (_) { /* metadata may not be JSON */ }
+      }
+    } catch (_) { /* lookup failed — return minimal */ }
+
+    return RpcHelpers.successResponse({
+      valid: true,
+      referrer_username: username,
+      referrer_country: country,
+      recommended_tournament_slug: "" + (data.slug || "gk_royale_daily"),
+    });
+  }
+
+  // ── RPC: certificate_get ────────────────────────────────────────────────────
+  // Public read for the web /certificate/[id] page. Returns the cert
+  // metadata + computed OG image URL. The PDF is rendered lazily by the
+  // tournament_certificate Lambda on first access.
+  function rpcCertificateGet(_ctx: nkruntime.Context, _l: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var certId = "" + (data.id || "");
+    if (!certId) return RpcHelpers.errorResponse("id required", 400);
+    var rows: any[] = [];
+    try {
+      rows = nk.storageRead([{ collection: TournamentsStorage.COL_CERTS, key: certId, userId: "" }]);
+    } catch (_) { rows = []; }
+    if (!rows || rows.length === 0) return RpcHelpers.successResponse({ certificate: null });
+    var row: any = rows[0].value;
+    if (!row) return RpcHelpers.successResponse({ certificate: null });
+
+    // Resolve display fields.
+    var username = "Player";
+    var tournamentName = row.tournament_slug;
+    try {
+      var accts = nk.usersGetId([row.user_id]);
+      if (accts && accts.length > 0 && accts[0].username) username = accts[0].username;
+    } catch (_) { /* keep default */ }
+    var cfg = TournamentEconomy.getBySlug(row.tournament_slug);
+    if (cfg) tournamentName = cfg.name;
+
+    var ogBase = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com";
+    return RpcHelpers.successResponse({
+      certificate: {
+        id: row.cert_id,
+        tier: row.tier,
+        player_username: username,
+        tournament_name: tournamentName,
+        tournament_slug: row.tournament_slug,
+        final_rank: row.rank || 0,
+        final_score: row.score || 0,
+        issued_iso: new Date((row.claimed_at || nowSec()) * 1000).toISOString(),
+        pdf_url: row.s3_url || (ogBase + "/tournaments/certificates/" + row.cert_id + ".pdf"),
+        og_image_url: ogBase + "/tournaments/certificates/" + row.cert_id + "-og.png",
+        verify_hash: row.cert_id,
+      },
+    });
+  }
+
+  // ── RPC: learning_track_get / _progress_get / _video_record_watch ──────────
+  // These are aliases that mirror the existing tournament_video_get_url +
+  // tournament_learning_check_submit RPCs but with the names the web /
+  // Unity clients use. Keeping the alias layer here means the server
+  // contract stays stable even if we rename internal helpers.
+  function rpcLearningTrackGet(_ctx: nkruntime.Context, _l: nkruntime.Logger, _nk: nkruntime.Nakama, payload: string): string {
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var trackId = "" + (data.track_id || "");
+    if (!trackId) return RpcHelpers.errorResponse("track_id required", 400);
+    var cfg = TournamentEconomy.getBySlug(trackId);
+    if (!cfg) return RpcHelpers.successResponse({ ok: false, error: "track not found" });
+    var threshold = cfg.amoe && cfg.amoe.learning_series_required_videos
+      ? cfg.amoe.learning_series_required_videos : 6;
+
+    // Build the video manifest from the topic catalog. Video URLs follow
+    // the canonical S3 path
+    //   s3://intelli-verse-x-media/tournaments/learning/{topic_tag}/v{idx}.mp4
+    // which content-factory pre-generates during the pregeneration cron
+    // (§1G). When the file is missing the player falls back to a coming-
+    // soon placeholder client-side.
+    var entry = TournamentTopicCatalog.getEntry(cfg.topic_tag);
+    var prompts: string[] = entry && entry.learning_series_prompts ? entry.learning_series_prompts : [];
+    var s3Base = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com/tournaments/learning/" + cfg.topic_tag;
+    var videos: any[] = [];
+    var videoCount = Math.max(threshold, prompts.length);
+    for (var i = 0; i < videoCount; i++) {
+      videos.push({
+        id: "v" + i,
+        title: prompts[i] || ("Lesson " + (i + 1)),
+        url: s3Base + "/v" + i + ".mp4",
+        duration_sec: 90,
+        check_question_count: 5,
+      });
+    }
+
+    return RpcHelpers.successResponse({
+      ok: true,
+      track: {
+        track_id: cfg.slug,
+        tournament_slug: cfg.slug,
+        topic_label: cfg.name,
+        videos: videos,
+        amoe_unlock_threshold: threshold,
+      },
+    });
+  }
+
+  function rpcLearningTrackProgressGet(ctx: nkruntime.Context, _l: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var userId = RpcHelpers.requireUserId(ctx);
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var trackId = "" + (data.track_id || "");
+    if (!trackId) return RpcHelpers.errorResponse("track_id required", 400);
+    var cfg = TournamentEconomy.getBySlug(trackId);
+    if (!cfg) return RpcHelpers.successResponse({ ok: false, error: "track not found" });
+    var threshold = cfg.amoe && cfg.amoe.learning_series_required_videos
+      ? cfg.amoe.learning_series_required_videos : 6;
+    var progress = LearningSeries.getProgress(nk, userId, cfg.topic_tag);
+    var amoe = LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, threshold);
+    // Reshape `checks` (numeric index) into rows the clients consume by
+    // string `video_id` — we synthesize "v{index}" so the web/Unity views
+    // stay simple. When prod videos move to stable string IDs this is the
+    // only line that changes.
+    var rows: any[] = [];
+    if (progress.checks && progress.checks.length > 0) {
+      for (var i = 0; i < progress.checks.length; i++) {
+        var c = progress.checks[i];
+        rows.push({ video_id: "v" + c.video_index, watched: true, check_passed: !!c.passed });
+      }
+    }
+    return RpcHelpers.successResponse({ ok: true, progress: rows, amoe_unlocked: amoe });
+  }
+
+  function rpcLearningVideoRecordWatch(ctx: nkruntime.Context, _l: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var userId = RpcHelpers.requireUserId(ctx);
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var trackId = "" + (data.track_id || "");
+    var videoId = "" + (data.video_id || "");
+    if (!trackId || !videoId) return RpcHelpers.errorResponse("track_id + video_id required", 400);
+    var cfg = TournamentEconomy.getBySlug(trackId);
+    if (!cfg) return RpcHelpers.successResponse({ ok: false, error: "track not found" });
+    // video_id convention: "v{index}" (matches rpcLearningTrackProgressGet).
+    var vidx = 0;
+    if (videoId.charAt(0) === "v") {
+      var n = parseInt(videoId.substring(1), 10);
+      if (!isNaN(n)) vidx = n;
+    } else {
+      var n2 = parseInt(videoId, 10);
+      if (!isNaN(n2)) vidx = n2;
+    }
+    // Mark the video as watched without a check result — the actual check
+    // pass/fail flows through learning_check_submit. We record 0/0 here
+    // which won't count toward amoe_unlocked until the user passes the
+    // 5-question check.
+    LearningSeries.recordVideoCheck(nk, userId, cfg.topic_tag, vidx, 0, 0);
+    var threshold = cfg.amoe && cfg.amoe.learning_series_required_videos
+      ? cfg.amoe.learning_series_required_videos : 6;
+    var amoe = LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, threshold);
+    return RpcHelpers.successResponse({ ok: true, amoe_unlocked: amoe });
+  }
+
   // ── Registration ───────────────────────────────────────────────────────────
   export function register(initializer: nkruntime.Initializer): void {
     // User-callable
     initializer.registerRpc("tournament_list", rpcList);
     initializer.registerRpc("tournament_get", rpcGet);
+    initializer.registerRpc("tournament_caller_status", rpcCallerStatus);
+    initializer.registerRpc("tournament_bracket_state", rpcBracketState);
     initializer.registerRpc("tournament_pre_enroll", rpcPreEnroll);
     initializer.registerRpc("tournament_enter", rpcEnter);
     initializer.registerRpc("tournament_submit_pack_result", rpcSubmitPackResult);
@@ -805,10 +1198,21 @@ namespace TournamentRpcs {
     initializer.registerRpc("tournament_leaderboard_tier_league", rpcLbTierLeague);
     initializer.registerRpc("tournament_leaderboard_activity_feed", rpcLbActivityFeed);
     initializer.registerRpc("tournament_claim_cert", rpcClaimCert);
+    initializer.registerRpc("tournament_claim_certificate", rpcClaimCert); // alias used by web/Unity clients
+    initializer.registerRpc("certificate_get", rpcCertificateGet);
     initializer.registerRpc("tournament_content_get_pack", rpcContentGetPack);
+    initializer.registerRpc("tournament_get_pick_n_questions", rpcContentGetPack); // alias for Pick-N flow
     initializer.registerRpc("tournament_video_get_url", rpcVideoGetUrl);
+    initializer.registerRpc("learning_track_video_url", rpcVideoGetUrl);   // alias for Unity gateway
+    initializer.registerRpc("learning_track_get", rpcLearningTrackGet);
+    initializer.registerRpc("learning_track_progress_get", rpcLearningTrackProgressGet);
+    initializer.registerRpc("learning_video_record_watch", rpcLearningVideoRecordWatch);
+    initializer.registerRpc("learning_check_submit", rpcLearningCheckSubmit);
     initializer.registerRpc("tournament_learning_check_submit", rpcLearningCheckSubmit);
     initializer.registerRpc("tournament_referral_get_mine", rpcReferralGetMine);
+    initializer.registerRpc("referral_my_code", rpcReferralGetMine);       // alias
+    initializer.registerRpc("referral_lookup", rpcReferralLookup);
+    initializer.registerRpc("referral_pre_enroll_with_code", rpcReferralPreEnrollWithCode);
 
     // Service-only
     initializer.registerRpc("tournament_admin_create", rpcAdminCreate);
@@ -816,5 +1220,7 @@ namespace TournamentRpcs {
     initializer.registerRpc("tournament_settle", rpcSettle);
     initializer.registerRpc("tournament_eliminate_round", rpcEliminateRound);
     initializer.registerRpc("tournament_referral_settle_topN", rpcReferralSettleTopN);
+    initializer.registerRpc("tournament_bracket_seed_topN", rpcBracketSeed);
+    initializer.registerRpc("tournament_bracket_advance_round", rpcBracketAdvanceRound);
   }
 }
