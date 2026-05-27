@@ -49,4 +49,6 @@ tournament_cron_tick
 nakama_analytics_tick
 
 # ── Wallet & user-backend critical path ───────────────────────────
-wallet_get_balance
+# NOTE: registered name is `wallet_get_balances` (plural) in
+# src/legacy/wallet.ts:750 — verified pre-merge against master.
+wallet_get_balances
