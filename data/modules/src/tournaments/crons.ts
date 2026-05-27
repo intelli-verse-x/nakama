@@ -19,6 +19,75 @@ namespace TournamentCrons {
 
   function nowSec(): number { return Math.floor(Date.now() / 1000); }
   function isoToUnix(iso: string): number { return Math.floor(new Date(iso).getTime() / 1000); }
+  function unixToIso(ts: number): string { return new Date(ts * 1000).toISOString(); }
+
+  // B6 fix: opportunistic tick — runs at most once per 60s globally.
+  // Called from high-traffic read RPCs (tournament_list / tournament_get) so
+  // the lifecycle advances without needing an external scheduler. The 60s
+  // gate is keyed on a system-owned storage row so concurrent requests
+  // dedupe across nodes.
+  const OPPORTUNISTIC_TICK_GATE_KEY = "opportunistic_tick_gate";
+  const OPPORTUNISTIC_TICK_INTERVAL_SEC = 60;
+
+  export function opportunisticTick(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): boolean {
+    var now = nowSec();
+    var lastRanAt = 0;
+    try {
+      var rows = nk.storageRead([{
+        collection: "tournament_cron_state",
+        key: OPPORTUNISTIC_TICK_GATE_KEY,
+        userId: Constants.SYSTEM_USER_ID,
+      }]);
+      if (rows && rows.length > 0) {
+        var v: any = rows[0].value;
+        if (v && typeof v.last_ran_at === "number") lastRanAt = v.last_ran_at;
+      }
+    } catch (_) { }
+    if (now - lastRanAt < OPPORTUNISTIC_TICK_INTERVAL_SEC) return false;
+    // Mark BEFORE running so concurrent callers don't double-fire.
+    try {
+      nk.storageWrite([{
+        collection: "tournament_cron_state",
+        key: OPPORTUNISTIC_TICK_GATE_KEY,
+        userId: Constants.SYSTEM_USER_ID,
+        value: { last_ran_at: now },
+        permissionRead: 0,
+        permissionWrite: 0,
+      }]);
+    } catch (_) { }
+    try { tick(ctx, logger, nk); } catch (e: any) {
+      logger.warn("[TournamentCron] opportunistic tick failed: " + (e && e.message));
+    }
+    return true;
+  }
+
+  // B8 fix: daily tournaments (open_start_iso → end_iso window ≤ 25h) get
+  // rolled forward when they settle. We shift open_start_iso + end_iso
+  // forward by one day, reset pot to seed, reset entries_count, bump a
+  // daily_instance counter, and put status back to OPEN. Old leaderboard
+  // records stay (preserve history); the cron also rotates the active
+  // leaderboard ID via daily_instance suffix.
+  function isDailyTournament(cfg: TournamentEconomy.TournamentConfig): boolean {
+    var span = isoToUnix(cfg.end_iso) - isoToUnix(cfg.open_start_iso);
+    return span > 0 && span <= 25 * 3600;
+  }
+
+  function rollDailyForward(nk: nkruntime.Nakama, cfg: TournamentEconomy.TournamentConfig, meta: TournamentsStorage.MetaRow): TournamentsStorage.MetaRow {
+    var now = nowSec();
+    var anyMeta: any = meta;
+    var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
+    var newOpenIso = unixToIso(prevWindowEnd + 1);                // start where prev ended
+    var newEndIso = unixToIso(prevWindowEnd + 24 * 3600);          // 24h window
+    anyMeta.window_open_iso = newOpenIso;
+    anyMeta.window_end_iso = newEndIso;
+    anyMeta.daily_instance = (anyMeta.daily_instance || 1) + 1;
+    meta.status = "OPEN";
+    meta.pot_bc = cfg.pot_seed_bc | 0;
+    meta.entries_count = 0;
+    // Pre-enroll count carries over (founder ranks are sticky to the slug).
+    TournamentsStorage.writeMeta(nk, cfg.slug, meta);
+    return meta;
+  }
 
   // Single-tick driver: walks every slate config, advances any whose schedule
   // has elapsed.
@@ -39,16 +108,25 @@ namespace TournamentCrons {
       // PRE_ENROLL → OPEN transition
       if (meta.status === "PRE_ENROLL" && now >= isoToUnix(cfg.open_start_iso)) {
         meta.status = "OPEN";
+        // Initialize daily window tracking (B8): the first window matches
+        // the cfg dates; daily roll-forward will then update on settle.
+        var anyMetaInit: any = meta;
+        if (!anyMetaInit.window_open_iso) anyMetaInit.window_open_iso = cfg.open_start_iso;
+        if (!anyMetaInit.window_end_iso)  anyMetaInit.window_end_iso  = cfg.end_iso;
         TournamentsStorage.writeMeta(nk, cfg.slug, meta);
         TournamentLeaderboard.ensureLeaderboard(nk, cfg.slug, null, 0);
-        // Pre-create Bracket shell for top-64 playoff (plan §3 update)
-        try {
-          var br = BracketClient.createBracketShell(ctx, nk, cfg.slug, cfg.name, 64);
-          if (br.ok && br.bracket_id) {
-            (meta as any).bracket_id = br.bracket_id;
-            TournamentsStorage.writeMeta(nk, cfg.slug, meta);
-          }
-        } catch (_) { }
+        // Bracket shell — ONLY for elimination format (gate fix). Classic
+        // and pick_n don't have head-to-head matches, so a bracket would
+        // be useless and pollutes the Bracket service dashboard.
+        if (cfg.format === "elimination") {
+          try {
+            var br = BracketClient.createBracketShell(ctx, nk, cfg.slug, cfg.name, 64);
+            if (br.ok && br.bracket_id) {
+              (meta as any).bracket_id = br.bracket_id;
+              TournamentsStorage.writeMeta(nk, cfg.slug, meta);
+            }
+          } catch (_) { }
+        }
         actions.push({ slug: cfg.slug, action: "opened" });
         continue;
       }
@@ -152,10 +230,29 @@ namespace TournamentCrons {
         }
       }
 
-      // End → SETTLING → SETTLED transition
-      if ((meta.status === "OPEN" || meta.status === "ACTIVE") && now >= isoToUnix(cfg.end_iso)) {
+      // End → SETTLING → SETTLED transition (uses the current daily window
+      // when present, else falls back to cfg.end_iso).
+      var anyMetaForEnd: any = meta;
+      var effectiveEndIso = anyMetaForEnd.window_end_iso || cfg.end_iso;
+      if ((meta.status === "OPEN" || meta.status === "ACTIVE") && now >= isoToUnix(effectiveEndIso)) {
         var res = TournamentSettlement.settle(ctx, logger, nk, cfg.slug);
         actions.push({ slug: cfg.slug, action: "settled", result: res });
+
+        // B8: daily tournaments roll forward into the next 24h window so
+        // gk-royale-daily / pick-5-daily don't go dark after Jul 1.
+        if (isDailyTournament(cfg)) {
+          var reloaded = TournamentsStorage.readMeta(nk, cfg.slug);
+          if (reloaded && reloaded.status === "SETTLED") {
+            var rolled = rollDailyForward(nk, cfg, reloaded);
+            actions.push({
+              slug: cfg.slug,
+              action: "daily_rolled_forward",
+              new_window_open_iso: (rolled as any).window_open_iso,
+              new_window_end_iso: (rolled as any).window_end_iso,
+              daily_instance: (rolled as any).daily_instance,
+            });
+          }
+        }
         continue;
       }
     }

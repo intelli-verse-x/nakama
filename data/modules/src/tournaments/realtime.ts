@@ -50,51 +50,119 @@ namespace TournamentRealtime {
     sendToUsers(nk, [userId], code, subject, content, persistent);
   }
 
+  // Resolve username best-effort. Returns "" if Nakama doesn't have one.
+  function usernameFor(nk: nkruntime.Nakama, userId: string): string {
+    if (!userId) return "";
+    try {
+      var acc = nk.usersGetId([userId]);
+      if (acc && acc.length > 0 && acc[0].username) return "" + acc[0].username;
+    } catch (_) { }
+    return "";
+  }
+
+  // Standard payload envelope. ALL clients (web ActivityTicker, Unity
+  // TournamentManager) can rely on `slug` being present. Keep
+  // `tournament_slug` too so existing string searches in other systems
+  // (e.g. analytics) still match. (Fix B4 + B9 + B10.)
+  function envelope(slug: string, extra: any): any {
+    var base: any = {
+      slug: slug,
+      tournament_slug: slug,
+      ts: Math.floor(Date.now() / 1000),
+    };
+    if (extra) {
+      for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) base[k] = extra[k];
+    }
+    return base;
+  }
+
   // ── Tournament-specific helpers ────────────────────────────────────────────
-  export function notifyPotUpdate(nk: nkruntime.Nakama, tournamentSlug: string, newPotBc: number, recentDelta: number, subscribers: string[]): void {
-    sendToUsers(nk, subscribers, CODE_POT_UPDATE, "tournament_pot_update", {
-      tournament_slug: tournamentSlug,
+  // B3 fix: every fanout helper now pulls the live subscriber list from
+  // storage (populated by tournament_pre_enroll / tournament_enter /
+  // tournament_caller_status) rather than relying on the caller to pass it.
+  export function notifyPotUpdate(nk: nkruntime.Nakama, tournamentSlug: string, newPotBc: number, recentDelta: number, _subscribers?: string[], scorer?: { userId: string; score?: number }): void {
+    var subs = (_subscribers && _subscribers.length > 0) ? _subscribers : TournamentsStorage.listSubscribers(nk, tournamentSlug);
+    if (subs.length === 0) return;
+    var payload = envelope(tournamentSlug, {
       pot_bc: newPotBc,
       delta_bc: recentDelta,
-      ts: Math.floor(Date.now() / 1000),
-    }, false);
+      entries_count: undefined,  // filled by caller via incrementPot if relevant
+    });
+    if (scorer && scorer.userId) {
+      payload.username = usernameFor(nk, scorer.userId);
+      if (typeof scorer.score === "number") payload.score = scorer.score;
+    }
+    sendToUsers(nk, subs, CODE_POT_UPDATE, "tournament_pot_update", payload, false);
   }
 
   export function notifyEliminated(nk: nkruntime.Nakama, userId: string, tournamentSlug: string, round: number, finalRank: number): void {
-    sendToUser(nk, userId, CODE_ELIMINATED, "tournament_eliminated", {
-      tournament_slug: tournamentSlug,
+    sendToUser(nk, userId, CODE_ELIMINATED, "tournament_eliminated", envelope(tournamentSlug, {
       round: round,
       final_rank: finalRank,
-      ts: Math.floor(Date.now() / 1000),
-    }, true);  // persistent so user sees it next session
+      username: usernameFor(nk, userId),
+    }), true);  // persistent so user sees it next session
+    // Also broadcast a slim ticker event to subscribers for social proof.
+    var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+    if (subs.length > 0) {
+      sendToUsers(nk, subs, CODE_ELIMINATED, "tournament_eliminated_broadcast", envelope(tournamentSlug, {
+        round: round,
+        username: usernameFor(nk, userId),
+      }), false);
+    }
   }
 
   export function notifySettled(nk: nkruntime.Nakama, userId: string, tournamentSlug: string, payoutBc: number, finalRank: number, certId: string | null): void {
-    sendToUser(nk, userId, CODE_SETTLED, "tournament_settled", {
-      tournament_slug: tournamentSlug,
+    sendToUser(nk, userId, CODE_SETTLED, "tournament_settled", envelope(tournamentSlug, {
       payout_bc: payoutBc,
       final_rank: finalRank,
       cert_id: certId,
-      ts: Math.floor(Date.now() / 1000),
-    }, true);
+      username: usernameFor(nk, userId),
+    }), true);
   }
 
-  export function notifyPreEnrollScarcity(nk: nkruntime.Nakama, tournamentSlug: string, founderSpotsLeft: number, subscribers: string[]): void {
+  export function notifyPreEnrollScarcity(nk: nkruntime.Nakama, tournamentSlug: string, founderSpotsLeft: number, _subscribers?: string[]): void {
     if (founderSpotsLeft > 100) return;  // only fire under threshold
-    sendToUsers(nk, subscribers, CODE_PREENROLL_SCARCITY, "preenroll_scarcity", {
-      tournament_slug: tournamentSlug,
+    var subs = (_subscribers && _subscribers.length > 0) ? _subscribers : TournamentsStorage.listSubscribers(nk, tournamentSlug);
+    if (subs.length === 0) return;
+    var meta = TournamentsStorage.readMeta(nk, tournamentSlug);
+    sendToUsers(nk, subs, CODE_PREENROLL_SCARCITY, "preenroll_scarcity", envelope(tournamentSlug, {
       founder_spots_left: founderSpotsLeft,
-      ts: Math.floor(Date.now() / 1000),
-    }, false);
+      spots_left: founderSpotsLeft,                     // alias for legacy Unity readers
+      pre_enroll_count: meta ? (meta.pre_enroll_count | 0) : 0,
+    }), false);
   }
 
-  // Leaderboard ticker: broadcasts current top-10 + activity snippet to all
-  // subscribers; called by leaderboard helper every ~5s during active windows.
-  export function notifyLeaderboardTick(nk: nkruntime.Nakama, tournamentSlug: string, topRows: any[], subscribers: string[]): void {
-    sendToUsers(nk, subscribers, CODE_LB_UPDATE, "tournament_lb_update", {
-      tournament_slug: tournamentSlug,
+  // Score tick for the activity ticker — fired whenever a user scores in a
+  // tournament. Includes the username so the web ActivityTicker can render
+  // "Sarah just scored 4,200".
+  export function notifyScoreTick(nk: nkruntime.Nakama, tournamentSlug: string, scorerUserId: string, newTotalScore: number): void {
+    var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+    if (subs.length === 0) return;
+    sendToUsers(nk, subs, CODE_LB_UPDATE, "tournament_score_tick", envelope(tournamentSlug, {
+      username: usernameFor(nk, scorerUserId),
+      score: newTotalScore,
+      scorer_user_id: scorerUserId,
+    }), false);
+  }
+
+  // Entry tick — emitted on every tournament_enter. Powers the ticker
+  // "Alex just entered" entries.
+  export function notifyEntered(nk: nkruntime.Nakama, tournamentSlug: string, enteredUserId: string, newPotBc: number, newEntriesCount: number): void {
+    var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+    if (subs.length === 0) return;
+    sendToUsers(nk, subs, CODE_POT_UPDATE, "tournament_entered", envelope(tournamentSlug, {
+      username: usernameFor(nk, enteredUserId),
+      pot_bc: newPotBc,
+      entries_count: newEntriesCount,
+    }), false);
+  }
+
+  // Leaderboard ticker (manual call site; kept for completeness).
+  export function notifyLeaderboardTick(nk: nkruntime.Nakama, tournamentSlug: string, topRows: any[]): void {
+    var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+    if (subs.length === 0) return;
+    sendToUsers(nk, subs, CODE_LB_UPDATE, "tournament_lb_update", envelope(tournamentSlug, {
       top: topRows,
-      ts: Math.floor(Date.now() / 1000),
-    }, false);
+    }), false);
   }
 }

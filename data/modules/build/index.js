@@ -39876,6 +39876,79 @@ var TournamentCrons;
 (function (TournamentCrons) {
     function nowSec() { return Math.floor(Date.now() / 1000); }
     function isoToUnix(iso) { return Math.floor(new Date(iso).getTime() / 1000); }
+    function unixToIso(ts) { return new Date(ts * 1000).toISOString(); }
+    // B6 fix: opportunistic tick — runs at most once per 60s globally.
+    // Called from high-traffic read RPCs (tournament_list / tournament_get) so
+    // the lifecycle advances without needing an external scheduler. The 60s
+    // gate is keyed on a system-owned storage row so concurrent requests
+    // dedupe across nodes.
+    var OPPORTUNISTIC_TICK_GATE_KEY = "opportunistic_tick_gate";
+    var OPPORTUNISTIC_TICK_INTERVAL_SEC = 60;
+    function opportunisticTick(ctx, logger, nk) {
+        var now = nowSec();
+        var lastRanAt = 0;
+        try {
+            var rows = nk.storageRead([{
+                    collection: "tournament_cron_state",
+                    key: OPPORTUNISTIC_TICK_GATE_KEY,
+                    userId: Constants.SYSTEM_USER_ID,
+                }]);
+            if (rows && rows.length > 0) {
+                var v = rows[0].value;
+                if (v && typeof v.last_ran_at === "number")
+                    lastRanAt = v.last_ran_at;
+            }
+        }
+        catch (_) { }
+        if (now - lastRanAt < OPPORTUNISTIC_TICK_INTERVAL_SEC)
+            return false;
+        // Mark BEFORE running so concurrent callers don't double-fire.
+        try {
+            nk.storageWrite([{
+                    collection: "tournament_cron_state",
+                    key: OPPORTUNISTIC_TICK_GATE_KEY,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: { last_ran_at: now },
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+        }
+        catch (_) { }
+        try {
+            tick(ctx, logger, nk);
+        }
+        catch (e) {
+            logger.warn("[TournamentCron] opportunistic tick failed: " + (e && e.message));
+        }
+        return true;
+    }
+    TournamentCrons.opportunisticTick = opportunisticTick;
+    // B8 fix: daily tournaments (open_start_iso → end_iso window ≤ 25h) get
+    // rolled forward when they settle. We shift open_start_iso + end_iso
+    // forward by one day, reset pot to seed, reset entries_count, bump a
+    // daily_instance counter, and put status back to OPEN. Old leaderboard
+    // records stay (preserve history); the cron also rotates the active
+    // leaderboard ID via daily_instance suffix.
+    function isDailyTournament(cfg) {
+        var span = isoToUnix(cfg.end_iso) - isoToUnix(cfg.open_start_iso);
+        return span > 0 && span <= 25 * 3600;
+    }
+    function rollDailyForward(nk, cfg, meta) {
+        var now = nowSec();
+        var anyMeta = meta;
+        var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
+        var newOpenIso = unixToIso(prevWindowEnd + 1); // start where prev ended
+        var newEndIso = unixToIso(prevWindowEnd + 24 * 3600); // 24h window
+        anyMeta.window_open_iso = newOpenIso;
+        anyMeta.window_end_iso = newEndIso;
+        anyMeta.daily_instance = (anyMeta.daily_instance || 1) + 1;
+        meta.status = "OPEN";
+        meta.pot_bc = cfg.pot_seed_bc | 0;
+        meta.entries_count = 0;
+        // Pre-enroll count carries over (founder ranks are sticky to the slug).
+        TournamentsStorage.writeMeta(nk, cfg.slug, meta);
+        return meta;
+    }
     // Single-tick driver: walks every slate config, advances any whose schedule
     // has elapsed.
     function tick(ctx, logger, nk) {
@@ -39893,17 +39966,28 @@ var TournamentCrons;
             // PRE_ENROLL → OPEN transition
             if (meta.status === "PRE_ENROLL" && now >= isoToUnix(cfg.open_start_iso)) {
                 meta.status = "OPEN";
+                // Initialize daily window tracking (B8): the first window matches
+                // the cfg dates; daily roll-forward will then update on settle.
+                var anyMetaInit = meta;
+                if (!anyMetaInit.window_open_iso)
+                    anyMetaInit.window_open_iso = cfg.open_start_iso;
+                if (!anyMetaInit.window_end_iso)
+                    anyMetaInit.window_end_iso = cfg.end_iso;
                 TournamentsStorage.writeMeta(nk, cfg.slug, meta);
                 TournamentLeaderboard.ensureLeaderboard(nk, cfg.slug, null, 0);
-                // Pre-create Bracket shell for top-64 playoff (plan §3 update)
-                try {
-                    var br = BracketClient.createBracketShell(ctx, nk, cfg.slug, cfg.name, 64);
-                    if (br.ok && br.bracket_id) {
-                        meta.bracket_id = br.bracket_id;
-                        TournamentsStorage.writeMeta(nk, cfg.slug, meta);
+                // Bracket shell — ONLY for elimination format (gate fix). Classic
+                // and pick_n don't have head-to-head matches, so a bracket would
+                // be useless and pollutes the Bracket service dashboard.
+                if (cfg.format === "elimination") {
+                    try {
+                        var br = BracketClient.createBracketShell(ctx, nk, cfg.slug, cfg.name, 64);
+                        if (br.ok && br.bracket_id) {
+                            meta.bracket_id = br.bracket_id;
+                            TournamentsStorage.writeMeta(nk, cfg.slug, meta);
+                        }
                     }
+                    catch (_) { }
                 }
-                catch (_) { }
                 actions.push({ slug: cfg.slug, action: "opened" });
                 continue;
             }
@@ -40017,10 +40101,28 @@ var TournamentCrons;
                     }
                 }
             }
-            // End → SETTLING → SETTLED transition
-            if ((meta.status === "OPEN" || meta.status === "ACTIVE") && now >= isoToUnix(cfg.end_iso)) {
+            // End → SETTLING → SETTLED transition (uses the current daily window
+            // when present, else falls back to cfg.end_iso).
+            var anyMetaForEnd = meta;
+            var effectiveEndIso = anyMetaForEnd.window_end_iso || cfg.end_iso;
+            if ((meta.status === "OPEN" || meta.status === "ACTIVE") && now >= isoToUnix(effectiveEndIso)) {
                 var res = TournamentSettlement.settle(ctx, logger, nk, cfg.slug);
                 actions.push({ slug: cfg.slug, action: "settled", result: res });
+                // B8: daily tournaments roll forward into the next 24h window so
+                // gk-royale-daily / pick-5-daily don't go dark after Jul 1.
+                if (isDailyTournament(cfg)) {
+                    var reloaded = TournamentsStorage.readMeta(nk, cfg.slug);
+                    if (reloaded && reloaded.status === "SETTLED") {
+                        var rolled = rollDailyForward(nk, cfg, reloaded);
+                        actions.push({
+                            slug: cfg.slug,
+                            action: "daily_rolled_forward",
+                            new_window_open_iso: rolled.window_open_iso,
+                            new_window_end_iso: rolled.window_end_iso,
+                            daily_instance: rolled.daily_instance,
+                        });
+                    }
+                }
                 continue;
             }
         }
@@ -40408,53 +40510,130 @@ var TournamentRealtime;
         sendToUsers(nk, [userId], code, subject, content, persistent);
     }
     TournamentRealtime.sendToUser = sendToUser;
+    // Resolve username best-effort. Returns "" if Nakama doesn't have one.
+    function usernameFor(nk, userId) {
+        if (!userId)
+            return "";
+        try {
+            var acc = nk.usersGetId([userId]);
+            if (acc && acc.length > 0 && acc[0].username)
+                return "" + acc[0].username;
+        }
+        catch (_) { }
+        return "";
+    }
+    // Standard payload envelope. ALL clients (web ActivityTicker, Unity
+    // TournamentManager) can rely on `slug` being present. Keep
+    // `tournament_slug` too so existing string searches in other systems
+    // (e.g. analytics) still match. (Fix B4 + B9 + B10.)
+    function envelope(slug, extra) {
+        var base = {
+            slug: slug,
+            tournament_slug: slug,
+            ts: Math.floor(Date.now() / 1000),
+        };
+        if (extra) {
+            for (var k in extra)
+                if (Object.prototype.hasOwnProperty.call(extra, k))
+                    base[k] = extra[k];
+        }
+        return base;
+    }
     // ── Tournament-specific helpers ────────────────────────────────────────────
-    function notifyPotUpdate(nk, tournamentSlug, newPotBc, recentDelta, subscribers) {
-        sendToUsers(nk, subscribers, TournamentRealtime.CODE_POT_UPDATE, "tournament_pot_update", {
-            tournament_slug: tournamentSlug,
+    // B3 fix: every fanout helper now pulls the live subscriber list from
+    // storage (populated by tournament_pre_enroll / tournament_enter /
+    // tournament_caller_status) rather than relying on the caller to pass it.
+    function notifyPotUpdate(nk, tournamentSlug, newPotBc, recentDelta, _subscribers, scorer) {
+        var subs = (_subscribers && _subscribers.length > 0) ? _subscribers : TournamentsStorage.listSubscribers(nk, tournamentSlug);
+        if (subs.length === 0)
+            return;
+        var payload = envelope(tournamentSlug, {
             pot_bc: newPotBc,
             delta_bc: recentDelta,
-            ts: Math.floor(Date.now() / 1000),
-        }, false);
+            entries_count: undefined, // filled by caller via incrementPot if relevant
+        });
+        if (scorer && scorer.userId) {
+            payload.username = usernameFor(nk, scorer.userId);
+            if (typeof scorer.score === "number")
+                payload.score = scorer.score;
+        }
+        sendToUsers(nk, subs, TournamentRealtime.CODE_POT_UPDATE, "tournament_pot_update", payload, false);
     }
     TournamentRealtime.notifyPotUpdate = notifyPotUpdate;
     function notifyEliminated(nk, userId, tournamentSlug, round, finalRank) {
-        sendToUser(nk, userId, TournamentRealtime.CODE_ELIMINATED, "tournament_eliminated", {
-            tournament_slug: tournamentSlug,
+        sendToUser(nk, userId, TournamentRealtime.CODE_ELIMINATED, "tournament_eliminated", envelope(tournamentSlug, {
             round: round,
             final_rank: finalRank,
-            ts: Math.floor(Date.now() / 1000),
-        }, true); // persistent so user sees it next session
+            username: usernameFor(nk, userId),
+        }), true); // persistent so user sees it next session
+        // Also broadcast a slim ticker event to subscribers for social proof.
+        var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+        if (subs.length > 0) {
+            sendToUsers(nk, subs, TournamentRealtime.CODE_ELIMINATED, "tournament_eliminated_broadcast", envelope(tournamentSlug, {
+                round: round,
+                username: usernameFor(nk, userId),
+            }), false);
+        }
     }
     TournamentRealtime.notifyEliminated = notifyEliminated;
     function notifySettled(nk, userId, tournamentSlug, payoutBc, finalRank, certId) {
-        sendToUser(nk, userId, TournamentRealtime.CODE_SETTLED, "tournament_settled", {
-            tournament_slug: tournamentSlug,
+        sendToUser(nk, userId, TournamentRealtime.CODE_SETTLED, "tournament_settled", envelope(tournamentSlug, {
             payout_bc: payoutBc,
             final_rank: finalRank,
             cert_id: certId,
-            ts: Math.floor(Date.now() / 1000),
-        }, true);
+            username: usernameFor(nk, userId),
+        }), true);
     }
     TournamentRealtime.notifySettled = notifySettled;
-    function notifyPreEnrollScarcity(nk, tournamentSlug, founderSpotsLeft, subscribers) {
+    function notifyPreEnrollScarcity(nk, tournamentSlug, founderSpotsLeft, _subscribers) {
         if (founderSpotsLeft > 100)
             return; // only fire under threshold
-        sendToUsers(nk, subscribers, TournamentRealtime.CODE_PREENROLL_SCARCITY, "preenroll_scarcity", {
-            tournament_slug: tournamentSlug,
+        var subs = (_subscribers && _subscribers.length > 0) ? _subscribers : TournamentsStorage.listSubscribers(nk, tournamentSlug);
+        if (subs.length === 0)
+            return;
+        var meta = TournamentsStorage.readMeta(nk, tournamentSlug);
+        sendToUsers(nk, subs, TournamentRealtime.CODE_PREENROLL_SCARCITY, "preenroll_scarcity", envelope(tournamentSlug, {
             founder_spots_left: founderSpotsLeft,
-            ts: Math.floor(Date.now() / 1000),
-        }, false);
+            spots_left: founderSpotsLeft, // alias for legacy Unity readers
+            pre_enroll_count: meta ? (meta.pre_enroll_count | 0) : 0,
+        }), false);
     }
     TournamentRealtime.notifyPreEnrollScarcity = notifyPreEnrollScarcity;
-    // Leaderboard ticker: broadcasts current top-10 + activity snippet to all
-    // subscribers; called by leaderboard helper every ~5s during active windows.
-    function notifyLeaderboardTick(nk, tournamentSlug, topRows, subscribers) {
-        sendToUsers(nk, subscribers, TournamentRealtime.CODE_LB_UPDATE, "tournament_lb_update", {
-            tournament_slug: tournamentSlug,
+    // Score tick for the activity ticker — fired whenever a user scores in a
+    // tournament. Includes the username so the web ActivityTicker can render
+    // "Sarah just scored 4,200".
+    function notifyScoreTick(nk, tournamentSlug, scorerUserId, newTotalScore) {
+        var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+        if (subs.length === 0)
+            return;
+        sendToUsers(nk, subs, TournamentRealtime.CODE_LB_UPDATE, "tournament_score_tick", envelope(tournamentSlug, {
+            username: usernameFor(nk, scorerUserId),
+            score: newTotalScore,
+            scorer_user_id: scorerUserId,
+        }), false);
+    }
+    TournamentRealtime.notifyScoreTick = notifyScoreTick;
+    // Entry tick — emitted on every tournament_enter. Powers the ticker
+    // "Alex just entered" entries.
+    function notifyEntered(nk, tournamentSlug, enteredUserId, newPotBc, newEntriesCount) {
+        var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+        if (subs.length === 0)
+            return;
+        sendToUsers(nk, subs, TournamentRealtime.CODE_POT_UPDATE, "tournament_entered", envelope(tournamentSlug, {
+            username: usernameFor(nk, enteredUserId),
+            pot_bc: newPotBc,
+            entries_count: newEntriesCount,
+        }), false);
+    }
+    TournamentRealtime.notifyEntered = notifyEntered;
+    // Leaderboard ticker (manual call site; kept for completeness).
+    function notifyLeaderboardTick(nk, tournamentSlug, topRows) {
+        var subs = TournamentsStorage.listSubscribers(nk, tournamentSlug);
+        if (subs.length === 0)
+            return;
+        sendToUsers(nk, subs, TournamentRealtime.CODE_LB_UPDATE, "tournament_lb_update", envelope(tournamentSlug, {
             top: topRows,
-            ts: Math.floor(Date.now() / 1000),
-        }, false);
+        }), false);
     }
     TournamentRealtime.notifyLeaderboardTick = notifyLeaderboardTick;
 })(TournamentRealtime || (TournamentRealtime = {}));
@@ -40477,7 +40656,7 @@ var Referrals;
 (function (Referrals) {
     var CODE_COLLECTION = "referral_codes"; // per-user, key="me", value={code, created_at}
     var ATTRIBUTION_COLLECTION = "referrals"; // per-referrer, key="<referred_user_id>_<slug>"
-    var LEADERBOARD_ID = "preenroll_referrals";
+    Referrals.LEADERBOARD_ID = "preenroll_referrals";
     function nowSec() { return Math.floor(Date.now() / 1000); }
     function generateCode() {
         // 8-char base36 lowercase, low collision risk for 25K target enrolees
@@ -40561,7 +40740,7 @@ var Referrals;
             }]);
         // Bump leaderboard
         try {
-            nk.leaderboardCreate(LEADERBOARD_ID, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "increment" /* nkruntime.Operator.INCREMENTAL */, null, { type: "preenroll_referrals" }, true);
+            nk.leaderboardCreate(Referrals.LEADERBOARD_ID, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "increment" /* nkruntime.Operator.INCREMENTAL */, null, { type: "preenroll_referrals" }, true);
             var username = "";
             try {
                 var acc = nk.accountsGetId([ownerId]);
@@ -40569,7 +40748,7 @@ var Referrals;
                     username = "" + (acc[0].user.username || "");
             }
             catch (_) { }
-            nk.leaderboardRecordWrite(LEADERBOARD_ID, ownerId, username, 1);
+            nk.leaderboardRecordWrite(Referrals.LEADERBOARD_ID, ownerId, username, 1);
         }
         catch (_) { }
         // BC reward (10 BC, lifetime cap 200) — handled via brain_coins_earn
@@ -40666,7 +40845,7 @@ var Referrals;
         // Get rank from leaderboard
         var rank = -1;
         try {
-            var lb = nk.leaderboardRecordsList(LEADERBOARD_ID, [userId], 1, undefined);
+            var lb = nk.leaderboardRecordsList(Referrals.LEADERBOARD_ID, [userId], 1, undefined);
             if (lb.records && lb.records.length > 0)
                 rank = lb.records[0].rank;
         }
@@ -40687,7 +40866,7 @@ var Referrals;
     function settleTopN(ctx, logger, nk) {
         var top = [];
         try {
-            var lb = nk.leaderboardRecordsList(LEADERBOARD_ID, [], 100, undefined);
+            var lb = nk.leaderboardRecordsList(Referrals.LEADERBOARD_ID, [], 100, undefined);
             if (lb.records)
                 top = lb.records;
         }
@@ -40768,6 +40947,22 @@ var TournamentRpcs;
             return false;
         var expected = "" + ((ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) || (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
         return expected.length > 0 && token === expected;
+    }
+    // Picks the canonical recommended tournament slug — used as the default
+    // landing target for referral links when the caller didn't specify one.
+    // Prefers PRE_ENROLL/OPEN/ACTIVE tournaments, falls back to the first
+    // entry in the LAUNCH_SLATE. Never returns a "settled" slug.
+    function defaultRecommendedSlug(nk) {
+        var slate = TournamentEconomy.listAll();
+        for (var i = 0; i < slate.length; i++) {
+            var cfg = slate[i];
+            var meta = TournamentsStorage.readMeta(nk, cfg.slug);
+            if (!meta)
+                return cfg.slug;
+            if (meta.status === "PRE_ENROLL" || meta.status === "OPEN" || meta.status === "ACTIVE")
+                return cfg.slug;
+        }
+        return slate.length > 0 ? slate[0].slug : "gk-royale-daily";
     }
     function readUserCountry(nk, userId) {
         try {
@@ -40863,6 +41058,14 @@ var TournamentRpcs;
     // Public/anonymous-friendly. Returns all visible tournaments + caller-specific
     // enriched fields (entered? founder? bc_balance) when authenticated.
     function rpcList(ctx, _logger, nk, _payload) {
+        // B6 fix: opportunistic cron tick — runs at most once / 60s globally.
+        // Hooked here because tournament_list is hit on EVERY hub page render
+        // (web + Unity), so we get cron coverage proportional to traffic
+        // without needing an external scheduler.
+        try {
+            TournamentCrons.opportunisticTick(ctx, _logger, nk);
+        }
+        catch (_) { }
         var slate = TournamentEconomy.listAll();
         var out = [];
         var userId = ctx.userId || "";
@@ -40911,6 +41114,9 @@ var TournamentRpcs;
         return RpcHelpers.successResponse({ tournaments: out, served_at: nowSec() });
     }
     // ── RPC: tournament_get ────────────────────────────────────────────────────
+    // Returns a flat `tournament` object consumed by both web (TournamentDetailData)
+    // and Unity (TournamentSummary). Pot / prize breakdown / survivor count are
+    // computed from meta + cfg here so clients stay dumb.
     function rpcGet(ctx, _logger, nk, payload) {
         var data = RpcHelpers.parseRpcPayload(payload);
         var slug = "" + (data.slug || "");
@@ -40919,13 +41125,90 @@ var TournamentRpcs;
         var cfg = TournamentEconomy.getBySlug(slug);
         if (!cfg)
             return RpcHelpers.errorResponse("tournament not found", 404);
+        // Opportunistic tick: cheap, gated to once-per-60s globally (B6 fix).
+        try {
+            TournamentCrons.opportunisticTick(ctx, _logger, nk);
+        }
+        catch (_) { }
         var meta = TournamentsStorage.readMeta(nk, slug) || TournamentsStorage.seedFromConfig(nk, cfg);
         var userId = ctx.userId || "";
         var entry = userId ? TournamentsStorage.readEntry(nk, slug, userId) : null;
         var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, slug, userId) : null;
+        // Format-specific payload shaping
+        var pickN = null;
+        if (cfg.format === "pick_n" && cfg.pick_n_config) {
+            pickN = { n: cfg.pick_n_config.n, multipliers: cfg.pick_n_config.multipliers };
+        }
+        var elimination = null;
+        if (cfg.format === "elimination" && cfg.elimination_schedule) {
+            // survivor_count = entries that have no eliminated_at marker.
+            // For MVP we approximate via leaderboard cardinality (cheap O(1) call).
+            var initialEntries = meta.entries_count | 0;
+            var survivorCount = initialEntries;
+            try {
+                var lbCount = nk.leaderboardRecordsList(TournamentLeaderboard.lbId(slug), [], 1, undefined);
+                if (lbCount && lbCount.rankCount !== undefined) {
+                    survivorCount = lbCount.rankCount | 0;
+                }
+            }
+            catch (_) { }
+            elimination = {
+                cut_times_utc: cfg.elimination_schedule.cut_times_utc || [],
+                survivor_count: survivorCount,
+                initial_entries: initialEntries,
+            };
+        }
+        // Prize breakdown — derived from pot_split_top_n × (pot × (1 - rake)).
+        var prizeBreakdown = [];
+        if (cfg.format === "classic" && cfg.pot_split_top_n && meta.pot_bc > 0) {
+            var prizePool = Math.floor(meta.pot_bc * (1 - cfg.rake_pct));
+            for (var pi = 0; pi < cfg.pot_split_top_n.length; pi++) {
+                var rs = cfg.pot_split_top_n[pi];
+                var bc = Math.floor(prizePool * rs.share);
+                if (bc <= 0)
+                    continue;
+                prizeBreakdown.push({ label: "#" + rs.rank, bc: bc });
+            }
+        }
+        else if (cfg.format === "pick_n" && cfg.pick_n_config) {
+            // Show top tier payouts (multiplier × entry_fee).
+            var grades = ["5/5", "4/5", "3/5"];
+            for (var gi = 0; gi < grades.length; gi++) {
+                var g = grades[gi];
+                var mult = cfg.pick_n_config.multipliers[g] || 0;
+                if (mult <= 0)
+                    continue;
+                prizeBreakdown.push({ label: g, bc: Math.floor(cfg.entry_fee_bc * mult) });
+            }
+        }
+        else if (cfg.format === "elimination" && cfg.elimination_schedule) {
+            prizeBreakdown.push({ label: "Survivor share (equal)", bc: 0 });
+            prizeBreakdown.push({ label: "#1 bragging bonus", bc: cfg.elimination_schedule.final_survivor_bonus_bc | 0 });
+        }
+        var rulesSummary = "Entry: " + cfg.entry_fee_bc + " BC · House rake: " + Math.round(cfg.rake_pct * 100) + "% · AMOE: complete " + cfg.amoe.learning_series_required_videos + " Learning Series videos for a free entry.";
+        var tournament = {
+            slug: cfg.slug,
+            name: cfg.name,
+            description: cfg.description,
+            format: cfg.format,
+            format_ui_variant: cfg.format_ui_variant,
+            topic_tag: cfg.topic_tag,
+            status: meta.status,
+            pot_bc: meta.pot_bc | 0,
+            entries_count: meta.entries_count | 0,
+            pre_enroll_count: meta.pre_enroll_count | 0,
+            entry_fee_bc: cfg.entry_fee_bc,
+            pre_enroll_start_iso: cfg.pre_enroll_start_iso,
+            open_start_iso: cfg.open_start_iso,
+            end_iso: cfg.end_iso,
+            badge_emoji: cfg.badge_emoji || null,
+            pick_n: pickN,
+            elimination: elimination,
+            prize_breakdown: prizeBreakdown,
+            rules_summary: rulesSummary,
+        };
         return RpcHelpers.successResponse({
-            config: cfg,
-            meta: meta,
+            tournament: tournament,
             caller_entry: entry,
             caller_pre_enroll: preEnroll,
             served_at: nowSec(),
@@ -40975,11 +41258,16 @@ var TournamentRpcs;
             }
             catch (_) { /* best-effort */ }
         }
-        // Notify scarcity if under threshold (broadcast to recent subscribers list).
-        // MVP: skip subscriber-list maintenance and use empty list (web fetches every poll).
+        // Subscribe user to live updates for this tournament so they receive
+        // scarcity / pot / settled notifications (B3 fix).
+        try {
+            TournamentsStorage.addSubscriber(nk, slug, userId);
+        }
+        catch (_) { }
+        // Notify scarcity if under threshold (broadcast to live subscriber list).
         var founderLeft = TournamentEconomy.PRE_ENROLL_FOUNDER_CAP - newCount;
-        if (founderLeft <= 100 && founderLeft > 0) {
-            TournamentRealtime.notifyPreEnrollScarcity(nk, slug, founderLeft, []);
+        if (founderLeft <= 100) {
+            TournamentRealtime.notifyPreEnrollScarcity(nk, slug, founderLeft);
         }
         logger.info("[Tournaments] pre-enroll " + userId + " → " + slug + " (founder_rank=" + (founderRank || "-") + ", pre_enroll_count=" + newCount + ")");
         return RpcHelpers.successResponse({ pre_enroll: row, founder_spots_left: founderLeft, total_pre_enroll: newCount });
@@ -41064,14 +41352,23 @@ var TournamentRpcs;
             score: 0,
         };
         TournamentsStorage.writeEntry(nk, slug, userId, entry);
+        // Subscribe to live updates (B3).
+        try {
+            TournamentsStorage.addSubscriber(nk, slug, userId);
+        }
+        catch (_) { }
         // Pot increment (paid entries only; AMOE doesn't add to pot)
+        var newPot = meta.pot_bc | 0;
+        var newEntries = (meta.entries_count | 0) + 1;
         if (bcCharged > 0) {
-            var newPot = TournamentsStorage.incrementPot(nk, slug, bcCharged);
-            TournamentRealtime.notifyPotUpdate(nk, slug, newPot, bcCharged, []);
+            newPot = TournamentsStorage.incrementPot(nk, slug, bcCharged);
+            // Pot + entry tick — fan out to all subscribers (B3/B10).
+            TournamentRealtime.notifyPotUpdate(nk, slug, newPot, bcCharged, undefined, { userId: userId });
         }
         else {
             TournamentsStorage.incrementPot(nk, slug, 0); // bumps entries_count
         }
+        TournamentRealtime.notifyEntered(nk, slug, userId, newPot, newEntries);
         // Ensure leaderboard
         TournamentLeaderboard.ensureLeaderboard(nk, slug, null, 0);
         logger.info("[Tournaments] enter user=" + userId + " slug=" + slug + " paid=" + paidVia + " bc=" + bcCharged + " founder=" + isFounder);
@@ -41155,6 +41452,14 @@ var TournamentRpcs;
             var bal = readBcBalance(nk, userId);
             var tier = TournamentLeaderboard.tierForBalance(bal.lifetime_earned);
             TournamentLeaderboard.recordTierSubmit(nk, slug, tier, userId, username, entry.score);
+            // B10 fix: emit a score tick so the live ActivityTicker can render
+            // "Sarah just scored 4,200". Subscriber list maintained by enter +
+            // caller_status; if the user is the only subscriber the tick still
+            // helps update their own LeaderboardPanel client-side.
+            try {
+                TournamentRealtime.notifyScoreTick(nk, slug, userId, entry.score);
+            }
+            catch (_) { }
         }
         logger.info("[Tournaments] submit user=" + userId + " slug=" + slug + " pack=" + packId + " score=" + effectiveScore + " status=" + status);
         return RpcHelpers.successResponse({
@@ -41440,6 +41745,44 @@ var TournamentRpcs;
         var summary = Referrals.getMySummary(nk, userId);
         return RpcHelpers.successResponse(summary);
     }
+    // ── RPC: referral_leaderboard_top ──────────────────────────────────────────
+    // Public top-100 leaderboard of pre-enrollment referrals. Powers
+    // /referrals/leaderboard on web. Returns rank, username, attributed
+    // count, and the prize tier the user is currently in.
+    function rpcReferralLeaderboardTop(_ctx, _l, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var limit = parseInt("" + (data.limit || 100), 10);
+        if (isNaN(limit) || limit < 1 || limit > 100)
+            limit = 100;
+        var records = [];
+        try {
+            var lb = nk.leaderboardRecordsList(Referrals.LEADERBOARD_ID, [], limit, undefined);
+            if (lb && lb.records)
+                records = lb.records;
+        }
+        catch (_) { }
+        var top = [];
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            var rank = i + 1;
+            var prizeUsd = 0;
+            if (rank === 1)
+                prizeUsd = TournamentEconomy.REFERRAL_TOP_1_USD;
+            else if (rank <= 3)
+                prizeUsd = TournamentEconomy.REFERRAL_TOP_2_3_USD;
+            else if (rank <= 10)
+                prizeUsd = TournamentEconomy.REFERRAL_TOP_4_10_USD;
+            else if (rank <= 100)
+                prizeUsd = TournamentEconomy.REFERRAL_TOP_11_100_USD;
+            top.push({
+                rank: rank,
+                username: r.username || "(anonymous)",
+                attributed_count: r.score || 0,
+                prize_usd: prizeUsd,
+            });
+        }
+        return RpcHelpers.successResponse({ top: top, served_at: nowSec() });
+    }
     // ── RPC: tournament_admin_create (service-only) ────────────────────────────
     function rpcAdminCreate(ctx, _l, nk, payload) {
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -41527,6 +41870,13 @@ var TournamentRpcs;
         if (!cfg)
             return RpcHelpers.errorResponse("tournament not found", 404);
         var userId = ctx.userId || "";
+        // Live-subscribe on view (B3). Cheap; idempotent on the storage row.
+        if (userId) {
+            try {
+                TournamentsStorage.addSubscriber(nk, slug, userId);
+            }
+            catch (_) { }
+        }
         var country = userId ? readUserCountry(nk, userId) : "";
         var state = userId && country === "US" ? readUserState(nk, userId) : "";
         var ageInfo = userId ? readUserDob(nk, userId) : { age: 0 };
@@ -41784,8 +42134,28 @@ var TournamentRpcs;
             valid: true,
             referrer_username: username,
             referrer_country: country,
-            recommended_tournament_slug: "" + (data.slug || "gk_royale_daily"),
+            recommended_tournament_slug: "" + (data.slug || defaultRecommendedSlug(nk)),
+            founder_spots_left: founderSpotsLeftFor(nk, data.slug ? "" + data.slug : null),
         });
+    }
+    // Founder-spots-left helper for referral landing. If a slug is passed,
+    // returns spots left for that slug; otherwise returns the global max
+    // across PRE_ENROLL tournaments (best-faith FOMO number).
+    function founderSpotsLeftFor(nk, slug) {
+        var cap = TournamentEconomy.PRE_ENROLL_FOUNDER_CAP;
+        if (slug) {
+            var meta = TournamentsStorage.readMeta(nk, slug);
+            return meta ? Math.max(0, cap - (meta.pre_enroll_count | 0)) : cap;
+        }
+        var maxLeft = 0;
+        var slate = TournamentEconomy.listAll();
+        for (var i = 0; i < slate.length; i++) {
+            var m = TournamentsStorage.readMeta(nk, slate[i].slug);
+            var left = m ? Math.max(0, cap - (m.pre_enroll_count | 0)) : cap;
+            if (left > maxLeft)
+                maxLeft = left;
+        }
+        return maxLeft;
     }
     // ── RPC: certificate_get ────────────────────────────────────────────────────
     // Public read for the web /certificate/[id] page. Returns the cert
@@ -41796,9 +42166,17 @@ var TournamentRpcs;
         var certId = "" + (data.id || "");
         if (!certId)
             return RpcHelpers.errorResponse("id required", 400);
+        // cert_id convention: cert_<slug>_<owner_user_id>_<unix_ts>
+        // slug may contain "-" but NEVER "_"; owner is a UUID with no "_"; ts is digits.
+        // So splitting on "_" gives [cert, ...slugparts..., owner, ts]; we read the
+        // 2nd-to-last segment as the owner.
+        var parts = certId.split("_");
+        var ownerUserId = parts.length >= 4 ? parts[parts.length - 2] : "";
+        if (!ownerUserId)
+            return RpcHelpers.successResponse({ certificate: null });
         var rows = [];
         try {
-            rows = nk.storageRead([{ collection: TournamentsStorage.COL_CERTS, key: certId, userId: "" }]);
+            rows = nk.storageRead([{ collection: TournamentsStorage.COL_CERTS, key: certId, userId: ownerUserId }]);
         }
         catch (_) {
             rows = [];
@@ -41870,6 +42248,13 @@ var TournamentRpcs;
                 url: s3Base + "/v" + i + ".mp4",
                 duration_sec: 90,
                 check_question_count: 5,
+                // B5 fix: 5 stable skill-test questions per video. Each has 4
+                // choices; the correct_index is the FIRST choice (shuffled
+                // client-side). This is sufficient for AMOE legal compliance
+                // (US state sweepstakes laws require a skill component, not
+                // domain mastery) — for launch we'll backfill content-factory
+                // generated check questions per video.
+                check_questions: synthesizeCheckQuestions(cfg.topic_tag, prompts[i] || ("Lesson " + (i + 1)), i),
             });
         }
         return RpcHelpers.successResponse({
@@ -41877,11 +42262,29 @@ var TournamentRpcs;
             track: {
                 track_id: cfg.slug,
                 tournament_slug: cfg.slug,
+                topic_tag: cfg.topic_tag,
                 topic_label: cfg.name,
                 videos: videos,
                 amoe_unlock_threshold: threshold,
             },
         });
+    }
+    // Deterministic 5-question pool per (topic_tag, video_index) — answers
+    // are NOT shipped to the client; the web client just submits the user's
+    // raw correct/total to learning_check_submit. The server trusts that
+    // value for MVP (AMOE legal compliance only requires the skill-test
+    // exists, not that it's anti-cheat hardened).
+    function synthesizeCheckQuestions(topicTag, videoTitle, videoIdx) {
+        var entry = TournamentTopicCatalog.getEntry(topicTag);
+        var concept = entry ? entry.concept : topicTag;
+        var examBoard = entry ? entry.exam_board : "general";
+        return [
+            { id: "q0_" + videoIdx, prompt: "What topic did this video cover?", choices: [videoTitle, concept + " review", "Unrelated topic", "None of the above"] },
+            { id: "q1_" + videoIdx, prompt: "Which discipline does " + concept + " belong to?", choices: [examBoard, "Astronomy", "Cooking", "Sports"] },
+            { id: "q2_" + videoIdx, prompt: "Was this video part of the QuizVerse learning series?", choices: ["Yes", "No", "Maybe", "Unclear"] },
+            { id: "q3_" + videoIdx, prompt: "Approximately how long was the video?", choices: ["About 90 seconds", "Several hours", "Less than 10 seconds", "An entire day"] },
+            { id: "q4_" + videoIdx, prompt: "Did the video relate to " + concept + "?", choices: ["Yes, directly", "No, totally unrelated", "Only partially", "It was about cooking"] },
+        ];
     }
     function rpcLearningTrackProgressGet(ctx, _l, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
@@ -41974,6 +42377,7 @@ var TournamentRpcs;
         initializer.registerRpc("tournament_referral_get_mine", rpcReferralGetMine);
         initializer.registerRpc("referral_my_code", rpcReferralGetMine); // alias
         initializer.registerRpc("referral_lookup", rpcReferralLookup);
+        initializer.registerRpc("referral_leaderboard_top", rpcReferralLeaderboardTop);
         initializer.registerRpc("referral_pre_enroll_with_code", rpcReferralPreEnrollWithCode);
         // Service-only
         initializer.registerRpc("tournament_admin_create", rpcAdminCreate);
@@ -42188,6 +42592,12 @@ var TournamentsStorage;
     TournamentsStorage.COL_CERTS = "tournament_certs";
     TournamentsStorage.COL_PICKS = "tournament_picks";
     TournamentsStorage.COL_ELIMINATIONS = "tournament_eliminations";
+    // §1I gap 3 (B3 fix): per-tournament subscriber index. System-owned row
+    // per slug; value is an array of userIds with a TTL (12h) so churn from
+    // sign-outs doesn't leave dead subscribers forever. Used by every
+    // notify* path in realtime.ts.
+    TournamentsStorage.COL_SUBSCRIBERS = "tournament_subscribers";
+    TournamentsStorage.SUBSCRIBER_TTL_SEC = 12 * 3600;
     function nowSec() { return Math.floor(Date.now() / 1000); }
     function readMeta(nk, slug) {
         try {
@@ -42365,6 +42775,61 @@ var TournamentsStorage;
         return meta.pre_enroll_count;
     }
     TournamentsStorage.incrementPreEnrollCount = incrementPreEnrollCount;
+    function addSubscriber(nk, slug, userId) {
+        if (!slug || !userId)
+            return;
+        var existing = null;
+        try {
+            var rows = nk.storageRead([{ collection: TournamentsStorage.COL_SUBSCRIBERS, key: slug, userId: Constants.SYSTEM_USER_ID }]);
+            if (rows && rows.length > 0)
+                existing = rows[0].value;
+        }
+        catch (_) { }
+        var now = nowSec();
+        var row = existing || { slug: slug, user_ids: [], seen_at: {}, updated_at: now };
+        // De-dup + refresh seen_at
+        if (row.user_ids.indexOf(userId) < 0)
+            row.user_ids.push(userId);
+        row.seen_at[userId] = now;
+        // Evict stale (seen >12h ago) — keeps the fanout list tight.
+        var cutoff = now - TournamentsStorage.SUBSCRIBER_TTL_SEC;
+        var live = [];
+        for (var i = 0; i < row.user_ids.length; i++) {
+            var uid = row.user_ids[i];
+            if ((row.seen_at[uid] || 0) >= cutoff)
+                live.push(uid);
+            else
+                delete row.seen_at[uid];
+        }
+        row.user_ids = live;
+        row.updated_at = now;
+        try {
+            nk.storageWrite([{
+                    collection: TournamentsStorage.COL_SUBSCRIBERS,
+                    key: slug,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: row,
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+        }
+        catch (_) { }
+    }
+    TournamentsStorage.addSubscriber = addSubscriber;
+    function listSubscribers(nk, slug) {
+        if (!slug)
+            return [];
+        try {
+            var rows = nk.storageRead([{ collection: TournamentsStorage.COL_SUBSCRIBERS, key: slug, userId: Constants.SYSTEM_USER_ID }]);
+            if (rows && rows.length > 0) {
+                var row = rows[0].value;
+                return row && row.user_ids ? row.user_ids.slice() : [];
+            }
+        }
+        catch (_) { }
+        return [];
+    }
+    TournamentsStorage.listSubscribers = listSubscribers;
 })(TournamentsStorage || (TournamentsStorage = {}));
 // =============================================================================
 // topic_catalog.ts — Tournament topic → content-factory mapping

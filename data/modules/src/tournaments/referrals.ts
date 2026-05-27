@@ -18,7 +18,7 @@ namespace Referrals {
 
   const CODE_COLLECTION = "referral_codes";       // per-user, key="me", value={code, created_at}
   const ATTRIBUTION_COLLECTION = "referrals";     // per-referrer, key="<referred_user_id>_<slug>"
-  const LEADERBOARD_ID = "preenroll_referrals";
+  export const LEADERBOARD_ID = "preenroll_referrals";
 
   function nowSec(): number { return Math.floor(Date.now() / 1000); }
 

@@ -3491,6 +3491,7 @@ declare namespace ContentFactoryClient {
     } | null;
 }
 declare namespace TournamentCrons {
+    function opportunisticTick(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): boolean;
     function tick(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): any;
     function pregenerateTick(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, maxJobs: number): any;
     function register(initializer: nkruntime.Initializer): void;
@@ -3536,13 +3537,19 @@ declare namespace TournamentRealtime {
     const CODE_PREENROLL_SCARCITY = 1005;
     function sendToUsers(nk: nkruntime.Nakama, userIds: string[], code: number, subject: string, content: any, persistent: boolean): void;
     function sendToUser(nk: nkruntime.Nakama, userId: string, code: number, subject: string, content: any, persistent: boolean): void;
-    function notifyPotUpdate(nk: nkruntime.Nakama, tournamentSlug: string, newPotBc: number, recentDelta: number, subscribers: string[]): void;
+    function notifyPotUpdate(nk: nkruntime.Nakama, tournamentSlug: string, newPotBc: number, recentDelta: number, _subscribers?: string[], scorer?: {
+        userId: string;
+        score?: number;
+    }): void;
     function notifyEliminated(nk: nkruntime.Nakama, userId: string, tournamentSlug: string, round: number, finalRank: number): void;
     function notifySettled(nk: nkruntime.Nakama, userId: string, tournamentSlug: string, payoutBc: number, finalRank: number, certId: string | null): void;
-    function notifyPreEnrollScarcity(nk: nkruntime.Nakama, tournamentSlug: string, founderSpotsLeft: number, subscribers: string[]): void;
-    function notifyLeaderboardTick(nk: nkruntime.Nakama, tournamentSlug: string, topRows: any[], subscribers: string[]): void;
+    function notifyPreEnrollScarcity(nk: nkruntime.Nakama, tournamentSlug: string, founderSpotsLeft: number, _subscribers?: string[]): void;
+    function notifyScoreTick(nk: nkruntime.Nakama, tournamentSlug: string, scorerUserId: string, newTotalScore: number): void;
+    function notifyEntered(nk: nkruntime.Nakama, tournamentSlug: string, enteredUserId: string, newPotBc: number, newEntriesCount: number): void;
+    function notifyLeaderboardTick(nk: nkruntime.Nakama, tournamentSlug: string, topRows: any[]): void;
 }
 declare namespace Referrals {
+    const LEADERBOARD_ID = "preenroll_referrals";
     function ensureCodeForUser(nk: nkruntime.Nakama, userId: string): string;
     function resolveCodeToOwner(nk: nkruntime.Nakama, code: string): string | null;
     function recordReferral(nk: nkruntime.Nakama, referralCode: string, referredUserId: string, tournamentSlug: string): void;
@@ -3565,6 +3572,8 @@ declare namespace TournamentsStorage {
     const COL_CERTS = "tournament_certs";
     const COL_PICKS = "tournament_picks";
     const COL_ELIMINATIONS = "tournament_eliminations";
+    const COL_SUBSCRIBERS = "tournament_subscribers";
+    const SUBSCRIBER_TTL_SEC: number;
     interface MetaRow {
         slug: string;
         status: TournamentEconomy.TournamentStatus;
@@ -3630,6 +3639,8 @@ declare namespace TournamentsStorage {
     function writePreEnroll(nk: nkruntime.Nakama, slug: string, userId: string, row: PreEnrollRow): void;
     function incrementPot(nk: nkruntime.Nakama, slug: string, deltaBc: number): number;
     function incrementPreEnrollCount(nk: nkruntime.Nakama, slug: string): number;
+    function addSubscriber(nk: nkruntime.Nakama, slug: string, userId: string): void;
+    function listSubscribers(nk: nkruntime.Nakama, slug: string): string[];
 }
 declare namespace TournamentTopicCatalog {
     interface TopicEntry {

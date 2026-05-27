@@ -25,6 +25,12 @@ namespace TournamentsStorage {
   export const COL_CERTS = "tournament_certs";
   export const COL_PICKS = "tournament_picks";
   export const COL_ELIMINATIONS = "tournament_eliminations";
+  // §1I gap 3 (B3 fix): per-tournament subscriber index. System-owned row
+  // per slug; value is an array of userIds with a TTL (12h) so churn from
+  // sign-outs doesn't leave dead subscribers forever. Used by every
+  // notify* path in realtime.ts.
+  export const COL_SUBSCRIBERS = "tournament_subscribers";
+  export const SUBSCRIBER_TTL_SEC = 12 * 3600;
 
   function nowSec(): number { return Math.floor(Date.now() / 1000); }
 
@@ -256,5 +262,61 @@ namespace TournamentsStorage {
     }
     writeMeta(nk, slug, meta);
     return meta.pre_enroll_count;
+  }
+
+  // ── Subscriber index (B3) ──────────────────────────────────────────────────
+  // System-owned per-slug row of `{ user_ids: string[], updated_at }`.
+  // Add on pre-enroll, enter, view-detail. Notify helpers pull this list.
+  interface SubscriberRow {
+    slug: string;
+    user_ids: string[];
+    seen_at: { [userId: string]: number };
+    updated_at: number;
+  }
+
+  export function addSubscriber(nk: nkruntime.Nakama, slug: string, userId: string): void {
+    if (!slug || !userId) return;
+    var existing: SubscriberRow | null = null;
+    try {
+      var rows = nk.storageRead([{ collection: COL_SUBSCRIBERS, key: slug, userId: Constants.SYSTEM_USER_ID }]);
+      if (rows && rows.length > 0) existing = rows[0].value as SubscriberRow;
+    } catch (_) { }
+    var now = nowSec();
+    var row: SubscriberRow = existing || { slug: slug, user_ids: [], seen_at: {}, updated_at: now };
+    // De-dup + refresh seen_at
+    if (row.user_ids.indexOf(userId) < 0) row.user_ids.push(userId);
+    row.seen_at[userId] = now;
+    // Evict stale (seen >12h ago) — keeps the fanout list tight.
+    var cutoff = now - SUBSCRIBER_TTL_SEC;
+    var live: string[] = [];
+    for (var i = 0; i < row.user_ids.length; i++) {
+      var uid = row.user_ids[i];
+      if ((row.seen_at[uid] || 0) >= cutoff) live.push(uid);
+      else delete row.seen_at[uid];
+    }
+    row.user_ids = live;
+    row.updated_at = now;
+    try {
+      nk.storageWrite([{
+        collection: COL_SUBSCRIBERS,
+        key: slug,
+        userId: Constants.SYSTEM_USER_ID,
+        value: row,
+        permissionRead: 0,
+        permissionWrite: 0,
+      }]);
+    } catch (_) { }
+  }
+
+  export function listSubscribers(nk: nkruntime.Nakama, slug: string): string[] {
+    if (!slug) return [];
+    try {
+      var rows = nk.storageRead([{ collection: COL_SUBSCRIBERS, key: slug, userId: Constants.SYSTEM_USER_ID }]);
+      if (rows && rows.length > 0) {
+        var row = rows[0].value as SubscriberRow;
+        return row && row.user_ids ? row.user_ids.slice() : [];
+      }
+    } catch (_) { }
+    return [];
   }
 }
