@@ -550,6 +550,10 @@ function InitModule(ctx, logger, nk, initializer) {
                     _skippedCount++;
                 }
                 else {
+                    // Bridged-from-legacy proxy. The actual RPC name reaches Goja's
+                    // AST walker via the literal-string registerRpc call inside
+                    // LegacyInitModule itself; this passthrough is just gating
+                    // duplicates. nakama-allow-dynamic-rpc-id
                     initializer.registerRpc(id, fn);
                     _alreadyRegistered[id] = true;
                     _bridgedCount++;
@@ -7081,7 +7085,13 @@ var QuizVersePlugin;
         for (var i = 0; i < gens.length; i++) {
             MpKernelSyncTurn.registerGenerator(gens[i]);
         }
-        // Literal-string registrations REQUIRED — see RPC_* doc above and PR #94.
+        // Literal-string registrations REQUIRED — Goja's AST walker only
+        // extracts RPC ids that appear as string literals at the call site.
+        // The RPC_CREATE_MATCH / RPC_LOAD_PACK / RPC_LIST_PACKS constants
+        // above remain for export so external callers can reference them
+        // by name; do not replace these literals with the constants.
+        // See PRs #94 and #100 for the live regression that motivated this,
+        // and PR #97 for the build-time linter that enforces it going forward.
         initializer.registerRpc("quizverse_create_match", rpcCreateMatch);
         initializer.registerRpc("quizverse_load_pack", rpcLoadPack);
         initializer.registerRpc("quizverse_list_packs", rpcListPacks);
@@ -20212,6 +20222,24 @@ var LegacyMissions;
     }
     LegacyMissions.register = register;
 })(LegacyMissions || (LegacyMissions = {}));
+// nakama-allow-dynamic-rpc-id:file
+//
+// Intentional file-level exemption from check-rpc-literals.js.
+//
+// `registerGameRpcs(initializer, prefix, gameId)` registers RPCs of
+// the form `<prefix><suffix>` for an enumerated suffix list. Goja's
+// AST walker would not extract these dynamic ids on its own, but
+// postbuild.js text-scans this file for the
+// `initializer.registerRpc(prefix + "<suffix>", gameRpcHandler(gameId, fn))`
+// pattern and emits explicit
+// `initializer.registerRpc("<prefix><suffix>", ...)` calls into the
+// generated bundle for every (prefix, suffix) pair declared at the
+// `register(...)` call sites below. The dynamic-looking source is
+// the input to that generator, not the runtime form.
+//
+// If you ADD or REMOVE rpcs in this file, also re-run `npm run build`
+// to regenerate the postbuild expansion. See `postbuild.js` ~line 199
+// for the matching extractor.
 var LegacyMultiGame;
 (function (LegacyMultiGame) {
     function gameRpcHandler(gameId, handler) {
@@ -20806,25 +20834,41 @@ var LegacyNotifScheduler;
             logger.error("[NotifScheduler] Task %s failed: %s", taskName, e && e.message ? e.message : String(e));
         }
     }
-    LegacyNotifScheduler.matchInit = function (ctx, logger, nk, params) {
+    // CRITICAL: These MUST be `function` DECLARATIONS, not `export var name =
+    // function(...){}` EXPRESSIONS. Nakama's Goja JS runtime walks the AST at
+    // registerMatch() time to extract the handler functions by name; it can
+    // resolve a top-level `function matchInit(...)` declaration but cannot
+    // resolve a namespace-property-assigned function expression. The build
+    // (#367, 2026-05-28) shipped the expression form and prod logged on every
+    // pod boot:
+    //   '[Legacy] Failed to register legacy RPCs: js match handler "matchInit"
+    //    function for module "notif_scheduler_v1" global id could not be
+    //    extracted: not found'
+    // …which meant `notif_scheduler_v1` was never registered and the
+    // LegacyNotifScheduler.spawnSchedulerMatch() call in shared/health.ts
+    // silently failed on every nakama_js_health probe. Net effect: zero push
+    // notifications (daily quiz, weekly quiz, winback, streak warning,
+    // motivation) actually fired from any pod between 2026-05-28T00:57Z and
+    // this fix. Same root pattern as cricket #94 and PRs #97/#100.
+    function matchInit(ctx, logger, nk, params) {
         logger.info("[NotifScheduler] match init — tickRate=1, label=" + LegacyNotifScheduler.MATCH_NAME);
         return {
             state: { lastDispatchedMinute: {}, lastLog: 0 },
             tickRate: 1, // 1 Hz — once per second
             label: LegacyNotifScheduler.MATCH_NAME
         };
-    };
+    }
     // Headless: never accept any joiners. Scheduler runs without players.
-    LegacyNotifScheduler.matchJoinAttempt = function (ctx, logger, nk, dispatcher, tick, state, presence, metadata) {
+    function matchJoinAttempt(_ctx, _logger, _nk, _dispatcher, _tick, state, _presence, _metadata) {
         return { state: state, accept: false, rejectMessage: "scheduler match — no joins" };
-    };
-    LegacyNotifScheduler.matchJoin = function (ctx, logger, nk, dispatcher, tick, state, presences) {
+    }
+    function matchJoin(_ctx, _logger, _nk, _dispatcher, _tick, state, _presences) {
         return { state: state };
-    };
-    LegacyNotifScheduler.matchLeave = function (ctx, logger, nk, dispatcher, tick, state, presences) {
+    }
+    function matchLeave(_ctx, _logger, _nk, _dispatcher, _tick, state, _presences) {
         return { state: state };
-    };
-    LegacyNotifScheduler.matchLoop = function (ctx, logger, nk, dispatcher, tick, state, messages) {
+    }
+    function matchLoop(ctx, logger, nk, _dispatcher, _tick, state, _messages) {
         // Direct calls into the cron functions inside LegacyPush. Note these
         // functions enforce `if (ctx.userId)` to reject user-token callers; the
         // match context has no userId so the admin gate passes.
@@ -20846,14 +20890,14 @@ var LegacyNotifScheduler;
             logger.info("[NotifScheduler] heartbeat — minute=%d", m);
         }
         return { state: state };
-    };
-    LegacyNotifScheduler.matchSignal = function (ctx, logger, nk, dispatcher, tick, state, data) {
+    }
+    function matchSignal(_ctx, _logger, _nk, _dispatcher, _tick, state, data) {
         return { state: state, data: data };
-    };
-    LegacyNotifScheduler.matchTerminate = function (ctx, logger, nk, dispatcher, tick, state, graceSeconds) {
+    }
+    function matchTerminate(_ctx, logger, _nk, _dispatcher, _tick, state, graceSeconds) {
         logger.warn("[NotifScheduler] match terminating — grace=%ds", graceSeconds);
         return { state: state };
-    };
+    }
     // Spawn one scheduler match for this Nakama process. Called LAZILY from
     // the first nakama_js_health invocation after boot (NOT from InitModule —
     // see main.ts comment for why). Idempotent across repeated calls within
@@ -20915,16 +20959,17 @@ var LegacyNotifScheduler;
         // refuses to bind matchInit when its source is a function-EXPRESSION
         // assigned to a namespace var (`exports.matchInit = function(...)`).
         // Inline the handler functions in the registerMatch call so the
-        // walker sees real function declarations in scope. See PR #94 for
-        // the canonical analysis of this anti-pattern.
+        // walker sees real function declarations in scope. See PRs #94 / #100
+        // for the canonical analysis of this anti-pattern, and PR #97 for the
+        // build-time linter that enforces it going forward.
         initializer.registerMatch("notif_scheduler_v1", {
-            matchInit: LegacyNotifScheduler.matchInit,
-            matchJoinAttempt: LegacyNotifScheduler.matchJoinAttempt,
-            matchJoin: LegacyNotifScheduler.matchJoin,
-            matchLeave: LegacyNotifScheduler.matchLeave,
-            matchLoop: LegacyNotifScheduler.matchLoop,
-            matchSignal: LegacyNotifScheduler.matchSignal,
-            matchTerminate: LegacyNotifScheduler.matchTerminate
+            matchInit: matchInit,
+            matchJoinAttempt: matchJoinAttempt,
+            matchJoin: matchJoin,
+            matchLeave: matchLeave,
+            matchLoop: matchLoop,
+            matchSignal: matchSignal,
+            matchTerminate: matchTerminate
         });
     }
     LegacyNotifScheduler.register = register;
@@ -25848,6 +25893,13 @@ var MpKernelMatch;
             to: template.opRange.to,
             template_id: template.templateId
         });
+        // MpKernel per-template registration helper. The set of templates
+        // is enumerated at build time in src/multiplayer-kernel/index.ts —
+        // each one is wrapped in safeRegisterTemplate() with a known literal
+        // label, and the templateId itself comes from a const exported in
+        // src/multiplayer-kernel/code-registry.ts. So while this exact call
+        // site doesn't have a literal, the upstream chain is fully static
+        // and reviewable. nakama-allow-dynamic-rpc-id
         initializer.registerMatch(template.templateId, makeHandler(template));
         logger.info("[MpKernel] registered match template '" + template.templateId +
             "' opRange=0x" + template.opRange.from.toString(16) + "-0x" + template.opRange.to.toString(16));
@@ -34040,6 +34092,10 @@ var AnalyticsAlerts;
                     throw err;
                 }
             };
+            // AnalyticsAlerts proxy: the literal RPC name is passed by the
+            // upstream caller into proxy.registerRpc("the_literal_name", fn).
+            // The Goja AST walker sees that literal at the original call site;
+            // this passthrough only adds metric sampling. nakama-allow-dynamic-rpc-id
             initializer.registerRpc(id, wrapped);
         };
         logger.info("[AnalyticsAlerts] initializer instrumented — all RPCs will be sampled");
