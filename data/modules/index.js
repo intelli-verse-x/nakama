@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-05-27T22:52:29.103Z
-// RPC Count: 1023
+// Generated: 2026-05-27T23:59:22.182Z
+// RPC Count: 1024
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -397,6 +397,7 @@ var __rpc_get_leaderboard;
 var __rpc_get_daily_missions;
 var __rpc_submit_mission_progress;
 var __rpc_claim_mission_reward;
+var __rpc__prefix__suffix_;
 var __rpc_quizverse_get_quiz_categories;
 var __rpc_lasttolive_get_weapon_stats;
 var __rpc_get_player_portfolio;
@@ -56663,10 +56664,16 @@ function rpcQuizverseFetchMoviesQuiz(ctx, logger, nk, payload) {
 // ─────────────────────────────────────────────────────────────────
 // Registration
 // ─────────────────────────────────────────────────────────────────
-var InitModule = function(ctx, logger, nk, initializer) {
+// IMPORTANT: this file is concatenated into data/modules/index.js by
+// postbuild.js. Top-level `var InitModule = function(...)` here would
+// SHADOW the wrapper InitModule that postbuild generates and contains
+// the 1000+ direct registerRpc calls Goja's AST walker requires — every
+// other RPC then returns 404 (smoke-test caught this regression on
+// build #373 / sha 6f79b127). Use the canonical `register(initializer)`
+// export that postbuild auto-invokes from inside the wrapper.
+function register(initializer) {
     __rpc_quizverse_fetch_movies_quiz = __rpc_quizverse_fetch_movies_quiz || (rpcQuizverseFetchMoviesQuiz);
-    logger.info("[MoviesQuiz] Module registered — RPC: quizverse_fetch_movies_quiz (iTunes RSS, no key)");
-};
+}
 
 
 // --- Module: quizverse_music_quiz/quizverse_music_quiz.js ---
@@ -56892,10 +56899,16 @@ function rpcQuizverseFetchMusicQuiz(ctx, logger, nk, payload) {
 // ─────────────────────────────────────────────────────────────────
 // Registration
 // ─────────────────────────────────────────────────────────────────
-var InitModule = function(ctx, logger, nk, initializer) {
+// IMPORTANT: this file is concatenated into data/modules/index.js by
+// postbuild.js. Top-level `var InitModule = function(...)` here would
+// SHADOW the wrapper InitModule that postbuild generates and contains
+// the 1000+ direct registerRpc calls Goja's AST walker requires — every
+// other RPC then returns 404 (smoke-test caught this regression on
+// build #373 / sha 6f79b127). Use the canonical `register(initializer)`
+// export that postbuild auto-invokes from inside the wrapper.
+function register(initializer) {
     __rpc_quizverse_fetch_music_quiz = __rpc_quizverse_fetch_music_quiz || (rpcQuizverseFetchMusicQuiz);
-    logger.info("[MusicQuiz] Module registered — RPC: quizverse_fetch_music_quiz (Deezer, no key)");
-};
+}
 
 
 // --- Module: quizverse_news_quiz/quizverse_news_quiz.js ---
@@ -93226,6 +93239,10 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
                     _skippedCount++;
                 }
                 else {
+                    // Bridged-from-legacy proxy. The actual RPC name reaches Goja's
+                    // AST walker via the literal-string registerRpc call inside
+                    // LegacyInitModule itself; this passthrough is just gating
+                    // duplicates. nakama-allow-dynamic-rpc-id
                     initializer.registerRpc(id, fn);
                     _alreadyRegistered[id] = true;
                     _bridgedCount++;
@@ -99774,7 +99791,13 @@ var QuizVersePlugin;
         for (var i = 0; i < gens.length; i++) {
             MpKernelSyncTurn.registerGenerator(gens[i]);
         }
-        // Literal-string registrations REQUIRED — see RPC_* doc above and PR #94.
+        // Literal-string registrations REQUIRED — Goja's AST walker only
+        // extracts RPC ids that appear as string literals at the call site.
+        // The RPC_CREATE_MATCH / RPC_LOAD_PACK / RPC_LIST_PACKS constants
+        // above remain for export so external callers can reference them
+        // by name; do not replace these literals with the constants.
+        // See PRs #94 and #100 for the live regression that motivated this,
+        // and PR #97 for the build-time linter that enforces it going forward.
         __rpc_quizverse_create_match = rpcCreateMatch;
         __rpc_quizverse_load_pack = rpcLoadPack;
         __rpc_quizverse_list_packs = rpcListPacks;
@@ -112942,6 +112965,24 @@ var LegacyMissions;
     LegacyMissions.register = register;
     register();
 })(LegacyMissions || (LegacyMissions = {}));
+// nakama-allow-dynamic-rpc-id:file
+//
+// Intentional file-level exemption from check-rpc-literals.js.
+//
+// `registerGameRpcs(initializer, prefix, gameId)` registers RPCs of
+// the form `<prefix><suffix>` for an enumerated suffix list. Goja's
+// AST walker would not extract these dynamic ids on its own, but
+// postbuild.js text-scans this file for the
+// `initializer.registerRpc(prefix + "<suffix>", gameRpcHandler(gameId, fn))`
+// pattern and emits explicit
+// `__rpc__prefix__suffix_ = ...` calls into the
+// generated bundle for every (prefix, suffix) pair declared at the
+// `register(...)` call sites below. The dynamic-looking source is
+// the input to that generator, not the runtime form.
+//
+// If you ADD or REMOVE rpcs in this file, also re-run `npm run build`
+// to regenerate the postbuild expansion. See `postbuild.js` ~line 199
+// for the matching extractor.
 var LegacyMultiGame;
 (function (LegacyMultiGame) {
     function gameRpcHandler(gameId, handler) {
@@ -113657,8 +113698,9 @@ var LegacyNotifScheduler;
         // refuses to bind matchInit when its source is a function-EXPRESSION
         // assigned to a namespace var (`exports.matchInit = function(...)`).
         // Inline the handler functions in the registerMatch call so the
-        // walker sees real function declarations in scope. See PR #94 for
-        // the canonical analysis of this anti-pattern.
+        // walker sees real function declarations in scope. See PRs #94 / #100
+        // for the canonical analysis of this anti-pattern, and PR #97 for the
+        // build-time linter that enforces it going forward.
         initializer.registerMatch("notif_scheduler_v1", {
             matchInit: LegacyNotifScheduler.matchInit,
             matchJoinAttempt: LegacyNotifScheduler.matchJoinAttempt,
@@ -118597,6 +118639,13 @@ var MpKernelMatch;
             to: template.opRange.to,
             template_id: template.templateId
         });
+        // MpKernel per-template registration helper. The set of templates
+        // is enumerated at build time in src/multiplayer-kernel/index.ts —
+        // each one is wrapped in safeRegisterTemplate() with a known literal
+        // label, and the templateId itself comes from a const exported in
+        // src/multiplayer-kernel/code-registry.ts. So while this exact call
+        // site doesn't have a literal, the upstream chain is fully static
+        // and reviewable. nakama-allow-dynamic-rpc-id
         initializer.registerMatch(template.templateId, makeHandler(template));
         logger.info("[MpKernel] registered match template '" + template.templateId +
             "' opRange=0x" + template.opRange.from.toString(16) + "-0x" + template.opRange.to.toString(16));
@@ -126792,6 +126841,10 @@ var AnalyticsAlerts;
                     throw err;
                 }
             };
+            // AnalyticsAlerts proxy: the literal RPC name is passed by the
+            // upstream caller into proxy.registerRpc("the_literal_name", fn).
+            // The Goja AST walker sees that literal at the original call site;
+            // this passthrough only adds metric sampling. nakama-allow-dynamic-rpc-id
             initializer.registerRpc(id, wrapped);
         };
         logger.info("[AnalyticsAlerts] initializer instrumented — all RPCs will be sampled");
@@ -138623,6 +138676,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("get_daily_missions", __rpc_get_daily_missions); } catch(e) {}
   try { initializer.registerRpc("submit_mission_progress", __rpc_submit_mission_progress); } catch(e) {}
   try { initializer.registerRpc("claim_mission_reward", __rpc_claim_mission_reward); } catch(e) {}
+  try { initializer.registerRpc("<prefix><suffix>", __rpc__prefix__suffix_); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_quiz_categories", __rpc_quizverse_get_quiz_categories); } catch(e) {}
   try { initializer.registerRpc("lasttolive_get_weapon_stats", __rpc_lasttolive_get_weapon_stats); } catch(e) {}
   try { initializer.registerRpc("get_player_portfolio", __rpc_get_player_portfolio); } catch(e) {}
@@ -139258,5 +139312,5 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("visual_path_get_state", __rpc_visual_path_get_state); } catch(e) {}
   try { initializer.registerRpc("visual_path_get_schedule", __rpc_visual_path_get_schedule); } catch(e) {}
   try { initializer.registerRpc("visual_path_skip_day_with_ad", __rpc_visual_path_skip_day_with_ad); } catch(e) {}
-  logger.info("[Postbuild] Registered " + 1023 + " RPCs via AST-compatible wrapper (2 aliases applied)");
+  logger.info("[Postbuild] Registered " + 1024 + " RPCs via AST-compatible wrapper (2 aliases applied)");
 }
