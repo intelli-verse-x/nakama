@@ -3419,10 +3419,10 @@
         let selectedDays = 30;
         let selectedMode = '';
         let autoRefreshTimer = null;
-        const DEBUG_ANALYTICS = true;
+        const DEBUG_ANALYTICS = (new URLSearchParams(location.search).get('debugAnalytics') === '1');
         function analyticsDebugLog(...args) {
             if (!DEBUG_ANALYTICS) return;
-            try { console.debug('[analytics-dashboard][debug]', ...args); } catch (_) {}
+            try { console.debug('[analytics-dashboard][debug]', ...args); } catch (err) {}
         }
 
         // ─────────────────────────────────────────────────────────────────────

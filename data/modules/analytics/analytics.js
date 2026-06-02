@@ -216,6 +216,32 @@ function analyticsDebugString(v) {
     try { return JSON.stringify(v); } catch (e) { return String(v); }
 }
 
+function analyticsDebugEnabled(ctx) {
+    var raw = (ctx && ctx.env && ctx.env["ANALYTICS_DEBUG_LOGS"]) || "";
+    return raw === "1" || raw === "true";
+}
+
+function analyticsDebugEventMeta(ev) {
+    if (!ev || typeof ev !== "object") return {};
+    var d = ev.eventData || ev.event_data || ev.properties || ev.data || {};
+    var keys = [];
+    if (d && typeof d === "object") {
+        for (var k in d) {
+            if (Object.prototype.hasOwnProperty.call(d, k)) {
+                keys.push(k);
+                if (keys.length >= 30) break;
+            }
+        }
+    }
+    return {
+        gameId: ev.gameId || ev.game_id || ev.gameID || null,
+        eventName: ev.eventName || ev.event_name || ev.event || null,
+        userId: ev.userId || ev.user_id || null,
+        eventDataKeys: keys,
+        hasEventData: keys.length > 0
+    };
+}
+
 /**
  * Normalize a single inbound event into the canonical server-side record.
  * Handles legacy casings (gameID, eventData=properties, etc.) so the dashboard
@@ -559,7 +585,7 @@ function liveCountersRead(nk, gameId) {
  * Persist a single normalized event + fan-out to DAU + session aggregator.
  * Returns null on success, or a string error.
  */
-function persistNormalizedEvent(nk, logger, ev) {
+function persistNormalizedEvent(nk, logger, ev, debugLog) {
     // ── In-house dashboard fan-out (analytics_events / dash_* keys) ──
     // Runs FIRST so the dashboard always captures the event regardless of whether
     // the per-player GPA write below succeeds. The legacy dashboard rollup scanners
@@ -581,9 +607,9 @@ function persistNormalizedEvent(nk, logger, ev) {
             permissionRead: 0,
             permissionWrite: 0
         }]);
-        if (logger && logger.info) {
+        if (debugLog && logger && logger.info) {
             logger.info("[analytics][debug] storageWrite analytics_events key=" + dashKey +
-                " value=" + analyticsDebugString(ev));
+                " meta=" + analyticsDebugString(analyticsDebugEventMeta(ev)));
         }
     } catch (e) {
         dashWriteErr = (e.message || e);
@@ -609,7 +635,7 @@ function persistNormalizedEvent(nk, logger, ev) {
     var gpaFailed = false;
     try {
         gpaUpsertEvent(nk, logger, ev);
-        if (logger && logger.info) {
+        if (debugLog && logger && logger.info) {
             logger.info("[analytics][debug] gpaUpsertEvent ok userId=" + ev.userId + " gameId=" + ev.gameId +
                 " eventName=" + ev.eventName);
         }
@@ -718,8 +744,11 @@ function persistNormalizedEvent(nk, logger, ev) {
  */
 function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     utils.logInfo(logger, "RPC analytics_log_event called");
-    if (logger && logger.info) {
-        logger.info("[analytics][debug] rpc request raw payload=" + String(payload || ""));
+    var debugLog = analyticsDebugEnabled(ctx);
+    if (debugLog && logger && logger.info) {
+        logger.info("[analytics][debug] rpc request meta=" + analyticsDebugString({
+            payloadLength: String(payload || "").length
+        }));
     }
 
     var parsed = utils.safeJsonParse(payload);
@@ -748,8 +777,9 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     var errors = [];
 
     for (var i = 0; i < inbound.length; i++) {
-        if (logger && logger.info) {
-            logger.info("[analytics][debug] inbound event[" + i + "]=" + analyticsDebugString(inbound[i]));
+        if (debugLog && logger && logger.info) {
+            logger.info("[analytics][debug] inbound event[" + i + "] meta=" +
+                analyticsDebugString(analyticsDebugEventMeta(inbound[i])));
         }
         var normalized = normalizeInboundEvent(ctx, inbound[i], nk, logger);
         if (!normalized || normalized.__invalid) {
@@ -760,15 +790,16 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
             recordFailedEvent(nk, logger, ctx, inbound[i], rejReason);
             continue;
         }
-        if (logger && logger.info) {
-            logger.info("[analytics][debug] normalized event[" + i + "]=" + analyticsDebugString(normalized));
+        if (debugLog && logger && logger.info) {
+            logger.info("[analytics][debug] normalized event[" + i + "] meta=" +
+                analyticsDebugString(analyticsDebugEventMeta(normalized)));
         }
-        var err = persistNormalizedEvent(nk, logger, normalized);
+        var err = persistNormalizedEvent(nk, logger, normalized, debugLog);
         if (err) {
             rejected++;
             errors.push({ index: i, reason: err });
             recordFailedEvent(nk, logger, ctx, inbound[i], err);
-            if (logger && logger.warn) {
+            if (debugLog && logger && logger.warn) {
                 logger.warn("[analytics][debug] persist result event[" + i + "] error=" + err);
             }
         } else {
@@ -778,7 +809,7 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
                 v2WarningsCount += (normalized.v2Warnings && normalized.v2Warnings.length) || 0;
             }
             accepted++;
-            if (logger && logger.info) {
+            if (debugLog && logger && logger.info) {
                 logger.info("[analytics][debug] persist result event[" + i + "]=ok");
             }
         }
@@ -831,7 +862,7 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     };
     if (v2WarningsCount > 0) resp.v2_warnings_total = v2WarningsCount;
     if (errors.length > 0)   resp.errors = errors.slice(0, 20);
-    if (logger && logger.info) {
+    if (debugLog && logger && logger.info) {
         logger.info("[analytics][debug] rpc response=" + analyticsDebugString(resp));
     }
     return JSON.stringify(resp);
