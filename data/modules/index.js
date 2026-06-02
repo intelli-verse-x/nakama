@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-06-02T23:01:53.030Z
+// Generated: 2026-06-02T23:03:56.641Z
 // RPC Count: 1065
 // ============================================================
 
@@ -3347,6 +3347,10 @@ var AN_PII_FIELDS = {
     "idfa": true,         "idfv": true,          "gaid": true
 };
 
+function analyticsDebugString(v) {
+    try { return JSON.stringify(v); } catch (e) { return String(v); }
+}
+
 /**
  * Normalize a single inbound event into the canonical server-side record.
  * Handles legacy casings (gameID, eventData=properties, etc.) so the dashboard
@@ -3712,6 +3716,10 @@ function persistNormalizedEvent(nk, logger, ev) {
             permissionRead: 0,
             permissionWrite: 0
         }]);
+        if (logger && logger.info) {
+            logger.info("[analytics][debug] storageWrite analytics_events key=" + dashKey +
+                " value=" + analyticsDebugString(ev));
+        }
     } catch (e) {
         dashWriteErr = (e.message || e);
         if (logger && logger.warn) {
@@ -3736,6 +3744,10 @@ function persistNormalizedEvent(nk, logger, ev) {
     var gpaFailed = false;
     try {
         gpaUpsertEvent(nk, logger, ev);
+        if (logger && logger.info) {
+            logger.info("[analytics][debug] gpaUpsertEvent ok userId=" + ev.userId + " gameId=" + ev.gameId +
+                " eventName=" + ev.eventName);
+        }
     } catch (e) {
         gpaFailed = true;
         if (logger && logger.warn) {
@@ -3841,6 +3853,9 @@ function persistNormalizedEvent(nk, logger, ev) {
  */
 function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     utils.logInfo(logger, "RPC analytics_log_event called");
+    if (logger && logger.info) {
+        logger.info("[analytics][debug] rpc request raw payload=" + String(payload || ""));
+    }
 
     var parsed = utils.safeJsonParse(payload);
     if (!parsed.success) {
@@ -3868,6 +3883,9 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     var errors = [];
 
     for (var i = 0; i < inbound.length; i++) {
+        if (logger && logger.info) {
+            logger.info("[analytics][debug] inbound event[" + i + "]=" + analyticsDebugString(inbound[i]));
+        }
         var normalized = normalizeInboundEvent(ctx, inbound[i], nk, logger);
         if (!normalized || normalized.__invalid) {
             rejected++;
@@ -3877,11 +3895,17 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
             recordFailedEvent(nk, logger, ctx, inbound[i], rejReason);
             continue;
         }
+        if (logger && logger.info) {
+            logger.info("[analytics][debug] normalized event[" + i + "]=" + analyticsDebugString(normalized));
+        }
         var err = persistNormalizedEvent(nk, logger, normalized);
         if (err) {
             rejected++;
             errors.push({ index: i, reason: err });
             recordFailedEvent(nk, logger, ctx, inbound[i], err);
+            if (logger && logger.warn) {
+                logger.warn("[analytics][debug] persist result event[" + i + "] error=" + err);
+            }
         } else {
             if (normalized.canonicalized) aliasNormalized++;
             if (normalized.schemaVersion === 2) {
@@ -3889,6 +3913,9 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
                 v2WarningsCount += (normalized.v2Warnings && normalized.v2Warnings.length) || 0;
             }
             accepted++;
+            if (logger && logger.info) {
+                logger.info("[analytics][debug] persist result event[" + i + "]=ok");
+            }
         }
     }
 
@@ -3939,6 +3966,9 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     };
     if (v2WarningsCount > 0) resp.v2_warnings_total = v2WarningsCount;
     if (errors.length > 0)   resp.errors = errors.slice(0, 20);
+    if (logger && logger.info) {
+        logger.info("[analytics][debug] rpc response=" + analyticsDebugString(resp));
+    }
     return JSON.stringify(resp);
 }
 

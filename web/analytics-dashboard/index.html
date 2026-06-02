@@ -3419,6 +3419,11 @@
         let selectedDays = 30;
         let selectedMode = '';
         let autoRefreshTimer = null;
+        const DEBUG_ANALYTICS = true;
+        function analyticsDebugLog(...args) {
+            if (!DEBUG_ANALYTICS) return;
+            try { console.debug('[analytics-dashboard][debug]', ...args); } catch (_) {}
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // Admin Authentication
@@ -3884,6 +3889,8 @@
                 if (cached) return cached;
             }
 
+            analyticsDebugLog('rpc request payload', { rpcId, payload, options });
+
             const response = await fetch(`${CONFIG.serverUrl}/v2/rpc/${rpcId}`, {
                 method: 'POST',
                 headers: {
@@ -3913,11 +3920,14 @@
                     const upstreamMsg = parsed && (parsed.message || parsed.error);
                     if (upstreamMsg) bodyText = upstreamMsg;
                 } catch (_) { /* keep raw bodyText */ }
+                analyticsDebugLog('rpc error response', { rpcId, status: response.status, bodyText });
                 throw new Error(`RPC ${rpcId} failed (HTTP ${response.status}): ${(bodyText || '').toString().substring(0, 240)}`);
             }
 
             const data = await response.json();
+            analyticsDebugLog('rpc response payload', { rpcId, data });
             const parsed = data.payload ? JSON.parse(data.payload) : data;
+            analyticsDebugLog('rpc parsed payload', { rpcId, parsed });
             if (cacheable) rpcCachePut(cacheKey, parsed);
             return parsed;
         }
@@ -4193,6 +4203,12 @@
                 const sessionsPerDauNum = parseFloat(sessionsPerDau);
                 const sessionsHealth = sessionsPerDauNum >= 3.5 ? 'positive' : sessionsPerDauNum >= 2.2 ? '' : 'negative';
                 const sessionsBenchmark = sessionsPerDauNum >= 3.5 ? '🟢 Top 25%' : sessionsPerDauNum >= 2.2 ? '🟡 Median' : '🔴 Below avg';
+                analyticsDebugLog('overview render input', {
+                    analyticsDashboard: data,
+                    revenueData,
+                    sessionData,
+                    computed: { arpdau, sessionsPerDau, avgSessionsPerDay }
+                });
                 
                 // Calculate period-over-period changes
                 const wau7chg = data.trends?.wau_7d_change_pct || 0;
@@ -4262,6 +4278,14 @@
                         <div class="trend">Min/Max · Volatility ${data.dau_7d_max && data.dau_7d_min ? Math.round((data.dau_7d_max - data.dau_7d_min) / ((data.dau_7d_max + data.dau_7d_min) / 2) * 100) : 0}%</div>
                     </div>
                 `;
+                analyticsDebugLog('overview final render data', {
+                    dau: data.dau,
+                    wau: data.wau,
+                    mau: data.mau,
+                    arpdau,
+                    sessionsPerDau,
+                    avgSessionDuration: data.avg_session_duration_seconds || sessionData.avg_duration_seconds || 0
+                });
                 // DAU sparkline
                 if (data.dau_trend && data.dau_trend.length >= 2) {
                     const cvs = document.getElementById('dauSparkline');
