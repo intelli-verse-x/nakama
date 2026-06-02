@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-06-02T23:05:59.571Z
+// Generated: 2026-06-02T23:07:08.883Z
 // RPC Count: 1065
 // ============================================================
 
@@ -3348,7 +3348,7 @@ var AN_PII_FIELDS = {
 };
 
 function analyticsDebugString(v) {
-    try { return JSON.stringify(v); } catch (e) { return String(v); }
+    try { return JSON.stringify(v); } catch (e) { return "[unserializable:" + (e && e.message ? e.message : "unknown") + "]"; }
 }
 
 function analyticsDebugEnabled(ctx) {
@@ -3356,6 +3356,11 @@ function analyticsDebugEnabled(ctx) {
     return raw === "1" || raw === "true";
 }
 
+/**
+ * Build a metadata-only event snapshot for debug logs.
+ * Intentionally excludes eventData values to reduce PII risk.
+ * eventDataKeys is capped to 30 entries to keep logs bounded.
+ */
 function analyticsDebugEventMeta(ev) {
     if (!ev || typeof ev !== "object") return {};
     var d = ev.eventData || ev.event_data || ev.properties || ev.data || {};
