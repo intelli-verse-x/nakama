@@ -3422,7 +3422,7 @@
         const debugAnalytics = (new URLSearchParams(location.search).get('debugAnalytics') === '1');
         function analyticsDebugLog(...args) {
             if (!debugAnalytics) return;
-            try { console.debug('[analytics-dashboard][debug]', ...args); } catch (err) {}
+            try { console.debug('[analytics-dashboard][debug]', ...args); } catch (err) { console.log('[analytics-dashboard][debug-fallback]', ...args); }
         }
 
         // ─────────────────────────────────────────────────────────────────────

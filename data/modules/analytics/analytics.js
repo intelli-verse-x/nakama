@@ -213,7 +213,7 @@ var AN_PII_FIELDS = {
 };
 
 function analyticsDebugString(v) {
-    try { return JSON.stringify(v); } catch (e) { return "[unserializable:" + (e && e.message ? e.message : "unknown") + "]"; }
+    try { return JSON.stringify(v); } catch (e) { return "[unserializable:" + String((e && e.message) || e || "unknown") + "]"; }
 }
 
 function analyticsDebugEnabled(ctx) {
@@ -234,6 +234,7 @@ function analyticsDebugEventMeta(ev) {
         for (var k in d) {
             if (Object.prototype.hasOwnProperty.call(d, k)) {
                 keys.push(k);
+                // Cap debug key output so one oversized payload can't spam logs.
                 if (keys.length >= 30) break;
             }
         }
