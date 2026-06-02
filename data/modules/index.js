@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-06-02T21:14:58.685Z
+// Generated: 2026-06-02T23:01:53.030Z
 // RPC Count: 1065
 // ============================================================
 
@@ -881,15 +881,15 @@ var __rpc_satori_segments_run;
 var __rpc_satori_segments_status;
 var __rpc_analytics_tracking_plan;
 var __rpc_analytics_data_quality;
+var __rpc_chat_filter_message;
+var __rpc_chat_report_message;
+var __rpc_chat_moderation_review;
+var __rpc_chat_moderation_stats;
 var __rpc_quizverse_chatbox_greeting;
 var __rpc_quizverse_chatbox_message;
 var __rpc_quizverse_kb_get_context;
 var __rpc_quizverse_kb_register_seen_questions;
 var __rpc_quizverse_kb_filter_unseen_questions;
-var __rpc_chat_filter_message;
-var __rpc_chat_report_message;
-var __rpc_chat_moderation_review;
-var __rpc_chat_moderation_stats;
 var __rpc_cricket_create_ai_note;
 var __rpc_cricket_generate_quiz_from_note;
 var __rpc_cricket_generate_match_trivia;
@@ -967,10 +967,8 @@ var __rpc_external_poll_appstore;
 var __rpc_external_poll_ugs;
 var __rpc_external_poll_all;
 var __rpc_external_poll_status;
-var __rpc_friends_get_online_count;
-var __rpc_social_pressure_get_today_summary;
-var __rpc_friend_battle_create;
-var __rpc_friend_invite_with_reward;
+var __rpc_friend_streak_get_broken_log;
+var __rpc_friend_streak_repair;
 var __rpc_id;
 var __rpc_send_friend_challenge;
 var __rpc_friends_challenge_user;
@@ -984,8 +982,10 @@ var __rpc_accept_friend_invite;
 var __rpc_decline_friend_invite;
 var __rpc_cancel_friend_invite;
 var __rpc_list_pending_friend_invites;
-var __rpc_friend_streak_get_broken_log;
-var __rpc_friend_streak_repair;
+var __rpc_friends_get_online_count;
+var __rpc_social_pressure_get_today_summary;
+var __rpc_friend_battle_create;
+var __rpc_friend_invite_with_reward;
 var __rpc_get_group_details;
 var __rpc_log_group_activity;
 var __rpc_submit_score;
@@ -1080,7 +1080,7 @@ var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_reca
 
 // --- Discovered Modules (115 files) ---
 
-// --- Module: achievements\achievements.js ---
+// --- Module: achievements/achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1669,7 +1669,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player\ai_player.js ---
+// --- Module: ai_player/ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2453,7 +2453,7 @@ function __ModuleInit_1(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\admin\analytics_admin.js ---
+// --- Module: analytics/admin/analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3132,7 +3132,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\analytics.js ---
+// --- Module: analytics/analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -4741,7 +4741,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\backfill\analytics_backfill.js ---
+// --- Module: analytics/backfill/analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -5870,7 +5870,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\dropoff\analytics_dropoff.js ---
+// --- Module: analytics/dropoff/analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -6446,7 +6446,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\extended\analytics_extended.js ---
+// --- Module: analytics/extended/analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -9495,7 +9495,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
+// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -10236,7 +10236,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\hardening\analytics_hardening.js ---
+// --- Module: analytics/hardening/analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -10857,7 +10857,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\history\analytics_history.js ---
+// --- Module: analytics/history/analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -11730,7 +11730,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\modes\analytics_modes.js ---
+// --- Module: analytics/modes/analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -12332,7 +12332,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\ops\analytics_ops.js ---
+// --- Module: analytics/ops/analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -12963,7 +12963,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\player_analytics_store.js ---
+// --- Module: analytics/player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -13591,7 +13591,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics\player_profile\analytics_player_profile.js ---
+// --- Module: analytics/player_profile/analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -14273,7 +14273,7 @@ function __ModuleInit_13(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\read_models\analytics_read_models.js ---
+// --- Module: analytics/read_models/analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -14917,7 +14917,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\recap_signals\recap_signals.js ---
+// --- Module: analytics/recap_signals/recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -15220,7 +15220,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
+// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -15478,7 +15478,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\rollup\analytics_rollup.js ---
+// --- Module: analytics/rollup/analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -17447,7 +17447,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
+// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -18188,7 +18188,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\segments\analytics_segments.js ---
+// --- Module: analytics/segments/analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -18769,7 +18769,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
+// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -19194,7 +19194,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\v2\analytics_v2.js ---
+// --- Module: analytics/v2/analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -20212,7 +20212,423 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges\badges.js ---
+// --- Module: badges/badge_definitions.js ---
+/**
+ * QuizVerse Badge Definitions — all 207 badges from the game manifest.
+ * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
+ * Thresholds: Bronze = Day-0 achievable; Diamond = 30-100x daily activity (hard).
+ * Events: see quizverse_badges_config.json event_reference for Unity-side firing instructions.
+ *
+ * AUTO-SEEDED on Nakama startup via seedBadgesOnStartup() in badges.js.
+ * DO NOT hand-edit this file after a build — run npm run build to regenerate index.js.
+ */
+
+var BASE = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com/agent-assets/games/quiz-verse/badges/";
+
+var QUIZVERSE_BADGE_DEFINITIONS = {
+    game_id: "quizverse",
+    version: "2.0.0",
+    badges: [
+        // ── VOLUME ──────────────────────────────────────────────────────────────────
+        { badge_id: "dashing_debut",          title: "Dashing Debut",             description: "Complete your first quiz",                       icon_url: BASE + "volume/dashing_debut.png",             category: "volume",       rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_complete",            count: 1     }, rewards: { coins: 50,   xp: 25   }, points: 5   },
+        { badge_id: "beta_tester",            title: "Beta Tester",               description: "One of the first players in QuizVerse",          icon_url: BASE + "volume/beta_tester.png",               category: "volume",       rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "beta_grant",               count: 1     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "quiz_warrior",           title: "Quiz Warrior",              description: "Complete 5 quizzes",                             icon_url: BASE + "volume/quiz_warrior.png",              category: "volume",       rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "quiz_complete",            count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "quiz_warrior_bronze",    title: "Quiz Warrior (Bronze)",     description: "Complete 10 quizzes",                            icon_url: BASE + "volume/quiz_warrior_bronze.png",       category: "volume",       rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "quiz_complete",            count: 10    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "quiz_warrior_silver",    title: "Quiz Warrior (Silver)",     description: "Complete 25 quizzes",                            icon_url: BASE + "volume/quiz_warrior_silver.png",       category: "volume",       rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "quiz_complete",            count: 25    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "quiz_warrior_gold",      title: "Quiz Warrior (Gold)",       description: "Complete 50 quizzes",                            icon_url: BASE + "volume/quiz_warrior_gold.png",         category: "volume",       rarity: "epic",      type: "progressive", target: 50,    unlock_criteria: { event: "quiz_complete",            count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "quiz_warrior_diamond",   title: "Quiz Warrior (Diamond)",    description: "Complete 100 quizzes",                           icon_url: BASE + "volume/quiz_warrior_diamond.png",      category: "volume",       rarity: "legendary", type: "progressive", target: 100,   unlock_criteria: { event: "quiz_complete",            count: 100   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "centurion",              title: "Centurion",                 description: "Complete 100 quizzes",                           icon_url: BASE + "volume/centurion.png",                 category: "volume",       rarity: "common",    type: "progressive", target: 100,   unlock_criteria: { event: "quiz_complete",            count: 100   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "centurion_bronze",       title: "Centurion (Bronze)",        description: "Complete 250 quizzes",                           icon_url: BASE + "volume/centurion_bronze.png",          category: "volume",       rarity: "common",    type: "progressive", target: 250,   unlock_criteria: { event: "quiz_complete",            count: 250   }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "centurion_silver",       title: "Centurion (Silver)",        description: "Complete 500 quizzes",                           icon_url: BASE + "volume/centurion_silver.png",          category: "volume",       rarity: "rare",      type: "progressive", target: 500,   unlock_criteria: { event: "quiz_complete",            count: 500   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "centurion_gold",         title: "Centurion (Gold)",          description: "Complete 1000 quizzes",                          icon_url: BASE + "volume/centurion_gold.png",            category: "volume",       rarity: "epic",      type: "progressive", target: 1000,  unlock_criteria: { event: "quiz_complete",            count: 1000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "centurion_diamond",      title: "Centurion (Diamond)",       description: "Complete 2500 quizzes",                          icon_url: BASE + "volume/centurion_diamond.png",         category: "volume",       rarity: "legendary", type: "progressive", target: 2500,  unlock_criteria: { event: "quiz_complete",            count: 2500  }, rewards: { coins: 1500, xp: 750  }, points: 150 },
+        { badge_id: "flash_fanatic",          title: "Flash Fanatic",             description: "Complete your first Speed Quiz",                 icon_url: BASE + "volume/flash_fanatic.png",             category: "volume",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "speed_quiz_complete",      count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "flash_fanatic_bronze",   title: "Flash Fanatic (Bronze)",    description: "Complete 10 Speed Quizzes",                      icon_url: BASE + "volume/flash_fanatic_bronze.png",      category: "volume",       rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "speed_quiz_complete",      count: 10    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "flash_fanatic_silver",   title: "Flash Fanatic (Silver)",    description: "Complete 50 Speed Quizzes",                      icon_url: BASE + "volume/flash_fanatic_silver.png",      category: "volume",       rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "speed_quiz_complete",      count: 50    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "flash_fanatic_gold",     title: "Flash Fanatic (Gold)",      description: "Complete 200 Speed Quizzes",                     icon_url: BASE + "volume/flash_fanatic_gold.png",        category: "volume",       rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "speed_quiz_complete",      count: 200   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "flash_fanatic_diamond",  title: "Flash Fanatic (Diamond)",   description: "Complete 500 Speed Quizzes",                     icon_url: BASE + "volume/flash_fanatic_diamond.png",     category: "volume",       rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "speed_quiz_complete",      count: 500   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+
+        // ── ACCURACY ─────────────────────────────────────────────────────────────────
+        { badge_id: "perfect_round",          title: "Perfect Round",             description: "Get 100% on any quiz",                           icon_url: BASE + "accuracy/perfect_round.png",           category: "accuracy",     rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "perfect_round",            count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "accuracy_engine",        title: "Accuracy Engine",           description: "Complete 5 quizzes with 80%+ accuracy",          icon_url: BASE + "accuracy/accuracy_engine.png",         category: "accuracy",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "accuracy_quiz",            count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "accuracy_engine_bronze", title: "Accuracy Engine (Bronze)",  description: "Complete 20 quizzes with 80%+ accuracy",         icon_url: BASE + "accuracy/accuracy_engine_bronze.png",  category: "accuracy",     rarity: "common",    type: "progressive", target: 20,    unlock_criteria: { event: "accuracy_quiz",            count: 20    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "accuracy_engine_silver", title: "Accuracy Engine (Silver)",  description: "Complete 100 quizzes with 80%+ accuracy",        icon_url: BASE + "accuracy/accuracy_engine_silver.png",  category: "accuracy",     rarity: "rare",      type: "progressive", target: 100,   unlock_criteria: { event: "accuracy_quiz",            count: 100   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "accuracy_engine_gold",   title: "Accuracy Engine (Gold)",    description: "Complete 500 quizzes with 80%+ accuracy",        icon_url: BASE + "accuracy/accuracy_engine_gold.png",    category: "accuracy",     rarity: "epic",      type: "progressive", target: 500,   unlock_criteria: { event: "accuracy_quiz",            count: 500   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "accuracy_engine_diamond",title: "Accuracy Engine (Diamond)", description: "Complete 2000 quizzes with 80%+ accuracy",       icon_url: BASE + "accuracy/accuracy_engine_diamond.png", category: "accuracy",     rarity: "legendary", type: "progressive", target: 2000,  unlock_criteria: { event: "accuracy_quiz",            count: 2000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "sharp_shooter",          title: "Sharp Shooter",             description: "Answer 10 questions correctly",                  icon_url: BASE + "accuracy/sharp_shooter.png",           category: "accuracy",     rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "correct_answer",           count: 10    }, rewards: { coins: 50,   xp: 25   }, points: 5   },
+        { badge_id: "sharp_shooter_bronze",   title: "Sharp Shooter (Bronze)",    description: "Answer 100 questions correctly",                 icon_url: BASE + "accuracy/sharp_shooter_bronze.png",    category: "accuracy",     rarity: "common",    type: "progressive", target: 100,   unlock_criteria: { event: "correct_answer",           count: 100   }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "sharp_shooter_silver",   title: "Sharp Shooter (Silver)",    description: "Answer 500 questions correctly",                 icon_url: BASE + "accuracy/sharp_shooter_silver.png",    category: "accuracy",     rarity: "rare",      type: "progressive", target: 500,   unlock_criteria: { event: "correct_answer",           count: 500   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "sharp_shooter_gold",     title: "Sharp Shooter (Gold)",      description: "Answer 1000 questions correctly",                icon_url: BASE + "accuracy/sharp_shooter_gold.png",      category: "accuracy",     rarity: "epic",      type: "progressive", target: 1000,  unlock_criteria: { event: "correct_answer",           count: 1000  }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "sharp_shooter_diamond",  title: "Sharp Shooter (Diamond)",   description: "Answer 5000 questions correctly",                icon_url: BASE + "accuracy/sharp_shooter_diamond.png",   category: "accuracy",     rarity: "legendary", type: "progressive", target: 5000,  unlock_criteria: { event: "correct_answer",           count: 5000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+
+        // ── SPEED ─────────────────────────────────────────────────────────────────────
+        { badge_id: "speed_demon",            title: "Speed Demon",               description: "Answer 5 questions in under 3 seconds",          icon_url: BASE + "speed/speed_demon.png",                category: "speed",        rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "fast_answer",              count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "speed_demon_bronze",     title: "Speed Demon (Bronze)",      description: "Answer 25 questions in under 3 seconds",         icon_url: BASE + "speed/speed_demon_bronze.png",         category: "speed",        rarity: "common",    type: "progressive", target: 25,    unlock_criteria: { event: "fast_answer",              count: 25    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "speed_demon_silver",     title: "Speed Demon (Silver)",      description: "Answer 100 questions in under 3 seconds",        icon_url: BASE + "speed/speed_demon_silver.png",         category: "speed",        rarity: "rare",      type: "progressive", target: 100,   unlock_criteria: { event: "fast_answer",              count: 100   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "speed_demon_gold",       title: "Speed Demon (Gold)",        description: "Answer 500 questions in under 3 seconds",        icon_url: BASE + "speed/speed_demon_gold.png",           category: "speed",        rarity: "epic",      type: "progressive", target: 500,   unlock_criteria: { event: "fast_answer",              count: 500   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "speed_demon_diamond",    title: "Speed Demon (Diamond)",     description: "Answer 2000 questions in under 3 seconds",       icon_url: BASE + "speed/speed_demon_diamond.png",        category: "speed",        rarity: "legendary", type: "progressive", target: 2000,  unlock_criteria: { event: "fast_answer",              count: 2000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "lightning_round",        title: "Lightning Round",           description: "Win your first Speed Quiz match",                icon_url: BASE + "speed/lightning_round.png",            category: "speed",        rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "speed_quiz_win",           count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "lightning_round_bronze", title: "Lightning Round (Bronze)",  description: "Win 10 Speed Quiz matches",                      icon_url: BASE + "speed/lightning_round_bronze.png",     category: "speed",        rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "speed_quiz_win",           count: 10    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "lightning_round_silver", title: "Lightning Round (Silver)",  description: "Win 50 Speed Quiz matches",                      icon_url: BASE + "speed/lightning_round_silver.png",     category: "speed",        rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "speed_quiz_win",           count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "lightning_round_gold",   title: "Lightning Round (Gold)",    description: "Win 200 Speed Quiz matches",                     icon_url: BASE + "speed/lightning_round_gold.png",       category: "speed",        rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "speed_quiz_win",           count: 200   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "lightning_round_diamond",title: "Lightning Round (Diamond)", description: "Win 500 Speed Quiz matches",                     icon_url: BASE + "speed/lightning_round_diamond.png",    category: "speed",        rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "speed_quiz_win",           count: 500   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
+
+        // ── CONSISTENCY ───────────────────────────────────────────────────────────────
+        { badge_id: "lucky_7",               title: "Lucky 7",                   description: "Keep a 7-day quiz streak",                       icon_url: BASE + "consistency/lucky_7.png",              category: "consistency",  rarity: "common",    type: "one_time",    target: 7,     unlock_criteria: { event: "daily_streak",             count: 7     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "early_bird",            title: "Early Bird",                description: "Play your first quiz before 9am",                icon_url: BASE + "consistency/early_bird.png",           category: "consistency",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "early_quiz",               count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "the_return",            title: "The Return",                description: "Come back after a 3+ day absence",               icon_url: BASE + "consistency/the_return.png",           category: "consistency",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "comeback_quiz",            count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "streak_keeper",         title: "Streak Keeper",             description: "Maintain a 3-day streak",                        icon_url: BASE + "consistency/streak_keeper.png",        category: "consistency",  rarity: "common",    type: "progressive", target: 3,     unlock_criteria: { event: "daily_streak",             count: 3     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "streak_keeper_bronze",  title: "Streak Keeper (Bronze)",    description: "Maintain a 7-day streak",                        icon_url: BASE + "consistency/streak_keeper_bronze.png", category: "consistency",  rarity: "common",    type: "progressive", target: 7,     unlock_criteria: { event: "daily_streak",             count: 7     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "streak_keeper_silver",  title: "Streak Keeper (Silver)",    description: "Maintain a 30-day streak",                       icon_url: BASE + "consistency/streak_keeper_silver.png", category: "consistency",  rarity: "rare",      type: "progressive", target: 30,    unlock_criteria: { event: "daily_streak",             count: 30    }, rewards: { coins: 350,  xp: 175  }, points: 35  },
+        { badge_id: "streak_keeper_gold",    title: "Streak Keeper (Gold)",      description: "Maintain a 100-day streak",                      icon_url: BASE + "consistency/streak_keeper_gold.png",   category: "consistency",  rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "daily_streak",             count: 100   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "streak_keeper_diamond", title: "Streak Keeper (Diamond)",   description: "Maintain a 365-day streak",                      icon_url: BASE + "consistency/streak_keeper_diamond.png",category: "consistency",  rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "daily_streak",             count: 365   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "daily_grinder",         title: "Daily Grinder",             description: "Play quizzes on 7 different days",               icon_url: BASE + "consistency/daily_grinder.png",        category: "consistency",  rarity: "common",    type: "progressive", target: 7,     unlock_criteria: { event: "daily_quiz_played",        count: 7     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "daily_grinder_bronze",  title: "Daily Grinder (Bronze)",    description: "Play quizzes on 14 different days",              icon_url: BASE + "consistency/daily_grinder_bronze.png", category: "consistency",  rarity: "common",    type: "progressive", target: 14,    unlock_criteria: { event: "daily_quiz_played",        count: 14    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "daily_grinder_silver",  title: "Daily Grinder (Silver)",    description: "Play quizzes on 30 different days",              icon_url: BASE + "consistency/daily_grinder_silver.png", category: "consistency",  rarity: "rare",      type: "progressive", target: 30,    unlock_criteria: { event: "daily_quiz_played",        count: 30    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "daily_grinder_gold",    title: "Daily Grinder (Gold)",      description: "Play quizzes on 90 different days",              icon_url: BASE + "consistency/daily_grinder_gold.png",   category: "consistency",  rarity: "epic",      type: "progressive", target: 90,    unlock_criteria: { event: "daily_quiz_played",        count: 90    }, rewards: { coins: 600,  xp: 300  }, points: 60  },
+        { badge_id: "daily_grinder_diamond", title: "Daily Grinder (Diamond)",   description: "Play quizzes on 365 different days",             icon_url: BASE + "consistency/daily_grinder_diamond.png",category: "consistency",  rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "daily_quiz_played",        count: 365   }, rewards: { coins: 1500, xp: 750  }, points: 150 },
+        { badge_id: "perfect_week",          title: "Perfect Week",              description: "Play every day for a full week",                 icon_url: BASE + "consistency/perfect_week.png",         category: "consistency",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "perfect_week",             count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "perfect_week_bronze",   title: "Perfect Week (Bronze)",     description: "Achieve 4 perfect weeks",                        icon_url: BASE + "consistency/perfect_week_bronze.png",  category: "consistency",  rarity: "common",    type: "progressive", target: 4,     unlock_criteria: { event: "perfect_week",             count: 4     }, rewards: { coins: 250,  xp: 125  }, points: 25  },
+        { badge_id: "perfect_week_silver",   title: "Perfect Week (Silver)",     description: "Achieve 12 perfect weeks",                       icon_url: BASE + "consistency/perfect_week_silver.png",  category: "consistency",  rarity: "rare",      type: "progressive", target: 12,    unlock_criteria: { event: "perfect_week",             count: 12    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "perfect_week_gold",     title: "Perfect Week (Gold)",       description: "Achieve 26 perfect weeks",                       icon_url: BASE + "consistency/perfect_week_gold.png",    category: "consistency",  rarity: "epic",      type: "progressive", target: 26,    unlock_criteria: { event: "perfect_week",             count: 26    }, rewards: { coins: 800,  xp: 400  }, points: 80  },
+        { badge_id: "perfect_week_diamond",  title: "Perfect Week (Diamond)",    description: "Achieve 52 perfect weeks — a whole year!",       icon_url: BASE + "consistency/perfect_week_diamond.png", category: "consistency",  rarity: "legendary", type: "progressive", target: 52,    unlock_criteria: { event: "perfect_week",             count: 52    }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+
+        // ── LEARNING ─────────────────────────────────────────────────────────────────
+        { badge_id: "first_listen",          title: "First Listen",              description: "Play your first audio quiz",                     icon_url: BASE + "learning/first_listen.png",            category: "learning",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "audio_quiz_played",        count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "review_scholar",        title: "Review Scholar",            description: "Complete your first Smart Review session",       icon_url: BASE + "learning/review_scholar.png",          category: "learning",     rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "smart_review_session",     count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "review_scholar_bronze", title: "Review Scholar (Bronze)",   description: "Complete 10 Smart Review sessions",              icon_url: BASE + "learning/review_scholar_bronze.png",   category: "learning",     rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "smart_review_session",     count: 10    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "review_scholar_silver", title: "Review Scholar (Silver)",   description: "Complete 50 Smart Review sessions",              icon_url: BASE + "learning/review_scholar_silver.png",   category: "learning",     rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "smart_review_session",     count: 50    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "review_scholar_gold",   title: "Review Scholar (Gold)",     description: "Complete 200 Smart Review sessions",             icon_url: BASE + "learning/review_scholar_gold.png",     category: "learning",     rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "smart_review_session",     count: 200   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "review_scholar_diamond",title: "Review Scholar (Diamond)",  description: "Complete 500 Smart Review sessions",             icon_url: BASE + "learning/review_scholar_diamond.png",  category: "learning",     rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "smart_review_session",     count: 500   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "mastery_chain",         title: "Mastery Chain",             description: "Get 5 correct answers in a row",                 icon_url: BASE + "learning/mastery_chain.png",           category: "learning",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "consecutive_correct",      count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "mastery_chain_bronze",  title: "Mastery Chain (Bronze)",    description: "Get 20 correct answers in a row",                icon_url: BASE + "learning/mastery_chain_bronze.png",    category: "learning",     rarity: "common",    type: "progressive", target: 20,    unlock_criteria: { event: "consecutive_correct",      count: 20    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "mastery_chain_silver",  title: "Mastery Chain (Silver)",    description: "Get 50 correct answers in a row",                icon_url: BASE + "learning/mastery_chain_silver.png",    category: "learning",     rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "consecutive_correct",      count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "mastery_chain_gold",    title: "Mastery Chain (Gold)",      description: "Get 100 correct answers in a row",               icon_url: BASE + "learning/mastery_chain_gold.png",      category: "learning",     rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "consecutive_correct",      count: 100   }, rewards: { coins: 600,  xp: 300  }, points: 60  },
+        { badge_id: "mastery_chain_diamond", title: "Mastery Chain (Diamond)",   description: "Get 200 correct answers in a row — legendary!",  icon_url: BASE + "learning/mastery_chain_diamond.png",   category: "learning",     rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "consecutive_correct",      count: 200   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
+
+        // ── SOCIAL ────────────────────────────────────────────────────────────────────
+        { badge_id: "challenge_accepted",    title: "Challenge Accepted",        description: "Accept your first friend challenge",             icon_url: BASE + "social/challenge_accepted.png",        category: "social",       rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "friend_challenge_accepted",count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "party_animal",          title: "Party Animal",              description: "Play a quiz with 4+ other players",             icon_url: BASE + "social/party_animal.png",              category: "social",       rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "group_quiz",               count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "social_butterfly",      title: "Social Butterfly",          description: "Invite your first friend to QuizVerse",         icon_url: BASE + "social/social_butterfly.png",          category: "social",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "friend_invited",           count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "social_butterfly_bronze",title: "Social Butterfly (Bronze)",description: "Invite 5 friends",                              icon_url: BASE + "social/social_butterfly_bronze.png",   category: "social",       rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "friend_invited",           count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "social_butterfly_silver",title: "Social Butterfly (Silver)",description: "Invite 20 friends",                             icon_url: BASE + "social/social_butterfly_silver.png",   category: "social",       rarity: "rare",      type: "progressive", target: 20,    unlock_criteria: { event: "friend_invited",           count: 20    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "social_butterfly_gold", title: "Social Butterfly (Gold)",   description: "Invite 50 friends",                             icon_url: BASE + "social/social_butterfly_gold.png",     category: "social",       rarity: "epic",      type: "progressive", target: 50,    unlock_criteria: { event: "friend_invited",           count: 50    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "social_butterfly_diamond",title: "Social Butterfly (Diamond)",description: "Invite 100 friends",                          icon_url: BASE + "social/social_butterfly_diamond.png",  category: "social",       rarity: "legendary", type: "progressive", target: 100,   unlock_criteria: { event: "friend_invited",           count: 100   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
+        { badge_id: "friendly_fire",         title: "Friendly Fire",             description: "Play your first multiplayer game",               icon_url: BASE + "social/friendly_fire.png",             category: "social",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "multiplayer_game",         count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "friendly_fire_bronze",  title: "Friendly Fire (Bronze)",    description: "Play 10 multiplayer games",                      icon_url: BASE + "social/friendly_fire_bronze.png",      category: "social",       rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "multiplayer_game",         count: 10    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "friendly_fire_silver",  title: "Friendly Fire (Silver)",    description: "Play 50 multiplayer games",                      icon_url: BASE + "social/friendly_fire_silver.png",      category: "social",       rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "multiplayer_game",         count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "friendly_fire_gold",    title: "Friendly Fire (Gold)",      description: "Play 200 multiplayer games",                     icon_url: BASE + "social/friendly_fire_gold.png",        category: "social",       rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "multiplayer_game",         count: 200   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "friendly_fire_diamond", title: "Friendly Fire (Diamond)",   description: "Play 500 multiplayer games",                     icon_url: BASE + "social/friendly_fire_diamond.png",     category: "social",       rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "multiplayer_game",         count: 500   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
+        { badge_id: "mentor",                title: "Mentor",                    description: "Win your first multiplayer match",               icon_url: BASE + "social/mentor.png",                    category: "social",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "multiplayer_win",          count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "mentor_bronze",         title: "Mentor (Bronze)",           description: "Win 5 multiplayer matches",                      icon_url: BASE + "social/mentor_bronze.png",             category: "social",       rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "multiplayer_win",          count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "mentor_silver",         title: "Mentor (Silver)",           description: "Win 25 multiplayer matches",                     icon_url: BASE + "social/mentor_silver.png",             category: "social",       rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "multiplayer_win",          count: 25    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "mentor_gold",           title: "Mentor (Gold)",             description: "Win 100 multiplayer matches",                    icon_url: BASE + "social/mentor_gold.png",               category: "social",       rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "multiplayer_win",          count: 100   }, rewards: { coins: 600,  xp: 300  }, points: 60  },
+        { badge_id: "mentor_diamond",        title: "Mentor (Diamond)",          description: "Win 500 multiplayer matches",                    icon_url: BASE + "social/mentor_diamond.png",            category: "social",       rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "multiplayer_win",          count: 500   }, rewards: { coins: 1200, xp: 600  }, points: 120 },
+
+        // ── COMPETITION ───────────────────────────────────────────────────────────────
+        { badge_id: "combat_winner",         title: "Combat Winner",             description: "Win your first combat match",                    icon_url: BASE + "competition/combat_winner.png",        category: "competition",  rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "combat_win",               count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "clash_winner",          title: "Clash Winner",              description: "Win a clash tournament",                         icon_url: BASE + "competition/clash_winner.png",         category: "competition",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "clash_win",                count: 1     }, rewards: { coins: 250,  xp: 125  }, points: 25  },
+        { badge_id: "most_wanted",           title: "Most Wanted",               description: "Be the most wanted player in a match",          icon_url: BASE + "competition/most_wanted.png",          category: "competition",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "most_wanted_achieved",     count: 1     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "comeback_king",         title: "Comeback King",             description: "Win a match after being in last place",          icon_url: BASE + "competition/comeback_king.png",        category: "competition",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "comeback_win",             count: 1     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "weekly_warrior",        title: "Weekly Warrior",            description: "Win the weekly quiz tournament",                 icon_url: BASE + "competition/weekly_warrior.png",       category: "competition",  rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "weekly_tournament_win",    count: 1     }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "daily_champion",        title: "Daily Champion",            description: "Reach the top of the daily leaderboard",        icon_url: BASE + "competition/daily_champion.png",       category: "competition",  rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "daily_leaderboard_top",    count: 1     }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "rank_rising",           title: "Rank Rising",               description: "Move up in the global ranking",                  icon_url: BASE + "competition/rank_rising.png",          category: "competition",  rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "rank_increase",            count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "league_climber",        title: "League Climber",            description: "Get your first league promotion",                icon_url: BASE + "competition/league_climber.png",       category: "competition",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "league_promotion",         count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "league_climber_bronze", title: "League Climber (Bronze)",   description: "Get 3 league promotions",                        icon_url: BASE + "competition/league_climber_bronze.png",category: "competition",  rarity: "common",    type: "progressive", target: 3,     unlock_criteria: { event: "league_promotion",         count: 3     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "league_climber_silver", title: "League Climber (Silver)",   description: "Get 10 league promotions",                       icon_url: BASE + "competition/league_climber_silver.png",category: "competition",  rarity: "rare",      type: "progressive", target: 10,    unlock_criteria: { event: "league_promotion",         count: 10    }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "league_climber_gold",   title: "League Climber (Gold)",     description: "Get 20 league promotions",                       icon_url: BASE + "competition/league_climber_gold.png",  category: "competition",  rarity: "epic",      type: "progressive", target: 20,    unlock_criteria: { event: "league_promotion",         count: 20    }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "league_climber_diamond",title: "League Climber (Diamond)",  description: "Reach the Elite league",                         icon_url: BASE + "competition/league_climber_diamond.png",category: "competition",  rarity: "legendary", type: "one_time",    target: 1,     unlock_criteria: { event: "elite_league_entry",       count: 1     }, rewards: { coins: 1500, xp: 750  }, points: 150 },
+        { badge_id: "wager_winner",          title: "Wager Winner",              description: "Win your first wager",                           icon_url: BASE + "competition/wager_winner.png",         category: "competition",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "wager_win",                count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "wager_winner_bronze",   title: "Wager Winner (Bronze)",     description: "Win 10 wagers",                                  icon_url: BASE + "competition/wager_winner_bronze.png",  category: "competition",  rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "wager_win",                count: 10    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "wager_winner_silver",   title: "Wager Winner (Silver)",     description: "Win 50 wagers",                                  icon_url: BASE + "competition/wager_winner_silver.png",  category: "competition",  rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "wager_win",                count: 50    }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "wager_winner_gold",     title: "Wager Winner (Gold)",       description: "Win 200 wagers",                                 icon_url: BASE + "competition/wager_winner_gold.png",    category: "competition",  rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "wager_win",                count: 200   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "wager_winner_diamond",  title: "Wager Winner (Diamond)",    description: "Win 500 wagers",                                 icon_url: BASE + "competition/wager_winner_diamond.png", category: "competition",  rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "wager_win",                count: 500   }, rewards: { coins: 1500, xp: 750  }, points: 150 },
+        { badge_id: "leaderboard_regular",   title: "Leaderboard Regular",       description: "Appear on the leaderboard",                      icon_url: BASE + "competition/leaderboard_regular.png",  category: "competition",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "leaderboard_entry",        count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "leaderboard_regular_bronze",title: "Leaderboard Regular (Bronze)",description: "Appear on the leaderboard 5 times",        icon_url: BASE + "competition/leaderboard_regular_bronze.png",category: "competition",rarity: "common", type: "progressive", target: 5,  unlock_criteria: { event: "leaderboard_entry",        count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "leaderboard_regular_silver",title: "Leaderboard Regular (Silver)",description: "Appear on the leaderboard 20 times",       icon_url: BASE + "competition/leaderboard_regular_silver.png",category: "competition",rarity: "rare",  type: "progressive", target: 20, unlock_criteria: { event: "leaderboard_entry",        count: 20    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "leaderboard_regular_gold",  title: "Leaderboard Regular (Gold)",  description: "Appear on the leaderboard 50 times",      icon_url: BASE + "competition/leaderboard_regular_gold.png",  category: "competition",rarity: "epic",  type: "progressive", target: 50, unlock_criteria: { event: "leaderboard_entry",        count: 50    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "leaderboard_regular_diamond",title: "Leaderboard Regular (Diamond)",description: "Appear on the leaderboard 100 times",   icon_url: BASE + "competition/leaderboard_regular_diamond.png",category: "competition",rarity: "legendary",type: "progressive",target: 100,unlock_criteria: { event: "leaderboard_entry",        count: 100   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
+
+        // ── EXPLORATION ───────────────────────────────────────────────────────────────
+        { badge_id: "night_owl",             title: "Night Owl",                 description: "Play a quiz after midnight",                     icon_url: BASE + "exploration/night_owl.png",            category: "exploration",  rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "night_quiz",               count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "badge_hunter",          title: "Badge Hunter",              description: "Earn 10 different badges",                       icon_url: BASE + "exploration/badge_hunter.png",         category: "exploration",  rarity: "rare",      type: "one_time",    target: 10,    unlock_criteria: { event: "badge_unlocked",           count: 10    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "topic_explorer",        title: "Topic Explorer",            description: "Play quizzes in 2 different topics",             icon_url: BASE + "exploration/topic_explorer.png",       category: "exploration",  rarity: "common",    type: "progressive", target: 2,     unlock_criteria: { event: "unique_topic_played",      count: 2     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "topic_explorer_bronze", title: "Topic Explorer (Bronze)",   description: "Play quizzes in 5 different topics",             icon_url: BASE + "exploration/topic_explorer_bronze.png",category: "exploration",  rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "unique_topic_played",      count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "topic_explorer_silver", title: "Topic Explorer (Silver)",   description: "Play quizzes in 8 different topics",             icon_url: BASE + "exploration/topic_explorer_silver.png",category: "exploration",  rarity: "rare",      type: "progressive", target: 8,     unlock_criteria: { event: "unique_topic_played",      count: 8     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "topic_explorer_gold",   title: "Topic Explorer (Gold)",     description: "Play quizzes in all 12 topics",                  icon_url: BASE + "exploration/topic_explorer_gold.png",  category: "exploration",  rarity: "epic",      type: "progressive", target: 12,    unlock_criteria: { event: "unique_topic_played",      count: 12    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "topic_explorer_diamond",title: "Topic Explorer (Diamond)",  description: "Master all 12 topics at 90%+ accuracy",          icon_url: BASE + "exploration/topic_explorer_diamond.png",category: "exploration",  rarity: "legendary", type: "progressive", target: 12,    unlock_criteria: { event: "topic_mastered",           count: 12    }, rewards: { coins: 1000, xp: 500  }, points: 100 },
+        { badge_id: "category_conqueror",    title: "Category Conqueror",        description: "Master your first topic",                        icon_url: BASE + "exploration/category_conqueror.png",   category: "exploration",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_mastered",           count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "category_conqueror_bronze",title: "Category Conqueror (Bronze)",description: "Master 3 topics",                           icon_url: BASE + "exploration/category_conqueror_bronze.png",category: "exploration",rarity: "common",  type: "progressive", target: 3,  unlock_criteria: { event: "topic_mastered",           count: 3     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "category_conqueror_silver",title: "Category Conqueror (Silver)",description: "Master 6 topics",                           icon_url: BASE + "exploration/category_conqueror_silver.png",category: "exploration",rarity: "rare",   type: "progressive", target: 6,  unlock_criteria: { event: "topic_mastered",           count: 6     }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "category_conqueror_gold",  title: "Category Conqueror (Gold)",  description: "Master 9 topics",                           icon_url: BASE + "exploration/category_conqueror_gold.png",  category: "exploration",rarity: "epic",   type: "progressive", target: 9,  unlock_criteria: { event: "topic_mastered",           count: 9     }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "category_conqueror_diamond",title: "Category Conqueror (Diamond)",description: "Master all 12 topics",                    icon_url: BASE + "exploration/category_conqueror_diamond.png",category: "exploration",rarity: "legendary",type: "progressive",target: 12,unlock_criteria: { event: "topic_mastered",           count: 12    }, rewards: { coins: 1500, xp: 750  }, points: 150 },
+        { badge_id: "night_studier",         title: "Night Studier",             description: "Play a late-night quiz (11pm-4am)",              icon_url: BASE + "exploration/night_studier.png",        category: "exploration",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "night_quiz",               count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "night_studier_bronze",  title: "Night Studier (Bronze)",    description: "Play 5 late-night quizzes",                      icon_url: BASE + "exploration/night_studier_bronze.png", category: "exploration",  rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "night_quiz",               count: 5     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "night_studier_silver",  title: "Night Studier (Silver)",    description: "Play 25 late-night quizzes",                     icon_url: BASE + "exploration/night_studier_silver.png", category: "exploration",  rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "night_quiz",               count: 25    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "night_studier_gold",    title: "Night Studier (Gold)",      description: "Play 100 late-night quizzes",                    icon_url: BASE + "exploration/night_studier_gold.png",   category: "exploration",  rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "night_quiz",               count: 100   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "night_studier_diamond", title: "Night Studier (Diamond)",   description: "Play 500 late-night quizzes",                    icon_url: BASE + "exploration/night_studier_diamond.png",category: "exploration",  rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "night_quiz",               count: 500   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+
+        // ── CREATION ─────────────────────────────────────────────────────────────────
+        { badge_id: "link_creator",          title: "Link Creator",              description: "Create your first LinkAndPlay quiz",             icon_url: BASE + "creation/link_creator.png",            category: "creation",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "link_quiz_created",        count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "image_master",          title: "Image Master",              description: "Play your first image quiz",                     icon_url: BASE + "creation/image_master.png",            category: "creation",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "image_quiz_played",        count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
+        { badge_id: "influencer",            title: "Influencer",                description: "Your quiz has been played 100 times",            icon_url: BASE + "creation/influencer.png",              category: "creation",     rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_reach_100_plays",     count: 1     }, rewards: { coins: 500,  xp: 250  }, points: 50  },
+        { badge_id: "crowd_pleaser",         title: "Crowd Pleaser",             description: "Your quiz receives 10 positive ratings",         icon_url: BASE + "creation/crowd_pleaser.png",           category: "creation",     rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_liked",               count: 1     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "quiz_creator",          title: "Quiz Creator",              description: "Create your first quiz",                         icon_url: BASE + "creation/quiz_creator.png",            category: "creation",     rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "quiz_created",             count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "quiz_creator_bronze",   title: "Quiz Creator (Bronze)",     description: "Create 5 quizzes",                               icon_url: BASE + "creation/quiz_creator_bronze.png",     category: "creation",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "quiz_created",             count: 5     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "quiz_creator_silver",   title: "Quiz Creator (Silver)",     description: "Create 25 quizzes",                              icon_url: BASE + "creation/quiz_creator_silver.png",     category: "creation",     rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "quiz_created",             count: 25    }, rewards: { coins: 400,  xp: 200  }, points: 40  },
+        { badge_id: "quiz_creator_gold",     title: "Quiz Creator (Gold)",       description: "Create 100 quizzes",                             icon_url: BASE + "creation/quiz_creator_gold.png",       category: "creation",     rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "quiz_created",             count: 100   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
+        { badge_id: "quiz_creator_diamond",  title: "Quiz Creator (Diamond)",    description: "Create 500 quizzes",                             icon_url: BASE + "creation/quiz_creator_diamond.png",    category: "creation",     rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "quiz_created",             count: 500   }, rewards: { coins: 1500, xp: 750  }, points: 150 },
+
+        // ── LEGENDARY ─────────────────────────────────────────────────────────────────
+        { badge_id: "ultimate_player",       title: "Ultimate Player",           description: "Win 500 multiplayer matches",                    icon_url: BASE + "legendary/ultimate_player.png",        category: "legendary",    rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "multiplayer_win",          count: 500   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "marathon_player",       title: "Marathon Player",           description: "Complete 1000 quizzes",                          icon_url: BASE + "legendary/marathon_player.png",        category: "legendary",    rarity: "legendary", type: "progressive", target: 1000,  unlock_criteria: { event: "quiz_complete",            count: 1000  }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "veteran",               title: "Veteran",                   description: "Play QuizVerse for 365 days",                    icon_url: BASE + "legendary/veteran.png",                category: "legendary",    rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "days_active",              count: 365   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "immortal",              title: "Immortal",                  description: "Achieve a 365-day quiz streak",                  icon_url: BASE + "legendary/immortal.png",               category: "legendary",    rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "daily_streak",             count: 365   }, rewards: { coins: 5000, xp: 2500 }, points: 500 },
+        { badge_id: "the_corrector",         title: "The Corrector",             description: "Answer 10000 questions correctly",               icon_url: BASE + "legendary/the_corrector.png",          category: "legendary",    rarity: "legendary", type: "progressive", target: 10000, unlock_criteria: { event: "correct_answer",           count: 10000 }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "ride_or_die",           title: "Ride or Die",               description: "Play on 500 different days",                     icon_url: BASE + "legendary/ride_or_die.png",            category: "legendary",    rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "daily_quiz_played",        count: 500   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "easter_egg",            title: "Easter Egg",                description: "You found a hidden secret!",                     icon_url: BASE + "legendary/easter_egg.png",             category: "legendary",    rarity: "legendary", type: "one_time",    target: 1,     unlock_criteria: { event: "easter_egg_trigger",       count: 1     }, rewards: { coins: 1000, xp: 500  }, points: 100, hidden: true },
+        { badge_id: "polymath_legend",       title: "Polymath Legend",           description: "Master all 12 quiz topics",                      icon_url: BASE + "legendary/polymath_legend.png",        category: "legendary",    rarity: "legendary", type: "progressive", target: 12,    unlock_criteria: { event: "topic_mastered",           count: 12    }, rewards: { coins: 3000, xp: 1500 }, points: 300 },
+        { badge_id: "omniscient",            title: "Omniscient",                description: "Complete 500 quizzes with 95%+ accuracy",        icon_url: BASE + "legendary/omniscient.png",             category: "legendary",    rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "high_accuracy_quiz",       count: 500   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+        { badge_id: "the_oracle",            title: "The Oracle",                description: "Get a perfect score 100 times",                  icon_url: BASE + "legendary/the_oracle.png",             category: "legendary",    rarity: "legendary", type: "progressive", target: 100,   unlock_criteria: { event: "perfect_round",            count: 100   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
+
+        // ── SEASONAL ──────────────────────────────────────────────────────────────────
+        { badge_id: "summer_scholar",        title: "Summer Scholar",            description: "Participate in a summer seasonal event",         icon_url: BASE + "seasonal/summer_scholar.png",          category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "summer"     }, rewards: { coins: 300, xp: 150 }, points: 30 },
+        { badge_id: "holiday_hero",          title: "Holiday Hero",              description: "Participate in a holiday seasonal event",        icon_url: BASE + "seasonal/holiday_hero.png",            category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "holiday"     }, rewards: { coins: 300, xp: 150 }, points: 30 },
+        { badge_id: "new_years_resolution",  title: "New Year's Resolution",     description: "Play a quiz on New Year's Day",                  icon_url: BASE + "seasonal/new_years_resolution.png",    category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "new_year"    }, rewards: { coins: 300, xp: 150 }, points: 30 },
+        { badge_id: "valentines_quizzer",    title: "Valentine's Quizzer",       description: "Play a quiz on Valentine's Day",                 icon_url: BASE + "seasonal/valentines_quizzer.png",      category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "valentines"  }, rewards: { coins: 300, xp: 150 }, points: 30 },
+        { badge_id: "april_fool",            title: "April Fool",                description: "Play a quiz on April Fool's Day",                icon_url: BASE + "seasonal/april_fool.png",              category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "april_fool"  }, rewards: { coins: 300, xp: 150 }, points: 30 },
+
+        // ── SPECIALISATION — anime ────────────────────────────────────────────────────
+        { badge_id: "anime_novice",          title: "Anime Novice",              description: "Complete your first Anime quiz",                 icon_url: BASE + "specialisation/anime/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "anime"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "anime_apprentice",      title: "Anime Apprentice",          description: "Complete 10 Anime quizzes",                      icon_url: BASE + "specialisation/anime/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "anime"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "anime_expert",          title: "Anime Expert",              description: "Complete 50 Anime quizzes",                      icon_url: BASE + "specialisation/anime/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "anime"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "anime_master",          title: "Anime Master",              description: "Complete 100 Anime quizzes",                     icon_url: BASE + "specialisation/anime/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "anime"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "anime_legend",          title: "Anime Legend",              description: "Complete 200 Anime quizzes",                     icon_url: BASE + "specialisation/anime/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "anime"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — pokemon ───────────────────────────────────────────────────
+        { badge_id: "pokemon_novice",        title: "Pokemon Novice",            description: "Complete your first Pokemon quiz",               icon_url: BASE + "specialisation/pokemon/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "pokemon"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "pokemon_apprentice",    title: "Pokemon Apprentice",        description: "Complete 10 Pokemon quizzes",                    icon_url: BASE + "specialisation/pokemon/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "pokemon"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "pokemon_expert",        title: "Pokemon Expert",            description: "Complete 50 Pokemon quizzes",                    icon_url: BASE + "specialisation/pokemon/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "pokemon"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "pokemon_master",        title: "Pokemon Master",            description: "Complete 100 Pokemon quizzes",                   icon_url: BASE + "specialisation/pokemon/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "pokemon"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "pokemon_legend",        title: "Pokemon Legend",            description: "Complete 200 Pokemon quizzes",                   icon_url: BASE + "specialisation/pokemon/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "pokemon"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — gaming ────────────────────────────────────────────────────
+        { badge_id: "gaming_novice",         title: "Gaming Novice",             description: "Complete your first Gaming quiz",                icon_url: BASE + "specialisation/gaming/novice.png",     category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "gaming"   }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "gaming_apprentice",     title: "Gaming Apprentice",         description: "Complete 10 Gaming quizzes",                     icon_url: BASE + "specialisation/gaming/apprentice.png", category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "gaming"   }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "gaming_expert",         title: "Gaming Expert",             description: "Complete 50 Gaming quizzes",                     icon_url: BASE + "specialisation/gaming/expert.png",     category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "gaming"   }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "gaming_master",         title: "Gaming Master",             description: "Complete 100 Gaming quizzes",                    icon_url: BASE + "specialisation/gaming/master.png",     category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "gaming"   }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "gaming_legend",         title: "Gaming Legend",             description: "Complete 200 Gaming quizzes",                    icon_url: BASE + "specialisation/gaming/legend.png",     category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "gaming"   }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — film_tv ───────────────────────────────────────────────────
+        { badge_id: "film_tv_novice",        title: "Film & TV Novice",          description: "Complete your first Film & TV quiz",             icon_url: BASE + "specialisation/film_tv/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "film_tv"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "film_tv_apprentice",    title: "Film & TV Apprentice",      description: "Complete 10 Film & TV quizzes",                  icon_url: BASE + "specialisation/film_tv/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "film_tv"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "film_tv_expert",        title: "Film & TV Expert",          description: "Complete 50 Film & TV quizzes",                  icon_url: BASE + "specialisation/film_tv/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "film_tv"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "film_tv_master",        title: "Film & TV Master",          description: "Complete 100 Film & TV quizzes",                 icon_url: BASE + "specialisation/film_tv/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "film_tv"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "film_tv_legend",        title: "Film & TV Legend",          description: "Complete 200 Film & TV quizzes",                 icon_url: BASE + "specialisation/film_tv/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "film_tv"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — music ─────────────────────────────────────────────────────
+        { badge_id: "music_novice",          title: "Music Novice",              description: "Complete your first Music quiz",                 icon_url: BASE + "specialisation/music/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "music"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "music_apprentice",      title: "Music Apprentice",          description: "Complete 10 Music quizzes",                      icon_url: BASE + "specialisation/music/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "music"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "music_expert",          title: "Music Expert",              description: "Complete 50 Music quizzes",                      icon_url: BASE + "specialisation/music/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "music"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "music_master",          title: "Music Master",              description: "Complete 100 Music quizzes",                     icon_url: BASE + "specialisation/music/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "music"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "music_legend",          title: "Music Legend",              description: "Complete 200 Music quizzes",                     icon_url: BASE + "specialisation/music/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "music"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — ai_tech ───────────────────────────────────────────────────
+        { badge_id: "ai_tech_novice",        title: "AI & Tech Novice",          description: "Complete your first AI & Tech quiz",             icon_url: BASE + "specialisation/ai_tech/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "ai_tech"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "ai_tech_apprentice",    title: "AI & Tech Apprentice",      description: "Complete 10 AI & Tech quizzes",                  icon_url: BASE + "specialisation/ai_tech/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "ai_tech"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "ai_tech_expert",        title: "AI & Tech Expert",          description: "Complete 50 AI & Tech quizzes",                  icon_url: BASE + "specialisation/ai_tech/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "ai_tech"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "ai_tech_master",        title: "AI & Tech Master",          description: "Complete 100 AI & Tech quizzes",                 icon_url: BASE + "specialisation/ai_tech/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "ai_tech"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "ai_tech_legend",        title: "AI & Tech Legend",          description: "Complete 200 AI & Tech quizzes",                 icon_url: BASE + "specialisation/ai_tech/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "ai_tech"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — maths ─────────────────────────────────────────────────────
+        { badge_id: "maths_novice",          title: "Maths Novice",              description: "Complete your first Maths quiz",                 icon_url: BASE + "specialisation/maths/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "maths"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "maths_apprentice",      title: "Maths Apprentice",          description: "Complete 10 Maths quizzes",                      icon_url: BASE + "specialisation/maths/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "maths"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "maths_expert",          title: "Maths Expert",              description: "Complete 50 Maths quizzes",                      icon_url: BASE + "specialisation/maths/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "maths"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "maths_master",          title: "Maths Master",              description: "Complete 100 Maths quizzes",                     icon_url: BASE + "specialisation/maths/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "maths"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "maths_legend",          title: "Maths Legend",              description: "Complete 200 Maths quizzes",                     icon_url: BASE + "specialisation/maths/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "maths"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — science ───────────────────────────────────────────────────
+        { badge_id: "science_novice",        title: "Science Novice",            description: "Complete your first Science quiz",               icon_url: BASE + "specialisation/science/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "science"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "science_apprentice",    title: "Science Apprentice",        description: "Complete 10 Science quizzes",                    icon_url: BASE + "specialisation/science/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "science"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "science_expert",        title: "Science Expert",            description: "Complete 50 Science quizzes",                    icon_url: BASE + "specialisation/science/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "science"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "science_master",        title: "Science Master",            description: "Complete 100 Science quizzes",                   icon_url: BASE + "specialisation/science/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "science"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "science_legend",        title: "Science Legend",            description: "Complete 200 Science quizzes",                   icon_url: BASE + "specialisation/science/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "science"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — history ───────────────────────────────────────────────────
+        { badge_id: "history_novice",        title: "History Novice",            description: "Complete your first History quiz",               icon_url: BASE + "specialisation/history/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "history"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "history_apprentice",    title: "History Apprentice",        description: "Complete 10 History quizzes",                    icon_url: BASE + "specialisation/history/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "history"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "history_expert",        title: "History Expert",            description: "Complete 50 History quizzes",                    icon_url: BASE + "specialisation/history/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "history"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "history_master",        title: "History Master",            description: "Complete 100 History quizzes",                   icon_url: BASE + "specialisation/history/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "history"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "history_legend",        title: "History Legend",            description: "Complete 200 History quizzes",                   icon_url: BASE + "specialisation/history/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "history"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — geography ─────────────────────────────────────────────────
+        { badge_id: "geography_novice",      title: "Geography Novice",          description: "Complete your first Geography quiz",             icon_url: BASE + "specialisation/geography/novice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "geography"}, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "geography_apprentice",  title: "Geography Apprentice",      description: "Complete 10 Geography quizzes",                  icon_url: BASE + "specialisation/geography/apprentice.png",category: "specialisation",rarity: "common",  type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "geography"}, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "geography_expert",      title: "Geography Expert",          description: "Complete 50 Geography quizzes",                  icon_url: BASE + "specialisation/geography/expert.png",  category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "geography"}, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "geography_master",      title: "Geography Master",          description: "Complete 100 Geography quizzes",                 icon_url: BASE + "specialisation/geography/master.png",  category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "geography"}, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "geography_legend",      title: "Geography Legend",          description: "Complete 200 Geography quizzes",                 icon_url: BASE + "specialisation/geography/legend.png",  category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "geography"}, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — sport ─────────────────────────────────────────────────────
+        { badge_id: "sport_novice",          title: "Sport Novice",              description: "Complete your first Sport quiz",                 icon_url: BASE + "specialisation/sport/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "sport"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "sport_apprentice",      title: "Sport Apprentice",          description: "Complete 10 Sport quizzes",                      icon_url: BASE + "specialisation/sport/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "sport"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "sport_expert",          title: "Sport Expert",              description: "Complete 50 Sport quizzes",                      icon_url: BASE + "specialisation/sport/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "sport"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "sport_master",          title: "Sport Master",              description: "Complete 100 Sport quizzes",                     icon_url: BASE + "specialisation/sport/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "sport"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "sport_legend",          title: "Sport Legend",              description: "Complete 200 Sport quizzes",                     icon_url: BASE + "specialisation/sport/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "sport"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── SPECIALISATION — finance ───────────────────────────────────────────────────
+        { badge_id: "finance_novice",        title: "Finance Novice",            description: "Complete your first Finance quiz",               icon_url: BASE + "specialisation/finance/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "finance"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
+        { badge_id: "finance_apprentice",    title: "Finance Apprentice",        description: "Complete 10 Finance quizzes",                    icon_url: BASE + "specialisation/finance/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "finance"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
+        { badge_id: "finance_expert",        title: "Finance Expert",            description: "Complete 50 Finance quizzes",                    icon_url: BASE + "specialisation/finance/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "finance"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
+        { badge_id: "finance_master",        title: "Finance Master",            description: "Complete 100 Finance quizzes",                   icon_url: BASE + "specialisation/finance/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "finance"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
+        { badge_id: "finance_legend",        title: "Finance Legend",            description: "Complete 200 Finance quizzes",                   icon_url: BASE + "specialisation/finance/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "finance"  }, rewards: { coins: 750, xp: 375 }, points: 75  }
+    ]
+};
+
+
+// --- Module: badges/badge_seed_definitions.js ---
+// badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
+// Run once via admin RPC or directly call badges_bulk_create
+// Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
+
+/**
+ * Call this as a Nakama RPC: badges_bulk_create
+ * Payload: { game_id: "quizverse", badges: [...] }
+ */
+
+var LEGENDARY_AND_SEASONAL_BADGES = {
+    game_id: "quizverse",
+    badges: [
+        // ─── 3 REMAINING LEGENDARY BADGES (Phase 6) ───────────────────────
+        {
+            badge_id: "legend_topic_master",
+            title: "Topic Master",
+            description: "Master all 4 core topics with 90%+ accuracy in each",
+            icon_url: "badges/legendary/topic_master.png",
+            category: "special",
+            rarity: "legendary",
+            type: "tiered",
+            target: 4,
+            hidden: true,
+            points: 500,
+            order: 100,
+            rewards: { coins: 1000, xp: 500, collectables: ["frame_golden_brain"] },
+            unlock_criteria: { event: "topic_mastery", threshold: 4 }
+        },
+        {
+            badge_id: "legend_cross_topic",
+            title: "Cross-Topic Champion",
+            description: "Win 50 quizzes across at least 3 different topics",
+            icon_url: "badges/legendary/cross_topic.png",
+            category: "quiz",
+            rarity: "legendary",
+            type: "achievement",
+            target: 50,
+            hidden: false,
+            points: 400,
+            order: 101,
+            rewards: { coins: 750, xp: 400, collectables: ["title_champion"] },
+            unlock_criteria: { event: "quiz_complete", min_topics: 3 }
+        },
+        {
+            badge_id: "legend_polymath",
+            title: "Polymath",
+            description: "Answer 1000 questions correctly across Health, Love, Career & General",
+            icon_url: "badges/legendary/polymath.png",
+            category: "quiz",
+            rarity: "legendary",
+            type: "achievement",
+            target: 1000,
+            hidden: false,
+            points: 600,
+            order: 102,
+            rewards: { coins: 1500, xp: 750, collectables: ["border_rainbow", "title_polymath"] },
+            unlock_criteria: { event: "correct_answer", all_topics: true }
+        },
+
+        // ─── 5 SEASONAL BADGES ─────────────────────────────────────────────
+        {
+            badge_id: "seasonal_spring",
+            title: "Spring Bloom",
+            description: "Complete 10 quizzes during Spring season (Mar-May)",
+            icon_url: "badges/seasonal/spring.png",
+            category: "seasonal",
+            rarity: "epic",
+            type: "seasonal",
+            target: 10,
+            hidden: false,
+            points: 200,
+            order: 200,
+            rewards: { coins: 300, xp: 150 },
+            unlock_criteria: { event: "quiz_complete", season: "spring" }
+        },
+        {
+            badge_id: "seasonal_summer",
+            title: "Summer Heat",
+            description: "Win 5 multiplayer matches during Summer (Jun-Aug)",
+            icon_url: "badges/seasonal/summer.png",
+            category: "seasonal",
+            rarity: "epic",
+            type: "seasonal",
+            target: 5,
+            hidden: false,
+            points: 200,
+            order: 201,
+            rewards: { coins: 300, xp: 150 },
+            unlock_criteria: { event: "match_win", season: "summer" }
+        },
+        {
+            badge_id: "seasonal_monsoon",
+            title: "Monsoon Scholar",
+            description: "Complete 15 Smart Review sessions during Monsoon (Jul-Sep)",
+            icon_url: "badges/seasonal/monsoon.png",
+            category: "seasonal",
+            rarity: "epic",
+            type: "seasonal",
+            target: 15,
+            hidden: false,
+            points: 250,
+            order: 202,
+            rewards: { coins: 400, xp: 200 },
+            unlock_criteria: { event: "review_session", season: "monsoon" }
+        },
+        {
+            badge_id: "seasonal_autumn",
+            title: "Autumn Harvest",
+            description: "Maintain a 14-day streak during Autumn (Oct-Nov)",
+            icon_url: "badges/seasonal/autumn.png",
+            category: "seasonal",
+            rarity: "legendary",
+            type: "seasonal",
+            target: 14,
+            hidden: false,
+            points: 300,
+            order: 203,
+            rewards: { coins: 500, xp: 250 },
+            unlock_criteria: { event: "daily_login_streak", season: "autumn" }
+        },
+        {
+            badge_id: "seasonal_winter",
+            title: "Winter Warrior",
+            description: "Achieve 3 perfect quiz scores during Winter (Dec-Feb)",
+            icon_url: "badges/seasonal/winter.png",
+            category: "seasonal",
+            rarity: "legendary",
+            type: "seasonal",
+            target: 3,
+            hidden: false,
+            points: 300,
+            order: 204,
+            rewards: { coins: 500, xp: 250, collectables: ["frame_snowflake"] },
+            unlock_criteria: { event: "perfect_quiz", season: "winter" }
+        }
+    ]
+};
+
+// To seed: call badges_bulk_create RPC with the above payload
+// Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
+
+
+// --- Module: badges/badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -21646,7 +22062,7 @@ function seedBadgesOnStartup(nk, logger) {
     }
 }
 
-function __ModuleInit_22(ctx, logger, nk, initializer) {
+function __ModuleInit_24(ctx, logger, nk, initializer) {
     seedBadgesOnStartup(nk, logger);
     logger.info("[Badges] Badge module initialized — definitions seeded");
 }
@@ -21678,423 +22094,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: badges\badge_definitions.js ---
-/**
- * QuizVerse Badge Definitions — all 207 badges from the game manifest.
- * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
- * Thresholds: Bronze = Day-0 achievable; Diamond = 30-100x daily activity (hard).
- * Events: see quizverse_badges_config.json event_reference for Unity-side firing instructions.
- *
- * AUTO-SEEDED on Nakama startup via seedBadgesOnStartup() in badges.js.
- * DO NOT hand-edit this file after a build — run npm run build to regenerate index.js.
- */
-
-var BASE = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com/agent-assets/games/quiz-verse/badges/";
-
-var QUIZVERSE_BADGE_DEFINITIONS = {
-    game_id: "quizverse",
-    version: "2.0.0",
-    badges: [
-        // ── VOLUME ──────────────────────────────────────────────────────────────────
-        { badge_id: "dashing_debut",          title: "Dashing Debut",             description: "Complete your first quiz",                       icon_url: BASE + "volume/dashing_debut.png",             category: "volume",       rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_complete",            count: 1     }, rewards: { coins: 50,   xp: 25   }, points: 5   },
-        { badge_id: "beta_tester",            title: "Beta Tester",               description: "One of the first players in QuizVerse",          icon_url: BASE + "volume/beta_tester.png",               category: "volume",       rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "beta_grant",               count: 1     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "quiz_warrior",           title: "Quiz Warrior",              description: "Complete 5 quizzes",                             icon_url: BASE + "volume/quiz_warrior.png",              category: "volume",       rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "quiz_complete",            count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "quiz_warrior_bronze",    title: "Quiz Warrior (Bronze)",     description: "Complete 10 quizzes",                            icon_url: BASE + "volume/quiz_warrior_bronze.png",       category: "volume",       rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "quiz_complete",            count: 10    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "quiz_warrior_silver",    title: "Quiz Warrior (Silver)",     description: "Complete 25 quizzes",                            icon_url: BASE + "volume/quiz_warrior_silver.png",       category: "volume",       rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "quiz_complete",            count: 25    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "quiz_warrior_gold",      title: "Quiz Warrior (Gold)",       description: "Complete 50 quizzes",                            icon_url: BASE + "volume/quiz_warrior_gold.png",         category: "volume",       rarity: "epic",      type: "progressive", target: 50,    unlock_criteria: { event: "quiz_complete",            count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "quiz_warrior_diamond",   title: "Quiz Warrior (Diamond)",    description: "Complete 100 quizzes",                           icon_url: BASE + "volume/quiz_warrior_diamond.png",      category: "volume",       rarity: "legendary", type: "progressive", target: 100,   unlock_criteria: { event: "quiz_complete",            count: 100   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "centurion",              title: "Centurion",                 description: "Complete 100 quizzes",                           icon_url: BASE + "volume/centurion.png",                 category: "volume",       rarity: "common",    type: "progressive", target: 100,   unlock_criteria: { event: "quiz_complete",            count: 100   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "centurion_bronze",       title: "Centurion (Bronze)",        description: "Complete 250 quizzes",                           icon_url: BASE + "volume/centurion_bronze.png",          category: "volume",       rarity: "common",    type: "progressive", target: 250,   unlock_criteria: { event: "quiz_complete",            count: 250   }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "centurion_silver",       title: "Centurion (Silver)",        description: "Complete 500 quizzes",                           icon_url: BASE + "volume/centurion_silver.png",          category: "volume",       rarity: "rare",      type: "progressive", target: 500,   unlock_criteria: { event: "quiz_complete",            count: 500   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "centurion_gold",         title: "Centurion (Gold)",          description: "Complete 1000 quizzes",                          icon_url: BASE + "volume/centurion_gold.png",            category: "volume",       rarity: "epic",      type: "progressive", target: 1000,  unlock_criteria: { event: "quiz_complete",            count: 1000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "centurion_diamond",      title: "Centurion (Diamond)",       description: "Complete 2500 quizzes",                          icon_url: BASE + "volume/centurion_diamond.png",         category: "volume",       rarity: "legendary", type: "progressive", target: 2500,  unlock_criteria: { event: "quiz_complete",            count: 2500  }, rewards: { coins: 1500, xp: 750  }, points: 150 },
-        { badge_id: "flash_fanatic",          title: "Flash Fanatic",             description: "Complete your first Speed Quiz",                 icon_url: BASE + "volume/flash_fanatic.png",             category: "volume",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "speed_quiz_complete",      count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "flash_fanatic_bronze",   title: "Flash Fanatic (Bronze)",    description: "Complete 10 Speed Quizzes",                      icon_url: BASE + "volume/flash_fanatic_bronze.png",      category: "volume",       rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "speed_quiz_complete",      count: 10    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "flash_fanatic_silver",   title: "Flash Fanatic (Silver)",    description: "Complete 50 Speed Quizzes",                      icon_url: BASE + "volume/flash_fanatic_silver.png",      category: "volume",       rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "speed_quiz_complete",      count: 50    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "flash_fanatic_gold",     title: "Flash Fanatic (Gold)",      description: "Complete 200 Speed Quizzes",                     icon_url: BASE + "volume/flash_fanatic_gold.png",        category: "volume",       rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "speed_quiz_complete",      count: 200   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "flash_fanatic_diamond",  title: "Flash Fanatic (Diamond)",   description: "Complete 500 Speed Quizzes",                     icon_url: BASE + "volume/flash_fanatic_diamond.png",     category: "volume",       rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "speed_quiz_complete",      count: 500   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-
-        // ── ACCURACY ─────────────────────────────────────────────────────────────────
-        { badge_id: "perfect_round",          title: "Perfect Round",             description: "Get 100% on any quiz",                           icon_url: BASE + "accuracy/perfect_round.png",           category: "accuracy",     rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "perfect_round",            count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "accuracy_engine",        title: "Accuracy Engine",           description: "Complete 5 quizzes with 80%+ accuracy",          icon_url: BASE + "accuracy/accuracy_engine.png",         category: "accuracy",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "accuracy_quiz",            count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "accuracy_engine_bronze", title: "Accuracy Engine (Bronze)",  description: "Complete 20 quizzes with 80%+ accuracy",         icon_url: BASE + "accuracy/accuracy_engine_bronze.png",  category: "accuracy",     rarity: "common",    type: "progressive", target: 20,    unlock_criteria: { event: "accuracy_quiz",            count: 20    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "accuracy_engine_silver", title: "Accuracy Engine (Silver)",  description: "Complete 100 quizzes with 80%+ accuracy",        icon_url: BASE + "accuracy/accuracy_engine_silver.png",  category: "accuracy",     rarity: "rare",      type: "progressive", target: 100,   unlock_criteria: { event: "accuracy_quiz",            count: 100   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "accuracy_engine_gold",   title: "Accuracy Engine (Gold)",    description: "Complete 500 quizzes with 80%+ accuracy",        icon_url: BASE + "accuracy/accuracy_engine_gold.png",    category: "accuracy",     rarity: "epic",      type: "progressive", target: 500,   unlock_criteria: { event: "accuracy_quiz",            count: 500   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "accuracy_engine_diamond",title: "Accuracy Engine (Diamond)", description: "Complete 2000 quizzes with 80%+ accuracy",       icon_url: BASE + "accuracy/accuracy_engine_diamond.png", category: "accuracy",     rarity: "legendary", type: "progressive", target: 2000,  unlock_criteria: { event: "accuracy_quiz",            count: 2000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "sharp_shooter",          title: "Sharp Shooter",             description: "Answer 10 questions correctly",                  icon_url: BASE + "accuracy/sharp_shooter.png",           category: "accuracy",     rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "correct_answer",           count: 10    }, rewards: { coins: 50,   xp: 25   }, points: 5   },
-        { badge_id: "sharp_shooter_bronze",   title: "Sharp Shooter (Bronze)",    description: "Answer 100 questions correctly",                 icon_url: BASE + "accuracy/sharp_shooter_bronze.png",    category: "accuracy",     rarity: "common",    type: "progressive", target: 100,   unlock_criteria: { event: "correct_answer",           count: 100   }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "sharp_shooter_silver",   title: "Sharp Shooter (Silver)",    description: "Answer 500 questions correctly",                 icon_url: BASE + "accuracy/sharp_shooter_silver.png",    category: "accuracy",     rarity: "rare",      type: "progressive", target: 500,   unlock_criteria: { event: "correct_answer",           count: 500   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "sharp_shooter_gold",     title: "Sharp Shooter (Gold)",      description: "Answer 1000 questions correctly",                icon_url: BASE + "accuracy/sharp_shooter_gold.png",      category: "accuracy",     rarity: "epic",      type: "progressive", target: 1000,  unlock_criteria: { event: "correct_answer",           count: 1000  }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "sharp_shooter_diamond",  title: "Sharp Shooter (Diamond)",   description: "Answer 5000 questions correctly",                icon_url: BASE + "accuracy/sharp_shooter_diamond.png",   category: "accuracy",     rarity: "legendary", type: "progressive", target: 5000,  unlock_criteria: { event: "correct_answer",           count: 5000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-
-        // ── SPEED ─────────────────────────────────────────────────────────────────────
-        { badge_id: "speed_demon",            title: "Speed Demon",               description: "Answer 5 questions in under 3 seconds",          icon_url: BASE + "speed/speed_demon.png",                category: "speed",        rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "fast_answer",              count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "speed_demon_bronze",     title: "Speed Demon (Bronze)",      description: "Answer 25 questions in under 3 seconds",         icon_url: BASE + "speed/speed_demon_bronze.png",         category: "speed",        rarity: "common",    type: "progressive", target: 25,    unlock_criteria: { event: "fast_answer",              count: 25    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "speed_demon_silver",     title: "Speed Demon (Silver)",      description: "Answer 100 questions in under 3 seconds",        icon_url: BASE + "speed/speed_demon_silver.png",         category: "speed",        rarity: "rare",      type: "progressive", target: 100,   unlock_criteria: { event: "fast_answer",              count: 100   }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "speed_demon_gold",       title: "Speed Demon (Gold)",        description: "Answer 500 questions in under 3 seconds",        icon_url: BASE + "speed/speed_demon_gold.png",           category: "speed",        rarity: "epic",      type: "progressive", target: 500,   unlock_criteria: { event: "fast_answer",              count: 500   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "speed_demon_diamond",    title: "Speed Demon (Diamond)",     description: "Answer 2000 questions in under 3 seconds",       icon_url: BASE + "speed/speed_demon_diamond.png",        category: "speed",        rarity: "legendary", type: "progressive", target: 2000,  unlock_criteria: { event: "fast_answer",              count: 2000  }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "lightning_round",        title: "Lightning Round",           description: "Win your first Speed Quiz match",                icon_url: BASE + "speed/lightning_round.png",            category: "speed",        rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "speed_quiz_win",           count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "lightning_round_bronze", title: "Lightning Round (Bronze)",  description: "Win 10 Speed Quiz matches",                      icon_url: BASE + "speed/lightning_round_bronze.png",     category: "speed",        rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "speed_quiz_win",           count: 10    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "lightning_round_silver", title: "Lightning Round (Silver)",  description: "Win 50 Speed Quiz matches",                      icon_url: BASE + "speed/lightning_round_silver.png",     category: "speed",        rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "speed_quiz_win",           count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "lightning_round_gold",   title: "Lightning Round (Gold)",    description: "Win 200 Speed Quiz matches",                     icon_url: BASE + "speed/lightning_round_gold.png",       category: "speed",        rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "speed_quiz_win",           count: 200   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "lightning_round_diamond",title: "Lightning Round (Diamond)", description: "Win 500 Speed Quiz matches",                     icon_url: BASE + "speed/lightning_round_diamond.png",    category: "speed",        rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "speed_quiz_win",           count: 500   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
-
-        // ── CONSISTENCY ───────────────────────────────────────────────────────────────
-        { badge_id: "lucky_7",               title: "Lucky 7",                   description: "Keep a 7-day quiz streak",                       icon_url: BASE + "consistency/lucky_7.png",              category: "consistency",  rarity: "common",    type: "one_time",    target: 7,     unlock_criteria: { event: "daily_streak",             count: 7     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "early_bird",            title: "Early Bird",                description: "Play your first quiz before 9am",                icon_url: BASE + "consistency/early_bird.png",           category: "consistency",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "early_quiz",               count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "the_return",            title: "The Return",                description: "Come back after a 3+ day absence",               icon_url: BASE + "consistency/the_return.png",           category: "consistency",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "comeback_quiz",            count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "streak_keeper",         title: "Streak Keeper",             description: "Maintain a 3-day streak",                        icon_url: BASE + "consistency/streak_keeper.png",        category: "consistency",  rarity: "common",    type: "progressive", target: 3,     unlock_criteria: { event: "daily_streak",             count: 3     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "streak_keeper_bronze",  title: "Streak Keeper (Bronze)",    description: "Maintain a 7-day streak",                        icon_url: BASE + "consistency/streak_keeper_bronze.png", category: "consistency",  rarity: "common",    type: "progressive", target: 7,     unlock_criteria: { event: "daily_streak",             count: 7     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "streak_keeper_silver",  title: "Streak Keeper (Silver)",    description: "Maintain a 30-day streak",                       icon_url: BASE + "consistency/streak_keeper_silver.png", category: "consistency",  rarity: "rare",      type: "progressive", target: 30,    unlock_criteria: { event: "daily_streak",             count: 30    }, rewards: { coins: 350,  xp: 175  }, points: 35  },
-        { badge_id: "streak_keeper_gold",    title: "Streak Keeper (Gold)",      description: "Maintain a 100-day streak",                      icon_url: BASE + "consistency/streak_keeper_gold.png",   category: "consistency",  rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "daily_streak",             count: 100   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "streak_keeper_diamond", title: "Streak Keeper (Diamond)",   description: "Maintain a 365-day streak",                      icon_url: BASE + "consistency/streak_keeper_diamond.png",category: "consistency",  rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "daily_streak",             count: 365   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "daily_grinder",         title: "Daily Grinder",             description: "Play quizzes on 7 different days",               icon_url: BASE + "consistency/daily_grinder.png",        category: "consistency",  rarity: "common",    type: "progressive", target: 7,     unlock_criteria: { event: "daily_quiz_played",        count: 7     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "daily_grinder_bronze",  title: "Daily Grinder (Bronze)",    description: "Play quizzes on 14 different days",              icon_url: BASE + "consistency/daily_grinder_bronze.png", category: "consistency",  rarity: "common",    type: "progressive", target: 14,    unlock_criteria: { event: "daily_quiz_played",        count: 14    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "daily_grinder_silver",  title: "Daily Grinder (Silver)",    description: "Play quizzes on 30 different days",              icon_url: BASE + "consistency/daily_grinder_silver.png", category: "consistency",  rarity: "rare",      type: "progressive", target: 30,    unlock_criteria: { event: "daily_quiz_played",        count: 30    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "daily_grinder_gold",    title: "Daily Grinder (Gold)",      description: "Play quizzes on 90 different days",              icon_url: BASE + "consistency/daily_grinder_gold.png",   category: "consistency",  rarity: "epic",      type: "progressive", target: 90,    unlock_criteria: { event: "daily_quiz_played",        count: 90    }, rewards: { coins: 600,  xp: 300  }, points: 60  },
-        { badge_id: "daily_grinder_diamond", title: "Daily Grinder (Diamond)",   description: "Play quizzes on 365 different days",             icon_url: BASE + "consistency/daily_grinder_diamond.png",category: "consistency",  rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "daily_quiz_played",        count: 365   }, rewards: { coins: 1500, xp: 750  }, points: 150 },
-        { badge_id: "perfect_week",          title: "Perfect Week",              description: "Play every day for a full week",                 icon_url: BASE + "consistency/perfect_week.png",         category: "consistency",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "perfect_week",             count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "perfect_week_bronze",   title: "Perfect Week (Bronze)",     description: "Achieve 4 perfect weeks",                        icon_url: BASE + "consistency/perfect_week_bronze.png",  category: "consistency",  rarity: "common",    type: "progressive", target: 4,     unlock_criteria: { event: "perfect_week",             count: 4     }, rewards: { coins: 250,  xp: 125  }, points: 25  },
-        { badge_id: "perfect_week_silver",   title: "Perfect Week (Silver)",     description: "Achieve 12 perfect weeks",                       icon_url: BASE + "consistency/perfect_week_silver.png",  category: "consistency",  rarity: "rare",      type: "progressive", target: 12,    unlock_criteria: { event: "perfect_week",             count: 12    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "perfect_week_gold",     title: "Perfect Week (Gold)",       description: "Achieve 26 perfect weeks",                       icon_url: BASE + "consistency/perfect_week_gold.png",    category: "consistency",  rarity: "epic",      type: "progressive", target: 26,    unlock_criteria: { event: "perfect_week",             count: 26    }, rewards: { coins: 800,  xp: 400  }, points: 80  },
-        { badge_id: "perfect_week_diamond",  title: "Perfect Week (Diamond)",    description: "Achieve 52 perfect weeks — a whole year!",       icon_url: BASE + "consistency/perfect_week_diamond.png", category: "consistency",  rarity: "legendary", type: "progressive", target: 52,    unlock_criteria: { event: "perfect_week",             count: 52    }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-
-        // ── LEARNING ─────────────────────────────────────────────────────────────────
-        { badge_id: "first_listen",          title: "First Listen",              description: "Play your first audio quiz",                     icon_url: BASE + "learning/first_listen.png",            category: "learning",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "audio_quiz_played",        count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "review_scholar",        title: "Review Scholar",            description: "Complete your first Smart Review session",       icon_url: BASE + "learning/review_scholar.png",          category: "learning",     rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "smart_review_session",     count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "review_scholar_bronze", title: "Review Scholar (Bronze)",   description: "Complete 10 Smart Review sessions",              icon_url: BASE + "learning/review_scholar_bronze.png",   category: "learning",     rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "smart_review_session",     count: 10    }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "review_scholar_silver", title: "Review Scholar (Silver)",   description: "Complete 50 Smart Review sessions",              icon_url: BASE + "learning/review_scholar_silver.png",   category: "learning",     rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "smart_review_session",     count: 50    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "review_scholar_gold",   title: "Review Scholar (Gold)",     description: "Complete 200 Smart Review sessions",             icon_url: BASE + "learning/review_scholar_gold.png",     category: "learning",     rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "smart_review_session",     count: 200   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "review_scholar_diamond",title: "Review Scholar (Diamond)",  description: "Complete 500 Smart Review sessions",             icon_url: BASE + "learning/review_scholar_diamond.png",  category: "learning",     rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "smart_review_session",     count: 500   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "mastery_chain",         title: "Mastery Chain",             description: "Get 5 correct answers in a row",                 icon_url: BASE + "learning/mastery_chain.png",           category: "learning",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "consecutive_correct",      count: 5     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "mastery_chain_bronze",  title: "Mastery Chain (Bronze)",    description: "Get 20 correct answers in a row",                icon_url: BASE + "learning/mastery_chain_bronze.png",    category: "learning",     rarity: "common",    type: "progressive", target: 20,    unlock_criteria: { event: "consecutive_correct",      count: 20    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "mastery_chain_silver",  title: "Mastery Chain (Silver)",    description: "Get 50 correct answers in a row",                icon_url: BASE + "learning/mastery_chain_silver.png",    category: "learning",     rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "consecutive_correct",      count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "mastery_chain_gold",    title: "Mastery Chain (Gold)",      description: "Get 100 correct answers in a row",               icon_url: BASE + "learning/mastery_chain_gold.png",      category: "learning",     rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "consecutive_correct",      count: 100   }, rewards: { coins: 600,  xp: 300  }, points: 60  },
-        { badge_id: "mastery_chain_diamond", title: "Mastery Chain (Diamond)",   description: "Get 200 correct answers in a row — legendary!",  icon_url: BASE + "learning/mastery_chain_diamond.png",   category: "learning",     rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "consecutive_correct",      count: 200   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
-
-        // ── SOCIAL ────────────────────────────────────────────────────────────────────
-        { badge_id: "challenge_accepted",    title: "Challenge Accepted",        description: "Accept your first friend challenge",             icon_url: BASE + "social/challenge_accepted.png",        category: "social",       rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "friend_challenge_accepted",count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "party_animal",          title: "Party Animal",              description: "Play a quiz with 4+ other players",             icon_url: BASE + "social/party_animal.png",              category: "social",       rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "group_quiz",               count: 1     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "social_butterfly",      title: "Social Butterfly",          description: "Invite your first friend to QuizVerse",         icon_url: BASE + "social/social_butterfly.png",          category: "social",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "friend_invited",           count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "social_butterfly_bronze",title: "Social Butterfly (Bronze)",description: "Invite 5 friends",                              icon_url: BASE + "social/social_butterfly_bronze.png",   category: "social",       rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "friend_invited",           count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "social_butterfly_silver",title: "Social Butterfly (Silver)",description: "Invite 20 friends",                             icon_url: BASE + "social/social_butterfly_silver.png",   category: "social",       rarity: "rare",      type: "progressive", target: 20,    unlock_criteria: { event: "friend_invited",           count: 20    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "social_butterfly_gold", title: "Social Butterfly (Gold)",   description: "Invite 50 friends",                             icon_url: BASE + "social/social_butterfly_gold.png",     category: "social",       rarity: "epic",      type: "progressive", target: 50,    unlock_criteria: { event: "friend_invited",           count: 50    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "social_butterfly_diamond",title: "Social Butterfly (Diamond)",description: "Invite 100 friends",                          icon_url: BASE + "social/social_butterfly_diamond.png",  category: "social",       rarity: "legendary", type: "progressive", target: 100,   unlock_criteria: { event: "friend_invited",           count: 100   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
-        { badge_id: "friendly_fire",         title: "Friendly Fire",             description: "Play your first multiplayer game",               icon_url: BASE + "social/friendly_fire.png",             category: "social",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "multiplayer_game",         count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "friendly_fire_bronze",  title: "Friendly Fire (Bronze)",    description: "Play 10 multiplayer games",                      icon_url: BASE + "social/friendly_fire_bronze.png",      category: "social",       rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "multiplayer_game",         count: 10    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "friendly_fire_silver",  title: "Friendly Fire (Silver)",    description: "Play 50 multiplayer games",                      icon_url: BASE + "social/friendly_fire_silver.png",      category: "social",       rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "multiplayer_game",         count: 50    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "friendly_fire_gold",    title: "Friendly Fire (Gold)",      description: "Play 200 multiplayer games",                     icon_url: BASE + "social/friendly_fire_gold.png",        category: "social",       rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "multiplayer_game",         count: 200   }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "friendly_fire_diamond", title: "Friendly Fire (Diamond)",   description: "Play 500 multiplayer games",                     icon_url: BASE + "social/friendly_fire_diamond.png",     category: "social",       rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "multiplayer_game",         count: 500   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
-        { badge_id: "mentor",                title: "Mentor",                    description: "Win your first multiplayer match",               icon_url: BASE + "social/mentor.png",                    category: "social",       rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "multiplayer_win",          count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "mentor_bronze",         title: "Mentor (Bronze)",           description: "Win 5 multiplayer matches",                      icon_url: BASE + "social/mentor_bronze.png",             category: "social",       rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "multiplayer_win",          count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "mentor_silver",         title: "Mentor (Silver)",           description: "Win 25 multiplayer matches",                     icon_url: BASE + "social/mentor_silver.png",             category: "social",       rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "multiplayer_win",          count: 25    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "mentor_gold",           title: "Mentor (Gold)",             description: "Win 100 multiplayer matches",                    icon_url: BASE + "social/mentor_gold.png",               category: "social",       rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "multiplayer_win",          count: 100   }, rewards: { coins: 600,  xp: 300  }, points: 60  },
-        { badge_id: "mentor_diamond",        title: "Mentor (Diamond)",          description: "Win 500 multiplayer matches",                    icon_url: BASE + "social/mentor_diamond.png",            category: "social",       rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "multiplayer_win",          count: 500   }, rewards: { coins: 1200, xp: 600  }, points: 120 },
-
-        // ── COMPETITION ───────────────────────────────────────────────────────────────
-        { badge_id: "combat_winner",         title: "Combat Winner",             description: "Win your first combat match",                    icon_url: BASE + "competition/combat_winner.png",        category: "competition",  rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "combat_win",               count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "clash_winner",          title: "Clash Winner",              description: "Win a clash tournament",                         icon_url: BASE + "competition/clash_winner.png",         category: "competition",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "clash_win",                count: 1     }, rewards: { coins: 250,  xp: 125  }, points: 25  },
-        { badge_id: "most_wanted",           title: "Most Wanted",               description: "Be the most wanted player in a match",          icon_url: BASE + "competition/most_wanted.png",          category: "competition",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "most_wanted_achieved",     count: 1     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "comeback_king",         title: "Comeback King",             description: "Win a match after being in last place",          icon_url: BASE + "competition/comeback_king.png",        category: "competition",  rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "comeback_win",             count: 1     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "weekly_warrior",        title: "Weekly Warrior",            description: "Win the weekly quiz tournament",                 icon_url: BASE + "competition/weekly_warrior.png",       category: "competition",  rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "weekly_tournament_win",    count: 1     }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "daily_champion",        title: "Daily Champion",            description: "Reach the top of the daily leaderboard",        icon_url: BASE + "competition/daily_champion.png",       category: "competition",  rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "daily_leaderboard_top",    count: 1     }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "rank_rising",           title: "Rank Rising",               description: "Move up in the global ranking",                  icon_url: BASE + "competition/rank_rising.png",          category: "competition",  rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "rank_increase",            count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "league_climber",        title: "League Climber",            description: "Get your first league promotion",                icon_url: BASE + "competition/league_climber.png",       category: "competition",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "league_promotion",         count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "league_climber_bronze", title: "League Climber (Bronze)",   description: "Get 3 league promotions",                        icon_url: BASE + "competition/league_climber_bronze.png",category: "competition",  rarity: "common",    type: "progressive", target: 3,     unlock_criteria: { event: "league_promotion",         count: 3     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "league_climber_silver", title: "League Climber (Silver)",   description: "Get 10 league promotions",                       icon_url: BASE + "competition/league_climber_silver.png",category: "competition",  rarity: "rare",      type: "progressive", target: 10,    unlock_criteria: { event: "league_promotion",         count: 10    }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "league_climber_gold",   title: "League Climber (Gold)",     description: "Get 20 league promotions",                       icon_url: BASE + "competition/league_climber_gold.png",  category: "competition",  rarity: "epic",      type: "progressive", target: 20,    unlock_criteria: { event: "league_promotion",         count: 20    }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "league_climber_diamond",title: "League Climber (Diamond)",  description: "Reach the Elite league",                         icon_url: BASE + "competition/league_climber_diamond.png",category: "competition",  rarity: "legendary", type: "one_time",    target: 1,     unlock_criteria: { event: "elite_league_entry",       count: 1     }, rewards: { coins: 1500, xp: 750  }, points: 150 },
-        { badge_id: "wager_winner",          title: "Wager Winner",              description: "Win your first wager",                           icon_url: BASE + "competition/wager_winner.png",         category: "competition",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "wager_win",                count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "wager_winner_bronze",   title: "Wager Winner (Bronze)",     description: "Win 10 wagers",                                  icon_url: BASE + "competition/wager_winner_bronze.png",  category: "competition",  rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "wager_win",                count: 10    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "wager_winner_silver",   title: "Wager Winner (Silver)",     description: "Win 50 wagers",                                  icon_url: BASE + "competition/wager_winner_silver.png",  category: "competition",  rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "wager_win",                count: 50    }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "wager_winner_gold",     title: "Wager Winner (Gold)",       description: "Win 200 wagers",                                 icon_url: BASE + "competition/wager_winner_gold.png",    category: "competition",  rarity: "epic",      type: "progressive", target: 200,   unlock_criteria: { event: "wager_win",                count: 200   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "wager_winner_diamond",  title: "Wager Winner (Diamond)",    description: "Win 500 wagers",                                 icon_url: BASE + "competition/wager_winner_diamond.png", category: "competition",  rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "wager_win",                count: 500   }, rewards: { coins: 1500, xp: 750  }, points: 150 },
-        { badge_id: "leaderboard_regular",   title: "Leaderboard Regular",       description: "Appear on the leaderboard",                      icon_url: BASE + "competition/leaderboard_regular.png",  category: "competition",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "leaderboard_entry",        count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "leaderboard_regular_bronze",title: "Leaderboard Regular (Bronze)",description: "Appear on the leaderboard 5 times",        icon_url: BASE + "competition/leaderboard_regular_bronze.png",category: "competition",rarity: "common", type: "progressive", target: 5,  unlock_criteria: { event: "leaderboard_entry",        count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "leaderboard_regular_silver",title: "Leaderboard Regular (Silver)",description: "Appear on the leaderboard 20 times",       icon_url: BASE + "competition/leaderboard_regular_silver.png",category: "competition",rarity: "rare",  type: "progressive", target: 20, unlock_criteria: { event: "leaderboard_entry",        count: 20    }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "leaderboard_regular_gold",  title: "Leaderboard Regular (Gold)",  description: "Appear on the leaderboard 50 times",      icon_url: BASE + "competition/leaderboard_regular_gold.png",  category: "competition",rarity: "epic",  type: "progressive", target: 50, unlock_criteria: { event: "leaderboard_entry",        count: 50    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "leaderboard_regular_diamond",title: "Leaderboard Regular (Diamond)",description: "Appear on the leaderboard 100 times",   icon_url: BASE + "competition/leaderboard_regular_diamond.png",category: "competition",rarity: "legendary",type: "progressive",target: 100,unlock_criteria: { event: "leaderboard_entry",        count: 100   }, rewards: { coins: 1000, xp: 500  }, points: 100 },
-
-        // ── EXPLORATION ───────────────────────────────────────────────────────────────
-        { badge_id: "night_owl",             title: "Night Owl",                 description: "Play a quiz after midnight",                     icon_url: BASE + "exploration/night_owl.png",            category: "exploration",  rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "night_quiz",               count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "badge_hunter",          title: "Badge Hunter",              description: "Earn 10 different badges",                       icon_url: BASE + "exploration/badge_hunter.png",         category: "exploration",  rarity: "rare",      type: "one_time",    target: 10,    unlock_criteria: { event: "badge_unlocked",           count: 10    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "topic_explorer",        title: "Topic Explorer",            description: "Play quizzes in 2 different topics",             icon_url: BASE + "exploration/topic_explorer.png",       category: "exploration",  rarity: "common",    type: "progressive", target: 2,     unlock_criteria: { event: "unique_topic_played",      count: 2     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "topic_explorer_bronze", title: "Topic Explorer (Bronze)",   description: "Play quizzes in 5 different topics",             icon_url: BASE + "exploration/topic_explorer_bronze.png",category: "exploration",  rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "unique_topic_played",      count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
-        { badge_id: "topic_explorer_silver", title: "Topic Explorer (Silver)",   description: "Play quizzes in 8 different topics",             icon_url: BASE + "exploration/topic_explorer_silver.png",category: "exploration",  rarity: "rare",      type: "progressive", target: 8,     unlock_criteria: { event: "unique_topic_played",      count: 8     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "topic_explorer_gold",   title: "Topic Explorer (Gold)",     description: "Play quizzes in all 12 topics",                  icon_url: BASE + "exploration/topic_explorer_gold.png",  category: "exploration",  rarity: "epic",      type: "progressive", target: 12,    unlock_criteria: { event: "unique_topic_played",      count: 12    }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "topic_explorer_diamond",title: "Topic Explorer (Diamond)",  description: "Master all 12 topics at 90%+ accuracy",          icon_url: BASE + "exploration/topic_explorer_diamond.png",category: "exploration",  rarity: "legendary", type: "progressive", target: 12,    unlock_criteria: { event: "topic_mastered",           count: 12    }, rewards: { coins: 1000, xp: 500  }, points: 100 },
-        { badge_id: "category_conqueror",    title: "Category Conqueror",        description: "Master your first topic",                        icon_url: BASE + "exploration/category_conqueror.png",   category: "exploration",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_mastered",           count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "category_conqueror_bronze",title: "Category Conqueror (Bronze)",description: "Master 3 topics",                           icon_url: BASE + "exploration/category_conqueror_bronze.png",category: "exploration",rarity: "common",  type: "progressive", target: 3,  unlock_criteria: { event: "topic_mastered",           count: 3     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "category_conqueror_silver",title: "Category Conqueror (Silver)",description: "Master 6 topics",                           icon_url: BASE + "exploration/category_conqueror_silver.png",category: "exploration",rarity: "rare",   type: "progressive", target: 6,  unlock_criteria: { event: "topic_mastered",           count: 6     }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "category_conqueror_gold",  title: "Category Conqueror (Gold)",  description: "Master 9 topics",                           icon_url: BASE + "exploration/category_conqueror_gold.png",  category: "exploration",rarity: "epic",   type: "progressive", target: 9,  unlock_criteria: { event: "topic_mastered",           count: 9     }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "category_conqueror_diamond",title: "Category Conqueror (Diamond)",description: "Master all 12 topics",                    icon_url: BASE + "exploration/category_conqueror_diamond.png",category: "exploration",rarity: "legendary",type: "progressive",target: 12,unlock_criteria: { event: "topic_mastered",           count: 12    }, rewards: { coins: 1500, xp: 750  }, points: 150 },
-        { badge_id: "night_studier",         title: "Night Studier",             description: "Play a late-night quiz (11pm-4am)",              icon_url: BASE + "exploration/night_studier.png",        category: "exploration",  rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "night_quiz",               count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "night_studier_bronze",  title: "Night Studier (Bronze)",    description: "Play 5 late-night quizzes",                      icon_url: BASE + "exploration/night_studier_bronze.png", category: "exploration",  rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "night_quiz",               count: 5     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "night_studier_silver",  title: "Night Studier (Silver)",    description: "Play 25 late-night quizzes",                     icon_url: BASE + "exploration/night_studier_silver.png", category: "exploration",  rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "night_quiz",               count: 25    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "night_studier_gold",    title: "Night Studier (Gold)",      description: "Play 100 late-night quizzes",                    icon_url: BASE + "exploration/night_studier_gold.png",   category: "exploration",  rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "night_quiz",               count: 100   }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "night_studier_diamond", title: "Night Studier (Diamond)",   description: "Play 500 late-night quizzes",                    icon_url: BASE + "exploration/night_studier_diamond.png",category: "exploration",  rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "night_quiz",               count: 500   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-
-        // ── CREATION ─────────────────────────────────────────────────────────────────
-        { badge_id: "link_creator",          title: "Link Creator",              description: "Create your first LinkAndPlay quiz",             icon_url: BASE + "creation/link_creator.png",            category: "creation",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "link_quiz_created",        count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "image_master",          title: "Image Master",              description: "Play your first image quiz",                     icon_url: BASE + "creation/image_master.png",            category: "creation",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "image_quiz_played",        count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
-        { badge_id: "influencer",            title: "Influencer",                description: "Your quiz has been played 100 times",            icon_url: BASE + "creation/influencer.png",              category: "creation",     rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_reach_100_plays",     count: 1     }, rewards: { coins: 500,  xp: 250  }, points: 50  },
-        { badge_id: "crowd_pleaser",         title: "Crowd Pleaser",             description: "Your quiz receives 10 positive ratings",         icon_url: BASE + "creation/crowd_pleaser.png",           category: "creation",     rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_liked",               count: 1     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
-        { badge_id: "quiz_creator",          title: "Quiz Creator",              description: "Create your first quiz",                         icon_url: BASE + "creation/quiz_creator.png",            category: "creation",     rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "quiz_created",             count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
-        { badge_id: "quiz_creator_bronze",   title: "Quiz Creator (Bronze)",     description: "Create 5 quizzes",                               icon_url: BASE + "creation/quiz_creator_bronze.png",     category: "creation",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "quiz_created",             count: 5     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
-        { badge_id: "quiz_creator_silver",   title: "Quiz Creator (Silver)",     description: "Create 25 quizzes",                              icon_url: BASE + "creation/quiz_creator_silver.png",     category: "creation",     rarity: "rare",      type: "progressive", target: 25,    unlock_criteria: { event: "quiz_created",             count: 25    }, rewards: { coins: 400,  xp: 200  }, points: 40  },
-        { badge_id: "quiz_creator_gold",     title: "Quiz Creator (Gold)",       description: "Create 100 quizzes",                             icon_url: BASE + "creation/quiz_creator_gold.png",       category: "creation",     rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "quiz_created",             count: 100   }, rewards: { coins: 750,  xp: 375  }, points: 75  },
-        { badge_id: "quiz_creator_diamond",  title: "Quiz Creator (Diamond)",    description: "Create 500 quizzes",                             icon_url: BASE + "creation/quiz_creator_diamond.png",    category: "creation",     rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "quiz_created",             count: 500   }, rewards: { coins: 1500, xp: 750  }, points: 150 },
-
-        // ── LEGENDARY ─────────────────────────────────────────────────────────────────
-        { badge_id: "ultimate_player",       title: "Ultimate Player",           description: "Win 500 multiplayer matches",                    icon_url: BASE + "legendary/ultimate_player.png",        category: "legendary",    rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "multiplayer_win",          count: 500   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "marathon_player",       title: "Marathon Player",           description: "Complete 1000 quizzes",                          icon_url: BASE + "legendary/marathon_player.png",        category: "legendary",    rarity: "legendary", type: "progressive", target: 1000,  unlock_criteria: { event: "quiz_complete",            count: 1000  }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "veteran",               title: "Veteran",                   description: "Play QuizVerse for 365 days",                    icon_url: BASE + "legendary/veteran.png",                category: "legendary",    rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "days_active",              count: 365   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "immortal",              title: "Immortal",                  description: "Achieve a 365-day quiz streak",                  icon_url: BASE + "legendary/immortal.png",               category: "legendary",    rarity: "legendary", type: "progressive", target: 365,   unlock_criteria: { event: "daily_streak",             count: 365   }, rewards: { coins: 5000, xp: 2500 }, points: 500 },
-        { badge_id: "the_corrector",         title: "The Corrector",             description: "Answer 10000 questions correctly",               icon_url: BASE + "legendary/the_corrector.png",          category: "legendary",    rarity: "legendary", type: "progressive", target: 10000, unlock_criteria: { event: "correct_answer",           count: 10000 }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "ride_or_die",           title: "Ride or Die",               description: "Play on 500 different days",                     icon_url: BASE + "legendary/ride_or_die.png",            category: "legendary",    rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "daily_quiz_played",        count: 500   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "easter_egg",            title: "Easter Egg",                description: "You found a hidden secret!",                     icon_url: BASE + "legendary/easter_egg.png",             category: "legendary",    rarity: "legendary", type: "one_time",    target: 1,     unlock_criteria: { event: "easter_egg_trigger",       count: 1     }, rewards: { coins: 1000, xp: 500  }, points: 100, hidden: true },
-        { badge_id: "polymath_legend",       title: "Polymath Legend",           description: "Master all 12 quiz topics",                      icon_url: BASE + "legendary/polymath_legend.png",        category: "legendary",    rarity: "legendary", type: "progressive", target: 12,    unlock_criteria: { event: "topic_mastered",           count: 12    }, rewards: { coins: 3000, xp: 1500 }, points: 300 },
-        { badge_id: "omniscient",            title: "Omniscient",                description: "Complete 500 quizzes with 95%+ accuracy",        icon_url: BASE + "legendary/omniscient.png",             category: "legendary",    rarity: "legendary", type: "progressive", target: 500,   unlock_criteria: { event: "high_accuracy_quiz",       count: 500   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-        { badge_id: "the_oracle",            title: "The Oracle",                description: "Get a perfect score 100 times",                  icon_url: BASE + "legendary/the_oracle.png",             category: "legendary",    rarity: "legendary", type: "progressive", target: 100,   unlock_criteria: { event: "perfect_round",            count: 100   }, rewards: { coins: 2000, xp: 1000 }, points: 200 },
-
-        // ── SEASONAL ──────────────────────────────────────────────────────────────────
-        { badge_id: "summer_scholar",        title: "Summer Scholar",            description: "Participate in a summer seasonal event",         icon_url: BASE + "seasonal/summer_scholar.png",          category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "summer"     }, rewards: { coins: 300, xp: 150 }, points: 30 },
-        { badge_id: "holiday_hero",          title: "Holiday Hero",              description: "Participate in a holiday seasonal event",        icon_url: BASE + "seasonal/holiday_hero.png",            category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "holiday"     }, rewards: { coins: 300, xp: 150 }, points: 30 },
-        { badge_id: "new_years_resolution",  title: "New Year's Resolution",     description: "Play a quiz on New Year's Day",                  icon_url: BASE + "seasonal/new_years_resolution.png",    category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "new_year"    }, rewards: { coins: 300, xp: 150 }, points: 30 },
-        { badge_id: "valentines_quizzer",    title: "Valentine's Quizzer",       description: "Play a quiz on Valentine's Day",                 icon_url: BASE + "seasonal/valentines_quizzer.png",      category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "valentines"  }, rewards: { coins: 300, xp: 150 }, points: 30 },
-        { badge_id: "april_fool",            title: "April Fool",                description: "Play a quiz on April Fool's Day",                icon_url: BASE + "seasonal/april_fool.png",              category: "seasonal",     rarity: "rare",      type: "seasonal",    target: 1,     unlock_criteria: { event: "seasonal_event", count: 1, season: "april_fool"  }, rewards: { coins: 300, xp: 150 }, points: 30 },
-
-        // ── SPECIALISATION — anime ────────────────────────────────────────────────────
-        { badge_id: "anime_novice",          title: "Anime Novice",              description: "Complete your first Anime quiz",                 icon_url: BASE + "specialisation/anime/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "anime"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "anime_apprentice",      title: "Anime Apprentice",          description: "Complete 10 Anime quizzes",                      icon_url: BASE + "specialisation/anime/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "anime"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "anime_expert",          title: "Anime Expert",              description: "Complete 50 Anime quizzes",                      icon_url: BASE + "specialisation/anime/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "anime"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "anime_master",          title: "Anime Master",              description: "Complete 100 Anime quizzes",                     icon_url: BASE + "specialisation/anime/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "anime"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "anime_legend",          title: "Anime Legend",              description: "Complete 200 Anime quizzes",                     icon_url: BASE + "specialisation/anime/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "anime"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — pokemon ───────────────────────────────────────────────────
-        { badge_id: "pokemon_novice",        title: "Pokemon Novice",            description: "Complete your first Pokemon quiz",               icon_url: BASE + "specialisation/pokemon/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "pokemon"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "pokemon_apprentice",    title: "Pokemon Apprentice",        description: "Complete 10 Pokemon quizzes",                    icon_url: BASE + "specialisation/pokemon/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "pokemon"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "pokemon_expert",        title: "Pokemon Expert",            description: "Complete 50 Pokemon quizzes",                    icon_url: BASE + "specialisation/pokemon/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "pokemon"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "pokemon_master",        title: "Pokemon Master",            description: "Complete 100 Pokemon quizzes",                   icon_url: BASE + "specialisation/pokemon/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "pokemon"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "pokemon_legend",        title: "Pokemon Legend",            description: "Complete 200 Pokemon quizzes",                   icon_url: BASE + "specialisation/pokemon/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "pokemon"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — gaming ────────────────────────────────────────────────────
-        { badge_id: "gaming_novice",         title: "Gaming Novice",             description: "Complete your first Gaming quiz",                icon_url: BASE + "specialisation/gaming/novice.png",     category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "gaming"   }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "gaming_apprentice",     title: "Gaming Apprentice",         description: "Complete 10 Gaming quizzes",                     icon_url: BASE + "specialisation/gaming/apprentice.png", category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "gaming"   }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "gaming_expert",         title: "Gaming Expert",             description: "Complete 50 Gaming quizzes",                     icon_url: BASE + "specialisation/gaming/expert.png",     category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "gaming"   }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "gaming_master",         title: "Gaming Master",             description: "Complete 100 Gaming quizzes",                    icon_url: BASE + "specialisation/gaming/master.png",     category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "gaming"   }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "gaming_legend",         title: "Gaming Legend",             description: "Complete 200 Gaming quizzes",                    icon_url: BASE + "specialisation/gaming/legend.png",     category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "gaming"   }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — film_tv ───────────────────────────────────────────────────
-        { badge_id: "film_tv_novice",        title: "Film & TV Novice",          description: "Complete your first Film & TV quiz",             icon_url: BASE + "specialisation/film_tv/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "film_tv"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "film_tv_apprentice",    title: "Film & TV Apprentice",      description: "Complete 10 Film & TV quizzes",                  icon_url: BASE + "specialisation/film_tv/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "film_tv"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "film_tv_expert",        title: "Film & TV Expert",          description: "Complete 50 Film & TV quizzes",                  icon_url: BASE + "specialisation/film_tv/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "film_tv"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "film_tv_master",        title: "Film & TV Master",          description: "Complete 100 Film & TV quizzes",                 icon_url: BASE + "specialisation/film_tv/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "film_tv"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "film_tv_legend",        title: "Film & TV Legend",          description: "Complete 200 Film & TV quizzes",                 icon_url: BASE + "specialisation/film_tv/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "film_tv"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — music ─────────────────────────────────────────────────────
-        { badge_id: "music_novice",          title: "Music Novice",              description: "Complete your first Music quiz",                 icon_url: BASE + "specialisation/music/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "music"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "music_apprentice",      title: "Music Apprentice",          description: "Complete 10 Music quizzes",                      icon_url: BASE + "specialisation/music/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "music"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "music_expert",          title: "Music Expert",              description: "Complete 50 Music quizzes",                      icon_url: BASE + "specialisation/music/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "music"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "music_master",          title: "Music Master",              description: "Complete 100 Music quizzes",                     icon_url: BASE + "specialisation/music/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "music"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "music_legend",          title: "Music Legend",              description: "Complete 200 Music quizzes",                     icon_url: BASE + "specialisation/music/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "music"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — ai_tech ───────────────────────────────────────────────────
-        { badge_id: "ai_tech_novice",        title: "AI & Tech Novice",          description: "Complete your first AI & Tech quiz",             icon_url: BASE + "specialisation/ai_tech/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "ai_tech"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "ai_tech_apprentice",    title: "AI & Tech Apprentice",      description: "Complete 10 AI & Tech quizzes",                  icon_url: BASE + "specialisation/ai_tech/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "ai_tech"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "ai_tech_expert",        title: "AI & Tech Expert",          description: "Complete 50 AI & Tech quizzes",                  icon_url: BASE + "specialisation/ai_tech/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "ai_tech"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "ai_tech_master",        title: "AI & Tech Master",          description: "Complete 100 AI & Tech quizzes",                 icon_url: BASE + "specialisation/ai_tech/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "ai_tech"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "ai_tech_legend",        title: "AI & Tech Legend",          description: "Complete 200 AI & Tech quizzes",                 icon_url: BASE + "specialisation/ai_tech/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "ai_tech"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — maths ─────────────────────────────────────────────────────
-        { badge_id: "maths_novice",          title: "Maths Novice",              description: "Complete your first Maths quiz",                 icon_url: BASE + "specialisation/maths/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "maths"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "maths_apprentice",      title: "Maths Apprentice",          description: "Complete 10 Maths quizzes",                      icon_url: BASE + "specialisation/maths/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "maths"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "maths_expert",          title: "Maths Expert",              description: "Complete 50 Maths quizzes",                      icon_url: BASE + "specialisation/maths/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "maths"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "maths_master",          title: "Maths Master",              description: "Complete 100 Maths quizzes",                     icon_url: BASE + "specialisation/maths/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "maths"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "maths_legend",          title: "Maths Legend",              description: "Complete 200 Maths quizzes",                     icon_url: BASE + "specialisation/maths/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "maths"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — science ───────────────────────────────────────────────────
-        { badge_id: "science_novice",        title: "Science Novice",            description: "Complete your first Science quiz",               icon_url: BASE + "specialisation/science/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "science"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "science_apprentice",    title: "Science Apprentice",        description: "Complete 10 Science quizzes",                    icon_url: BASE + "specialisation/science/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "science"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "science_expert",        title: "Science Expert",            description: "Complete 50 Science quizzes",                    icon_url: BASE + "specialisation/science/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "science"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "science_master",        title: "Science Master",            description: "Complete 100 Science quizzes",                   icon_url: BASE + "specialisation/science/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "science"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "science_legend",        title: "Science Legend",            description: "Complete 200 Science quizzes",                   icon_url: BASE + "specialisation/science/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "science"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — history ───────────────────────────────────────────────────
-        { badge_id: "history_novice",        title: "History Novice",            description: "Complete your first History quiz",               icon_url: BASE + "specialisation/history/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "history"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "history_apprentice",    title: "History Apprentice",        description: "Complete 10 History quizzes",                    icon_url: BASE + "specialisation/history/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "history"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "history_expert",        title: "History Expert",            description: "Complete 50 History quizzes",                    icon_url: BASE + "specialisation/history/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "history"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "history_master",        title: "History Master",            description: "Complete 100 History quizzes",                   icon_url: BASE + "specialisation/history/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "history"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "history_legend",        title: "History Legend",            description: "Complete 200 History quizzes",                   icon_url: BASE + "specialisation/history/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "history"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — geography ─────────────────────────────────────────────────
-        { badge_id: "geography_novice",      title: "Geography Novice",          description: "Complete your first Geography quiz",             icon_url: BASE + "specialisation/geography/novice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "geography"}, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "geography_apprentice",  title: "Geography Apprentice",      description: "Complete 10 Geography quizzes",                  icon_url: BASE + "specialisation/geography/apprentice.png",category: "specialisation",rarity: "common",  type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "geography"}, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "geography_expert",      title: "Geography Expert",          description: "Complete 50 Geography quizzes",                  icon_url: BASE + "specialisation/geography/expert.png",  category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "geography"}, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "geography_master",      title: "Geography Master",          description: "Complete 100 Geography quizzes",                 icon_url: BASE + "specialisation/geography/master.png",  category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "geography"}, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "geography_legend",      title: "Geography Legend",          description: "Complete 200 Geography quizzes",                 icon_url: BASE + "specialisation/geography/legend.png",  category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "geography"}, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — sport ─────────────────────────────────────────────────────
-        { badge_id: "sport_novice",          title: "Sport Novice",              description: "Complete your first Sport quiz",                 icon_url: BASE + "specialisation/sport/novice.png",      category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "sport"    }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "sport_apprentice",      title: "Sport Apprentice",          description: "Complete 10 Sport quizzes",                      icon_url: BASE + "specialisation/sport/apprentice.png",  category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "sport"    }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "sport_expert",          title: "Sport Expert",              description: "Complete 50 Sport quizzes",                      icon_url: BASE + "specialisation/sport/expert.png",      category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "sport"    }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "sport_master",          title: "Sport Master",              description: "Complete 100 Sport quizzes",                     icon_url: BASE + "specialisation/sport/master.png",      category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "sport"    }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "sport_legend",          title: "Sport Legend",              description: "Complete 200 Sport quizzes",                     icon_url: BASE + "specialisation/sport/legend.png",      category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "sport"    }, rewards: { coins: 750, xp: 375 }, points: 75  },
-
-        // ── SPECIALISATION — finance ───────────────────────────────────────────────────
-        { badge_id: "finance_novice",        title: "Finance Novice",            description: "Complete your first Finance quiz",               icon_url: BASE + "specialisation/finance/novice.png",    category: "specialisation",rarity: "common",    type: "progressive", target: 1,     unlock_criteria: { event: "topic_quiz_complete", count: 1,   topic: "finance"  }, rewards: { coins: 50,  xp: 25  }, points: 5   },
-        { badge_id: "finance_apprentice",    title: "Finance Apprentice",        description: "Complete 10 Finance quizzes",                    icon_url: BASE + "specialisation/finance/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "finance"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
-        { badge_id: "finance_expert",        title: "Finance Expert",            description: "Complete 50 Finance quizzes",                    icon_url: BASE + "specialisation/finance/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "finance"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
-        { badge_id: "finance_master",        title: "Finance Master",            description: "Complete 100 Finance quizzes",                   icon_url: BASE + "specialisation/finance/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "finance"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "finance_legend",        title: "Finance Legend",            description: "Complete 200 Finance quizzes",                   icon_url: BASE + "specialisation/finance/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "finance"  }, rewards: { coins: 750, xp: 375 }, points: 75  }
-    ]
-};
-
-
-// --- Module: badges\badge_seed_definitions.js ---
-// badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
-// Run once via admin RPC or directly call badges_bulk_create
-// Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
-
-/**
- * Call this as a Nakama RPC: badges_bulk_create
- * Payload: { game_id: "quizverse", badges: [...] }
- */
-
-var LEGENDARY_AND_SEASONAL_BADGES = {
-    game_id: "quizverse",
-    badges: [
-        // ─── 3 REMAINING LEGENDARY BADGES (Phase 6) ───────────────────────
-        {
-            badge_id: "legend_topic_master",
-            title: "Topic Master",
-            description: "Master all 4 core topics with 90%+ accuracy in each",
-            icon_url: "badges/legendary/topic_master.png",
-            category: "special",
-            rarity: "legendary",
-            type: "tiered",
-            target: 4,
-            hidden: true,
-            points: 500,
-            order: 100,
-            rewards: { coins: 1000, xp: 500, collectables: ["frame_golden_brain"] },
-            unlock_criteria: { event: "topic_mastery", threshold: 4 }
-        },
-        {
-            badge_id: "legend_cross_topic",
-            title: "Cross-Topic Champion",
-            description: "Win 50 quizzes across at least 3 different topics",
-            icon_url: "badges/legendary/cross_topic.png",
-            category: "quiz",
-            rarity: "legendary",
-            type: "achievement",
-            target: 50,
-            hidden: false,
-            points: 400,
-            order: 101,
-            rewards: { coins: 750, xp: 400, collectables: ["title_champion"] },
-            unlock_criteria: { event: "quiz_complete", min_topics: 3 }
-        },
-        {
-            badge_id: "legend_polymath",
-            title: "Polymath",
-            description: "Answer 1000 questions correctly across Health, Love, Career & General",
-            icon_url: "badges/legendary/polymath.png",
-            category: "quiz",
-            rarity: "legendary",
-            type: "achievement",
-            target: 1000,
-            hidden: false,
-            points: 600,
-            order: 102,
-            rewards: { coins: 1500, xp: 750, collectables: ["border_rainbow", "title_polymath"] },
-            unlock_criteria: { event: "correct_answer", all_topics: true }
-        },
-
-        // ─── 5 SEASONAL BADGES ─────────────────────────────────────────────
-        {
-            badge_id: "seasonal_spring",
-            title: "Spring Bloom",
-            description: "Complete 10 quizzes during Spring season (Mar-May)",
-            icon_url: "badges/seasonal/spring.png",
-            category: "seasonal",
-            rarity: "epic",
-            type: "seasonal",
-            target: 10,
-            hidden: false,
-            points: 200,
-            order: 200,
-            rewards: { coins: 300, xp: 150 },
-            unlock_criteria: { event: "quiz_complete", season: "spring" }
-        },
-        {
-            badge_id: "seasonal_summer",
-            title: "Summer Heat",
-            description: "Win 5 multiplayer matches during Summer (Jun-Aug)",
-            icon_url: "badges/seasonal/summer.png",
-            category: "seasonal",
-            rarity: "epic",
-            type: "seasonal",
-            target: 5,
-            hidden: false,
-            points: 200,
-            order: 201,
-            rewards: { coins: 300, xp: 150 },
-            unlock_criteria: { event: "match_win", season: "summer" }
-        },
-        {
-            badge_id: "seasonal_monsoon",
-            title: "Monsoon Scholar",
-            description: "Complete 15 Smart Review sessions during Monsoon (Jul-Sep)",
-            icon_url: "badges/seasonal/monsoon.png",
-            category: "seasonal",
-            rarity: "epic",
-            type: "seasonal",
-            target: 15,
-            hidden: false,
-            points: 250,
-            order: 202,
-            rewards: { coins: 400, xp: 200 },
-            unlock_criteria: { event: "review_session", season: "monsoon" }
-        },
-        {
-            badge_id: "seasonal_autumn",
-            title: "Autumn Harvest",
-            description: "Maintain a 14-day streak during Autumn (Oct-Nov)",
-            icon_url: "badges/seasonal/autumn.png",
-            category: "seasonal",
-            rarity: "legendary",
-            type: "seasonal",
-            target: 14,
-            hidden: false,
-            points: 300,
-            order: 203,
-            rewards: { coins: 500, xp: 250 },
-            unlock_criteria: { event: "daily_login_streak", season: "autumn" }
-        },
-        {
-            badge_id: "seasonal_winter",
-            title: "Winter Warrior",
-            description: "Achieve 3 perfect quiz scores during Winter (Dec-Feb)",
-            icon_url: "badges/seasonal/winter.png",
-            category: "seasonal",
-            rarity: "legendary",
-            type: "seasonal",
-            target: 3,
-            hidden: false,
-            points: 300,
-            order: 204,
-            rewards: { coins: 500, xp: 250, collectables: ["frame_snowflake"] },
-            unlock_criteria: { event: "perfect_quiz", season: "winter" }
-        }
-    ]
-};
-
-// To seed: call badges_bulk_create RPC with the above payload
-// Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
-
-
-// --- Module: characters\characters.js ---
+// --- Module: characters/characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -22558,7 +22558,523 @@ function rpcCharacterSetActive(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: chatbox\chatbox.js ---
+// --- Module: chat_moderation/chat_moderation.js ---
+// chat_moderation.js - Chat Moderation Pipeline
+// Storage collection: chat_reports, chat_filter_config
+// RPCs: chat_filter_message (public), chat_report_message (public),
+//       chat_moderation_review (admin-gated), chat_moderation_stats (admin-gated)
+//
+// Helpers checkProfanity / filterMessage are also reused by chatbox.js via
+// the postbuild global hoist.
+//
+// SECURITY NOTE (audit 2026-05-19, P0-2 + P0-3):
+//   Prior to this module having an InitModule the admin RPCs were dead code,
+//   which masked the fact that they had NO auth check. Now that we register
+//   them, requireAdmin() bounces non-admins. Admin identities are sourced
+//   from the env-supplied ADMIN_USER_IDS (comma-separated UUID list, set in
+//   docker-compose / EKS secrets / .env via --runtime.env).
+
+// ============================================================================
+// ADMIN AUTH GATE
+// ============================================================================
+
+function modIsAdmin(ctx) {
+    if (!ctx || !ctx.userId) return false;
+    var raw = (ctx.env && ctx.env.ADMIN_USER_IDS) || "";
+    if (!raw) return false;
+    var ids = raw.split(",");
+    for (var i = 0; i < ids.length; i++) {
+        if ((ids[i] || "").trim() === ctx.userId) return true;
+    }
+    return false;
+}
+
+function modRequireAdmin(ctx) {
+    if (modIsAdmin(ctx)) return null;
+    return JSON.stringify({ success: false, error: "admin_required" });
+}
+
+var PROFANITY_WORDS = [
+    "fuck", "shit", "ass", "bitch", "dick", "cunt", "damn", "bastard",
+    "nigger", "nigga", "faggot", "retard", "whore", "slut",
+    "kill yourself", "kys", "die", "rape"
+];
+
+var SPAM_PATTERNS = [
+    /(.)\1{5,}/,
+    /https?:\/\/[^\s]+/,
+    /\b(free|cheap|buy now|click here|subscribe)\b/i
+];
+
+var MODERATION_CONFIG = {
+    max_reports_before_auto_mute: 5,
+    report_cooldown_seconds: 60,
+    auto_filter_enabled: true,
+    max_message_length: 1000
+};
+
+/**
+ * Check a message against the profanity word list.
+ * Returns { flagged: bool, matched_words: string[], severity: string }
+ */
+function checkProfanity(text) {
+    var lower = text.toLowerCase();
+    var matched = [];
+
+    for (var i = 0; i < PROFANITY_WORDS.length; i++) {
+        if (lower.indexOf(PROFANITY_WORDS[i]) !== -1) {
+            matched.push(PROFANITY_WORDS[i]);
+        }
+    }
+
+    var severity = 'clean';
+    if (matched.length > 0) severity = 'mild';
+    if (matched.length >= 3) severity = 'severe';
+
+    for (var j = 0; j < matched.length; j++) {
+        var w = matched[j];
+        if (w === 'nigger' || w === 'nigga' || w === 'faggot' || w === 'kill yourself' || w === 'kys' || w === 'rape') {
+            severity = 'severe';
+            break;
+        }
+    }
+
+    return { flagged: matched.length > 0, matched_words: matched, severity: severity };
+}
+
+/**
+ * Check a message for spam patterns.
+ */
+function checkSpam(text) {
+    var flags = [];
+    for (var i = 0; i < SPAM_PATTERNS.length; i++) {
+        if (SPAM_PATTERNS[i].test(text)) {
+            flags.push('spam_pattern_' + i);
+        }
+    }
+    if (text.length > MODERATION_CONFIG.max_message_length) {
+        flags.push('message_too_long');
+    }
+    return { flagged: flags.length > 0, flags: flags };
+}
+
+/**
+ * Filter a message by replacing profanity with asterisks.
+ * Returns the filtered text.
+ */
+function filterMessage(text) {
+    var filtered = text;
+    for (var i = 0; i < PROFANITY_WORDS.length; i++) {
+        var word = PROFANITY_WORDS[i];
+        var replacement = '';
+        for (var c = 0; c < word.length; c++) replacement += '*';
+        var regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        filtered = filtered.replace(regex, replacement);
+    }
+    return filtered;
+}
+
+/**
+ * RPC: chat_report_message
+ * Report a chat message as inappropriate.
+ */
+function rpcChatReportMessage(ctx, logger, nk, payload) {
+    logger.info('[Moderation] chat_report_message called');
+
+    try {
+        if (!ctx.userId) {
+            return JSON.stringify({ success: false, error: 'Authentication required' });
+        }
+
+        var data = JSON.parse(payload || '{}');
+
+        if (!data.message_id || !data.reason) {
+            return JSON.stringify({
+                success: false,
+                error: 'message_id and reason are required'
+            });
+        }
+
+        var reporterId = ctx.userId;
+        var messageId = data.message_id;
+        var reason = data.reason;
+        var channelType = data.channel_type || 'unknown';
+        var channelId = data.channel_id || '';
+        var reportedUserId = data.reported_user_id || '';
+        var messageContent = data.message_content || '';
+        var additionalInfo = data.additional_info || '';
+
+        // Check reporter hasn't spammed reports (cooldown)
+        var recentReports = nk.storageList(reporterId, 'chat_reports_by_reporter', 10, '');
+        var allRecent = recentReports;
+        if (typeof recentReports === 'object' && recentReports.objects) {
+            allRecent = recentReports.objects;
+        }
+        var nowMs = Date.now();
+        if (allRecent && allRecent.length > 0) {
+            var lastReport = allRecent[allRecent.length - 1];
+            if (lastReport && lastReport.value && lastReport.value.created_at_unix) {
+                var elapsed = (nowMs - lastReport.value.created_at_unix) / 1000;
+                if (elapsed < MODERATION_CONFIG.report_cooldown_seconds) {
+                    return JSON.stringify({
+                        success: false,
+                        error: 'Report cooldown active. Wait ' + Math.ceil(MODERATION_CONFIG.report_cooldown_seconds - elapsed) + 's.'
+                    });
+                }
+            }
+        }
+
+        // Run automated checks on the reported content
+        var profanityCheck = messageContent ? checkProfanity(messageContent) : { flagged: false, matched_words: [], severity: 'unknown' };
+        var spamCheck = messageContent ? checkSpam(messageContent) : { flagged: false, flags: [] };
+
+        var reportId = 'report_' + reporterId.slice(0, 8) + '_' + nowMs;
+        var reportData = {
+            report_id: reportId,
+            message_id: messageId,
+            channel_type: channelType,
+            channel_id: channelId,
+            reporter_id: reporterId,
+            reporter_username: ctx.username || 'Unknown',
+            reported_user_id: reportedUserId,
+            message_content: messageContent,
+            reason: reason,
+            additional_info: additionalInfo,
+            auto_analysis: {
+                profanity: profanityCheck,
+                spam: spamCheck
+            },
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            created_at_unix: nowMs,
+            reviewed_at: null,
+            reviewed_by: null,
+            action_taken: null
+        };
+
+        // Auto-escalate severe content
+        if (profanityCheck.severity === 'severe') {
+            reportData.status = 'auto_flagged_severe';
+        }
+
+        // Write to system-owned reports collection
+        nk.storageWrite([{
+            collection: 'chat_reports',
+            key: reportId,
+            userId: '00000000-0000-0000-0000-000000000000',
+            value: reportData,
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+
+        // Track per-reporter (for cooldown / abuse detection)
+        nk.storageWrite([{
+            collection: 'chat_reports_by_reporter',
+            key: reportId,
+            userId: reporterId,
+            value: { report_id: reportId, created_at_unix: nowMs },
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+
+        // Count total reports against the reported user
+        if (reportedUserId) {
+            var userReportCountKey = 'report_count_' + reportedUserId;
+            var existing = null;
+            try {
+                var countRecords = nk.storageRead([{
+                    collection: 'chat_moderation_user_stats',
+                    key: userReportCountKey,
+                    userId: '00000000-0000-0000-0000-000000000000'
+                }]);
+                if (countRecords && countRecords.length > 0) {
+                    existing = countRecords[0].value;
+                }
+            } catch (e) { /* first report */ }
+
+            var totalReports = (existing ? existing.total_reports : 0) + 1;
+            var autoMuted = existing ? existing.auto_muted : false;
+
+            if (totalReports >= MODERATION_CONFIG.max_reports_before_auto_mute && !autoMuted) {
+                autoMuted = true;
+                reportData.action_taken = 'auto_muted';
+                logger.warn('[Moderation] Auto-muted user ' + reportedUserId + ' after ' + totalReports + ' reports');
+            }
+
+            nk.storageWrite([{
+                collection: 'chat_moderation_user_stats',
+                key: userReportCountKey,
+                userId: '00000000-0000-0000-0000-000000000000',
+                value: {
+                    user_id: reportedUserId,
+                    total_reports: totalReports,
+                    auto_muted: autoMuted,
+                    last_report_at: new Date().toISOString()
+                },
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+        }
+
+        logger.info('[Moderation] Report created: ' + reportId);
+
+        return JSON.stringify({
+            success: true,
+            report_id: reportId,
+            auto_analysis: reportData.auto_analysis,
+            status: reportData.status,
+            action_taken: reportData.action_taken
+        });
+
+    } catch (err) {
+        logger.error('[Moderation] chat_report_message error: ' + err.message);
+        logRpcError(nk, logger, 'chat_report_message', err.message, ctx.userId, null);
+        return JSON.stringify({ success: false, error: "internal_error" });
+    }
+}
+
+/**
+ * RPC: chat_moderation_review
+ * Admin-only: Review pending reports and take action.
+ */
+function rpcChatModerationReview(ctx, logger, nk, payload) {
+    logger.info('[Moderation] chat_moderation_review called');
+
+    // P0-3: admin gate. Without this, any authenticated user could list
+    // reports and ban other users.
+    var denial = modRequireAdmin(ctx);
+    if (denial) return denial;
+
+    try {
+        var data = JSON.parse(payload || '{}');
+        var action = data.action || 'list';
+
+        if (action === 'list') {
+            var limit = parseInt(data.limit, 10) || 50;
+            var statusFilter = data.status || 'pending';
+            var cursor = data.cursor || '';
+
+            var records = nk.storageList('00000000-0000-0000-0000-000000000000', 'chat_reports', limit, cursor);
+            var reports = [];
+            var nextCursor = '';
+
+            var allRecords = records;
+            if (typeof records === 'object' && records.objects) {
+                nextCursor = records.cursor || '';
+                allRecords = records.objects;
+            }
+
+            for (var i = 0; i < allRecords.length; i++) {
+                var r = allRecords[i].value;
+                if (r && (statusFilter === 'all' || r.status === statusFilter || r.status === 'auto_flagged_severe')) {
+                    reports.push(r);
+                }
+            }
+
+            return JSON.stringify({
+                success: true,
+                reports: reports,
+                count: reports.length,
+                cursor: nextCursor
+            });
+        }
+
+        if (action === 'resolve') {
+            if (!data.report_id || !data.resolution) {
+                return JSON.stringify({
+                    success: false,
+                    error: 'report_id and resolution are required for resolve action'
+                });
+            }
+
+            var reportRecords = nk.storageRead([{
+                collection: 'chat_reports',
+                key: data.report_id,
+                userId: '00000000-0000-0000-0000-000000000000'
+            }]);
+
+            if (!reportRecords || reportRecords.length === 0) {
+                return JSON.stringify({ success: false, error: 'Report not found' });
+            }
+
+            var report = reportRecords[0].value;
+            report.status = 'resolved';
+            report.reviewed_at = new Date().toISOString();
+            report.reviewed_by = ctx.userId || 'admin';
+            report.action_taken = data.resolution;
+            report.resolution_notes = data.notes || '';
+
+            nk.storageWrite([{
+                collection: 'chat_reports',
+                key: data.report_id,
+                userId: '00000000-0000-0000-0000-000000000000',
+                value: report,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+
+            // Execute action if needed
+            if (data.resolution === 'ban' && report.reported_user_id) {
+                try {
+                    nk.usersBanId([report.reported_user_id]);
+                    logger.warn('[Moderation] Banned user: ' + report.reported_user_id);
+                } catch (banErr) {
+                    logger.error('[Moderation] Ban failed: ' + banErr.message);
+                }
+            }
+
+            return JSON.stringify({
+                success: true,
+                report_id: data.report_id,
+                new_status: 'resolved',
+                action_taken: data.resolution
+            });
+        }
+
+        return JSON.stringify({ success: false, error: 'Unknown action. Use "list" or "resolve".' });
+
+    } catch (err) {
+        logger.error('[Moderation] chat_moderation_review error: ' + err.message);
+        logRpcError(nk, logger, 'chat_moderation_review', err.message, ctx.userId, null);
+        return JSON.stringify({ success: false, error: "internal_error" });
+    }
+}
+
+/**
+ * RPC: chat_moderation_stats
+ * Returns moderation statistics: total reports, pending, resolved, top reported users, etc.
+ */
+function rpcChatModerationStats(ctx, logger, nk, payload) {
+    logger.info('[Moderation] chat_moderation_stats called');
+
+    // P0-3: admin gate. Stats reveal counts and top-reported users —
+    // useful intel for an attacker mapping which users to escalate against.
+    var denial = modRequireAdmin(ctx);
+    if (denial) return denial;
+
+    try {
+        var records = nk.storageList('00000000-0000-0000-0000-000000000000', 'chat_reports', 100, '');
+        var allRecords = records;
+        if (typeof records === 'object' && records.objects) {
+            allRecords = records.objects;
+        }
+
+        var stats = {
+            total_reports: 0,
+            pending: 0,
+            auto_flagged_severe: 0,
+            resolved: 0,
+            by_reason: {},
+            by_channel_type: {},
+            top_reported_users: {},
+            profanity_detections: 0,
+            spam_detections: 0
+        };
+
+        for (var i = 0; i < allRecords.length; i++) {
+            var r = allRecords[i].value;
+            if (!r) continue;
+
+            stats.total_reports++;
+            if (r.status === 'pending') stats.pending++;
+            else if (r.status === 'auto_flagged_severe') stats.auto_flagged_severe++;
+            else if (r.status === 'resolved') stats.resolved++;
+
+            if (r.reason) {
+                stats.by_reason[r.reason] = (stats.by_reason[r.reason] || 0) + 1;
+            }
+            if (r.channel_type) {
+                stats.by_channel_type[r.channel_type] = (stats.by_channel_type[r.channel_type] || 0) + 1;
+            }
+            if (r.reported_user_id) {
+                stats.top_reported_users[r.reported_user_id] = (stats.top_reported_users[r.reported_user_id] || 0) + 1;
+            }
+            if (r.auto_analysis) {
+                if (r.auto_analysis.profanity && r.auto_analysis.profanity.flagged) stats.profanity_detections++;
+                if (r.auto_analysis.spam && r.auto_analysis.spam.flagged) stats.spam_detections++;
+            }
+        }
+
+        // Sort top reported users
+        var sortedUsers = [];
+        for (var uid in stats.top_reported_users) {
+            sortedUsers.push({ user_id: uid, reports: stats.top_reported_users[uid] });
+        }
+        sortedUsers.sort(function(a, b) { return b.reports - a.reports; });
+        stats.top_reported_users = sortedUsers.slice(0, 10);
+
+        return JSON.stringify({
+            success: true,
+            stats: stats
+        });
+
+    } catch (err) {
+        logger.error('[Moderation] chat_moderation_stats error: ' + err.message);
+        logRpcError(nk, logger, 'chat_moderation_stats', err.message, ctx.userId, null);
+        return JSON.stringify({ success: false, error: "internal_error" });
+    }
+}
+
+/**
+ * RPC: chat_filter_message
+ * Check a message against the word filter before sending.
+ * Returns filtered text and flags. Can be called inline by clients before posting.
+ */
+function rpcChatFilterMessage(ctx, logger, nk, payload) {
+    logger.info('[Moderation] chat_filter_message called');
+
+    try {
+        var data = JSON.parse(payload || '{}');
+
+        if (!data.message) {
+            return JSON.stringify({ success: false, error: 'message is required' });
+        }
+
+        var profanityResult = checkProfanity(data.message);
+        var spamResult = checkSpam(data.message);
+        var filteredText = filterMessage(data.message);
+
+        var allowed = true;
+        if (profanityResult.severity === 'severe') allowed = false;
+        if (spamResult.flags.length > 2) allowed = false;
+
+        return JSON.stringify({
+            success: true,
+            original: data.message,
+            filtered: filteredText,
+            allowed: allowed,
+            profanity: profanityResult,
+            spam: spamResult
+        });
+
+    } catch (err) {
+        logger.error('[Moderation] chat_filter_message error: ' + err.message);
+        return JSON.stringify({ success: false, error: "internal_error" });
+    }
+}
+
+// ============================================================================
+// MODULE INIT (postbuild AST hook) — P0-2 fix
+// ----------------------------------------------------------------------------
+// postbuild.js renames this `InitModule` to `__ModuleInit_N` and lifts every
+// literal initializer.registerRpc call inside it into the master InitModule.
+// Keep registrations as direct literal calls (no helpers, no loops) or the
+// AST walker in runtime_javascript_init.go will not see them.
+//
+// Admin RPCs ARE registered here but are protected by modRequireAdmin().
+// Without ADMIN_USER_IDS in the runtime env, they all return admin_required.
+// ============================================================================
+
+function __ModuleInit_26(ctx, logger, nk, initializer) {
+    __rpc_chat_filter_message = __rpc_chat_filter_message || (rpcChatFilterMessage);     // public
+    __rpc_chat_report_message = __rpc_chat_report_message || (rpcChatReportMessage);     // public (creates a report)
+    __rpc_chat_moderation_review = __rpc_chat_moderation_review || (rpcChatModerationReview);  // admin-gated
+    __rpc_chat_moderation_stats = __rpc_chat_moderation_stats || (rpcChatModerationStats);   // admin-gated
+    logger.info("[Moderation] Module InitModule registered: 4 RPCs (2 public, 2 admin-gated)");
+}
+
+
+// --- Module: chatbox/chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -23652,7 +24168,7 @@ function rpcQuizverseKbFilterUnseen(ctx, logger, nk, payload) {
 // AST walker in runtime_javascript_init.go will not see them.
 // ============================================================================
 
-function __ModuleInit_26(ctx, logger, nk, initializer) {
+function __ModuleInit_27(ctx, logger, nk, initializer) {
     __rpc_quizverse_chatbox_greeting = __rpc_quizverse_chatbox_greeting || (rpcQuizverseChatboxGreeting);
     __rpc_quizverse_chatbox_message = __rpc_quizverse_chatbox_message || (rpcQuizverseChatboxMessage);
     __rpc_quizverse_kb_get_context = __rpc_quizverse_kb_get_context || (rpcQuizverseKbGetContext);
@@ -23662,523 +24178,7 @@ function __ModuleInit_26(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chat_moderation\chat_moderation.js ---
-// chat_moderation.js - Chat Moderation Pipeline
-// Storage collection: chat_reports, chat_filter_config
-// RPCs: chat_filter_message (public), chat_report_message (public),
-//       chat_moderation_review (admin-gated), chat_moderation_stats (admin-gated)
-//
-// Helpers checkProfanity / filterMessage are also reused by chatbox.js via
-// the postbuild global hoist.
-//
-// SECURITY NOTE (audit 2026-05-19, P0-2 + P0-3):
-//   Prior to this module having an InitModule the admin RPCs were dead code,
-//   which masked the fact that they had NO auth check. Now that we register
-//   them, requireAdmin() bounces non-admins. Admin identities are sourced
-//   from the env-supplied ADMIN_USER_IDS (comma-separated UUID list, set in
-//   docker-compose / EKS secrets / .env via --runtime.env).
-
-// ============================================================================
-// ADMIN AUTH GATE
-// ============================================================================
-
-function modIsAdmin(ctx) {
-    if (!ctx || !ctx.userId) return false;
-    var raw = (ctx.env && ctx.env.ADMIN_USER_IDS) || "";
-    if (!raw) return false;
-    var ids = raw.split(",");
-    for (var i = 0; i < ids.length; i++) {
-        if ((ids[i] || "").trim() === ctx.userId) return true;
-    }
-    return false;
-}
-
-function modRequireAdmin(ctx) {
-    if (modIsAdmin(ctx)) return null;
-    return JSON.stringify({ success: false, error: "admin_required" });
-}
-
-var PROFANITY_WORDS = [
-    "fuck", "shit", "ass", "bitch", "dick", "cunt", "damn", "bastard",
-    "nigger", "nigga", "faggot", "retard", "whore", "slut",
-    "kill yourself", "kys", "die", "rape"
-];
-
-var SPAM_PATTERNS = [
-    /(.)\1{5,}/,
-    /https?:\/\/[^\s]+/,
-    /\b(free|cheap|buy now|click here|subscribe)\b/i
-];
-
-var MODERATION_CONFIG = {
-    max_reports_before_auto_mute: 5,
-    report_cooldown_seconds: 60,
-    auto_filter_enabled: true,
-    max_message_length: 1000
-};
-
-/**
- * Check a message against the profanity word list.
- * Returns { flagged: bool, matched_words: string[], severity: string }
- */
-function checkProfanity(text) {
-    var lower = text.toLowerCase();
-    var matched = [];
-
-    for (var i = 0; i < PROFANITY_WORDS.length; i++) {
-        if (lower.indexOf(PROFANITY_WORDS[i]) !== -1) {
-            matched.push(PROFANITY_WORDS[i]);
-        }
-    }
-
-    var severity = 'clean';
-    if (matched.length > 0) severity = 'mild';
-    if (matched.length >= 3) severity = 'severe';
-
-    for (var j = 0; j < matched.length; j++) {
-        var w = matched[j];
-        if (w === 'nigger' || w === 'nigga' || w === 'faggot' || w === 'kill yourself' || w === 'kys' || w === 'rape') {
-            severity = 'severe';
-            break;
-        }
-    }
-
-    return { flagged: matched.length > 0, matched_words: matched, severity: severity };
-}
-
-/**
- * Check a message for spam patterns.
- */
-function checkSpam(text) {
-    var flags = [];
-    for (var i = 0; i < SPAM_PATTERNS.length; i++) {
-        if (SPAM_PATTERNS[i].test(text)) {
-            flags.push('spam_pattern_' + i);
-        }
-    }
-    if (text.length > MODERATION_CONFIG.max_message_length) {
-        flags.push('message_too_long');
-    }
-    return { flagged: flags.length > 0, flags: flags };
-}
-
-/**
- * Filter a message by replacing profanity with asterisks.
- * Returns the filtered text.
- */
-function filterMessage(text) {
-    var filtered = text;
-    for (var i = 0; i < PROFANITY_WORDS.length; i++) {
-        var word = PROFANITY_WORDS[i];
-        var replacement = '';
-        for (var c = 0; c < word.length; c++) replacement += '*';
-        var regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        filtered = filtered.replace(regex, replacement);
-    }
-    return filtered;
-}
-
-/**
- * RPC: chat_report_message
- * Report a chat message as inappropriate.
- */
-function rpcChatReportMessage(ctx, logger, nk, payload) {
-    logger.info('[Moderation] chat_report_message called');
-
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({ success: false, error: 'Authentication required' });
-        }
-
-        var data = JSON.parse(payload || '{}');
-
-        if (!data.message_id || !data.reason) {
-            return JSON.stringify({
-                success: false,
-                error: 'message_id and reason are required'
-            });
-        }
-
-        var reporterId = ctx.userId;
-        var messageId = data.message_id;
-        var reason = data.reason;
-        var channelType = data.channel_type || 'unknown';
-        var channelId = data.channel_id || '';
-        var reportedUserId = data.reported_user_id || '';
-        var messageContent = data.message_content || '';
-        var additionalInfo = data.additional_info || '';
-
-        // Check reporter hasn't spammed reports (cooldown)
-        var recentReports = nk.storageList(reporterId, 'chat_reports_by_reporter', 10, '');
-        var allRecent = recentReports;
-        if (typeof recentReports === 'object' && recentReports.objects) {
-            allRecent = recentReports.objects;
-        }
-        var nowMs = Date.now();
-        if (allRecent && allRecent.length > 0) {
-            var lastReport = allRecent[allRecent.length - 1];
-            if (lastReport && lastReport.value && lastReport.value.created_at_unix) {
-                var elapsed = (nowMs - lastReport.value.created_at_unix) / 1000;
-                if (elapsed < MODERATION_CONFIG.report_cooldown_seconds) {
-                    return JSON.stringify({
-                        success: false,
-                        error: 'Report cooldown active. Wait ' + Math.ceil(MODERATION_CONFIG.report_cooldown_seconds - elapsed) + 's.'
-                    });
-                }
-            }
-        }
-
-        // Run automated checks on the reported content
-        var profanityCheck = messageContent ? checkProfanity(messageContent) : { flagged: false, matched_words: [], severity: 'unknown' };
-        var spamCheck = messageContent ? checkSpam(messageContent) : { flagged: false, flags: [] };
-
-        var reportId = 'report_' + reporterId.slice(0, 8) + '_' + nowMs;
-        var reportData = {
-            report_id: reportId,
-            message_id: messageId,
-            channel_type: channelType,
-            channel_id: channelId,
-            reporter_id: reporterId,
-            reporter_username: ctx.username || 'Unknown',
-            reported_user_id: reportedUserId,
-            message_content: messageContent,
-            reason: reason,
-            additional_info: additionalInfo,
-            auto_analysis: {
-                profanity: profanityCheck,
-                spam: spamCheck
-            },
-            status: 'pending',
-            created_at: new Date().toISOString(),
-            created_at_unix: nowMs,
-            reviewed_at: null,
-            reviewed_by: null,
-            action_taken: null
-        };
-
-        // Auto-escalate severe content
-        if (profanityCheck.severity === 'severe') {
-            reportData.status = 'auto_flagged_severe';
-        }
-
-        // Write to system-owned reports collection
-        nk.storageWrite([{
-            collection: 'chat_reports',
-            key: reportId,
-            userId: '00000000-0000-0000-0000-000000000000',
-            value: reportData,
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-
-        // Track per-reporter (for cooldown / abuse detection)
-        nk.storageWrite([{
-            collection: 'chat_reports_by_reporter',
-            key: reportId,
-            userId: reporterId,
-            value: { report_id: reportId, created_at_unix: nowMs },
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-
-        // Count total reports against the reported user
-        if (reportedUserId) {
-            var userReportCountKey = 'report_count_' + reportedUserId;
-            var existing = null;
-            try {
-                var countRecords = nk.storageRead([{
-                    collection: 'chat_moderation_user_stats',
-                    key: userReportCountKey,
-                    userId: '00000000-0000-0000-0000-000000000000'
-                }]);
-                if (countRecords && countRecords.length > 0) {
-                    existing = countRecords[0].value;
-                }
-            } catch (e) { /* first report */ }
-
-            var totalReports = (existing ? existing.total_reports : 0) + 1;
-            var autoMuted = existing ? existing.auto_muted : false;
-
-            if (totalReports >= MODERATION_CONFIG.max_reports_before_auto_mute && !autoMuted) {
-                autoMuted = true;
-                reportData.action_taken = 'auto_muted';
-                logger.warn('[Moderation] Auto-muted user ' + reportedUserId + ' after ' + totalReports + ' reports');
-            }
-
-            nk.storageWrite([{
-                collection: 'chat_moderation_user_stats',
-                key: userReportCountKey,
-                userId: '00000000-0000-0000-0000-000000000000',
-                value: {
-                    user_id: reportedUserId,
-                    total_reports: totalReports,
-                    auto_muted: autoMuted,
-                    last_report_at: new Date().toISOString()
-                },
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        }
-
-        logger.info('[Moderation] Report created: ' + reportId);
-
-        return JSON.stringify({
-            success: true,
-            report_id: reportId,
-            auto_analysis: reportData.auto_analysis,
-            status: reportData.status,
-            action_taken: reportData.action_taken
-        });
-
-    } catch (err) {
-        logger.error('[Moderation] chat_report_message error: ' + err.message);
-        logRpcError(nk, logger, 'chat_report_message', err.message, ctx.userId, null);
-        return JSON.stringify({ success: false, error: "internal_error" });
-    }
-}
-
-/**
- * RPC: chat_moderation_review
- * Admin-only: Review pending reports and take action.
- */
-function rpcChatModerationReview(ctx, logger, nk, payload) {
-    logger.info('[Moderation] chat_moderation_review called');
-
-    // P0-3: admin gate. Without this, any authenticated user could list
-    // reports and ban other users.
-    var denial = modRequireAdmin(ctx);
-    if (denial) return denial;
-
-    try {
-        var data = JSON.parse(payload || '{}');
-        var action = data.action || 'list';
-
-        if (action === 'list') {
-            var limit = parseInt(data.limit, 10) || 50;
-            var statusFilter = data.status || 'pending';
-            var cursor = data.cursor || '';
-
-            var records = nk.storageList('00000000-0000-0000-0000-000000000000', 'chat_reports', limit, cursor);
-            var reports = [];
-            var nextCursor = '';
-
-            var allRecords = records;
-            if (typeof records === 'object' && records.objects) {
-                nextCursor = records.cursor || '';
-                allRecords = records.objects;
-            }
-
-            for (var i = 0; i < allRecords.length; i++) {
-                var r = allRecords[i].value;
-                if (r && (statusFilter === 'all' || r.status === statusFilter || r.status === 'auto_flagged_severe')) {
-                    reports.push(r);
-                }
-            }
-
-            return JSON.stringify({
-                success: true,
-                reports: reports,
-                count: reports.length,
-                cursor: nextCursor
-            });
-        }
-
-        if (action === 'resolve') {
-            if (!data.report_id || !data.resolution) {
-                return JSON.stringify({
-                    success: false,
-                    error: 'report_id and resolution are required for resolve action'
-                });
-            }
-
-            var reportRecords = nk.storageRead([{
-                collection: 'chat_reports',
-                key: data.report_id,
-                userId: '00000000-0000-0000-0000-000000000000'
-            }]);
-
-            if (!reportRecords || reportRecords.length === 0) {
-                return JSON.stringify({ success: false, error: 'Report not found' });
-            }
-
-            var report = reportRecords[0].value;
-            report.status = 'resolved';
-            report.reviewed_at = new Date().toISOString();
-            report.reviewed_by = ctx.userId || 'admin';
-            report.action_taken = data.resolution;
-            report.resolution_notes = data.notes || '';
-
-            nk.storageWrite([{
-                collection: 'chat_reports',
-                key: data.report_id,
-                userId: '00000000-0000-0000-0000-000000000000',
-                value: report,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-
-            // Execute action if needed
-            if (data.resolution === 'ban' && report.reported_user_id) {
-                try {
-                    nk.usersBanId([report.reported_user_id]);
-                    logger.warn('[Moderation] Banned user: ' + report.reported_user_id);
-                } catch (banErr) {
-                    logger.error('[Moderation] Ban failed: ' + banErr.message);
-                }
-            }
-
-            return JSON.stringify({
-                success: true,
-                report_id: data.report_id,
-                new_status: 'resolved',
-                action_taken: data.resolution
-            });
-        }
-
-        return JSON.stringify({ success: false, error: 'Unknown action. Use "list" or "resolve".' });
-
-    } catch (err) {
-        logger.error('[Moderation] chat_moderation_review error: ' + err.message);
-        logRpcError(nk, logger, 'chat_moderation_review', err.message, ctx.userId, null);
-        return JSON.stringify({ success: false, error: "internal_error" });
-    }
-}
-
-/**
- * RPC: chat_moderation_stats
- * Returns moderation statistics: total reports, pending, resolved, top reported users, etc.
- */
-function rpcChatModerationStats(ctx, logger, nk, payload) {
-    logger.info('[Moderation] chat_moderation_stats called');
-
-    // P0-3: admin gate. Stats reveal counts and top-reported users —
-    // useful intel for an attacker mapping which users to escalate against.
-    var denial = modRequireAdmin(ctx);
-    if (denial) return denial;
-
-    try {
-        var records = nk.storageList('00000000-0000-0000-0000-000000000000', 'chat_reports', 100, '');
-        var allRecords = records;
-        if (typeof records === 'object' && records.objects) {
-            allRecords = records.objects;
-        }
-
-        var stats = {
-            total_reports: 0,
-            pending: 0,
-            auto_flagged_severe: 0,
-            resolved: 0,
-            by_reason: {},
-            by_channel_type: {},
-            top_reported_users: {},
-            profanity_detections: 0,
-            spam_detections: 0
-        };
-
-        for (var i = 0; i < allRecords.length; i++) {
-            var r = allRecords[i].value;
-            if (!r) continue;
-
-            stats.total_reports++;
-            if (r.status === 'pending') stats.pending++;
-            else if (r.status === 'auto_flagged_severe') stats.auto_flagged_severe++;
-            else if (r.status === 'resolved') stats.resolved++;
-
-            if (r.reason) {
-                stats.by_reason[r.reason] = (stats.by_reason[r.reason] || 0) + 1;
-            }
-            if (r.channel_type) {
-                stats.by_channel_type[r.channel_type] = (stats.by_channel_type[r.channel_type] || 0) + 1;
-            }
-            if (r.reported_user_id) {
-                stats.top_reported_users[r.reported_user_id] = (stats.top_reported_users[r.reported_user_id] || 0) + 1;
-            }
-            if (r.auto_analysis) {
-                if (r.auto_analysis.profanity && r.auto_analysis.profanity.flagged) stats.profanity_detections++;
-                if (r.auto_analysis.spam && r.auto_analysis.spam.flagged) stats.spam_detections++;
-            }
-        }
-
-        // Sort top reported users
-        var sortedUsers = [];
-        for (var uid in stats.top_reported_users) {
-            sortedUsers.push({ user_id: uid, reports: stats.top_reported_users[uid] });
-        }
-        sortedUsers.sort(function(a, b) { return b.reports - a.reports; });
-        stats.top_reported_users = sortedUsers.slice(0, 10);
-
-        return JSON.stringify({
-            success: true,
-            stats: stats
-        });
-
-    } catch (err) {
-        logger.error('[Moderation] chat_moderation_stats error: ' + err.message);
-        logRpcError(nk, logger, 'chat_moderation_stats', err.message, ctx.userId, null);
-        return JSON.stringify({ success: false, error: "internal_error" });
-    }
-}
-
-/**
- * RPC: chat_filter_message
- * Check a message against the word filter before sending.
- * Returns filtered text and flags. Can be called inline by clients before posting.
- */
-function rpcChatFilterMessage(ctx, logger, nk, payload) {
-    logger.info('[Moderation] chat_filter_message called');
-
-    try {
-        var data = JSON.parse(payload || '{}');
-
-        if (!data.message) {
-            return JSON.stringify({ success: false, error: 'message is required' });
-        }
-
-        var profanityResult = checkProfanity(data.message);
-        var spamResult = checkSpam(data.message);
-        var filteredText = filterMessage(data.message);
-
-        var allowed = true;
-        if (profanityResult.severity === 'severe') allowed = false;
-        if (spamResult.flags.length > 2) allowed = false;
-
-        return JSON.stringify({
-            success: true,
-            original: data.message,
-            filtered: filteredText,
-            allowed: allowed,
-            profanity: profanityResult,
-            spam: spamResult
-        });
-
-    } catch (err) {
-        logger.error('[Moderation] chat_filter_message error: ' + err.message);
-        return JSON.stringify({ success: false, error: "internal_error" });
-    }
-}
-
-// ============================================================================
-// MODULE INIT (postbuild AST hook) — P0-2 fix
-// ----------------------------------------------------------------------------
-// postbuild.js renames this `InitModule` to `__ModuleInit_N` and lifts every
-// literal initializer.registerRpc call inside it into the master InitModule.
-// Keep registrations as direct literal calls (no helpers, no loops) or the
-// AST walker in runtime_javascript_init.go will not see them.
-//
-// Admin RPCs ARE registered here but are protected by modRequireAdmin().
-// Without ADMIN_USER_IDS in the runtime env, they all return admin_required.
-// ============================================================================
-
-function __ModuleInit_27(ctx, logger, nk, initializer) {
-    __rpc_chat_filter_message = __rpc_chat_filter_message || (rpcChatFilterMessage);     // public
-    __rpc_chat_report_message = __rpc_chat_report_message || (rpcChatReportMessage);     // public (creates a report)
-    __rpc_chat_moderation_review = __rpc_chat_moderation_review || (rpcChatModerationReview);  // admin-gated
-    __rpc_chat_moderation_stats = __rpc_chat_moderation_stats || (rpcChatModerationStats);   // admin-gated
-    logger.info("[Moderation] Module InitModule registered: 4 RPCs (2 public, 2 admin-gated)");
-}
-
-
-// --- Module: copilot\cognito_wallet_mapper.js ---
+// --- Module: copilot/cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -24410,7 +24410,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_aggregate.js ---
+// --- Module: copilot/leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -24522,7 +24522,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_friends.js ---
+// --- Module: copilot/leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -24699,7 +24699,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_sync.js ---
+// --- Module: copilot/leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -24774,7 +24774,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\social_features.js ---
+// --- Module: copilot/social_features.js ---
 // ============================================================================
 // social_features.js — Social graph and notification features (DEPRECATED)
 // ============================================================================
@@ -25023,7 +25023,7 @@ function rpcGetNotifications(ctx, logger, nk, payload) {
 ─── END DISABLED CODE ──────────────────────────────────────────────────── */
 
 
-// --- Module: copilot\utils.js ---
+// --- Module: copilot/utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -25106,7 +25106,7 @@ var utils = {
 };
 
 
-// --- Module: copilot\wallet_registry.js ---
+// --- Module: copilot/wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -25261,7 +25261,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot\wallet_utils.js ---
+// --- Module: copilot/wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -25367,7 +25367,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket\cricket_ai_integration.js ---
+// --- Module: cricket/cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -26208,7 +26208,7 @@ function __ModuleInit_36(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_daily_challenges.js ---
+// --- Module: cricket/cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -26783,7 +26783,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_economy.js ---
+// --- Module: cricket/cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -27460,7 +27460,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_engagement.js ---
+// --- Module: cricket/cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -28067,7 +28067,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_live_match.js ---
+// --- Module: cricket/cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -28827,7 +28827,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_predictions.js ---
+// --- Module: cricket/cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -29494,7 +29494,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_retention.js ---
+// --- Module: cricket/cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -30332,7 +30332,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_season_pass.js ---
+// --- Module: cricket/cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -30944,7 +30944,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_trivia.js ---
+// --- Module: cricket/cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -31894,7 +31894,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\engagement.js ---
+// --- Module: cricket_worldcup/engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -32563,7 +32563,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\predictions.js ---
+// --- Module: cricket_worldcup/predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -33153,7 +33153,7 @@ function __ModuleInit_46(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game\cross_game.js ---
+// --- Module: cross_game/cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -33640,7 +33640,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions\daily_missions.js ---
+// --- Module: daily_missions/daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -34019,7 +34019,219 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards\daily_rewards.js ---
+// --- Module: daily_rewards/daily_reward_calendar.js ---
+// daily_reward_calendar.js - 30-Day Daily Reward Calendar View
+// Extends the daily rewards system with a full calendar preview
+// RPC: daily_reward_get_calendar
+
+var CALENDAR_REWARD_CONFIGS = {
+    "default": [
+        { day: 1,  xp: 50,   tokens: 40,   name: "Welcome Back",         tier: "common",    icon: "coin_stack" },
+        { day: 2,  xp: 75,   tokens: 50,   name: "Steady Start",         tier: "common",    icon: "coin_stack" },
+        { day: 3,  xp: 100,  tokens: 65,   name: "Power-Up Day",         tier: "uncommon",  icon: "lightning" },
+        { day: 4,  xp: 150,  tokens: 80,   name: "Momentum Builder",     tier: "common",    icon: "coin_stack" },
+        { day: 5,  xp: 200,  tokens: 100,  name: "XP Boost",             tier: "uncommon",  icon: "star", multiplier: "2x XP" },
+        { day: 6,  xp: 275,  tokens: 125,  name: "Almost There",         tier: "uncommon",  icon: "fire" },
+        { day: 7,  xp: 400,  tokens: 200,  name: "Weekly Champion",      tier: "rare",      icon: "trophy",   bonus: "weekly_badge" },
+        { day: 8,  xp: 60,   tokens: 45,   name: "Fresh Week",           tier: "common",    icon: "sunrise" },
+        { day: 9,  xp: 90,   tokens: 55,   name: "Keeping It Up",        tier: "common",    icon: "thumbsup" },
+        { day: 10, xp: 150,  tokens: 75,   name: "Double Digits",        tier: "uncommon",  icon: "sparkles" },
+        { day: 11, xp: 175,  tokens: 90,   name: "Committed Player",     tier: "common",    icon: "muscle" },
+        { day: 12, xp: 225,  tokens: 110,  name: "Power Surge",          tier: "uncommon",  icon: "lightning", multiplier: "2x XP" },
+        { day: 13, xp: 300,  tokens: 140,  name: "Lucky 13",             tier: "uncommon",  icon: "clover" },
+        { day: 14, xp: 500,  tokens: 250,  name: "Two-Week Legend",      tier: "rare",      icon: "crown",    bonus: "biweekly_chest" },
+        { day: 15, xp: 75,   tokens: 50,   name: "Halfway Point",        tier: "common",    icon: "flag" },
+        { day: 16, xp: 100,  tokens: 60,   name: "Steady Grinder",       tier: "common",    icon: "pickaxe" },
+        { day: 17, xp: 175,  tokens: 85,   name: "Streak Fire",          tier: "uncommon",  icon: "fire" },
+        { day: 18, xp: 200,  tokens: 100,  name: "Bonus Round",          tier: "uncommon",  icon: "gift" },
+        { day: 19, xp: 250,  tokens: 120,  name: "XP Rush",              tier: "uncommon",  icon: "rocket",   multiplier: "3x XP" },
+        { day: 20, xp: 350,  tokens: 160,  name: "Dedication Reward",    tier: "rare",      icon: "medal" },
+        { day: 21, xp: 600,  tokens: 300,  name: "Three-Week Warrior",   tier: "epic",      icon: "shield",   bonus: "mystery_box" },
+        { day: 22, xp: 100,  tokens: 65,   name: "Final Stretch",        tier: "common",    icon: "runner" },
+        { day: 23, xp: 150,  tokens: 80,   name: "Almost Legendary",     tier: "common",    icon: "hourglass" },
+        { day: 24, xp: 200,  tokens: 100,  name: "Power Player",         tier: "uncommon",  icon: "lightning" },
+        { day: 25, xp: 275,  tokens: 130,  name: "Quarter Century",      tier: "uncommon",  icon: "sparkles" },
+        { day: 26, xp: 350,  tokens: 150,  name: "XP Mega Boost",        tier: "rare",      icon: "rocket",   multiplier: "4x XP" },
+        { day: 27, xp: 400,  tokens: 175,  name: "Penultimate Push",     tier: "rare",      icon: "fire" },
+        { day: 28, xp: 500,  tokens: 200,  name: "Four-Week Hero",       tier: "epic",      icon: "crown",    bonus: "exclusive_avatar" },
+        { day: 29, xp: 600,  tokens: 250,  name: "The Final Countdown",  tier: "epic",      icon: "alarm" },
+        { day: 30, xp: 1000, tokens: 500,  name: "LEGENDARY REWARD",     tier: "legendary", icon: "dragon",   bonus: "legendary_chest", multiplier: "5x XP" }
+    ]
+};
+
+/**
+ * Get the full 30-day calendar config for a game, falling back to default.
+ */
+function getCalendarConfig(gameId) {
+    return CALENDAR_REWARD_CONFIGS[gameId] || CALENDAR_REWARD_CONFIGS["default"];
+}
+
+/**
+ * RPC: daily_reward_get_calendar
+ * Returns the full 30-day reward calendar with claimed/unclaimed status per day.
+ */
+function rpcDailyRewardGetCalendar(ctx, logger, nk, payload) {
+    logger.info('[DailyRewardCalendar] daily_reward_get_calendar called');
+
+    try {
+        if (!ctx.userId) {
+            return JSON.stringify({ success: false, error: 'Authentication required' });
+        }
+
+        var data = JSON.parse(payload || '{}');
+        var gameId = data.game_id || data.gameId || 'default';
+        var userId = ctx.userId;
+
+        // Get the player's current streak data from the daily_streaks collection
+        var streakData = null;
+        try {
+            var streakKey = gameId + '_user_daily_streak_' + userId;
+            var records = nk.storageRead([{
+                collection: 'daily_streaks',
+                key: streakKey,
+                userId: userId
+            }]);
+            if (records && records.length > 0) {
+                streakData = records[0].value;
+            }
+        } catch (e) {
+            logger.warn('[DailyRewardCalendar] Could not read streak data: ' + e.message);
+        }
+
+        // Also try the alternate key pattern
+        if (!streakData) {
+            try {
+                var altKey = 'user_daily_streak_' + userId + '_' + gameId;
+                var altRecords = nk.storageRead([{
+                    collection: 'daily_streaks',
+                    key: altKey,
+                    userId: userId
+                }]);
+                if (altRecords && altRecords.length > 0) {
+                    streakData = altRecords[0].value;
+                }
+            } catch (e) { /* no streak yet */ }
+        }
+
+        var currentStreak = streakData ? (streakData.currentStreak || 0) : 0;
+        var lastClaimTimestamp = streakData ? (streakData.lastClaimTimestamp || 0) : 0;
+        var totalClaims = streakData ? (streakData.totalClaims || 0) : 0;
+
+        // Check if they can claim today
+        var canClaimToday = true;
+        if (lastClaimTimestamp > 0) {
+            var lastClaimDate = new Date(lastClaimTimestamp * 1000);
+            var today = new Date();
+            lastClaimDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            if (lastClaimDate.getTime() === today.getTime()) {
+                canClaimToday = false;
+            }
+            // Check streak break (>48h)
+            var nowUnix = Math.floor(Date.now() / 1000);
+            if ((nowUnix - lastClaimTimestamp) > 48 * 3600) {
+                currentStreak = 0;
+            }
+        }
+
+        // Build 30-day calendar
+        var config = getCalendarConfig(gameId);
+        var calendar = [];
+        var totalTokens = 0;
+        var totalXp = 0;
+
+        for (var day = 1; day <= 30; day++) {
+            var dayConfig = null;
+            for (var c = 0; c < config.length; c++) {
+                if (config[c].day === day) {
+                    dayConfig = config[c];
+                    break;
+                }
+            }
+
+            if (!dayConfig) {
+                // Fallback: cycle week 1 rewards with scaling
+                var weekDay = ((day - 1) % 7);
+                dayConfig = config[weekDay] || config[0];
+                var weekNum = Math.floor((day - 1) / 7) + 1;
+                dayConfig = {
+                    day: day,
+                    xp: Math.round(dayConfig.xp * (1 + (weekNum - 1) * 0.15)),
+                    tokens: Math.round(dayConfig.tokens * (1 + (weekNum - 1) * 0.15)),
+                    name: dayConfig.name,
+                    tier: dayConfig.tier,
+                    icon: dayConfig.icon
+                };
+            }
+
+            totalTokens += dayConfig.tokens || 0;
+            totalXp += dayConfig.xp || 0;
+
+            var status = 'locked';
+            if (day <= currentStreak) {
+                status = 'claimed';
+            } else if (day === currentStreak + 1 && canClaimToday) {
+                status = 'available';
+            } else if (day === currentStreak + 1 && !canClaimToday) {
+                status = 'claimed_today';
+            }
+
+            calendar.push({
+                day: day,
+                name: dayConfig.name,
+                tier: dayConfig.tier || 'common',
+                icon: dayConfig.icon || 'coin_stack',
+                rewards: {
+                    xp: dayConfig.xp || 0,
+                    tokens: dayConfig.tokens || 0,
+                    multiplier: dayConfig.multiplier || null,
+                    bonus: dayConfig.bonus || null
+                },
+                status: status
+            });
+        }
+
+        // Milestones summary
+        var milestones = [];
+        for (var m = 0; m < config.length; m++) {
+            if (config[m].tier === 'rare' || config[m].tier === 'epic' || config[m].tier === 'legendary') {
+                milestones.push({
+                    day: config[m].day,
+                    name: config[m].name,
+                    tier: config[m].tier,
+                    reached: config[m].day <= currentStreak
+                });
+            }
+        }
+
+        return JSON.stringify({
+            success: true,
+            user_id: userId,
+            game_id: gameId,
+            current_streak: currentStreak,
+            total_claims: totalClaims,
+            can_claim_today: canClaimToday,
+            calendar: calendar,
+            milestones: milestones,
+            totals: {
+                total_tokens_30_days: totalTokens,
+                total_xp_30_days: totalXp,
+                claimed_tokens: 0,
+                claimed_xp: 0
+            },
+            streak_status: currentStreak === 0 ? 'new' : (canClaimToday ? 'active' : 'claimed_today'),
+            next_milestone: null
+        });
+
+    } catch (err) {
+        logger.error('[DailyRewardCalendar] Error: ' + err.message);
+        logRpcError(nk, logger, 'daily_reward_get_calendar', err.message, ctx.userId, null);
+        return JSON.stringify({ success: false, error: err.message });
+    }
+}
+
+
+// --- Module: daily_rewards/daily_rewards.js ---
 // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
 /**
@@ -34334,219 +34546,7 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards\daily_reward_calendar.js ---
-// daily_reward_calendar.js - 30-Day Daily Reward Calendar View
-// Extends the daily rewards system with a full calendar preview
-// RPC: daily_reward_get_calendar
-
-var CALENDAR_REWARD_CONFIGS = {
-    "default": [
-        { day: 1,  xp: 50,   tokens: 40,   name: "Welcome Back",         tier: "common",    icon: "coin_stack" },
-        { day: 2,  xp: 75,   tokens: 50,   name: "Steady Start",         tier: "common",    icon: "coin_stack" },
-        { day: 3,  xp: 100,  tokens: 65,   name: "Power-Up Day",         tier: "uncommon",  icon: "lightning" },
-        { day: 4,  xp: 150,  tokens: 80,   name: "Momentum Builder",     tier: "common",    icon: "coin_stack" },
-        { day: 5,  xp: 200,  tokens: 100,  name: "XP Boost",             tier: "uncommon",  icon: "star", multiplier: "2x XP" },
-        { day: 6,  xp: 275,  tokens: 125,  name: "Almost There",         tier: "uncommon",  icon: "fire" },
-        { day: 7,  xp: 400,  tokens: 200,  name: "Weekly Champion",      tier: "rare",      icon: "trophy",   bonus: "weekly_badge" },
-        { day: 8,  xp: 60,   tokens: 45,   name: "Fresh Week",           tier: "common",    icon: "sunrise" },
-        { day: 9,  xp: 90,   tokens: 55,   name: "Keeping It Up",        tier: "common",    icon: "thumbsup" },
-        { day: 10, xp: 150,  tokens: 75,   name: "Double Digits",        tier: "uncommon",  icon: "sparkles" },
-        { day: 11, xp: 175,  tokens: 90,   name: "Committed Player",     tier: "common",    icon: "muscle" },
-        { day: 12, xp: 225,  tokens: 110,  name: "Power Surge",          tier: "uncommon",  icon: "lightning", multiplier: "2x XP" },
-        { day: 13, xp: 300,  tokens: 140,  name: "Lucky 13",             tier: "uncommon",  icon: "clover" },
-        { day: 14, xp: 500,  tokens: 250,  name: "Two-Week Legend",      tier: "rare",      icon: "crown",    bonus: "biweekly_chest" },
-        { day: 15, xp: 75,   tokens: 50,   name: "Halfway Point",        tier: "common",    icon: "flag" },
-        { day: 16, xp: 100,  tokens: 60,   name: "Steady Grinder",       tier: "common",    icon: "pickaxe" },
-        { day: 17, xp: 175,  tokens: 85,   name: "Streak Fire",          tier: "uncommon",  icon: "fire" },
-        { day: 18, xp: 200,  tokens: 100,  name: "Bonus Round",          tier: "uncommon",  icon: "gift" },
-        { day: 19, xp: 250,  tokens: 120,  name: "XP Rush",              tier: "uncommon",  icon: "rocket",   multiplier: "3x XP" },
-        { day: 20, xp: 350,  tokens: 160,  name: "Dedication Reward",    tier: "rare",      icon: "medal" },
-        { day: 21, xp: 600,  tokens: 300,  name: "Three-Week Warrior",   tier: "epic",      icon: "shield",   bonus: "mystery_box" },
-        { day: 22, xp: 100,  tokens: 65,   name: "Final Stretch",        tier: "common",    icon: "runner" },
-        { day: 23, xp: 150,  tokens: 80,   name: "Almost Legendary",     tier: "common",    icon: "hourglass" },
-        { day: 24, xp: 200,  tokens: 100,  name: "Power Player",         tier: "uncommon",  icon: "lightning" },
-        { day: 25, xp: 275,  tokens: 130,  name: "Quarter Century",      tier: "uncommon",  icon: "sparkles" },
-        { day: 26, xp: 350,  tokens: 150,  name: "XP Mega Boost",        tier: "rare",      icon: "rocket",   multiplier: "4x XP" },
-        { day: 27, xp: 400,  tokens: 175,  name: "Penultimate Push",     tier: "rare",      icon: "fire" },
-        { day: 28, xp: 500,  tokens: 200,  name: "Four-Week Hero",       tier: "epic",      icon: "crown",    bonus: "exclusive_avatar" },
-        { day: 29, xp: 600,  tokens: 250,  name: "The Final Countdown",  tier: "epic",      icon: "alarm" },
-        { day: 30, xp: 1000, tokens: 500,  name: "LEGENDARY REWARD",     tier: "legendary", icon: "dragon",   bonus: "legendary_chest", multiplier: "5x XP" }
-    ]
-};
-
-/**
- * Get the full 30-day calendar config for a game, falling back to default.
- */
-function getCalendarConfig(gameId) {
-    return CALENDAR_REWARD_CONFIGS[gameId] || CALENDAR_REWARD_CONFIGS["default"];
-}
-
-/**
- * RPC: daily_reward_get_calendar
- * Returns the full 30-day reward calendar with claimed/unclaimed status per day.
- */
-function rpcDailyRewardGetCalendar(ctx, logger, nk, payload) {
-    logger.info('[DailyRewardCalendar] daily_reward_get_calendar called');
-
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({ success: false, error: 'Authentication required' });
-        }
-
-        var data = JSON.parse(payload || '{}');
-        var gameId = data.game_id || data.gameId || 'default';
-        var userId = ctx.userId;
-
-        // Get the player's current streak data from the daily_streaks collection
-        var streakData = null;
-        try {
-            var streakKey = gameId + '_user_daily_streak_' + userId;
-            var records = nk.storageRead([{
-                collection: 'daily_streaks',
-                key: streakKey,
-                userId: userId
-            }]);
-            if (records && records.length > 0) {
-                streakData = records[0].value;
-            }
-        } catch (e) {
-            logger.warn('[DailyRewardCalendar] Could not read streak data: ' + e.message);
-        }
-
-        // Also try the alternate key pattern
-        if (!streakData) {
-            try {
-                var altKey = 'user_daily_streak_' + userId + '_' + gameId;
-                var altRecords = nk.storageRead([{
-                    collection: 'daily_streaks',
-                    key: altKey,
-                    userId: userId
-                }]);
-                if (altRecords && altRecords.length > 0) {
-                    streakData = altRecords[0].value;
-                }
-            } catch (e) { /* no streak yet */ }
-        }
-
-        var currentStreak = streakData ? (streakData.currentStreak || 0) : 0;
-        var lastClaimTimestamp = streakData ? (streakData.lastClaimTimestamp || 0) : 0;
-        var totalClaims = streakData ? (streakData.totalClaims || 0) : 0;
-
-        // Check if they can claim today
-        var canClaimToday = true;
-        if (lastClaimTimestamp > 0) {
-            var lastClaimDate = new Date(lastClaimTimestamp * 1000);
-            var today = new Date();
-            lastClaimDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            if (lastClaimDate.getTime() === today.getTime()) {
-                canClaimToday = false;
-            }
-            // Check streak break (>48h)
-            var nowUnix = Math.floor(Date.now() / 1000);
-            if ((nowUnix - lastClaimTimestamp) > 48 * 3600) {
-                currentStreak = 0;
-            }
-        }
-
-        // Build 30-day calendar
-        var config = getCalendarConfig(gameId);
-        var calendar = [];
-        var totalTokens = 0;
-        var totalXp = 0;
-
-        for (var day = 1; day <= 30; day++) {
-            var dayConfig = null;
-            for (var c = 0; c < config.length; c++) {
-                if (config[c].day === day) {
-                    dayConfig = config[c];
-                    break;
-                }
-            }
-
-            if (!dayConfig) {
-                // Fallback: cycle week 1 rewards with scaling
-                var weekDay = ((day - 1) % 7);
-                dayConfig = config[weekDay] || config[0];
-                var weekNum = Math.floor((day - 1) / 7) + 1;
-                dayConfig = {
-                    day: day,
-                    xp: Math.round(dayConfig.xp * (1 + (weekNum - 1) * 0.15)),
-                    tokens: Math.round(dayConfig.tokens * (1 + (weekNum - 1) * 0.15)),
-                    name: dayConfig.name,
-                    tier: dayConfig.tier,
-                    icon: dayConfig.icon
-                };
-            }
-
-            totalTokens += dayConfig.tokens || 0;
-            totalXp += dayConfig.xp || 0;
-
-            var status = 'locked';
-            if (day <= currentStreak) {
-                status = 'claimed';
-            } else if (day === currentStreak + 1 && canClaimToday) {
-                status = 'available';
-            } else if (day === currentStreak + 1 && !canClaimToday) {
-                status = 'claimed_today';
-            }
-
-            calendar.push({
-                day: day,
-                name: dayConfig.name,
-                tier: dayConfig.tier || 'common',
-                icon: dayConfig.icon || 'coin_stack',
-                rewards: {
-                    xp: dayConfig.xp || 0,
-                    tokens: dayConfig.tokens || 0,
-                    multiplier: dayConfig.multiplier || null,
-                    bonus: dayConfig.bonus || null
-                },
-                status: status
-            });
-        }
-
-        // Milestones summary
-        var milestones = [];
-        for (var m = 0; m < config.length; m++) {
-            if (config[m].tier === 'rare' || config[m].tier === 'epic' || config[m].tier === 'legendary') {
-                milestones.push({
-                    day: config[m].day,
-                    name: config[m].name,
-                    tier: config[m].tier,
-                    reached: config[m].day <= currentStreak
-                });
-            }
-        }
-
-        return JSON.stringify({
-            success: true,
-            user_id: userId,
-            game_id: gameId,
-            current_streak: currentStreak,
-            total_claims: totalClaims,
-            can_claim_today: canClaimToday,
-            calendar: calendar,
-            milestones: milestones,
-            totals: {
-                total_tokens_30_days: totalTokens,
-                total_xp_30_days: totalXp,
-                claimed_tokens: 0,
-                claimed_xp: 0
-            },
-            streak_status: currentStreak === 0 ? 'new' : (canClaimToday ? 'active' : 'claimed_today'),
-            next_milestone: null
-        });
-
-    } catch (err) {
-        logger.error('[DailyRewardCalendar] Error: ' + err.message);
-        logRpcError(nk, logger, 'daily_reward_get_calendar', err.message, ctx.userId, null);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-
-// --- Module: event_pipeline\event_pipeline.js ---
+// --- Module: event_pipeline/event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -34944,7 +34944,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics\external_analytics.js ---
+// --- Module: external_analytics/external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -35534,7 +35534,7 @@ function __ModuleInit_52(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers\external_pollers.js ---
+// --- Module: external_pollers/external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -35930,7 +35930,7 @@ function __ModuleInit_53(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel\fortune_wheel.js ---
+// --- Module: fortune_wheel/fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -36312,774 +36312,622 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friends\friends.js ---
-// ============================================================================
-// friends.js — Helper-only module (Phase-4 C2 cleanup)
-// ============================================================================
-// PRODUCTION-READY | ES5 (Goja runtime)
-//
-// HISTORY
-// -------
-// This file used to host SIX RPC handlers and SEVERAL helpers:
-//   * RPCs: friends_block, friends_unblock, friends_remove, friends_list,
-//          friends_challenge_user, friends_spectate
-//   * Helpers: isValidFriendUUID, isUserBlocked, areActualFriends,
-//              checkRateLimit, sendChallengePushNotification,
-//              sendChallengeChatMessage
-//
-// All six RPCs were silently shadowed by canonical replacements:
-//   * friends_block / friends_unblock / friends_remove → src/legacy/friends.ts
-//   * friends_list                                    → src/friends/friends_list.ts (Phase-4 C1)
-//   * friends_challenge_user / friends_spectate       → friends/friend_challenges.js (Phase-3a)
-//
-// Phase-4 C2 strips the dead RPC handlers AND their now-unused helpers
-// (isValidFriendUUID, isUserBlocked, areActualFriends, checkRateLimit) so
-// nobody can read this file and "fix" the wrong code path. The lone
-// `checkRateLimit` deletion also removes a name collision with
-// `infrastructure/rate_limiting.js` which defines a totally different
-// function with the same name (different signature) — the
-// rate_limiting.js version was silently overwriting friends.js's at
-// merge time, which is the kind of subtle global-scope bug we never
-// want to hit.
-//
-// What remains
-// ------------
-// Two helper functions that `friends/friend_challenges.js` still calls
-// at runtime (via `typeof X === 'function'` lookups so the module is
-// resilient to load-order changes — see line 483-495 of
-// friend_challenges.js):
-//
-//   sendChallengePushNotification(nk, logger, targetUserId, gameId,
-//                                 challengerName, quizModeName,
-//                                 challengeId, roomCode, isAsync)
-//      → fans out a push notification via the PUSH_SEND_URL Lambda
-//        endpoint to every push_endpoints row owned by `targetUserId`
-//        for the given `gameId`. Used by send_friend_challenge.
-//
-//   sendChallengeChatMessage(nk, logger, senderId, receiverId,
-//                            senderName, challengeData)
-//      → inserts a "friend challenge" message into the DM channel
-//        between sender and receiver so the challenge appears in their
-//        chat thread. Falls back to a `pending_chat_messages` storage
-//        row if the channel insert fails.
-//
-// Both helpers are intentionally kept in the legacy JS module rather
-// than ported to TypeScript because (a) the Phase-3a TS challenge
-// module already has the canonical RPC handler, (b) these helpers are
-// pure side-effect fan-outs the TS handler delegates to via dynamic
-// lookup, and (c) the dynamic lookup pattern is the safest way to
-// handle "host calls helper if it exists, otherwise no-op" without
-// hard-coupling the two files.
-//
-// If you need to add a NEW friend RPC, ADD IT TO ONE OF:
-//   - friends/friend_invites.js     (invite lifecycle)
-//   - friends/friend_challenges.js  (challenge lifecycle + spectate)
-//   - src/friends/friends_list.ts   (read-only roster RPCs)
-//   - src/legacy/friends.ts         (graph mutations)
-// NOT to this file. This file should never grow back to handler size.
-// ============================================================================
-
+// --- Module: friend_streaks/friend_streaks.js ---
+// friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
+// RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
+// Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
 
 /**
- * Send a push notification for a friend challenge.
- * Calls the push notification Lambda endpoint.
+ * Friend Streak System — Production-Ready
  *
- * @param {object} nk
- * @param {object} logger
- * @param {string} targetUserId   - Recipient userId (the challenged player)
- * @param {string} gameId         - Free-form game/mode id (used to filter push_endpoints)
- * @param {string} challengerName - Display name shown in the push title
- * @param {string} quizModeName   - Display name of the quiz mode for the body
- * @param {string} challengeId    - Server-authoritative challenge id (echoed in data)
- * @param {string} roomCode       - Room/share code (echoed in data)
- * @param {boolean} isAsync       - True for async challenges, false for live
+ * Tracks bilateral daily streaks between friends (both must play each day).
+ * Max 5 concurrent streaks per player. Unlocks at Day 14.
+ * Nudge system: 3 nudges/day with 4h cooldown per friend.
+ *
+ * Storage: collection="friend_streaks", key="streaks_{userId}"
  */
-function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync) {
-    var LAMBDA_PUSH_URL = (typeof process!=="undefined"&&process.env?process.env.PUSH_SEND_URL:undefined) || "https://your-lambda-url.lambda-url.region.on.aws/send-push";
 
-    var endpoints = [];
+// ─── CONSTANTS ──────────────────────────────────────────────────────────────
+
+var FS_COLLECTION = 'friend_streaks';
+var FS_MAX_CONCURRENT = 5;
+var FS_NUDGES_PER_DAY = 3;
+var FS_NUDGE_COOLDOWN_HOURS = 4;
+var FS_STREAK_BREAK_HOURS = 48; // 2 days without bilateral contribution = broken
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+
+function fsStorageKey(userId) {
+    return 'streaks_' + userId;
+}
+
+function fsReadData(nk, logger, userId) {
     try {
-        var records = nk.storageList(targetUserId, "push_endpoints", 100);
-        for (var i = 0; i < records.length; i++) {
-            var value = records[i].value;
-            if (value.gameId === gameId) {
-                endpoints.push(value);
-            }
+        var records = nk.storageRead([{
+            collection: FS_COLLECTION,
+            key: fsStorageKey(userId),
+            userId: userId
+        }]);
+        if (records && records.length > 0 && records[0].value) {
+            return records[0].value;
         }
     } catch (err) {
-        utils.logWarn(logger, "Could not list push endpoints: " + err.message);
-        return;
+        logger.warn('[FriendStreaks] Storage read failed: ' + err.message);
     }
-
-    if (endpoints.length === 0) {
-        utils.logInfo(logger, "No push endpoints for user " + targetUserId);
-        return;
-    }
-
-    var challengeType = isAsync ? "Async Challenge" : "Live Challenge";
-    var title = "🎮 " + challengerName + " challenged you!";
-    var body  = "Accept the " + quizModeName + " " + challengeType + " now!";
-
-    for (var j = 0; j < endpoints.length; j++) {
-        var endpoint = endpoints[j];
-
-        var pushPayload = {
-            endpointArn: endpoint.endpointArn,
-            platform:    endpoint.platform,
-            title:       title,
-            body:        body,
-            data: {
-                type:         "friend_challenge",
-                challengeId:  challengeId,
-                roomCode:     roomCode,
-                isAsync:      isAsync,
-                click_action: "OPEN_CHALLENGE"
-            },
-            gameId:    gameId,
-            eventType: "friend_challenge"
-        };
-
-        try {
-            var response = nk.httpRequest(
-                LAMBDA_PUSH_URL,
-                "post",
-                { "Content-Type": "application/json", "Accept": "application/json" },
-                JSON.stringify(pushPayload)
-            );
-            if (response.code === 200 || response.code === 201) {
-                utils.logInfo(logger, "Push sent to " + endpoint.platform + " for challenge " + challengeId);
-            }
-        } catch (pushErr) {
-            utils.logWarn(logger, "Push to " + endpoint.platform + " failed: " + pushErr.message);
-        }
-    }
+    return null;
 }
 
-/**
- * Send a friend challenge as a chat message so it appears in the conversation
- * thread between the two users.
- *
- * @param {object} nk
- * @param {object} logger
- * @param {string} senderId      - Challenger userId
- * @param {string} receiverId    - Challenged userId
- * @param {string} senderName    - Challenger display name
- * @param {object} challengeData - { challengeId, roomCode, quizModeName, isAsync,
- *                                   fromUserId, fromDisplayName, expiresAt }
- */
-function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, challengeData) {
-    var channelId = null;
-    try {
-        // Sort user IDs so both sides resolve to the same DM channel
-        var sortedIds = [senderId, receiverId].sort();
-        channelId = "dm_" + sortedIds[0] + "_" + sortedIds[1];
-    } catch (err) {
-        utils.logWarn(logger, "Could not create channel ID: " + err.message);
-        return;
-    }
-
-    var messageContent = {
-        type: "friend_challenge",
-        text: "🎮 " + senderName + " challenged you to " + challengeData.quizModeName + "!",
-        challenge: {
-            challengeId:     challengeData.challengeId,
-            roomCode:        challengeData.roomCode,
-            shareCode:       challengeData.roomCode,
-            quizModeName:    challengeData.quizModeName,
-            isAsync:         challengeData.isAsync,
-            fromUserId:      challengeData.fromUserId,
-            fromDisplayName: challengeData.fromDisplayName,
-            expiresAt:       challengeData.expiresAt,
-            status:          "pending"
-        }
-    };
-
-    try {
-        nk.channelMessageSend(
-            channelId,
-            JSON.stringify(messageContent),
-            senderId,
-            senderName,
-            true  // persistent
-        );
-        utils.logInfo(logger, "Challenge chat message sent to channel " + channelId);
-    } catch (chatErr) {
-        // Fallback: if the DM channel doesn't exist yet, persist the message
-        // so it can be replayed when the channel is later opened.
-        utils.logWarn(logger, "Channel message failed, using storage fallback: " + chatErr.message);
-
-        var msgKey = "pending_chat_" + receiverId + "_" + Date.now();
-        utils.writeStorage(nk, logger, "pending_chat_messages", msgKey, senderId, {
-            senderId:    senderId,
-            senderName:  senderName,
-            receiverId:  receiverId,
-            content:     messageContent,
-            timestamp:   utils.getCurrentTimestamp()
-        });
-    }
-}
-
-
-// --- Module: friends\friends_extras.js ---
-// ============================================================================
-// friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
-// ============================================================================
-// PRODUCTION-READY | ES5 (Goja runtime)
-//
-// Houses 4 RPCs that PLAN-ENGAGEMENT_SYSTEM_07_FRIENDS_SOCIAL.md (V11/V17/V20)
-// requires the server to expose:
-//
-//   friends_get_online_count
-//       -> count of caller's mutual friends currently online (Nakama presence)
-//
-//   social_pressure_get_today_summary
-//       -> aggregates "friends played today / friends ahead of me / streak at
-//          risk" data into a single response so the client doesn't need to
-//          stitch 4 separate reads.
-//
-//   friend_battle_create
-//       -> server-mints a battleId/roomCode, persists the lobby record under
-//          friend_battles/<battleId>, fans out invitations + push notifications
-//          to each invited friend. Atomic: if any non-friend is invited the
-//          whole call fails before any side-effect.
-//
-//   friend_invite_with_reward
-//       -> sends a friend invite (Nakama friendsAdd) AND tags it with a
-//          reward bundle that's claimable when the recipient accepts. The
-//          claim happens in send_friend_invite/accept_friend_invite already;
-//          this RPC is a thin wrapper that records the reward intent so the
-//          accept-handler can grant it.
-//
-// SECURITY: every RPC requires an authenticated caller (ctx.userId set), and
-// every "target" is verified as a confirmed mutual friend (Nakama state == 0)
-// before any side-effect.
-// ============================================================================
-
-var FX_BATTLE_COLLECTION = 'friend_battles';
-var FX_INVITE_REWARD_COL = 'friend_invite_rewards';
-var FX_BATTLE_MAX_INVITES = 8;
-var FX_BATTLE_MAX_DATA_BYTES = 4096;
-
-// ─── Tiny self-contained helpers ────────────────────────────────────────────
-// Same defensive pattern as friend_challenges.js — no `utils` dependency so
-// load-order can't break this module.
-
-function _fxUuidValid(id) {
-    if (!id || typeof id !== 'string') return false;
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-}
-
-function _fxNowIso() { return new Date().toISOString(); }
-
-function _fxOk(extra) {
-    var out = { success: true };
-    if (extra) {
-        for (var k in extra) {
-            if (Object.prototype.hasOwnProperty.call(extra, k)) out[k] = extra[k];
-        }
-    }
-    return JSON.stringify(out);
-}
-
-function _fxErr(message, errorCode, extra) {
-    var out = { success: false, error: message, errorCode: errorCode || 'unknown' };
-    if (extra) {
-        for (var k in extra) {
-            if (Object.prototype.hasOwnProperty.call(extra, k)) out[k] = extra[k];
-        }
-    }
-    return JSON.stringify(out);
-}
-
-function _fxParse(payload) {
-    if (!payload || payload === '') return { ok: true, data: {} };
-    try { return { ok: true, data: JSON.parse(payload) }; }
-    catch (e)  { return { ok: false, error: 'Invalid JSON payload: ' + e.message }; }
-}
-
-function _fxMintBattleId(nk) {
-    try {
-        if (nk && typeof nk.uuidv4 === 'function') {
-            return 'fbat_' + nk.uuidv4().replace(/-/g, '');
-        }
-    } catch (_) {}
-    var hex = '0123456789abcdef';
-    var rand = '';
-    for (var i = 0; i < 24; i++) rand += hex.charAt(Math.floor(Math.random() * 16));
-    return 'fbat_' + Date.now().toString(36) + '_' + rand;
-}
-
-// Returns array of confirmed-friend objects: [{ id, displayName, online }]
-// MUST pass the caller's userId — passing null runs under SYSTEM context.
-function _fxLoadFriends(nk, userId) {
-    if (!userId) return [];
-    var out = [];
-    try {
-        var page = nk.friendsList(userId, 1000, 0, null); // state=0 (FRIEND)
-        if (page && page.friends) {
-            for (var i = 0; i < page.friends.length; i++) {
-                var fr = page.friends[i];
-                if (fr && fr.user && fr.user.id) {
-                    out.push({
-                        id:          fr.user.id,
-                        displayName: fr.user.displayName || fr.user.username || 'Friend',
-                        online:      !!fr.user.online
-                    });
-                }
-            }
-        }
-    } catch (_) {}
-    return out;
-}
-
-// ============================================================================
-// RPC: friends_get_online_count
-// ============================================================================
-//
-// Payload: {}  (no inputs)
-// Response: {
-//   success: true,
-//   onlineCount: <int>,
-//   totalFriends: <int>,
-//   onlineFriendIds: [<UUID>...],   // capped at 50 for response-size sanity
-//   timestamp: <iso>
-// }
-//
-// Reads via nk.friendsList(state=0) which already includes the `online` flag
-// from Nakama presence — no extra round-trip needed.
-function rpcFriendsGetOnlineCount(ctx, logger, nk, payload) {
-    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
-
-    var friends = [];
-    try {
-        var page = nk.friendsList(ctx.userId, 1000, 0, null);
-        if (page && page.friends) friends = page.friends;
-    } catch (e) {
-        logger.warn('[FriendsExtras] friendsList failed: ' + e.message);
-        return _fxErr('Failed to load friends list', 'friends_list_failed');
-    }
-
-    var onlineIds = [];
-    for (var i = 0; i < friends.length; i++) {
-        var fr = friends[i];
-        if (fr && fr.user && fr.user.id && fr.user.online === true) {
-            if (onlineIds.length < 50) onlineIds.push(fr.user.id);
-        }
-    }
-
-    return _fxOk({
-        onlineCount:     onlineIds.length,
-        totalFriends:    friends.length,
-        onlineFriendIds: onlineIds,
-        timestamp:       _fxNowIso()
-    });
-}
-
-// ============================================================================
-// RPC: social_pressure_get_today_summary
-// ============================================================================
-//
-// Single-shot aggregator for the "Social Pressure" home-screen card. Returns:
-//   {
-//     friendsPlayedToday:      <int>,    // friends with quiz_complete today
-//     friendsPassedMe:         <int>,    // friends whose XP > my XP today
-//     friendsAboveMeInLeague:  [{ id, displayName, points, tier }],
-//     friendsStreakAtRisk:     [{ id, displayName, streakDays, hoursLeft }],
-//     timestamp: <iso>
-//   }
-//
-// Read-only — never mutates state. Best-effort: any sub-source that fails is
-// returned as 0 / [] rather than failing the whole call.
-function rpcSocialPressureGetTodaySummary(ctx, logger, nk, payload) {
-    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
-
-    var friends = _fxLoadFriends(nk, ctx.userId);
-    var todayKey = _fxNowIso().slice(0, 10).replace(/-/g, '');
-
-    // ── friendsPlayedToday + friendsPassedMe ──────────────────────────────
-    // Reads friend's `daily_play_log/{userId}_{YYYYMMDD}` if present (set by
-    // the existing daily_missions / quiz pipeline). Best-effort.
-    var playedToday = 0;
-    var passedMe = 0;
-    var myXpToday = 0;
-
-    try {
-        var myLog = nk.storageRead([{
-            collection: 'daily_play_log',
-            key: ctx.userId + '_' + todayKey,
-            userId: ctx.userId
-        }]);
-        if (myLog && myLog.length > 0 && myLog[0].value) {
-            myXpToday = myLog[0].value.xpToday || 0;
-        }
-    } catch (_) {}
-
-    for (var i = 0; i < friends.length; i++) {
-        var fid = friends[i].id;
-        try {
-            var rows = nk.storageRead([{
-                collection: 'daily_play_log',
-                key: fid + '_' + todayKey,
-                userId: fid
-            }]);
-            if (rows && rows.length > 0 && rows[0].value) {
-                playedToday++;
-                var fxp = rows[0].value.xpToday || 0;
-                if (fxp > myXpToday) passedMe++;
-            }
-        } catch (_) { /* friend may have permission 0 — skip silently */ }
-    }
-
-    // ── friendsAboveMeInLeague ────────────────────────────────────────────
-    // Reads friend's league record from the legacy leagues collection.
-    var aboveInLeague = [];
-    var myLeague = null;
-    try {
-        var myL = nk.storageRead([{
-            collection: 'leagues_named',
-            key: 'state_quizverse',
-            userId: ctx.userId
-        }]);
-        if (myL && myL.length > 0 && myL[0].value) myLeague = myL[0].value;
-    } catch (_) {}
-
-    if (myLeague) {
-        for (var j = 0; j < friends.length; j++) {
-            var fr = friends[j];
-            try {
-                var fL = nk.storageRead([{
-                    collection: 'leagues_named',
-                    key: 'state_quizverse',
-                    userId: fr.id
-                }]);
-                if (fL && fL.length > 0 && fL[0].value) {
-                    var lv = fL[0].value;
-                    if (lv.tier === myLeague.tier && (lv.points || 0) > (myLeague.points || 0)) {
-                        aboveInLeague.push({
-                            id:          fr.id,
-                            displayName: fr.displayName,
-                            points:      lv.points || 0,
-                            tier:        lv.tier
-                        });
-                    }
-                }
-            } catch (_) {}
-        }
-        aboveInLeague.sort(function(a, b) { return b.points - a.points; });
-        if (aboveInLeague.length > 10) aboveInLeague = aboveInLeague.slice(0, 10);
-    }
-
-    // ── friendsStreakAtRisk ───────────────────────────────────────────────
-    // Reads MY friend_streaks record (where I am one party of the streak).
-    // "At risk" = bilateral streak with <8 hours until break.
-    var atRisk = [];
-    try {
-        var myStreaks = nk.storageRead([{
-            collection: 'friend_streaks',
-            key: 'streaks_' + ctx.userId,
-            userId: ctx.userId
-        }]);
-        if (myStreaks && myStreaks.length > 0 && myStreaks[0].value &&
-            myStreaks[0].value.streaks) {
-            var streaks = myStreaks[0].value.streaks;
-            var nowMs = Date.now();
-            for (var fid2 in streaks) {
-                if (!Object.prototype.hasOwnProperty.call(streaks, fid2)) continue;
-                var s = streaks[fid2];
-                if (!s || !s.lastInteractionAt) continue;
-                var hoursSince = (nowMs - new Date(s.lastInteractionAt).getTime()) / 3600000;
-                var hoursLeft = 48 - hoursSince;
-                if (hoursLeft > 0 && hoursLeft < 8) {
-                    atRisk.push({
-                        id:          fid2,
-                        displayName: s.friendDisplayName || '',
-                        streakDays:  s.streakDays || 0,
-                        hoursLeft:   Math.max(0, Math.round(hoursLeft))
-                    });
-                }
-            }
-            atRisk.sort(function(a, b) { return a.hoursLeft - b.hoursLeft; });
-        }
-    } catch (e) {
-        logger.warn('[FriendsExtras] streak read failed: ' + e.message);
-    }
-
-    return _fxOk({
-        friendsPlayedToday:     playedToday,
-        friendsPassedMe:        passedMe,
-        friendsAboveMeInLeague: aboveInLeague,
-        friendsStreakAtRisk:    atRisk,
-        totalFriends:           friends.length,
-        timestamp:              _fxNowIso()
-    });
-}
-
-// ============================================================================
-// RPC: friend_battle_create
-// ============================================================================
-//
-// Server-mints a friend battle / lobby and atomically:
-//   1) verifies every invited friend is a confirmed mutual friend
-//   2) persists the lobby record (friend_battles/<battleId>)
-//   3) sends a Nakama notification to each invitee (code 110)
-//
-// Photon room creation is owned by the client; this RPC just guarantees the
-// invite fan-out is consistent (nobody gets a notification for a battle that
-// failed validation).
-//
-// Payload: {
-//   mode:           <string, e.g. 'speed_quiz' | 'classic'>,
-//   roomCode:       <string ≤ 64>,
-//   invitedFriendIds: [<UUID>...],   // 1..FX_BATTLE_MAX_INVITES
-//   metadata?:      <object ≤ 4 KB>
-// }
-function rpcFriendBattleCreate(ctx, logger, nk, payload) {
-    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
-
-    var p = _fxParse(payload);
-    if (!p.ok) return _fxErr(p.error, 'invalid_payload');
-
-    var data = p.data || {};
-    var mode = data.mode;
-    var roomCode = data.roomCode;
-    var invited = data.invitedFriendIds || [];
-    var meta = data.metadata || {};
-
-    if (!mode || typeof mode !== 'string' || mode.length > 64) {
-        return _fxErr('mode is required (string ≤ 64)', 'invalid_payload');
-    }
-    if (!roomCode || typeof roomCode !== 'string' || roomCode.length > 64) {
-        return _fxErr('roomCode is required (string ≤ 64)', 'invalid_payload');
-    }
-    if (!Array.isArray(invited) || invited.length === 0) {
-        return _fxErr('invitedFriendIds must be non-empty array', 'invalid_payload');
-    }
-    if (invited.length > FX_BATTLE_MAX_INVITES) {
-        return _fxErr('Too many invites (max ' + FX_BATTLE_MAX_INVITES + ')', 'too_many_invites');
-    }
-    var metaStr;
-    try { metaStr = JSON.stringify(meta); }
-    catch (e) { return _fxErr('metadata not serialisable: ' + e.message, 'invalid_payload'); }
-    if (metaStr.length > FX_BATTLE_MAX_DATA_BYTES) {
-        return _fxErr('metadata too large', 'data_too_large');
-    }
-
-    // Validate every invitee is a mutual friend BEFORE any side-effect
-    var mutualFriends = {};
-    var friends = _fxLoadFriends(nk, ctx.userId);
-    for (var i = 0; i < friends.length; i++) mutualFriends[friends[i].id] = friends[i];
-
-    var rejected = [];
-    for (var j = 0; j < invited.length; j++) {
-        var inv = invited[j];
-        if (!_fxUuidValid(inv)) {
-            rejected.push({ id: inv, reason: 'invalid_uuid' });
-        } else if (inv === ctx.userId) {
-            rejected.push({ id: inv, reason: 'self_invite' });
-        } else if (!mutualFriends[inv]) {
-            rejected.push({ id: inv, reason: 'not_mutual_friend' });
-        }
-    }
-    if (rejected.length > 0) {
-        return _fxErr('Some invitees are not mutual friends', 'invitees_not_mutual',
-                      { rejected: rejected });
-    }
-
-    var battleId = _fxMintBattleId(nk);
-    var nowIso = _fxNowIso();
-    var senderName = ctx.username || ctx.userId;
-
-    var battleRecord = {
-        battleId:     battleId,
-        creatorId:    ctx.userId,
-        creatorName:  senderName,
-        mode:         mode,
-        roomCode:     roomCode,
-        status:       'pending',
-        invitedIds:   invited,
-        acceptedIds:  [],
-        declinedIds:  [],
-        metadata:     meta,
-        createdAt:    nowIso,
-        expiresAt:    new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 min
-    };
-
-    // Persist lobby (owner = creator, owner-readable)
+function fsWriteData(nk, logger, userId, data) {
     try {
         nk.storageWrite([{
-            collection:      FX_BATTLE_COLLECTION,
-            key:             battleId,
-            userId:          ctx.userId,
-            value:           battleRecord,
-            permissionRead:  1,
+            collection: FS_COLLECTION,
+            key: fsStorageKey(userId),
+            userId: userId,
+            value: data,
+            permissionRead: 1,
             permissionWrite: 0
         }]);
-    } catch (e) {
-        logger.error('[FriendsExtras] battle persist failed: ' + e.message);
-        return _fxErr('Failed to persist battle', 'storage_write_failed');
+        return true;
+    } catch (err) {
+        logger.error('[FriendStreaks] Storage write failed: ' + err.message);
+        return false;
+    }
+}
+
+function fsInitData() {
+    return {
+        streaks: {},
+        nudgesSentToday: 0,
+        nudgeDateKey: '',
+        lastNudgeTimes: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+}
+
+function fsError(msg) {
+    return JSON.stringify({ success: false, error: msg });
+}
+
+function fsTodayKey() {
+    return new Date().toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+function fsHoursSince(isoDate) {
+    if (!isoDate) return 9999;
+    return (Date.now() - new Date(isoDate).getTime()) / 3600000;
+}
+
+// Clean up broken streaks. When a streak is broken we also persist a
+// rolling "broken log" entry under collection=friend_streaks key=broken_log_{userId}
+// so the player's UI can later surface "you lost a 30-day streak with X" even
+// if they weren't online when the prune happened (V23 in PLAN-07).
+var FS_BROKEN_LOG_MAX = 50;
+
+function fsAppendBrokenLog(nk, logger, userId, brokenList) {
+    if (!brokenList || brokenList.length === 0) return;
+    try {
+        var existing = [];
+        try {
+            var rows = nk.storageRead([{
+                collection: FS_COLLECTION,
+                key: 'broken_log_' + userId,
+                userId: userId
+            }]);
+            if (rows && rows.length > 0 && rows[0].value && rows[0].value.entries) {
+                existing = rows[0].value.entries;
+            }
+        } catch (_) {}
+
+        var now = new Date().toISOString();
+        for (var i = 0; i < brokenList.length; i++) {
+            var b = brokenList[i];
+            existing.unshift({
+                friendId:  b.friendId,
+                streakDays: b.days || 0,
+                brokenAt:  now,
+                repaired:  false
+            });
+        }
+        if (existing.length > FS_BROKEN_LOG_MAX) {
+            existing = existing.slice(0, FS_BROKEN_LOG_MAX);
+        }
+
+        nk.storageWrite([{
+            collection: FS_COLLECTION,
+            key: 'broken_log_' + userId,
+            userId: userId,
+            value: { entries: existing, updatedAt: now },
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+    } catch (err) {
+        if (logger && logger.warn) logger.warn('[FriendStreaks] broken-log persist failed: ' + err.message);
+    }
+}
+
+function fsPruneStreaks(data) {
+    var pruned = [];
+    for (var fid in data.streaks) {
+        var s = data.streaks[fid];
+        if (fsHoursSince(s.lastInteractionAt) > FS_STREAK_BREAK_HOURS) {
+            pruned.push({ friendId: fid, days: s.streakDays, friendDisplayName: s.friendDisplayName || '' });
+            delete data.streaks[fid];
+        }
+    }
+    return pruned;
+}
+
+// Reset daily nudge counter if new day
+function fsRefreshNudges(data) {
+    var today = fsTodayKey();
+    if (data.nudgeDateKey !== today) {
+        data.nudgesSentToday = 0;
+        data.nudgeDateKey = today;
+        data.lastNudgeTimes = {};
+    }
+}
+
+// ─── RPC: friend_streak_get_state ───────────────────────────────────────────
+
+function rpcFriendStreakGetState(ctx, logger, nk, payload) {
+    if (!ctx.userId) return fsError('User not authenticated');
+
+    var data = fsReadData(nk, logger, ctx.userId);
+    if (!data) data = fsInitData();
+
+    // Prune broken streaks
+    var broken = fsPruneStreaks(data);
+    fsRefreshNudges(data);
+
+    if (broken.length > 0) {
+        fsWriteData(nk, logger, ctx.userId, data);
+        fsAppendBrokenLog(nk, logger, ctx.userId, broken);
     }
 
-    // Fan out notifications (best-effort — but battle record exists already)
-    var notifs = [];
-    for (var k = 0; k < invited.length; k++) {
-        notifs.push({
-            userId:     invited[k],
-            subject:    senderName + ' invited you to a battle!',
-            content: {
-                type:        'friend_battle_invite',
-                battleId:    battleId,
-                fromUserId:  ctx.userId,
-                fromName:    senderName,
-                mode:        mode,
-                roomCode:    roomCode,
-                expiresAt:   battleRecord.expiresAt
-            },
-            code:       110,
-            persistent: true,
-            sender:     ctx.userId
+    // Build response
+    var streakList = [];
+    for (var fid in data.streaks) {
+        var s = data.streaks[fid];
+        var hoursLeft = FS_STREAK_BREAK_HOURS - fsHoursSince(s.lastInteractionAt);
+        streakList.push({
+            friendId: fid,
+            friendDisplayName: s.friendDisplayName || '',
+            streakDays: s.streakDays || 0,
+            myContributionToday: s.myContributionToday || false,
+            friendContributionToday: s.friendContributionToday || false,
+            isAtRisk: hoursLeft < 4 && hoursLeft > 0,
+            hoursUntilBreak: Math.max(0, Math.round(hoursLeft)),
+            startedAt: s.startedAt || null
         });
     }
-    try {
-        if (notifs.length > 0) nk.notificationsSend(notifs);
-    } catch (e) {
-        logger.warn('[FriendsExtras] battle notify failed: ' + e.message);
-    }
 
-    return _fxOk({
-        battleId:        battleId,
-        roomCode:        roomCode,
-        mode:            mode,
-        invitedIds:      invited,
-        invitedCount:    invited.length,
-        expiresAt:       battleRecord.expiresAt,
-        timestamp:       nowIso
+    return JSON.stringify({
+        success: true,
+        streaks: streakList,
+        totalActive: streakList.length,
+        maxStreaks: FS_MAX_CONCURRENT,
+        nudgesRemaining: Math.max(0, FS_NUDGES_PER_DAY - (data.nudgesSentToday || 0)),
+        brokenStreaks: broken,
+        timestamp: new Date().toISOString()
     });
 }
 
-// ============================================================================
-// RPC: friend_invite_with_reward
-// ============================================================================
-//
-// Sends a friend invite (Nakama friendsAdd) AND records a reward bundle that
-// will be granted to BOTH parties on accept. The actual grant happens in
-// the existing accept_friend_invite handler — this RPC just stores the intent.
-//
-// Payload: {
-//   targetUserId: <UUID>,
-//   rewardBundle?: { coins?: int, gems?: int, xp?: int }   // capped server-side
-// }
-//
-// Caps: coins ≤ 200, gems ≤ 10, xp ≤ 100 per invite (anti-griefing).
-var FX_REWARD_CAP = { coins: 200, gems: 10, xp: 100 };
+// ─── RPC: friend_streak_record_contribution ─────────────────────────────────
 
-function rpcFriendInviteWithReward(ctx, logger, nk, payload) {
-    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
+function rpcFriendStreakRecordContribution(ctx, logger, nk, payload) {
+    if (!ctx.userId) return fsError('User not authenticated');
 
-    var p = _fxParse(payload);
-    if (!p.ok) return _fxErr(p.error, 'invalid_payload');
+    var input;
+    try { input = JSON.parse(payload); } catch (e) { return fsError('Invalid JSON'); }
 
-    var data = p.data || {};
-    var target = data.targetUserId;
-    if (!_fxUuidValid(target)) {
-        return _fxErr('Invalid targetUserId (UUID required)', 'invalid_target');
-    }
-    if (target === ctx.userId) {
-        return _fxErr('Cannot invite yourself', 'self_invite');
-    }
+    var friendId = input.friendId;
+    if (!friendId) return fsError('Missing friendId');
 
-    var raw = data.rewardBundle || {};
-    var bundle = {
-        coins: Math.min(FX_REWARD_CAP.coins, Math.max(0, parseInt(raw.coins) || 0)),
-        gems:  Math.min(FX_REWARD_CAP.gems,  Math.max(0, parseInt(raw.gems)  || 0)),
-        xp:    Math.min(FX_REWARD_CAP.xp,    Math.max(0, parseInt(raw.xp)    || 0))
-    };
+    // --- My data ---
+    var myData = fsReadData(nk, logger, ctx.userId) || fsInitData();
+    fsPruneStreaks(myData);
 
-    // Send the friend request via Nakama's native graph
-    try {
-        nk.friendsAdd(ctx.userId, ctx.username || '', [target], null);
-    } catch (e) {
-        return _fxErr('friendsAdd failed: ' + e.message, 'friends_add_failed');
+    // Auto-create streak if not exists (within limits)
+    if (!myData.streaks[friendId]) {
+        if (Object.keys(myData.streaks).length >= FS_MAX_CONCURRENT) {
+            return fsError('Max concurrent streaks reached (' + FS_MAX_CONCURRENT + ')');
+        }
+        myData.streaks[friendId] = {
+            friendDisplayName: input.friendDisplayName || '',
+            streakDays: 0,
+            myContributionToday: false,
+            friendContributionToday: false,
+            lastInteractionAt: new Date().toISOString(),
+            startedAt: new Date().toISOString()
+        };
     }
 
-    // Persist the reward intent under both parties so accept_friend_invite
-    // (in src/legacy/friends.ts) can find and grant it.
-    var nowIso = _fxNowIso();
-    var rewardKey = 'invite_reward_' + ctx.userId + '_' + target;
-    var rewardRecord = {
-        senderId:       ctx.userId,
-        recipientId:    target,
-        rewardBundle:   bundle,
-        status:         'pending',
-        createdAt:      nowIso,
-        expiresAt:      new Date(Date.now() + 7 * 86400000).toISOString() // 7 days
-    };
-    try {
-        nk.storageWrite([
-            {
-                collection:      FX_INVITE_REWARD_COL,
-                key:             rewardKey,
-                userId:          ctx.userId,
-                value:           rewardRecord,
-                permissionRead:  0,
-                permissionWrite: 0
-            },
-            {
-                collection:      FX_INVITE_REWARD_COL,
-                key:             rewardKey,
-                userId:          target,
-                value:           rewardRecord,
-                permissionRead:  0,
-                permissionWrite: 0
-            }
-        ]);
-    } catch (e) {
-        logger.warn('[FriendsExtras] invite-reward persist failed: ' + e.message);
-        // Non-fatal — friend invite already went out
+    var myStreak = myData.streaks[friendId];
+    myStreak.myContributionToday = true;
+    myStreak.lastInteractionAt = new Date().toISOString();
+
+    // --- Friend's data (mirror the contribution) ---
+    var friendData = fsReadData(nk, logger, friendId) || fsInitData();
+    fsPruneStreaks(friendData);
+
+    if (!friendData.streaks[ctx.userId]) {
+        if (Object.keys(friendData.streaks).length >= FS_MAX_CONCURRENT) {
+            logger.warn('[FriendStreaks] Friend ' + friendId + ' at max streaks, cannot mirror');
+        } else {
+            friendData.streaks[ctx.userId] = {
+                friendDisplayName: input.myDisplayName || '',
+                streakDays: 0,
+                myContributionToday: false,
+                friendContributionToday: false,
+                lastInteractionAt: new Date().toISOString(),
+                startedAt: new Date().toISOString()
+            };
+        }
     }
 
-    // Notify the recipient
+    if (friendData.streaks[ctx.userId]) {
+        friendData.streaks[ctx.userId].friendContributionToday = true;
+        friendData.streaks[ctx.userId].lastInteractionAt = new Date().toISOString();
+
+        // Check bilateral completion on friend side
+        if (friendData.streaks[ctx.userId].myContributionToday &&
+            friendData.streaks[ctx.userId].friendContributionToday) {
+            friendData.streaks[ctx.userId].streakDays =
+                (friendData.streaks[ctx.userId].streakDays || 0) + 1;
+            friendData.streaks[ctx.userId].myContributionToday = false;
+            friendData.streaks[ctx.userId].friendContributionToday = false;
+        }
+        friendData.updatedAt = new Date().toISOString();
+        fsWriteData(nk, logger, friendId, friendData);
+    }
+
+    // Check bilateral completion on my side
+    var advanced = false;
+    if (myStreak.myContributionToday && myStreak.friendContributionToday) {
+        myStreak.streakDays = (myStreak.streakDays || 0) + 1;
+        myStreak.myContributionToday = false;
+        myStreak.friendContributionToday = false;
+        advanced = true;
+    }
+
+    myData.updatedAt = new Date().toISOString();
+    if (!fsWriteData(nk, logger, ctx.userId, myData)) {
+        return fsError('Failed to save streak data');
+    }
+
+    logger.info('[FriendStreaks] ' + ctx.userId + ' contributed to streak with ' +
+                friendId + (advanced ? ' — ADVANCED to day ' + myStreak.streakDays : ''));
+
+    return JSON.stringify({
+        success: true,
+        friendId: friendId,
+        streakDays: myStreak.streakDays,
+        advanced: advanced,
+        myContributionToday: myStreak.myContributionToday,
+        friendContributionToday: myStreak.friendContributionToday,
+        timestamp: new Date().toISOString()
+    });
+}
+
+// ─── RPC: friend_streak_send_nudge ──────────────────────────────────────────
+
+function rpcFriendStreakSendNudge(ctx, logger, nk, payload) {
+    if (!ctx.userId) return fsError('User not authenticated');
+
+    var input;
+    try { input = JSON.parse(payload); } catch (e) { return fsError('Invalid JSON'); }
+
+    var friendId = input.friendId;
+    if (!friendId) return fsError('Missing friendId');
+
+    var data = fsReadData(nk, logger, ctx.userId) || fsInitData();
+    fsRefreshNudges(data);
+
+    // Check daily limit
+    if ((data.nudgesSentToday || 0) >= FS_NUDGES_PER_DAY) {
+        return fsError('Daily nudge limit reached (' + FS_NUDGES_PER_DAY + ')');
+    }
+
+    // Check cooldown per friend
+    var lastNudge = data.lastNudgeTimes ? data.lastNudgeTimes[friendId] : null;
+    if (lastNudge && fsHoursSince(lastNudge) < FS_NUDGE_COOLDOWN_HOURS) {
+        var remaining = Math.ceil(FS_NUDGE_COOLDOWN_HOURS - fsHoursSince(lastNudge));
+        return fsError('Nudge cooldown: ' + remaining + 'h remaining');
+    }
+
+    // Send notification to friend
     try {
         nk.notificationsSend([{
-            userId:     target,
-            subject:    'Friend Invite + Reward',
+            userId: friendId,
+            subject: 'Streak Nudge! 🔥',
             content: {
-                type:         'friend_invite_with_reward',
-                fromUserId:   ctx.userId,
-                fromName:     ctx.username || ctx.userId,
-                rewardBundle: bundle
+                type: 'friend_streak_nudge',
+                senderId: ctx.userId,
+                senderName: input.myDisplayName || 'A friend'
             },
-            code:       111,
-            persistent: true,
-            sender:     ctx.userId
+            code: 101, // Custom notification code for streak nudges
+            persistent: true
         }]);
-    } catch (e) {
-        logger.warn('[FriendsExtras] invite notify failed: ' + e.message);
+    } catch (err) {
+        logger.warn('[FriendStreaks] Failed to send nudge notification: ' + err.message);
+        // Continue anyway — nudge is counted even if notification fails
     }
 
-    return _fxOk({
-        targetUserId:   target,
-        rewardBundle:   bundle,
-        rewardKey:      rewardKey,
-        expiresAt:      rewardRecord.expiresAt,
-        timestamp:      nowIso
+    // Update nudge state
+    data.nudgesSentToday = (data.nudgesSentToday || 0) + 1;
+    if (!data.lastNudgeTimes) data.lastNudgeTimes = {};
+    data.lastNudgeTimes[friendId] = new Date().toISOString();
+    data.updatedAt = new Date().toISOString();
+
+    fsWriteData(nk, logger, ctx.userId, data);
+
+    var remaining = FS_NUDGES_PER_DAY - data.nudgesSentToday;
+    logger.info('[FriendStreaks] Nudge sent from ' + ctx.userId + ' to ' + friendId +
+                '. Remaining: ' + remaining);
+
+    return JSON.stringify({
+        success: true,
+        friendId: friendId,
+        nudgesRemaining: remaining,
+        cooldownHours: FS_NUDGE_COOLDOWN_HOURS,
+        timestamp: new Date().toISOString()
+    });
+}
+
+// ─── RPC: friend_streak_get_broken_log ──────────────────────────────────────
+//
+// Returns the rolling log of streaks that broke while the player was offline,
+// so the client can show a "you lost a 30-day streak with X" banner. Also
+// runs a fresh prune so the log is always up to date at read time.
+
+function rpcFriendStreakGetBrokenLog(ctx, logger, nk, payload) {
+    if (!ctx.userId) return fsError('User not authenticated');
+
+    var input = {};
+    if (payload && payload !== '') {
+        try { input = JSON.parse(payload); } catch (e) { /* ignore — empty filter */ }
+    }
+    var limit = parseInt(input.limit) || 20;
+    if (limit < 1)  limit = 1;
+    if (limit > FS_BROKEN_LOG_MAX) limit = FS_BROKEN_LOG_MAX;
+    var includeRepaired = input.includeRepaired === true;
+
+    // Fresh prune so the log is always current at read time
+    var data = fsReadData(nk, logger, ctx.userId) || fsInitData();
+    var fresh = fsPruneStreaks(data);
+    if (fresh.length > 0) {
+        fsWriteData(nk, logger, ctx.userId, data);
+        fsAppendBrokenLog(nk, logger, ctx.userId, fresh);
+    }
+
+    var entries = [];
+    try {
+        var rows = nk.storageRead([{
+            collection: FS_COLLECTION,
+            key: 'broken_log_' + ctx.userId,
+            userId: ctx.userId
+        }]);
+        if (rows && rows.length > 0 && rows[0].value && rows[0].value.entries) {
+            entries = rows[0].value.entries;
+        }
+    } catch (err) {
+        logger.warn('[FriendStreaks] broken-log read failed: ' + err.message);
+    }
+
+    if (!includeRepaired) {
+        var filtered = [];
+        for (var i = 0; i < entries.length; i++) {
+            if (!entries[i].repaired) filtered.push(entries[i]);
+        }
+        entries = filtered;
+    }
+    if (entries.length > limit) entries = entries.slice(0, limit);
+
+    return JSON.stringify({
+        success: true,
+        entries: entries,
+        totalEntries: entries.length,
+        timestamp: new Date().toISOString()
+    });
+}
+
+// ─── RPC: friend_streak_repair ──────────────────────────────────────────────
+//
+// Spend a "Streak Saver" (gem cost) to restore a broken bilateral streak.
+// Server-authoritative: validates the broken-log entry exists, debits the
+// wallet, restores the streak with its previous day count, marks the entry
+// repaired, and notifies the friend so their state can mirror.
+//
+// Schema: { friendId: <UUID>, idempotencyKey?: <string> }
+
+var FS_REPAIR_GEM_COST = 50;
+
+function rpcFriendStreakRepair(ctx, logger, nk, payload) {
+    if (!ctx.userId) return fsError('User not authenticated');
+
+    var input;
+    try { input = JSON.parse(payload || '{}'); } catch (e) { return fsError('Invalid JSON'); }
+
+    var friendId = input.friendId;
+    if (!friendId) return fsError('Missing friendId');
+    var idempotencyKey = input.idempotencyKey || ('fs_repair_' + friendId + '_' + Date.now());
+
+    // Idempotency check — refuse double-spend on the same key
+    try {
+        var idemRows = nk.storageRead([{
+            collection: FS_COLLECTION,
+            key: 'repair_idem_' + ctx.userId + '_' + idempotencyKey,
+            userId: ctx.userId
+        }]);
+        if (idemRows && idemRows.length > 0 && idemRows[0].value) {
+            return JSON.stringify({
+                success: true,
+                idempotent: true,
+                friendId: friendId,
+                streakDays: idemRows[0].value.restoredDays || 0,
+                timestamp: new Date().toISOString()
+            });
+        }
+    } catch (_) { /* fall-through */ }
+
+    // Find the broken-log entry for this friend (most recent unrepaired)
+    var brokenEntry = null;
+    var brokenLog = null;
+    try {
+        var rows = nk.storageRead([{
+            collection: FS_COLLECTION,
+            key: 'broken_log_' + ctx.userId,
+            userId: ctx.userId
+        }]);
+        if (rows && rows.length > 0 && rows[0].value && rows[0].value.entries) {
+            brokenLog = rows[0].value;
+            for (var i = 0; i < brokenLog.entries.length; i++) {
+                if (brokenLog.entries[i].friendId === friendId && !brokenLog.entries[i].repaired) {
+                    brokenEntry = brokenLog.entries[i];
+                    break;
+                }
+            }
+        }
+    } catch (err) {
+        logger.warn('[FriendStreaks] repair read broken-log failed: ' + err.message);
+    }
+
+    if (!brokenEntry) {
+        return fsError('No broken streak found for friend ' + friendId);
+    }
+
+    // Repair window: only repair if the streak broke within last 7 days
+    var brokenAtMs = new Date(brokenEntry.brokenAt).getTime();
+    if ((Date.now() - brokenAtMs) > (7 * 86400000)) {
+        return fsError('Streak broken more than 7 days ago — too late to repair');
+    }
+
+    // Debit gems
+    try {
+        nk.walletUpdate(ctx.userId, { gems: -FS_REPAIR_GEM_COST }, {
+            source: 'friend_streak_repair',
+            friendId: friendId,
+            idempotencyKey: idempotencyKey
+        }, true);
+    } catch (walletErr) {
+        return fsError('Insufficient gems: ' + walletErr.message);
+    }
+
+    // Restore the streak on caller's side
+    var data = fsReadData(nk, logger, ctx.userId) || fsInitData();
+    if (Object.keys(data.streaks).length >= FS_MAX_CONCURRENT) {
+        // Refund gems
+        try {
+            nk.walletUpdate(ctx.userId, { gems: FS_REPAIR_GEM_COST }, {
+                source: 'friend_streak_repair_refund',
+                friendId: friendId
+            }, true);
+        } catch (_) {}
+        return fsError('Max concurrent streaks reached — cannot restore');
+    }
+    data.streaks[friendId] = {
+        friendDisplayName: brokenEntry.friendDisplayName || '',
+        streakDays: brokenEntry.streakDays || 0,
+        myContributionToday: false,
+        friendContributionToday: false,
+        lastInteractionAt: new Date().toISOString(),
+        startedAt: new Date().toISOString(),
+        repairedAt: new Date().toISOString()
+    };
+    data.updatedAt = new Date().toISOString();
+    fsWriteData(nk, logger, ctx.userId, data);
+
+    // Mark broken-log entry as repaired
+    try {
+        if (brokenLog && brokenLog.entries) {
+            for (var j = 0; j < brokenLog.entries.length; j++) {
+                if (brokenLog.entries[j] === brokenEntry) {
+                    brokenLog.entries[j].repaired = true;
+                    brokenLog.entries[j].repairedAt = new Date().toISOString();
+                    break;
+                }
+            }
+            nk.storageWrite([{
+                collection: FS_COLLECTION,
+                key: 'broken_log_' + ctx.userId,
+                userId: ctx.userId,
+                value: brokenLog,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+        }
+    } catch (err) {
+        logger.warn('[FriendStreaks] repair mark-log failed: ' + err.message);
+    }
+
+    // Persist idempotency record (24h TTL via Nakama isn't supported in JS
+    // runtime, so we just persist forever — keys are scoped per-user and small)
+    try {
+        nk.storageWrite([{
+            collection: FS_COLLECTION,
+            key: 'repair_idem_' + ctx.userId + '_' + idempotencyKey,
+            userId: ctx.userId,
+            value: {
+                friendId: friendId,
+                restoredDays: brokenEntry.streakDays || 0,
+                gemCost: FS_REPAIR_GEM_COST,
+                repairedAt: new Date().toISOString()
+            },
+            permissionRead: 0,
+            permissionWrite: 0
+        }]);
+    } catch (_) {}
+
+    // Notify the friend
+    try {
+        nk.notificationsSend([{
+            userId: friendId,
+            subject: 'Streak Restored! 🔥',
+            content: {
+                type: 'friend_streak_repaired',
+                fromUserId: ctx.userId,
+                streakDays: brokenEntry.streakDays || 0
+            },
+            code: 102,
+            persistent: true
+        }]);
+    } catch (err) {
+        logger.warn('[FriendStreaks] repair notify failed: ' + err.message);
+    }
+
+    logger.info('[FriendStreaks] Repaired streak ' + ctx.userId + ' ↔ ' + friendId +
+                ' restoredDays=' + (brokenEntry.streakDays || 0) + ' gemCost=' + FS_REPAIR_GEM_COST);
+
+    return JSON.stringify({
+        success: true,
+        friendId: friendId,
+        streakDays: brokenEntry.streakDays || 0,
+        gemCost: FS_REPAIR_GEM_COST,
+        idempotencyKey: idempotencyKey,
+        timestamp: new Date().toISOString()
     });
 }
 
 // ============================================================================
-// Module Init — register Friends Extras RPCs
+// Module Init — register Friend Streak RPCs
 // ============================================================================
-function __ModuleInit_56(ctx, logger, nk, initializer) {
-    __rpc_friends_get_online_count = __rpc_friends_get_online_count || (rpcFriendsGetOnlineCount);
-    __rpc_social_pressure_get_today_summary = __rpc_social_pressure_get_today_summary || (rpcSocialPressureGetTodaySummary);
-    __rpc_friend_battle_create = __rpc_friend_battle_create || (rpcFriendBattleCreate);
-    __rpc_friend_invite_with_reward = __rpc_friend_invite_with_reward || (rpcFriendInviteWithReward);
+// Registers all 5 friend-streak RPCs. Existing 3 (get_state, record_contribution,
+// send_nudge) are also registered by legacy_runtime.js; postbuild's `||` guard
+// + module-first concat order means our handler wins.
+function __ModuleInit_55(ctx, logger, nk, initializer) {
+    __rpc_friend_streak_get_state = __rpc_friend_streak_get_state || (rpcFriendStreakGetState);
+    __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contribution || (rpcFriendStreakRecordContribution);
+    __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge);
+    __rpc_friend_streak_get_broken_log = __rpc_friend_streak_get_broken_log || (rpcFriendStreakGetBrokenLog);
+    __rpc_friend_streak_repair = __rpc_friend_streak_repair || (rpcFriendStreakRepair);
     if (logger && logger.info) {
-        logger.info('[FriendsExtras] Registered 4 RPCs (online_count, social_pressure, battle_create, invite_with_reward)');
+        logger.info('[FriendStreaks] Registered 5 RPCs (get_state, record_contribution, send_nudge, get_broken_log, repair)');
     }
 }
 
 
-// --- Module: friends\friend_challenges.js ---
+// --- Module: friends/friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -38116,7 +37964,7 @@ function rpcFriendsSpectate(ctx, logger, nk, payload) {
 //
 // IMPORTANT: legacy_runtime.js's `friends_challenge_user` registration must
 // stay removed / commented so it doesn't compete with our handler.
-function __ModuleInit_57(ctx, logger, nk, initializer) {
+function __ModuleInit_56(ctx, logger, nk, initializer) {
     __rpc_send_friend_challenge = __rpc_send_friend_challenge || (rpcSendFriendChallenge);
     __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcSendFriendChallenge); // legacy alias
     __rpc_accept_friend_challenge = __rpc_accept_friend_challenge || (rpcAcceptFriendChallenge);
@@ -38131,7 +37979,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_invites.js ---
+// --- Module: friends/friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -38954,7 +38802,7 @@ function rpcFriendsListPendingInvites(ctx, logger, nk, payload) {
 // assignment, then replays it at module-load time. The legacy
 // registrations for these same RPC ids in legacy_runtime.js have been
 // commented out so this module wins the "first to set the stub" race.
-function __ModuleInit_58(ctx, logger, nk, initializer) {
+function __ModuleInit_57(ctx, logger, nk, initializer) {
     __rpc_send_friend_invite = __rpc_send_friend_invite || (rpcFriendsSendInvite);
     __rpc_accept_friend_invite = __rpc_accept_friend_invite || (rpcFriendsAcceptInvite);
     __rpc_decline_friend_invite = __rpc_decline_friend_invite || (rpcFriendsDeclineInvite);
@@ -38967,7 +38815,774 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\notification_codes.js ---
+// --- Module: friends/friends.js ---
+// ============================================================================
+// friends.js — Helper-only module (Phase-4 C2 cleanup)
+// ============================================================================
+// PRODUCTION-READY | ES5 (Goja runtime)
+//
+// HISTORY
+// -------
+// This file used to host SIX RPC handlers and SEVERAL helpers:
+//   * RPCs: friends_block, friends_unblock, friends_remove, friends_list,
+//          friends_challenge_user, friends_spectate
+//   * Helpers: isValidFriendUUID, isUserBlocked, areActualFriends,
+//              checkRateLimit, sendChallengePushNotification,
+//              sendChallengeChatMessage
+//
+// All six RPCs were silently shadowed by canonical replacements:
+//   * friends_block / friends_unblock / friends_remove → src/legacy/friends.ts
+//   * friends_list                                    → src/friends/friends_list.ts (Phase-4 C1)
+//   * friends_challenge_user / friends_spectate       → friends/friend_challenges.js (Phase-3a)
+//
+// Phase-4 C2 strips the dead RPC handlers AND their now-unused helpers
+// (isValidFriendUUID, isUserBlocked, areActualFriends, checkRateLimit) so
+// nobody can read this file and "fix" the wrong code path. The lone
+// `checkRateLimit` deletion also removes a name collision with
+// `infrastructure/rate_limiting.js` which defines a totally different
+// function with the same name (different signature) — the
+// rate_limiting.js version was silently overwriting friends.js's at
+// merge time, which is the kind of subtle global-scope bug we never
+// want to hit.
+//
+// What remains
+// ------------
+// Two helper functions that `friends/friend_challenges.js` still calls
+// at runtime (via `typeof X === 'function'` lookups so the module is
+// resilient to load-order changes — see line 483-495 of
+// friend_challenges.js):
+//
+//   sendChallengePushNotification(nk, logger, targetUserId, gameId,
+//                                 challengerName, quizModeName,
+//                                 challengeId, roomCode, isAsync)
+//      → fans out a push notification via the PUSH_SEND_URL Lambda
+//        endpoint to every push_endpoints row owned by `targetUserId`
+//        for the given `gameId`. Used by send_friend_challenge.
+//
+//   sendChallengeChatMessage(nk, logger, senderId, receiverId,
+//                            senderName, challengeData)
+//      → inserts a "friend challenge" message into the DM channel
+//        between sender and receiver so the challenge appears in their
+//        chat thread. Falls back to a `pending_chat_messages` storage
+//        row if the channel insert fails.
+//
+// Both helpers are intentionally kept in the legacy JS module rather
+// than ported to TypeScript because (a) the Phase-3a TS challenge
+// module already has the canonical RPC handler, (b) these helpers are
+// pure side-effect fan-outs the TS handler delegates to via dynamic
+// lookup, and (c) the dynamic lookup pattern is the safest way to
+// handle "host calls helper if it exists, otherwise no-op" without
+// hard-coupling the two files.
+//
+// If you need to add a NEW friend RPC, ADD IT TO ONE OF:
+//   - friends/friend_invites.js     (invite lifecycle)
+//   - friends/friend_challenges.js  (challenge lifecycle + spectate)
+//   - src/friends/friends_list.ts   (read-only roster RPCs)
+//   - src/legacy/friends.ts         (graph mutations)
+// NOT to this file. This file should never grow back to handler size.
+// ============================================================================
+
+
+/**
+ * Send a push notification for a friend challenge.
+ * Calls the push notification Lambda endpoint.
+ *
+ * @param {object} nk
+ * @param {object} logger
+ * @param {string} targetUserId   - Recipient userId (the challenged player)
+ * @param {string} gameId         - Free-form game/mode id (used to filter push_endpoints)
+ * @param {string} challengerName - Display name shown in the push title
+ * @param {string} quizModeName   - Display name of the quiz mode for the body
+ * @param {string} challengeId    - Server-authoritative challenge id (echoed in data)
+ * @param {string} roomCode       - Room/share code (echoed in data)
+ * @param {boolean} isAsync       - True for async challenges, false for live
+ */
+function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync) {
+    var LAMBDA_PUSH_URL = (typeof process!=="undefined"&&process.env?process.env.PUSH_SEND_URL:undefined) || "https://your-lambda-url.lambda-url.region.on.aws/send-push";
+
+    var endpoints = [];
+    try {
+        var records = nk.storageList(targetUserId, "push_endpoints", 100);
+        for (var i = 0; i < records.length; i++) {
+            var value = records[i].value;
+            if (value.gameId === gameId) {
+                endpoints.push(value);
+            }
+        }
+    } catch (err) {
+        utils.logWarn(logger, "Could not list push endpoints: " + err.message);
+        return;
+    }
+
+    if (endpoints.length === 0) {
+        utils.logInfo(logger, "No push endpoints for user " + targetUserId);
+        return;
+    }
+
+    var challengeType = isAsync ? "Async Challenge" : "Live Challenge";
+    var title = "🎮 " + challengerName + " challenged you!";
+    var body  = "Accept the " + quizModeName + " " + challengeType + " now!";
+
+    for (var j = 0; j < endpoints.length; j++) {
+        var endpoint = endpoints[j];
+
+        var pushPayload = {
+            endpointArn: endpoint.endpointArn,
+            platform:    endpoint.platform,
+            title:       title,
+            body:        body,
+            data: {
+                type:         "friend_challenge",
+                challengeId:  challengeId,
+                roomCode:     roomCode,
+                isAsync:      isAsync,
+                click_action: "OPEN_CHALLENGE"
+            },
+            gameId:    gameId,
+            eventType: "friend_challenge"
+        };
+
+        try {
+            var response = nk.httpRequest(
+                LAMBDA_PUSH_URL,
+                "post",
+                { "Content-Type": "application/json", "Accept": "application/json" },
+                JSON.stringify(pushPayload)
+            );
+            if (response.code === 200 || response.code === 201) {
+                utils.logInfo(logger, "Push sent to " + endpoint.platform + " for challenge " + challengeId);
+            }
+        } catch (pushErr) {
+            utils.logWarn(logger, "Push to " + endpoint.platform + " failed: " + pushErr.message);
+        }
+    }
+}
+
+/**
+ * Send a friend challenge as a chat message so it appears in the conversation
+ * thread between the two users.
+ *
+ * @param {object} nk
+ * @param {object} logger
+ * @param {string} senderId      - Challenger userId
+ * @param {string} receiverId    - Challenged userId
+ * @param {string} senderName    - Challenger display name
+ * @param {object} challengeData - { challengeId, roomCode, quizModeName, isAsync,
+ *                                   fromUserId, fromDisplayName, expiresAt }
+ */
+function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, challengeData) {
+    var channelId = null;
+    try {
+        // Sort user IDs so both sides resolve to the same DM channel
+        var sortedIds = [senderId, receiverId].sort();
+        channelId = "dm_" + sortedIds[0] + "_" + sortedIds[1];
+    } catch (err) {
+        utils.logWarn(logger, "Could not create channel ID: " + err.message);
+        return;
+    }
+
+    var messageContent = {
+        type: "friend_challenge",
+        text: "🎮 " + senderName + " challenged you to " + challengeData.quizModeName + "!",
+        challenge: {
+            challengeId:     challengeData.challengeId,
+            roomCode:        challengeData.roomCode,
+            shareCode:       challengeData.roomCode,
+            quizModeName:    challengeData.quizModeName,
+            isAsync:         challengeData.isAsync,
+            fromUserId:      challengeData.fromUserId,
+            fromDisplayName: challengeData.fromDisplayName,
+            expiresAt:       challengeData.expiresAt,
+            status:          "pending"
+        }
+    };
+
+    try {
+        nk.channelMessageSend(
+            channelId,
+            JSON.stringify(messageContent),
+            senderId,
+            senderName,
+            true  // persistent
+        );
+        utils.logInfo(logger, "Challenge chat message sent to channel " + channelId);
+    } catch (chatErr) {
+        // Fallback: if the DM channel doesn't exist yet, persist the message
+        // so it can be replayed when the channel is later opened.
+        utils.logWarn(logger, "Channel message failed, using storage fallback: " + chatErr.message);
+
+        var msgKey = "pending_chat_" + receiverId + "_" + Date.now();
+        utils.writeStorage(nk, logger, "pending_chat_messages", msgKey, senderId, {
+            senderId:    senderId,
+            senderName:  senderName,
+            receiverId:  receiverId,
+            content:     messageContent,
+            timestamp:   utils.getCurrentTimestamp()
+        });
+    }
+}
+
+
+// --- Module: friends/friends_extras.js ---
+// ============================================================================
+// friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
+// ============================================================================
+// PRODUCTION-READY | ES5 (Goja runtime)
+//
+// Houses 4 RPCs that PLAN-ENGAGEMENT_SYSTEM_07_FRIENDS_SOCIAL.md (V11/V17/V20)
+// requires the server to expose:
+//
+//   friends_get_online_count
+//       -> count of caller's mutual friends currently online (Nakama presence)
+//
+//   social_pressure_get_today_summary
+//       -> aggregates "friends played today / friends ahead of me / streak at
+//          risk" data into a single response so the client doesn't need to
+//          stitch 4 separate reads.
+//
+//   friend_battle_create
+//       -> server-mints a battleId/roomCode, persists the lobby record under
+//          friend_battles/<battleId>, fans out invitations + push notifications
+//          to each invited friend. Atomic: if any non-friend is invited the
+//          whole call fails before any side-effect.
+//
+//   friend_invite_with_reward
+//       -> sends a friend invite (Nakama friendsAdd) AND tags it with a
+//          reward bundle that's claimable when the recipient accepts. The
+//          claim happens in send_friend_invite/accept_friend_invite already;
+//          this RPC is a thin wrapper that records the reward intent so the
+//          accept-handler can grant it.
+//
+// SECURITY: every RPC requires an authenticated caller (ctx.userId set), and
+// every "target" is verified as a confirmed mutual friend (Nakama state == 0)
+// before any side-effect.
+// ============================================================================
+
+var FX_BATTLE_COLLECTION = 'friend_battles';
+var FX_INVITE_REWARD_COL = 'friend_invite_rewards';
+var FX_BATTLE_MAX_INVITES = 8;
+var FX_BATTLE_MAX_DATA_BYTES = 4096;
+
+// ─── Tiny self-contained helpers ────────────────────────────────────────────
+// Same defensive pattern as friend_challenges.js — no `utils` dependency so
+// load-order can't break this module.
+
+function _fxUuidValid(id) {
+    if (!id || typeof id !== 'string') return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
+function _fxNowIso() { return new Date().toISOString(); }
+
+function _fxOk(extra) {
+    var out = { success: true };
+    if (extra) {
+        for (var k in extra) {
+            if (Object.prototype.hasOwnProperty.call(extra, k)) out[k] = extra[k];
+        }
+    }
+    return JSON.stringify(out);
+}
+
+function _fxErr(message, errorCode, extra) {
+    var out = { success: false, error: message, errorCode: errorCode || 'unknown' };
+    if (extra) {
+        for (var k in extra) {
+            if (Object.prototype.hasOwnProperty.call(extra, k)) out[k] = extra[k];
+        }
+    }
+    return JSON.stringify(out);
+}
+
+function _fxParse(payload) {
+    if (!payload || payload === '') return { ok: true, data: {} };
+    try { return { ok: true, data: JSON.parse(payload) }; }
+    catch (e)  { return { ok: false, error: 'Invalid JSON payload: ' + e.message }; }
+}
+
+function _fxMintBattleId(nk) {
+    try {
+        if (nk && typeof nk.uuidv4 === 'function') {
+            return 'fbat_' + nk.uuidv4().replace(/-/g, '');
+        }
+    } catch (_) {}
+    var hex = '0123456789abcdef';
+    var rand = '';
+    for (var i = 0; i < 24; i++) rand += hex.charAt(Math.floor(Math.random() * 16));
+    return 'fbat_' + Date.now().toString(36) + '_' + rand;
+}
+
+// Returns array of confirmed-friend objects: [{ id, displayName, online }]
+// MUST pass the caller's userId — passing null runs under SYSTEM context.
+function _fxLoadFriends(nk, userId) {
+    if (!userId) return [];
+    var out = [];
+    try {
+        var page = nk.friendsList(userId, 1000, 0, null); // state=0 (FRIEND)
+        if (page && page.friends) {
+            for (var i = 0; i < page.friends.length; i++) {
+                var fr = page.friends[i];
+                if (fr && fr.user && fr.user.id) {
+                    out.push({
+                        id:          fr.user.id,
+                        displayName: fr.user.displayName || fr.user.username || 'Friend',
+                        online:      !!fr.user.online
+                    });
+                }
+            }
+        }
+    } catch (_) {}
+    return out;
+}
+
+// ============================================================================
+// RPC: friends_get_online_count
+// ============================================================================
+//
+// Payload: {}  (no inputs)
+// Response: {
+//   success: true,
+//   onlineCount: <int>,
+//   totalFriends: <int>,
+//   onlineFriendIds: [<UUID>...],   // capped at 50 for response-size sanity
+//   timestamp: <iso>
+// }
+//
+// Reads via nk.friendsList(state=0) which already includes the `online` flag
+// from Nakama presence — no extra round-trip needed.
+function rpcFriendsGetOnlineCount(ctx, logger, nk, payload) {
+    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
+
+    var friends = [];
+    try {
+        var page = nk.friendsList(ctx.userId, 1000, 0, null);
+        if (page && page.friends) friends = page.friends;
+    } catch (e) {
+        logger.warn('[FriendsExtras] friendsList failed: ' + e.message);
+        return _fxErr('Failed to load friends list', 'friends_list_failed');
+    }
+
+    var onlineIds = [];
+    for (var i = 0; i < friends.length; i++) {
+        var fr = friends[i];
+        if (fr && fr.user && fr.user.id && fr.user.online === true) {
+            if (onlineIds.length < 50) onlineIds.push(fr.user.id);
+        }
+    }
+
+    return _fxOk({
+        onlineCount:     onlineIds.length,
+        totalFriends:    friends.length,
+        onlineFriendIds: onlineIds,
+        timestamp:       _fxNowIso()
+    });
+}
+
+// ============================================================================
+// RPC: social_pressure_get_today_summary
+// ============================================================================
+//
+// Single-shot aggregator for the "Social Pressure" home-screen card. Returns:
+//   {
+//     friendsPlayedToday:      <int>,    // friends with quiz_complete today
+//     friendsPassedMe:         <int>,    // friends whose XP > my XP today
+//     friendsAboveMeInLeague:  [{ id, displayName, points, tier }],
+//     friendsStreakAtRisk:     [{ id, displayName, streakDays, hoursLeft }],
+//     timestamp: <iso>
+//   }
+//
+// Read-only — never mutates state. Best-effort: any sub-source that fails is
+// returned as 0 / [] rather than failing the whole call.
+function rpcSocialPressureGetTodaySummary(ctx, logger, nk, payload) {
+    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
+
+    var friends = _fxLoadFriends(nk, ctx.userId);
+    var todayKey = _fxNowIso().slice(0, 10).replace(/-/g, '');
+
+    // ── friendsPlayedToday + friendsPassedMe ──────────────────────────────
+    // Reads friend's `daily_play_log/{userId}_{YYYYMMDD}` if present (set by
+    // the existing daily_missions / quiz pipeline). Best-effort.
+    var playedToday = 0;
+    var passedMe = 0;
+    var myXpToday = 0;
+
+    try {
+        var myLog = nk.storageRead([{
+            collection: 'daily_play_log',
+            key: ctx.userId + '_' + todayKey,
+            userId: ctx.userId
+        }]);
+        if (myLog && myLog.length > 0 && myLog[0].value) {
+            myXpToday = myLog[0].value.xpToday || 0;
+        }
+    } catch (_) {}
+
+    for (var i = 0; i < friends.length; i++) {
+        var fid = friends[i].id;
+        try {
+            var rows = nk.storageRead([{
+                collection: 'daily_play_log',
+                key: fid + '_' + todayKey,
+                userId: fid
+            }]);
+            if (rows && rows.length > 0 && rows[0].value) {
+                playedToday++;
+                var fxp = rows[0].value.xpToday || 0;
+                if (fxp > myXpToday) passedMe++;
+            }
+        } catch (_) { /* friend may have permission 0 — skip silently */ }
+    }
+
+    // ── friendsAboveMeInLeague ────────────────────────────────────────────
+    // Reads friend's league record from the legacy leagues collection.
+    var aboveInLeague = [];
+    var myLeague = null;
+    try {
+        var myL = nk.storageRead([{
+            collection: 'leagues_named',
+            key: 'state_quizverse',
+            userId: ctx.userId
+        }]);
+        if (myL && myL.length > 0 && myL[0].value) myLeague = myL[0].value;
+    } catch (_) {}
+
+    if (myLeague) {
+        for (var j = 0; j < friends.length; j++) {
+            var fr = friends[j];
+            try {
+                var fL = nk.storageRead([{
+                    collection: 'leagues_named',
+                    key: 'state_quizverse',
+                    userId: fr.id
+                }]);
+                if (fL && fL.length > 0 && fL[0].value) {
+                    var lv = fL[0].value;
+                    if (lv.tier === myLeague.tier && (lv.points || 0) > (myLeague.points || 0)) {
+                        aboveInLeague.push({
+                            id:          fr.id,
+                            displayName: fr.displayName,
+                            points:      lv.points || 0,
+                            tier:        lv.tier
+                        });
+                    }
+                }
+            } catch (_) {}
+        }
+        aboveInLeague.sort(function(a, b) { return b.points - a.points; });
+        if (aboveInLeague.length > 10) aboveInLeague = aboveInLeague.slice(0, 10);
+    }
+
+    // ── friendsStreakAtRisk ───────────────────────────────────────────────
+    // Reads MY friend_streaks record (where I am one party of the streak).
+    // "At risk" = bilateral streak with <8 hours until break.
+    var atRisk = [];
+    try {
+        var myStreaks = nk.storageRead([{
+            collection: 'friend_streaks',
+            key: 'streaks_' + ctx.userId,
+            userId: ctx.userId
+        }]);
+        if (myStreaks && myStreaks.length > 0 && myStreaks[0].value &&
+            myStreaks[0].value.streaks) {
+            var streaks = myStreaks[0].value.streaks;
+            var nowMs = Date.now();
+            for (var fid2 in streaks) {
+                if (!Object.prototype.hasOwnProperty.call(streaks, fid2)) continue;
+                var s = streaks[fid2];
+                if (!s || !s.lastInteractionAt) continue;
+                var hoursSince = (nowMs - new Date(s.lastInteractionAt).getTime()) / 3600000;
+                var hoursLeft = 48 - hoursSince;
+                if (hoursLeft > 0 && hoursLeft < 8) {
+                    atRisk.push({
+                        id:          fid2,
+                        displayName: s.friendDisplayName || '',
+                        streakDays:  s.streakDays || 0,
+                        hoursLeft:   Math.max(0, Math.round(hoursLeft))
+                    });
+                }
+            }
+            atRisk.sort(function(a, b) { return a.hoursLeft - b.hoursLeft; });
+        }
+    } catch (e) {
+        logger.warn('[FriendsExtras] streak read failed: ' + e.message);
+    }
+
+    return _fxOk({
+        friendsPlayedToday:     playedToday,
+        friendsPassedMe:        passedMe,
+        friendsAboveMeInLeague: aboveInLeague,
+        friendsStreakAtRisk:    atRisk,
+        totalFriends:           friends.length,
+        timestamp:              _fxNowIso()
+    });
+}
+
+// ============================================================================
+// RPC: friend_battle_create
+// ============================================================================
+//
+// Server-mints a friend battle / lobby and atomically:
+//   1) verifies every invited friend is a confirmed mutual friend
+//   2) persists the lobby record (friend_battles/<battleId>)
+//   3) sends a Nakama notification to each invitee (code 110)
+//
+// Photon room creation is owned by the client; this RPC just guarantees the
+// invite fan-out is consistent (nobody gets a notification for a battle that
+// failed validation).
+//
+// Payload: {
+//   mode:           <string, e.g. 'speed_quiz' | 'classic'>,
+//   roomCode:       <string ≤ 64>,
+//   invitedFriendIds: [<UUID>...],   // 1..FX_BATTLE_MAX_INVITES
+//   metadata?:      <object ≤ 4 KB>
+// }
+function rpcFriendBattleCreate(ctx, logger, nk, payload) {
+    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
+
+    var p = _fxParse(payload);
+    if (!p.ok) return _fxErr(p.error, 'invalid_payload');
+
+    var data = p.data || {};
+    var mode = data.mode;
+    var roomCode = data.roomCode;
+    var invited = data.invitedFriendIds || [];
+    var meta = data.metadata || {};
+
+    if (!mode || typeof mode !== 'string' || mode.length > 64) {
+        return _fxErr('mode is required (string ≤ 64)', 'invalid_payload');
+    }
+    if (!roomCode || typeof roomCode !== 'string' || roomCode.length > 64) {
+        return _fxErr('roomCode is required (string ≤ 64)', 'invalid_payload');
+    }
+    if (!Array.isArray(invited) || invited.length === 0) {
+        return _fxErr('invitedFriendIds must be non-empty array', 'invalid_payload');
+    }
+    if (invited.length > FX_BATTLE_MAX_INVITES) {
+        return _fxErr('Too many invites (max ' + FX_BATTLE_MAX_INVITES + ')', 'too_many_invites');
+    }
+    var metaStr;
+    try { metaStr = JSON.stringify(meta); }
+    catch (e) { return _fxErr('metadata not serialisable: ' + e.message, 'invalid_payload'); }
+    if (metaStr.length > FX_BATTLE_MAX_DATA_BYTES) {
+        return _fxErr('metadata too large', 'data_too_large');
+    }
+
+    // Validate every invitee is a mutual friend BEFORE any side-effect
+    var mutualFriends = {};
+    var friends = _fxLoadFriends(nk, ctx.userId);
+    for (var i = 0; i < friends.length; i++) mutualFriends[friends[i].id] = friends[i];
+
+    var rejected = [];
+    for (var j = 0; j < invited.length; j++) {
+        var inv = invited[j];
+        if (!_fxUuidValid(inv)) {
+            rejected.push({ id: inv, reason: 'invalid_uuid' });
+        } else if (inv === ctx.userId) {
+            rejected.push({ id: inv, reason: 'self_invite' });
+        } else if (!mutualFriends[inv]) {
+            rejected.push({ id: inv, reason: 'not_mutual_friend' });
+        }
+    }
+    if (rejected.length > 0) {
+        return _fxErr('Some invitees are not mutual friends', 'invitees_not_mutual',
+                      { rejected: rejected });
+    }
+
+    var battleId = _fxMintBattleId(nk);
+    var nowIso = _fxNowIso();
+    var senderName = ctx.username || ctx.userId;
+
+    var battleRecord = {
+        battleId:     battleId,
+        creatorId:    ctx.userId,
+        creatorName:  senderName,
+        mode:         mode,
+        roomCode:     roomCode,
+        status:       'pending',
+        invitedIds:   invited,
+        acceptedIds:  [],
+        declinedIds:  [],
+        metadata:     meta,
+        createdAt:    nowIso,
+        expiresAt:    new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 min
+    };
+
+    // Persist lobby (owner = creator, owner-readable)
+    try {
+        nk.storageWrite([{
+            collection:      FX_BATTLE_COLLECTION,
+            key:             battleId,
+            userId:          ctx.userId,
+            value:           battleRecord,
+            permissionRead:  1,
+            permissionWrite: 0
+        }]);
+    } catch (e) {
+        logger.error('[FriendsExtras] battle persist failed: ' + e.message);
+        return _fxErr('Failed to persist battle', 'storage_write_failed');
+    }
+
+    // Fan out notifications (best-effort — but battle record exists already)
+    var notifs = [];
+    for (var k = 0; k < invited.length; k++) {
+        notifs.push({
+            userId:     invited[k],
+            subject:    senderName + ' invited you to a battle!',
+            content: {
+                type:        'friend_battle_invite',
+                battleId:    battleId,
+                fromUserId:  ctx.userId,
+                fromName:    senderName,
+                mode:        mode,
+                roomCode:    roomCode,
+                expiresAt:   battleRecord.expiresAt
+            },
+            code:       110,
+            persistent: true,
+            sender:     ctx.userId
+        });
+    }
+    try {
+        if (notifs.length > 0) nk.notificationsSend(notifs);
+    } catch (e) {
+        logger.warn('[FriendsExtras] battle notify failed: ' + e.message);
+    }
+
+    return _fxOk({
+        battleId:        battleId,
+        roomCode:        roomCode,
+        mode:            mode,
+        invitedIds:      invited,
+        invitedCount:    invited.length,
+        expiresAt:       battleRecord.expiresAt,
+        timestamp:       nowIso
+    });
+}
+
+// ============================================================================
+// RPC: friend_invite_with_reward
+// ============================================================================
+//
+// Sends a friend invite (Nakama friendsAdd) AND records a reward bundle that
+// will be granted to BOTH parties on accept. The actual grant happens in
+// the existing accept_friend_invite handler — this RPC just stores the intent.
+//
+// Payload: {
+//   targetUserId: <UUID>,
+//   rewardBundle?: { coins?: int, gems?: int, xp?: int }   // capped server-side
+// }
+//
+// Caps: coins ≤ 200, gems ≤ 10, xp ≤ 100 per invite (anti-griefing).
+var FX_REWARD_CAP = { coins: 200, gems: 10, xp: 100 };
+
+function rpcFriendInviteWithReward(ctx, logger, nk, payload) {
+    if (!ctx.userId) return _fxErr('Authentication required', 'unauthenticated');
+
+    var p = _fxParse(payload);
+    if (!p.ok) return _fxErr(p.error, 'invalid_payload');
+
+    var data = p.data || {};
+    var target = data.targetUserId;
+    if (!_fxUuidValid(target)) {
+        return _fxErr('Invalid targetUserId (UUID required)', 'invalid_target');
+    }
+    if (target === ctx.userId) {
+        return _fxErr('Cannot invite yourself', 'self_invite');
+    }
+
+    var raw = data.rewardBundle || {};
+    var bundle = {
+        coins: Math.min(FX_REWARD_CAP.coins, Math.max(0, parseInt(raw.coins) || 0)),
+        gems:  Math.min(FX_REWARD_CAP.gems,  Math.max(0, parseInt(raw.gems)  || 0)),
+        xp:    Math.min(FX_REWARD_CAP.xp,    Math.max(0, parseInt(raw.xp)    || 0))
+    };
+
+    // Send the friend request via Nakama's native graph
+    try {
+        nk.friendsAdd(ctx.userId, ctx.username || '', [target], null);
+    } catch (e) {
+        return _fxErr('friendsAdd failed: ' + e.message, 'friends_add_failed');
+    }
+
+    // Persist the reward intent under both parties so accept_friend_invite
+    // (in src/legacy/friends.ts) can find and grant it.
+    var nowIso = _fxNowIso();
+    var rewardKey = 'invite_reward_' + ctx.userId + '_' + target;
+    var rewardRecord = {
+        senderId:       ctx.userId,
+        recipientId:    target,
+        rewardBundle:   bundle,
+        status:         'pending',
+        createdAt:      nowIso,
+        expiresAt:      new Date(Date.now() + 7 * 86400000).toISOString() // 7 days
+    };
+    try {
+        nk.storageWrite([
+            {
+                collection:      FX_INVITE_REWARD_COL,
+                key:             rewardKey,
+                userId:          ctx.userId,
+                value:           rewardRecord,
+                permissionRead:  0,
+                permissionWrite: 0
+            },
+            {
+                collection:      FX_INVITE_REWARD_COL,
+                key:             rewardKey,
+                userId:          target,
+                value:           rewardRecord,
+                permissionRead:  0,
+                permissionWrite: 0
+            }
+        ]);
+    } catch (e) {
+        logger.warn('[FriendsExtras] invite-reward persist failed: ' + e.message);
+        // Non-fatal — friend invite already went out
+    }
+
+    // Notify the recipient
+    try {
+        nk.notificationsSend([{
+            userId:     target,
+            subject:    'Friend Invite + Reward',
+            content: {
+                type:         'friend_invite_with_reward',
+                fromUserId:   ctx.userId,
+                fromName:     ctx.username || ctx.userId,
+                rewardBundle: bundle
+            },
+            code:       111,
+            persistent: true,
+            sender:     ctx.userId
+        }]);
+    } catch (e) {
+        logger.warn('[FriendsExtras] invite notify failed: ' + e.message);
+    }
+
+    return _fxOk({
+        targetUserId:   target,
+        rewardBundle:   bundle,
+        rewardKey:      rewardKey,
+        expiresAt:      rewardRecord.expiresAt,
+        timestamp:      nowIso
+    });
+}
+
+// ============================================================================
+// Module Init — register Friends Extras RPCs
+// ============================================================================
+function __ModuleInit_59(ctx, logger, nk, initializer) {
+    __rpc_friends_get_online_count = __rpc_friends_get_online_count || (rpcFriendsGetOnlineCount);
+    __rpc_social_pressure_get_today_summary = __rpc_social_pressure_get_today_summary || (rpcSocialPressureGetTodaySummary);
+    __rpc_friend_battle_create = __rpc_friend_battle_create || (rpcFriendBattleCreate);
+    __rpc_friend_invite_with_reward = __rpc_friend_invite_with_reward || (rpcFriendInviteWithReward);
+    if (logger && logger.info) {
+        logger.info('[FriendsExtras] Registered 4 RPCs (online_count, social_pressure, battle_create, invite_with_reward)');
+    }
+}
+
+
+// --- Module: friends/notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -39225,622 +39840,7 @@ function sendFriendsNotification(nk, logger, subjectKey, userId, payload, sender
 }
 
 
-// --- Module: friend_streaks\friend_streaks.js ---
-// friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
-// RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
-// Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
-
-/**
- * Friend Streak System — Production-Ready
- *
- * Tracks bilateral daily streaks between friends (both must play each day).
- * Max 5 concurrent streaks per player. Unlocks at Day 14.
- * Nudge system: 3 nudges/day with 4h cooldown per friend.
- *
- * Storage: collection="friend_streaks", key="streaks_{userId}"
- */
-
-// ─── CONSTANTS ──────────────────────────────────────────────────────────────
-
-var FS_COLLECTION = 'friend_streaks';
-var FS_MAX_CONCURRENT = 5;
-var FS_NUDGES_PER_DAY = 3;
-var FS_NUDGE_COOLDOWN_HOURS = 4;
-var FS_STREAK_BREAK_HOURS = 48; // 2 days without bilateral contribution = broken
-
-// ─── HELPERS ────────────────────────────────────────────────────────────────
-
-function fsStorageKey(userId) {
-    return 'streaks_' + userId;
-}
-
-function fsReadData(nk, logger, userId) {
-    try {
-        var records = nk.storageRead([{
-            collection: FS_COLLECTION,
-            key: fsStorageKey(userId),
-            userId: userId
-        }]);
-        if (records && records.length > 0 && records[0].value) {
-            return records[0].value;
-        }
-    } catch (err) {
-        logger.warn('[FriendStreaks] Storage read failed: ' + err.message);
-    }
-    return null;
-}
-
-function fsWriteData(nk, logger, userId, data) {
-    try {
-        nk.storageWrite([{
-            collection: FS_COLLECTION,
-            key: fsStorageKey(userId),
-            userId: userId,
-            value: data,
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-        return true;
-    } catch (err) {
-        logger.error('[FriendStreaks] Storage write failed: ' + err.message);
-        return false;
-    }
-}
-
-function fsInitData() {
-    return {
-        streaks: {},
-        nudgesSentToday: 0,
-        nudgeDateKey: '',
-        lastNudgeTimes: {},
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-}
-
-function fsError(msg) {
-    return JSON.stringify({ success: false, error: msg });
-}
-
-function fsTodayKey() {
-    return new Date().toISOString().slice(0, 10).replace(/-/g, '');
-}
-
-function fsHoursSince(isoDate) {
-    if (!isoDate) return 9999;
-    return (Date.now() - new Date(isoDate).getTime()) / 3600000;
-}
-
-// Clean up broken streaks. When a streak is broken we also persist a
-// rolling "broken log" entry under collection=friend_streaks key=broken_log_{userId}
-// so the player's UI can later surface "you lost a 30-day streak with X" even
-// if they weren't online when the prune happened (V23 in PLAN-07).
-var FS_BROKEN_LOG_MAX = 50;
-
-function fsAppendBrokenLog(nk, logger, userId, brokenList) {
-    if (!brokenList || brokenList.length === 0) return;
-    try {
-        var existing = [];
-        try {
-            var rows = nk.storageRead([{
-                collection: FS_COLLECTION,
-                key: 'broken_log_' + userId,
-                userId: userId
-            }]);
-            if (rows && rows.length > 0 && rows[0].value && rows[0].value.entries) {
-                existing = rows[0].value.entries;
-            }
-        } catch (_) {}
-
-        var now = new Date().toISOString();
-        for (var i = 0; i < brokenList.length; i++) {
-            var b = brokenList[i];
-            existing.unshift({
-                friendId:  b.friendId,
-                streakDays: b.days || 0,
-                brokenAt:  now,
-                repaired:  false
-            });
-        }
-        if (existing.length > FS_BROKEN_LOG_MAX) {
-            existing = existing.slice(0, FS_BROKEN_LOG_MAX);
-        }
-
-        nk.storageWrite([{
-            collection: FS_COLLECTION,
-            key: 'broken_log_' + userId,
-            userId: userId,
-            value: { entries: existing, updatedAt: now },
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-    } catch (err) {
-        if (logger && logger.warn) logger.warn('[FriendStreaks] broken-log persist failed: ' + err.message);
-    }
-}
-
-function fsPruneStreaks(data) {
-    var pruned = [];
-    for (var fid in data.streaks) {
-        var s = data.streaks[fid];
-        if (fsHoursSince(s.lastInteractionAt) > FS_STREAK_BREAK_HOURS) {
-            pruned.push({ friendId: fid, days: s.streakDays, friendDisplayName: s.friendDisplayName || '' });
-            delete data.streaks[fid];
-        }
-    }
-    return pruned;
-}
-
-// Reset daily nudge counter if new day
-function fsRefreshNudges(data) {
-    var today = fsTodayKey();
-    if (data.nudgeDateKey !== today) {
-        data.nudgesSentToday = 0;
-        data.nudgeDateKey = today;
-        data.lastNudgeTimes = {};
-    }
-}
-
-// ─── RPC: friend_streak_get_state ───────────────────────────────────────────
-
-function rpcFriendStreakGetState(ctx, logger, nk, payload) {
-    if (!ctx.userId) return fsError('User not authenticated');
-
-    var data = fsReadData(nk, logger, ctx.userId);
-    if (!data) data = fsInitData();
-
-    // Prune broken streaks
-    var broken = fsPruneStreaks(data);
-    fsRefreshNudges(data);
-
-    if (broken.length > 0) {
-        fsWriteData(nk, logger, ctx.userId, data);
-        fsAppendBrokenLog(nk, logger, ctx.userId, broken);
-    }
-
-    // Build response
-    var streakList = [];
-    for (var fid in data.streaks) {
-        var s = data.streaks[fid];
-        var hoursLeft = FS_STREAK_BREAK_HOURS - fsHoursSince(s.lastInteractionAt);
-        streakList.push({
-            friendId: fid,
-            friendDisplayName: s.friendDisplayName || '',
-            streakDays: s.streakDays || 0,
-            myContributionToday: s.myContributionToday || false,
-            friendContributionToday: s.friendContributionToday || false,
-            isAtRisk: hoursLeft < 4 && hoursLeft > 0,
-            hoursUntilBreak: Math.max(0, Math.round(hoursLeft)),
-            startedAt: s.startedAt || null
-        });
-    }
-
-    return JSON.stringify({
-        success: true,
-        streaks: streakList,
-        totalActive: streakList.length,
-        maxStreaks: FS_MAX_CONCURRENT,
-        nudgesRemaining: Math.max(0, FS_NUDGES_PER_DAY - (data.nudgesSentToday || 0)),
-        brokenStreaks: broken,
-        timestamp: new Date().toISOString()
-    });
-}
-
-// ─── RPC: friend_streak_record_contribution ─────────────────────────────────
-
-function rpcFriendStreakRecordContribution(ctx, logger, nk, payload) {
-    if (!ctx.userId) return fsError('User not authenticated');
-
-    var input;
-    try { input = JSON.parse(payload); } catch (e) { return fsError('Invalid JSON'); }
-
-    var friendId = input.friendId;
-    if (!friendId) return fsError('Missing friendId');
-
-    // --- My data ---
-    var myData = fsReadData(nk, logger, ctx.userId) || fsInitData();
-    fsPruneStreaks(myData);
-
-    // Auto-create streak if not exists (within limits)
-    if (!myData.streaks[friendId]) {
-        if (Object.keys(myData.streaks).length >= FS_MAX_CONCURRENT) {
-            return fsError('Max concurrent streaks reached (' + FS_MAX_CONCURRENT + ')');
-        }
-        myData.streaks[friendId] = {
-            friendDisplayName: input.friendDisplayName || '',
-            streakDays: 0,
-            myContributionToday: false,
-            friendContributionToday: false,
-            lastInteractionAt: new Date().toISOString(),
-            startedAt: new Date().toISOString()
-        };
-    }
-
-    var myStreak = myData.streaks[friendId];
-    myStreak.myContributionToday = true;
-    myStreak.lastInteractionAt = new Date().toISOString();
-
-    // --- Friend's data (mirror the contribution) ---
-    var friendData = fsReadData(nk, logger, friendId) || fsInitData();
-    fsPruneStreaks(friendData);
-
-    if (!friendData.streaks[ctx.userId]) {
-        if (Object.keys(friendData.streaks).length >= FS_MAX_CONCURRENT) {
-            logger.warn('[FriendStreaks] Friend ' + friendId + ' at max streaks, cannot mirror');
-        } else {
-            friendData.streaks[ctx.userId] = {
-                friendDisplayName: input.myDisplayName || '',
-                streakDays: 0,
-                myContributionToday: false,
-                friendContributionToday: false,
-                lastInteractionAt: new Date().toISOString(),
-                startedAt: new Date().toISOString()
-            };
-        }
-    }
-
-    if (friendData.streaks[ctx.userId]) {
-        friendData.streaks[ctx.userId].friendContributionToday = true;
-        friendData.streaks[ctx.userId].lastInteractionAt = new Date().toISOString();
-
-        // Check bilateral completion on friend side
-        if (friendData.streaks[ctx.userId].myContributionToday &&
-            friendData.streaks[ctx.userId].friendContributionToday) {
-            friendData.streaks[ctx.userId].streakDays =
-                (friendData.streaks[ctx.userId].streakDays || 0) + 1;
-            friendData.streaks[ctx.userId].myContributionToday = false;
-            friendData.streaks[ctx.userId].friendContributionToday = false;
-        }
-        friendData.updatedAt = new Date().toISOString();
-        fsWriteData(nk, logger, friendId, friendData);
-    }
-
-    // Check bilateral completion on my side
-    var advanced = false;
-    if (myStreak.myContributionToday && myStreak.friendContributionToday) {
-        myStreak.streakDays = (myStreak.streakDays || 0) + 1;
-        myStreak.myContributionToday = false;
-        myStreak.friendContributionToday = false;
-        advanced = true;
-    }
-
-    myData.updatedAt = new Date().toISOString();
-    if (!fsWriteData(nk, logger, ctx.userId, myData)) {
-        return fsError('Failed to save streak data');
-    }
-
-    logger.info('[FriendStreaks] ' + ctx.userId + ' contributed to streak with ' +
-                friendId + (advanced ? ' — ADVANCED to day ' + myStreak.streakDays : ''));
-
-    return JSON.stringify({
-        success: true,
-        friendId: friendId,
-        streakDays: myStreak.streakDays,
-        advanced: advanced,
-        myContributionToday: myStreak.myContributionToday,
-        friendContributionToday: myStreak.friendContributionToday,
-        timestamp: new Date().toISOString()
-    });
-}
-
-// ─── RPC: friend_streak_send_nudge ──────────────────────────────────────────
-
-function rpcFriendStreakSendNudge(ctx, logger, nk, payload) {
-    if (!ctx.userId) return fsError('User not authenticated');
-
-    var input;
-    try { input = JSON.parse(payload); } catch (e) { return fsError('Invalid JSON'); }
-
-    var friendId = input.friendId;
-    if (!friendId) return fsError('Missing friendId');
-
-    var data = fsReadData(nk, logger, ctx.userId) || fsInitData();
-    fsRefreshNudges(data);
-
-    // Check daily limit
-    if ((data.nudgesSentToday || 0) >= FS_NUDGES_PER_DAY) {
-        return fsError('Daily nudge limit reached (' + FS_NUDGES_PER_DAY + ')');
-    }
-
-    // Check cooldown per friend
-    var lastNudge = data.lastNudgeTimes ? data.lastNudgeTimes[friendId] : null;
-    if (lastNudge && fsHoursSince(lastNudge) < FS_NUDGE_COOLDOWN_HOURS) {
-        var remaining = Math.ceil(FS_NUDGE_COOLDOWN_HOURS - fsHoursSince(lastNudge));
-        return fsError('Nudge cooldown: ' + remaining + 'h remaining');
-    }
-
-    // Send notification to friend
-    try {
-        nk.notificationsSend([{
-            userId: friendId,
-            subject: 'Streak Nudge! 🔥',
-            content: {
-                type: 'friend_streak_nudge',
-                senderId: ctx.userId,
-                senderName: input.myDisplayName || 'A friend'
-            },
-            code: 101, // Custom notification code for streak nudges
-            persistent: true
-        }]);
-    } catch (err) {
-        logger.warn('[FriendStreaks] Failed to send nudge notification: ' + err.message);
-        // Continue anyway — nudge is counted even if notification fails
-    }
-
-    // Update nudge state
-    data.nudgesSentToday = (data.nudgesSentToday || 0) + 1;
-    if (!data.lastNudgeTimes) data.lastNudgeTimes = {};
-    data.lastNudgeTimes[friendId] = new Date().toISOString();
-    data.updatedAt = new Date().toISOString();
-
-    fsWriteData(nk, logger, ctx.userId, data);
-
-    var remaining = FS_NUDGES_PER_DAY - data.nudgesSentToday;
-    logger.info('[FriendStreaks] Nudge sent from ' + ctx.userId + ' to ' + friendId +
-                '. Remaining: ' + remaining);
-
-    return JSON.stringify({
-        success: true,
-        friendId: friendId,
-        nudgesRemaining: remaining,
-        cooldownHours: FS_NUDGE_COOLDOWN_HOURS,
-        timestamp: new Date().toISOString()
-    });
-}
-
-// ─── RPC: friend_streak_get_broken_log ──────────────────────────────────────
-//
-// Returns the rolling log of streaks that broke while the player was offline,
-// so the client can show a "you lost a 30-day streak with X" banner. Also
-// runs a fresh prune so the log is always up to date at read time.
-
-function rpcFriendStreakGetBrokenLog(ctx, logger, nk, payload) {
-    if (!ctx.userId) return fsError('User not authenticated');
-
-    var input = {};
-    if (payload && payload !== '') {
-        try { input = JSON.parse(payload); } catch (e) { /* ignore — empty filter */ }
-    }
-    var limit = parseInt(input.limit) || 20;
-    if (limit < 1)  limit = 1;
-    if (limit > FS_BROKEN_LOG_MAX) limit = FS_BROKEN_LOG_MAX;
-    var includeRepaired = input.includeRepaired === true;
-
-    // Fresh prune so the log is always current at read time
-    var data = fsReadData(nk, logger, ctx.userId) || fsInitData();
-    var fresh = fsPruneStreaks(data);
-    if (fresh.length > 0) {
-        fsWriteData(nk, logger, ctx.userId, data);
-        fsAppendBrokenLog(nk, logger, ctx.userId, fresh);
-    }
-
-    var entries = [];
-    try {
-        var rows = nk.storageRead([{
-            collection: FS_COLLECTION,
-            key: 'broken_log_' + ctx.userId,
-            userId: ctx.userId
-        }]);
-        if (rows && rows.length > 0 && rows[0].value && rows[0].value.entries) {
-            entries = rows[0].value.entries;
-        }
-    } catch (err) {
-        logger.warn('[FriendStreaks] broken-log read failed: ' + err.message);
-    }
-
-    if (!includeRepaired) {
-        var filtered = [];
-        for (var i = 0; i < entries.length; i++) {
-            if (!entries[i].repaired) filtered.push(entries[i]);
-        }
-        entries = filtered;
-    }
-    if (entries.length > limit) entries = entries.slice(0, limit);
-
-    return JSON.stringify({
-        success: true,
-        entries: entries,
-        totalEntries: entries.length,
-        timestamp: new Date().toISOString()
-    });
-}
-
-// ─── RPC: friend_streak_repair ──────────────────────────────────────────────
-//
-// Spend a "Streak Saver" (gem cost) to restore a broken bilateral streak.
-// Server-authoritative: validates the broken-log entry exists, debits the
-// wallet, restores the streak with its previous day count, marks the entry
-// repaired, and notifies the friend so their state can mirror.
-//
-// Schema: { friendId: <UUID>, idempotencyKey?: <string> }
-
-var FS_REPAIR_GEM_COST = 50;
-
-function rpcFriendStreakRepair(ctx, logger, nk, payload) {
-    if (!ctx.userId) return fsError('User not authenticated');
-
-    var input;
-    try { input = JSON.parse(payload || '{}'); } catch (e) { return fsError('Invalid JSON'); }
-
-    var friendId = input.friendId;
-    if (!friendId) return fsError('Missing friendId');
-    var idempotencyKey = input.idempotencyKey || ('fs_repair_' + friendId + '_' + Date.now());
-
-    // Idempotency check — refuse double-spend on the same key
-    try {
-        var idemRows = nk.storageRead([{
-            collection: FS_COLLECTION,
-            key: 'repair_idem_' + ctx.userId + '_' + idempotencyKey,
-            userId: ctx.userId
-        }]);
-        if (idemRows && idemRows.length > 0 && idemRows[0].value) {
-            return JSON.stringify({
-                success: true,
-                idempotent: true,
-                friendId: friendId,
-                streakDays: idemRows[0].value.restoredDays || 0,
-                timestamp: new Date().toISOString()
-            });
-        }
-    } catch (_) { /* fall-through */ }
-
-    // Find the broken-log entry for this friend (most recent unrepaired)
-    var brokenEntry = null;
-    var brokenLog = null;
-    try {
-        var rows = nk.storageRead([{
-            collection: FS_COLLECTION,
-            key: 'broken_log_' + ctx.userId,
-            userId: ctx.userId
-        }]);
-        if (rows && rows.length > 0 && rows[0].value && rows[0].value.entries) {
-            brokenLog = rows[0].value;
-            for (var i = 0; i < brokenLog.entries.length; i++) {
-                if (brokenLog.entries[i].friendId === friendId && !brokenLog.entries[i].repaired) {
-                    brokenEntry = brokenLog.entries[i];
-                    break;
-                }
-            }
-        }
-    } catch (err) {
-        logger.warn('[FriendStreaks] repair read broken-log failed: ' + err.message);
-    }
-
-    if (!brokenEntry) {
-        return fsError('No broken streak found for friend ' + friendId);
-    }
-
-    // Repair window: only repair if the streak broke within last 7 days
-    var brokenAtMs = new Date(brokenEntry.brokenAt).getTime();
-    if ((Date.now() - brokenAtMs) > (7 * 86400000)) {
-        return fsError('Streak broken more than 7 days ago — too late to repair');
-    }
-
-    // Debit gems
-    try {
-        nk.walletUpdate(ctx.userId, { gems: -FS_REPAIR_GEM_COST }, {
-            source: 'friend_streak_repair',
-            friendId: friendId,
-            idempotencyKey: idempotencyKey
-        }, true);
-    } catch (walletErr) {
-        return fsError('Insufficient gems: ' + walletErr.message);
-    }
-
-    // Restore the streak on caller's side
-    var data = fsReadData(nk, logger, ctx.userId) || fsInitData();
-    if (Object.keys(data.streaks).length >= FS_MAX_CONCURRENT) {
-        // Refund gems
-        try {
-            nk.walletUpdate(ctx.userId, { gems: FS_REPAIR_GEM_COST }, {
-                source: 'friend_streak_repair_refund',
-                friendId: friendId
-            }, true);
-        } catch (_) {}
-        return fsError('Max concurrent streaks reached — cannot restore');
-    }
-    data.streaks[friendId] = {
-        friendDisplayName: brokenEntry.friendDisplayName || '',
-        streakDays: brokenEntry.streakDays || 0,
-        myContributionToday: false,
-        friendContributionToday: false,
-        lastInteractionAt: new Date().toISOString(),
-        startedAt: new Date().toISOString(),
-        repairedAt: new Date().toISOString()
-    };
-    data.updatedAt = new Date().toISOString();
-    fsWriteData(nk, logger, ctx.userId, data);
-
-    // Mark broken-log entry as repaired
-    try {
-        if (brokenLog && brokenLog.entries) {
-            for (var j = 0; j < brokenLog.entries.length; j++) {
-                if (brokenLog.entries[j] === brokenEntry) {
-                    brokenLog.entries[j].repaired = true;
-                    brokenLog.entries[j].repairedAt = new Date().toISOString();
-                    break;
-                }
-            }
-            nk.storageWrite([{
-                collection: FS_COLLECTION,
-                key: 'broken_log_' + ctx.userId,
-                userId: ctx.userId,
-                value: brokenLog,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        }
-    } catch (err) {
-        logger.warn('[FriendStreaks] repair mark-log failed: ' + err.message);
-    }
-
-    // Persist idempotency record (24h TTL via Nakama isn't supported in JS
-    // runtime, so we just persist forever — keys are scoped per-user and small)
-    try {
-        nk.storageWrite([{
-            collection: FS_COLLECTION,
-            key: 'repair_idem_' + ctx.userId + '_' + idempotencyKey,
-            userId: ctx.userId,
-            value: {
-                friendId: friendId,
-                restoredDays: brokenEntry.streakDays || 0,
-                gemCost: FS_REPAIR_GEM_COST,
-                repairedAt: new Date().toISOString()
-            },
-            permissionRead: 0,
-            permissionWrite: 0
-        }]);
-    } catch (_) {}
-
-    // Notify the friend
-    try {
-        nk.notificationsSend([{
-            userId: friendId,
-            subject: 'Streak Restored! 🔥',
-            content: {
-                type: 'friend_streak_repaired',
-                fromUserId: ctx.userId,
-                streakDays: brokenEntry.streakDays || 0
-            },
-            code: 102,
-            persistent: true
-        }]);
-    } catch (err) {
-        logger.warn('[FriendStreaks] repair notify failed: ' + err.message);
-    }
-
-    logger.info('[FriendStreaks] Repaired streak ' + ctx.userId + ' ↔ ' + friendId +
-                ' restoredDays=' + (brokenEntry.streakDays || 0) + ' gemCost=' + FS_REPAIR_GEM_COST);
-
-    return JSON.stringify({
-        success: true,
-        friendId: friendId,
-        streakDays: brokenEntry.streakDays || 0,
-        gemCost: FS_REPAIR_GEM_COST,
-        idempotencyKey: idempotencyKey,
-        timestamp: new Date().toISOString()
-    });
-}
-
-// ============================================================================
-// Module Init — register Friend Streak RPCs
-// ============================================================================
-// Registers all 5 friend-streak RPCs. Existing 3 (get_state, record_contribution,
-// send_nudge) are also registered by legacy_runtime.js; postbuild's `||` guard
-// + module-first concat order means our handler wins.
-function __ModuleInit_60(ctx, logger, nk, initializer) {
-    __rpc_friend_streak_get_state = __rpc_friend_streak_get_state || (rpcFriendStreakGetState);
-    __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contribution || (rpcFriendStreakRecordContribution);
-    __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge);
-    __rpc_friend_streak_get_broken_log = __rpc_friend_streak_get_broken_log || (rpcFriendStreakGetBrokenLog);
-    __rpc_friend_streak_repair = __rpc_friend_streak_repair || (rpcFriendStreakRepair);
-    if (logger && logger.info) {
-        logger.info('[FriendStreaks] Registered 5 RPCs (get_state, record_contribution, send_nudge, get_broken_log, repair)');
-    }
-}
-
-
-// --- Module: game_metrics\game_metrics.js ---
+// --- Module: game_metrics/game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -40221,7 +40221,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups\groups.js ---
+// --- Module: groups/groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -41469,7 +41469,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure\batch_operations.js ---
+// --- Module: infrastructure/batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -41731,7 +41731,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure\caching.js ---
+// --- Module: infrastructure/caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -41969,7 +41969,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure\rate_limiting.js ---
+// --- Module: infrastructure/rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -42147,7 +42147,7 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 // __rpc_submit_score = __rpc_submit_score || (withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest\ivx_quest.js ---
+// --- Module: ivx_quest/ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -42457,7 +42457,7 @@ function __ModuleInit_67(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth\lasttolive_depth.js ---
+// --- Module: lasttolive_depth/lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -43194,6 +43194,276 @@ function writeToAllLeaderboards(nk, logger, userId, username, gameId, score) {
     logger.info("[NAKAMA] Total leaderboards updated: " + leaderboardsUpdated.length);
     return leaderboardsUpdated;
 }
+
+
+// --- Module: leaderboard_utils.js ---
+/**
+ * Leaderboard Utilities Module
+ * 
+ * Provides shared utilities for enriching leaderboard records with user profile data
+ * including profile pictures from the UserManagement service.
+ * 
+ * This module is used by all game-specific leaderboard RPCs to add profile pictures
+ * without requiring changes to game clients.
+ * 
+ * @version 1.0.0
+ * @author IntelliVerse-X
+ */
+
+// UserManagement API Configuration
+var USER_MANAGEMENT_API_URL = "https://api.intelli-verse-x.ai/api/user";
+
+/**
+ * Enrich a single leaderboard record with profile picture
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {string} userId - User ID (ownerId from leaderboard record)
+ * @returns {object} Profile data { profilePicture, displayName }
+ */
+function getUserProfileData(nk, logger, userId) {
+    let profilePicture = null;
+    let displayName = null;
+    
+    try {
+        const users = nk.usersGetId([userId]);
+        if (users && users.length > 0) {
+            const user = users[0];
+            displayName = user.displayName || user.username || null;
+            
+            // Primary: Use avatar_url (synced from UserManagement)
+            if (user.avatarUrl) {
+                profilePicture = user.avatarUrl;
+            }
+            
+            // Fallback: Check user metadata
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) {
+                    // Metadata parse failed, ignore
+                }
+            }
+        }
+    } catch (e) {
+        logger.warn(`[LeaderboardUtils] Failed to get profile for ${userId}: ${e.message}`);
+    }
+    
+    return { profilePicture, displayName };
+}
+
+/**
+ * Enrich an array of leaderboard records with profile pictures
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {array} records - Array of leaderboard records from nk.leaderboardRecordsList()
+ * @returns {array} Enriched records with profilePicture field
+ */
+function enrichLeaderboardRecords(nk, logger, records) {
+    if (!records || records.length === 0) {
+        return [];
+    }
+    
+    return records.map(record => {
+        const profileData = getUserProfileData(nk, logger, record.ownerId);
+        
+        return {
+            rank: record.rank,
+            userId: record.ownerId,
+            username: record.username?.value || record.username || "Anonymous",
+            displayName: profileData.displayName || record.username?.value || record.username || "Anonymous",
+            score: record.score,
+            subscore: record.subscore,
+            numScore: record.numScore,
+            metadata: record.metadata ? (typeof record.metadata === 'string' ? JSON.parse(record.metadata) : record.metadata) : null,
+            updateTime: record.updateTime,
+            // Profile Picture - THE KEY ADDITION
+            profilePicture: profileData.profilePicture
+        };
+    });
+}
+
+/**
+ * Enrich custom leaderboard entries (for storage-based leaderboards)
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {array} entries - Array of custom entries with userId field
+ * @returns {array} Enriched entries with profilePicture field
+ */
+function enrichCustomEntries(nk, logger, entries) {
+    if (!entries || entries.length === 0) {
+        return [];
+    }
+    
+    return entries.map(entry => {
+        const profileData = getUserProfileData(nk, logger, entry.userId);
+        
+        return {
+            ...entry,
+            displayName: profileData.displayName || entry.username || "Anonymous",
+            profilePicture: profileData.profilePicture
+        };
+    });
+}
+
+/**
+ * Batch fetch profile pictures for multiple user IDs
+ * More efficient when you need profiles for many users
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {array} userIds - Array of user IDs
+ * @returns {object} Map of userId -> { profilePicture, displayName }
+ */
+function batchGetUserProfiles(nk, logger, userIds) {
+    const profiles = {};
+    
+    if (!userIds || userIds.length === 0) {
+        return profiles;
+    }
+    
+    // Deduplicate user IDs
+    const uniqueUserIds = [...new Set(userIds)];
+    
+    try {
+        const users = nk.usersGetId(uniqueUserIds);
+        
+        for (const user of users) {
+            let profilePicture = user.avatarUrl || null;
+            
+            // Check metadata if no avatar_url
+            if (!profilePicture && user.metadata) {
+                try {
+                    const metadata = typeof user.metadata === 'string' 
+                        ? JSON.parse(user.metadata) 
+                        : user.metadata;
+                    profilePicture = metadata.profilePicture || null;
+                } catch (e) {
+                    // ignore
+                }
+            }
+            
+            profiles[user.id] = {
+                profilePicture: profilePicture,
+                displayName: user.displayName || user.username || null
+            };
+        }
+    } catch (e) {
+        logger.warn(`[LeaderboardUtils] Batch profile fetch failed: ${e.message}`);
+    }
+    
+    // Fill in missing entries with nulls
+    for (const userId of uniqueUserIds) {
+        if (!profiles[userId]) {
+            profiles[userId] = { profilePicture: null, displayName: null };
+        }
+    }
+    
+    return profiles;
+}
+
+/**
+ * Get a complete leaderboard with profile pictures
+ * This is a convenience function that wraps leaderboardRecordsList
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {string} leaderboardId - Leaderboard ID
+ * @param {number} limit - Number of records to fetch
+ * @param {string|null} cursor - Pagination cursor
+ * @returns {object} { records, prevCursor, nextCursor }
+ */
+function getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor) {
+    limit = limit || 10;
+    cursor = cursor || null;
+    
+    const result = nk.leaderboardRecordsList(leaderboardId, null, limit, cursor, 0);
+    
+    const enrichedRecords = enrichLeaderboardRecords(nk, logger, result.records || []);
+    
+    return {
+        records: enrichedRecords,
+        prevCursor: result.prevCursor || null,
+        nextCursor: result.nextCursor || null
+    };
+}
+
+/**
+ * Get user's leaderboard position with profile picture
+ * @param {object} nk - Nakama module
+ * @param {object} logger - Logger instance
+ * @param {string} leaderboardId - Leaderboard ID
+ * @param {string} userId - User ID
+ * @returns {object|null} User's record with profile picture, or null if not found
+ */
+function getUserLeaderboardPosition(nk, logger, leaderboardId, userId) {
+    if (!userId) {
+        return null;
+    }
+    
+    try {
+        const result = nk.leaderboardRecordsList(leaderboardId, [userId], 1, null, 0);
+        
+        if (result.records && result.records.length > 0) {
+            const enriched = enrichLeaderboardRecords(nk, logger, result.records);
+            return enriched[0];
+        }
+    } catch (e) {
+        logger.warn(`[LeaderboardUtils] Failed to get user position for ${userId}: ${e.message}`);
+    }
+    
+    return null;
+}
+
+// Export functions for use in other modules
+// Note: In Nakama JS runtime, we expose these as global functions
+var LeaderboardUtils = {
+    getUserProfileData: getUserProfileData,
+    enrichLeaderboardRecords: enrichLeaderboardRecords,
+    enrichCustomEntries: enrichCustomEntries,
+    batchGetUserProfiles: batchGetUserProfiles,
+    getLeaderboardWithProfiles: getLeaderboardWithProfiles,
+    getUserLeaderboardPosition: getUserLeaderboardPosition
+};
+
+// Make functions globally available
+function _getUserProfileData(nk, logger, userId) {
+    return getUserProfileData(nk, logger, userId);
+}
+
+function _enrichLeaderboardRecords(nk, logger, records) {
+    return enrichLeaderboardRecords(nk, logger, records);
+}
+
+function _enrichCustomEntries(nk, logger, entries) {
+    return enrichCustomEntries(nk, logger, entries);
+}
+
+function _batchGetUserProfiles(nk, logger, userIds) {
+    return batchGetUserProfiles(nk, logger, userIds);
+}
+
+function _getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor) {
+    return getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor);
+}
+
+function _getUserLeaderboardPosition(nk, logger, leaderboardId, userId) {
+    return getUserLeaderboardPosition(nk, logger, leaderboardId, userId);
+}
+
+// Module initialization (empty - this is a utility module)
+function __ModuleInit_70(ctx, logger, nk, initializer) {
+    logger.info("📊 Leaderboard Utils Module loaded");
+    logger.info("   Available functions:");
+    logger.info("   - getUserProfileData(nk, logger, userId)");
+    logger.info("   - enrichLeaderboardRecords(nk, logger, records)");
+    logger.info("   - enrichCustomEntries(nk, logger, entries)");
+    logger.info("   - batchGetUserProfiles(nk, logger, userIds)");
+    logger.info("   - getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor)");
+    logger.info("   - getUserLeaderboardPosition(nk, logger, leaderboardId, userId)");
+}
+
+!InitModule.toString().includes("InitModule") || InitModule;
 
 
 // --- Module: leaderboards_timeperiod.js ---
@@ -44181,277 +44451,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leaderboard_utils.js ---
-/**
- * Leaderboard Utilities Module
- * 
- * Provides shared utilities for enriching leaderboard records with user profile data
- * including profile pictures from the UserManagement service.
- * 
- * This module is used by all game-specific leaderboard RPCs to add profile pictures
- * without requiring changes to game clients.
- * 
- * @version 1.0.0
- * @author IntelliVerse-X
- */
-
-// UserManagement API Configuration
-var USER_MANAGEMENT_API_URL = "https://api.intelli-verse-x.ai/api/user";
-
-/**
- * Enrich a single leaderboard record with profile picture
- * @param {object} nk - Nakama module
- * @param {object} logger - Logger instance
- * @param {string} userId - User ID (ownerId from leaderboard record)
- * @returns {object} Profile data { profilePicture, displayName }
- */
-function getUserProfileData(nk, logger, userId) {
-    let profilePicture = null;
-    let displayName = null;
-    
-    try {
-        const users = nk.usersGetId([userId]);
-        if (users && users.length > 0) {
-            const user = users[0];
-            displayName = user.displayName || user.username || null;
-            
-            // Primary: Use avatar_url (synced from UserManagement)
-            if (user.avatarUrl) {
-                profilePicture = user.avatarUrl;
-            }
-            
-            // Fallback: Check user metadata
-            if (!profilePicture && user.metadata) {
-                try {
-                    const metadata = typeof user.metadata === 'string' 
-                        ? JSON.parse(user.metadata) 
-                        : user.metadata;
-                    profilePicture = metadata.profilePicture || null;
-                } catch (e) {
-                    // Metadata parse failed, ignore
-                }
-            }
-        }
-    } catch (e) {
-        logger.warn(`[LeaderboardUtils] Failed to get profile for ${userId}: ${e.message}`);
-    }
-    
-    return { profilePicture, displayName };
-}
-
-/**
- * Enrich an array of leaderboard records with profile pictures
- * @param {object} nk - Nakama module
- * @param {object} logger - Logger instance
- * @param {array} records - Array of leaderboard records from nk.leaderboardRecordsList()
- * @returns {array} Enriched records with profilePicture field
- */
-function enrichLeaderboardRecords(nk, logger, records) {
-    if (!records || records.length === 0) {
-        return [];
-    }
-    
-    return records.map(record => {
-        const profileData = getUserProfileData(nk, logger, record.ownerId);
-        
-        return {
-            rank: record.rank,
-            userId: record.ownerId,
-            username: record.username?.value || record.username || "Anonymous",
-            displayName: profileData.displayName || record.username?.value || record.username || "Anonymous",
-            score: record.score,
-            subscore: record.subscore,
-            numScore: record.numScore,
-            metadata: record.metadata ? (typeof record.metadata === 'string' ? JSON.parse(record.metadata) : record.metadata) : null,
-            updateTime: record.updateTime,
-            // Profile Picture - THE KEY ADDITION
-            profilePicture: profileData.profilePicture
-        };
-    });
-}
-
-/**
- * Enrich custom leaderboard entries (for storage-based leaderboards)
- * @param {object} nk - Nakama module
- * @param {object} logger - Logger instance
- * @param {array} entries - Array of custom entries with userId field
- * @returns {array} Enriched entries with profilePicture field
- */
-function enrichCustomEntries(nk, logger, entries) {
-    if (!entries || entries.length === 0) {
-        return [];
-    }
-    
-    return entries.map(entry => {
-        const profileData = getUserProfileData(nk, logger, entry.userId);
-        
-        return {
-            ...entry,
-            displayName: profileData.displayName || entry.username || "Anonymous",
-            profilePicture: profileData.profilePicture
-        };
-    });
-}
-
-/**
- * Batch fetch profile pictures for multiple user IDs
- * More efficient when you need profiles for many users
- * @param {object} nk - Nakama module
- * @param {object} logger - Logger instance
- * @param {array} userIds - Array of user IDs
- * @returns {object} Map of userId -> { profilePicture, displayName }
- */
-function batchGetUserProfiles(nk, logger, userIds) {
-    const profiles = {};
-    
-    if (!userIds || userIds.length === 0) {
-        return profiles;
-    }
-    
-    // Deduplicate user IDs
-    const uniqueUserIds = [...new Set(userIds)];
-    
-    try {
-        const users = nk.usersGetId(uniqueUserIds);
-        
-        for (const user of users) {
-            let profilePicture = user.avatarUrl || null;
-            
-            // Check metadata if no avatar_url
-            if (!profilePicture && user.metadata) {
-                try {
-                    const metadata = typeof user.metadata === 'string' 
-                        ? JSON.parse(user.metadata) 
-                        : user.metadata;
-                    profilePicture = metadata.profilePicture || null;
-                } catch (e) {
-                    // ignore
-                }
-            }
-            
-            profiles[user.id] = {
-                profilePicture: profilePicture,
-                displayName: user.displayName || user.username || null
-            };
-        }
-    } catch (e) {
-        logger.warn(`[LeaderboardUtils] Batch profile fetch failed: ${e.message}`);
-    }
-    
-    // Fill in missing entries with nulls
-    for (const userId of uniqueUserIds) {
-        if (!profiles[userId]) {
-            profiles[userId] = { profilePicture: null, displayName: null };
-        }
-    }
-    
-    return profiles;
-}
-
-/**
- * Get a complete leaderboard with profile pictures
- * This is a convenience function that wraps leaderboardRecordsList
- * @param {object} nk - Nakama module
- * @param {object} logger - Logger instance
- * @param {string} leaderboardId - Leaderboard ID
- * @param {number} limit - Number of records to fetch
- * @param {string|null} cursor - Pagination cursor
- * @returns {object} { records, prevCursor, nextCursor }
- */
-function getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor) {
-    limit = limit || 10;
-    cursor = cursor || null;
-    
-    const result = nk.leaderboardRecordsList(leaderboardId, null, limit, cursor, 0);
-    
-    const enrichedRecords = enrichLeaderboardRecords(nk, logger, result.records || []);
-    
-    return {
-        records: enrichedRecords,
-        prevCursor: result.prevCursor || null,
-        nextCursor: result.nextCursor || null
-    };
-}
-
-/**
- * Get user's leaderboard position with profile picture
- * @param {object} nk - Nakama module
- * @param {object} logger - Logger instance
- * @param {string} leaderboardId - Leaderboard ID
- * @param {string} userId - User ID
- * @returns {object|null} User's record with profile picture, or null if not found
- */
-function getUserLeaderboardPosition(nk, logger, leaderboardId, userId) {
-    if (!userId) {
-        return null;
-    }
-    
-    try {
-        const result = nk.leaderboardRecordsList(leaderboardId, [userId], 1, null, 0);
-        
-        if (result.records && result.records.length > 0) {
-            const enriched = enrichLeaderboardRecords(nk, logger, result.records);
-            return enriched[0];
-        }
-    } catch (e) {
-        logger.warn(`[LeaderboardUtils] Failed to get user position for ${userId}: ${e.message}`);
-    }
-    
-    return null;
-}
-
-// Export functions for use in other modules
-// Note: In Nakama JS runtime, we expose these as global functions
-var LeaderboardUtils = {
-    getUserProfileData: getUserProfileData,
-    enrichLeaderboardRecords: enrichLeaderboardRecords,
-    enrichCustomEntries: enrichCustomEntries,
-    batchGetUserProfiles: batchGetUserProfiles,
-    getLeaderboardWithProfiles: getLeaderboardWithProfiles,
-    getUserLeaderboardPosition: getUserLeaderboardPosition
-};
-
-// Make functions globally available
-function _getUserProfileData(nk, logger, userId) {
-    return getUserProfileData(nk, logger, userId);
-}
-
-function _enrichLeaderboardRecords(nk, logger, records) {
-    return enrichLeaderboardRecords(nk, logger, records);
-}
-
-function _enrichCustomEntries(nk, logger, entries) {
-    return enrichCustomEntries(nk, logger, entries);
-}
-
-function _batchGetUserProfiles(nk, logger, userIds) {
-    return batchGetUserProfiles(nk, logger, userIds);
-}
-
-function _getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor) {
-    return getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor);
-}
-
-function _getUserLeaderboardPosition(nk, logger, leaderboardId, userId) {
-    return getUserLeaderboardPosition(nk, logger, leaderboardId, userId);
-}
-
-// Module initialization (empty - this is a utility module)
-function __ModuleInit_71(ctx, logger, nk, initializer) {
-    logger.info("📊 Leaderboard Utils Module loaded");
-    logger.info("   Available functions:");
-    logger.info("   - getUserProfileData(nk, logger, userId)");
-    logger.info("   - enrichLeaderboardRecords(nk, logger, records)");
-    logger.info("   - enrichCustomEntries(nk, logger, entries)");
-    logger.info("   - batchGetUserProfiles(nk, logger, userIds)");
-    logger.info("   - getLeaderboardWithProfiles(nk, logger, leaderboardId, limit, cursor)");
-    logger.info("   - getUserLeaderboardPosition(nk, logger, leaderboardId, userId)");
-}
-
-!InitModule.toString().includes("InitModule") || InitModule;
-
-
-// --- Module: leagues\leagues.js ---
+// --- Module: leagues/leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -45074,7 +45074,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: live_ops\live_ops.js ---
+// --- Module: live_ops/live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -45707,7 +45707,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest\manifest.js ---
+// --- Module: manifest/manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -45819,7 +45819,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking\matchmaking.js ---
+// --- Module: matchmaking/matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -47519,7 +47519,7 @@ function registerMultiGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -47974,7 +47974,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications\notification_gate.js ---
+// --- Module: notifications/notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -48134,7 +48134,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications\notification_inbox.js ---
+// --- Module: notifications/notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -48587,7 +48587,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine\offer_engine.js ---
+// --- Module: offer_engine/offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -49508,7 +49508,7 @@ function __ModuleInit_80(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding\onboarding.js ---
+// --- Module: onboarding/onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -50582,7 +50582,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization\personalization.js ---
+// --- Module: personalization/personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -51917,7 +51917,7 @@ function __ModuleInit_83(ctx, logger, nk, initializer) {
 !InitModule.toString().includes("InitModule") || InitModule;
 
 
-// --- Module: player\player_full_profile.js ---
+// --- Module: player/player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -52132,7 +52132,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts\player_gifts.js ---
+// --- Module: player_gifts/player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -53457,7 +53457,7 @@ function __ModuleInit_87(ctx, logger, nk, initializer) {
 !InitModule.toString().includes("InitModule") || InitModule;
 
 
-// --- Module: progression\mastery_system.js ---
+// --- Module: progression/mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -53793,7 +53793,7 @@ module.exports = {
 
 
 
-// --- Module: progression\progressive_unlocks.js ---
+// --- Module: progression/progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -55566,7 +55566,864 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quizverse_depth\quizverse_depth.js ---
+// --- Module: quiz_results/quiz_results.js ---
+// quiz_results.js - Quiz Results Tracking & Analytics System
+// Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
+//
+// Seen-question merging is delegated to globalThis.__qvsSeen (quizverse_seen.js)
+// so that OCC, scope/topic slugification, and the safety cap are applied consistently.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KNOWLEDGE MAP HISTORY — constants
+// ─────────────────────────────────────────────────────────────────────────────
+// Maximum number of per-question history entries kept per user in the knowledge
+// map rolling window. Older entries are dropped when this cap is exceeded so the
+// storageRead payload stays bounded regardless of play-session count.
+var KM_HISTORY_MAX_ENTRIES = 2000;
+
+// Canonical UUID → slug map. Mirrors the entry in analytics.js so both systems
+// resolve to the same slug-based collection name without a shared dependency.
+var KM_UUID_TO_SLUG = {
+    "126bf539-dae2-4bcf-964d-316c0fa1f92b": "quiz-verse"
+};
+
+/**
+ * Resolve a gameId (UUID or slug) to its short slug, which is used as the
+ * prefix for the knowledge-map history collection.
+ * Returns the input unchanged if no mapping is found (graceful no-op).
+ */
+function kmResolveSlug(gameId) {
+    if (!gameId) return "quiz-verse";
+    var mapped = KM_UUID_TO_SLUG[gameId];
+    return mapped || gameId;
+}
+
+/**
+ * Append per-question knowledge-map history entries for a completed quiz and
+ * persist them as a rolling window in Nakama storage.
+ *
+ * Called as a non-critical side-effect of quiz_submit_result. Any failure is
+ * caught and logged so it never blocks the main result submission.
+ *
+ * Entry sources (in priority order):
+ *  1. data.questionHistory   — [{category, correct, time_ms}] (AsyncChallenge / ScoreCalculationEngine)
+ *  1b. data.questionDetails  — [{category, isCorrect, timeTakenSeconds}] (IVXQuizResultsManager SDK)
+ *  2. data.categoryName + result aggregate — one synthesized entry per quiz
+ *
+ * The synthesized fallback maps:
+ *   category  = data.categoryName || data.categoryId || "general"
+ *   correct   = accuracy >= 60 %  (i.e. the player knew most of this category)
+ *   time_ms   = round(timeTakenSeconds / totalQuestions * 1000)  per-question avg
+ *
+ * Rolling window: after appending, entries are trimmed to KM_HISTORY_MAX_ENTRIES
+ * keeping the most recent ones so the document stays bounded forever.
+ */
+function appendKnowledgeMapHistory(nk, logger, userId, data, result, metrics) {
+    try {
+        var slug = kmResolveSlug(data.gameId);
+        var collection = slug + "_quiz_history";
+        var storageKey  = "history";
+
+        // Read current history document (may not exist yet for a new player).
+        var existing = null;
+        try {
+            var records = nk.storageRead([{ collection: collection, key: storageKey, userId: userId }]);
+            if (records && records.length > 0 && records[0].value) {
+                existing = records[0].value;
+            }
+        } catch (readErr) {
+            // Missing document is fine — we will create it below.
+            logger.debug("[KMHistory] No existing history for user " + userId + " — creating new document.");
+        }
+
+        var entries = (existing && Array.isArray(existing.entries)) ? existing.entries : [];
+
+        // ── Build new entries to append ───────────────────────────────────────
+        var newEntries = [];
+
+        // Priority 1: explicit per-question breakdown — QuestionHistoryEntry schema
+        // (from AsyncChallengeManager / ScoreCalculationEngine).
+        // Expected shape: [{category, correct, time_ms}]
+        // Also accepts alternate field names for forward/backward compat.
+        if (data.questionHistory && Array.isArray(data.questionHistory) && data.questionHistory.length > 0) {
+            for (var qi = 0; qi < data.questionHistory.length; qi++) {
+                var q = data.questionHistory[qi];
+                if (!q || typeof q !== "object") continue;
+                var cat     = q.category  || q.categoryName || q.categoryId || "general";
+                var correct = (q.correct !== undefined) ? !!q.correct
+                            : (q.was_correct !== undefined) ? !!q.was_correct
+                            : false;
+                var timeMs  = parseInt(q.time_ms || q.timeMs || 0, 10);
+                newEntries.push({ category: cat, correct: correct, time_ms: timeMs });
+            }
+        }
+
+        // Priority 1b: IVXQuizResultsManager.QuizResultData uses "questionDetails"
+        // (QuestionAnswerDetail[] schema from the SDK).  Fields: category, isCorrect,
+        // timeTakenSeconds (seconds, not ms).  This is the path used by
+        // DailyQuizManager and any mode submitting through QuizContainer.
+        if (newEntries.length === 0 &&
+            data.questionDetails && Array.isArray(data.questionDetails) && data.questionDetails.length > 0) {
+            for (var qd = 0; qd < data.questionDetails.length; qd++) {
+                var d = data.questionDetails[qd];
+                if (!d || typeof d !== "object") continue;
+                var cat     = d.category || d.concept || "general";
+                var correct = (d.isCorrect !== undefined) ? !!d.isCorrect : false;
+                var timeMs  = Math.round((parseFloat(d.timeTakenSeconds) || 0) * 1000);
+                newEntries.push({ category: cat, correct: correct, time_ms: timeMs });
+            }
+        }
+
+        // Priority 2: synthesize one aggregate entry from the quiz-level result.
+        // Used when Unity does not send a per-question breakdown (older clients,
+        // multiplayer modes, etc.).
+        if (newEntries.length === 0) {
+            var cat     = data.categoryName || data.categoryId || "general";
+            var correct = (typeof metrics.accuracy === "number") ? metrics.accuracy >= 60 : false;
+            var perQMs  = (result.totalQuestions > 0)
+                        ? Math.round((result.timeTakenSeconds * 1000) / result.totalQuestions)
+                        : 0;
+            newEntries.push({ category: cat, correct: correct, time_ms: perQMs });
+        }
+
+        // ── Append + enforce rolling cap ──────────────────────────────────────
+        var combined = entries.concat(newEntries);
+        if (combined.length > KM_HISTORY_MAX_ENTRIES) {
+            combined = combined.slice(combined.length - KM_HISTORY_MAX_ENTRIES);
+        }
+
+        nk.storageWrite([{
+            collection:      collection,
+            key:             storageKey,
+            userId:          userId,
+            value:           { entries: combined },
+            permissionRead:  1,
+            permissionWrite: 0
+        }]);
+
+        logger.info("[KMHistory] Appended " + newEntries.length + " entries for user " + userId +
+            " (total=" + combined.length + ", slug=" + slug + ")");
+
+    } catch (err) {
+        // Non-critical: never let a history write failure block the main submit.
+        logger.warn("[KMHistory] appendKnowledgeMapHistory failed (non-critical): " + err.message);
+    }
+}
+
+/**
+ * Quiz Result Schema
+ * Captures comprehensive data about each quiz attempt
+ */
+var QUIZ_RESULT_SCHEMA = {
+    // Required fields
+    gameId: "string",           // Game UUID
+    gameMode: "string",         // QuickPlay, DailyChallenge, Championship, etc.
+    
+    // Score data
+    score: "number",            // Final score
+    correctAnswers: "number",   // Number of correct answers
+    totalQuestions: "number",   // Total questions in quiz
+    
+    // Timing
+    timeTakenSeconds: "number", // Total time taken
+    
+    // Win/Loss
+    won: "boolean",             // Did user win?
+    
+    // Optional fields
+    difficulty: "string",       // easy, medium, hard
+    categoryId: "string",       // Category/topic ID
+    categoryName: "string",     // Category/topic name
+    opponentId: "string",       // For multiplayer
+    opponentName: "string",     // Opponent display name
+    tournamentId: "string",     // If part of tournament
+    matchId: "string",          // Match ID for multiplayer
+    hintsUsed: "number",        // Power-ups used
+    skipsUsed: "number",
+    extraTimeUsed: "number",
+    extraLivesUsed: "number",
+    coinsSpent: "number",       // Coins spent on power-ups
+    coinsEarned: "number",      // Coins earned from this quiz
+    xpEarned: "number",         // XP earned
+    streakDay: "number",        // Daily streak day
+    perfectScore: "boolean",    // 100% accuracy
+    metadata: "object"          // Any additional game-specific data
+};
+
+/**
+ * Get collection name for quiz results
+ */
+function getResultsCollection(gameId) {
+    return "quiz_results_" + gameId;
+}
+
+/**
+ * Get user stats collection
+ */
+function getUserStatsCollection(gameId) {
+    return "quiz_user_stats_" + gameId;
+}
+
+/**
+ * Generate unique result key
+ */
+function generateResultKey(userId, timestamp) {
+    return "result_" + userId + "_" + timestamp;
+}
+
+/**
+ * Calculate performance metrics
+ */
+function calculateMetrics(result) {
+    var accuracy = result.totalQuestions > 0 
+        ? (result.correctAnswers / result.totalQuestions) * 100 
+        : 0;
+    
+    var avgTimePerQuestion = result.totalQuestions > 0 
+        ? result.timeTakenSeconds / result.totalQuestions 
+        : 0;
+    
+    var isPerfect = result.correctAnswers === result.totalQuestions && result.totalQuestions > 0;
+    
+    return {
+        accuracy: Math.round(accuracy * 100) / 100,
+        avgTimePerQuestion: Math.round(avgTimePerQuestion * 100) / 100,
+        isPerfect: isPerfect,
+        performanceRating: calculatePerformanceRating(accuracy, avgTimePerQuestion, result.won)
+    };
+}
+
+/**
+ * Calculate performance rating (1-5 stars)
+ */
+function calculatePerformanceRating(accuracy, avgTime, won) {
+    var rating = 0;
+    
+    // Accuracy contribution (0-2.5 stars)
+    if (accuracy >= 90) rating += 2.5;
+    else if (accuracy >= 70) rating += 2.0;
+    else if (accuracy >= 50) rating += 1.5;
+    else if (accuracy >= 30) rating += 1.0;
+    else rating += 0.5;
+    
+    // Speed contribution (0-1.5 stars)
+    if (avgTime <= 5) rating += 1.5;
+    else if (avgTime <= 10) rating += 1.0;
+    else if (avgTime <= 15) rating += 0.5;
+    
+    // Win bonus (0-1 star)
+    if (won) rating += 1.0;
+    
+    return Math.min(5, Math.round(rating * 10) / 10);
+}
+
+/**
+ * Update user's aggregate statistics
+ */
+function updateUserStats(nk, logger, userId, gameId, result, metrics) {
+    var collection = getUserStatsCollection(gameId);
+    var key = "stats_" + userId;
+    
+    // Get existing stats
+    var stats = utils.readStorage(nk, logger, collection, key, userId);
+    
+    if (!stats) {
+        stats = {
+            userId: userId,
+            gameId: gameId,
+            totalGames: 0,
+            totalWins: 0,
+            totalScore: 0,
+            totalCorrect: 0,
+            totalQuestions: 0,
+            totalTimePlayed: 0,
+            perfectGames: 0,
+            highestScore: 0,
+            longestStreak: 0,
+            currentStreak: 0,
+            lastPlayedAt: null,
+            modeStats: {},
+            createdAt: utils.getCurrentTimestamp()
+        };
+    }
+    
+    // Update totals
+    stats.totalGames++;
+    stats.totalScore += result.score || 0;
+    stats.totalCorrect += result.correctAnswers || 0;
+    stats.totalQuestions += result.totalQuestions || 0;
+    stats.totalTimePlayed += result.timeTakenSeconds || 0;
+    
+    if (result.won) {
+        stats.totalWins++;
+        stats.currentStreak++;
+        stats.longestStreak = Math.max(stats.longestStreak, stats.currentStreak);
+    } else {
+        stats.currentStreak = 0;
+    }
+    
+    if (metrics.isPerfect) {
+        stats.perfectGames++;
+    }
+    
+    stats.highestScore = Math.max(stats.highestScore, result.score || 0);
+    stats.lastPlayedAt = utils.getCurrentTimestamp();
+    
+    // Update per-mode stats
+    var mode = result.gameMode || "unknown";
+    if (!stats.modeStats[mode]) {
+        stats.modeStats[mode] = {
+            games: 0,
+            wins: 0,
+            totalScore: 0,
+            highestScore: 0
+        };
+    }
+    stats.modeStats[mode].games++;
+    if (result.won) stats.modeStats[mode].wins++;
+    stats.modeStats[mode].totalScore += result.score || 0;
+    stats.modeStats[mode].highestScore = Math.max(
+        stats.modeStats[mode].highestScore, 
+        result.score || 0
+    );
+    
+    stats.updatedAt = utils.getCurrentTimestamp();
+    
+    // Save stats
+    utils.writeStorage(nk, logger, collection, key, userId, stats);
+    
+    return stats;
+}
+
+/**
+ * RPC: quiz_submit_result
+ * Submit quiz result from any game mode
+ * 
+ * Required payload:
+ * {
+ *   gameId: "uuid",
+ *   gameMode: "QuickPlay",
+ *   score: 850,
+ *   correctAnswers: 8,
+ *   totalQuestions: 10,
+ *   timeTakenSeconds: 120,
+ *   won: true
+ * }
+ * 
+ * Optional fields: difficulty, categoryId, categoryName, opponentId,
+ *   tournamentId, matchId, hintsUsed, skipsUsed, coinsSpent, coinsEarned, etc.
+ */
+function rpcQuizSubmitResult(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC quiz_submit_result called");
+    
+    // Parse payload
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+    
+    var data = parsed.data;
+    
+    // Validate required fields
+    var required = ['gameId', 'gameMode', 'score', 'correctAnswers', 'totalQuestions', 'timeTakenSeconds'];
+    var validation = utils.validatePayload(data, required);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
+    
+    // Validate gameId UUID
+    if (!utils.isValidUUID(data.gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
+    
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+    
+    var username = ctx.username || "unknown";
+    var timestamp = utils.getUnixTimestamp();
+    
+    // Build result object
+    var result = {
+        id: generateResultKey(userId, timestamp),
+        userId: userId,
+        username: username,
+        gameId: data.gameId,
+        gameMode: data.gameMode,
+        score: parseInt(data.score) || 0,
+        correctAnswers: parseInt(data.correctAnswers) || 0,
+        totalQuestions: parseInt(data.totalQuestions) || 0,
+        timeTakenSeconds: parseFloat(data.timeTakenSeconds) || 0,
+        won: data.won === true || data.won === "true",
+        
+        // Optional fields
+        difficulty: data.difficulty || "normal",
+        categoryId: data.categoryId || null,
+        categoryName: data.categoryName || null,
+        opponentId: data.opponentId || null,
+        opponentName: data.opponentName || null,
+        tournamentId: data.tournamentId || null,
+        matchId: data.matchId || null,
+        hintsUsed: parseInt(data.hintsUsed) || 0,
+        skipsUsed: parseInt(data.skipsUsed) || 0,
+        extraTimeUsed: parseInt(data.extraTimeUsed) || 0,
+        extraLivesUsed: parseInt(data.extraLivesUsed) || 0,
+        coinsSpent: parseInt(data.coinsSpent) || 0,
+        coinsEarned: parseInt(data.coinsEarned) || 0,
+        xpEarned: parseInt(data.xpEarned) || 0,
+        streakDay: parseInt(data.streakDay) || 0,
+        metadata: data.metadata || {},
+        
+        // Server-generated
+        timestamp: timestamp,
+        submittedAt: utils.getCurrentTimestamp()
+    };
+    
+    // Calculate metrics
+    var metrics = calculateMetrics(result);
+    result.metrics = metrics;
+    result.perfectScore = metrics.isPerfect;
+    
+    try {
+        // 1. Store the result
+        var collection = getResultsCollection(data.gameId);
+        var resultKey = result.id;
+        utils.writeStorage(nk, logger, collection, resultKey, userId, result);
+        utils.logInfo(logger, "Stored quiz result: " + resultKey);
+        
+        // 2. Update user stats
+        var updatedStats = updateUserStats(nk, logger, userId, data.gameId, result, metrics);
+        
+        // 3. Update leaderboard if score > 0
+        if (result.score > 0) {
+            try {
+                var leaderboardId = "leaderboard_" + data.gameId;
+                var leaderboardMetadata = {
+                    gameMode: result.gameMode,
+                    accuracy: metrics.accuracy,
+                    submittedAt: result.submittedAt
+                };
+                
+                nk.leaderboardRecordWrite(
+                    leaderboardId,
+                    userId,
+                    username,
+                    result.score,
+                    0, // subscore
+                    JSON.stringify(leaderboardMetadata),
+                    null // operator - use default (best)
+                );
+                utils.logInfo(logger, "Updated leaderboard: " + leaderboardId);
+            } catch (lbErr) {
+                utils.logWarning(logger, "Leaderboard update failed (non-critical): " + lbErr.message);
+            }
+        }
+        
+        // 4. Store in transaction log for analytics
+        var transactionKey = "quiz_result_" + userId + "_" + timestamp;
+        utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, {
+            type: "quiz_result",
+            resultId: result.id,
+            gameMode: result.gameMode,
+            score: result.score,
+            won: result.won,
+            timestamp: result.submittedAt
+        });
+        
+        // 5. Merge seen question IDs into the qv_seen ledger (if provided)
+        // Delegates to globalThis.__qvsSeen (quizverse_seen.js) for OCC-safe,
+        // correctly slugified writes. Supports both top-level and nested metadata
+        // layouts from the Unity SDK.
+        var seenIds = null;
+        var seenScopeRaw = null;
+        var seenTopicRaw = null;
+        if (data.seenQuestionIds && Array.isArray(data.seenQuestionIds) && data.seenQuestionIds.length > 0) {
+            seenIds = data.seenQuestionIds;
+            seenScopeRaw = data.seenScope;
+            seenTopicRaw = data.seenTopic;
+        } else if (data.metadata && data.metadata.seenQuestionIds &&
+                   Array.isArray(data.metadata.seenQuestionIds) && data.metadata.seenQuestionIds.length > 0) {
+            seenIds = data.metadata.seenQuestionIds;
+            seenScopeRaw = data.metadata.seenScope;
+            seenTopicRaw = data.metadata.seenTopic;
+        }
+        if (seenIds && seenIds.length > 0) {
+            try {
+                var seenScope = seenScopeRaw || "global";
+                var seenTopic = seenTopicRaw || data.categoryName || "general";
+                globalThis.__qvsSeen.merge(nk, userId, seenScope, seenTopic, seenIds);
+                utils.logInfo(logger, "Merged " + seenIds.length +
+                    " seen IDs into qv_seen/" + globalThis.__qvsSeen.buildKey(seenScope, seenTopic) +
+                    " for user " + userId);
+            } catch (seenErr) {
+                utils.logWarning(logger, "Seen ledger merge failed (non-critical): " + seenErr.message);
+            }
+        }
+
+        // 6. Append per-question entries to the knowledge-map history document.
+        // Non-critical: wrapped internally so failures never block the response.
+        appendKnowledgeMapHistory(nk, logger, userId, data, result, metrics);
+
+        utils.logInfo(logger, "Quiz result submitted: User " + userId + ", Mode: " + result.gameMode + ", Score: " + result.score);
+        
+        return JSON.stringify({
+            success: true,
+            resultId: result.id,
+            metrics: metrics,
+            stats: {
+                totalGames: updatedStats.totalGames,
+                totalWins: updatedStats.totalWins,
+                currentStreak: updatedStats.currentStreak,
+                highestScore: updatedStats.highestScore
+            }
+        });
+        
+    } catch (err) {
+        utils.logError(logger, "Failed to submit quiz result: " + err.message);
+        return JSON.stringify({
+            success: false,
+            error: "Failed to submit result: " + err.message
+        });
+    }
+}
+
+/**
+ * RPC: quiz_get_history
+ * Get quiz history for a user
+ * 
+ * Payload:
+ * {
+ *   gameId: "uuid",
+ *   gameMode: "QuickPlay" (optional, filter by mode),
+ *   limit: 20,
+ *   cursor: "..." (for pagination)
+ * }
+ */
+function rpcQuizGetHistory(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC quiz_get_history called");
+    
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+    
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing gameId");
+    }
+    
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+    
+    var collection = getResultsCollection(data.gameId);
+    var limit = Math.min(parseInt(data.limit) || 20, 100);
+    
+    try {
+        // List storage objects for this user
+        var objects = nk.storageList(userId, collection, limit, data.cursor || "");
+        
+        var results = [];
+        for (var obj of objects.objects || []) {
+            var result = JSON.parse(obj.value);
+            
+            // Filter by gameMode if specified
+            if (data.gameMode && result.gameMode !== data.gameMode) {
+                continue;
+            }
+            
+            results.push({
+                id: result.id,
+                gameMode: result.gameMode,
+                score: result.score,
+                correctAnswers: result.correctAnswers,
+                totalQuestions: result.totalQuestions,
+                won: result.won,
+                metrics: result.metrics,
+                categoryName: result.categoryName,
+                submittedAt: result.submittedAt
+            });
+        }
+        
+        return JSON.stringify({
+            success: true,
+            results: results,
+            cursor: objects.cursor || null,
+            count: results.length
+        });
+        
+    } catch (err) {
+        utils.logError(logger, "Failed to get quiz history: " + err.message);
+        return JSON.stringify({
+            success: false,
+            error: "Failed to get history: " + err.message
+        });
+    }
+}
+
+/**
+ * RPC: quiz_get_stats
+ * Get user's aggregate quiz statistics
+ */
+function rpcQuizGetStats(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC quiz_get_stats called");
+    
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+    
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing gameId");
+    }
+    
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+    
+    var collection = getUserStatsCollection(data.gameId);
+    var key = "stats_" + userId;
+    
+    var stats = utils.readStorage(nk, logger, collection, key, userId);
+    
+    if (!stats) {
+        return JSON.stringify({
+            success: true,
+            stats: {
+                totalGames: 0,
+                totalWins: 0,
+                winRate: 0,
+                totalScore: 0,
+                averageScore: 0,
+                accuracy: 0,
+                highestScore: 0,
+                currentStreak: 0,
+                longestStreak: 0,
+                perfectGames: 0,
+                modeStats: {}
+            }
+        });
+    }
+    
+    // Calculate derived stats
+    var winRate = stats.totalGames > 0 
+        ? Math.round((stats.totalWins / stats.totalGames) * 100) 
+        : 0;
+    
+    var averageScore = stats.totalGames > 0 
+        ? Math.round(stats.totalScore / stats.totalGames) 
+        : 0;
+    
+    var accuracy = stats.totalQuestions > 0 
+        ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100) 
+        : 0;
+    
+    return JSON.stringify({
+        success: true,
+        stats: {
+            totalGames: stats.totalGames,
+            totalWins: stats.totalWins,
+            winRate: winRate,
+            totalScore: stats.totalScore,
+            averageScore: averageScore,
+            accuracy: accuracy,
+            highestScore: stats.highestScore,
+            currentStreak: stats.currentStreak,
+            longestStreak: stats.longestStreak,
+            perfectGames: stats.perfectGames,
+            totalTimePlayed: stats.totalTimePlayed,
+            modeStats: stats.modeStats,
+            lastPlayedAt: stats.lastPlayedAt
+        }
+    });
+}
+
+/**
+ * RPC: quiz_check_daily_completion
+ * Check if user has completed a quiz for a specific game mode today
+ * Based on user UUID - queries across all quiz result collections for the user
+ * 
+ * Payload:
+ * {
+ *   gameMode: "DailyChallenge" | "DailyPremiumQuiz"
+ *   gameId: "uuid" (optional - if provided, only checks that specific game)
+ * }
+ * 
+ * Returns:
+ * {
+ *   success: true,
+ *   completed: boolean,
+ *   gameMode: "DailyChallenge",
+ *   date: "2025-01-15" (YYYY-MM-DD format)
+ * }
+ */
+function rpcQuizCheckDailyCompletion(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC quiz_check_daily_completion called");
+    
+    // Parse payload
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+    
+    var data = parsed.data;
+    
+    // Validate required fields (only gameMode is required now)
+    var validation = utils.validatePayload(data, ['gameMode']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
+    
+    // Validate gameMode
+    var validModes = ['DailyChallenge', 'DailyPremiumQuiz'];
+    if (validModes.indexOf(data.gameMode) === -1) {
+        return utils.handleError(ctx, null, "Invalid gameMode. Must be 'DailyChallenge' or 'DailyPremiumQuiz'");
+    }
+    
+    // Validate gameId if provided (optional)
+    if (data.gameId && !utils.isValidUUID(data.gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
+    
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+    
+    try {
+        // Get today's start timestamp (00:00:00 UTC)
+        var todayStart = utils.getStartOfDay();
+        var todayEnd = todayStart + 86400; // End of day (24 hours later)
+        
+        // Get current date string for response (YYYY-MM-DD)
+        var today = new Date();
+        var dateString = today.getUTCFullYear() + "-" + 
+                          String(today.getUTCMonth() + 1).padStart(2, '0') + "-" + 
+                          String(today.getUTCDate()).padStart(2, '0');
+        
+        var completed = false;
+        
+        // If gameId is provided, only check that specific collection
+        if (data.gameId) {
+            var collection = getResultsCollection(data.gameId);
+            var limit = 100; // Check last 100 results (should be enough for daily check)
+            
+            var objects = nk.storageList(userId, collection, limit, "");
+            
+            // Check if any result matches gameMode and was submitted today
+            for (var obj of objects.objects || []) {
+                var result = JSON.parse(obj.value);
+                
+                // Check if gameMode matches
+                if (result.gameMode !== data.gameMode) {
+                    continue;
+                }
+                
+                // Check if submitted today
+                // result.timestamp is Unix timestamp in seconds
+                if (result.timestamp >= todayStart && result.timestamp < todayEnd) {
+                    completed = true;
+                    utils.logInfo(logger, `User ${userId} completed ${data.gameMode} today (timestamp: ${result.timestamp})`);
+                    break;
+                }
+            }
+        } else {
+            // No gameId provided - query transaction_logs which stores all quiz results
+            var transactionCollection = "transaction_logs";
+            var limit = 1000; // Higher limit to check more results
+            var transactionObjects = nk.storageList(userId, transactionCollection, limit, "");
+            
+            // Check transaction logs for quiz results submitted today
+            for (var obj of transactionObjects.objects || []) {
+                var transaction = JSON.parse(obj.value);
+                
+                // Check if this is a quiz result transaction
+                if (transaction.type === "quiz_result" && 
+                    transaction.gameMode === data.gameMode) {
+                    
+                    // Parse timestamp from submittedAt (ISO string) or use timestamp if available
+                    var transactionTimestamp = null;
+                    if (transaction.timestamp) {
+                        // If timestamp is a Unix timestamp (seconds)
+                        if (typeof transaction.timestamp === 'number') {
+                            transactionTimestamp = transaction.timestamp;
+                        } else if (typeof transaction.timestamp === 'string') {
+                            // If it's an ISO string, convert to Unix timestamp
+                            var dateObj = new Date(transaction.timestamp);
+                            if (!isNaN(dateObj.getTime())) {
+                                transactionTimestamp = Math.floor(dateObj.getTime() / 1000);
+                            }
+                        }
+                    } else if (transaction.submittedAt) {
+                        // Fallback to submittedAt if timestamp not available
+                        var dateObj = new Date(transaction.submittedAt);
+                        if (!isNaN(dateObj.getTime())) {
+                            transactionTimestamp = Math.floor(dateObj.getTime() / 1000);
+                        }
+                    }
+                    
+                    // Check if submitted today
+                    if (transactionTimestamp && transactionTimestamp >= todayStart && transactionTimestamp < todayEnd) {
+                        completed = true;
+                        utils.logInfo(logger, `User ${userId} completed ${data.gameMode} today (from transaction log, timestamp: ${transactionTimestamp})`);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return JSON.stringify({
+            success: true,
+            completed: completed,
+            gameMode: data.gameMode,
+            date: dateString
+        });
+        
+    } catch (err) {
+        utils.logError(logger, "Failed to check daily completion: " + err.message);
+        return JSON.stringify({
+            success: false,
+            error: "Failed to check completion: " + err.message,
+            completed: false
+        });
+    }
+}
+
+// ============================================================================
+// MODULE INIT (postbuild AST hook)
+// ----------------------------------------------------------------------------
+// Registers the harmonized `rpcQuizSubmitResult` (with qv_seen ledger merge)
+// over the legacy_runtime.js copy. postbuild's collision-rename pass renames
+// the legacy declaration to `__legacy_rpcQuizSubmitResult`, so the modules
+// version wins at the global scope when the guarded `||` assignments are
+// replayed (modules first, legacy fallback second).
+// ============================================================================
+function __ModuleInit_92(ctx, logger, nk, initializer) {
+    __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult);
+    __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory);
+    __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats);
+    __rpc_quiz_check_daily_completion = __rpc_quiz_check_daily_completion || (rpcQuizCheckDailyCompletion);
+
+    // ── Cross-module bridge ───────────────────────────────────────────────────
+    // Expose appendKnowledgeMapHistory on globalThis so sibling modules
+    // (legacy_runtime.js, async_challenge, etc.) can write knowledge-map history
+    // entries without a hard module dependency.
+    // Pattern mirrors globalThis.__qvsSeen used by the seen-question ledger.
+    // Guarded with `||` so the first module to register wins (identical to the
+    // postbuild collision-rename convention used throughout this codebase).
+    globalThis.__kmAppendHistory = globalThis.__kmAppendHistory || appendKnowledgeMapHistory;
+
+    logger.info("[QuizResults] Module InitModule registered: 4 RPCs + __kmAppendHistory bridge");
+}
+
+
+// --- Module: quizverse_depth/quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -56564,7 +57421,7 @@ function registerQuizverseDepthRPCs(initializer, logger) {
 }
 
 
-// --- Module: quizverse_movies_quiz\quizverse_movies_quiz.js ---
+// --- Module: quizverse_movies_quiz/quizverse_movies_quiz.js ---
 // quizverse_movies_quiz.js — Server-side movie quiz for QuizVerse
 // Nakama Goja JavaScript runtime (ES5, no Node.js built-ins)
 //
@@ -56776,7 +57633,7 @@ function register(initializer) {
 }
 
 
-// --- Module: quizverse_music_quiz\quizverse_music_quiz.js ---
+// --- Module: quizverse_music_quiz/quizverse_music_quiz.js ---
 // quizverse_music_quiz.js — Server-side music quiz for QuizVerse
 // Nakama Goja JavaScript runtime (ES5, no Node.js built-ins)
 //
@@ -57011,7 +57868,7 @@ function register(initializer) {
 }
 
 
-// --- Module: quizverse_news_quiz\quizverse_news_quiz.js ---
+// --- Module: quizverse_news_quiz/quizverse_news_quiz.js ---
 // quizverse_news_quiz.js — Server-side news fetching for QuizVerse News Quiz
 // Nakama V8 JavaScript runtime (No ES Modules)
 //
@@ -57361,13 +58218,13 @@ function rpcQuizverseFetchNewsQuiz(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_95(ctx, logger, nk, initializer) {
+function __ModuleInit_96(ctx, logger, nk, initializer) {
     __rpc_quizverse_fetch_news_quiz = __rpc_quizverse_fetch_news_quiz || (rpcQuizverseFetchNewsQuiz);
     logger.info("[NewsQuiz] Registered RPC: quizverse_fetch_news_quiz");
 }
 
 
-// --- Module: quizverse_quiz_generate\quizverse_quiz_generate.js ---
+// --- Module: quizverse_quiz_generate/quizverse_quiz_generate.js ---
 // quizverse_quiz_generate.js - Server-authoritative question delivery RPC
 // Nakama V8 JavaScript runtime (No ES Modules)
 //
@@ -57950,14 +58807,14 @@ function registerQuizverseQuizGenerateRPCs(initializer, logger) {
 // ============================================================================
 // MODULE INIT (postbuild AST hook — see quizverse_seen.js for full rationale)
 // ============================================================================
-function __ModuleInit_96(ctx, logger, nk, initializer) {
+function __ModuleInit_97(ctx, logger, nk, initializer) {
     __rpc_quizverse_quiz_generate = __rpc_quizverse_quiz_generate || (rpcQuizverseQuizGenerate);
     __rpc_quizverse_seen_resolve = __rpc_quizverse_seen_resolve || (rpcQuizverseSeenResolve);
     logger.info("[QuizGen] Module InitModule registered: 2 RPCs");
 }
 
 
-// --- Module: quizverse_seen\quizverse_seen.js ---
+// --- Module: quizverse_seen/quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -58455,7 +59312,7 @@ function registerQuizverseSeenRPCs(initializer, logger) {
 //   3) Replay those assignments at IIFE/global scope so every Goja VM has them
 //   4) Emit `__rpc__id_ = __rpc__id_ || (__rpc_<id>)` inside the master InitModule
 // ============================================================================
-function __ModuleInit_97(ctx, logger, nk, initializer) {
+function __ModuleInit_98(ctx, logger, nk, initializer) {
     __rpc_quizverse_seen_get = __rpc_quizverse_seen_get || (rpcQuizverseSeenGet);
     __rpc_quizverse_seen_merge = __rpc_quizverse_seen_merge || (rpcQuizverseSeenMerge);
     __rpc_quizverse_seen_purge = __rpc_quizverse_seen_purge || (rpcQuizverseSeenPurge);
@@ -58465,864 +59322,7 @@ function __ModuleInit_97(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quiz_results\quiz_results.js ---
-// quiz_results.js - Quiz Results Tracking & Analytics System
-// Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
-//
-// Seen-question merging is delegated to globalThis.__qvsSeen (quizverse_seen.js)
-// so that OCC, scope/topic slugification, and the safety cap are applied consistently.
-
-// ─────────────────────────────────────────────────────────────────────────────
-// KNOWLEDGE MAP HISTORY — constants
-// ─────────────────────────────────────────────────────────────────────────────
-// Maximum number of per-question history entries kept per user in the knowledge
-// map rolling window. Older entries are dropped when this cap is exceeded so the
-// storageRead payload stays bounded regardless of play-session count.
-var KM_HISTORY_MAX_ENTRIES = 2000;
-
-// Canonical UUID → slug map. Mirrors the entry in analytics.js so both systems
-// resolve to the same slug-based collection name without a shared dependency.
-var KM_UUID_TO_SLUG = {
-    "126bf539-dae2-4bcf-964d-316c0fa1f92b": "quiz-verse"
-};
-
-/**
- * Resolve a gameId (UUID or slug) to its short slug, which is used as the
- * prefix for the knowledge-map history collection.
- * Returns the input unchanged if no mapping is found (graceful no-op).
- */
-function kmResolveSlug(gameId) {
-    if (!gameId) return "quiz-verse";
-    var mapped = KM_UUID_TO_SLUG[gameId];
-    return mapped || gameId;
-}
-
-/**
- * Append per-question knowledge-map history entries for a completed quiz and
- * persist them as a rolling window in Nakama storage.
- *
- * Called as a non-critical side-effect of quiz_submit_result. Any failure is
- * caught and logged so it never blocks the main result submission.
- *
- * Entry sources (in priority order):
- *  1. data.questionHistory   — [{category, correct, time_ms}] (AsyncChallenge / ScoreCalculationEngine)
- *  1b. data.questionDetails  — [{category, isCorrect, timeTakenSeconds}] (IVXQuizResultsManager SDK)
- *  2. data.categoryName + result aggregate — one synthesized entry per quiz
- *
- * The synthesized fallback maps:
- *   category  = data.categoryName || data.categoryId || "general"
- *   correct   = accuracy >= 60 %  (i.e. the player knew most of this category)
- *   time_ms   = round(timeTakenSeconds / totalQuestions * 1000)  per-question avg
- *
- * Rolling window: after appending, entries are trimmed to KM_HISTORY_MAX_ENTRIES
- * keeping the most recent ones so the document stays bounded forever.
- */
-function appendKnowledgeMapHistory(nk, logger, userId, data, result, metrics) {
-    try {
-        var slug = kmResolveSlug(data.gameId);
-        var collection = slug + "_quiz_history";
-        var storageKey  = "history";
-
-        // Read current history document (may not exist yet for a new player).
-        var existing = null;
-        try {
-            var records = nk.storageRead([{ collection: collection, key: storageKey, userId: userId }]);
-            if (records && records.length > 0 && records[0].value) {
-                existing = records[0].value;
-            }
-        } catch (readErr) {
-            // Missing document is fine — we will create it below.
-            logger.debug("[KMHistory] No existing history for user " + userId + " — creating new document.");
-        }
-
-        var entries = (existing && Array.isArray(existing.entries)) ? existing.entries : [];
-
-        // ── Build new entries to append ───────────────────────────────────────
-        var newEntries = [];
-
-        // Priority 1: explicit per-question breakdown — QuestionHistoryEntry schema
-        // (from AsyncChallengeManager / ScoreCalculationEngine).
-        // Expected shape: [{category, correct, time_ms}]
-        // Also accepts alternate field names for forward/backward compat.
-        if (data.questionHistory && Array.isArray(data.questionHistory) && data.questionHistory.length > 0) {
-            for (var qi = 0; qi < data.questionHistory.length; qi++) {
-                var q = data.questionHistory[qi];
-                if (!q || typeof q !== "object") continue;
-                var cat     = q.category  || q.categoryName || q.categoryId || "general";
-                var correct = (q.correct !== undefined) ? !!q.correct
-                            : (q.was_correct !== undefined) ? !!q.was_correct
-                            : false;
-                var timeMs  = parseInt(q.time_ms || q.timeMs || 0, 10);
-                newEntries.push({ category: cat, correct: correct, time_ms: timeMs });
-            }
-        }
-
-        // Priority 1b: IVXQuizResultsManager.QuizResultData uses "questionDetails"
-        // (QuestionAnswerDetail[] schema from the SDK).  Fields: category, isCorrect,
-        // timeTakenSeconds (seconds, not ms).  This is the path used by
-        // DailyQuizManager and any mode submitting through QuizContainer.
-        if (newEntries.length === 0 &&
-            data.questionDetails && Array.isArray(data.questionDetails) && data.questionDetails.length > 0) {
-            for (var qd = 0; qd < data.questionDetails.length; qd++) {
-                var d = data.questionDetails[qd];
-                if (!d || typeof d !== "object") continue;
-                var cat     = d.category || d.concept || "general";
-                var correct = (d.isCorrect !== undefined) ? !!d.isCorrect : false;
-                var timeMs  = Math.round((parseFloat(d.timeTakenSeconds) || 0) * 1000);
-                newEntries.push({ category: cat, correct: correct, time_ms: timeMs });
-            }
-        }
-
-        // Priority 2: synthesize one aggregate entry from the quiz-level result.
-        // Used when Unity does not send a per-question breakdown (older clients,
-        // multiplayer modes, etc.).
-        if (newEntries.length === 0) {
-            var cat     = data.categoryName || data.categoryId || "general";
-            var correct = (typeof metrics.accuracy === "number") ? metrics.accuracy >= 60 : false;
-            var perQMs  = (result.totalQuestions > 0)
-                        ? Math.round((result.timeTakenSeconds * 1000) / result.totalQuestions)
-                        : 0;
-            newEntries.push({ category: cat, correct: correct, time_ms: perQMs });
-        }
-
-        // ── Append + enforce rolling cap ──────────────────────────────────────
-        var combined = entries.concat(newEntries);
-        if (combined.length > KM_HISTORY_MAX_ENTRIES) {
-            combined = combined.slice(combined.length - KM_HISTORY_MAX_ENTRIES);
-        }
-
-        nk.storageWrite([{
-            collection:      collection,
-            key:             storageKey,
-            userId:          userId,
-            value:           { entries: combined },
-            permissionRead:  1,
-            permissionWrite: 0
-        }]);
-
-        logger.info("[KMHistory] Appended " + newEntries.length + " entries for user " + userId +
-            " (total=" + combined.length + ", slug=" + slug + ")");
-
-    } catch (err) {
-        // Non-critical: never let a history write failure block the main submit.
-        logger.warn("[KMHistory] appendKnowledgeMapHistory failed (non-critical): " + err.message);
-    }
-}
-
-/**
- * Quiz Result Schema
- * Captures comprehensive data about each quiz attempt
- */
-var QUIZ_RESULT_SCHEMA = {
-    // Required fields
-    gameId: "string",           // Game UUID
-    gameMode: "string",         // QuickPlay, DailyChallenge, Championship, etc.
-    
-    // Score data
-    score: "number",            // Final score
-    correctAnswers: "number",   // Number of correct answers
-    totalQuestions: "number",   // Total questions in quiz
-    
-    // Timing
-    timeTakenSeconds: "number", // Total time taken
-    
-    // Win/Loss
-    won: "boolean",             // Did user win?
-    
-    // Optional fields
-    difficulty: "string",       // easy, medium, hard
-    categoryId: "string",       // Category/topic ID
-    categoryName: "string",     // Category/topic name
-    opponentId: "string",       // For multiplayer
-    opponentName: "string",     // Opponent display name
-    tournamentId: "string",     // If part of tournament
-    matchId: "string",          // Match ID for multiplayer
-    hintsUsed: "number",        // Power-ups used
-    skipsUsed: "number",
-    extraTimeUsed: "number",
-    extraLivesUsed: "number",
-    coinsSpent: "number",       // Coins spent on power-ups
-    coinsEarned: "number",      // Coins earned from this quiz
-    xpEarned: "number",         // XP earned
-    streakDay: "number",        // Daily streak day
-    perfectScore: "boolean",    // 100% accuracy
-    metadata: "object"          // Any additional game-specific data
-};
-
-/**
- * Get collection name for quiz results
- */
-function getResultsCollection(gameId) {
-    return "quiz_results_" + gameId;
-}
-
-/**
- * Get user stats collection
- */
-function getUserStatsCollection(gameId) {
-    return "quiz_user_stats_" + gameId;
-}
-
-/**
- * Generate unique result key
- */
-function generateResultKey(userId, timestamp) {
-    return "result_" + userId + "_" + timestamp;
-}
-
-/**
- * Calculate performance metrics
- */
-function calculateMetrics(result) {
-    var accuracy = result.totalQuestions > 0 
-        ? (result.correctAnswers / result.totalQuestions) * 100 
-        : 0;
-    
-    var avgTimePerQuestion = result.totalQuestions > 0 
-        ? result.timeTakenSeconds / result.totalQuestions 
-        : 0;
-    
-    var isPerfect = result.correctAnswers === result.totalQuestions && result.totalQuestions > 0;
-    
-    return {
-        accuracy: Math.round(accuracy * 100) / 100,
-        avgTimePerQuestion: Math.round(avgTimePerQuestion * 100) / 100,
-        isPerfect: isPerfect,
-        performanceRating: calculatePerformanceRating(accuracy, avgTimePerQuestion, result.won)
-    };
-}
-
-/**
- * Calculate performance rating (1-5 stars)
- */
-function calculatePerformanceRating(accuracy, avgTime, won) {
-    var rating = 0;
-    
-    // Accuracy contribution (0-2.5 stars)
-    if (accuracy >= 90) rating += 2.5;
-    else if (accuracy >= 70) rating += 2.0;
-    else if (accuracy >= 50) rating += 1.5;
-    else if (accuracy >= 30) rating += 1.0;
-    else rating += 0.5;
-    
-    // Speed contribution (0-1.5 stars)
-    if (avgTime <= 5) rating += 1.5;
-    else if (avgTime <= 10) rating += 1.0;
-    else if (avgTime <= 15) rating += 0.5;
-    
-    // Win bonus (0-1 star)
-    if (won) rating += 1.0;
-    
-    return Math.min(5, Math.round(rating * 10) / 10);
-}
-
-/**
- * Update user's aggregate statistics
- */
-function updateUserStats(nk, logger, userId, gameId, result, metrics) {
-    var collection = getUserStatsCollection(gameId);
-    var key = "stats_" + userId;
-    
-    // Get existing stats
-    var stats = utils.readStorage(nk, logger, collection, key, userId);
-    
-    if (!stats) {
-        stats = {
-            userId: userId,
-            gameId: gameId,
-            totalGames: 0,
-            totalWins: 0,
-            totalScore: 0,
-            totalCorrect: 0,
-            totalQuestions: 0,
-            totalTimePlayed: 0,
-            perfectGames: 0,
-            highestScore: 0,
-            longestStreak: 0,
-            currentStreak: 0,
-            lastPlayedAt: null,
-            modeStats: {},
-            createdAt: utils.getCurrentTimestamp()
-        };
-    }
-    
-    // Update totals
-    stats.totalGames++;
-    stats.totalScore += result.score || 0;
-    stats.totalCorrect += result.correctAnswers || 0;
-    stats.totalQuestions += result.totalQuestions || 0;
-    stats.totalTimePlayed += result.timeTakenSeconds || 0;
-    
-    if (result.won) {
-        stats.totalWins++;
-        stats.currentStreak++;
-        stats.longestStreak = Math.max(stats.longestStreak, stats.currentStreak);
-    } else {
-        stats.currentStreak = 0;
-    }
-    
-    if (metrics.isPerfect) {
-        stats.perfectGames++;
-    }
-    
-    stats.highestScore = Math.max(stats.highestScore, result.score || 0);
-    stats.lastPlayedAt = utils.getCurrentTimestamp();
-    
-    // Update per-mode stats
-    var mode = result.gameMode || "unknown";
-    if (!stats.modeStats[mode]) {
-        stats.modeStats[mode] = {
-            games: 0,
-            wins: 0,
-            totalScore: 0,
-            highestScore: 0
-        };
-    }
-    stats.modeStats[mode].games++;
-    if (result.won) stats.modeStats[mode].wins++;
-    stats.modeStats[mode].totalScore += result.score || 0;
-    stats.modeStats[mode].highestScore = Math.max(
-        stats.modeStats[mode].highestScore, 
-        result.score || 0
-    );
-    
-    stats.updatedAt = utils.getCurrentTimestamp();
-    
-    // Save stats
-    utils.writeStorage(nk, logger, collection, key, userId, stats);
-    
-    return stats;
-}
-
-/**
- * RPC: quiz_submit_result
- * Submit quiz result from any game mode
- * 
- * Required payload:
- * {
- *   gameId: "uuid",
- *   gameMode: "QuickPlay",
- *   score: 850,
- *   correctAnswers: 8,
- *   totalQuestions: 10,
- *   timeTakenSeconds: 120,
- *   won: true
- * }
- * 
- * Optional fields: difficulty, categoryId, categoryName, opponentId,
- *   tournamentId, matchId, hintsUsed, skipsUsed, coinsSpent, coinsEarned, etc.
- */
-function rpcQuizSubmitResult(ctx, logger, nk, payload) {
-    utils.logInfo(logger, "RPC quiz_submit_result called");
-    
-    // Parse payload
-    var parsed = utils.safeJsonParse(payload);
-    if (!parsed.success) {
-        return utils.handleError(ctx, null, "Invalid JSON payload");
-    }
-    
-    var data = parsed.data;
-    
-    // Validate required fields
-    var required = ['gameId', 'gameMode', 'score', 'correctAnswers', 'totalQuestions', 'timeTakenSeconds'];
-    var validation = utils.validatePayload(data, required);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-    }
-    
-    // Validate gameId UUID
-    if (!utils.isValidUUID(data.gameId)) {
-        return utils.handleError(ctx, null, "Invalid gameId UUID format");
-    }
-    
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-    
-    var username = ctx.username || "unknown";
-    var timestamp = utils.getUnixTimestamp();
-    
-    // Build result object
-    var result = {
-        id: generateResultKey(userId, timestamp),
-        userId: userId,
-        username: username,
-        gameId: data.gameId,
-        gameMode: data.gameMode,
-        score: parseInt(data.score) || 0,
-        correctAnswers: parseInt(data.correctAnswers) || 0,
-        totalQuestions: parseInt(data.totalQuestions) || 0,
-        timeTakenSeconds: parseFloat(data.timeTakenSeconds) || 0,
-        won: data.won === true || data.won === "true",
-        
-        // Optional fields
-        difficulty: data.difficulty || "normal",
-        categoryId: data.categoryId || null,
-        categoryName: data.categoryName || null,
-        opponentId: data.opponentId || null,
-        opponentName: data.opponentName || null,
-        tournamentId: data.tournamentId || null,
-        matchId: data.matchId || null,
-        hintsUsed: parseInt(data.hintsUsed) || 0,
-        skipsUsed: parseInt(data.skipsUsed) || 0,
-        extraTimeUsed: parseInt(data.extraTimeUsed) || 0,
-        extraLivesUsed: parseInt(data.extraLivesUsed) || 0,
-        coinsSpent: parseInt(data.coinsSpent) || 0,
-        coinsEarned: parseInt(data.coinsEarned) || 0,
-        xpEarned: parseInt(data.xpEarned) || 0,
-        streakDay: parseInt(data.streakDay) || 0,
-        metadata: data.metadata || {},
-        
-        // Server-generated
-        timestamp: timestamp,
-        submittedAt: utils.getCurrentTimestamp()
-    };
-    
-    // Calculate metrics
-    var metrics = calculateMetrics(result);
-    result.metrics = metrics;
-    result.perfectScore = metrics.isPerfect;
-    
-    try {
-        // 1. Store the result
-        var collection = getResultsCollection(data.gameId);
-        var resultKey = result.id;
-        utils.writeStorage(nk, logger, collection, resultKey, userId, result);
-        utils.logInfo(logger, "Stored quiz result: " + resultKey);
-        
-        // 2. Update user stats
-        var updatedStats = updateUserStats(nk, logger, userId, data.gameId, result, metrics);
-        
-        // 3. Update leaderboard if score > 0
-        if (result.score > 0) {
-            try {
-                var leaderboardId = "leaderboard_" + data.gameId;
-                var leaderboardMetadata = {
-                    gameMode: result.gameMode,
-                    accuracy: metrics.accuracy,
-                    submittedAt: result.submittedAt
-                };
-                
-                nk.leaderboardRecordWrite(
-                    leaderboardId,
-                    userId,
-                    username,
-                    result.score,
-                    0, // subscore
-                    JSON.stringify(leaderboardMetadata),
-                    null // operator - use default (best)
-                );
-                utils.logInfo(logger, "Updated leaderboard: " + leaderboardId);
-            } catch (lbErr) {
-                utils.logWarning(logger, "Leaderboard update failed (non-critical): " + lbErr.message);
-            }
-        }
-        
-        // 4. Store in transaction log for analytics
-        var transactionKey = "quiz_result_" + userId + "_" + timestamp;
-        utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, {
-            type: "quiz_result",
-            resultId: result.id,
-            gameMode: result.gameMode,
-            score: result.score,
-            won: result.won,
-            timestamp: result.submittedAt
-        });
-        
-        // 5. Merge seen question IDs into the qv_seen ledger (if provided)
-        // Delegates to globalThis.__qvsSeen (quizverse_seen.js) for OCC-safe,
-        // correctly slugified writes. Supports both top-level and nested metadata
-        // layouts from the Unity SDK.
-        var seenIds = null;
-        var seenScopeRaw = null;
-        var seenTopicRaw = null;
-        if (data.seenQuestionIds && Array.isArray(data.seenQuestionIds) && data.seenQuestionIds.length > 0) {
-            seenIds = data.seenQuestionIds;
-            seenScopeRaw = data.seenScope;
-            seenTopicRaw = data.seenTopic;
-        } else if (data.metadata && data.metadata.seenQuestionIds &&
-                   Array.isArray(data.metadata.seenQuestionIds) && data.metadata.seenQuestionIds.length > 0) {
-            seenIds = data.metadata.seenQuestionIds;
-            seenScopeRaw = data.metadata.seenScope;
-            seenTopicRaw = data.metadata.seenTopic;
-        }
-        if (seenIds && seenIds.length > 0) {
-            try {
-                var seenScope = seenScopeRaw || "global";
-                var seenTopic = seenTopicRaw || data.categoryName || "general";
-                globalThis.__qvsSeen.merge(nk, userId, seenScope, seenTopic, seenIds);
-                utils.logInfo(logger, "Merged " + seenIds.length +
-                    " seen IDs into qv_seen/" + globalThis.__qvsSeen.buildKey(seenScope, seenTopic) +
-                    " for user " + userId);
-            } catch (seenErr) {
-                utils.logWarning(logger, "Seen ledger merge failed (non-critical): " + seenErr.message);
-            }
-        }
-
-        // 6. Append per-question entries to the knowledge-map history document.
-        // Non-critical: wrapped internally so failures never block the response.
-        appendKnowledgeMapHistory(nk, logger, userId, data, result, metrics);
-
-        utils.logInfo(logger, "Quiz result submitted: User " + userId + ", Mode: " + result.gameMode + ", Score: " + result.score);
-        
-        return JSON.stringify({
-            success: true,
-            resultId: result.id,
-            metrics: metrics,
-            stats: {
-                totalGames: updatedStats.totalGames,
-                totalWins: updatedStats.totalWins,
-                currentStreak: updatedStats.currentStreak,
-                highestScore: updatedStats.highestScore
-            }
-        });
-        
-    } catch (err) {
-        utils.logError(logger, "Failed to submit quiz result: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "Failed to submit result: " + err.message
-        });
-    }
-}
-
-/**
- * RPC: quiz_get_history
- * Get quiz history for a user
- * 
- * Payload:
- * {
- *   gameId: "uuid",
- *   gameMode: "QuickPlay" (optional, filter by mode),
- *   limit: 20,
- *   cursor: "..." (for pagination)
- * }
- */
-function rpcQuizGetHistory(ctx, logger, nk, payload) {
-    utils.logInfo(logger, "RPC quiz_get_history called");
-    
-    var parsed = utils.safeJsonParse(payload);
-    if (!parsed.success) {
-        return utils.handleError(ctx, null, "Invalid JSON payload");
-    }
-    
-    var data = parsed.data;
-    var validation = utils.validatePayload(data, ['gameId']);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing gameId");
-    }
-    
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-    
-    var collection = getResultsCollection(data.gameId);
-    var limit = Math.min(parseInt(data.limit) || 20, 100);
-    
-    try {
-        // List storage objects for this user
-        var objects = nk.storageList(userId, collection, limit, data.cursor || "");
-        
-        var results = [];
-        for (var obj of objects.objects || []) {
-            var result = JSON.parse(obj.value);
-            
-            // Filter by gameMode if specified
-            if (data.gameMode && result.gameMode !== data.gameMode) {
-                continue;
-            }
-            
-            results.push({
-                id: result.id,
-                gameMode: result.gameMode,
-                score: result.score,
-                correctAnswers: result.correctAnswers,
-                totalQuestions: result.totalQuestions,
-                won: result.won,
-                metrics: result.metrics,
-                categoryName: result.categoryName,
-                submittedAt: result.submittedAt
-            });
-        }
-        
-        return JSON.stringify({
-            success: true,
-            results: results,
-            cursor: objects.cursor || null,
-            count: results.length
-        });
-        
-    } catch (err) {
-        utils.logError(logger, "Failed to get quiz history: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "Failed to get history: " + err.message
-        });
-    }
-}
-
-/**
- * RPC: quiz_get_stats
- * Get user's aggregate quiz statistics
- */
-function rpcQuizGetStats(ctx, logger, nk, payload) {
-    utils.logInfo(logger, "RPC quiz_get_stats called");
-    
-    var parsed = utils.safeJsonParse(payload);
-    if (!parsed.success) {
-        return utils.handleError(ctx, null, "Invalid JSON payload");
-    }
-    
-    var data = parsed.data;
-    var validation = utils.validatePayload(data, ['gameId']);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing gameId");
-    }
-    
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-    
-    var collection = getUserStatsCollection(data.gameId);
-    var key = "stats_" + userId;
-    
-    var stats = utils.readStorage(nk, logger, collection, key, userId);
-    
-    if (!stats) {
-        return JSON.stringify({
-            success: true,
-            stats: {
-                totalGames: 0,
-                totalWins: 0,
-                winRate: 0,
-                totalScore: 0,
-                averageScore: 0,
-                accuracy: 0,
-                highestScore: 0,
-                currentStreak: 0,
-                longestStreak: 0,
-                perfectGames: 0,
-                modeStats: {}
-            }
-        });
-    }
-    
-    // Calculate derived stats
-    var winRate = stats.totalGames > 0 
-        ? Math.round((stats.totalWins / stats.totalGames) * 100) 
-        : 0;
-    
-    var averageScore = stats.totalGames > 0 
-        ? Math.round(stats.totalScore / stats.totalGames) 
-        : 0;
-    
-    var accuracy = stats.totalQuestions > 0 
-        ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100) 
-        : 0;
-    
-    return JSON.stringify({
-        success: true,
-        stats: {
-            totalGames: stats.totalGames,
-            totalWins: stats.totalWins,
-            winRate: winRate,
-            totalScore: stats.totalScore,
-            averageScore: averageScore,
-            accuracy: accuracy,
-            highestScore: stats.highestScore,
-            currentStreak: stats.currentStreak,
-            longestStreak: stats.longestStreak,
-            perfectGames: stats.perfectGames,
-            totalTimePlayed: stats.totalTimePlayed,
-            modeStats: stats.modeStats,
-            lastPlayedAt: stats.lastPlayedAt
-        }
-    });
-}
-
-/**
- * RPC: quiz_check_daily_completion
- * Check if user has completed a quiz for a specific game mode today
- * Based on user UUID - queries across all quiz result collections for the user
- * 
- * Payload:
- * {
- *   gameMode: "DailyChallenge" | "DailyPremiumQuiz"
- *   gameId: "uuid" (optional - if provided, only checks that specific game)
- * }
- * 
- * Returns:
- * {
- *   success: true,
- *   completed: boolean,
- *   gameMode: "DailyChallenge",
- *   date: "2025-01-15" (YYYY-MM-DD format)
- * }
- */
-function rpcQuizCheckDailyCompletion(ctx, logger, nk, payload) {
-    utils.logInfo(logger, "RPC quiz_check_daily_completion called");
-    
-    // Parse payload
-    var parsed = utils.safeJsonParse(payload);
-    if (!parsed.success) {
-        return utils.handleError(ctx, null, "Invalid JSON payload");
-    }
-    
-    var data = parsed.data;
-    
-    // Validate required fields (only gameMode is required now)
-    var validation = utils.validatePayload(data, ['gameMode']);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-    }
-    
-    // Validate gameMode
-    var validModes = ['DailyChallenge', 'DailyPremiumQuiz'];
-    if (validModes.indexOf(data.gameMode) === -1) {
-        return utils.handleError(ctx, null, "Invalid gameMode. Must be 'DailyChallenge' or 'DailyPremiumQuiz'");
-    }
-    
-    // Validate gameId if provided (optional)
-    if (data.gameId && !utils.isValidUUID(data.gameId)) {
-        return utils.handleError(ctx, null, "Invalid gameId UUID format");
-    }
-    
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-    
-    try {
-        // Get today's start timestamp (00:00:00 UTC)
-        var todayStart = utils.getStartOfDay();
-        var todayEnd = todayStart + 86400; // End of day (24 hours later)
-        
-        // Get current date string for response (YYYY-MM-DD)
-        var today = new Date();
-        var dateString = today.getUTCFullYear() + "-" + 
-                          String(today.getUTCMonth() + 1).padStart(2, '0') + "-" + 
-                          String(today.getUTCDate()).padStart(2, '0');
-        
-        var completed = false;
-        
-        // If gameId is provided, only check that specific collection
-        if (data.gameId) {
-            var collection = getResultsCollection(data.gameId);
-            var limit = 100; // Check last 100 results (should be enough for daily check)
-            
-            var objects = nk.storageList(userId, collection, limit, "");
-            
-            // Check if any result matches gameMode and was submitted today
-            for (var obj of objects.objects || []) {
-                var result = JSON.parse(obj.value);
-                
-                // Check if gameMode matches
-                if (result.gameMode !== data.gameMode) {
-                    continue;
-                }
-                
-                // Check if submitted today
-                // result.timestamp is Unix timestamp in seconds
-                if (result.timestamp >= todayStart && result.timestamp < todayEnd) {
-                    completed = true;
-                    utils.logInfo(logger, `User ${userId} completed ${data.gameMode} today (timestamp: ${result.timestamp})`);
-                    break;
-                }
-            }
-        } else {
-            // No gameId provided - query transaction_logs which stores all quiz results
-            var transactionCollection = "transaction_logs";
-            var limit = 1000; // Higher limit to check more results
-            var transactionObjects = nk.storageList(userId, transactionCollection, limit, "");
-            
-            // Check transaction logs for quiz results submitted today
-            for (var obj of transactionObjects.objects || []) {
-                var transaction = JSON.parse(obj.value);
-                
-                // Check if this is a quiz result transaction
-                if (transaction.type === "quiz_result" && 
-                    transaction.gameMode === data.gameMode) {
-                    
-                    // Parse timestamp from submittedAt (ISO string) or use timestamp if available
-                    var transactionTimestamp = null;
-                    if (transaction.timestamp) {
-                        // If timestamp is a Unix timestamp (seconds)
-                        if (typeof transaction.timestamp === 'number') {
-                            transactionTimestamp = transaction.timestamp;
-                        } else if (typeof transaction.timestamp === 'string') {
-                            // If it's an ISO string, convert to Unix timestamp
-                            var dateObj = new Date(transaction.timestamp);
-                            if (!isNaN(dateObj.getTime())) {
-                                transactionTimestamp = Math.floor(dateObj.getTime() / 1000);
-                            }
-                        }
-                    } else if (transaction.submittedAt) {
-                        // Fallback to submittedAt if timestamp not available
-                        var dateObj = new Date(transaction.submittedAt);
-                        if (!isNaN(dateObj.getTime())) {
-                            transactionTimestamp = Math.floor(dateObj.getTime() / 1000);
-                        }
-                    }
-                    
-                    // Check if submitted today
-                    if (transactionTimestamp && transactionTimestamp >= todayStart && transactionTimestamp < todayEnd) {
-                        completed = true;
-                        utils.logInfo(logger, `User ${userId} completed ${data.gameMode} today (from transaction log, timestamp: ${transactionTimestamp})`);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return JSON.stringify({
-            success: true,
-            completed: completed,
-            gameMode: data.gameMode,
-            date: dateString
-        });
-        
-    } catch (err) {
-        utils.logError(logger, "Failed to check daily completion: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "Failed to check completion: " + err.message,
-            completed: false
-        });
-    }
-}
-
-// ============================================================================
-// MODULE INIT (postbuild AST hook)
-// ----------------------------------------------------------------------------
-// Registers the harmonized `rpcQuizSubmitResult` (with qv_seen ledger merge)
-// over the legacy_runtime.js copy. postbuild's collision-rename pass renames
-// the legacy declaration to `__legacy_rpcQuizSubmitResult`, so the modules
-// version wins at the global scope when the guarded `||` assignments are
-// replayed (modules first, legacy fallback second).
-// ============================================================================
-function __ModuleInit_98(ctx, logger, nk, initializer) {
-    __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult);
-    __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory);
-    __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats);
-    __rpc_quiz_check_daily_completion = __rpc_quiz_check_daily_completion || (rpcQuizCheckDailyCompletion);
-
-    // ── Cross-module bridge ───────────────────────────────────────────────────
-    // Expose appendKnowledgeMapHistory on globalThis so sibling modules
-    // (legacy_runtime.js, async_challenge, etc.) can write knowledge-map history
-    // entries without a hard module dependency.
-    // Pattern mirrors globalThis.__qvsSeen used by the seen-question ledger.
-    // Guarded with `||` so the first module to register wins (identical to the
-    // postbuild collision-rename convention used throughout this codebase).
-    globalThis.__kmAppendHistory = globalThis.__kmAppendHistory || appendKnowledgeMapHistory;
-
-    logger.info("[QuizResults] Module InitModule registered: 4 RPCs + __kmAppendHistory bridge");
-}
-
-
-// --- Module: retention\collections.js ---
+// --- Module: retention/collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -59836,7 +59836,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\retention_v2.js ---
+// --- Module: retention/retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -60243,7 +60243,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\season_pass.js ---
+// --- Module: retention/season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -60905,7 +60905,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\winback.js ---
+// --- Module: retention/winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -61466,7 +61466,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads\rewarded_ads.js ---
+// --- Module: rewarded_ads/rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -62367,7 +62367,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets\s3_assets.js ---
+// --- Module: s3_assets/s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -62782,7 +62782,7 @@ function __ModuleInit_104(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat\satori_compat.js ---
+// --- Module: satori_compat/satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -62969,7 +62969,7 @@ function __ModuleInit_105(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct\satori_direct.js ---
+// --- Module: satori_direct/satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -63938,7 +63938,7 @@ function __ModuleInit_106(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases\sdk_aliases.js ---
+// --- Module: sdk_aliases/sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -64065,7 +64065,7 @@ function __ModuleInit_107(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review\smart_review.js ---
+// --- Module: smart_review/smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -64863,7 +64863,7 @@ function __ModuleInit_108(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: social_v2\social_v2.js ---
+// --- Module: social_v2/social_v2.js ---
 // social_v2.js - Social features: challenges, rivalries, teams, duos, group quests
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -65513,7 +65513,7 @@ function rpcGroupActivityFeed(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: tournaments\tournaments.js ---
+// --- Module: tournaments/tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -66066,7 +66066,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: visual_path\visual_path.js ---
+// --- Module: visual_path/visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -66417,7 +66417,7 @@ function __ModuleInit_111(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet\wallet.js ---
+// --- Module: wallet/wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -141661,15 +141661,15 @@ try { __rpc_satori_segments_run = __rpc_satori_segments_run || (rpcSatoriSegment
 try { __rpc_satori_segments_status = __rpc_satori_segments_status || (rpcSatoriSegmentsStatus); } catch(e) {}
 try { __rpc_analytics_tracking_plan = __rpc_analytics_tracking_plan || (rpcAnalyticsTrackingPlan); } catch(e) {}
 try { __rpc_analytics_data_quality = __rpc_analytics_data_quality || (rpcAnalyticsDataQuality); } catch(e) {}
+try { __rpc_chat_filter_message = __rpc_chat_filter_message || (rpcChatFilterMessage); } catch(e) {}
+try { __rpc_chat_report_message = __rpc_chat_report_message || (rpcChatReportMessage); } catch(e) {}
+try { __rpc_chat_moderation_review = __rpc_chat_moderation_review || (rpcChatModerationReview); } catch(e) {}
+try { __rpc_chat_moderation_stats = __rpc_chat_moderation_stats || (rpcChatModerationStats); } catch(e) {}
 try { __rpc_quizverse_chatbox_greeting = __rpc_quizverse_chatbox_greeting || (rpcQuizverseChatboxGreeting); } catch(e) {}
 try { __rpc_quizverse_chatbox_message = __rpc_quizverse_chatbox_message || (rpcQuizverseChatboxMessage); } catch(e) {}
 try { __rpc_quizverse_kb_get_context = __rpc_quizverse_kb_get_context || (rpcQuizverseKbGetContext); } catch(e) {}
 try { __rpc_quizverse_kb_register_seen_questions = __rpc_quizverse_kb_register_seen_questions || (rpcQuizverseKbRegisterSeen); } catch(e) {}
 try { __rpc_quizverse_kb_filter_unseen_questions = __rpc_quizverse_kb_filter_unseen_questions || (rpcQuizverseKbFilterUnseen); } catch(e) {}
-try { __rpc_chat_filter_message = __rpc_chat_filter_message || (rpcChatFilterMessage); } catch(e) {}
-try { __rpc_chat_report_message = __rpc_chat_report_message || (rpcChatReportMessage); } catch(e) {}
-try { __rpc_chat_moderation_review = __rpc_chat_moderation_review || (rpcChatModerationReview); } catch(e) {}
-try { __rpc_chat_moderation_stats = __rpc_chat_moderation_stats || (rpcChatModerationStats); } catch(e) {}
 try { __rpc_cricket_create_ai_note = __rpc_cricket_create_ai_note || (rpcCreateAINote); } catch(e) {}
 try { __rpc_cricket_generate_quiz_from_note = __rpc_cricket_generate_quiz_from_note || (rpcGenerateQuizFromNote); } catch(e) {}
 try { __rpc_cricket_generate_match_trivia = __rpc_cricket_generate_match_trivia || (rpcGenerateMatchTrivia); } catch(e) {}
@@ -141749,10 +141749,11 @@ try { __rpc_external_poll_appstore = __rpc_external_poll_appstore || (rpcExterna
 try { __rpc_external_poll_ugs = __rpc_external_poll_ugs || (rpcExternalPollUgs); } catch(e) {}
 try { __rpc_external_poll_all = __rpc_external_poll_all || (rpcExternalPollAll); } catch(e) {}
 try { __rpc_external_poll_status = __rpc_external_poll_status || (rpcExternalPollStatus); } catch(e) {}
-try { __rpc_friends_get_online_count = __rpc_friends_get_online_count || (rpcFriendsGetOnlineCount); } catch(e) {}
-try { __rpc_social_pressure_get_today_summary = __rpc_social_pressure_get_today_summary || (rpcSocialPressureGetTodaySummary); } catch(e) {}
-try { __rpc_friend_battle_create = __rpc_friend_battle_create || (rpcFriendBattleCreate); } catch(e) {}
-try { __rpc_friend_invite_with_reward = __rpc_friend_invite_with_reward || (rpcFriendInviteWithReward); } catch(e) {}
+try { __rpc_friend_streak_get_state = __rpc_friend_streak_get_state || (rpcFriendStreakGetState); } catch(e) {}
+try { __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contribution || (rpcFriendStreakRecordContribution); } catch(e) {}
+try { __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge); } catch(e) {}
+try { __rpc_friend_streak_get_broken_log = __rpc_friend_streak_get_broken_log || (rpcFriendStreakGetBrokenLog); } catch(e) {}
+try { __rpc_friend_streak_repair = __rpc_friend_streak_repair || (rpcFriendStreakRepair); } catch(e) {}
 try { __rpc_id = __rpc_id || (handler); } catch(e) {}
 try { __rpc_send_friend_challenge = __rpc_send_friend_challenge || (rpcSendFriendChallenge); } catch(e) {}
 try { __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcSendFriendChallenge); } catch(e) {}
@@ -141767,11 +141768,10 @@ try { __rpc_accept_friend_invite = __rpc_accept_friend_invite || (rpcFriendsAcce
 try { __rpc_decline_friend_invite = __rpc_decline_friend_invite || (rpcFriendsDeclineInvite); } catch(e) {}
 try { __rpc_cancel_friend_invite = __rpc_cancel_friend_invite || (rpcFriendsCancelInvite); } catch(e) {}
 try { __rpc_list_pending_friend_invites = __rpc_list_pending_friend_invites || (rpcFriendsListPendingInvites); } catch(e) {}
-try { __rpc_friend_streak_get_state = __rpc_friend_streak_get_state || (rpcFriendStreakGetState); } catch(e) {}
-try { __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contribution || (rpcFriendStreakRecordContribution); } catch(e) {}
-try { __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge); } catch(e) {}
-try { __rpc_friend_streak_get_broken_log = __rpc_friend_streak_get_broken_log || (rpcFriendStreakGetBrokenLog); } catch(e) {}
-try { __rpc_friend_streak_repair = __rpc_friend_streak_repair || (rpcFriendStreakRepair); } catch(e) {}
+try { __rpc_friends_get_online_count = __rpc_friends_get_online_count || (rpcFriendsGetOnlineCount); } catch(e) {}
+try { __rpc_social_pressure_get_today_summary = __rpc_social_pressure_get_today_summary || (rpcSocialPressureGetTodaySummary); } catch(e) {}
+try { __rpc_friend_battle_create = __rpc_friend_battle_create || (rpcFriendBattleCreate); } catch(e) {}
+try { __rpc_friend_invite_with_reward = __rpc_friend_invite_with_reward || (rpcFriendInviteWithReward); } catch(e) {}
 try { __rpc_get_group_details = __rpc_get_group_details || (rpcGetGroupDetails); } catch(e) {}
 try { __rpc_log_group_activity = __rpc_log_group_activity || (rpcLogGroupActivity); } catch(e) {}
 try { __rpc_ivx_quest_config = __rpc_ivx_quest_config || (rpcIvxQuestConfig); } catch(e) {}
@@ -141830,6 +141830,10 @@ try { __rpc_intellidraws_list = __rpc_intellidraws_list || (rpcIntelliDrawsList)
 try { __rpc_intellidraws_winners = __rpc_intellidraws_winners || (rpcIntelliDrawsWinners); } catch(e) {}
 try { __rpc_intellidraws_enter = __rpc_intellidraws_enter || (rpcIntelliDrawsEnter); } catch(e) {}
 try { __rpc_intellidraws_past = __rpc_intellidraws_past || (rpcIntelliDrawsPast); } catch(e) {}
+try { __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult); } catch(e) {}
+try { __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory); } catch(e) {}
+try { __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats); } catch(e) {}
+try { __rpc_quiz_check_daily_completion = __rpc_quiz_check_daily_completion || (rpcQuizCheckDailyCompletion); } catch(e) {}
 try { __rpc_quizverse_fetch_movies_quiz = __rpc_quizverse_fetch_movies_quiz || (rpcQuizverseFetchMoviesQuiz); } catch(e) {}
 try { __rpc_quizverse_fetch_music_quiz = __rpc_quizverse_fetch_music_quiz || (rpcQuizverseFetchMusicQuiz); } catch(e) {}
 try { __rpc_quizverse_fetch_news_quiz = __rpc_quizverse_fetch_news_quiz || (rpcQuizverseFetchNewsQuiz); } catch(e) {}
@@ -141840,10 +141844,6 @@ try { __rpc_quizverse_seen_merge = __rpc_quizverse_seen_merge || (rpcQuizverseSe
 try { __rpc_quizverse_seen_purge = __rpc_quizverse_seen_purge || (rpcQuizverseSeenPurge); } catch(e) {}
 try { __rpc_quizverse_seen_reset = __rpc_quizverse_seen_reset || (rpcQuizverseSeenReset); } catch(e) {}
 try { __rpc_quizverse_seen_stats = __rpc_quizverse_seen_stats || (rpcQuizverseSeenStats); } catch(e) {}
-try { __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult); } catch(e) {}
-try { __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory); } catch(e) {}
-try { __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats); } catch(e) {}
-try { __rpc_quiz_check_daily_completion = __rpc_quiz_check_daily_completion || (rpcQuizCheckDailyCompletion); } catch(e) {}
 try { __rpc_s3_asset_download = __rpc_s3_asset_download || (rpcAssetDownload); } catch(e) {}
 try { __rpc_s3_asset_list = __rpc_s3_asset_list || (rpcAssetList); } catch(e) {}
 try { __rpc_s3_asset_manifest_update = __rpc_s3_asset_manifest_update || (rpcAssetManifestUpdate); } catch(e) {}
@@ -143085,15 +143085,15 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("satori_segments_status", __rpc_satori_segments_status); } catch(e) {}
   try { initializer.registerRpc("analytics_tracking_plan", __rpc_analytics_tracking_plan); } catch(e) {}
   try { initializer.registerRpc("analytics_data_quality", __rpc_analytics_data_quality); } catch(e) {}
+  try { initializer.registerRpc("chat_filter_message", __rpc_chat_filter_message); } catch(e) {}
+  try { initializer.registerRpc("chat_report_message", __rpc_chat_report_message); } catch(e) {}
+  try { initializer.registerRpc("chat_moderation_review", __rpc_chat_moderation_review); } catch(e) {}
+  try { initializer.registerRpc("chat_moderation_stats", __rpc_chat_moderation_stats); } catch(e) {}
   try { initializer.registerRpc("quizverse_chatbox_greeting", __rpc_quizverse_chatbox_greeting); } catch(e) {}
   try { initializer.registerRpc("quizverse_chatbox_message", __rpc_quizverse_chatbox_message); } catch(e) {}
   try { initializer.registerRpc("quizverse_kb_get_context", __rpc_quizverse_kb_get_context); } catch(e) {}
   try { initializer.registerRpc("quizverse_kb_register_seen_questions", __rpc_quizverse_kb_register_seen_questions); } catch(e) {}
   try { initializer.registerRpc("quizverse_kb_filter_unseen_questions", __rpc_quizverse_kb_filter_unseen_questions); } catch(e) {}
-  try { initializer.registerRpc("chat_filter_message", __rpc_chat_filter_message); } catch(e) {}
-  try { initializer.registerRpc("chat_report_message", __rpc_chat_report_message); } catch(e) {}
-  try { initializer.registerRpc("chat_moderation_review", __rpc_chat_moderation_review); } catch(e) {}
-  try { initializer.registerRpc("chat_moderation_stats", __rpc_chat_moderation_stats); } catch(e) {}
   try { initializer.registerRpc("cricket_create_ai_note", __rpc_cricket_create_ai_note); } catch(e) {}
   try { initializer.registerRpc("cricket_generate_quiz_from_note", __rpc_cricket_generate_quiz_from_note); } catch(e) {}
   try { initializer.registerRpc("cricket_generate_match_trivia", __rpc_cricket_generate_match_trivia); } catch(e) {}
@@ -143171,10 +143171,8 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("external_poll_ugs", __rpc_external_poll_ugs); } catch(e) {}
   try { initializer.registerRpc("external_poll_all", __rpc_external_poll_all); } catch(e) {}
   try { initializer.registerRpc("external_poll_status", __rpc_external_poll_status); } catch(e) {}
-  try { initializer.registerRpc("friends_get_online_count", __rpc_friends_get_online_count); } catch(e) {}
-  try { initializer.registerRpc("social_pressure_get_today_summary", __rpc_social_pressure_get_today_summary); } catch(e) {}
-  try { initializer.registerRpc("friend_battle_create", __rpc_friend_battle_create); } catch(e) {}
-  try { initializer.registerRpc("friend_invite_with_reward", __rpc_friend_invite_with_reward); } catch(e) {}
+  try { initializer.registerRpc("friend_streak_get_broken_log", __rpc_friend_streak_get_broken_log); } catch(e) {}
+  try { initializer.registerRpc("friend_streak_repair", __rpc_friend_streak_repair); } catch(e) {}
   try { initializer.registerRpc("id", __rpc_id); } catch(e) {}
   try { initializer.registerRpc("send_friend_challenge", __rpc_send_friend_challenge); } catch(e) {}
   try { initializer.registerRpc("friends_challenge_user", __rpc_friends_challenge_user); } catch(e) {}
@@ -143188,8 +143186,10 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("decline_friend_invite", __rpc_decline_friend_invite); } catch(e) {}
   try { initializer.registerRpc("cancel_friend_invite", __rpc_cancel_friend_invite); } catch(e) {}
   try { initializer.registerRpc("list_pending_friend_invites", __rpc_list_pending_friend_invites); } catch(e) {}
-  try { initializer.registerRpc("friend_streak_get_broken_log", __rpc_friend_streak_get_broken_log); } catch(e) {}
-  try { initializer.registerRpc("friend_streak_repair", __rpc_friend_streak_repair); } catch(e) {}
+  try { initializer.registerRpc("friends_get_online_count", __rpc_friends_get_online_count); } catch(e) {}
+  try { initializer.registerRpc("social_pressure_get_today_summary", __rpc_social_pressure_get_today_summary); } catch(e) {}
+  try { initializer.registerRpc("friend_battle_create", __rpc_friend_battle_create); } catch(e) {}
+  try { initializer.registerRpc("friend_invite_with_reward", __rpc_friend_invite_with_reward); } catch(e) {}
   try { initializer.registerRpc("get_group_details", __rpc_get_group_details); } catch(e) {}
   try { initializer.registerRpc("log_group_activity", __rpc_log_group_activity); } catch(e) {}
   try { initializer.registerRpc("submit_score", __rpc_submit_score); } catch(e) {}
