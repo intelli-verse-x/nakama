@@ -552,6 +552,18 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[TutorXProgress] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- QuizVerse Entitlement (Phase 4 — unified premium source of truth) ----
+  // One server-side entitlement document that BOTH web (RevenueCat webhook
+  // writes via service token) and Unity (StoreData/ads sync reads) agree on.
+  // quizverse_entitlement_get (auth) + quizverse_entitlement_set (service-only).
+  try {
+    logger.info("[QuizVerseEntitlement] Registering quizverse_entitlement_get / set RPCs...");
+    QuizVerseEntitlement.register(initializer);
+    logger.info("[QuizVerseEntitlement] Entitlement RPCs registered successfully");
+  } catch (err: any) {
+    logger.error("[QuizVerseEntitlement] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- Fantasy Cricket RPCs ----
   try {
     logger.info("[Fantasy] Registering Team RPCs...");
