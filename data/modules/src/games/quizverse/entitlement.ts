@@ -196,6 +196,71 @@ namespace QuizVerseEntitlement {
     return RpcHelpers.successResponse({ user_id: userId, status: status, tier: highestTier(ids) });
   }
 
+  // ─── RPC: quizverse_rc_sync ──────────────────────────────────────────
+  // Stripe (web) webhook write (http_key). Payload (from stripe/webhook):
+  //   { event: { type, app_user_id, product_id, store, quantity } }
+  // Handles both the consumable (aivoice credits) and subscription (voyage)
+  // products the Stripe checkout grants.
+  function rpcRcSync(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var blocked = rejectIfUserSession(ctx);
+    if (blocked) return blocked;
+
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var ev = (data && data.event) ? data.event : data;
+    var userId = "" + ((ev && (ev.app_user_id || ev.user_id || ev.userId)) || "");
+    if (!userId) return RpcHelpers.errorResponse("app_user_id required", 400);
+
+    var productId = ("" + ((ev && ev.product_id) || "")).toLowerCase();
+    var quantity = (ev && typeof ev.quantity === "number") ? ev.quantity : 0;
+
+    try {
+      if (productId.indexOf("aivoice") >= 0) {
+        // Consumable: increment aiVoiceCredits. Fall back to parsing the count
+        // from the productId tail (com.intelliverse.quizverse.aivoice.{n}) when
+        // quantity wasn't passed.
+        var add = quantity;
+        if (add <= 0) {
+          var m = productId.match(/aivoice\.(\d+)/);
+          if (m) add = parseInt(m[1], 10) || 0;
+        }
+        if (add > 0) {
+          var cRec = readKey(nk, userId, KEY_CONSUMABLES);
+          var c = cRec.value || { aiVoiceCredits: 0, voiceSessionsUsed: 0 };
+          c.aiVoiceCredits = (typeof c.aiVoiceCredits === "number" ? c.aiVoiceCredits : 0) + add;
+          writeKey(nk, userId, KEY_CONSUMABLES, c, cRec.version);
+          return RpcHelpers.successResponse({ user_id: userId, aiVoiceCreditsAdded: add });
+        }
+        return RpcHelpers.successResponse({ user_id: userId, aiVoiceCreditsAdded: 0 });
+      }
+
+      if (productId.indexOf("voyage") >= 0) {
+        // Voyage premium is ad-free; the cache reads VOYAGE_PREMIUM from RC
+        // CustomerInfo (not the subscriptions tier switch), so we mirror it as a
+        // one_time.noAds grant plus a subscription record tagged "voyage" for
+        // history (the cache safely ignores unknown tiers).
+        var sRec = readKey(nk, userId, KEY_SUBS);
+        writeKey(nk, userId, KEY_SUBS, { tier: "voyage", productId: productId }, sRec.version);
+        var oRec = readKey(nk, userId, KEY_ONE_TIME);
+        var o = oRec.value || {};
+        o.noAds = true;
+        writeKey(nk, userId, KEY_ONE_TIME, o, oRec.version);
+        return RpcHelpers.successResponse({ user_id: userId, tier: "voyage" });
+      }
+
+      // Other products: map to a subscription tier when recognisable.
+      var tier = tierFromEntitlementId(productId);
+      if (tier) {
+        var subRec = readKey(nk, userId, KEY_SUBS);
+        writeKey(nk, userId, KEY_SUBS, { tier: tier, productId: productId }, subRec.version);
+        return RpcHelpers.successResponse({ user_id: userId, tier: tier });
+      }
+      return RpcHelpers.successResponse({ user_id: userId, handled: false, productId: productId });
+    } catch (err: any) {
+      logger.warn("[QuizVerseEntitlement] rc_sync write failed for " + userId + ": " + (err && err.message ? err.message : String(err)));
+      return RpcHelpers.errorResponse("write failed", 500);
+    }
+  }
+
   // ─── RPC: quizverse_entitlement_set ──────────────────────────────────
   // Generic SERVICE-ONLY upsert (service_token). For Unity IAP-validate / admin
   // tooling. Payload (any subset):
@@ -236,6 +301,7 @@ namespace QuizVerseEntitlement {
     initializer.registerRpc("quizverse_entitlement_get", RpcHelpers.withCleanAuthError(rpcGet));
     // Writes — server-only.
     initializer.registerRpc("analytics.iap.event", rpcIapEvent);  // RC webhook
+    initializer.registerRpc("quizverse_rc_sync", rpcRcSync);      // Stripe webhook
     initializer.registerRpc("quizverse_entitlement_set", rpcSet); // generic service upsert
   }
 }
