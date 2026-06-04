@@ -36170,6 +36170,130 @@ var QvAgent;
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
+    // ── RPC: qv_agent_public_activity ──────────────────────────────────────────
+    // Anonymous-OK, counts-only projection of the `analytics_events` store for the
+    // public /stats/activity marketing page (audience capture + backlinks).
+    //
+    // Returns aggregate learner-activity counts bucketed by UTC day, with weekly
+    // (ISO-8601) and monthly roll-ups. NO PII: only event counts + distinct-user
+    // counts per bucket. Bounded single scan (sampled=true when capped) keeps the
+    // host RPC cheap — this is signal for a marketing surface, not an exact ledger.
+    //
+    // Request:  {}  (optional { "limit"?: number })
+    // Response: { success, data: {
+    //   game_id, generated_unix, sampled,
+    //   totals: { learners, events, days },
+    //   daily:  [{ bucket: "YYYY-MM-DD", events, learners }],   // last 30
+    //   weekly: [{ bucket: "YYYY-Www",  events, learners }],    // last 12
+    //   monthly:[{ bucket: "YYYY-MM",   events, learners }] } }  // last 12
+    var ACTIVITY_EVENTS_COLLECTION = "analytics_events";
+    var QV_GAME_UUID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+    function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+    function isoDateUtc(d) {
+        return d.getUTCFullYear() + "-" + pad2(d.getUTCMonth() + 1) + "-" + pad2(d.getUTCDate());
+    }
+    function isoWeekUtc(d) {
+        var date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        var dayNum = (date.getUTCDay() + 6) % 7; // Mon=0 … Sun=6
+        date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
+        var firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+        var firstDayNum = (firstThursday.getUTCDay() + 6) % 7;
+        firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayNum + 3);
+        var week = 1 + Math.round((date.getTime() - firstThursday.getTime()) / (7 * 86400000));
+        return date.getUTCFullYear() + "-W" + pad2(week);
+    }
+    function bumpBucket(map, key, uid) {
+        if (!map[key])
+            map[key] = { events: 0, users: {} };
+        map[key].events++;
+        if (uid)
+            map[key].users[uid] = true;
+    }
+    function lastBuckets(map, n) {
+        var keys = [];
+        for (var k in map) {
+            if (map.hasOwnProperty(k))
+                keys.push(k);
+        }
+        keys.sort(); // YYYY-MM-DD / YYYY-Www / YYYY-MM all sort lexicographically by time
+        var start = Math.max(0, keys.length - n);
+        var out = [];
+        for (var i = start; i < keys.length; i++) {
+            var b = map[keys[i]];
+            var learners = 0;
+            for (var u in b.users) {
+                if (b.users.hasOwnProperty(u))
+                    learners++;
+            }
+            out.push({ bucket: keys[i], events: b.events, learners: learners });
+        }
+        return out;
+    }
+    function rpcPublicActivity(_ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var maxScan = Math.min(Math.max(parseInt(data.limit) || 5000, 100), 8000);
+            var dayMap = {};
+            var weekMap = {};
+            var monthMap = {};
+            var allUsers = {};
+            var totalEvents = 0;
+            var objs = [];
+            try {
+                var listRes = nk.storageList("", ACTIVITY_EVENTS_COLLECTION, maxScan);
+                objs = (listRes && listRes.objects) || [];
+            }
+            catch (e) {
+                logger.warn("qv_agent_public_activity scan failed: " + (e && e.message ? e.message : String(e)));
+            }
+            var sampled = objs.length >= maxScan;
+            for (var i = 0; i < objs.length; i++) {
+                var v = objs[i].value;
+                if (!v)
+                    continue;
+                var tsSec = v.unixTimestamp || v.unix_timestamp || 0;
+                if (!tsSec)
+                    continue;
+                // Scope to QuizVerse where the source row carries a game id; rows
+                // without one are kept (legacy events predate the gameId field).
+                var gid = v.gameId || v.game_id || "";
+                if (gid && gid !== "quizverse" && gid !== QV_GAME_UUID)
+                    continue;
+                var d = new Date(tsSec * 1000);
+                var uid = "" + (v.userId || v.user_id || "");
+                var dayKey = isoDateUtc(d);
+                bumpBucket(dayMap, dayKey, uid);
+                bumpBucket(weekMap, isoWeekUtc(d), uid);
+                bumpBucket(monthMap, dayKey.substring(0, 7), uid);
+                if (uid)
+                    allUsers[uid] = true;
+                totalEvents++;
+            }
+            var learnerCount = 0;
+            for (var u2 in allUsers) {
+                if (allUsers.hasOwnProperty(u2))
+                    learnerCount++;
+            }
+            var dayCount = 0;
+            for (var dk in dayMap) {
+                if (dayMap.hasOwnProperty(dk))
+                    dayCount++;
+            }
+            return RpcHelpers.successResponse({
+                game_id: ANALYTICS_GAME_ID,
+                generated_unix: Math.floor(Date.now() / 1000),
+                sampled: sampled,
+                totals: { learners: learnerCount, events: totalEvents, days: dayCount },
+                daily: lastBuckets(dayMap, 30),
+                weekly: lastBuckets(weekMap, 12),
+                monthly: lastBuckets(monthMap, 12),
+            });
+        }
+        catch (err) {
+            logger.error("qv_agent_public_activity failed: " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("internal error", 500);
+        }
+    }
     // ── Registration ───────────────────────────────────────────────────────────
     function register(initializer) {
         initializer.registerRpc("qv_agent_ping", rpcPing);
@@ -36179,6 +36303,7 @@ var QvAgent;
         initializer.registerRpc("qv_agent_global_leaderboard_top10", rpcGlobalLeaderboardTop10);
         initializer.registerRpc("qv_agent_analyze_quiz_performance", rpcAnalyzeQuizPerformance);
         initializer.registerRpc("qv_agent_generate_trivia", rpcGenerateTrivia);
+        initializer.registerRpc("qv_agent_public_activity", rpcPublicActivity);
     }
     QvAgent.register = register;
 })(QvAgent || (QvAgent = {}));
