@@ -564,6 +564,17 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QuizVerseEntitlement] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- QuizVerse Weekly Leagues (Phase 3) ----
+  // league_get_state / league_submit_points / league_get_leaderboard — the
+  // backend the prod LeagueManager/LeagueScreen already call (was unimplemented).
+  try {
+    logger.info("[QuizVerseLeague] Registering league_get_state / submit_points / get_leaderboard RPCs...");
+    QuizVerseLeague.register(initializer);
+    logger.info("[QuizVerseLeague] League RPCs registered successfully");
+  } catch (err: any) {
+    logger.error("[QuizVerseLeague] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- Fantasy Cricket RPCs ----
   try {
     logger.info("[Fantasy] Registering Team RPCs...");
