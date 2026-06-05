@@ -20,13 +20,18 @@
 //        expiresAt = ISO-8601 string (absent ⇒ lifetime)
 //   key "consumables":   { aiVoiceCredits, voiceSessionsUsed }
 //   key "one_time":      { inventorySlots, noAds, partyMode, microphone, examPacks[] }
+//        examPacks[] = catalog packIds (exam + concept packs). Granted from a
+//        store product id of the form `quizverse.pack.{packId}` — the same id
+//        the storefront/exam-taxonomy PACK_CATALOG emits. The Unity client reads
+//        one_time.examPacks to unlock pack content; writes are server-only.
 //
 // RPCs:
 //   quizverse_get_entitlements  (auth)      → { success, data: { subscriptions,
 //                                               consumables, one_time } }
 //   quizverse_entitlement_get   (auth alias)→ same handler
 //   analytics.iap.event         (http_key)  → RC webhook grant/revoke
-//   quizverse_entitlement_set   (service)   → generic upsert (Unity IAP / admin)
+//   quizverse_rc_sync           (http_key)  → Stripe webhook grant
+//   quizverse_entitlement_set   (service)   → generic upsert (+ grant_packs[])
 //
 // All write paths are SERVER-ONLY: http_key RPCs reject any call carrying a
 // ctx.userId, and entitlement_set requires a service token — a user session can
@@ -84,6 +89,58 @@ namespace QuizVerseEntitlement {
     };
     if (version) (write as any).version = version;
     nk.storageWrite([write]);
+  }
+
+  // ─── Pack grants (one_time.examPacks[]) ──────────────────────────────
+  // Catalog packId carried in a store product id `quizverse.pack.{packId}`.
+  // Decoupled from the NestJS PACK_CATALOG by convention (no cross-repo import).
+  function packIdFromProduct(productId: string): string {
+    var s = ("" + productId).toLowerCase();
+    var marker = "quizverse.pack.";
+    var idx = s.indexOf(marker);
+    if (idx < 0) {
+      // tolerate shorter ids like "pack.jee_main_crammer"
+      idx = s.indexOf("pack.");
+      return idx >= 0 ? s.substring(idx + 5) : "";
+    }
+    return s.substring(idx + marker.length);
+  }
+
+  // Collect any pack ids present in a product id + entitlement id list.
+  function collectPackIds(productId: string, ids: string[]): string[] {
+    var out: string[] = [];
+    var fromProduct = packIdFromProduct(productId);
+    if (fromProduct) out.push(fromProduct);
+    if (ids && ids.length) {
+      for (var i = 0; i < ids.length; i++) {
+        var pid = packIdFromProduct(ids[i]);
+        if (pid) out.push(pid);
+      }
+    }
+    return out;
+  }
+
+  // Append pack ids to one_time.examPacks[], de-duplicated. Server-only write.
+  function grantPacks(nk: nkruntime.Nakama, userId: string, packIds: string[]): string[] {
+    if (!packIds || !packIds.length) return [];
+    var otRec = readKey(nk, userId, KEY_ONE_TIME);
+    var ot = otRec.value || {};
+    var existing: string[] = (ot.examPacks && ot.examPacks.length) ? ot.examPacks : [];
+    var added: string[] = [];
+    for (var i = 0; i < packIds.length; i++) {
+      var pid = "" + packIds[i];
+      if (!pid) continue;
+      var found = false;
+      for (var j = 0; j < existing.length; j++) {
+        if (existing[j] === pid) { found = true; break; }
+      }
+      if (!found) { existing.push(pid); added.push(pid); }
+    }
+    if (added.length) {
+      ot.examPacks = existing;
+      writeKey(nk, userId, KEY_ONE_TIME, ot, otRec.version);
+    }
+    return added;
   }
 
   // ─── RPC: quizverse_get_entitlements / quizverse_entitlement_get ─────
@@ -187,6 +244,11 @@ namespace QuizVerseEntitlement {
           ot.noAds = true;
           writeKey(nk, userId, KEY_ONE_TIME, ot, otRec.version);
         }
+        // One-time exam / concept pack unlocks.
+        var grantedPacks = grantPacks(nk, userId, collectPackIds(productId, ids));
+        if (grantedPacks.length) {
+          return RpcHelpers.successResponse({ user_id: userId, status: status, tier: highestTier(ids), packs: grantedPacks });
+        }
       }
     } catch (err: any) {
       logger.warn("[QuizVerseEntitlement] iap.event write failed for " + userId + ": " + (err && err.message ? err.message : String(err)));
@@ -247,6 +309,12 @@ namespace QuizVerseEntitlement {
         return RpcHelpers.successResponse({ user_id: userId, tier: "voyage" });
       }
 
+      if (productId.indexOf("pack.") >= 0) {
+        // One-time exam / concept pack purchased via Stripe checkout.
+        var packs = grantPacks(nk, userId, collectPackIds(productId, []));
+        return RpcHelpers.successResponse({ user_id: userId, packs: packs });
+      }
+
       // Other products: map to a subscription tier when recognisable.
       var tier = tierFromEntitlementId(productId);
       if (tier) {
@@ -285,6 +353,10 @@ namespace QuizVerseEntitlement {
       if (data.one_time && typeof data.one_time === "object") {
         var o = readKey(nk, userId, KEY_ONE_TIME);
         writeKey(nk, userId, KEY_ONE_TIME, data.one_time, o.version);
+      }
+      // Additive pack grants (does not clobber existing one_time fields).
+      if (data.grant_packs && data.grant_packs.length) {
+        grantPacks(nk, userId, data.grant_packs);
       }
     } catch (err: any) {
       logger.warn("[QuizVerseEntitlement] set write failed for " + userId + ": " + (err && err.message ? err.message : String(err)));
