@@ -788,7 +788,10 @@ namespace LearnerToolbelt {
   // error. This is the contract that makes /tools/score-predictor degrade
   // gracefully for state-B/C/D users (§ 2.5.1).
   // ────────────────────────────────────────────────────────────────────────
-  function rpcScorePredict(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+  // `export`ed so the no-exam redirect path is unit-testable via
+  // LearnerToolbeltTests (run-toolbelt-tests.js). The local binding is retained,
+  // so `initializer.registerRpc("lt_score_predict", rpcScorePredict)` is unaffected.
+  export function rpcScorePredict(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var data = RpcHelpers.parseRpcPayload(payload);
       var auth = resolveServiceUserId(ctx, data);
@@ -1341,21 +1344,35 @@ namespace LearnerToolbelt {
   // ────────────────────────────────────────────────────────────────────────
   // RPC: lt_school_search (Wave 4 — anonymous OK)
   // ────────────────────────────────────────────────────────────────────────
-  function rpcSchoolSearch(_ctx: nkruntime.Context, logger: nkruntime.Logger, _nk: nkruntime.Nakama, payload: string): string {
+  function rpcSchoolSearch(_ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var data = RpcHelpers.parseRpcPayload(payload);
       var query = "" + (data.query || "");
       var country = ("" + (data.country_code || data.country || "")).toUpperCase();
       var locale = "" + (data.locale || "en");
+      var level = "" + (data.level || "");           // ""=both | "school" | "college"
       var limit = Math.min(Math.max(parseInt("" + (data.limit || 10), 10) || 10, 1), 50);
       if (query.length < 2) return RpcHelpers.errorResponse("query must be ≥2 chars", 400);
 
-      var hits = searchSchools(query, country, limit);
+      // DB-first (all geos + colleges) with graceful fixture fallback when the
+      // lt_schools table is empty/unavailable. See PLAN-SCHOOL-FINDER-DATA-INGEST.
+      var hits: SchoolSearchHit[];
+      var source = "db";
+      var db = searchSchoolsDb(nk, query, country, level, limit);
+      if (db && db.ready) {
+        hits = db.hits;
+      } else {
+        source = "fixture";
+        // The fixture is K-12 only — a college-only filter has no fixture hits.
+        hits = (level === "college") ? [] : searchSchools(query, country, limit);
+      }
+
       return safeWrap({
         ok: true, status: hits.length > 0 ? "ok" : "no_results",
-        query: query, country_code: country, locale: locale,
+        query: query, country_code: country, locale: locale, level: level,
         results: hits,
         count: hits.length,
+        source: source,
         message: hits.length === 0 ? i18nString(locale, "school.no_results") : "",
       });
     } catch (err: any) {
@@ -1367,12 +1384,12 @@ namespace LearnerToolbelt {
   // ────────────────────────────────────────────────────────────────────────
   // RPC: lt_school_get_detail (Wave 4 — anonymous OK)
   // ────────────────────────────────────────────────────────────────────────
-  function rpcSchoolGetDetail(_ctx: nkruntime.Context, logger: nkruntime.Logger, _nk: nkruntime.Nakama, payload: string): string {
+  function rpcSchoolGetDetail(_ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var data = RpcHelpers.parseRpcPayload(payload);
       var schoolId = "" + (data.school_id || "");
       if (!schoolId) return RpcHelpers.errorResponse("school_id required", 400);
-      var rec = getSchoolById(schoolId);
+      var rec = getSchoolByIdDb(nk, schoolId) || getSchoolById(schoolId); // DB-first, fixture fallback
       if (!rec) return safeWrap({ ok: true, status: "not_found", school_id: schoolId, found: false });
       return safeWrap({ ok: true, status: "ok", found: true, school: rec });
     } catch (err: any) {
@@ -1393,9 +1410,9 @@ namespace LearnerToolbelt {
       var schoolId = "" + (data.school_id || "");
       if (!schoolId) return RpcHelpers.errorResponse("school_id required", 400);
 
-      // Resolve verified-ness — fixture hits are verified; freetext entries
-      // remain provisional until ai-content reviews.
-      var rec = getSchoolById(schoolId);
+      // Resolve verified-ness — DB-backed or fixture hits are verified;
+      // freetext entries remain provisional until ai-content reviews.
+      var rec = getSchoolByIdDb(nk, schoolId) || getSchoolById(schoolId);
       var verified = !!rec;
       var record: UserSchoolRecord = {
         school_id: schoolId,
@@ -1440,7 +1457,7 @@ namespace LearnerToolbelt {
         return safeWrap({ ok: true, status: "ok", has_school: false });
       }
       var rec = rows[0].value as UserSchoolRecord;
-      var hydrated = getSchoolById(rec.school_id);
+      var hydrated = getSchoolByIdDb(nk, rec.school_id) || getSchoolById(rec.school_id);
       return safeWrap({
         ok: true, status: "ok",
         has_school: true,

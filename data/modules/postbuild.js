@@ -477,6 +477,7 @@ function autoInvokeRegister(content) {
   var assignRe = /(\w+)\.register\s*=\s*register\s*;/g;
   var m;
   var insertions = [];
+  var deferredInvokes = []; // see "Deferred invoke" note below
   while ((m = assignRe.exec(scan)) !== null) {
     var nsName = m[1];
     var assignIdx = m.index;
@@ -556,6 +557,23 @@ function autoInvokeRegister(content) {
           continue;
         }
       }
+      // Deferred invoke (build #NNN root-cause: entitlement + league):
+      // a register() body whose stubs are wrapped with a SHARED namespace —
+      // `RpcHelpers.withCleanAuthError(handler)` — references a sibling
+      // namespace that tsc emits LATE in the bundle. Auto-invoking inline
+      // (during THIS IIFE) dereferences `RpcHelpers` before its own IIFE has
+      // run → `TypeError: Cannot read property 'withCleanAuthError' of
+      // undefined`, which escapes the IIFE and aborts ALL runtime eval (every
+      // RPC, incl. nakama_js_health, vanishes → unhealthy container). This is
+      // the same failure class as the `initializer.<x>()` guard (#200/#217),
+      // but the unsafe reference is another namespace, not a param. Fix:
+      // DEFER the invocation to the very end of the build content — after
+      // every namespace (incl. RpcHelpers) is defined. It still runs at
+      // global scope on every VM, so VM-pool stub population is preserved.
+      if (/\bRpcHelpers\s*\./.test(bodySrc)) {
+        deferredInvokes.push(nsName);
+        continue;
+      }
     }
     insertions.push({ at: assignEnd, ns: nsName });
   }
@@ -565,6 +583,19 @@ function autoInvokeRegister(content) {
     var ins = insertions[i];
     content = content.substring(0, ins.at) + '\n    register();' + content.substring(ins.at);
     count++;
+  }
+  // Append deferred register() invocations at the END of this content block,
+  // after every namespace IIFE (incl. RpcHelpers) has executed. Guarded so a
+  // missing namespace can never re-introduce the abort-all-eval failure.
+  if (deferredInvokes.length > 0) {
+    var deferLines = ['', '// --- Deferred register() invokes (run after ALL namespaces incl. RpcHelpers are defined) ---'];
+    for (var di = 0; di < deferredInvokes.length; di++) {
+      var dns = deferredInvokes[di];
+      deferLines.push('if (typeof ' + dns + ' !== "undefined" && ' + dns + ' && ' + dns + '.register) { ' + dns + '.register(); }');
+    }
+    content = content + '\n' + deferLines.join('\n') + '\n';
+    count += deferredInvokes.length;
+    console.log('[postbuild] Deferred ' + deferredInvokes.length + ' RpcHelpers-wrapping register() invoke(s) to end-of-content: ' + deferredInvokes.join(', '));
   }
   if (skipped.length > 0) {
     console.log('[postbuild] Skipped auto-invoke for parameterized register(): ' + skipped.join(', '));

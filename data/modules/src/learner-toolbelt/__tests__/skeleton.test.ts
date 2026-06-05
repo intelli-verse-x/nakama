@@ -449,6 +449,136 @@ namespace LearnerToolbeltTests {
     });
   });
 
+  // ── Tests: searchSchools geo coverage (§ 6) ──────────────────────────────
+  //
+  // These guard the School Finder data layer. The "current coverage" suite is a
+  // genuine regression suite (must always pass). The "Phase-B gaps" suite is a
+  // TRIPWIRE: it asserts the *current* fixture limitations so that when the real
+  // NCES/UDISE+/GIAS (+ higher-ed) ingest lands, these tests FAIL and force the
+  // benchmark to be widened. See PLAN-SCHOOL-FINDER-DATA-INGEST.md.
+  //
+  // NOTE: these exercise the FIXTURE matcher (`searchSchools`) — which is the
+  // runtime FALLBACK once the CockroachDB `lt_schools` table is populated. The
+  // DB-backed path (`searchSchoolsDb` / `getSchoolByIdDb`) needs a live DB and
+  // is integration-tested post-load via the curl smoke tests in the ingest
+  // runbook (content-factory/scripts/school_finder/README.md), not here.
+
+  function isPlaceholderRow(displayName: string): boolean {
+    return ("" + displayName).indexOf("generic placeholder") >= 0;
+  }
+
+  function realFixtureRows(cc: string): any[] {
+    var out: any[] = [];
+    var fixture: any[] = (LearnerToolbelt as any).SCHOOL_FIXTURE || [];
+    for (var i = 0; i < fixture.length; i++) {
+      var r = fixture[i];
+      if (r.country_code === cc && !isPlaceholderRow(r.display_name)) out.push(r);
+    }
+    return out;
+  }
+
+  // A school is "higher-ed" (college/university) if its grade band says so.
+  // The Phase-A fixture is K-12 / pre-university only, so this is 0 today.
+  function higherEdCount(): number {
+    var n = 0;
+    var fixture: any[] = (LearnerToolbelt as any).SCHOOL_FIXTURE || [];
+    var RE = /undergrad|university|college-he|tertiary|degree/i;
+    for (var i = 0; i < fixture.length; i++) {
+      if (RE.test("" + (fixture[i].grade_band || ""))) n++;
+    }
+    return n;
+  }
+
+  function firstHit(query: string, cc: string): any {
+    var hits = LearnerToolbelt.searchSchools(query, cc, 5);
+    return hits && hits.length > 0 ? hits[0] : null;
+  }
+
+  describe("searchSchools — current fixture coverage (regression)", function(): void {
+
+    // Representative query per covered geo → must resolve a real school.
+    var COVERED: Array<{ cc: string; q: string; expect: string }> = [
+      { cc: "US", q: "Stuyvesant",        expect: "Stuyvesant" },
+      { cc: "IN", q: "Delhi Public School", expect: "Delhi Public School" },
+      { cc: "UK", q: "Eton",              expect: "Eton" },
+      { cc: "SG", q: "Raffles",           expect: "Raffles" },
+      { cc: "BR", q: "Bandeirantes",      expect: "Bandeirantes" },
+      { cc: "AE", q: "GEMS",              expect: "GEMS" },
+      { cc: "AU", q: "Melbourne",         expect: "Melbourne" },
+      { cc: "CA", q: "Upper Canada",      expect: "Upper Canada" },
+      { cc: "JP", q: "Nada",              expect: "Nada" },
+      { cc: "KR", q: "Seoul Science",     expect: "Seoul Science" },
+    ];
+
+    for (var ci = 0; ci < COVERED.length; ci++) {
+      (function(tc): void {
+        it(tc.cc + ": '" + tc.q + "' resolves a real school", function(): void {
+          var hit = firstHit(tc.q, tc.cc);
+          expectTrue(hit !== null, tc.cc + " returned no hits for '" + tc.q + "'");
+          expectTrue(
+            hit.display_name.indexOf(tc.expect) >= 0,
+            "expected name containing '" + tc.expect + "' got '" + (hit ? hit.display_name : "") + "'"
+          );
+        });
+      })(COVERED[ci]);
+    }
+
+    it("country filter excludes out-of-country matches", function(): void {
+      // A US name searched under IN must not leak a US school.
+      var hits = LearnerToolbelt.searchSchools("Stuyvesant", "IN", 5);
+      expectEq(hits.length, 0);
+    });
+
+    it("acronym match works (DPS RKP → Delhi Public School, R.K. Puram)", function(): void {
+      var hit = firstHit("DPS RKP", "IN");
+      expectTrue(hit !== null, "no acronym hit");
+      expectTrue(hit.display_name.indexOf("R.K. Puram") >= 0, "got " + (hit ? hit.display_name : ""));
+    });
+
+    it("hit shape matches the web contract (school_id, display_name, score)", function(): void {
+      var hit = firstHit("Eton", "UK");
+      expectTrue(hit !== null);
+      expectTrue(typeof hit.school_id === "string" && hit.school_id.length > 0);
+      expectTrue(typeof hit.display_name === "string" && hit.display_name.length > 0);
+      expectTrue(typeof hit.score === "number");
+    });
+
+    it("sub-2-char queries are handled by the RPC, not the matcher (guard)", function(): void {
+      // searchSchools itself doesn't enforce min length; the RPC does. Ensure a
+      // 1-char query simply doesn't throw and returns an array.
+      var hits = LearnerToolbelt.searchSchools("a", "US", 5);
+      expectTrue(Array.isArray(hits));
+    });
+  });
+
+  describe("searchSchools — Phase-B coverage gaps (TRIPWIRE: update on ingest)", function(): void {
+
+    // NOT all-geos yet. These big markets have NO real schools in the fixture
+    // (placeholder-only). When the real ingest lands, flip these to >0 and move
+    // the query into the COVERED suite above.
+    var UNCOVERED = ["CN", "ES", "ID", "PK", "RU", "TR", "TH", "VN", "PH", "EG"];
+    for (var ui = 0; ui < UNCOVERED.length; ui++) {
+      (function(cc): void {
+        it(cc + ": currently has ZERO real schools (gap to close)", function(): void {
+          expectEq(realFixtureRows(cc).length, 0, cc + " unexpectedly has real rows — widen COVERED suite");
+        });
+      })(UNCOVERED[ui]);
+    }
+
+    it("NO college / university coverage yet (higher-ed count is 0)", function(): void {
+      // The fixture is K-12 / pre-university only. When higher-ed sources
+      // (Hipolabs / IPEDS / AISHE / GeoNames UNIV) are ingested with a
+      // `level: "college"` field, this assertion MUST be updated.
+      expectEq(higherEdCount(), 0, "higher-ed rows appeared — add college coverage tests");
+    });
+
+    it("covered geos are still a famous-name SAMPLER, not full coverage", function(): void {
+      // Document the order-of-magnitude gap: real US schools number ~130k;
+      // the fixture has well under 100. This is a reminder, not a target.
+      expectTrue(realFixtureRows("US").length < 100, "US fixture grew — revisit this tripwire");
+    });
+  });
+
   // ── Runner entry ──────────────────────────────────────────────────────────
 
   export function runAll(): { passed: number; failed: number; errors: string[]; total: number } {

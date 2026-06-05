@@ -874,6 +874,21 @@ namespace TournamentRpcs {
     return RpcHelpers.successResponse(summary);
   }
 
+  // ── RPC: referral_claim_install (auth) ─────────────────────────────────────
+  // Called by the app on FIRST OPEN when the install carried a referral code
+  // (Play install referrer / Apple campaign token / deferred deep link, set by
+  // the web /get choke point). Credits both the new user (welcome bonus) and
+  // the inviter, exactly once per referred user (idempotent). Payload:
+  //   { code: "<8-char base36>" }
+  function rpcReferralClaimInstall(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var userId = RpcHelpers.requireUserId(ctx);
+    var data = RpcHelpers.parseRpcPayload(payload);
+    var code = ("" + (data.code || "")).toLowerCase();
+    if (!code) return RpcHelpers.errorResponse("code required", 400);
+    var result = Referrals.claimInstall(nk, logger, userId, code);
+    return RpcHelpers.successResponse(result);
+  }
+
   // ── RPC: referral_leaderboard_top ──────────────────────────────────────────
   // Public top-100 leaderboard of pre-enrollment referrals. Powers
   // /referrals/leaderboard on web. Returns rank, username, attributed
@@ -1884,6 +1899,7 @@ namespace TournamentRpcs {
     initializer.registerRpc("tournament_learning_check_submit", auth(rpcLearningCheckSubmit));
     initializer.registerRpc("tournament_referral_get_mine", auth(rpcReferralGetMine));
     initializer.registerRpc("referral_my_code", auth(rpcReferralGetMine));       // alias
+    initializer.registerRpc("referral_claim_install", auth(rpcReferralClaimInstall)); // first-open 2-sided grant
     initializer.registerRpc("referral_lookup", rpcReferralLookup);
     initializer.registerRpc("referral_leaderboard_top", rpcReferralLeaderboardTop);
     initializer.registerRpc("referral_pre_enroll_with_code", rpcReferralPreEnrollWithCode);

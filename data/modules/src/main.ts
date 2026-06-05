@@ -386,6 +386,10 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     // quiz-verse repo).
     logger.info("[LearnerToolbelt] Registering Learner Toolbelt RPCs (13 RPCs: predict, countdown, GPA, school)...");
     try {
+      // Phase B: idempotent lt_schools table + indexes (all geos + colleges).
+      // Non-fatal — until the ETL loads data, school search serves the fixture.
+      // See docs/strategy/PLAN-SCHOOL-FINDER-DATA-INGEST.md.
+      LearnerToolbelt.bootstrapSchoolsTable(nk, logger);
       LearnerToolbelt.register(initializer);
       logger.info("[LearnerToolbelt] lt_score_predict, lt_exam_countdown_{get,set,clear}, lt_exam_calendar_get, lt_gpa_{compute,save,get}, lt_school_{search,get_detail,set_user_school,get_user_school,freetext_submit} registered");
     } catch (err: any) {
@@ -562,6 +566,17 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[QuizVerseEntitlement] Entitlement RPCs registered successfully");
   } catch (err: any) {
     logger.error("[QuizVerseEntitlement] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- QuizVerse Weekly Leagues (Phase 3) ----
+  // league_get_state / league_submit_points / league_get_leaderboard — the
+  // backend the prod LeagueManager/LeagueScreen already call (was unimplemented).
+  try {
+    logger.info("[QuizVerseLeague] Registering league_get_state / submit_points / get_leaderboard RPCs...");
+    QuizVerseLeague.register(initializer);
+    logger.info("[QuizVerseLeague] League RPCs registered successfully");
+  } catch (err: any) {
+    logger.error("[QuizVerseLeague] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
 
   // ---- Fantasy Cricket RPCs ----

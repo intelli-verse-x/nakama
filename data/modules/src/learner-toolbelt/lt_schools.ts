@@ -35,6 +35,7 @@ namespace LearnerToolbelt {
     lat: number | null;
     lng: number | null;
     language_of_instruction: string | null;
+    level?: string; // 'school' | 'college' — DB-backed rows set this; fixture omits (→ school)
   }
 
   function mk(id: string, source: string, name: string, city: string, region: string, country: string, board: string | null, band: string, lang: string | null): SchoolRecord {
@@ -255,6 +256,7 @@ namespace LearnerToolbelt {
     board: string | null;
     source: string;
     score: number;
+    level?: string; // 'school' | 'college'
   }
 
   function normalize(s: string): string {
@@ -347,11 +349,18 @@ namespace LearnerToolbelt {
           score = qTokens.length >= 2 ? 700 : 350;
         } else if (qTokens.length > 0 && hits2 >= Math.ceil(qTokens.length / 2)) {
           score = 200;
-        } else if (q.length >= 3) {
-          // Edit-distance fallback (≤2) only against name's first token.
+        } else if (q.length >= 4) {
+          // Edit-distance fallback (≤2) against the name's first token — but
+          // ONLY when query and token are of comparable length. The old
+          // `q.slice(0, token.len + 2)` form let a long query (e.g.
+          // "stuyvesant", 10) match a short token (e.g. "st" in St. Xavier's)
+          // within distance 2, leaking a US name into an IN-filtered search.
+          // (Regression: searchSchools country filter leak.)
           var firstNameToken = name.split(" ")[0] || "";
-          var d = editDistance(q.slice(0, firstNameToken.length + 2), firstNameToken, 2);
-          if (d <= 2) score = Math.max(score, 100);
+          if (firstNameToken.length >= 4 && Math.abs(q.length - firstNameToken.length) <= 3) {
+            var d = editDistance(q, firstNameToken, 2);
+            if (d <= 2) score = Math.max(score, 100);
+          }
         }
       }
 
@@ -373,6 +382,7 @@ namespace LearnerToolbelt {
         board: rec.board,
         source: rec.source,
         score: score,
+        level: "school", // the fixture is K-12 / pre-university only
       });
     }
 
@@ -386,5 +396,151 @@ namespace LearnerToolbelt {
       if (SCHOOL_FIXTURE[i].school_id === schoolId) return SCHOOL_FIXTURE[i];
     }
     return null;
+  }
+
+  // ── Phase B: CockroachDB-backed search (PLAN-SCHOOL-FINDER-DATA-INGEST) ────
+  //
+  // When the `lt_schools` table is populated (by the ops ETL loader — NCES,
+  // UDISE+, GIAS, Hipolabs colleges, …) search is served from the DB across
+  // all geos + colleges. Until then EVERY path falls back to the in-memory
+  // fixture above, so deploying this code BEFORE the data load is safe
+  // (behaviour == fixture). No module-level cache is used (Goja VM pool
+  // isolates calls); readiness is resolved per-call via a cheap probe.
+
+  /**
+   * Idempotent table + index bootstrap. Mirrors find_friends.bootstrapDatabase:
+   * every statement is IF NOT EXISTS and failures are non-fatal (the RPC simply
+   * keeps serving the fixture). Call once from main.ts InitModule.
+   */
+  export function bootstrapSchoolsTable(nk: nkruntime.Nakama, logger: nkruntime.Logger): void {
+    var stmts: { sql: string; label: string }[] = [
+      { label: "table lt_schools", sql:
+        "CREATE TABLE IF NOT EXISTS lt_schools (" +
+        "school_id STRING PRIMARY KEY, " +
+        "source STRING NOT NULL, " +
+        "display_name STRING NOT NULL, " +
+        "name_norm STRING NOT NULL, " +
+        "acronym STRING, " +
+        "city STRING, " +
+        "state_region STRING, " +
+        "country_code STRING NOT NULL, " +
+        "level STRING NOT NULL DEFAULT 'school', " +
+        "board STRING, " +
+        "grade_band STRING, " +
+        "lat FLOAT8, " +
+        "lng FLOAT8, " +
+        "language STRING, " +
+        "popularity INT8 DEFAULT 0)" },
+      { label: "idx country_name", sql:
+        "CREATE INDEX IF NOT EXISTS idx_lt_schools_country_name ON lt_schools (country_code, name_norm)" },
+      { label: "idx country_acro", sql:
+        "CREATE INDEX IF NOT EXISTS idx_lt_schools_country_acro ON lt_schools (country_code, acronym)" },
+      { label: "idx level", sql:
+        "CREATE INDEX IF NOT EXISTS idx_lt_schools_level ON lt_schools (level)" },
+    ];
+    for (var i = 0; i < stmts.length; i++) {
+      try {
+        nk.sqlExec(stmts[i].sql, []);
+        if (logger && logger.info) logger.info("[LearnerToolbelt] schools bootstrap OK: " + stmts[i].label);
+      } catch (e: any) {
+        var m = (e && (e.message || String(e))) || "unknown";
+        if (logger && logger.warn) {
+          logger.warn("[LearnerToolbelt] schools bootstrap '" + stmts[i].label +
+            "' failed (non-fatal — fixture fallback active): " + m);
+        }
+      }
+    }
+    // Optional trigram index — best-effort; the query path does NOT depend on
+    // it (uses deterministic prefix/substring), so absence is fine.
+    try {
+      nk.sqlExec("CREATE INDEX IF NOT EXISTS idx_lt_schools_name_trgm ON lt_schools USING gin (name_norm gin_trgm_ops)", []);
+    } catch (_e: any) { /* pg_trgm/gin_trgm_ops absent — ignore */ }
+  }
+
+  function mapDbRowToHit(row: any): SchoolSearchHit {
+    return {
+      school_id: "" + (row.school_id || ""),
+      display_name: "" + (row.display_name || ""),
+      city: "" + (row.city || ""),
+      state_region: "" + (row.state_region || ""),
+      country_code: "" + (row.country_code || ""),
+      board: row.board ? ("" + row.board) : null,
+      source: "" + (row.source || ""),
+      score: parseInt("" + (row.score || 0), 10) || 0,
+      level: "" + (row.level || "school"),
+    };
+  }
+
+  /**
+   * DB-backed search. Returns:
+   *   null            → DB error / table missing  → caller uses fixture
+   *   { ready:false } → table exists but is EMPTY → caller uses fixture
+   *   { ready:true }  → DB-backed result (0 hits = a genuine no-result)
+   */
+  export function searchSchoolsDb(
+    nk: nkruntime.Nakama, query: string, countryCode: string, level: string, limit: number
+  ): { ready: boolean; hits: SchoolSearchHit[] } | null {
+    var q = normalize(query);
+    var cc = ("" + (countryCode || "")).toUpperCase();
+    var lvl = (level === "school" || level === "college") ? level : "";
+    var lim = Math.min(Math.max(limit || 10, 1), 50);
+    try {
+      var sql =
+        "SELECT school_id, display_name, city, state_region, country_code, level, board, source, " +
+        "(CASE WHEN name_norm = $1 THEN 1000 " +
+        "      WHEN name_norm LIKE $1 || '%' THEN 800 " +
+        "      WHEN acronym = $1 THEN 850 " +
+        "      WHEN acronym LIKE $1 || '%' THEN 600 " +
+        "      WHEN strpos(name_norm, $1) > 0 THEN 500 " +
+        "      ELSE 200 END) + COALESCE(popularity, 0) AS score " +
+        "FROM lt_schools " +
+        "WHERE ($2 = '' OR country_code = $2) " +
+        "AND ($4 = '' OR level = $4) " +
+        "AND (strpos(name_norm, $1) > 0 OR acronym LIKE $1 || '%') " +
+        "ORDER BY score DESC, COALESCE(popularity, 0) DESC, display_name ASC " +
+        "LIMIT $3";
+      var rows = nk.sqlQuery(sql, [q, cc, lim, lvl]) || [];
+      if (rows.length > 0) {
+        var hits: SchoolSearchHit[] = [];
+        for (var i = 0; i < rows.length; i++) hits.push(mapDbRowToHit(rows[i]));
+        return { ready: true, hits: hits };
+      }
+      // 0 matches — distinguish an EMPTY table from a genuine no-result so we
+      // don't mask real "no_results" once data is loaded.
+      var probe = nk.sqlQuery("SELECT 1 FROM lt_schools LIMIT 1", []) || [];
+      if (probe.length > 0) return { ready: true, hits: [] };
+      return { ready: false, hits: [] };
+    } catch (_e: any) {
+      return null;
+    }
+  }
+
+  /** DB-backed detail lookup; null → caller falls back to the fixture. */
+  export function getSchoolByIdDb(nk: nkruntime.Nakama, schoolId: string): SchoolRecord | null {
+    try {
+      var rows = nk.sqlQuery(
+        "SELECT school_id, source, display_name, city, state_region, country_code, level, " +
+        "board, grade_band, lat, lng, language FROM lt_schools WHERE school_id = $1 LIMIT 1",
+        [schoolId]
+      ) || [];
+      if (rows.length === 0) return null;
+      var r: any = rows[0];
+      return {
+        school_id: "" + r.school_id,
+        source: "" + (r.source || ""),
+        display_name: "" + (r.display_name || ""),
+        city: "" + (r.city || ""),
+        state_region: "" + (r.state_region || ""),
+        country_code: "" + (r.country_code || ""),
+        board: r.board ? ("" + r.board) : null,
+        grade_band: "" + (r.grade_band || ""),
+        lat: (r.lat === null || r.lat === undefined || r.lat === "") ? null : parseFloat("" + r.lat),
+        lng: (r.lng === null || r.lng === undefined || r.lng === "") ? null : parseFloat("" + r.lng),
+        language_of_instruction: r.language ? ("" + r.language) : null,
+        level: "" + (r.level || "school"),
+      };
+    } catch (_e: any) {
+      return null;
+    }
   }
 }
