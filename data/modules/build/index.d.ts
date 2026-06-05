@@ -3806,6 +3806,7 @@ declare namespace Referrals {
     function ensureCodeForUser(nk: nkruntime.Nakama, userId: string): string;
     function resolveCodeToOwner(nk: nkruntime.Nakama, code: string): string | null;
     function recordReferral(nk: nkruntime.Nakama, referralCode: string, referredUserId: string, tournamentSlug: string): void;
+    function claimInstall(nk: nkruntime.Nakama, logger: nkruntime.Logger, referredUserId: string, code: string): any;
     function getMySummary(nk: nkruntime.Nakama, userId: string): any;
     function settleTopN(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): any;
 }

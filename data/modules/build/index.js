@@ -6877,13 +6877,18 @@ var IntelliverseFriendsList;
 //        expiresAt = ISO-8601 string (absent ⇒ lifetime)
 //   key "consumables":   { aiVoiceCredits, voiceSessionsUsed }
 //   key "one_time":      { inventorySlots, noAds, partyMode, microphone, examPacks[] }
+//        examPacks[] = catalog packIds (exam + concept packs). Granted from a
+//        store product id of the form `quizverse.pack.{packId}` — the same id
+//        the storefront/exam-taxonomy PACK_CATALOG emits. The Unity client reads
+//        one_time.examPacks to unlock pack content; writes are server-only.
 //
 // RPCs:
 //   quizverse_get_entitlements  (auth)      → { success, data: { subscriptions,
 //                                               consumables, one_time } }
 //   quizverse_entitlement_get   (auth alias)→ same handler
 //   analytics.iap.event         (http_key)  → RC webhook grant/revoke
-//   quizverse_entitlement_set   (service)   → generic upsert (Unity IAP / admin)
+//   quizverse_rc_sync           (http_key)  → Stripe webhook grant
+//   quizverse_entitlement_set   (service)   → generic upsert (+ grant_packs[])
 //
 // All write paths are SERVER-ONLY: http_key RPCs reject any call carrying a
 // ctx.userId, and entitlement_set requires a service token — a user session can
@@ -6940,6 +6945,65 @@ var QuizVerseEntitlement;
         if (version)
             write.version = version;
         nk.storageWrite([write]);
+    }
+    // ─── Pack grants (one_time.examPacks[]) ──────────────────────────────
+    // Catalog packId carried in a store product id `quizverse.pack.{packId}`.
+    // Decoupled from the NestJS PACK_CATALOG by convention (no cross-repo import).
+    function packIdFromProduct(productId) {
+        var s = ("" + productId).toLowerCase();
+        var marker = "quizverse.pack.";
+        var idx = s.indexOf(marker);
+        if (idx < 0) {
+            // tolerate shorter ids like "pack.jee_main_crammer"
+            idx = s.indexOf("pack.");
+            return idx >= 0 ? s.substring(idx + 5) : "";
+        }
+        return s.substring(idx + marker.length);
+    }
+    // Collect any pack ids present in a product id + entitlement id list.
+    function collectPackIds(productId, ids) {
+        var out = [];
+        var fromProduct = packIdFromProduct(productId);
+        if (fromProduct)
+            out.push(fromProduct);
+        if (ids && ids.length) {
+            for (var i = 0; i < ids.length; i++) {
+                var pid = packIdFromProduct(ids[i]);
+                if (pid)
+                    out.push(pid);
+            }
+        }
+        return out;
+    }
+    // Append pack ids to one_time.examPacks[], de-duplicated. Server-only write.
+    function grantPacks(nk, userId, packIds) {
+        if (!packIds || !packIds.length)
+            return [];
+        var otRec = readKey(nk, userId, KEY_ONE_TIME);
+        var ot = otRec.value || {};
+        var existing = (ot.examPacks && ot.examPacks.length) ? ot.examPacks : [];
+        var added = [];
+        for (var i = 0; i < packIds.length; i++) {
+            var pid = "" + packIds[i];
+            if (!pid)
+                continue;
+            var found = false;
+            for (var j = 0; j < existing.length; j++) {
+                if (existing[j] === pid) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                existing.push(pid);
+                added.push(pid);
+            }
+        }
+        if (added.length) {
+            ot.examPacks = existing;
+            writeKey(nk, userId, KEY_ONE_TIME, ot, otRec.version);
+        }
+        return added;
     }
     // ─── RPC: quizverse_get_entitlements / quizverse_entitlement_get ─────
     // Auth required. Aggregates the three storage keys into the single envelope
@@ -7041,6 +7105,11 @@ var QuizVerseEntitlement;
                     ot.noAds = true;
                     writeKey(nk, userId, KEY_ONE_TIME, ot, otRec.version);
                 }
+                // One-time exam / concept pack unlocks.
+                var grantedPacks = grantPacks(nk, userId, collectPackIds(productId, ids));
+                if (grantedPacks.length) {
+                    return RpcHelpers.successResponse({ user_id: userId, status: status, tier: highestTier(ids), packs: grantedPacks });
+                }
             }
         }
         catch (err) {
@@ -7098,6 +7167,11 @@ var QuizVerseEntitlement;
                 writeKey(nk, userId, KEY_ONE_TIME, o, oRec.version);
                 return RpcHelpers.successResponse({ user_id: userId, tier: "voyage" });
             }
+            if (productId.indexOf("pack.") >= 0) {
+                // One-time exam / concept pack purchased via Stripe checkout.
+                var packs = grantPacks(nk, userId, collectPackIds(productId, []));
+                return RpcHelpers.successResponse({ user_id: userId, packs: packs });
+            }
             // Other products: map to a subscription tier when recognisable.
             var tier = tierFromEntitlementId(productId);
             if (tier) {
@@ -7136,6 +7210,10 @@ var QuizVerseEntitlement;
             if (data.one_time && typeof data.one_time === "object") {
                 var o = readKey(nk, userId, KEY_ONE_TIME);
                 writeKey(nk, userId, KEY_ONE_TIME, data.one_time, o.version);
+            }
+            // Additive pack grants (does not clobber existing one_time fields).
+            if (data.grant_packs && data.grant_packs.length) {
+                grantPacks(nk, userId, data.grant_packs);
             }
         }
         catch (err) {
@@ -43003,6 +43081,11 @@ var Referrals;
     var CODE_COLLECTION = "referral_codes"; // per-user, key="me", value={code, created_at}
     var ATTRIBUTION_COLLECTION = "referrals"; // per-referrer, key="<referred_user_id>_<slug>"
     Referrals.LEADERBOARD_ID = "preenroll_referrals";
+    // Two-sided install reward (granted on first app open when the install
+    // carried a referral code). Same "coins" currency as the A3 2-sided
+    // tournament reward (nk.walletUpdate). Idempotent per referred user.
+    var INSTALL_REFERRED_BC = 20; // welcome bonus to the newly-installed user
+    var INSTALL_REFERRER_BC = 20; // reward to the inviter
     function nowSec() { return Math.floor(Date.now() / 1000); }
     function generateCode() {
         // 8-char base36 lowercase, low collision risk for 25K target enrolees
@@ -43164,6 +43247,75 @@ var Referrals;
             },
         ]);
     }
+    // Grant the two-sided install reward. Called from the authed
+    // referral_claim_install RPC on the referred user's FIRST app open, when the
+    // install carried a referral code (Play install referrer / Apple campaign /
+    // deferred deep link). Idempotent: a referred user can only ever claim once,
+    // guarded by the per-user "install_claim" flag. Returns a result object the
+    // RPC serializes back to the client.
+    function claimInstall(nk, logger, referredUserId, code) {
+        if (!code)
+            return { claimed: false, reason: "no_code" };
+        var ownerId = resolveCodeToOwner(nk, code);
+        if (!ownerId)
+            return { claimed: false, reason: "invalid_code" };
+        if (ownerId === referredUserId)
+            return { claimed: false, reason: "self_referral" };
+        // Idempotency guard — one install claim per referred user, ever.
+        var flagKey = "install_claim";
+        try {
+            var existing = nk.storageRead([{ collection: CODE_COLLECTION, key: flagKey, userId: referredUserId }]);
+            if (existing && existing.length > 0)
+                return { claimed: false, reason: "already_claimed" };
+        }
+        catch (_) { }
+        // Persist the claim flag (idempotency) + attribution under the referrer.
+        nk.storageWrite([{
+                collection: CODE_COLLECTION,
+                key: flagKey,
+                userId: referredUserId,
+                value: { code: code, referrer_user_id: ownerId, claimed_at: nowSec() },
+                permissionRead: 1,
+                permissionWrite: 0,
+            }]);
+        try {
+            nk.storageWrite([{
+                    collection: ATTRIBUTION_COLLECTION,
+                    key: referredUserId + "_install",
+                    userId: ownerId,
+                    value: { referred_user_id: referredUserId, source: "install", recorded_at: nowSec() },
+                    permissionRead: 1,
+                    permissionWrite: 0,
+                }]);
+        }
+        catch (_) { }
+        // Credit both legs on the native coins wallet (same currency the A3
+        // 2-sided tournament reward uses). Wrapped individually so a failure on
+        // one leg never silently drops the other.
+        try {
+            nk.walletUpdate(referredUserId, { coins: INSTALL_REFERRED_BC }, { source: "referral_install_referred", code: code }, false);
+        }
+        catch (e) {
+            if (logger)
+                logger.warn("[Referrals] install referred credit failed: %s", e && e.message ? e.message : "?");
+        }
+        try {
+            nk.walletUpdate(ownerId, { coins: INSTALL_REFERRER_BC }, { source: "referral_install_referrer", referred_user_id: referredUserId }, false);
+        }
+        catch (e) {
+            if (logger)
+                logger.warn("[Referrals] install referrer credit failed: %s", e && e.message ? e.message : "?");
+        }
+        if (logger)
+            logger.info("[Referrals] install claim: referrer=%s referred=%s", ownerId, referredUserId);
+        return {
+            claimed: true,
+            referrer_user_id: ownerId,
+            referred_bc: INSTALL_REFERRED_BC,
+            referrer_bc: INSTALL_REFERRER_BC,
+        };
+    }
+    Referrals.claimInstall = claimInstall;
     function getMySummary(nk, userId) {
         var code = ensureCodeForUser(nk, userId);
         // Count attributed referrals
@@ -44128,6 +44280,21 @@ var TournamentRpcs;
         var userId = RpcHelpers.requireUserId(ctx);
         var summary = Referrals.getMySummary(nk, userId);
         return RpcHelpers.successResponse(summary);
+    }
+    // ── RPC: referral_claim_install (auth) ─────────────────────────────────────
+    // Called by the app on FIRST OPEN when the install carried a referral code
+    // (Play install referrer / Apple campaign token / deferred deep link, set by
+    // the web /get choke point). Credits both the new user (welcome bonus) and
+    // the inviter, exactly once per referred user (idempotent). Payload:
+    //   { code: "<8-char base36>" }
+    function rpcReferralClaimInstall(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var code = ("" + (data.code || "")).toLowerCase();
+        if (!code)
+            return RpcHelpers.errorResponse("code required", 400);
+        var result = Referrals.claimInstall(nk, logger, userId, code);
+        return RpcHelpers.successResponse(result);
     }
     // ── RPC: referral_leaderboard_top ──────────────────────────────────────────
     // Public top-100 leaderboard of pre-enrollment referrals. Powers
@@ -45188,6 +45355,7 @@ var TournamentRpcs;
         initializer.registerRpc("tournament_learning_check_submit", auth(rpcLearningCheckSubmit));
         initializer.registerRpc("tournament_referral_get_mine", auth(rpcReferralGetMine));
         initializer.registerRpc("referral_my_code", auth(rpcReferralGetMine)); // alias
+        initializer.registerRpc("referral_claim_install", auth(rpcReferralClaimInstall)); // first-open 2-sided grant
         initializer.registerRpc("referral_lookup", rpcReferralLookup);
         initializer.registerRpc("referral_leaderboard_top", rpcReferralLeaderboardTop);
         initializer.registerRpc("referral_pre_enroll_with_code", rpcReferralPreEnrollWithCode);

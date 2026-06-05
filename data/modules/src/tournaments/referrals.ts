@@ -20,6 +20,12 @@ namespace Referrals {
   const ATTRIBUTION_COLLECTION = "referrals";     // per-referrer, key="<referred_user_id>_<slug>"
   export const LEADERBOARD_ID = "preenroll_referrals";
 
+  // Two-sided install reward (granted on first app open when the install
+  // carried a referral code). Same "coins" currency as the A3 2-sided
+  // tournament reward (nk.walletUpdate). Idempotent per referred user.
+  const INSTALL_REFERRED_BC = 20;   // welcome bonus to the newly-installed user
+  const INSTALL_REFERRER_BC = 20;   // reward to the inviter
+
   function nowSec(): number { return Math.floor(Date.now() / 1000); }
 
   function generateCode(): string {
@@ -166,6 +172,62 @@ namespace Referrals {
         permissionWrite: 0,
       },
     ]);
+  }
+
+  // Grant the two-sided install reward. Called from the authed
+  // referral_claim_install RPC on the referred user's FIRST app open, when the
+  // install carried a referral code (Play install referrer / Apple campaign /
+  // deferred deep link). Idempotent: a referred user can only ever claim once,
+  // guarded by the per-user "install_claim" flag. Returns a result object the
+  // RPC serializes back to the client.
+  export function claimInstall(nk: nkruntime.Nakama, logger: nkruntime.Logger, referredUserId: string, code: string): any {
+    if (!code) return { claimed: false, reason: "no_code" };
+    var ownerId = resolveCodeToOwner(nk, code);
+    if (!ownerId) return { claimed: false, reason: "invalid_code" };
+    if (ownerId === referredUserId) return { claimed: false, reason: "self_referral" };
+
+    // Idempotency guard — one install claim per referred user, ever.
+    var flagKey = "install_claim";
+    try {
+      var existing = nk.storageRead([{ collection: CODE_COLLECTION, key: flagKey, userId: referredUserId }]);
+      if (existing && existing.length > 0) return { claimed: false, reason: "already_claimed" };
+    } catch (_) { }
+
+    // Persist the claim flag (idempotency) + attribution under the referrer.
+    nk.storageWrite([{
+      collection: CODE_COLLECTION,
+      key: flagKey,
+      userId: referredUserId,
+      value: { code: code, referrer_user_id: ownerId, claimed_at: nowSec() },
+      permissionRead: 1,
+      permissionWrite: 0,
+    }]);
+    try {
+      nk.storageWrite([{
+        collection: ATTRIBUTION_COLLECTION,
+        key: referredUserId + "_install",
+        userId: ownerId,
+        value: { referred_user_id: referredUserId, source: "install", recorded_at: nowSec() },
+        permissionRead: 1,
+        permissionWrite: 0,
+      }]);
+    } catch (_) { }
+
+    // Credit both legs on the native coins wallet (same currency the A3
+    // 2-sided tournament reward uses). Wrapped individually so a failure on
+    // one leg never silently drops the other.
+    try { nk.walletUpdate(referredUserId, { coins: INSTALL_REFERRED_BC }, { source: "referral_install_referred", code: code }, false); }
+    catch (e: any) { if (logger) logger.warn("[Referrals] install referred credit failed: %s", e && e.message ? e.message : "?"); }
+    try { nk.walletUpdate(ownerId, { coins: INSTALL_REFERRER_BC }, { source: "referral_install_referrer", referred_user_id: referredUserId }, false); }
+    catch (e: any) { if (logger) logger.warn("[Referrals] install referrer credit failed: %s", e && e.message ? e.message : "?"); }
+
+    if (logger) logger.info("[Referrals] install claim: referrer=%s referred=%s", ownerId, referredUserId);
+    return {
+      claimed: true,
+      referrer_user_id: ownerId,
+      referred_bc: INSTALL_REFERRED_BC,
+      referrer_bc: INSTALL_REFERRER_BC,
+    };
   }
 
   export function getMySummary(nk: nkruntime.Nakama, userId: string): any {
