@@ -48,7 +48,7 @@ function InitModule(ctx, logger, nk, initializer) {
     // and Hiro registrations so QuizVerse + future game plugins can call
     // MpKernelSyncTurn.registerGenerator(...) during their own register().
     try {
-        MpKernelModule.register(initializer, logger);
+        MpKernelModule.mount(initializer, logger);
     }
     catch (err) {
         logger.error("[MpKernel] failed to mount: " + (err && err.message ? err.message : String(err)));
@@ -59,7 +59,14 @@ function InitModule(ctx, logger, nk, initializer) {
     // and BEFORE the legacy bridge so QuizVerse rpc IDs are pinned in
     // _tsRpcList and the legacy_runtime.js stub cannot shadow them.
     try {
-        QuizVersePlugin.register(initializer, nk, logger);
+        // register(initializer) is single-arg on purpose so postbuild's
+        // autoInvokeRegister re-runs it on every pooled Goja VM (populating the
+        // quizverse_* __rpc_ stubs there — otherwise they're undefined on the
+        // VMs that serve traffic → HTTP 500). Generators are registered lazily
+        // at match-init time (see zz_mp_kernel_handlers.js) since they need `nk`
+        // and the QuizVerseGame/Generator namespaces, which aren't safe to touch
+        // at IIFE-eval time. This explicit call covers the initial VM.
+        QuizVersePlugin.register(initializer);
     }
     catch (err) {
         logger.error("[QuizVerse] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
@@ -303,6 +310,21 @@ function InitModule(ctx, logger, nk, initializer) {
         catch (err) {
             logger.error("[QvAgent] failed to register QvAgent: " + (err && err.message ? err.message : String(err)));
         }
+        // ── User KB inspection RPCs (Nakama wrapper around the BFF dump route) ──
+        // qv_kb_user_dump / qv_kb_user_summary / qv_kb_user_kind. Lets the Unity
+        // client render the in-game Knowledge Graph view through the normal
+        // Nakama SDK without ever shipping the admin secret in the build. See
+        // data/modules/src/kb/qv_kb_user_dump.ts for the full RPC contract.
+        // Requires QV_KB_ADMIN_SECRET (mandatory) and
+        // QV_KB_NAKAMA_SERVICE_TOKEN (for service-token callers) in runtime.env.
+        logger.info("[QvKbUserDump] Registering qv_kb_user_dump / _summary / _kind RPCs...");
+        try {
+            QvKbUserDump.register(initializer);
+            logger.info("[QvKbUserDump] qv_kb_user_dump, qv_kb_user_summary, qv_kb_user_kind registered");
+        }
+        catch (err) {
+            logger.error("[QvKbUserDump] failed to register: " + (err && err.message ? err.message : String(err)));
+        }
         // ── QuizVerse Learner Toolbelt (Phase A — Score Predictor / Exam Countdown /
         //   GPA Calculator / School Info Gathering) ────────────────────────────
         // Skeleton PR: every RPC returns { ok: true, status: "not_implemented",
@@ -313,6 +335,10 @@ function InitModule(ctx, logger, nk, initializer) {
         // quiz-verse repo).
         logger.info("[LearnerToolbelt] Registering Learner Toolbelt RPCs (13 RPCs: predict, countdown, GPA, school)...");
         try {
+            // Phase B: idempotent lt_schools table + indexes (all geos + colleges).
+            // Non-fatal — until the ETL loads data, school search serves the fixture.
+            // See docs/strategy/PLAN-SCHOOL-FINDER-DATA-INGEST.md.
+            LearnerToolbelt.bootstrapSchoolsTable(nk, logger);
             LearnerToolbelt.register(initializer);
             logger.info("[LearnerToolbelt] lt_score_predict, lt_exam_countdown_{get,set,clear}, lt_exam_calendar_get, lt_gpa_{compute,save,get}, lt_school_{search,get_detail,set_user_school,get_user_school,freetext_submit} registered");
         }
@@ -454,6 +480,42 @@ function InitModule(ctx, logger, nk, initializer) {
     }
     catch (err) {
         logger.error("[FortuneWheelAdSpin] Failed to register: " + (err.message || String(err)));
+    }
+    // ---- TutorX Progress (server-authoritative XP + streak/freeze + quests) ----
+    // Replaces the client-only (localStorage) gamification in the TutorX web SPA.
+    // register() is single-arg on purpose so postbuild's autoInvokeRegister
+    // re-runs it on every pooled Goja VM (populating the __rpc_tutorx_* stubs
+    // there — otherwise they're undefined on the VMs serving traffic → HTTP 500).
+    try {
+        logger.info("[TutorXProgress] Registering tutorx_xp_get / xp_add / streak_touch / quest_claim RPCs...");
+        TutorXProgress.register(initializer);
+        logger.info("[TutorXProgress] TutorX progress RPCs registered successfully");
+    }
+    catch (err) {
+        logger.error("[TutorXProgress] Failed to register: " + (err && err.message ? err.message : String(err)));
+    }
+    // ---- QuizVerse Entitlement (Phase 4 — unified premium source of truth) ----
+    // One server-side entitlement document that BOTH web (RevenueCat webhook
+    // writes via service token) and Unity (StoreData/ads sync reads) agree on.
+    // quizverse_entitlement_get (auth) + quizverse_entitlement_set (service-only).
+    try {
+        logger.info("[QuizVerseEntitlement] Registering quizverse_entitlement_get / set RPCs...");
+        QuizVerseEntitlement.register(initializer);
+        logger.info("[QuizVerseEntitlement] Entitlement RPCs registered successfully");
+    }
+    catch (err) {
+        logger.error("[QuizVerseEntitlement] Failed to register: " + (err && err.message ? err.message : String(err)));
+    }
+    // ---- QuizVerse Weekly Leagues (Phase 3) ----
+    // league_get_state / league_submit_points / league_get_leaderboard — the
+    // backend the prod LeagueManager/LeagueScreen already call (was unimplemented).
+    try {
+        logger.info("[QuizVerseLeague] Registering league_get_state / submit_points / get_leaderboard RPCs...");
+        QuizVerseLeague.register(initializer);
+        logger.info("[QuizVerseLeague] League RPCs registered successfully");
+    }
+    catch (err) {
+        logger.error("[QuizVerseLeague] Failed to register: " + (err && err.message ? err.message : String(err)));
     }
     // ---- Fantasy Cricket RPCs ----
     try {
@@ -6793,6 +6855,307 @@ var IntelliverseFriendsList;
     }
     IntelliverseFriendsList.register = register;
 })(IntelliverseFriendsList || (IntelliverseFriendsList = {}));
+// entitlement.ts — Unified QuizVerse premium-entitlement source of truth.
+//
+// WHY THIS EXISTS
+// ---------------
+// The Unity client already ships `NakamaEntitlementCache` (Monetization/) which
+// calls the `quizverse_get_entitlements` RPC on login + after every purchase and
+// applies the result to StoreData. But that RPC was never implemented server-side
+// (verified absent from the bundle), so the cache call always came back empty and
+// silently fell through to the local PlayerPrefs cache. The web RC webhook
+// likewise calls an unimplemented `analytics.iap.event` RPC to grant/revoke.
+//
+// This module implements BOTH names against ONE storage contract — the exact
+// schema NakamaEntitlementCache.cs already parses — so a subscription bought on
+// web (RC webhook → analytics.iap.event) is visible in the app on next refresh,
+// and the app reads the same document. One ledger across web + Unity.
+//
+// STORAGE CONTRACT (collection `qv_entitlements`, server-only writes):
+//   key "subscriptions": { tier, expiresAt?, productId }
+//        tier ∈ pro | pro_plus | linkplay_pro | linkplay_proplus
+//        expiresAt = ISO-8601 string (absent ⇒ lifetime)
+//   key "consumables":   { aiVoiceCredits, voiceSessionsUsed }
+//   key "one_time":      { inventorySlots, noAds, partyMode, microphone, examPacks[] }
+//
+// RPCs:
+//   quizverse_get_entitlements  (auth)      → { success, data: { subscriptions,
+//                                               consumables, one_time } }
+//   quizverse_entitlement_get   (auth alias)→ same handler
+//   analytics.iap.event         (http_key)  → RC webhook grant/revoke
+//   quizverse_entitlement_set   (service)   → generic upsert (Unity IAP / admin)
+//
+// All write paths are SERVER-ONLY: http_key RPCs reject any call carrying a
+// ctx.userId, and entitlement_set requires a service token — a user session can
+// never self-grant. Storage is permissionWrite:0.
+var QuizVerseEntitlement;
+(function (QuizVerseEntitlement) {
+    var COLLECTION = "qv_entitlements";
+    var KEY_SUBS = "subscriptions";
+    var KEY_CONSUMABLES = "consumables";
+    var KEY_ONE_TIME = "one_time";
+    // Reuse the already-wired learner-toolbelt service token by default (same
+    // trust boundary: our own web/gateway backend). QV_ENTITLEMENT_SERVICE_TOKEN
+    // overrides it when present. Either must be in RUNTIME_ENV_KEYS for ctx.env.
+    function serviceToken(ctx) {
+        var dedicated = "" + ((ctx.env && ctx.env["QV_ENTITLEMENT_SERVICE_TOKEN"]) || "");
+        if (dedicated.length > 0)
+            return dedicated;
+        return "" + ((ctx.env && ctx.env["LT_SERVICE_TOKEN"]) || "");
+    }
+    function isServiceCaller(ctx, payload) {
+        var token = payload && payload.service_token;
+        if (!token)
+            return false;
+        var expected = serviceToken(ctx);
+        return expected.length > 0 && token === expected;
+    }
+    // The http_key grant/sync RPCs are reached server-to-server (no ctx.userId).
+    // If a real user session calls them, reject — nobody self-grants premium.
+    function rejectIfUserSession(ctx) {
+        if (ctx.userId) {
+            return RpcHelpers.errorResponse("server-only RPC — not callable from a user session", 403);
+        }
+        return null;
+    }
+    function readKey(nk, userId, key) {
+        try {
+            var records = nk.storageRead([{ collection: COLLECTION, key: key, userId: userId }]);
+            if (records && records.length > 0 && records[0].value) {
+                return { value: records[0].value, version: records[0].version };
+            }
+        }
+        catch (_) { /* fall through */ }
+        return { value: null, version: undefined };
+    }
+    function writeKey(nk, userId, key, value, version) {
+        var write = {
+            collection: COLLECTION,
+            key: key,
+            userId: userId,
+            value: value,
+            permissionRead: 1, // owner can read their own entitlement
+            permissionWrite: 0, // server-only writes — clients cannot self-grant
+        };
+        if (version)
+            write.version = version;
+        nk.storageWrite([write]);
+    }
+    // ─── RPC: quizverse_get_entitlements / quizverse_entitlement_get ─────
+    // Auth required. Aggregates the three storage keys into the single envelope
+    // NakamaEntitlementCache.RefreshAsync() parses (data.subscriptions /
+    // .consumables / .one_time).
+    function rpcGet(ctx, _logger, nk, _payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var subs = readKey(nk, userId, KEY_SUBS).value;
+        var consumables = readKey(nk, userId, KEY_CONSUMABLES).value;
+        var oneTime = readKey(nk, userId, KEY_ONE_TIME).value;
+        return RpcHelpers.successResponse({
+            // The cache reads each as a JSON string via .ToString(); returning the
+            // objects (or {} when unset) keeps the envelope faithful and null-safe.
+            subscriptions: subs || {},
+            consumables: consumables || { aiVoiceCredits: 0, voiceSessionsUsed: 0 },
+            one_time: oneTime || {},
+        });
+    }
+    // Map a RevenueCat / store entitlement id to the cache's subscription tier.
+    // Higher-priority tiers win when several ids are present. Returns "" for ids
+    // that are not subscription tiers (e.g. no_ads handled separately).
+    function tierRank(tier) {
+        switch (tier) {
+            case "pro_plus": return 4;
+            case "pro": return 3;
+            case "linkplay_proplus": return 2;
+            case "linkplay_pro": return 1;
+            default: return 0;
+        }
+    }
+    function tierFromEntitlementId(id) {
+        var s = ("" + id).toLowerCase();
+        if (s.indexOf("linkplay") >= 0 || s.indexOf("lap") >= 0) {
+            return (s.indexOf("plus") >= 0) ? "linkplay_proplus" : "linkplay_pro";
+        }
+        if (s.indexOf("plus") >= 0)
+            return "pro_plus"; // pro_plus / proplus / library_proplus
+        if (s.indexOf("pro") >= 0)
+            return "pro"; // pro / library_pro
+        return ""; // no_ads / voyage / library_plus / unknown — not a cache tier
+    }
+    function highestTier(ids) {
+        var best = "";
+        for (var i = 0; i < ids.length; i++) {
+            var t = tierFromEntitlementId(ids[i]);
+            if (tierRank(t) > tierRank(best))
+                best = t;
+        }
+        return best;
+    }
+    function hasNoAdsId(ids) {
+        for (var i = 0; i < ids.length; i++) {
+            var s = ("" + ids[i]).toLowerCase();
+            if (s.indexOf("no_ads") >= 0 || s.indexOf("noads") >= 0)
+                return true;
+        }
+        return false;
+    }
+    // ─── RPC: analytics.iap.event ────────────────────────────────────────
+    // RevenueCat webhook write (http_key). Payload (from web rc/webhook):
+    //   { event_type, user_id, transaction_id, product_id, entitlement_ids[],
+    //     expiration_at_ms, store, environment, status }
+    function rpcIapEvent(ctx, logger, nk, payload) {
+        var blocked = rejectIfUserSession(ctx);
+        if (blocked)
+            return blocked;
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var userId = "" + (data.user_id || data.userId || data.app_user_id || "");
+        if (!userId)
+            return RpcHelpers.errorResponse("user_id required", 400);
+        var status = ("" + (data.status || "")).toLowerCase();
+        var ids = (data.entitlement_ids && data.entitlement_ids.length) ? data.entitlement_ids : [];
+        var productId = "" + (data.product_id || "");
+        try {
+            if (status === "expired") {
+                // Revoke the subscription record; the cache treats an expired/empty
+                // subscription as "no access" and clears StoreData accordingly.
+                var subsRec = readKey(nk, userId, KEY_SUBS);
+                writeKey(nk, userId, KEY_SUBS, {
+                    tier: "",
+                    expiresAt: new Date().toISOString(),
+                    productId: productId,
+                }, subsRec.version);
+            }
+            else {
+                // active / trial / cancelled / billing_issue / product_change → grant.
+                var tier = highestTier(ids);
+                if (tier) {
+                    var rec = readKey(nk, userId, KEY_SUBS);
+                    var subValue = { tier: tier, productId: productId };
+                    var expMs = (typeof data.expiration_at_ms === "number") ? data.expiration_at_ms : 0;
+                    if (expMs > 0)
+                        subValue.expiresAt = new Date(expMs).toISOString();
+                    writeKey(nk, userId, KEY_SUBS, subValue, rec.version);
+                }
+                if (hasNoAdsId(ids)) {
+                    var otRec = readKey(nk, userId, KEY_ONE_TIME);
+                    var ot = otRec.value || {};
+                    ot.noAds = true;
+                    writeKey(nk, userId, KEY_ONE_TIME, ot, otRec.version);
+                }
+            }
+        }
+        catch (err) {
+            logger.warn("[QuizVerseEntitlement] iap.event write failed for " + userId + ": " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("write failed", 500);
+        }
+        return RpcHelpers.successResponse({ user_id: userId, status: status, tier: highestTier(ids) });
+    }
+    // ─── RPC: quizverse_rc_sync ──────────────────────────────────────────
+    // Stripe (web) webhook write (http_key). Payload (from stripe/webhook):
+    //   { event: { type, app_user_id, product_id, store, quantity } }
+    // Handles both the consumable (aivoice credits) and subscription (voyage)
+    // products the Stripe checkout grants.
+    function rpcRcSync(ctx, logger, nk, payload) {
+        var blocked = rejectIfUserSession(ctx);
+        if (blocked)
+            return blocked;
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var ev = (data && data.event) ? data.event : data;
+        var userId = "" + ((ev && (ev.app_user_id || ev.user_id || ev.userId)) || "");
+        if (!userId)
+            return RpcHelpers.errorResponse("app_user_id required", 400);
+        var productId = ("" + ((ev && ev.product_id) || "")).toLowerCase();
+        var quantity = (ev && typeof ev.quantity === "number") ? ev.quantity : 0;
+        try {
+            if (productId.indexOf("aivoice") >= 0) {
+                // Consumable: increment aiVoiceCredits. Fall back to parsing the count
+                // from the productId tail (com.intelliverse.quizverse.aivoice.{n}) when
+                // quantity wasn't passed.
+                var add = quantity;
+                if (add <= 0) {
+                    var m = productId.match(/aivoice\.(\d+)/);
+                    if (m)
+                        add = parseInt(m[1], 10) || 0;
+                }
+                if (add > 0) {
+                    var cRec = readKey(nk, userId, KEY_CONSUMABLES);
+                    var c = cRec.value || { aiVoiceCredits: 0, voiceSessionsUsed: 0 };
+                    c.aiVoiceCredits = (typeof c.aiVoiceCredits === "number" ? c.aiVoiceCredits : 0) + add;
+                    writeKey(nk, userId, KEY_CONSUMABLES, c, cRec.version);
+                    return RpcHelpers.successResponse({ user_id: userId, aiVoiceCreditsAdded: add });
+                }
+                return RpcHelpers.successResponse({ user_id: userId, aiVoiceCreditsAdded: 0 });
+            }
+            if (productId.indexOf("voyage") >= 0) {
+                // Voyage premium is ad-free; the cache reads VOYAGE_PREMIUM from RC
+                // CustomerInfo (not the subscriptions tier switch), so we mirror it as a
+                // one_time.noAds grant plus a subscription record tagged "voyage" for
+                // history (the cache safely ignores unknown tiers).
+                var sRec = readKey(nk, userId, KEY_SUBS);
+                writeKey(nk, userId, KEY_SUBS, { tier: "voyage", productId: productId }, sRec.version);
+                var oRec = readKey(nk, userId, KEY_ONE_TIME);
+                var o = oRec.value || {};
+                o.noAds = true;
+                writeKey(nk, userId, KEY_ONE_TIME, o, oRec.version);
+                return RpcHelpers.successResponse({ user_id: userId, tier: "voyage" });
+            }
+            // Other products: map to a subscription tier when recognisable.
+            var tier = tierFromEntitlementId(productId);
+            if (tier) {
+                var subRec = readKey(nk, userId, KEY_SUBS);
+                writeKey(nk, userId, KEY_SUBS, { tier: tier, productId: productId }, subRec.version);
+                return RpcHelpers.successResponse({ user_id: userId, tier: tier });
+            }
+            return RpcHelpers.successResponse({ user_id: userId, handled: false, productId: productId });
+        }
+        catch (err) {
+            logger.warn("[QuizVerseEntitlement] rc_sync write failed for " + userId + ": " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("write failed", 500);
+        }
+    }
+    // ─── RPC: quizverse_entitlement_set ──────────────────────────────────
+    // Generic SERVICE-ONLY upsert (service_token). For Unity IAP-validate / admin
+    // tooling. Payload (any subset):
+    //   { service_token, user_id, subscriptions?{}, consumables?{}, one_time?{} }
+    function rpcSet(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!isServiceCaller(ctx, data)) {
+            return RpcHelpers.errorResponse("not authorised — entitlement_set is service-only", 403);
+        }
+        var userId = "" + (data.user_id || data.userId || "");
+        if (!userId)
+            return RpcHelpers.errorResponse("user_id required", 400);
+        try {
+            if (data.subscriptions && typeof data.subscriptions === "object") {
+                var s = readKey(nk, userId, KEY_SUBS);
+                writeKey(nk, userId, KEY_SUBS, data.subscriptions, s.version);
+            }
+            if (data.consumables && typeof data.consumables === "object") {
+                var c = readKey(nk, userId, KEY_CONSUMABLES);
+                writeKey(nk, userId, KEY_CONSUMABLES, data.consumables, c.version);
+            }
+            if (data.one_time && typeof data.one_time === "object") {
+                var o = readKey(nk, userId, KEY_ONE_TIME);
+                writeKey(nk, userId, KEY_ONE_TIME, data.one_time, o.version);
+            }
+        }
+        catch (err) {
+            logger.warn("[QuizVerseEntitlement] set write failed for " + userId + ": " + (err && err.message ? err.message : String(err)));
+            return RpcHelpers.errorResponse("write failed", 500);
+        }
+        return RpcHelpers.successResponse({ user_id: userId, updated: true });
+    }
+    // ─── Registration ────────────────────────────────────────────────────
+    function register(initializer) {
+        // Reads (auth) — name the Unity NakamaEntitlementCache already calls + alias.
+        initializer.registerRpc("quizverse_get_entitlements", RpcHelpers.withCleanAuthError(rpcGet));
+        initializer.registerRpc("quizverse_entitlement_get", RpcHelpers.withCleanAuthError(rpcGet));
+        // Writes — server-only.
+        initializer.registerRpc("analytics.iap.event", rpcIapEvent); // RC webhook
+        initializer.registerRpc("quizverse_rc_sync", rpcRcSync); // Stripe webhook
+        initializer.registerRpc("quizverse_entitlement_set", rpcSet); // generic service upsert
+    }
+    QuizVerseEntitlement.register = register;
+})(QuizVerseEntitlement || (QuizVerseEntitlement = {}));
 // QuizVerse turn generator — implements the SyncTurnMatch IGenerator
 // contract. Produces one quiz question per turn, scores submissions,
 // and builds the QV_REVEAL payload that goes back to clients.
@@ -7245,26 +7608,408 @@ var QuizVersePlugin;
         }
         return JSON.stringify({ packs: out });
     }
-    function register(initializer, nk, logger) {
-        QuizVerseGenerator.registerNk(nk);
+    // SINGLE-parameter `register(initializer)` on purpose. postbuild.js's
+    // autoInvokeRegister only re-invokes zero/one-arg register() functions at
+    // IIFE scope on every pooled Goja VM — and that IIFE-scope replay is the
+    // ONLY thing that populates the `__rpc_quizverse_*` stubs on the VMs that
+    // actually serve RPC traffic (pooled VMs never run InitModule). The old
+    // three-arg `register(initializer, nk, logger)` was skipped, so
+    // quizverse_create_match resolved to `undefined` on pooled VMs → HTTP 500
+    // "Could not run Rpc function." The literal-string RPC ids are still
+    // REQUIRED (Goja's AST walker only extracts string-literal ids); the
+    // RPC_CREATE_MATCH/etc. constants remain for external reference only —
+    // see PRs #94/#97/#100. Body must contain ONLY registerRpc calls so
+    // autoInvokeRegister considers it safe to replay.
+    function register(initializer) {
+        initializer.registerRpc("quizverse_create_match", rpcCreateMatch);
+        initializer.registerRpc("quizverse_load_pack", rpcLoadPack);
+        initializer.registerRpc("quizverse_list_packs", rpcListPacks);
+    }
+    QuizVersePlugin.register = register;
+    // Build + register the QuizVerse turn generators into the SyncTurn
+    // registry. Invoked LAZILY at match-init time (data/modules/
+    // zz_mp_kernel_handlers.js) rather than from InitModule, because:
+    //   (a) match handlers run on pooled VMs that never ran InitModule, so the
+    //       generator map must be (re)populated on whichever VM hosts the match;
+    //   (b) it needs the live `nk` (for custom packs; falls back to SEED_PACK
+    //       when absent) which is only available inside match/RPC callbacks; and
+    //   (c) QuizVerseGenerator.buildAll() touches QuizVerseGame.*, whose
+    //       namespace IIFE evaluates AFTER QuizVersePlugin's — so an eager
+    //       eval-time call would throw (build #217 regression).
+    // Idempotent: registerGenerator just overwrites the map entry by id.
+    function registerGenerators(nk) {
+        if (nk)
+            QuizVerseGenerator.registerNk(nk);
         var gens = QuizVerseGenerator.buildAll();
         for (var i = 0; i < gens.length; i++) {
             MpKernelSyncTurn.registerGenerator(gens[i]);
         }
-        // Literal-string registrations REQUIRED — Goja's AST walker only
-        // extracts RPC ids that appear as string literals at the call site.
-        // The RPC_CREATE_MATCH / RPC_LOAD_PACK / RPC_LIST_PACKS constants
-        // above remain for export so external callers can reference them
-        // by name; do not replace these literals with the constants.
-        // See PRs #94 and #100 for the live regression that motivated this,
-        // and PR #97 for the build-time linter that enforces it going forward.
-        initializer.registerRpc("quizverse_create_match", rpcCreateMatch);
-        initializer.registerRpc("quizverse_load_pack", rpcLoadPack);
-        initializer.registerRpc("quizverse_list_packs", rpcListPacks);
-        logger.info("[QuizVerse] plugin registered; generators=" + gens.length + " modes=classic|friend_battle|link_and_play");
     }
-    QuizVersePlugin.register = register;
+    QuizVersePlugin.registerGenerators = registerGenerators;
 })(QuizVersePlugin || (QuizVersePlugin = {}));
+// league.ts — Weekly competitive leagues for QuizVerse (Phase 3).
+//
+// WHY THIS EXISTS
+// ---------------
+// quiz-verse-prod already ships LeagueManager.cs + LeagueScreen.cs which call
+//   league_get_state / league_submit_points / league_get_leaderboard
+// on Nakama — but those RPCs were never implemented (verified absent from the
+// bundle), so the whole league UI sat dead (RefreshLeagueStateAsync returned
+// null). This module implements the three RPCs against the EXACT response shapes
+// the Unity DTOs deserialize (LeagueStateData / SubmitPointsResponse /
+// LeagueLeaderboardData), so the existing UI lights up with no client changes.
+//
+// MODEL (mirrors the Unity client)
+//   6 tiers: bronze < silver < gold < platinum < diamond < elite.
+//   Weekly seasons (ISO year-week). At each rollover we promote/demote based on
+//   last week's points + quiz count, then reset the weekly counters.
+//   Per-tier XP multiplier rewards higher tiers.
+//
+// STORAGE
+//   collection "league_state", key "quizverse", per-user:
+//     { season, tierIndex, points, quizzesThisWeek, perfectRounds, accuracySum,
+//       recentSubmissions[] }
+//   Leaderboard per tier+season: id "league_{tier}_{season}", authoritative,
+//   DESCENDING/BEST, with per-record metadata {quizzesThisWeek, perfectRounds,
+//   averageAccuracy, avatarUrl} so the board is self-sufficient for the UI.
+var QuizVerseLeague;
+(function (QuizVerseLeague) {
+    var COLLECTION = "league_state";
+    var STATE_KEY = "quizverse";
+    var MIN_QUIZZES_TO_RANK = 3;
+    var MAX_RECENT_SUBMISSIONS = 30;
+    var TIER_NAMES = ["bronze", "silver", "gold", "platinum", "diamond", "elite"];
+    // Points needed (within a week) to promote out of tier i. Top tier never promotes.
+    var PROMOTION_THRESHOLD = [1000, 2000, 3500, 5000, 7000, 0];
+    // Below this at week end ⇒ demote (bronze never demotes).
+    var DEMOTION_THRESHOLD = [0, 500, 900, 1500, 2200, 3000];
+    var XP_MULTIPLIER = [1.0, 1.05, 1.1, 1.2, 1.35, 1.5];
+    // ─── Season helpers (ISO year-week, UTC) ─────────────────────────────
+    function isoWeek(d) {
+        // Copy, shift to nearest Thursday (ISO weeks belong to the year of their Thu)
+        var date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        var day = (date.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+        date.setUTCDate(date.getUTCDate() - day + 3);
+        var firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+        var firstDay = (firstThursday.getUTCDay() + 6) % 7;
+        firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDay + 3);
+        var week = 1 + Math.round((date.getTime() - firstThursday.getTime()) / (7 * 24 * 3600 * 1000));
+        return { year: date.getUTCFullYear(), week: week };
+    }
+    function currentSeason() {
+        var w = isoWeek(new Date());
+        var ww = w.week < 10 ? "0" + w.week : "" + w.week;
+        return w.year + "-W" + ww;
+    }
+    // Next Monday 00:00 UTC — when the current weekly season ends.
+    function seasonEndsAt() {
+        var now = new Date();
+        var day = (now.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+        var daysUntilNextMon = 7 - day;
+        var end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysUntilNextMon));
+        return end.toISOString();
+    }
+    function clampTier(i) {
+        if (i < 0)
+            return 0;
+        if (i > TIER_NAMES.length - 1)
+            return TIER_NAMES.length - 1;
+        return i;
+    }
+    function lbId(tierIndex, season) {
+        return "league_" + TIER_NAMES[clampTier(tierIndex)] + "_" + season;
+    }
+    function ensureLeaderboard(nk, id) {
+        try {
+            nk.leaderboardCreate(id, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "", {});
+        }
+        catch (_) {
+            // Already exists — leaderboardCreate throws on duplicate; safe to ignore.
+        }
+    }
+    function defaultState() {
+        return {
+            season: currentSeason(),
+            tierIndex: 0,
+            points: 0,
+            quizzesThisWeek: 0,
+            perfectRounds: 0,
+            accuracySum: 0,
+            recentSubmissions: [],
+        };
+    }
+    function load(nk, userId) {
+        try {
+            var recs = nk.storageRead([{ collection: COLLECTION, key: STATE_KEY, userId: userId }]);
+            if (recs && recs.length > 0 && recs[0].value) {
+                var v = recs[0].value;
+                var s = defaultState();
+                if (typeof v.season === "string")
+                    s.season = v.season;
+                if (typeof v.tierIndex === "number")
+                    s.tierIndex = clampTier(v.tierIndex);
+                if (typeof v.points === "number")
+                    s.points = v.points;
+                if (typeof v.quizzesThisWeek === "number")
+                    s.quizzesThisWeek = v.quizzesThisWeek;
+                if (typeof v.perfectRounds === "number")
+                    s.perfectRounds = v.perfectRounds;
+                if (typeof v.accuracySum === "number")
+                    s.accuracySum = v.accuracySum;
+                if (v.recentSubmissions && v.recentSubmissions.length)
+                    s.recentSubmissions = v.recentSubmissions;
+                return { state: s, version: recs[0].version };
+            }
+        }
+        catch (_) { /* fall through */ }
+        return { state: defaultState(), version: undefined };
+    }
+    function save(nk, userId, s, version) {
+        var write = {
+            collection: COLLECTION,
+            key: STATE_KEY,
+            userId: userId,
+            value: s,
+            permissionRead: 1,
+            permissionWrite: 0, // server-only; points are authoritative
+        };
+        if (version)
+            write.version = version;
+        nk.storageWrite([write]);
+    }
+    // Apply weekly rollover (promote/demote + reset) when the stored season is
+    // stale. Returns true if the state changed (caller should persist).
+    function applyRollover(s) {
+        var season = currentSeason();
+        if (s.season === season)
+            return false;
+        var promoteAt = PROMOTION_THRESHOLD[s.tierIndex];
+        var demoteAt = DEMOTION_THRESHOLD[s.tierIndex];
+        if (promoteAt > 0 && s.points >= promoteAt && s.quizzesThisWeek >= MIN_QUIZZES_TO_RANK) {
+            s.tierIndex = clampTier(s.tierIndex + 1);
+        }
+        else if (s.tierIndex > 0 && s.points < demoteAt) {
+            s.tierIndex = clampTier(s.tierIndex - 1);
+        }
+        s.season = season;
+        s.points = 0;
+        s.quizzesThisWeek = 0;
+        s.perfectRounds = 0;
+        s.accuracySum = 0;
+        s.recentSubmissions = [];
+        return true;
+    }
+    function avgAccuracy(s) {
+        if (s.quizzesThisWeek <= 0)
+            return 0;
+        return Math.round(s.accuracySum / s.quizzesThisWeek);
+    }
+    function qualifies(s) {
+        var t = PROMOTION_THRESHOLD[s.tierIndex];
+        return t > 0 && s.points >= t && s.quizzesThisWeek >= MIN_QUIZZES_TO_RANK;
+    }
+    // ─── RPC: league_get_state ───────────────────────────────────────────
+    function rpcGetState(ctx, _logger, nk, _payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        var changed = applyRollover(s);
+        var isNew = loaded.version === undefined;
+        if (changed || isNew)
+            save(nk, userId, s, loaded.version);
+        var promoteAt = PROMOTION_THRESHOLD[s.tierIndex];
+        var demoteAt = DEMOTION_THRESHOLD[s.tierIndex];
+        return JSON.stringify({
+            success: true,
+            isNew: isNew,
+            userId: userId,
+            gameId: "quizverse",
+            tier: TIER_NAMES[s.tierIndex],
+            tierIndex: s.tierIndex,
+            points: s.points,
+            quizzesThisWeek: s.quizzesThisWeek,
+            perfectRounds: s.perfectRounds,
+            averageAccuracy: avgAccuracy(s),
+            season: s.season,
+            seasonEndsAt: seasonEndsAt(),
+            minQuizzesRequired: MIN_QUIZZES_TO_RANK,
+            qualifiesForPromotion: qualifies(s),
+            promotionThreshold: promoteAt,
+            demotionThreshold: demoteAt,
+            xpMultiplier: XP_MULTIPLIER[s.tierIndex],
+            canPromote: promoteAt > 0,
+            canDemote: s.tierIndex > 0,
+            timestamp: new Date().toISOString(),
+        });
+    }
+    // ─── RPC: league_submit_points ───────────────────────────────────────
+    function rpcSubmitPoints(ctx, _logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var rawPoints = (typeof data.points === "number") ? Math.floor(data.points) : 0;
+        if (rawPoints <= 0 || rawPoints > 10000) {
+            return JSON.stringify({ success: false, error: "invalid_points" });
+        }
+        var accuracy = (typeof data.accuracy === "number") ? data.accuracy : 0; // 0..1
+        var isPerfect = data.isPerfect === true;
+        var submissionId = "" + (data.submissionId || "");
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        applyRollover(s);
+        // Idempotency — server-side guard against double submits / retries.
+        if (submissionId) {
+            for (var i = 0; i < s.recentSubmissions.length; i++) {
+                if (s.recentSubmissions[i] === submissionId) {
+                    return JSON.stringify({
+                        success: true, duplicate: true, pointsAwarded: 0, pointsRaw: rawPoints,
+                        totalPoints: s.points, tier: TIER_NAMES[s.tierIndex], quizzesThisWeek: s.quizzesThisWeek,
+                        qualifiesForPromotion: qualifies(s), nearPromotion: false, nearDemotion: false,
+                        xpMultiplier: XP_MULTIPLIER[s.tierIndex], error: "",
+                    });
+                }
+            }
+        }
+        var mult = XP_MULTIPLIER[s.tierIndex];
+        var awarded = Math.round(rawPoints * mult);
+        s.points += awarded;
+        s.quizzesThisWeek += 1;
+        if (isPerfect)
+            s.perfectRounds += 1;
+        s.accuracySum += Math.round((accuracy <= 1 ? accuracy * 100 : accuracy));
+        if (submissionId) {
+            s.recentSubmissions.push(submissionId);
+            if (s.recentSubmissions.length > MAX_RECENT_SUBMISSIONS) {
+                s.recentSubmissions = s.recentSubmissions.slice(s.recentSubmissions.length - MAX_RECENT_SUBMISSIONS);
+            }
+        }
+        save(nk, userId, s, loaded.version);
+        // Mirror to the tier+season leaderboard for ranking.
+        var id = lbId(s.tierIndex, s.season);
+        ensureLeaderboard(nk, id);
+        var username = "";
+        var avatarUrl = "";
+        try {
+            var accts = nk.usersGetId([userId]);
+            if (accts && accts.length > 0) {
+                username = accts[0].username || "";
+                avatarUrl = accts[0].avatarUrl || "";
+            }
+        }
+        catch (_) { /* non-fatal */ }
+        try {
+            nk.leaderboardRecordWrite(id, userId, username, s.points, 0, {
+                quizzesThisWeek: s.quizzesThisWeek,
+                perfectRounds: s.perfectRounds,
+                averageAccuracy: avgAccuracy(s),
+                avatarUrl: avatarUrl,
+            });
+        }
+        catch (_) { /* leaderboard write is best-effort */ }
+        var promoteAt = PROMOTION_THRESHOLD[s.tierIndex];
+        var demoteAt = DEMOTION_THRESHOLD[s.tierIndex];
+        return JSON.stringify({
+            success: true,
+            duplicate: false,
+            pointsAwarded: awarded,
+            pointsRaw: rawPoints,
+            totalPoints: s.points,
+            tier: TIER_NAMES[s.tierIndex],
+            quizzesThisWeek: s.quizzesThisWeek,
+            qualifiesForPromotion: qualifies(s),
+            nearPromotion: promoteAt > 0 && s.points >= Math.round(promoteAt * 0.8),
+            nearDemotion: s.tierIndex > 0 && s.points < demoteAt,
+            xpMultiplier: mult,
+            error: "",
+        });
+    }
+    // ─── RPC: league_get_leaderboard ─────────────────────────────────────
+    function rpcGetLeaderboard(ctx, _logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var limit = (typeof data.limit === "number") ? data.limit : 50;
+        if (limit < 1)
+            limit = 1;
+        if (limit > 100)
+            limit = 100;
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        if (applyRollover(s))
+            save(nk, userId, s, loaded.version);
+        var id = lbId(s.tierIndex, s.season);
+        ensureLeaderboard(nk, id);
+        var records = [];
+        var userRecord = null;
+        try {
+            var list = nk.leaderboardRecordsList(id, [], limit, undefined, 0);
+            var rows = (list && list.records) ? list.records : [];
+            // Batch-resolve usernames for any record missing one.
+            var missingIds = [];
+            for (var i = 0; i < rows.length; i++) {
+                if (!rows[i].username)
+                    missingIds.push(rows[i].ownerId);
+            }
+            var nameById = {};
+            if (missingIds.length > 0) {
+                try {
+                    var users = nk.usersGetId(missingIds);
+                    for (var u = 0; u < users.length; u++) {
+                        nameById[users[u].userId] = { username: users[u].username || "", avatarUrl: users[u].avatarUrl || "" };
+                    }
+                }
+                catch (_) { /* non-fatal */ }
+            }
+            for (var r = 0; r < rows.length; r++) {
+                var row = rows[r];
+                var meta = row.metadata || {};
+                var resolved = nameById[row.ownerId] || { username: "", avatarUrl: "" };
+                records.push({
+                    rank: row.rank,
+                    userId: row.ownerId,
+                    username: row.username || resolved.username,
+                    avatarUrl: meta.avatarUrl || resolved.avatarUrl || "",
+                    points: row.score,
+                    perfectRounds: meta.perfectRounds || 0,
+                    quizzesThisWeek: meta.quizzesThisWeek || 0,
+                    averageAccuracy: meta.averageAccuracy || 0,
+                });
+            }
+            // Caller's own record + percentile.
+            var mine = nk.leaderboardRecordsList(id, [userId], 1, undefined, 0);
+            var myRows = (mine && mine.records) ? mine.records : [];
+            if (myRows.length > 0) {
+                var total = records.length;
+                var myRank = myRows[0].rank;
+                var percentile = total > 0 ? Math.round((myRank / total) * 100) : 0;
+                var mmeta = myRows[0].metadata || {};
+                userRecord = {
+                    rank: myRank,
+                    points: myRows[0].score,
+                    perfectRounds: mmeta.perfectRounds || s.perfectRounds,
+                    quizzesThisWeek: mmeta.quizzesThisWeek || s.quizzesThisWeek,
+                    averageAccuracy: mmeta.averageAccuracy || avgAccuracy(s),
+                    percentile: percentile,
+                };
+            }
+        }
+        catch (_) { /* return whatever we have */ }
+        return JSON.stringify({
+            success: true,
+            tier: TIER_NAMES[s.tierIndex],
+            season: s.season,
+            seasonEndsAt: seasonEndsAt(),
+            totalPlayers: records.length,
+            records: records,
+            userRecord: userRecord,
+        });
+    }
+    // ─── Registration ────────────────────────────────────────────────────
+    function register(initializer) {
+        initializer.registerRpc("league_get_state", RpcHelpers.withCleanAuthError(rpcGetState));
+        initializer.registerRpc("league_submit_points", RpcHelpers.withCleanAuthError(rpcSubmitPoints));
+        initializer.registerRpc("league_get_leaderboard", RpcHelpers.withCleanAuthError(rpcGetLeaderboard));
+    }
+    QuizVerseLeague.register = register;
+})(QuizVerseLeague || (QuizVerseLeague = {}));
 // QuizVerse Nakama-Only Migration plugin.
 //
 // Single TS module that registers every "v2 / Nakama-only" RPC the
@@ -14928,6 +15673,393 @@ var IdentityResolver;
     }
     IdentityResolver.register = register;
 })(IdentityResolver || (IdentityResolver = {}));
+// qv_kb_user_dump.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// QuizVerse — User KB inspection RPCs (Nakama wrapper around the BFF dump route)
+//
+// Why these exist
+// ---------------
+// The web team shipped `GET /api/v1/kb/user/{userId}/dump` on quizverse.world
+// (see Quizverse-web-frontend/web/app/api/v1/kb/user/[userId]/dump/route.ts).
+// That endpoint returns every doc the KB has recorded for a user, fanned out
+// across all 11 `qv_u_<userId>_<kind>` memory-service collections. It's the
+// single source of truth Unity needs to render the in-game Knowledge Graph
+// view.
+//
+// Unity already talks to Nakama via the Nakama SDK and never speaks HTTPS
+// directly to quizverse.world. To keep that pattern (and to make sure no
+// client build ever ships the admin secret), we expose three thin RPCs here
+// that the Unity client calls with its normal session token; Nakama then
+// signs the outbound HTTPS call with the admin secret server-side and
+// returns the response verbatim.
+//
+// RPCs registered (3)
+// -------------------
+//   qv_kb_user_dump      — full multi-kind dump for the calling user
+//   qv_kb_user_summary   — light "what's in my KB?" call (no document text;
+//                           returns just counts + collection ids — fast)
+//   qv_kb_user_kind      — single-kind drill-down (for graph node expansion
+//                           after the initial graph is rendered)
+//
+// Auth model
+// ----------
+// Each RPC accepts TWO equivalent paths:
+//   (a) the caller IS the user — `ctx.userId` is set by Nakama auth middleware
+//       and the RPC ALWAYS scopes the BFF call to `ctx.userId`. Payload
+//       `user_id` is ignored in this path; clients cannot read someone else's
+//       KB by tampering with the payload.
+//   (b) the caller is a trusted service — payload `service_token` matches
+//       `ctx.env["QV_KB_NAKAMA_SERVICE_TOKEN"]`, AND payload `user_id` is
+//       supplied. Used by the gateway / cron / admin dashboards.
+//
+// http_key (server-to-server with empty ctx.userId) callers MUST use path (b).
+//
+// Upstream HTTP call
+// ------------------
+// Target URL is built from:
+//   • `ctx.env["QV_KB_BFF_URL"]` — base URL, defaults to the in-cluster
+//     service `http://intelliverse-quiz-frontend.aicart.svc.cluster.local:3000`
+//     to avoid the public LB hop and stay inside the VPC.
+//   • Path                       — `/api/v1/kb/user/{userId}/dump[?…]`
+//
+// Outbound auth header:
+//   `Authorization: Bearer <ctx.env["QV_KB_ADMIN_SECRET"]>`
+// (same shared secret already used by /api/kb/admin/secret-ingest; it is
+// listed in nakama-secret.yaml -> runtime.env so the Goja runtime can see it.)
+//
+// Cross-references
+// ----------------
+//   Quizverse-web-frontend/web/app/api/v1/kb/user/[userId]/dump/route.ts  — BFF route
+//   Quizverse-web-frontend/web/app/api/kb/ingest/[source]/route.ts        — USER_DOC_KINDS (write side)
+//   content-factory/services/memory/api/routes/knowledge.py               — `/knowledge/list` upstream
+//   intelli-verse-kube-infra/nakama/nakama-secret.yaml                    — runtime.env: must add
+//                                                                            QV_KB_ADMIN_SECRET and
+//                                                                            QV_KB_NAKAMA_SERVICE_TOKEN
+var QvKbUserDump;
+(function (QvKbUserDump) {
+    // ── Constants ──────────────────────────────────────────────────────────────
+    var DEFAULT_BFF_URL = "http://intelliverse-quiz-frontend.aicart.svc.cluster.local:3000";
+    var DEFAULT_LIMIT_PER_KIND = 50;
+    var MAX_LIMIT_PER_KIND = 100;
+    var DEFAULT_TEXT_TRUNCATE_FOR_SUMMARY = 0;
+    var UPSTREAM_TIMEOUT_MS = 10000;
+    // Mirror of USER_DOC_KINDS in /api/kb/ingest/[source]/route.ts (KB v2 §5.3).
+    var ALL_KINDS = [
+        "weak", "attempts", "notes", "goals", "behavior",
+        "diagnostic", "chat", "animations", "quests",
+        "insights", "parent_summary"
+    ];
+    var USER_ID_REGEX = /^[A-Za-z0-9_-]{4,128}$/;
+    var KIND_REGEX = /^[a-z_]{3,32}$/;
+    // ── Env helpers ────────────────────────────────────────────────────────────
+    function getBffUrl(ctx) {
+        return "" + ((ctx.env && ctx.env["QV_KB_BFF_URL"]) || DEFAULT_BFF_URL);
+    }
+    function getAdminSecret(ctx) {
+        return "" + ((ctx.env && ctx.env["QV_KB_ADMIN_SECRET"]) || "");
+    }
+    function getServiceToken(ctx) {
+        return "" + ((ctx.env && ctx.env["QV_KB_NAKAMA_SERVICE_TOKEN"]) || "");
+    }
+    // Constant-time string compare (Goja has no `crypto.timingSafeEqual`).
+    function constantTimeEq(a, b) {
+        if (a.length !== b.length)
+            return false;
+        var diff = 0;
+        for (var i = 0; i < a.length; i++) {
+            diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+        }
+        return diff === 0;
+    }
+    // ── Caller resolution ──────────────────────────────────────────────────────
+    // Returns the user id this RPC should query, or throws an Error which the
+    // top-level handler converts into an `errorResponse`.
+    //
+    // Rules:
+    //   - Always prefer ctx.userId when set (Unity Nakama session). Payload
+    //     `user_id` is IGNORED in this path so a malicious client cannot dump
+    //     another user's KB by tampering with the payload.
+    //   - When ctx.userId is empty (http_key admin call from a backend), require
+    //     `service_token` + `user_id` in the payload.
+    function resolveTargetUser(ctx, data) {
+        var hdrUid = ctx.userId || "";
+        if (hdrUid) {
+            if (!USER_ID_REGEX.test(hdrUid))
+                throw new Error("invalid ctx.userId");
+            return { userId: hdrUid, via: "self" };
+        }
+        var providedToken = "" + (data && data.service_token || "");
+        var expectedToken = getServiceToken(ctx);
+        if (!expectedToken || !providedToken || !constantTimeEq(providedToken, expectedToken)) {
+            throw new Error("service_token required (no Nakama session present)");
+        }
+        var payloadUid = "" + (data && data.user_id || "");
+        if (!payloadUid || !USER_ID_REGEX.test(payloadUid)) {
+            throw new Error("user_id required and must match ^[A-Za-z0-9_-]{4,128}$");
+        }
+        return { userId: payloadUid, via: "service" };
+    }
+    // ── Query string builder ───────────────────────────────────────────────────
+    // Validates and serialises the optional query parameters that the BFF
+    // route accepts. We never trust the client payload verbatim — any field
+    // we don't recognise is dropped, so a misbehaving client cannot smuggle
+    // through extra parameters that bypass server-side defaults.
+    function buildQuery(data) {
+        var parts = [];
+        // kinds
+        var rawKinds = data && data.kinds;
+        var kindList = [];
+        if (typeof rawKinds === "string" && rawKinds.length > 0) {
+            var split = rawKinds.split(",");
+            for (var i = 0; i < split.length; i++) {
+                var k = (split[i] || "").trim().toLowerCase();
+                if (KIND_REGEX.test(k) && ALL_KINDS.indexOf(k) >= 0)
+                    kindList.push(k);
+            }
+        }
+        else if (Object.prototype.toString.call(rawKinds) === "[object Array]") {
+            for (var j = 0; j < rawKinds.length; j++) {
+                var kk = ("" + rawKinds[j]).trim().toLowerCase();
+                if (KIND_REGEX.test(kk) && ALL_KINDS.indexOf(kk) >= 0)
+                    kindList.push(kk);
+            }
+        }
+        if (kindList.length > 0)
+            parts.push("kinds=" + encodeURIComponent(kindList.join(",")));
+        // limit_per_kind
+        var lp = parseInt("" + (data && data.limit_per_kind), 10);
+        if (!isFinite(lp) || lp <= 0)
+            lp = DEFAULT_LIMIT_PER_KIND;
+        if (lp > MAX_LIMIT_PER_KIND)
+            lp = MAX_LIMIT_PER_KIND;
+        parts.push("limit_per_kind=" + lp);
+        // order
+        var order = ("" + (data && data.order || "desc")).toLowerCase();
+        if (order !== "asc" && order !== "desc")
+            order = "desc";
+        parts.push("order=" + order);
+        // include_text — default true at the BFF level; this RPC defaults to
+        // false ONLY when the summary path is used (see callBff(... 'summary')).
+        if (data && data.include_text === false)
+            parts.push("include_text=false");
+        else if (data && data.include_text === true)
+            parts.push("include_text=true");
+        // text_truncate
+        var tt = parseInt("" + (data && data.text_truncate), 10);
+        if (isFinite(tt) && tt > 0)
+            parts.push("text_truncate=" + Math.min(tt, 20000));
+        return parts.length > 0 ? "?" + parts.join("&") : "";
+    }
+    // ── BFF call ───────────────────────────────────────────────────────────────
+    // Returns the parsed JSON body on success, or throws on transport / auth
+    // failures. Caller is responsible for turning thrown errors into RPC error
+    // responses.
+    function callBff(ctx, logger, nk, userId, qs, mode) {
+        var adminSecret = getAdminSecret(ctx);
+        if (!adminSecret) {
+            throw new Error("QV_KB_ADMIN_SECRET not configured in Nakama runtime.env");
+        }
+        var url = getBffUrl(ctx).replace(/\/+$/, "")
+            + "/api/v1/kb/user/" + encodeURIComponent(userId) + "/dump" + qs;
+        var headers = {
+            "Authorization": "Bearer " + adminSecret,
+            "Accept": "application/json",
+            "User-Agent": "nakama-qv-kb-rpc/1.0 (" + mode + ")",
+        };
+        var resp;
+        try {
+            resp = nk.httpRequest(url, "get", headers, "", UPSTREAM_TIMEOUT_MS);
+        }
+        catch (e) {
+            logger.warn("[qv_kb_user_dump] httpRequest threw: " + (e && e.message ? e.message : String(e)));
+            throw new Error("upstream_unreachable");
+        }
+        var code = (resp && resp.code) || 0;
+        if (code < 200 || code >= 300) {
+            logger.warn("[qv_kb_user_dump] BFF non-2xx code=" + code +
+                " body=" + (resp && resp.body ? String(resp.body).slice(0, 300) : ""));
+            // Surface a few specific upstream codes so the client can react.
+            if (code === 400)
+                throw new Error("upstream_bad_request");
+            if (code === 401 || code === 403)
+                throw new Error("upstream_auth_failed");
+            if (code === 504)
+                throw new Error("upstream_timeout");
+            throw new Error("upstream_" + code);
+        }
+        try {
+            return JSON.parse(resp.body || "{}");
+        }
+        catch (e) {
+            throw new Error("upstream_invalid_json");
+        }
+    }
+    // ── RPC: qv_kb_user_dump ──────────────────────────────────────────────────
+    // Full dump. Forwards every documented query parameter to the BFF and
+    // returns the BFF response under `data.dump`. Unity should call this with
+    // `include_text: false` for the initial graph render and then call
+    // `qv_kb_user_kind` to expand a single node's body on click.
+    function rpcDump(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var who = resolveTargetUser(ctx, data);
+            var qs = buildQuery(data);
+            var t0 = Date.now();
+            var body = callBff(ctx, logger, nk, who.userId, qs, "dump");
+            var elapsed = Date.now() - t0;
+            logger.info("[qv_kb_user_dump] ok user=" + who.userId + " via=" + who.via +
+                " kinds=" + ((body && body.summary && body.summary.kinds_with_data) || []).join(",") +
+                " total=" + (body && body.summary && body.summary.total_documents) +
+                " elapsed_ms=" + elapsed);
+            return RpcHelpers.successResponse({
+                ok: true,
+                auth_via: who.via,
+                upstream_elapsed_ms: elapsed,
+                dump: body,
+            });
+        }
+        catch (err) {
+            var msg = (err && err.message) || String(err);
+            logger.warn("[qv_kb_user_dump] failed: " + msg);
+            return RpcHelpers.errorResponse(msg, mapErrorCode(msg));
+        }
+    }
+    // ── RPC: qv_kb_user_summary ───────────────────────────────────────────────
+    // Light "is there anything in this user's KB?" call. Always forces
+    // include_text=false and limit_per_kind=1 to keep payload size minimal —
+    // the response is small enough to stick on every player session start.
+    //
+    // Returns:
+    //   { ok, auth_via, summary: { total_documents, kinds_with_data,
+    //                              kinds_empty, kinds_failed,
+    //                              collection_ids: { <kind>: <coll_id>, … } } }
+    function rpcSummary(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var who = resolveTargetUser(ctx, data);
+            var qs = "?include_text=false&limit_per_kind=1";
+            var t0 = Date.now();
+            var body = callBff(ctx, logger, nk, who.userId, qs, "summary");
+            var elapsed = Date.now() - t0;
+            var collectionIds = {};
+            if (body && Object.prototype.toString.call(body.collections) === "[object Array]") {
+                for (var i = 0; i < body.collections.length; i++) {
+                    var c = body.collections[i] || {};
+                    if (c.kind && c.collection_id)
+                        collectionIds[c.kind] = c.collection_id;
+                }
+            }
+            var summary = (body && body.summary) || { total_documents: 0, kinds_with_data: [], kinds_empty: [], kinds_failed: [] };
+            var _ = DEFAULT_TEXT_TRUNCATE_FOR_SUMMARY;
+            void _; // referenced to satisfy noUnusedLocals
+            return RpcHelpers.successResponse({
+                ok: true,
+                auth_via: who.via,
+                upstream_elapsed_ms: elapsed,
+                user_id: who.userId,
+                summary: {
+                    total_documents: summary.total_documents,
+                    kinds_with_data: summary.kinds_with_data,
+                    kinds_empty: summary.kinds_empty,
+                    kinds_failed: summary.kinds_failed,
+                    collection_ids: collectionIds,
+                },
+            });
+        }
+        catch (err) {
+            var msg = (err && err.message) || String(err);
+            logger.warn("[qv_kb_user_summary] failed: " + msg);
+            return RpcHelpers.errorResponse(msg, mapErrorCode(msg));
+        }
+    }
+    // ── RPC: qv_kb_user_kind ──────────────────────────────────────────────────
+    // Single-kind drill-down for the "expand this graph node" interaction.
+    //
+    // Required payload:
+    //   { kind: "chat" | "diagnostic" | "insights" | …,
+    //     limit_per_kind?: number,   // default 50, max 100
+    //     order?: "asc"|"desc",      // default desc
+    //     text_truncate?: number,    // default 0 (full text)
+    //     include_text?: boolean }    // default true
+    //
+    // Same auth model as dump/summary (self via ctx.userId OR service_token).
+    function rpcKind(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var who = resolveTargetUser(ctx, data);
+            var kind = ("" + (data && data.kind || "")).trim().toLowerCase();
+            if (!kind || ALL_KINDS.indexOf(kind) < 0) {
+                return RpcHelpers.errorResponse("kind required; one of " + ALL_KINDS.join(","), 400);
+            }
+            // Build a `kinds=<single>` query and reuse the dump's normaliser
+            // for limit / order / text params.
+            var subData = {
+                kinds: kind,
+                limit_per_kind: data && data.limit_per_kind,
+                order: data && data.order,
+                text_truncate: data && data.text_truncate,
+            };
+            // include_text defaults TRUE on this RPC (drill-down wants the body),
+            // but honour an explicit false.
+            if (data && data.include_text === false)
+                subData.include_text = false;
+            else
+                subData.include_text = true;
+            var qs = buildQuery(subData);
+            var t0 = Date.now();
+            var body = callBff(ctx, logger, nk, who.userId, qs, "kind=" + kind);
+            var elapsed = Date.now() - t0;
+            var collection = null;
+            if (body && Object.prototype.toString.call(body.collections) === "[object Array]") {
+                for (var i = 0; i < body.collections.length; i++) {
+                    if (body.collections[i] && body.collections[i].kind === kind) {
+                        collection = body.collections[i];
+                        break;
+                    }
+                }
+            }
+            return RpcHelpers.successResponse({
+                ok: true,
+                auth_via: who.via,
+                upstream_elapsed_ms: elapsed,
+                user_id: who.userId,
+                kind: kind,
+                collection: collection || { kind: kind, collection_id: "qv_u_" + who.userId + "_" + kind, count: 0, documents: [] },
+            });
+        }
+        catch (err) {
+            var msg = (err && err.message) || String(err);
+            logger.warn("[qv_kb_user_kind] failed: " + msg);
+            return RpcHelpers.errorResponse(msg, mapErrorCode(msg));
+        }
+    }
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function mapErrorCode(msg) {
+        if (!msg)
+            return 500;
+        if (msg.indexOf("invalid") === 0 || msg.indexOf("user_id required") === 0 || msg.indexOf("kind required") === 0)
+            return 400;
+        if (msg.indexOf("service_token required") === 0)
+            return 401;
+        if (msg.indexOf("upstream_bad_request") === 0)
+            return 400;
+        if (msg.indexOf("upstream_auth_failed") === 0)
+            return 401;
+        if (msg.indexOf("upstream_timeout") === 0)
+            return 504;
+        if (msg.indexOf("upstream_unreachable") === 0)
+            return 502;
+        if (msg.indexOf("QV_KB_ADMIN_SECRET") === 0)
+            return 503;
+        return 500;
+    }
+    function register(initializer) {
+        initializer.registerRpc("qv_kb_user_dump", rpcDump);
+        initializer.registerRpc("qv_kb_user_summary", rpcSummary);
+        initializer.registerRpc("qv_kb_user_kind", rpcKind);
+    }
+    QvKbUserDump.register = register;
+})(QvKbUserDump || (QvKbUserDump = {}));
 // learner_toolbelt.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // QuizVerse Learner Toolbelt — Wave 4-5 implementation (PR-LT2).
@@ -15601,6 +16733,9 @@ var LearnerToolbelt;
     // error. This is the contract that makes /tools/score-predictor degrade
     // gracefully for state-B/C/D users (§ 2.5.1).
     // ────────────────────────────────────────────────────────────────────────
+    // `export`ed so the no-exam redirect path is unit-testable via
+    // LearnerToolbeltTests (run-toolbelt-tests.js). The local binding is retained,
+    // so `initializer.registerRpc("lt_score_predict", rpcScorePredict)` is unaffected.
     function rpcScorePredict(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
@@ -15663,6 +16798,7 @@ var LearnerToolbelt;
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
+    LearnerToolbelt.rpcScorePredict = rpcScorePredict;
     // ────────────────────────────────────────────────────────────────────────
     // RPC: lt_exam_countdown_get (Wave 4)
     // ────────────────────────────────────────────────────────────────────────
@@ -16145,21 +17281,35 @@ var LearnerToolbelt;
     // ────────────────────────────────────────────────────────────────────────
     // RPC: lt_school_search (Wave 4 — anonymous OK)
     // ────────────────────────────────────────────────────────────────────────
-    function rpcSchoolSearch(_ctx, logger, _nk, payload) {
+    function rpcSchoolSearch(_ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
             var query = "" + (data.query || "");
             var country = ("" + (data.country_code || data.country || "")).toUpperCase();
             var locale = "" + (data.locale || "en");
+            var level = "" + (data.level || ""); // ""=both | "school" | "college"
             var limit = Math.min(Math.max(parseInt("" + (data.limit || 10), 10) || 10, 1), 50);
             if (query.length < 2)
                 return RpcHelpers.errorResponse("query must be ≥2 chars", 400);
-            var hits = LearnerToolbelt.searchSchools(query, country, limit);
+            // DB-first (all geos + colleges) with graceful fixture fallback when the
+            // lt_schools table is empty/unavailable. See PLAN-SCHOOL-FINDER-DATA-INGEST.
+            var hits;
+            var source = "db";
+            var db = LearnerToolbelt.searchSchoolsDb(nk, query, country, level, limit);
+            if (db && db.ready) {
+                hits = db.hits;
+            }
+            else {
+                source = "fixture";
+                // The fixture is K-12 only — a college-only filter has no fixture hits.
+                hits = (level === "college") ? [] : LearnerToolbelt.searchSchools(query, country, limit);
+            }
             return safeWrap({
                 ok: true, status: hits.length > 0 ? "ok" : "no_results",
-                query: query, country_code: country, locale: locale,
+                query: query, country_code: country, locale: locale, level: level,
                 results: hits,
                 count: hits.length,
+                source: source,
                 message: hits.length === 0 ? LearnerToolbelt.i18nString(locale, "school.no_results") : "",
             });
         }
@@ -16171,13 +17321,13 @@ var LearnerToolbelt;
     // ────────────────────────────────────────────────────────────────────────
     // RPC: lt_school_get_detail (Wave 4 — anonymous OK)
     // ────────────────────────────────────────────────────────────────────────
-    function rpcSchoolGetDetail(_ctx, logger, _nk, payload) {
+    function rpcSchoolGetDetail(_ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
             var schoolId = "" + (data.school_id || "");
             if (!schoolId)
                 return RpcHelpers.errorResponse("school_id required", 400);
-            var rec = LearnerToolbelt.getSchoolById(schoolId);
+            var rec = LearnerToolbelt.getSchoolByIdDb(nk, schoolId) || LearnerToolbelt.getSchoolById(schoolId); // DB-first, fixture fallback
             if (!rec)
                 return safeWrap({ ok: true, status: "not_found", school_id: schoolId, found: false });
             return safeWrap({ ok: true, status: "ok", found: true, school: rec });
@@ -16199,9 +17349,9 @@ var LearnerToolbelt;
             var schoolId = "" + (data.school_id || "");
             if (!schoolId)
                 return RpcHelpers.errorResponse("school_id required", 400);
-            // Resolve verified-ness — fixture hits are verified; freetext entries
-            // remain provisional until ai-content reviews.
-            var rec = LearnerToolbelt.getSchoolById(schoolId);
+            // Resolve verified-ness — DB-backed or fixture hits are verified;
+            // freetext entries remain provisional until ai-content reviews.
+            var rec = LearnerToolbelt.getSchoolByIdDb(nk, schoolId) || LearnerToolbelt.getSchoolById(schoolId);
             var verified = !!rec;
             var record = {
                 school_id: schoolId,
@@ -16245,7 +17395,7 @@ var LearnerToolbelt;
                 return safeWrap({ ok: true, status: "ok", has_school: false });
             }
             var rec = rows[0].value;
-            var hydrated = LearnerToolbelt.getSchoolById(rec.school_id);
+            var hydrated = LearnerToolbelt.getSchoolByIdDb(nk, rec.school_id) || LearnerToolbelt.getSchoolById(rec.school_id);
             return safeWrap({
                 ok: true, status: "ok",
                 has_school: true,
@@ -17997,12 +19147,19 @@ var LearnerToolbelt;
                 else if (qTokens.length > 0 && hits2 >= Math.ceil(qTokens.length / 2)) {
                     score = 200;
                 }
-                else if (q.length >= 3) {
-                    // Edit-distance fallback (≤2) only against name's first token.
+                else if (q.length >= 4) {
+                    // Edit-distance fallback (≤2) against the name's first token — but
+                    // ONLY when query and token are of comparable length. The old
+                    // `q.slice(0, token.len + 2)` form let a long query (e.g.
+                    // "stuyvesant", 10) match a short token (e.g. "st" in St. Xavier's)
+                    // within distance 2, leaking a US name into an IN-filtered search.
+                    // (Regression: searchSchools country filter leak.)
                     var firstNameToken = name.split(" ")[0] || "";
-                    var d = editDistance(q.slice(0, firstNameToken.length + 2), firstNameToken, 2);
-                    if (d <= 2)
-                        score = Math.max(score, 100);
+                    if (firstNameToken.length >= 4 && Math.abs(q.length - firstNameToken.length) <= 3) {
+                        var d = editDistance(q, firstNameToken, 2);
+                        if (d <= 2)
+                            score = Math.max(score, 100);
+                    }
                 }
             }
             if (score === 0)
@@ -18023,6 +19180,7 @@ var LearnerToolbelt;
                 board: rec.board,
                 source: rec.source,
                 score: score,
+                level: "school", // the fixture is K-12 / pre-university only
             });
         }
         hits.sort(function (a, b) { return b.score - a.score; });
@@ -18039,6 +19197,148 @@ var LearnerToolbelt;
         return null;
     }
     LearnerToolbelt.getSchoolById = getSchoolById;
+    // ── Phase B: CockroachDB-backed search (PLAN-SCHOOL-FINDER-DATA-INGEST) ────
+    //
+    // When the `lt_schools` table is populated (by the ops ETL loader — NCES,
+    // UDISE+, GIAS, Hipolabs colleges, …) search is served from the DB across
+    // all geos + colleges. Until then EVERY path falls back to the in-memory
+    // fixture above, so deploying this code BEFORE the data load is safe
+    // (behaviour == fixture). No module-level cache is used (Goja VM pool
+    // isolates calls); readiness is resolved per-call via a cheap probe.
+    /**
+     * Idempotent table + index bootstrap. Mirrors find_friends.bootstrapDatabase:
+     * every statement is IF NOT EXISTS and failures are non-fatal (the RPC simply
+     * keeps serving the fixture). Call once from main.ts InitModule.
+     */
+    function bootstrapSchoolsTable(nk, logger) {
+        var stmts = [
+            { label: "table lt_schools", sql: "CREATE TABLE IF NOT EXISTS lt_schools (" +
+                    "school_id STRING PRIMARY KEY, " +
+                    "source STRING NOT NULL, " +
+                    "display_name STRING NOT NULL, " +
+                    "name_norm STRING NOT NULL, " +
+                    "acronym STRING, " +
+                    "city STRING, " +
+                    "state_region STRING, " +
+                    "country_code STRING NOT NULL, " +
+                    "level STRING NOT NULL DEFAULT 'school', " +
+                    "board STRING, " +
+                    "grade_band STRING, " +
+                    "lat FLOAT8, " +
+                    "lng FLOAT8, " +
+                    "language STRING, " +
+                    "popularity INT8 DEFAULT 0)" },
+            { label: "idx country_name", sql: "CREATE INDEX IF NOT EXISTS idx_lt_schools_country_name ON lt_schools (country_code, name_norm)" },
+            { label: "idx country_acro", sql: "CREATE INDEX IF NOT EXISTS idx_lt_schools_country_acro ON lt_schools (country_code, acronym)" },
+            { label: "idx level", sql: "CREATE INDEX IF NOT EXISTS idx_lt_schools_level ON lt_schools (level)" },
+        ];
+        for (var i = 0; i < stmts.length; i++) {
+            try {
+                nk.sqlExec(stmts[i].sql, []);
+                if (logger && logger.info)
+                    logger.info("[LearnerToolbelt] schools bootstrap OK: " + stmts[i].label);
+            }
+            catch (e) {
+                var m = (e && (e.message || String(e))) || "unknown";
+                if (logger && logger.warn) {
+                    logger.warn("[LearnerToolbelt] schools bootstrap '" + stmts[i].label +
+                        "' failed (non-fatal — fixture fallback active): " + m);
+                }
+            }
+        }
+        // Optional trigram index — best-effort; the query path does NOT depend on
+        // it (uses deterministic prefix/substring), so absence is fine.
+        try {
+            nk.sqlExec("CREATE INDEX IF NOT EXISTS idx_lt_schools_name_trgm ON lt_schools USING gin (name_norm gin_trgm_ops)", []);
+        }
+        catch (_e) { /* pg_trgm/gin_trgm_ops absent — ignore */ }
+    }
+    LearnerToolbelt.bootstrapSchoolsTable = bootstrapSchoolsTable;
+    function mapDbRowToHit(row) {
+        return {
+            school_id: "" + (row.school_id || ""),
+            display_name: "" + (row.display_name || ""),
+            city: "" + (row.city || ""),
+            state_region: "" + (row.state_region || ""),
+            country_code: "" + (row.country_code || ""),
+            board: row.board ? ("" + row.board) : null,
+            source: "" + (row.source || ""),
+            score: parseInt("" + (row.score || 0), 10) || 0,
+            level: "" + (row.level || "school"),
+        };
+    }
+    /**
+     * DB-backed search. Returns:
+     *   null            → DB error / table missing  → caller uses fixture
+     *   { ready:false } → table exists but is EMPTY → caller uses fixture
+     *   { ready:true }  → DB-backed result (0 hits = a genuine no-result)
+     */
+    function searchSchoolsDb(nk, query, countryCode, level, limit) {
+        var q = normalize(query);
+        var cc = ("" + (countryCode || "")).toUpperCase();
+        var lvl = (level === "school" || level === "college") ? level : "";
+        var lim = Math.min(Math.max(limit || 10, 1), 50);
+        try {
+            var sql = "SELECT school_id, display_name, city, state_region, country_code, level, board, source, " +
+                "(CASE WHEN name_norm = $1 THEN 1000 " +
+                "      WHEN name_norm LIKE $1 || '%' THEN 800 " +
+                "      WHEN acronym = $1 THEN 850 " +
+                "      WHEN acronym LIKE $1 || '%' THEN 600 " +
+                "      WHEN strpos(name_norm, $1) > 0 THEN 500 " +
+                "      ELSE 200 END) + COALESCE(popularity, 0) AS score " +
+                "FROM lt_schools " +
+                "WHERE ($2 = '' OR country_code = $2) " +
+                "AND ($4 = '' OR level = $4) " +
+                "AND (strpos(name_norm, $1) > 0 OR acronym LIKE $1 || '%') " +
+                "ORDER BY score DESC, COALESCE(popularity, 0) DESC, display_name ASC " +
+                "LIMIT $3";
+            var rows = nk.sqlQuery(sql, [q, cc, lim, lvl]) || [];
+            if (rows.length > 0) {
+                var hits = [];
+                for (var i = 0; i < rows.length; i++)
+                    hits.push(mapDbRowToHit(rows[i]));
+                return { ready: true, hits: hits };
+            }
+            // 0 matches — distinguish an EMPTY table from a genuine no-result so we
+            // don't mask real "no_results" once data is loaded.
+            var probe = nk.sqlQuery("SELECT 1 FROM lt_schools LIMIT 1", []) || [];
+            if (probe.length > 0)
+                return { ready: true, hits: [] };
+            return { ready: false, hits: [] };
+        }
+        catch (_e) {
+            return null;
+        }
+    }
+    LearnerToolbelt.searchSchoolsDb = searchSchoolsDb;
+    /** DB-backed detail lookup; null → caller falls back to the fixture. */
+    function getSchoolByIdDb(nk, schoolId) {
+        try {
+            var rows = nk.sqlQuery("SELECT school_id, source, display_name, city, state_region, country_code, level, " +
+                "board, grade_band, lat, lng, language FROM lt_schools WHERE school_id = $1 LIMIT 1", [schoolId]) || [];
+            if (rows.length === 0)
+                return null;
+            var r = rows[0];
+            return {
+                school_id: "" + r.school_id,
+                source: "" + (r.source || ""),
+                display_name: "" + (r.display_name || ""),
+                city: "" + (r.city || ""),
+                state_region: "" + (r.state_region || ""),
+                country_code: "" + (r.country_code || ""),
+                board: r.board ? ("" + r.board) : null,
+                grade_band: "" + (r.grade_band || ""),
+                lat: (r.lat === null || r.lat === undefined || r.lat === "") ? null : parseFloat("" + r.lat),
+                lng: (r.lng === null || r.lng === undefined || r.lng === "") ? null : parseFloat("" + r.lng),
+                language_of_instruction: r.language ? ("" + r.language) : null,
+                level: "" + (r.level || "school"),
+            };
+        }
+        catch (_e) {
+            return null;
+        }
+    }
+    LearnerToolbelt.getSchoolByIdDb = getSchoolByIdDb;
 })(LearnerToolbelt || (LearnerToolbelt = {}));
 // per-exam-config.ts
 // ─────────────────────────────────────────────────────────────────────────────
@@ -25112,11 +26412,29 @@ var MpKernelClock;
 var MpKernelCodeRegistry;
 (function (MpKernelCodeRegistry) {
     var owners = [];
-    function register(owner) {
+    // NOTE: deliberately NOT named `register`. postbuild.js's autoInvokeRegister
+    // auto-invokes any zero/one-arg `Namespace.register = register;` at IIFE
+    // scope on every Goja VM to populate __rpc_ stubs. A 1-arg `register(owner)`
+    // here matched that heuristic and got called with `owner === undefined`,
+    // pushing `undefined` into `owners` — which then made every subsequent
+    // reserve()/bootstrap throw "Cannot read property 'name' of undefined"
+    // (the original 2026-05 MpKernel mount-failure signature). Keep this name
+    // distinct from `register` so the heuristic can never fire on it.
+    function reserve(owner) {
         for (var i = 0; i < owners.length; i++) {
             var o = owners[i];
             if (o.name === owner.name) {
                 // Idempotent re-registration (e.g. test reload): replace.
+                owners[i] = owner;
+                return;
+            }
+            // Exact-range adoption: some templates intentionally live inside a
+            // pre-claimed service band (e.g. conversational-party-v1 uses the
+            // 0x1000-0x1FFF "social-conversational" band). When a template claims a
+            // range that is byte-for-byte identical to an existing placeholder, the
+            // template "adopts" the band — replace the placeholder rather than
+            // flagging a (false-positive) overlap. Partial overlaps remain errors.
+            if (o.from === owner.from && o.to === owner.to) {
                 owners[i] = owner;
                 return;
             }
@@ -25129,7 +26447,7 @@ var MpKernelCodeRegistry;
         }
         owners.push(owner);
     }
-    MpKernelCodeRegistry.register = register;
+    MpKernelCodeRegistry.reserve = reserve;
     function rangesOverlap(a, b) {
         return a.from <= b.to && b.from <= a.to;
     }
@@ -25157,12 +26475,12 @@ var MpKernelCodeRegistry;
         // schemas/multiplayer/opcodes.proto. Template ranges register
         // themselves on registerTemplate; ranges below are pre-claimed so
         // any accidental overlap fails fast at module init.
-        register({ name: "kernel-control", from: 0x0000, to: 0x0FFF });
-        register({ name: "social-conversational", from: 0x1000, to: 0x1FFF });
-        register({ name: "agents", from: 0x2000, to: 0x2FFF });
-        register({ name: "moderation", from: 0x3000, to: 0x3FFF });
-        register({ name: "game-defined", from: 0xC000, to: 0xCFFF });
-        register({ name: "xr-pose-fast-path", from: 0xF000, to: 0xFFFF });
+        reserve({ name: "kernel-control", from: 0x0000, to: 0x0FFF });
+        reserve({ name: "social-conversational", from: 0x1000, to: 0x1FFF });
+        reserve({ name: "agents", from: 0x2000, to: 0x2FFF });
+        reserve({ name: "moderation", from: 0x3000, to: 0x3FFF });
+        reserve({ name: "game-defined", from: 0xC000, to: 0xCFFF });
+        reserve({ name: "xr-pose-fast-path", from: 0xF000, to: 0xFFFF });
     }
     MpKernelCodeRegistry.bootstrapKernelRanges = bootstrapKernelRanges;
 })(MpKernelCodeRegistry || (MpKernelCodeRegistry = {}));
@@ -25397,18 +26715,31 @@ var MpKernelModule;
     // List the registered templates so the JS adapter can validate
     // template_ids client-side at compile-time codegen.
     function rpcListTemplates(_ctx, _logger, _nk, _payload) {
-        var owners = MpKernelCodeRegistry.listAll();
+        // Source of truth is `registeredTemplateIds`, populated by the
+        // single-arg, auto-invoked register(initializer) so it is present on
+        // EVERY pooled Goja VM (the code registry's opcode ranges are only
+        // reserved on the InitModule VM via mount(), so we can't rely on
+        // listAll() here without returning an empty set on pooled VMs).
+        var ranges = {};
+        try {
+            var owners = MpKernelCodeRegistry.listAll();
+            for (var i = 0; i < owners.length; i++) {
+                if (owners[i].template_id) {
+                    ranges[owners[i].template_id] = { from: owners[i].from, to: owners[i].to };
+                }
+            }
+        }
+        catch (_e) { /* registry not bootstrapped on this VM — ranges optional */ }
         var out = {
             templates: []
         };
-        for (var i = 0; i < owners.length; i++) {
-            if (owners[i].template_id) {
-                out.templates.push({
-                    id: owners[i].template_id,
-                    from: owners[i].from,
-                    to: owners[i].to
-                });
-            }
+        for (var id in registeredTemplateIds) {
+            if (!registeredTemplateIds.hasOwnProperty(id))
+                continue;
+            if (registeredTemplateIds[id] !== true)
+                continue;
+            var r = ranges[id] || { from: 0, to: 0 };
+            out.templates.push({ id: id, from: r.from, to: r.to });
         }
         return JSON.stringify(out);
     }
@@ -25500,41 +26831,80 @@ var MpKernelModule;
             };
         }
     };
-    // Single boot path: registers all built-in templates + RPCs.
-    //
-    // Per-template registration is wrapped in a try/catch + null-check so a
-    // single broken template (e.g. an undefined `template` from a TS-bundle
-    // load-order issue, or a missing `template.opRange`/`template.templateId`)
-    // can't take down the entire kernel mount. Symptom in prod (EKS,
-    // 2026-05-27): "[MpKernel] failed to mount: Cannot read property 'name'
-    // of undefined" caused every match-create + every fantasy_event_leaderboard
-    // / fantasy_scoring_process RPC to fail across all 4 pods after rollout.
-    // The defensive guards here keep healthy templates registering and emit a
-    // pinpoint log for the broken one(s).
-    function safeRegisterTemplate(initializer, logger, label, template, afterRegister) {
-        try {
-            if (!template || typeof template !== "object") {
-                logger.error("[MpKernel] template '" + label + "' is undefined at boot — skipping (check TS bundle load order)");
-                return;
-            }
-            if (!template.templateId || !template.opRange ||
-                typeof template.opRange.from !== "number" ||
-                typeof template.opRange.to !== "number") {
-                logger.error("[MpKernel] template '" + label + "' missing required fields (templateId/opRange) — skipping");
-                return;
-            }
-            MpKernelMatch.registerTemplate(initializer, template, logger);
-            registerTemplateId(template.templateId);
-            if (afterRegister)
-                afterRegister();
-        }
-        catch (err) {
-            logger.error("[MpKernel] template '" + label + "' register failed: " +
-                (err && err.message ? err.message : String(err)) +
-                " — kernel boot continues with remaining templates");
-        }
+    // All in-tree JS templates, keyed by their stable templateId. The order
+    // here is the registration order. Native Go templates (realtime-tick,
+    // avatar-replication) are id-only — their match handler is mounted by the
+    // Go plugin's own InitModule.
+    var JS_TEMPLATE_IDS = [
+        MpKernelModule.TEMPLATE_IDS.SYNC_TURN_V1,
+        MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1,
+        MpKernelModule.TEMPLATE_IDS.LOBBY_HANDOFF_V1,
+        MpKernelModule.TEMPLATE_IDS.TOURNAMENT_V1,
+        MpKernelModule.TEMPLATE_IDS.LIVE_EVENT_V1,
+        MpKernelModule.TEMPLATE_IDS.PERSISTENT_PARTY_V1,
+        MpKernelModule.TEMPLATE_IDS.CONVERSATIONAL_PARTY_V1,
+        MpKernelModule.TEMPLATE_IDS.MR_ANCHOR_V1
+    ];
+    // Resolve a template object by id. Only called from mount() (InitModule
+    // VM, after every namespace IIFE has evaluated) so the references are safe.
+    function templateById(id) {
+        return MpKernelMatch.getTemplate(id);
     }
-    function register(initializer, logger) {
+    // Register the built-in echo generators used by the SDK conformance suite
+    // and any game that doesn't ship its own generator. Pure (no initializer /
+    // nk / logger) and idempotent, so it is safe to call lazily on EVERY pooled
+    // Goja VM at match-init time (see data/modules/zz_mp_kernel_handlers.js).
+    // It must NOT run at namespace-IIFE-eval time: MpKernelSyncTurn /
+    // MpKernelAsyncTurn evaluate AFTER MpKernelModule in the bundle, so an
+    // eager call would hit an undefined namespace.
+    function registerBuiltinGenerators() {
+        try {
+            MpKernelSyncTurn.registerGenerator(ECHO_GENERATOR);
+        }
+        catch (_e) { }
+        try {
+            MpKernelAsyncTurn.registerGenerator(ASYNC_ECHO_GENERATOR);
+        }
+        catch (_e) { }
+    }
+    MpKernelModule.registerBuiltinGenerators = registerBuiltinGenerators;
+    // VM-pool-safe registration. This is a SINGLE-parameter `register(initializer)`
+    // on purpose: postbuild.js's autoInvokeRegister re-invokes zero/one-arg
+    // register() functions at IIFE scope on EVERY Goja VM (not just the initial
+    // VM that runs InitModule), which is the only way the `__rpc_*` stubs get
+    // populated on the pooled VMs that actually serve RPC traffic. The previous
+    // two-arg `register(initializer, logger)` was skipped by autoInvokeRegister,
+    // so mp_create_match / mp_list_templates / mp_read_match_result resolved to
+    // `undefined` on pooled VMs → HTTP 500 "Could not run Rpc function".
+    //
+    // CRITICAL: this body must only touch MpKernelModule-internal symbols and
+    // must NOT call any `initializer.<x>()` other than registerRpc — both are
+    // requirements for autoInvokeRegister to treat it as safe, and the function
+    // runs at MpKernelModule's IIFE-end (before the template namespaces have
+    // evaluated). Template-object wiring + opcode-range reservation that needs
+    // those later namespaces lives in mount(), called from InitModule.
+    function register(initializer) {
+        // Whitelist every template id so `mp_create_match` (isKnownTemplate) and
+        // `mp_list_templates` work on every VM. Pure literal-id calls only.
+        for (var i = 0; i < JS_TEMPLATE_IDS.length; i++) {
+            registerTemplateId(JS_TEMPLATE_IDS[i]);
+        }
+        registerTemplateId(MpKernelModule.TEMPLATE_IDS.REALTIME_TICK_V1);
+        registerTemplateId(MpKernelModule.TEMPLATE_IDS.AVATAR_REPLICATION_V1);
+        initializer.registerRpc("mp_create_match", rpcCreateMatch);
+        initializer.registerRpc("mp_read_match_result", rpcReadMatchResult);
+        initializer.registerRpc("mp_list_templates", rpcListTemplates);
+    }
+    MpKernelModule.register = register;
+    // Full boot path — invoked once from src/main.ts InitModule, AFTER every
+    // namespace IIFE has evaluated (so template objects are resolvable). Does
+    // the opcode-range reservation + the runtime services (voice / agents /
+    // moderation / interest). Match handlers themselves are mounted by
+    // postbuild.js section 5b (direct registerMatch in the InitModule wrapper);
+    // generators are registered lazily at match-init time. This is also where
+    // we (re-)run register() so the RPCs are registered on the initial VM.
+    function mount(initializer, logger) {
+        register(initializer);
         try {
             MpKernelCodeRegistry.bootstrapKernelRanges();
         }
@@ -25543,55 +26913,38 @@ var MpKernelModule;
                 (err && err.message ? err.message : String(err)) +
                 " — kernel boot continues; opcode-range overlap detection disabled");
         }
-        // Templates ship one-by-one; P1 ships SyncTurnMatch, P5 adds
-        // AsyncTurnMatch + LobbyHandoffMatch.
-        safeRegisterTemplate(initializer, logger, "sync-turn-v1", MpKernelSyncTurn && MpKernelSyncTurn.template, function () {
-            MpKernelSyncTurn.registerGenerator(ECHO_GENERATOR);
-        });
-        safeRegisterTemplate(initializer, logger, "async-turn-v1", MpKernelAsyncTurn && MpKernelAsyncTurn.template, function () {
-            MpKernelAsyncTurn.registerGenerator(ASYNC_ECHO_GENERATOR);
-        });
-        safeRegisterTemplate(initializer, logger, "lobby-handoff-v1", MpKernelLobbyHandoff && MpKernelLobbyHandoff.template);
-        safeRegisterTemplate(initializer, logger, "tournament-v1", MpKernelTournament && MpKernelTournament.template);
-        safeRegisterTemplate(initializer, logger, "live-event-v1", MpKernelLiveEvent && MpKernelLiveEvent.template);
-        safeRegisterTemplate(initializer, logger, "persistent-party-v1", MpKernelPersistentParty && MpKernelPersistentParty.template);
-        safeRegisterTemplate(initializer, logger, "conversational-party-v1", MpKernelConvParty && MpKernelConvParty.template);
-        safeRegisterTemplate(initializer, logger, "mixed-reality-anchor-v1", MpKernelMrAnchor && MpKernelMrAnchor.template);
-        // RealtimeTickMatch lives in a native Go plugin (data/modules/realtime_tick.so)
-        // so it can run at 10–30 Hz without paying the Goja per-tick cost. The Go
-        // plugin registers the match handler under "realtime-tick-v1" at boot via
-        // its own InitModule. Here we ONLY whitelist the template_id so
-        // `mp_create_match` will accept it — without this guard the RPC returns
-        // NOT_FOUND even though the Go side is ready. Also reserve the opcode
-        // range so other JS templates can't collide with realtime-tick wires.
-        registerTemplateId(MpKernelModule.TEMPLATE_IDS.REALTIME_TICK_V1);
+        // Reserve each JS template's opcode range in the code registry. Wrapped
+        // per-template so a single missing namespace can't abort the rest.
+        for (var i = 0; i < JS_TEMPLATE_IDS.length; i++) {
+            var id = JS_TEMPLATE_IDS[i];
+            try {
+                var tmpl = templateById(id);
+                if (!tmpl || !tmpl.opRange || typeof tmpl.opRange.from !== "number" || typeof tmpl.opRange.to !== "number") {
+                    logger.error("[MpKernel] template '" + id + "' missing/invalid at mount — opcode range not reserved (handler still mounts via postbuild)");
+                    continue;
+                }
+                MpKernelMatch.registerTemplate(tmpl);
+            }
+            catch (err) {
+                logger.error("[MpKernel] template '" + id + "' range reserve failed: " +
+                    (err && err.message ? err.message : String(err)) + " — continuing");
+            }
+        }
+        // Native Go templates: id already whitelisted in register(); reserve their
+        // opcode ranges here so JS templates can't collide with their wires.
         try {
-            MpKernelCodeRegistry.register({
-                name: MpKernelModule.TEMPLATE_IDS.REALTIME_TICK_V1,
-                from: 0x6000,
-                to: 0x6FFF,
+            MpKernelCodeRegistry.reserve({
+                name: MpKernelModule.TEMPLATE_IDS.REALTIME_TICK_V1, from: 0x6000, to: 0x6FFF,
                 template_id: MpKernelModule.TEMPLATE_IDS.REALTIME_TICK_V1
             });
         }
         catch (e) {
-            // Range already reserved (re-register on hot reload). Idempotent.
             logger.debug("[MpKernel] realtime-tick range already reserved: " +
                 ((e && e.message) ? e.message : String(e)));
         }
-        // AvatarReplicationMatch lives in a native Go plugin
-        // (data/modules/avatar_replication/main.go → avatar_replication.so) so it
-        // can sustain 60–90 Hz pose tick with delta + quantization + AOI without
-        // paying the Goja per-tick cost. The Go plugin registers the match
-        // handler under "avatar-replication-v1" at boot via its own InitModule.
-        // Here we whitelist the template_id so `mp_create_match` accepts it and
-        // reserve opcode range 0xF000–0xFFFF (XR pose fast-path) so other JS
-        // templates can't collide with XR wires.
-        registerTemplateId(MpKernelModule.TEMPLATE_IDS.AVATAR_REPLICATION_V1);
         try {
-            MpKernelCodeRegistry.register({
-                name: MpKernelModule.TEMPLATE_IDS.AVATAR_REPLICATION_V1,
-                from: 0xF000,
-                to: 0xFFFF,
+            MpKernelCodeRegistry.reserve({
+                name: MpKernelModule.TEMPLATE_IDS.AVATAR_REPLICATION_V1, from: 0xF000, to: 0xFFFF,
                 template_id: MpKernelModule.TEMPLATE_IDS.AVATAR_REPLICATION_V1
             });
         }
@@ -25599,9 +26952,6 @@ var MpKernelModule;
             logger.debug("[MpKernel] avatar-replication range already reserved: " +
                 ((e && e.message) ? e.message : String(e)));
         }
-        initializer.registerRpc("mp_create_match", rpcCreateMatch);
-        initializer.registerRpc("mp_read_match_result", rpcReadMatchResult);
-        initializer.registerRpc("mp_list_templates", rpcListTemplates);
         // Voice-provider plumbing: register the `mp_voice_token` RPC. The
         // active LiveKit minter is constructed lazily on first RPC call
         // (config from storage `ivx_runtime_configs / mp_voice_livekit`,
@@ -25657,7 +27007,7 @@ var MpKernelModule;
         }
         logger.info("[MpKernel] kernel registered; templates=%d generators=echo", MpKernelCodeRegistry.listAll().length);
     }
-    MpKernelModule.register = register;
+    MpKernelModule.mount = mount;
 })(MpKernelModule || (MpKernelModule = {}));
 // IVX Multiplayer Kernel — server-side interest management.
 //
@@ -25919,251 +27269,289 @@ var MpKernelMatch;
         }
     }
     MpKernelMatch.broadcastKernel = broadcastKernel;
-    // ------- match handler factory -------
-    function makeHandler(template) {
+    // ------- template resolution (VM-pool safe) -------
+    //
+    // Match handlers run on POOLED Goja VMs that never execute InitModule, so
+    // anything populated only inside InitModule/register() (a template-object
+    // registry, generator maps, etc.) is absent when a match actually runs.
+    // We therefore resolve the template object directly from its owning
+    // namespace by id. `getTemplate` is only ever CALLED at match time — long
+    // after every namespace IIFE has evaluated — so the forward references
+    // below resolve cleanly on every VM regardless of namespace eval order.
+    function getTemplate(templateId) {
+        switch (templateId) {
+            case "sync-turn-v1": return MpKernelSyncTurn.template;
+            case "async-turn-v1": return MpKernelAsyncTurn.template;
+            case "lobby-handoff-v1": return MpKernelLobbyHandoff.template;
+            case "tournament-v1": return MpKernelTournament.template;
+            case "live-event-v1": return MpKernelLiveEvent.template;
+            case "persistent-party-v1": return MpKernelPersistentParty.template;
+            case "conversational-party-v1": return MpKernelConvParty.template;
+            case "mixed-reality-anchor-v1": return MpKernelMrAnchor.template;
+            default: return null;
+        }
+    }
+    MpKernelMatch.getTemplate = getTemplate;
+    // ------- match handler lifecycle impls -------
+    //
+    // These are the real handler bodies. The seven Nakama lifecycle hooks are
+    // registered via top-level global wrapper functions (data/modules/
+    // zz_mp_kernel_handlers.js) that postbuild.js injects into the InitModule
+    // wrapper with a direct `initializer.registerMatch(...)` call — the only
+    // shape Nakama's Goja AST walker can extract handler keys from. The
+    // wrappers delegate here. matchInit takes the templateId explicitly (the
+    // match-name = templateId, hard-coded per-template in its init wrapper);
+    // the remaining hooks read the resolved template back off kernel state.
+    function matchInitImpl(templateId, ctx, logger, nk, params) {
+        var template = getTemplate(templateId);
+        if (!template) {
+            throw new Error("[MpKernel] unknown template_id at matchInit: " + templateId);
+        }
+        var args = {
+            template_id: template.templateId,
+            game_id: (params && params.game_id) ? String(params.game_id) : "",
+            region: (params && params.region) ? String(params.region) : "",
+            template_init: (params && params.template_init) ? params.template_init : template.defaultInit,
+            creator_user_id: (params && params.creator_user_id) ? String(params.creator_user_id) : "",
+            flags: {}
+        };
+        var inner = template.initState(ctx, logger, nk, args);
+        // Determine reconnect grace from template_init or default.
+        var graceMs = MpKernelPresence.DEFAULT_GRACE_MS;
+        var ti = args.template_init;
+        if (ti && typeof ti.reconnect_grace_ms === "number" && ti.reconnect_grace_ms > 0) {
+            graceMs = ti.reconnect_grace_ms;
+        }
+        else if (ti && typeof ti.reconnect_grace_seconds === "number" && ti.reconnect_grace_seconds > 0) {
+            graceMs = ti.reconnect_grace_seconds * 1000;
+        }
+        var kernelState = {
+            template_id: template.templateId,
+            game_id: args.game_id,
+            region: args.region,
+            presence: MpKernelPresence.init(graceMs),
+            clock: MpKernelClock.init(),
+            feature_flags: 0,
+            counters: {
+                messages_in: 0,
+                messages_in_dropped_dupe: 0,
+                messages_in_dropped_unknown_op: 0,
+                messages_in_dropped_seq_gap: 0,
+                flap_kicks: 0,
+                reconnects_inside_grace: 0
+            },
+            template_state: inner.state,
+            template: template,
+            last_resync_seq: 0
+        };
+        // Inject a kernel-shared seq provider into the template state so
+        // server-origin broadcasts (kernel + template) advance ONE counter.
+        // Without this, both would emit `sender_user_id="server"` with
+        // independent seqs and clients ordering by (sender, seq) would
+        // see two interleaved monotonic streams. Conformance test 06.
+        if (typeof inner.state === "object" && inner.state !== null) {
+            inner.state.__seqProvider = function () {
+                return MpKernelClock.nextSeq(kernelState.clock);
+            };
+            inner.state.__matchTimeMs = function () {
+                return MpKernelClock.matchTimeMs(kernelState.clock);
+            };
+        }
         return {
-            matchInit: function (ctx, logger, nk, params) {
-                var args = {
-                    template_id: template.templateId,
-                    game_id: (params && params.game_id) ? String(params.game_id) : "",
-                    region: (params && params.region) ? String(params.region) : "",
-                    template_init: (params && params.template_init) ? params.template_init : template.defaultInit,
-                    creator_user_id: (params && params.creator_user_id) ? String(params.creator_user_id) : "",
-                    flags: {}
-                };
-                var inner = template.initState(ctx, logger, nk, args);
-                // Determine reconnect grace from template_init or default.
-                var graceMs = MpKernelPresence.DEFAULT_GRACE_MS;
-                var ti = args.template_init;
-                if (ti && typeof ti.reconnect_grace_ms === "number" && ti.reconnect_grace_ms > 0) {
-                    graceMs = ti.reconnect_grace_ms;
-                }
-                else if (ti && typeof ti.reconnect_grace_seconds === "number" && ti.reconnect_grace_seconds > 0) {
-                    graceMs = ti.reconnect_grace_seconds * 1000;
-                }
-                var kernelState = {
-                    template_id: template.templateId,
-                    game_id: args.game_id,
-                    region: args.region,
-                    presence: MpKernelPresence.init(graceMs),
-                    clock: MpKernelClock.init(),
-                    feature_flags: 0,
-                    counters: {
-                        messages_in: 0,
-                        messages_in_dropped_dupe: 0,
-                        messages_in_dropped_unknown_op: 0,
-                        messages_in_dropped_seq_gap: 0,
-                        flap_kicks: 0,
-                        reconnects_inside_grace: 0
-                    },
-                    template_state: inner.state,
-                    template: template,
-                    last_resync_seq: 0
-                };
-                // Inject a kernel-shared seq provider into the template state so
-                // server-origin broadcasts (kernel + template) advance ONE counter.
-                // Without this, both would emit `sender_user_id="server"` with
-                // independent seqs and clients ordering by (sender, seq) would
-                // see two interleaved monotonic streams. Conformance test 06.
-                if (typeof inner.state === "object" && inner.state !== null) {
-                    inner.state.__seqProvider = function () {
-                        return MpKernelClock.nextSeq(kernelState.clock);
-                    };
-                    inner.state.__matchTimeMs = function () {
-                        return MpKernelClock.matchTimeMs(kernelState.clock);
-                    };
-                }
-                return {
-                    state: kernelState,
-                    tickRate: inner.tickRate,
-                    label: inner.label
-                };
-            },
-            matchJoinAttempt: function (ctx, logger, nk, dispatcher, tick, state, presence, metadata) {
-                // Hand off to template for game-specific gating.
-                var ks = state;
-                var inner = ks.template.onJoinAttempt(ctx, logger, nk, dispatcher, tick, ks.template_state, presence, metadata);
-                ks.template_state = inner.state;
-                return { state: ks, accept: inner.accept, rejectMessage: inner.rejectMessage };
-            },
-            matchJoin: function (ctx, logger, nk, dispatcher, tick, state, presences) {
-                var ks = state;
-                var now = Date.now();
-                var matchId = ctx.matchId || "";
-                for (var i = 0; i < presences.length; i++) {
-                    var p = presences[i];
-                    var rj = MpKernelPresence.recordJoin(ks.presence, p, now);
-                    if (rj.flapped) {
-                        ks.counters.flap_kicks++;
-                        // Soft-ban: emit PlayerKicked + ERROR(FLAPPING), then evict.
-                        broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.PLAYER_KICKED, {
-                            user_id: p.userId,
-                            reason: MpKernel.LeaveReason.FLAPPING,
-                            ban_seconds: ks.presence.flap_ban_seconds
-                        }, null);
-                        MpKernelError.send(dispatcher, p, matchId, "server", MpKernelClock.seqProvider(ks.clock), MpKernelClock.matchTimeMs(ks.clock), MpKernelError.flapping(ks.presence.flap_ban_seconds));
-                        // Remove the seat fully — don't carry flapper state forward.
-                        delete ks.presence.seats[p.userId];
-                        try {
-                            dispatcher.matchKick([p]);
-                        }
-                        catch (_) { }
-                        continue;
-                    }
-                    if (rj.resumed) {
-                        ks.counters.reconnects_inside_grace++;
-                    }
-                    // Send Welcome to the (re)joining player.
-                    var welcome = {
-                        match_id: matchId,
-                        assigned_user_id: p.userId,
-                        server_match_time_ms: MpKernelClock.matchTimeMs(ks.clock),
-                        server_unix_ms: Date.now(),
-                        feature_flags: ks.feature_flags,
-                        reconnect_grace_ms_remaining: MpKernelPresence.reconnectGraceRemainingMs(rj.seat, ks.presence, now)
-                    };
-                    broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.WELCOME, welcome, [p]);
-                    // Broadcast PlayerJoined to everyone else (excluding self).
-                    var others = [];
-                    for (var k in ks.presence.seats) {
-                        if (!ks.presence.seats.hasOwnProperty(k))
-                            continue;
-                        if (k === p.userId)
-                            continue;
-                        var s = ks.presence.seats[k];
-                        if (s.disconnected_at_unix_ms === 0) {
-                            // We don't track Presence objects directly; fan-out goes
-                            // to "all-except-self" via dispatcher.broadcastMessage with
-                            // null + presenceRecipients excludes. Nakama's API doesn't
-                            // give us the Presence list back; we use targets=null and
-                            // an opt-out filter on the wire by sender_user_id check.
-                        }
-                    }
-                    broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.PLAYER_JOINED, {
-                        user_id: p.userId,
-                        is_agent: rj.seat.is_agent,
-                        display_name: rj.seat.display_name || "",
-                        presence_metadata: rj.seat.presence_metadata
-                    }, null);
-                }
-                // Defer to template for any game-side wiring.
-                var inner = ks.template.onJoin(ctx, logger, nk, dispatcher, tick, ks.template_state, presences);
-                ks.template_state = inner.state;
-                return { state: ks };
-            },
-            matchLeave: function (ctx, logger, nk, dispatcher, tick, state, presences) {
-                var ks = state;
-                var now = Date.now();
-                var matchId = ctx.matchId || "";
-                for (var i = 0; i < presences.length; i++) {
-                    MpKernelPresence.recordLeave(ks.presence, presences[i], now);
-                }
-                var inner = ks.template.onLeave(ctx, logger, nk, dispatcher, tick, ks.template_state, presences);
-                ks.template_state = inner.state;
-                return { state: ks };
-            },
-            matchLoop: function (ctx, logger, nk, dispatcher, tick, state, messages) {
-                var ks = state;
-                var matchId = ctx.matchId || "";
-                var now = Date.now();
-                // 1. GC reconnect-grace expirations.
-                var evicted = MpKernelPresence.evictExpired(ks.presence, now);
-                for (var i = 0; i < evicted.length; i++) {
-                    var ev = evicted[i];
-                    broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.PLAYER_LEFT, {
-                        user_id: ev.user_id,
-                        reason: MpKernel.LeaveReason.TIMEOUT
-                    }, null);
-                }
-                // 2. Process incoming messages — kernel intercepts control opcodes
-                //    + dedupes, then forwards game opcodes to the template.
-                var forwarded = [];
-                for (var j = 0; j < messages.length; j++) {
-                    var m = messages[j];
-                    ks.counters.messages_in++;
-                    if (handleKernelOpInbound(ks, dispatcher, matchId, m, logger))
-                        continue;
-                    // Idempotency dedup happens for game opcodes.
-                    var senderSeat = ks.presence.seats[m.sender.userId];
-                    if (senderSeat) {
-                        // Parse envelope to extract idem uuid + seq, but on parse failure
-                        // forward as-is (template may use legacy raw format during cutover).
-                        var hdr = parseHeader(m);
-                        if (hdr) {
-                            if (hdr.client_opcode_uuid && !MpKernelIdempotency.admit(senderSeat.idem_ring, hdr.client_opcode_uuid, now)) {
-                                ks.counters.messages_in_dropped_dupe++;
-                                continue;
-                            }
-                            if (hdr.seq > 0 && hdr.seq < senderSeat.last_seq_in_from_client) {
-                                // Out-of-order — drop, but don't error (Pillar 8: tolerate).
-                                continue;
-                            }
-                            if (hdr.seq > senderSeat.last_seq_in_from_client + MpKernelMatch.SEQ_GAP_THRESHOLD && senderSeat.last_seq_in_from_client !== 0) {
-                                ks.counters.messages_in_dropped_seq_gap++;
-                                MpKernelError.send(dispatcher, m.sender, matchId, "server", MpKernelClock.seqProvider(ks.clock), MpKernelClock.matchTimeMs(ks.clock), MpKernelError.build(MpKernel.ErrorCode.SEQ_GAP, "gap>" + MpKernelMatch.SEQ_GAP_THRESHOLD));
-                                // Force a state-resync — template.buildResult() (or a
-                                // dedicated snapshot hook) drives the snapshot payload.
-                                continue;
-                            }
-                            if (hdr.seq > senderSeat.last_seq_in_from_client) {
-                                senderSeat.last_seq_in_from_client = hdr.seq;
-                            }
-                            senderSeat.last_seen_unix_ms = now;
-                        }
-                    }
-                    forwarded.push(m);
-                }
-                // 3. Periodic ClockSync (every CLOCK_SYNC_INTERVAL_MS).
-                if (MpKernelClock.shouldEmitClockSync(ks.clock)) {
-                    broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.CLOCK_SYNC, MpKernelClock.buildClockSync(ks.clock, 0), null);
-                }
-                // 4. Hand off to template for game logic + outbound.
-                var inner = ks.template.onLoop(ctx, logger, nk, dispatcher, tick, ks.template_state, forwarded);
-                if (inner === null) {
-                    // Template requested match end. Persist + return null to Nakama.
-                    finalizeMatch(ks, dispatcher, matchId, "template_requested", logger, nk);
-                    return null;
-                }
-                ks.template_state = inner.state;
-                // 5. Liveness sanity check — quorum lost (active < min) ends match.
-                var initParams = ks.template.defaultInit;
-                var min = (initParams && typeof initParams.min_players === "number") ? initParams.min_players : 0;
-                if (min > 0 && MpKernelPresence.activeCount(ks.presence) < min) {
-                    // QuizVerse and similar games tolerate a brief drop-below-min during
-                    // grace. Only force-end when no seat is even pending reconnect.
-                    if (MpKernelPresence.totalCount(ks.presence) < min) {
-                        // Persist + broadcast in correct order: build the result first
-                        // so the wire MatchEnded can carry it (Pillar 8 — clients see
-                        // outcome immediately, don't have to round-trip an RPC).
-                        var endRes = null;
-                        if (typeof ks.template.buildResult === "function") {
-                            endRes = ks.template.buildResult(ks.template_state, "quorum_lost");
-                        }
-                        broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.MATCH_ENDED, {
-                            reason: MpKernel.EndReason.QUORUM_LOST,
-                            result_envelope: endRes
-                        }, null);
-                        finalizeMatch(ks, dispatcher, matchId, "quorum_lost", logger, nk);
-                        return null;
-                    }
-                }
-                return { state: ks };
-            },
-            matchTerminate: function (ctx, logger, nk, dispatcher, tick, state, graceSeconds) {
-                var ks = state;
-                var matchId = ctx.matchId || "";
-                var inner = ks.template.onTerminate(ctx, logger, nk, dispatcher, tick, ks.template_state, graceSeconds);
-                ks.template_state = inner.state;
-                finalizeMatch(ks, dispatcher, matchId, "operator_terminate", logger, nk);
-                return { state: ks };
-            },
-            matchSignal: function (ctx, logger, nk, dispatcher, tick, state, data) {
-                // Reserved for admin signals (force-end, mod-action). Default no-op.
-                return { state: state, data: data };
-            }
+            state: kernelState,
+            tickRate: inner.tickRate,
+            label: inner.label
         };
     }
-    MpKernelMatch.makeHandler = makeHandler;
+    MpKernelMatch.matchInitImpl = matchInitImpl;
+    function matchJoinAttemptImpl(ctx, logger, nk, dispatcher, tick, state, presence, metadata) {
+        // Hand off to template for game-specific gating.
+        var ks = state;
+        var inner = ks.template.onJoinAttempt(ctx, logger, nk, dispatcher, tick, ks.template_state, presence, metadata);
+        ks.template_state = inner.state;
+        return { state: ks, accept: inner.accept, rejectMessage: inner.rejectMessage };
+    }
+    MpKernelMatch.matchJoinAttemptImpl = matchJoinAttemptImpl;
+    function matchJoinImpl(ctx, logger, nk, dispatcher, tick, state, presences) {
+        var ks = state;
+        var now = Date.now();
+        var matchId = ctx.matchId || "";
+        for (var i = 0; i < presences.length; i++) {
+            var p = presences[i];
+            var rj = MpKernelPresence.recordJoin(ks.presence, p, now);
+            if (rj.flapped) {
+                ks.counters.flap_kicks++;
+                // Soft-ban: emit PlayerKicked + ERROR(FLAPPING), then evict.
+                broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.PLAYER_KICKED, {
+                    user_id: p.userId,
+                    reason: MpKernel.LeaveReason.FLAPPING,
+                    ban_seconds: ks.presence.flap_ban_seconds
+                }, null);
+                MpKernelError.send(dispatcher, p, matchId, "server", MpKernelClock.seqProvider(ks.clock), MpKernelClock.matchTimeMs(ks.clock), MpKernelError.flapping(ks.presence.flap_ban_seconds));
+                // Remove the seat fully — don't carry flapper state forward.
+                delete ks.presence.seats[p.userId];
+                try {
+                    dispatcher.matchKick([p]);
+                }
+                catch (_) { }
+                continue;
+            }
+            if (rj.resumed) {
+                ks.counters.reconnects_inside_grace++;
+            }
+            // Send Welcome to the (re)joining player.
+            var welcome = {
+                match_id: matchId,
+                assigned_user_id: p.userId,
+                server_match_time_ms: MpKernelClock.matchTimeMs(ks.clock),
+                server_unix_ms: Date.now(),
+                feature_flags: ks.feature_flags,
+                reconnect_grace_ms_remaining: MpKernelPresence.reconnectGraceRemainingMs(rj.seat, ks.presence, now)
+            };
+            broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.WELCOME, welcome, [p]);
+            // Broadcast PlayerJoined to everyone else (excluding self).
+            var others = [];
+            for (var k in ks.presence.seats) {
+                if (!ks.presence.seats.hasOwnProperty(k))
+                    continue;
+                if (k === p.userId)
+                    continue;
+                var s = ks.presence.seats[k];
+                if (s.disconnected_at_unix_ms === 0) {
+                    // We don't track Presence objects directly; fan-out goes
+                    // to "all-except-self" via dispatcher.broadcastMessage with
+                    // null + presenceRecipients excludes. Nakama's API doesn't
+                    // give us the Presence list back; we use targets=null and
+                    // an opt-out filter on the wire by sender_user_id check.
+                }
+            }
+            broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.PLAYER_JOINED, {
+                user_id: p.userId,
+                is_agent: rj.seat.is_agent,
+                display_name: rj.seat.display_name || "",
+                presence_metadata: rj.seat.presence_metadata
+            }, null);
+        }
+        // Defer to template for any game-side wiring.
+        var inner = ks.template.onJoin(ctx, logger, nk, dispatcher, tick, ks.template_state, presences);
+        ks.template_state = inner.state;
+        return { state: ks };
+    }
+    MpKernelMatch.matchJoinImpl = matchJoinImpl;
+    function matchLeaveImpl(ctx, logger, nk, dispatcher, tick, state, presences) {
+        var ks = state;
+        var now = Date.now();
+        var matchId = ctx.matchId || "";
+        for (var i = 0; i < presences.length; i++) {
+            MpKernelPresence.recordLeave(ks.presence, presences[i], now);
+        }
+        var inner = ks.template.onLeave(ctx, logger, nk, dispatcher, tick, ks.template_state, presences);
+        ks.template_state = inner.state;
+        return { state: ks };
+    }
+    MpKernelMatch.matchLeaveImpl = matchLeaveImpl;
+    function matchLoopImpl(ctx, logger, nk, dispatcher, tick, state, messages) {
+        var ks = state;
+        var matchId = ctx.matchId || "";
+        var now = Date.now();
+        // 1. GC reconnect-grace expirations.
+        var evicted = MpKernelPresence.evictExpired(ks.presence, now);
+        for (var i = 0; i < evicted.length; i++) {
+            var ev = evicted[i];
+            broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.PLAYER_LEFT, {
+                user_id: ev.user_id,
+                reason: MpKernel.LeaveReason.TIMEOUT
+            }, null);
+        }
+        // 2. Process incoming messages — kernel intercepts control opcodes
+        //    + dedupes, then forwards game opcodes to the template.
+        var forwarded = [];
+        for (var j = 0; j < messages.length; j++) {
+            var m = messages[j];
+            ks.counters.messages_in++;
+            if (handleKernelOpInbound(ks, dispatcher, matchId, m, logger))
+                continue;
+            // Idempotency dedup happens for game opcodes.
+            var senderSeat = ks.presence.seats[m.sender.userId];
+            if (senderSeat) {
+                // Parse envelope to extract idem uuid + seq, but on parse failure
+                // forward as-is (template may use legacy raw format during cutover).
+                var hdr = parseHeader(m);
+                if (hdr) {
+                    if (hdr.client_opcode_uuid && !MpKernelIdempotency.admit(senderSeat.idem_ring, hdr.client_opcode_uuid, now)) {
+                        ks.counters.messages_in_dropped_dupe++;
+                        continue;
+                    }
+                    if (hdr.seq > 0 && hdr.seq < senderSeat.last_seq_in_from_client) {
+                        // Out-of-order — drop, but don't error (Pillar 8: tolerate).
+                        continue;
+                    }
+                    if (hdr.seq > senderSeat.last_seq_in_from_client + MpKernelMatch.SEQ_GAP_THRESHOLD && senderSeat.last_seq_in_from_client !== 0) {
+                        ks.counters.messages_in_dropped_seq_gap++;
+                        MpKernelError.send(dispatcher, m.sender, matchId, "server", MpKernelClock.seqProvider(ks.clock), MpKernelClock.matchTimeMs(ks.clock), MpKernelError.build(MpKernel.ErrorCode.SEQ_GAP, "gap>" + MpKernelMatch.SEQ_GAP_THRESHOLD));
+                        // Force a state-resync — template.buildResult() (or a
+                        // dedicated snapshot hook) drives the snapshot payload.
+                        continue;
+                    }
+                    if (hdr.seq > senderSeat.last_seq_in_from_client) {
+                        senderSeat.last_seq_in_from_client = hdr.seq;
+                    }
+                    senderSeat.last_seen_unix_ms = now;
+                }
+            }
+            forwarded.push(m);
+        }
+        // 3. Periodic ClockSync (every CLOCK_SYNC_INTERVAL_MS).
+        if (MpKernelClock.shouldEmitClockSync(ks.clock)) {
+            broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.CLOCK_SYNC, MpKernelClock.buildClockSync(ks.clock, 0), null);
+        }
+        // 4. Hand off to template for game logic + outbound.
+        var inner = ks.template.onLoop(ctx, logger, nk, dispatcher, tick, ks.template_state, forwarded);
+        if (inner === null) {
+            // Template requested match end. Persist + return null to Nakama.
+            finalizeMatch(ks, dispatcher, matchId, "template_requested", logger, nk);
+            return null;
+        }
+        ks.template_state = inner.state;
+        // 5. Liveness sanity check — quorum lost (active < min) ends match.
+        var initParams = ks.template.defaultInit;
+        var min = (initParams && typeof initParams.min_players === "number") ? initParams.min_players : 0;
+        if (min > 0 && MpKernelPresence.activeCount(ks.presence) < min) {
+            // QuizVerse and similar games tolerate a brief drop-below-min during
+            // grace. Only force-end when no seat is even pending reconnect.
+            if (MpKernelPresence.totalCount(ks.presence) < min) {
+                // Persist + broadcast in correct order: build the result first
+                // so the wire MatchEnded can carry it (Pillar 8 — clients see
+                // outcome immediately, don't have to round-trip an RPC).
+                var endRes = null;
+                if (typeof ks.template.buildResult === "function") {
+                    endRes = ks.template.buildResult(ks.template_state, "quorum_lost");
+                }
+                broadcastKernel(ks, dispatcher, matchId, MpKernel.KernelOp.MATCH_ENDED, {
+                    reason: MpKernel.EndReason.QUORUM_LOST,
+                    result_envelope: endRes
+                }, null);
+                finalizeMatch(ks, dispatcher, matchId, "quorum_lost", logger, nk);
+                return null;
+            }
+        }
+        return { state: ks };
+    }
+    MpKernelMatch.matchLoopImpl = matchLoopImpl;
+    function matchTerminateImpl(ctx, logger, nk, dispatcher, tick, state, graceSeconds) {
+        var ks = state;
+        var matchId = ctx.matchId || "";
+        var inner = ks.template.onTerminate(ctx, logger, nk, dispatcher, tick, ks.template_state, graceSeconds);
+        ks.template_state = inner.state;
+        finalizeMatch(ks, dispatcher, matchId, "operator_terminate", logger, nk);
+        return { state: ks };
+    }
+    MpKernelMatch.matchTerminateImpl = matchTerminateImpl;
+    function matchSignalImpl(ctx, logger, nk, dispatcher, tick, state, data) {
+        // Reserved for admin signals (force-end, mod-action). Default no-op.
+        return { state: state, data: data };
+    }
+    MpKernelMatch.matchSignalImpl = matchSignalImpl;
     // ------- helpers -------
     function parseHeader(m) {
         try {
@@ -26261,26 +27649,31 @@ var MpKernelMatch;
         }
     }
     // ------- template registration -------
-    // Register a template with the Nakama runtime + the code registry.
-    // Idempotent across module reload.
-    function registerTemplate(initializer, template, logger) {
+    // Reserve a template's opcode range in the code registry. Pure (no
+    // `initializer`, `nk` or `logger`) so it is safe to run on EVERY Goja VM
+    // via the auto-invoked, single-arg MpKernelModule.register(initializer)
+    // (see postbuild.js autoInvokeRegister). Idempotent across module reload.
+    //
+    // NOTE: this intentionally does NOT call `initializer.registerMatch(...)`.
+    // Nakama's Goja AST walker (server/runtime_javascript_init.go
+    // @ getMatchHookFnIdentifier) only extracts handler keys from
+    // `registerMatch` calls that are DIRECT statements inside InitModule's
+    // body, with handler properties that are Identifiers referencing
+    // GLOBAL-scope functions. A nested call here (inside a namespace helper,
+    // passing a factory-built object literal) is invisible to the walker and
+    // throws "global id could not be extracted: not found" — which is exactly
+    // why every match template silently failed to mount. The actual
+    // registerMatch wiring now lives in postbuild.js section 5b, which emits
+    // direct calls in the generated InitModule wrapper pointing at the
+    // top-level wrappers declared in data/modules/zz_mp_kernel_handlers.js.
+    function registerTemplate(template) {
         MpKernelCodeRegistry.bootstrapKernelRanges();
-        MpKernelCodeRegistry.register({
+        MpKernelCodeRegistry.reserve({
             name: "template:" + template.templateId,
             from: template.opRange.from,
             to: template.opRange.to,
             template_id: template.templateId
         });
-        // MpKernel per-template registration helper. The set of templates
-        // is enumerated at build time in src/multiplayer-kernel/index.ts —
-        // each one is wrapped in safeRegisterTemplate() with a known literal
-        // label, and the templateId itself comes from a const exported in
-        // src/multiplayer-kernel/code-registry.ts. So while this exact call
-        // site doesn't have a literal, the upstream chain is fully static
-        // and reviewable. nakama-allow-dynamic-rpc-id
-        initializer.registerMatch(template.templateId, makeHandler(template));
-        logger.info("[MpKernel] registered match template '" + template.templateId +
-            "' opRange=0x" + template.opRange.from.toString(16) + "-0x" + template.opRange.to.toString(16));
     }
     MpKernelMatch.registerTemplate = registerTemplate;
 })(MpKernelMatch || (MpKernelMatch = {}));
@@ -45422,6 +46815,274 @@ var TournamentFormatPickN;
     }
     TournamentFormatPickN.computePayouts = computePayouts;
 })(TournamentFormatPickN || (TournamentFormatPickN = {}));
+// tutorx_progress.ts — Server-authoritative TutorX gamification
+// (XP, daily streak with freeze, and idempotent daily-quest claims).
+//
+// Replaces the previously client-only (localStorage) streak/XP/quest logic in
+// the TutorX web SPA. The web client calls these RPCs with `?unwrap`, so every
+// handler returns a FLAT JSON object (NOT the {success,data} envelope) whose
+// keys match what the SPA reads: res.xp, res.streak, res.streakDate, etc.
+//
+// RPCs:
+//   tutorx_xp_get      → { xp, streak, streakDate, level, freezes }
+//   tutorx_xp_add      → { xp, added, level }            payload: { delta }
+//   tutorx_streak_touch→ { streak, streakDate, freezes, frozen }
+//   tutorx_quest_claim → { claimed, alreadyClaimed, quest, xp, xpAwarded,
+//                          questsToday, streak, streakDate }
+//                        payload: { quest: "showup"|"ask"|"practice" }
+//
+// State is stored in ONE record (collection `tutorx_progress`, key `state`) per
+// user so streak/XP/quests stay consistent. Optimistic concurrency via the
+// storage `version` field prevents lost updates under concurrent calls.
+var TutorXProgress;
+(function (TutorXProgress) {
+    var COLLECTION = "tutorx_progress";
+    var STATE_KEY = "state";
+    // XP awarded per quest, enforced SERVER-SIDE (clients cannot inflate).
+    var QUEST_XP = {
+        showup: 20,
+        ask: 15,
+        practice: 15,
+    };
+    // Anti-abuse: cap a single tutorx_xp_add delta. Quests don't go through
+    // xp_add (they use quest_claim), so this only covers misc client XP events.
+    var MAX_XP_DELTA = 200;
+    // Streak-freeze economy: every user starts with 1 freeze; they earn another
+    // each time their streak crosses a 7-day milestone, capped at MAX_FREEZES.
+    var START_FREEZES = 1;
+    var MAX_FREEZES = 3;
+    var FREEZE_MILESTONE = 7;
+    // ─── Date helpers (UTC ISO day, matches the web client's slice(0,10)) ──
+    function today() {
+        return new Date().toISOString().slice(0, 10);
+    }
+    function addDays(isoDay, n) {
+        var d = new Date(isoDay + "T00:00:00.000Z");
+        d.setUTCDate(d.getUTCDate() + n);
+        return d.toISOString().slice(0, 10);
+    }
+    function defaultState() {
+        return {
+            xp: 0,
+            streak: 0,
+            streakDate: "",
+            freezes: START_FREEZES,
+            lastFreezeMilestone: 0,
+            quests: { date: "", claimed: {} },
+        };
+    }
+    function load(nk, userId) {
+        try {
+            var records = nk.storageRead([{ collection: COLLECTION, key: STATE_KEY, userId: userId }]);
+            if (records && records.length > 0 && records[0].value) {
+                var v = records[0].value;
+                var s = defaultState();
+                if (typeof v.xp === "number")
+                    s.xp = v.xp;
+                if (typeof v.streak === "number")
+                    s.streak = v.streak;
+                if (typeof v.streakDate === "string")
+                    s.streakDate = v.streakDate;
+                if (typeof v.freezes === "number")
+                    s.freezes = v.freezes;
+                if (typeof v.lastFreezeMilestone === "number")
+                    s.lastFreezeMilestone = v.lastFreezeMilestone;
+                if (v.quests && typeof v.quests === "object") {
+                    s.quests.date = typeof v.quests.date === "string" ? v.quests.date : "";
+                    s.quests.claimed = (v.quests.claimed && typeof v.quests.claimed === "object") ? v.quests.claimed : {};
+                }
+                return { state: s, version: records[0].version };
+            }
+        }
+        catch (_) {
+            // fall through to default
+        }
+        return { state: defaultState(), version: undefined };
+    }
+    function save(nk, userId, state, version) {
+        var write = {
+            collection: COLLECTION,
+            key: STATE_KEY,
+            userId: userId,
+            value: state,
+            permissionRead: 1, // owner can read their own progress
+            permissionWrite: 0, // server-only writes
+        };
+        // Optimistic concurrency: only attach version when we actually read one,
+        // so the very first write (no prior record) isn't rejected.
+        if (version)
+            write.version = version;
+        nk.storageWrite([write]);
+    }
+    // Roll the quest-day forward if it belongs to a previous day.
+    function rollQuests(state, day) {
+        if (state.quests.date !== day) {
+            state.quests = { date: day, claimed: {} };
+        }
+    }
+    // Grant freeze tokens for any 7-day milestones crossed since last grant.
+    function grantFreezeMilestones(state) {
+        var milestone = Math.floor(state.streak / FREEZE_MILESTONE) * FREEZE_MILESTONE;
+        if (milestone > state.lastFreezeMilestone) {
+            var steps = (milestone - state.lastFreezeMilestone) / FREEZE_MILESTONE;
+            for (var i = 0; i < steps && state.freezes < MAX_FREEZES; i++) {
+                state.freezes++;
+            }
+            state.lastFreezeMilestone = milestone;
+        }
+    }
+    // Advance the streak for "activity happened today". Returns whether a freeze
+    // was consumed to bridge a missed day. Mutates state in place.
+    function touchStreak(state, day) {
+        var frozen = false;
+        if (state.streakDate === day) {
+            // Already counted today — no change.
+            return false;
+        }
+        if (!state.streakDate) {
+            // First ever activity.
+            state.streak = 1;
+        }
+        else if (addDays(state.streakDate, 1) === day) {
+            // Consecutive day.
+            state.streak = state.streak + 1;
+        }
+        else {
+            // Missed one or more days. A single freeze bridges exactly one gap day;
+            // we consume one if available and the gap is recoverable, else reset.
+            if (state.freezes > 0) {
+                state.freezes--;
+                state.streak = state.streak + 1;
+                frozen = true;
+            }
+            else {
+                state.streak = 1;
+            }
+        }
+        state.streakDate = day;
+        grantFreezeMilestones(state);
+        return frozen;
+    }
+    function levelForXp(xp) {
+        // Mirror-ish of the web's level curve; informational only (client computes
+        // its own). Simple sqrt curve: level grows with total XP.
+        if (xp <= 0)
+            return 1;
+        return Math.floor(Math.sqrt(xp / 100)) + 1;
+    }
+    // ─── RPC: tutorx_xp_get ──────────────────────────────────────────────
+    function rpcXpGet(ctx, logger, nk, _payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        return JSON.stringify({
+            xp: s.xp,
+            streak: s.streak,
+            streakDate: s.streakDate,
+            freezes: s.freezes,
+            level: levelForXp(s.xp),
+        });
+    }
+    // ─── RPC: tutorx_xp_add ──────────────────────────────────────────────
+    function rpcXpAdd(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var delta = 0;
+        if (typeof data.delta === "number" && isFinite(data.delta)) {
+            delta = Math.floor(data.delta);
+        }
+        // Only positive, capped deltas are honoured. Negative/zero → no-op (but we
+        // still return the authoritative total so the client can reconcile).
+        if (delta < 0)
+            delta = 0;
+        if (delta > MAX_XP_DELTA)
+            delta = MAX_XP_DELTA;
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        if (delta > 0) {
+            s.xp = s.xp + delta;
+            try {
+                save(nk, userId, s, loaded.version);
+            }
+            catch (err) {
+                logger.warn("[TutorXProgress] xp_add save failed: " + (err && err.message ? err.message : String(err)));
+            }
+        }
+        return JSON.stringify({ xp: s.xp, added: delta, level: levelForXp(s.xp) });
+    }
+    // ─── RPC: tutorx_streak_touch ────────────────────────────────────────
+    function rpcStreakTouch(ctx, logger, nk, _payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var day = today();
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        var frozen = touchStreak(s, day);
+        try {
+            save(nk, userId, s, loaded.version);
+        }
+        catch (err) {
+            logger.warn("[TutorXProgress] streak_touch save failed: " + (err && err.message ? err.message : String(err)));
+        }
+        return JSON.stringify({
+            streak: s.streak,
+            streakDate: s.streakDate,
+            freezes: s.freezes,
+            frozen: frozen,
+        });
+    }
+    // ─── RPC: tutorx_quest_claim ─────────────────────────────────────────
+    // Idempotent per (user, quest, day). Awards server-enforced XP on FIRST claim
+    // only, and also touches the streak (claiming a quest is real daily activity).
+    function rpcQuestClaim(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var quest = typeof data.quest === "string" ? data.quest : "";
+        if (!QUEST_XP.hasOwnProperty(quest)) {
+            // Flat error (no throw) so anonymous/buggy callers don't get a goja
+            // stack trace + HTTP 500; the client just treats it as a no-op.
+            return JSON.stringify({ claimed: false, alreadyClaimed: false, quest: quest, error: "unknown_quest" });
+        }
+        var day = today();
+        var loaded = load(nk, userId);
+        var s = loaded.state;
+        rollQuests(s, day);
+        var already = s.quests.claimed[quest] === true;
+        var xpAwarded = 0;
+        if (!already) {
+            s.quests.claimed[quest] = true;
+            xpAwarded = QUEST_XP[quest];
+            s.xp = s.xp + xpAwarded;
+            // Completing a quest is genuine daily activity → keep the streak alive.
+            touchStreak(s, day);
+        }
+        try {
+            save(nk, userId, s, loaded.version);
+        }
+        catch (err) {
+            logger.warn("[TutorXProgress] quest_claim save failed: " + (err && err.message ? err.message : String(err)));
+        }
+        return JSON.stringify({
+            claimed: !already,
+            alreadyClaimed: already,
+            quest: quest,
+            xp: s.xp,
+            xpAwarded: xpAwarded,
+            questsToday: s.quests.claimed,
+            streak: s.streak,
+            streakDate: s.streakDate,
+            freezes: s.freezes,
+            level: levelForXp(s.xp),
+        });
+    }
+    // ─── Registration ────────────────────────────────────────────────────
+    function register(initializer) {
+        initializer.registerRpc("tutorx_xp_get", RpcHelpers.withCleanAuthError(rpcXpGet));
+        initializer.registerRpc("tutorx_xp_add", RpcHelpers.withCleanAuthError(rpcXpAdd));
+        initializer.registerRpc("tutorx_streak_touch", RpcHelpers.withCleanAuthError(rpcStreakTouch));
+        initializer.registerRpc("tutorx_quest_claim", RpcHelpers.withCleanAuthError(rpcQuestClaim));
+    }
+    TutorXProgress.register = register;
+})(TutorXProgress || (TutorXProgress = {}));
 // =============================================================================
 // User Model RPCs — read-side + signal ingest + consent
 //

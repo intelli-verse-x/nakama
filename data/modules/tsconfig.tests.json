@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outFile": "./build-tests/toolbelt-tests.js",
+    "declaration": false,
+    "noEmitOnError": false
+  },
+  "files": [
+    "./node_modules/nakama-common/index.d.ts",
+    "./src/shared/constants.ts",
+    "./src/shared/rpc-helpers.ts"
+  ],
+  "include": [
+    "src/learner-toolbelt/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "build-tests"
+  ]
+}

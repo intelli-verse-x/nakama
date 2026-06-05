@@ -643,6 +643,9 @@ declare namespace IntelliverseFriends {
 declare namespace IntelliverseFriendsList {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QuizVerseEntitlement {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QuizVerseGenerator {
     function registerNk(nk: nkruntime.Nakama): void;
     function buildAll(): MpKernelSyncTurn.IGenerator[];
@@ -651,7 +654,11 @@ declare namespace QuizVersePlugin {
     var RPC_CREATE_MATCH: string;
     var RPC_LOAD_PACK: string;
     var RPC_LIST_PACKS: string;
-    function register(initializer: nkruntime.Initializer, nk: nkruntime.Nakama, logger: nkruntime.Logger): void;
+    function register(initializer: nkruntime.Initializer): void;
+    function registerGenerators(nk: nkruntime.Nakama): void;
+}
+declare namespace QuizVerseLeague {
+    function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace QuizVerseMigration {
     var RPC_GET_PLAYER_CONTEXT: string;
@@ -917,6 +924,9 @@ declare namespace AccountMerge {
 declare namespace IdentityResolver {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QvKbUserDump {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace LearnerToolbelt {
     var MODULE_VERSION: string;
     interface LearnerStateInputs {
@@ -942,6 +952,7 @@ declare namespace LearnerToolbelt {
         mode: string;
         locale: string;
     }): any;
+    function rpcScorePredict(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcLearnerStateGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcLearnerInsightsGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcLearnerSoftCtaCheck(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
@@ -1066,6 +1077,7 @@ declare namespace LearnerToolbelt {
         lat: number | null;
         lng: number | null;
         language_of_instruction: string | null;
+        level?: string;
     }
     var SCHOOL_FIXTURE: SchoolRecord[];
     interface SchoolSearchHit {
@@ -1077,9 +1089,28 @@ declare namespace LearnerToolbelt {
         board: string | null;
         source: string;
         score: number;
+        level?: string;
     }
     function searchSchools(query: string, countryCode: string, limit: number): SchoolSearchHit[];
     function getSchoolById(schoolId: string): SchoolRecord | null;
+    /**
+     * Idempotent table + index bootstrap. Mirrors find_friends.bootstrapDatabase:
+     * every statement is IF NOT EXISTS and failures are non-fatal (the RPC simply
+     * keeps serving the fixture). Call once from main.ts InitModule.
+     */
+    function bootstrapSchoolsTable(nk: nkruntime.Nakama, logger: nkruntime.Logger): void;
+    /**
+     * DB-backed search. Returns:
+     *   null            → DB error / table missing  → caller uses fixture
+     *   { ready:false } → table exists but is EMPTY → caller uses fixture
+     *   { ready:true }  → DB-backed result (0 hits = a genuine no-result)
+     */
+    function searchSchoolsDb(nk: nkruntime.Nakama, query: string, countryCode: string, level: string, limit: number): {
+        ready: boolean;
+        hits: SchoolSearchHit[];
+    } | null;
+    /** DB-backed detail lookup; null → caller falls back to the fixture. */
+    function getSchoolByIdDb(nk: nkruntime.Nakama, schoolId: string): SchoolRecord | null;
 }
 declare namespace PerExamConfig {
     type PredictorMethod = 'irt-2pl' | 'concordance' | 'ap-composite' | 'irt-section-adaptive' | 'irt-focus-edition' | 'percentile-4section' | 'raw-to-scaled-120-180' | 'cutoff-band' | 'mbe-mee-mpt-composite' | 'nta-percentile-to-air' | 'marks-vs-rank-curve' | 'section-percentile-to-oa' | 'gate-score-formula' | 'prelims-cutoff-band' | 'marks-to-nlu-rank' | 'nta-percentile-multisubject' | 'written-cutoff-only' | 'tier-1-2-composite' | 'phase-1-2-cutoff' | 'bayes-fallback' | 'uk-boundary';
@@ -1555,7 +1586,7 @@ declare namespace MpKernelCodeRegistry {
         to: number;
         template_id?: string;
     }
-    function register(owner: IRangeOwner): void;
+    function reserve(owner: IRangeOwner): void;
     function findOwner(op: number): IRangeOwner | null;
     function listAll(): IRangeOwner[];
     function bootstrapKernelRanges(): void;
@@ -1621,7 +1652,9 @@ declare namespace MpKernelModule {
     function rpcCreateMatch(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcReadMatchResult(_ctx: nkruntime.Context, _logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcListTemplates(_ctx: nkruntime.Context, _logger: nkruntime.Logger, _nk: nkruntime.Nakama, _payload: string): string;
-    function register(initializer: nkruntime.Initializer, logger: nkruntime.Logger): void;
+    function registerBuiltinGenerators(): void;
+    function register(initializer: nkruntime.Initializer): void;
+    function mount(initializer: nkruntime.Initializer, logger: nkruntime.Logger): void;
 }
 declare namespace MpKernelInterest {
     interface IMatchCfg {
@@ -1683,8 +1716,38 @@ declare namespace MpKernelMatch {
         last_resync_seq: number;
     }
     function broadcastKernel<P>(state: IKernelState<any>, dispatcher: nkruntime.MatchDispatcher, matchId: string, op: number, payload: P, targets: nkruntime.Presence[] | null, senderUserId?: string): void;
-    function makeHandler<TS>(template: MpKernel.IMatchTemplate<TS>): nkruntime.MatchHandler<IKernelState<TS>>;
-    function registerTemplate<TS>(initializer: nkruntime.Initializer, template: MpKernel.IMatchTemplate<TS>, logger: nkruntime.Logger): void;
+    function getTemplate(templateId: string): MpKernel.IMatchTemplate<any> | null;
+    function matchInitImpl(templateId: string, ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, params: {
+        [key: string]: any;
+    }): {
+        state: nkruntime.MatchState;
+        tickRate: number;
+        label: string;
+    };
+    function matchJoinAttemptImpl(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presence: nkruntime.Presence, metadata: {
+        [key: string]: any;
+    }): {
+        state: nkruntime.MatchState;
+        accept: boolean;
+        rejectMessage?: string;
+    } | null;
+    function matchJoinImpl(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presences: nkruntime.Presence[]): {
+        state: nkruntime.MatchState;
+    } | null;
+    function matchLeaveImpl(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, presences: nkruntime.Presence[]): {
+        state: nkruntime.MatchState;
+    } | null;
+    function matchLoopImpl(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, messages: nkruntime.MatchMessage[]): {
+        state: nkruntime.MatchState;
+    } | null;
+    function matchTerminateImpl(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, graceSeconds: number): {
+        state: nkruntime.MatchState;
+    } | null;
+    function matchSignalImpl(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, dispatcher: nkruntime.MatchDispatcher, tick: number, state: nkruntime.MatchState, data: string): {
+        state: nkruntime.MatchState;
+        data: string;
+    } | null;
+    function registerTemplate<TS>(template: MpKernel.IMatchTemplate<TS>): void;
 }
 declare namespace MpKernelMatchResult {
     var COLLECTION: string;
@@ -4069,6 +4132,9 @@ declare namespace TournamentFormatPickN {
         pool_drained: boolean;
         house_backstop_used_bc: number;
     };
+}
+declare namespace TutorXProgress {
+    function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace Hiro {
     interface CurrencyAmount {
