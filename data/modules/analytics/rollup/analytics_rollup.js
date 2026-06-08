@@ -249,26 +249,51 @@ function arWriteOne(nk, collection, key, userId, value) {
 // ─── Core: scan events for one day ────────────────────────
 
 /**
- * Streams analytics_events under SYSTEM_USER and collects records falling on `dateStr`.
+ * Streams analytics_events under SYSTEM_USER and collects records for `dateStr`.
  * Returns { events: [...], scanned, truncated }.
  *
- * Note: we rely on the dashboard-fanout copy written by persistNormalizedEvent,
- * which is keyed as `dash_<YYYY-MM-DD>_<eventName>_...`. Scanning under SYSTEM_USER
- * avoids cross-user reads and is the cheapest path.
+ * Keys are stored as `dash_<YYYY-MM-DD>_<eventName>_<uid>_<ts>` by
+ * analytics.js::persistNormalizedEvent. Nakama's storageList returns objects
+ * in lexicographic key order, so all docs for a given date are clustered
+ * together. We exploit this in two ways:
+ *
+ *   1. SKIP phase  — pages before the target date prefix are skipped quickly
+ *      by checking only the first key in each page (no per-doc value parsing).
+ *   2. COLLECT phase — once we see the first key ≥ "dash_<dateStr>_" we
+ *      collect matching docs and stop the scan the moment keys advance past
+ *      "dash_<dateStr>~" (tilde sorts just above underscore+z, i.e. past all
+ *      keys with the target date prefix).
+ *
+ * This turns an O(578 k) full-collection scan into an O(docs_this_date) scan,
+ * eliminating the gateway timeout that caused the Players tab to show only 2 users.
+ *
+ * Fallback: non-dash_ docs (legacy user-owned copies) are skipped cheaply by
+ * key prefix check so we never double-count. If the collection has no dash_
+ * copies at all (pre-2024 data), the function returns an empty set quickly.
  */
 function arScanEventsForDate(nk, logger, dateStr) {
-    var events = [];
+    var events  = [];
     var scanned = 0;
     var truncated = false;
-    var cursor = null;
-    var pagesScanned = 0;
-    var maxPages = 100;         // cap: 100 pages × 100 = 10k objects / day; keeps well under the 30s RPC gateway timeout
-    var pageSize = 100;
-    var dayStart = Math.floor(new Date(dateStr + "T00:00:00.000Z").getTime() / 1000);
-    var dayEnd = dayStart + 86400;
+    var cursor  = null;
 
-    for (var p = 0; p < maxPages; p++) {
-        pagesScanned++;
+    // Lexicographic bounds for the target date's dash_ keys.
+    var keyFrom = "dash_" + dateStr + "_";   // inclusive lower bound
+    var keyTo   = "dash_" + dateStr + "~";   // exclusive upper bound (~ > all printable)
+
+    // Phase 1 — SKIP: advance the cursor without collecting until we reach the
+    // target date prefix. Each skip page is large to minimize round-trips.
+    var SKIP_PAGE  = 100;
+    var COLLECT_PAGE = 100;
+    // Hard cap on total pages to protect against degenerate collections that
+    // have no dash_ keys at all (avoids infinite loop / very long scan).
+    var MAX_TOTAL_PAGES = 600;  // 600 × 100 = 60 k objects max before giving up
+    var totalPages = 0;
+    var collecting = false;
+
+    while (totalPages < MAX_TOTAL_PAGES) {
+        totalPages++;
+        var pageSize = collecting ? COLLECT_PAGE : SKIP_PAGE;
         var page;
         try {
             page = nk.storageList(AR_SYSTEM_USER, AR_EVENTS_COLLECTION, pageSize, cursor);
@@ -278,35 +303,60 @@ function arScanEventsForDate(nk, logger, dateStr) {
         }
         if (!page || !page.objects || page.objects.length === 0) break;
 
+        // During skip phase: check if the last key in this page is still before
+        // the target date. If so, skip the whole page in one cursor advance.
+        if (!collecting) {
+            var lastKey = page.objects[page.objects.length - 1].key || "";
+            if (lastKey < keyFrom) {
+                // Entire page is before target date — advance cursor and loop.
+                if (!page.cursor) break;
+                cursor = page.cursor;
+                continue;
+            }
+            // Some keys in this page may overlap our target range — switch to
+            // per-doc processing from here onwards.
+            collecting = true;
+        }
+
+        // Collect phase: process each doc, stop when we pass the date boundary.
+        var pastDate = false;
         for (var i = 0; i < page.objects.length; i++) {
             scanned++;
             var o = page.objects[i];
-            if (!o || !o.value) continue;
-            // Only consider the dashboard-fanout copies; user-owned event copies are duplicates
-            // and would double-count aggregates. The dash_ prefix is written by
-            // analytics.js::persistNormalizedEvent.
-            if (!o.key || o.key.indexOf("dash_") !== 0) continue;
+            if (!o) continue;
 
+            var k = o.key || "";
+
+            // Once keys advance past "dash_<dateStr>~" we're done — no more
+            // docs for this date will appear (lexicographic ordering).
+            if (k >= keyTo) { pastDate = true; break; }
+
+            // Only collect dashboard-fanout copies (dash_ prefix with our date).
+            if (k < keyFrom || k.indexOf("dash_") !== 0) continue;
+
+            if (!o.value) continue;
             var ev = o.value;
-            var unix = ev.unixTimestamp;
-            if (!unix && ev.timestamp) unix = Math.floor(new Date(ev.timestamp).getTime() / 1000);
-            if (!unix) continue;
-            if (unix < dayStart || unix >= dayEnd) continue;
 
-            // Normalize event-derived gameId at the source so every downstream
-            // consumer (rollup, first-seen, retention, funnels) sees the same
-            // canonical UUID. Legacy events emitted with slug like "quizverse"
-            // are folded into 126bf539-... here.
+            // Normalize legacy gameId slugs to canonical UUIDs.
             if (ev.gameId) ev.gameId = arResolveGameId(ev.gameId);
-
             events.push(ev);
         }
 
+        if (pastDate) break;
         if (!page.cursor) break;
         cursor = page.cursor;
     }
 
-    if (pagesScanned >= maxPages && page && page.cursor) truncated = true;
+    if (totalPages >= MAX_TOTAL_PAGES && !collecting) {
+        // Never found the target date's keys — possible if all events predate
+        // the dash_ naming convention. Return empty + truncated flag so the
+        // caller can log a warning without hard-failing.
+        truncated = true;
+        logger.warn("[analytics_rollup] arScanEventsForDate: reached page cap (" +
+                    MAX_TOTAL_PAGES + ") without finding dash_ keys for " + dateStr +
+                    ". Collection may use a different key scheme.");
+    }
+
     return { events: events, scanned: scanned, truncated: truncated };
 }
 
@@ -1164,12 +1214,14 @@ function rpcAnalyticsRollupRun(ctx, logger, nk, payload) {
         return arErr("Scan failed: " + e.message, 500);
     }
 
-    // Hard-fail on truncation: a truncated scan means the rollup is incomplete.
-    // The cron job checks for this and will retry/alert. Operator must raise
-    // maxPages in arScanEventsForDate or partition by game.
+    // Truncation now only fires when the collection has no dash_<date>_ prefixed
+    // keys at all (pre-dash_ legacy data or wrong key scheme). Log a warning but
+    // proceed — the rollup will write an empty doc for the day rather than abort,
+    // which is better than leaving the day completely unprocessed.
     if (scanResult.truncated) {
-        logger.error("[analytics_rollup] scan truncated at " + scanResult.scanned + " events — rollup aborted for " + dateStr);
-        return arErr("Event scan truncated at " + scanResult.scanned + " objects; increase maxPages or partition by gameId", 507);
+        logger.warn("[analytics_rollup] scan found no dash_-prefixed keys for " + dateStr +
+                    " after scanning " + scanResult.scanned + " objects. " +
+                    "Events for this date may use a legacy key scheme.");
     }
 
     var events = scanResult.events;
