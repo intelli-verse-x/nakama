@@ -39071,9 +39071,7 @@ var SatoriCreatorEvents;
         if (startAt <= 0 || durationMin <= 0)
             return "Event schedule is invalid";
         var endAt = startAt + Math.floor(durationMin * 60);
-        // Allow up to 30 s before the scheduled start to absorb clock skew and
-        // the brief lag between the countdown reaching zero and the server tick.
-        if (nowSec < startAt - 30)
+        if (nowSec < startAt)
             return "Event has not started yet";
         if (nowSec >= endAt)
             return "Event has ended";
