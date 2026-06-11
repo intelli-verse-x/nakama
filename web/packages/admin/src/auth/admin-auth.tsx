@@ -48,6 +48,35 @@ function readStoredSession(): AdminSession | null {
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AdminSession | null>(() => readStoredSession());
 
+  // Listen for IVX_ADMIN_TOKEN postMessage from parent iframe wrapper (auto-login)
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      // Accept from any origin when embedded — the wrapper is same-origin with admin portal
+      if (event.data?.type !== "IVX_ADMIN_TOKEN" && event.data?.type !== "IVX_NAKAMA_ADMIN_SESSION") {
+        return;
+      }
+      const { token, username, userId, role, expiresAt } = event.data;
+      if (!token) return;
+
+      const nextSession: AdminSession = {
+        token,
+        username: username ?? "admin",
+        userId: userId ?? "",
+        role: role ?? "admin",
+        expiresAt: expiresAt ?? Math.floor(Date.now() / 1000) + 3600,
+      };
+      window.localStorage.setItem(ADMIN_SESSION_STORAGE_KEY, JSON.stringify(nextSession));
+      window.sessionStorage.setItem(
+        LEGACY_ANALYTICS_SESSION_STORAGE_KEY,
+        JSON.stringify({ token, username: nextSession.username, expiresAt: nextSession.expiresAt }),
+      );
+      setSession(nextSession);
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   useEffect(() => {
     if (!session?.expiresAt) return;
     window.sessionStorage.setItem(
