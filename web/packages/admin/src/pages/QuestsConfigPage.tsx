@@ -28,6 +28,9 @@ import {
   CalendarClock,
   CheckCircle2,
   Ban,
+  Upload,
+  Download,
+  FileJson,
 } from "lucide-react";
 import { serverKeyAuth, questEngine, satori, type Audience } from "@nakama/shared";
 import type { QuestConfig, QuestsConfig } from "@nakama/shared/rpc/quest-engine";
@@ -907,6 +910,10 @@ export function QuestsConfigPage() {
   const [editing, setEditing] = useState<QuestDef | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<QuestDef | null>(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [bulkJson, setBulkJson] = useState("");
+  const [bulkError, setBulkError] = useState("");
+  const [bulkMode, setBulkMode] = useState<"merge" | "replace">("merge");
 
   const { data: rawConfig, isLoading, isError, error, refetch } = useQuestEngineConfig(gameScope);
   const save = useSaveQuestEngineConfig(gameScope);
@@ -1000,6 +1007,88 @@ export function QuestsConfigPage() {
     [],
   );
 
+  const handleExport = useCallback(() => {
+    const exportData = questsConfig;
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `quests-config-${gameScope}-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [questsConfig, gameScope]);
+
+  const handleBulkImport = useCallback(() => {
+    setBulkError("");
+    try {
+      const parsed = JSON.parse(bulkJson);
+      
+      // Support both { quests: {...} } and direct { quest1: {...}, quest2: {...} } formats
+      let importedQuests: Record<string, QuestConfig>;
+      if (parsed.quests && typeof parsed.quests === "object") {
+        importedQuests = parsed.quests;
+      } else if (typeof parsed === "object" && !Array.isArray(parsed)) {
+        importedQuests = parsed;
+      } else {
+        throw new Error("Invalid format. Expected { quests: {...} } or { questId: {...}, ... }");
+      }
+
+      const questCount = Object.keys(importedQuests).length;
+      if (questCount === 0) {
+        throw new Error("No quests found in JSON");
+      }
+
+      // Validate each quest has required fields
+      for (const [id, q] of Object.entries(importedQuests)) {
+        if (!q.id) q.id = id;
+        if (!q.name) throw new Error(`Quest "${id}" missing required "name" field`);
+        if (!q.steps || !Array.isArray(q.steps) || q.steps.length === 0) {
+          throw new Error(`Quest "${id}" missing required "steps" array`);
+        }
+      }
+
+      let newConfig: QuestsConfig;
+      if (bulkMode === "replace") {
+        newConfig = { quests: importedQuests };
+      } else {
+        // Merge: existing + imported (imported overwrites on conflict)
+        newConfig = {
+          quests: {
+            ...(questsConfig?.quests ?? {}),
+            ...importedQuests,
+          },
+        };
+      }
+
+      save.mutate(newConfig, {
+        onSuccess: () => {
+          setShowBulkImport(false);
+          setBulkJson("");
+          setBulkError("");
+        },
+        onError: (err) => {
+          setBulkError(`Save failed: ${(err as Error).message}`);
+        },
+      });
+    } catch (e) {
+      setBulkError((e as Error).message);
+    }
+  }, [bulkJson, bulkMode, questsConfig, save]);
+
+  const bulkPreview = useMemo(() => {
+    if (!bulkJson.trim()) return null;
+    try {
+      const parsed = JSON.parse(bulkJson);
+      const quests = parsed.quests ?? parsed;
+      const count = Object.keys(quests).length;
+      return { count, valid: true };
+    } catch {
+      return { count: 0, valid: false };
+    }
+  }, [bulkJson]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1030,6 +1119,27 @@ export function QuestsConfigPage() {
           >
             <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
             Refresh
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={quests.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+            title="Export all quests as JSON"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </button>
+          <button
+            onClick={() => {
+              setShowBulkImport(true);
+              setBulkJson("");
+              setBulkError("");
+            }}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
+            title="Bulk import quests from JSON"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Import
           </button>
           <button
             onClick={() => {
@@ -1076,6 +1186,123 @@ export function QuestsConfigPage() {
           isPending={save.isPending}
           existingIds={quests.map((q) => q.id)}
         />
+      )}
+
+      {/* Bulk Import Modal */}
+      {showBulkImport && (
+        <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <FileJson className="h-4 w-4 text-primary" />
+              Bulk Import Quests
+            </h3>
+            <button
+              onClick={() => setShowBulkImport(false)}
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              Paste JSON (supports both formats)
+            </label>
+            <textarea
+              value={bulkJson}
+              onChange={(e) => {
+                setBulkJson(e.target.value);
+                setBulkError("");
+              }}
+              rows={12}
+              placeholder={`{
+  "quests": {
+    "my_quest_1": {
+      "id": "my_quest_1",
+      "name": "My Quest",
+      "category": "daily",
+      "steps": [{ "id": "s1", "eventType": "quiz_win", "requiredCount": 3 }],
+      "reward": { "currencies": { "coins": 100 } }
+    }
+  }
+}`}
+              className={cn(
+                "w-full rounded-md border bg-background px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring resize-none",
+                bulkError ? "border-destructive" : "border-border",
+              )}
+            />
+            {bulkError && (
+              <p className="flex items-center gap-1 text-xs text-destructive">
+                <AlertTriangle className="h-3 w-3" />
+                {bulkError}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="bulkMode"
+                checked={bulkMode === "merge"}
+                onChange={() => setBulkMode("merge")}
+                className="h-4 w-4 text-primary"
+              />
+              <span className="text-foreground">Merge</span>
+              <span className="text-xs text-muted-foreground">(add new, update existing)</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="bulkMode"
+                checked={bulkMode === "replace"}
+                onChange={() => setBulkMode("replace")}
+                className="h-4 w-4 text-primary"
+              />
+              <span className="text-foreground">Replace</span>
+              <span className="text-xs text-muted-foreground">(delete all, import fresh)</span>
+            </label>
+          </div>
+
+          {bulkPreview && (
+            <div className={cn(
+              "rounded-md border px-3 py-2 text-sm",
+              bulkPreview.valid
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                : "border-amber-500/30 bg-amber-500/10 text-amber-400",
+            )}>
+              {bulkPreview.valid
+                ? `✓ ${bulkPreview.count} quest${bulkPreview.count !== 1 ? "s" : ""} ready to import`
+                : "⚠ Invalid JSON format"}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 pt-2">
+            <button
+              onClick={handleBulkImport}
+              disabled={!bulkPreview?.valid || save.isPending}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {save.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              {bulkMode === "merge" ? "Merge Import" : "Replace All"}
+            </button>
+            <button
+              onClick={() => setShowBulkImport(false)}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
+            >
+              Cancel
+            </button>
+            {quests.length > 0 && (
+              <span className="ml-auto text-xs text-muted-foreground">
+                Current: {quests.length} quest{quests.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Search + Filter */}
