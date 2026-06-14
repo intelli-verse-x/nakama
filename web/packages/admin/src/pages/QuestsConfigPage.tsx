@@ -29,7 +29,8 @@ import {
   CheckCircle2,
   Ban,
 } from "lucide-react";
-import { serverKeyAuth, hiro, satori, type Audience } from "@nakama/shared";
+import { serverKeyAuth, questEngine, satori, type Audience } from "@nakama/shared";
+import type { QuestConfig, QuestsConfig } from "@nakama/shared/rpc/quest-engine";
 import { cn } from "@/lib/utils";
 
 const GLOBAL_CONFIG_SCOPE = "global";
@@ -69,16 +70,13 @@ interface QuestDef {
   [key: string]: unknown;
 }
 
-interface ChallengesConfig {
-  challenges?: Record<string, QuestDef>;
-  [key: string]: unknown;
-}
-
 type QuestStatus = "active" | "upcoming" | "expired" | "disabled" | "all";
 
 const CATEGORIES = [
   "daily",
   "weekly",
+  "monthly",
+  "friend",
   "seasonal",
   "event",
   "tutorial",
@@ -89,6 +87,17 @@ const CATEGORIES = [
 ] as const;
 
 const OBJECTIVE_TYPES = [
+  // QuizVerse-specific events
+  "quiz_win",
+  "quiz_complete",
+  "multiplayer_won",
+  "perfect_round",
+  "streak_day_reached",
+  "review_completed",
+  "friend_challenged",
+  "friend_played",
+  "category_mastery",
+  // Generic game events
   "matches_played",
   "matches_won",
   "score_reached",
@@ -179,38 +188,95 @@ function formatReward(r?: QuestReward): string[] {
   return parts;
 }
 
-function flattenQuests(config: ChallengesConfig): QuestDef[] {
-  if (!config?.challenges) return [];
-  return Object.entries(config.challenges).map(([key, val]) => ({
+function questConfigToUIDef(q: QuestConfig): QuestDef {
+  const step = q.steps?.[0];
+  return {
+    id: q.id,
+    name: q.name,
+    description: q.description,
+    category: q.category,
+    max_count: step?.requiredCount ?? 1,
+    reward: q.reward,
+    start_time_sec: q.startTimeSec,
+    end_time_sec: q.endTimeSec,
+    reset_time_sec: q.resetIntervalSec,
+    disabled: q.disabled,
+    sort_order: q.sortOrder,
+    metadata: {
+      ...q.metadata,
+      objective_type: step?.eventType ?? "custom",
+      required_value: step?.requiredValue,
+      repeatable: q.repeatable,
+    },
+  };
+}
+
+function uiDefToQuestConfig(q: QuestDef): QuestConfig {
+  const eventType = (q.metadata?.objective_type as string) ?? "custom";
+  const requiredValue = q.metadata?.required_value as number | undefined;
+  const repeatable = (q.metadata?.repeatable as boolean) ?? (q.reset_time_sec ? true : false);
+  
+  const { objective_type, required_value, repeatable: _, ...restMeta } = q.metadata ?? {};
+  
+  return {
+    id: q.id,
+    name: q.name,
+    description: q.description,
+    category: q.category,
+    repeatable,
+    resetIntervalSec: q.reset_time_sec,
+    steps: [{
+      id: "s1",
+      description: q.description,
+      eventType,
+      requiredCount: q.max_count,
+      requiredValue,
+    }],
+    reward: q.reward ? {
+      currencies: q.reward.currencies,
+      items: q.reward.items,
+      xp: q.reward.xp,
+    } : undefined,
+    startTimeSec: q.start_time_sec,
+    endTimeSec: q.end_time_sec,
+    disabled: q.disabled,
+    sortOrder: q.sort_order,
+    metadata: Object.keys(restMeta).length > 0 ? restMeta : undefined,
+  };
+}
+
+function flattenQuests(config: QuestsConfig | null | undefined): QuestDef[] {
+  if (!config?.quests) return [];
+  return Object.entries(config.quests).map(([key, val]) => questConfigToUIDef({
     ...val,
     id: val.id || key,
   }));
 }
 
-function rebuildConfig(base: ChallengesConfig, quests: QuestDef[]): ChallengesConfig {
-  const challenges: Record<string, QuestDef> = {};
-  for (const q of quests) challenges[q.id] = q;
-  return { ...base, challenges };
+function rebuildConfig(base: QuestsConfig | null | undefined, quests: QuestDef[]): QuestsConfig {
+  const questsMap: Record<string, QuestConfig> = {};
+  for (const q of quests) questsMap[q.id] = uiDefToQuestConfig(q);
+  return { quests: questsMap };
 }
 
 /* ------------------------------------------------------------------ */
 /*  Hooks                                                              */
 /* ------------------------------------------------------------------ */
 
-function useChallengesConfig(gameScope: string) {
+function useQuestEngineConfig(gameScope: string) {
   return useQuery({
-    queryKey: ["hiro", "config", "challenges", gameScope],
-    queryFn: () => hiro.getHiroConfig("challenges", serverKeyAuth(), rpcGameId(gameScope)),
+    queryKey: ["quest-engine", "config", gameScope],
+    queryFn: () => questEngine.getQuestConfig(serverKeyAuth(), rpcGameId(gameScope)),
     staleTime: 30_000,
   });
 }
 
-function useSaveChallengesConfig(gameScope: string) {
+function useSaveQuestEngineConfig(gameScope: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (config: Record<string, unknown>) =>
-      hiro.setHiroConfig("challenges", config, serverKeyAuth(), rpcGameId(gameScope)),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["hiro", "config", "challenges", gameScope] }),
+    mutationFn: (config: QuestsConfig) =>
+      questEngine.saveQuestConfig(config, serverKeyAuth(), rpcGameId(gameScope)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["quest-engine", "config", gameScope] }),
   });
 }
 
@@ -842,12 +908,12 @@ export function QuestsConfigPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<QuestDef | null>(null);
 
-  const { data: rawConfig, isLoading, isError, error, refetch } = useChallengesConfig(gameScope);
-  const save = useSaveChallengesConfig(gameScope);
+  const { data: rawConfig, isLoading, isError, error, refetch } = useQuestEngineConfig(gameScope);
+  const save = useSaveQuestEngineConfig(gameScope);
   const { data: audiences = [] } = useAudiences(gameScope);
 
-  const challengesConfig = (rawConfig ?? {}) as ChallengesConfig;
-  const quests = useMemo(() => flattenQuests(challengesConfig), [challengesConfig]);
+  const questsConfig = rawConfig ?? { quests: {} };
+  const quests = useMemo(() => flattenQuests(questsConfig), [questsConfig]);
 
   const filtered = useMemo(() => {
     let list = quests;
@@ -885,7 +951,7 @@ export function QuestsConfigPage() {
   const handleSubmit = useCallback(
     (quest: QuestDef) => {
       const updated = [...quests.filter((q) => q.id !== quest.id), quest];
-      const newConfig = rebuildConfig(challengesConfig, updated);
+      const newConfig = rebuildConfig(questsConfig, updated);
       save.mutate(newConfig, {
         onSuccess: () => {
           setShowForm(false);
@@ -893,14 +959,14 @@ export function QuestsConfigPage() {
         },
       });
     },
-    [quests, challengesConfig, save],
+    [quests, questsConfig, save],
   );
 
   const handleDelete = useCallback(
     (quest: QuestDef) => {
       setDeletingId(quest.id);
       const updated = quests.filter((q) => q.id !== quest.id);
-      const newConfig = rebuildConfig(challengesConfig, updated);
+      const newConfig = rebuildConfig(questsConfig, updated);
       save.mutate(newConfig, {
         onSettled: () => {
           setDeletingId(null);
@@ -908,17 +974,17 @@ export function QuestsConfigPage() {
         },
       });
     },
-    [quests, challengesConfig, save],
+    [quests, questsConfig, save],
   );
 
   const handleToggle = useCallback(
     (quest: QuestDef) => {
       const toggled = { ...quest, disabled: !quest.disabled };
       const updated = quests.map((q) => (q.id === quest.id ? toggled : q));
-      const newConfig = rebuildConfig(challengesConfig, updated);
+      const newConfig = rebuildConfig(questsConfig, updated);
       save.mutate(newConfig);
     },
-    [quests, challengesConfig, save],
+    [quests, questsConfig, save],
   );
 
   const handleDuplicate = useCallback(

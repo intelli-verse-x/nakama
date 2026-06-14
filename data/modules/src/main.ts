@@ -293,6 +293,10 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[QuestEngine] Registering quest_engine_get / record_event / claim_reward / admin_save_config / admin_get_config RPCs...");
     QuestEngine.register(initializer);
     logger.info("[QuestEngine] 5 RPCs registered successfully");
+
+    // Seed default QuizVerse quests if none exist
+    logger.info("[QuestEngine] Checking for default QuizVerse quests...");
+    QuizVerseQuestSeed.ensureQuizVerseQuests(nk, logger);
   } catch (err: any) {
     logger.error("[QuestEngine] Failed to register: " + (err && err.message ? err.message : String(err)));
   }

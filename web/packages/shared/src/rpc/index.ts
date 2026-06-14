@@ -4,6 +4,7 @@ export * as nakama from "./nakama";
 export * as hiro from "./hiro";
 export * as satori from "./satori";
 export * as quizverse from "./quizverse";
+export * as questEngine from "./quest-engine";
 export type {
   FeatureFlag,
   LiveEvent,

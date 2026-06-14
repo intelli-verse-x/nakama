@@ -3284,6 +3284,19 @@ declare namespace WalletGuestSync {
 declare namespace QuestEngine {
     function register(initializer: nkruntime.Initializer): void;
 }
+/**
+ * QuizVerse Quest Configuration Seed
+ *
+ * Call `ensureQuizVerseQuests()` at server startup to seed default quests
+ * if none exist. Safe to call multiple times — won't overwrite existing config.
+ */
+declare namespace QuizVerseQuestSeed {
+    /**
+     * Check if quest config exists for QuizVerse. If not, seed the defaults.
+     * Call this from main.ts InitModule or a startup hook.
+     */
+    function ensureQuizVerseQuests(nk: nkruntime.Nakama, logger: nkruntime.Logger): void;
+}
 declare namespace QvAgent {
     function register(initializer: nkruntime.Initializer): void;
 }
