@@ -297,6 +297,11 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     // Seed default QuizVerse quests if none exist
     logger.info("[QuestEngine] Checking for default QuizVerse quests...");
     QuizVerseQuestSeed.ensureQuizVerseQuests(nk, logger);
+
+    // Register EventBus bridge for automatic quest progress from existing events
+    logger.info("[QuestEventBusBridge] Registering EventBus subscriptions...");
+    QuestEventBusBridge.register(initializer, logger);
+    logger.info("[QuestEventBusBridge] Apps can now auto-progress quests via existing analytics events");
   } catch (err: any) {
     logger.error("[QuestEngine] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
