@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-06-19T06:30:46.194Z
+// Generated: 2026-06-19T07:11:22.534Z
 // RPC Count: 1137
 // ============================================================
 
@@ -141875,11 +141875,20 @@ var SatoriCreatorEvents;
             : scoreBestGuess(def, data.answer, nowMs);
         if (scoreResult.error)
             return RpcHelpers.errorResponse(scoreResult.error);
+        var playerEmail = "";
+        if (typeof data.email === "string") {
+            playerEmail = data.email.trim();
+        }
+        else if (typeof data.playerEmail === "string") {
+            playerEmail = data.playerEmail.trim();
+        }
         var answerRecord = {
             eventId: eventId,
             playerId: userId,
             deviceId: data.deviceId || data.device_id || "",
             playerName: String(data.playerName || data.displayName || data.player_name || ctx.username || "").trim(),
+            playerEmail: playerEmail,
+            email: playerEmail,
             answer: scoreResult.answer,
             correct: scoreResult.correct,
             score: scoreResult.score,
@@ -141909,7 +141918,7 @@ var SatoriCreatorEvents;
         }
         var leaderboardId = LEADERBOARD_PREFIX + eventId;
         try {
-            var lbUsername = String(data.playerName || data.displayName || data.player_name || ctx.username || "").trim();
+            var lbUsername = String(data.playerName || data.displayName || data.player_name || playerEmail || ctx.username || "").trim();
             nk.leaderboardRecordWrite(leaderboardId, userId, lbUsername, scoreResult.score, 0);
         }
         catch (err) {

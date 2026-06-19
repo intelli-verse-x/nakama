@@ -647,11 +647,20 @@ namespace SatoriCreatorEvents {
       : scoreBestGuess(def, data.answer, nowMs);
     if (scoreResult.error) return RpcHelpers.errorResponse(scoreResult.error);
 
+    var playerEmail = "";
+    if (typeof data.email === "string") {
+      playerEmail = (data.email as string).trim();
+    } else if (typeof data.playerEmail === "string") {
+      playerEmail = (data.playerEmail as string).trim();
+    }
+
     var answerRecord: any = {
       eventId: eventId,
       playerId: userId,
       deviceId: data.deviceId || data.device_id || "",
       playerName: String(data.playerName || data.displayName || data.player_name || ctx.username || "").trim(),
+      playerEmail: playerEmail,
+      email: playerEmail,
       answer: scoreResult.answer,
       correct: scoreResult.correct,
       score: scoreResult.score,
@@ -683,7 +692,7 @@ namespace SatoriCreatorEvents {
     var leaderboardId = LEADERBOARD_PREFIX + eventId;
 
     try {
-      var lbUsername = String(data.playerName || data.displayName || data.player_name || ctx.username || "").trim();
+      var lbUsername = String(data.playerName || data.displayName || data.player_name || playerEmail || ctx.username || "").trim();
       nk.leaderboardRecordWrite(leaderboardId, userId, lbUsername, scoreResult.score, 0);
     } catch (err: any) {
       logger.warn("[CreatorEvent] Leaderboard write failed: %s", err.message || String(err));
