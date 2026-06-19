@@ -1521,6 +1521,15 @@ namespace AdminConsole {
     var filterRegion = data.region || null;
     var filterCreatorId = data.creator_id || data.creatorId || null;
     var filterGameId = data.game_id || data.gameId || null;
+    // Resolve the requested scope to its canonical app id (UUID/slug/alias all
+    // fold to one value; "all"/"global"/"" → undefined = platform-wide, no
+    // filtering). Creator events that were authored before per-app scoping have
+    // no gameId stored; they belong to QuizVerse (mirrors the formatEvent
+    // default below), so an unset gameId is treated as QuizVerse. This makes
+    // "select Cricket VR / Last To Live" correctly show ZERO instead of
+    // leaking QuizVerse's untagged events into every app.
+    var DEFAULT_CREATOR_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+    var filterGameCanon = LegacyGameRegistry.resolveCanonicalGameId(nk, filterGameId);
     // Return limit (applied AFTER sorting so the newest events always surface).
     var limit = Math.min(data.limit || 500, 2000);
     // Collection bound — scan far more than `limit` so the sort sees every
@@ -1609,7 +1618,7 @@ namespace AdminConsole {
         rewards_json: rewardsJson,
         creator_id: ev.creatorId || "",
         creator_email: ev.creatorEmail || "",
-        game_id: ev.gameId || "126bf539-dae2-4bcf-964d-316c0fa1f92b",
+        game_id: ev.gameId || DEFAULT_CREATOR_GAME_ID,
         status: effectiveStatus,
         raw_status: ev.status,
         participant_count: Math.max(Number(ev.participantCount) || 0, participantCounts[ev.id] || 0),
@@ -1631,7 +1640,10 @@ namespace AdminConsole {
       if (filterStatus && effectiveStatus !== filterStatus) return false;
       if (filterRegion && (ev.region || "global") !== filterRegion) return false;
       if (filterCreatorId && ev.creatorId !== filterCreatorId) return false;
-      if (filterGameId && ev.gameId && ev.gameId !== filterGameId) return false;
+      if (filterGameCanon) {
+        var evCanon = LegacyGameRegistry.resolveCanonicalGameId(nk, ev.gameId || DEFAULT_CREATOR_GAME_ID);
+        if (evCanon !== filterGameCanon) return false;
+      }
       return true;
     }
 
