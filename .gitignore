@@ -755,6 +755,11 @@ scripts/apple_data_cache.json
 .local-secrets/
 config.bat
 
+# Cursor MCP config — holds real prod Nakama secrets (HTTP key, console +
+# admin creds) in the working tree. Never commit. Use .cursor/mcp.json.example
+# as the placeholder template for a new clone.
+.cursor/mcp.json
+
 # Lambda function build artifacts — source goes in src/, but the Linux x64
 # node_modules (with native sharp binaries, ~100 MB) and the staging zip
 # are deploy artifacts only. Build with `npm install && npm run package`

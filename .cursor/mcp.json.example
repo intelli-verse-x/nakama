@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "nakama-prod": {
+      "command": "npx",
+      "args": [
+        "tsx",
+        "mcp-server/src/index.ts"
+      ],
+      "env": {
+        "NAKAMA_CONSOLE_URL": "https://nakama.intelli-verse-x.ai",
+        "NAKAMA_API_URL": "https://nakama-rest.intelli-verse-x.ai",
+        "NAKAMA_CONSOLE_USER": "<console-username>",
+        "NAKAMA_CONSOLE_PASSWORD": "<console-password>",
+        "NAKAMA_HTTP_KEY": "<nakama-http-key>",
+        "NAKAMA_ADMIN_USER": "<analytics-admin-user>",
+        "NAKAMA_ADMIN_PASSWORD": "<analytics-admin-password>"
+      }
+    }
+  }
+}
