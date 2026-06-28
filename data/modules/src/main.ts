@@ -549,7 +549,7 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
   // ---- Ad Revenue Recording (PLAN-ADS-OPTIMIZATION-v2 §11) ----
   try {
     logger.info("[AdRevenueEvent] Registering ad_revenue_record RPC...");
-    AdRevenueEvent.register(initializer, logger);
+    AdRevenueEvent.register(initializer);
     logger.info("[AdRevenueEvent] Ad revenue recording registered successfully");
   } catch (err: any) {
     logger.error("[AdRevenueEvent] Failed to register: " + (err.message || String(err)));
@@ -558,7 +558,7 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
   // ---- Fortune Wheel Ad Spin (PLAN-ADS-OPTIMIZATION-v2 §4 #19) ----
   try {
     logger.info("[FortuneWheelAdSpin] Registering fortune_wheel_ad_spin RPC...");
-    FortuneWheelAdSpin.register(initializer, logger);
+    FortuneWheelAdSpin.register(initializer);
     logger.info("[FortuneWheelAdSpin] Fortune wheel ad spin registered successfully");
   } catch (err: any) {
     logger.error("[FortuneWheelAdSpin] Failed to register: " + (err.message || String(err)));
@@ -566,7 +566,7 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
 
   try {
     logger.info("[WebAdReward] Registering quizverse_web_ad_reward RPC...");
-    WebAdReward.register(initializer, logger);
+    WebAdReward.register(initializer);
   } catch (err: any) {
     logger.error("[WebAdReward] Failed to register: " + (err.message || String(err)));
   }

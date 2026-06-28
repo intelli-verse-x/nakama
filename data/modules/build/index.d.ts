@@ -643,6 +643,9 @@ declare namespace IntelliverseFriends {
 declare namespace IntelliverseFriendsList {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace BlogEmbed {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QuizVerseGenerator {
     function registerNk(nk: nkruntime.Nakama): void;
     function buildAll(): MpKernelSyncTurn.IGenerator[];
@@ -1082,8 +1085,10 @@ declare namespace LearnerToolbelt {
         lat: number | null;
         lng: number | null;
         language_of_instruction: string | null;
+        institution_type: string;
     }
     var SCHOOL_FIXTURE: SchoolRecord[];
+    var COLLEGE_FIXTURE: SchoolRecord[];
     interface SchoolSearchHit {
         school_id: string;
         display_name: string;
@@ -1092,9 +1097,10 @@ declare namespace LearnerToolbelt {
         country_code: string;
         board: string | null;
         source: string;
+        institution_type: string;
         score: number;
     }
-    function searchSchools(query: string, countryCode: string, limit: number): SchoolSearchHit[];
+    function searchSchools(query: string, countryCode: string, limit: number, institutionType?: string): SchoolSearchHit[];
     function getSchoolById(schoolId: string): SchoolRecord | null;
 }
 declare namespace PerExamConfig {
@@ -1179,6 +1185,17 @@ declare namespace LegacyNotifScheduler {
         lastLog: number;
     }
     function nowMinute(): number;
+    var DISPATCH_COLLECTION: string;
+    var DISPATCH_KEY: string;
+    function readSharedDispatch(nk: nkruntime.Nakama): {
+        [task: string]: number;
+    };
+    function writeSharedDispatch(nk: nkruntime.Nakama, tasks: {
+        [task: string]: number;
+    }): void;
+    function sharedDue(tasks: {
+        [task: string]: number;
+    }, task: string, periodMin: number): boolean;
     function shouldDispatch(state: SchedulerState, task: string, periodMin: number): boolean;
     function dispatchSafely(taskName: string, fn: Function, ctx: any, logger: nkruntime.Logger, nk: nkruntime.Nakama): void;
     function matchInitImpl(_ctx: nkruntime.Context, logger: nkruntime.Logger, _nk: nkruntime.Nakama, _params: {
@@ -3411,8 +3428,20 @@ declare namespace AdRevenueEvent {
     function rpcRecordAdRevenue(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     /**
      * Register all RPCs in this module.
+     *
+     * MUST be a single-parameter (`initializer`-only) function whose body
+     * contains ONLY `initializer.registerRpc(...)` calls. postbuild rewrites
+     * those into `__rpc_ad_revenue_record = rpcRecordAdRevenue` and then
+     * AUTO-INVOKES this register() inside the namespace IIFE on EVERY pooled
+     * Goja VM (see postbuild.js §3b). A second `logger` parameter (or any
+     * non-registerRpc body statement) makes postbuild treat auto-invoke as
+     * unsafe and SKIP it — which is exactly what left `__rpc_ad_revenue_record`
+     * undefined on every VM except the one that ran InitModule, producing
+     * "JavaScript runtime function invalid." for ad_revenue_record on ~96% of
+     * calls (the ones that landed on a pooled VM). Do NOT add params or logging
+     * here. Init-time logging lives in main.ts instead.
      */
-    function register(initializer: nkruntime.Initializer, logger: nkruntime.Logger): void;
+    function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace ConfigLoader {
     function loadConfig<T>(nk: nkruntime.Nakama, configKey: string, defaultValue: T): T;
@@ -3514,7 +3543,7 @@ declare namespace FortuneWheelAdSpin {
     /**
      * Register all RPCs in this module.
      */
-    function register(initializer: nkruntime.Initializer, logger: nkruntime.Logger): void;
+    function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace GeoTier {
     /**
@@ -3649,7 +3678,7 @@ declare namespace WalletHelpers {
 }
 declare namespace WebAdReward {
     function rpcWebAdReward(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
-    function register(initializer: nkruntime.Initializer, logger: nkruntime.Logger): void;
+    function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace TournamentAntiCheat {
     interface SubmitCheckInput {
