@@ -550,6 +550,7 @@ namespace LegacyPush {
           success: providerResult.success === true,
           messageId: providerResult.messageId,
           error: providerResult.error,
+          code: providerResult.code,
           removed: !!providerResult.removeToken
         });
       }
@@ -592,6 +593,23 @@ namespace LegacyPush {
         logger.warn("[Push] push_send_event FAILED to reach any device: eventType=%s targetUserId=%s — " +
           "check providerResults in the response body for per-platform errors.", subject, targetUserId);
       }
+      // Push delivery observability — feed the real device-delivery outcome to
+      // PushAlerts so a high device-failure rate or dead-token spike pages
+      // Discord (these never throw, so they're invisible to RPC analytics).
+      try {
+        var paDead = 0;
+        for (var dk in deadTokenStrings) { if (deadTokenStrings.hasOwnProperty(dk) && deadTokenStrings[dk]) paDead++; }
+        var paCodes: { [c: string]: number } = {};
+        for (var pc = 0; pc < providerResults.length; pc++) {
+          var prr: any = providerResults[pc];
+          if (prr && prr.success !== true) {
+            var ck = prr.removed ? "UNREGISTERED" : (prr.code || "send_failed");
+            paCodes[ck] = (paCodes[ck] || 0) + 1;
+          }
+        }
+        PushAlerts.ensureConfigured(ctx, logger);
+        PushAlerts.recordOutcome(nk, logger, "send_event", providerResults.length, successCount, paDead, paCodes);
+      } catch (_) {}
       return JSON.stringify({
         success: true,
         messageId: "nakama_notification_" + Date.now(),
@@ -1007,13 +1025,19 @@ namespace LegacyPush {
     var sent = 0;
     var localDead: { [token: string]: boolean } = {};
     var localHasDead = false;
+    var localCodes: { [c: string]: number } = {};
     for (var i = 0; i < tokensData.tokens.length; i++) {
       var t: any = tokensData.tokens[i];
       var providerResult = sendProviderPush(ctx, logger, nk, t, {
         title: title, body: body, data: mergedData,
         gameId: opts.gameId || "quizverse", eventType: eventType
       });
-      if (providerResult.success === true) sent++;
+      if (providerResult.success === true) {
+        sent++;
+      } else {
+        var lck = providerResult.removeToken ? "UNREGISTERED" : (providerResult.code || "send_failed");
+        localCodes[lck] = (localCodes[lck] || 0) + 1;
+      }
       if (providerResult.removeToken && t.token) { localDead[t.token] = true; localHasDead = true; }
     }
 
@@ -1037,6 +1061,15 @@ namespace LegacyPush {
         content: { eventType: eventType, title: title, body: body, data: mergedData },
         code: DEFAULT_PUSH_NOTIFICATION_CODE, persistent: true
       }]);
+    } catch (_) {}
+
+    // Scheduled-push delivery observability — same signal as the on-demand path
+    // so the cron silently dropping to 0 device-sends raises a Discord alert.
+    try {
+      var locDead = 0;
+      for (var ldk in localDead) { if (localDead.hasOwnProperty(ldk) && localDead[ldk]) locDead++; }
+      PushAlerts.ensureConfigured(ctx, logger);
+      PushAlerts.recordOutcome(nk, logger, "cron", tokensData.tokens.length, sent, locDead, localCodes);
     } catch (_) {}
 
     return sent > 0;
