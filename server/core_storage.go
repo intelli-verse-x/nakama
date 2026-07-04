@@ -579,10 +579,13 @@ func StorageWriteObjects(ctx context.Context, logger *zap.Logger, db *sql.DB, me
 	var acks []*api.StorageObjectAck
 	var sortedWrites StorageOpWrites
 
-	if err := ExecuteInTxPgx(ctx, db, func(tx pgx.Tx) error {
+	writeCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	if err := ExecuteInTxPgx(writeCtx, db, func(tx pgx.Tx) error {
 		// If the transaction is retried ensure we wipe any acks that may have been prepared by previous attempts.
 		var writeErr error
-		sortedWrites, acks, writeErr = storageWriteObjects(ctx, logger, metrics, tx, authoritativeWrite, ops)
+		sortedWrites, acks, writeErr = storageWriteObjects(writeCtx, logger, metrics, tx, authoritativeWrite, ops)
 		if writeErr != nil {
 			if writeErr == runtime.ErrStorageRejectedVersion || writeErr == runtime.ErrStorageRejectedPermission {
 				logger.Debug("Error writing storage objects.", zap.Error(writeErr))
@@ -602,7 +605,7 @@ func StorageWriteObjects(ctx context.Context, logger *zap.Logger, db *sql.DB, me
 		return nil, codes.Internal, err
 	}
 
-	storageIndexWrite(ctx, storageIndex, sortedWrites, acks)
+	storageIndexWrite(context.Background(), storageIndex, sortedWrites, acks)
 
 	return &api.StorageObjectAcks{Acks: acks}, codes.OK, nil
 }
@@ -836,7 +839,7 @@ func storageIndexWrite(ctx context.Context, storageIndex StorageIndex, ops Stora
 			Value:           o.Object.Value,
 			Version:         acks[i].Version,
 			PermissionRead:  o.Object.PermissionRead.GetValue(),
-			PermissionWrite: o.Object.PermissionRead.GetValue(),
+			PermissionWrite: o.Object.PermissionWrite.GetValue(),
 			CreateTime:      acks[i].CreateTime,
 			UpdateTime:      acks[i].UpdateTime,
 		})
