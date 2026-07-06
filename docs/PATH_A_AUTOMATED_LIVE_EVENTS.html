@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizVerse Path A — Automated YouTube-Driven Live Events</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #131824;
+    --panel2: #1a2130;
+    --border: #253047;
+    --text: #e6ebf4;
+    --muted: #8b97ad;
+    --cf: #f59e0b;      /* Content Factory */
+    --n8n: #ec4899;     /* n8n */
+    --nakama: #38bdf8;  /* Nakama */
+    --yt: #ef4444;      /* YouTube / Postiz */
+    --k8s: #a78bfa;     /* Kubernetes */
+    --green: #34d399;
+    --amber: #fbbf24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  header { text-align: center; margin-bottom: 14px; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(52, 211, 153, .12); color: var(--green);
+    border: 1px solid rgba(52, 211, 153, .35);
+    padding: 5px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    margin-bottom: 18px; letter-spacing: .4px;
+  }
+  .live-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  h1 { font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  h1 .grad {
+    background: linear-gradient(90deg, var(--yt), var(--cf), var(--nakama));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .subtitle { color: var(--muted); font-size: 15px; margin-top: 8px; max-width: 720px; margin-left: auto; margin-right: auto; }
+
+  /* ---------- legend ---------- */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    margin: 26px 0 44px;
+  }
+  .legend span {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12.5px; color: var(--muted);
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 5px 12px; border-radius: 8px;
+  }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ---------- section titles ---------- */
+  .section-title {
+    display: flex; align-items: center; gap: 12px;
+    margin: 52px 0 22px; font-size: 20px; font-weight: 700;
+  }
+  .section-title .num {
+    width: 32px; height: 32px; border-radius: 9px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel2); border: 1px solid var(--border);
+    font-size: 14px; color: var(--nakama);
+  }
+  .section-sub { color: var(--muted); font-size: 13.5px; margin: -14px 0 22px 44px; }
+
+  /* ---------- flow ---------- */
+  .flow { display: flex; flex-direction: column; align-items: stretch; }
+  .stage {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 22px;
+    border-left: 4px solid var(--border);
+    position: relative;
+  }
+  .stage.cf     { border-left-color: var(--cf); }
+  .stage.n8n    { border-left-color: var(--n8n); }
+  .stage.nakama { border-left-color: var(--nakama); }
+  .stage.yt     { border-left-color: var(--yt); }
+  .stage.k8s    { border-left-color: var(--k8s); }
+  .stage-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .stage-head .emoji { font-size: 20px; }
+  .stage-head b { font-size: 16px; }
+  .sys-tag {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+    padding: 2.5px 9px; border-radius: 999px;
+  }
+  .sys-tag.cf     { background: rgba(245,158,11,.14);  color: var(--cf); }
+  .sys-tag.n8n    { background: rgba(236,72,153,.14);  color: var(--n8n); }
+  .sys-tag.nakama { background: rgba(56,189,248,.14);  color: var(--nakama); }
+  .sys-tag.yt     { background: rgba(239,68,68,.14);   color: var(--yt); }
+  .sys-tag.k8s    { background: rgba(167,139,250,.14); color: var(--k8s); }
+  .stage p { color: var(--muted); font-size: 14px; }
+  .stage code, td code, .status-note code {
+    background: var(--panel2); border: 1px solid var(--border);
+    padding: 1.5px 7px; border-radius: 6px;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    font-size: 12px; color: #c9d6ea; white-space: nowrap;
+  }
+  .arrow {
+    align-self: center; height: 40px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: var(--muted); font-size: 11.5px; gap: 2px;
+  }
+  .arrow::before { content: ""; width: 2px; flex: 1; background: linear-gradient(var(--border), #3b4a68); }
+  .arrow::after  { content: "▼"; color: #3b4a68; font-size: 11px; line-height: 1; }
+  .arrow.labeled { height: 56px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 11px; font-size: 12.5px; color: var(--text);
+  }
+  .chip small { display: block; color: var(--muted); font-size: 11px; }
+
+  /* split lane (primary + fallback) */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+
+  /* ---------- 3-part mystery strip ---------- */
+  .parts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+  @media (max-width: 720px) { .parts { grid-template-columns: 1fr; } }
+  .part {
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: 11px; padding: 14px 15px;
+  }
+  .part b { font-size: 13.5px; color: var(--cf); }
+  .part p { font-size: 12.5px; margin-top: 5px; }
+
+  /* ---------- awards ---------- */
+  .awards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 820px) { .awards { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .awards { grid-template-columns: 1fr; } }
+  .award {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 13px; padding: 18px;
+  }
+  .award .emoji { font-size: 26px; }
+  .award b { display: block; margin: 8px 0 4px; font-size: 15px; }
+  .award p { color: var(--muted); font-size: 13px; }
+
+  /* ---------- status table ---------- */
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 13px; overflow: hidden; }
+  th, td { text-align: left; padding: 12px 16px; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+  th { background: var(--panel2); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+  tr:last-child td { border-bottom: none; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 11px; border-radius: 999px; }
+  .pill.ok      { background: rgba(52,211,153,.12); color: var(--green); }
+  .pill.pending { background: rgba(251,191,36,.12); color: var(--amber); }
+  .status-note {
+    margin-top: 16px; padding: 14px 18px; border-radius: 11px; font-size: 13.5px;
+    background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.25); color: #e8d9a8;
+  }
+
+  footer { margin-top: 60px; text-align: center; color: var(--muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="live-badge"><span class="dot"></span> LIVE IN PRODUCTION</div>
+    <h1>QuizVerse <span class="grad">Path A</span> — Automated YouTube-Driven Live Events</h1>
+    <p class="subtitle">
+      Zero-touch weekly loop: AI generates mystery videos, YouTube comments pick winners,
+      events end themselves, and champions are crowned every Sunday — no human in the loop.
+    </p>
+  </header>
+
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--cf)"></i> Content Factory (video AI)</span>
+    <span><i class="swatch" style="background:var(--yt)"></i> Postiz / YouTube</span>
+    <span><i class="swatch" style="background:var(--n8n)"></i> n8n (orchestration)</span>
+    <span><i class="swatch" style="background:var(--nakama)"></i> Nakama (game server)</span>
+    <span><i class="swatch" style="background:var(--k8s)"></i> Kubernetes (fallback)</span>
+  </div>
+
+  <!-- ============ 1. DAILY CONTENT LOOP ============ -->
+  <div class="section-title"><span class="num">1</span> Daily Content Loop — the 3-Part Mystery</div>
+  <p class="section-sub">Runs 6× per day per region, fully automated.</p>
+
+  <div class="flow">
+    <div class="stage n8n">
+      <div class="stage-head"><span class="emoji">⏰</span><b>Daily Best-Guess Cron</b><span class="sys-tag n8n">n8n</span></div>
+      <p>The <code>Daily Best Guess 6x Cron</code> workflow fires on a DST-safe schedule and calls the
+      Content Factory <code>quiz-shorts</code> pipeline with the region + series part to generate.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage cf">
+      <div class="stage-head"><span class="emoji">🎬</span><b>Quiz-Shorts Pipeline + Mystery Registry</b><span class="sys-tag cf">Content Factory</span></div>
+      <p>Each mystery is a 3-part series tracked in <code>quizverse_mystery_registry.py</code> —
+      clues, answer, video IDs, winner, and wrong guesses persist across parts so the story stays continuous.</p>
+      <div class="parts">
+        <div class="part"><b>Part 1 — Tease</b><p>2 clues. Ends with “First correct guess in the comments WINS.”</p></div>
+        <div class="part"><b>Part 2 — Build</b><p>4 clues. Script highlights real wrong guesses from Part 1 comments and hypes whether anyone has cracked it.</p></div>
+        <div class="part"><b>Part 3 — Reveal</b><p>Answer revealed. Script announces the actual winner by name — or “NOBODY got it!”</p></div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage yt">
+      <div class="stage-head"><span class="emoji">📤</span><b>Publish via Postiz → YouTube</b><span class="sys-tag yt">Postiz / YouTube</span></div>
+      <p>Postiz publishes the rendered short. Its publish-status webhook calls back into
+      <code>automation.py → receive_publish_status</code>, which extracts the YouTube video ID from the
+      release URL and stores it on the mystery record (<code>record_video_id()</code>). Now the system knows
+      exactly which video to scan for comments.</p>
+    </div>
+    <div class="arrow labeled"><span>viewers comment their guesses</span></div>
+
+    <div class="stage cf">
+      <div class="stage-head"><span class="emoji">🕵️</span><b>Comment Monitor — First Correct Guess Wins</b><span class="sys-tag cf">Content Factory</span></div>
+      <p>Before generating Part 2 / Part 3, <code>quizverse_comment_monitor.py</code> pulls comments through the
+      YouTube Data API and fuzzy-matches every guess against the answer (exact substring,
+      similarity ratio &gt; 0.75, significant-word match). The <em>earliest</em> correct commenter is the winner;
+      the funniest wrong guesses get featured in the next video.</p>
+      <div class="chip-row">
+        <div class="chip">🏆 Winner handle + timestamp<small>fed into Part 3 reveal script</small></div>
+        <div class="chip">😂 Top wrong guesses<small>featured in Part 2 script</small></div>
+        <div class="chip">📊 Total comment count<small>stored on the mystery record</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2. LIVE EVENT AUTO-END ============ -->
+  <div class="section-title"><span class="num">2</span> Live Events End Themselves</div>
+  <p class="section-sub">No creator or admin has to press “End”. Two independent sweepers guarantee it.</p>
+
+  <div class="flow">
+    <div class="split">
+      <div class="stage n8n">
+        <div class="stage-head"><span class="emoji">🔁</span><b>Primary — every minute</b><span class="sys-tag n8n">n8n</span></div>
+        <p><code>Live Event Auto-End Sweep</code> workflow calls the Nakama RPC
+        <code>creator_event_auto_end_sweep</code> every 60&nbsp;seconds. Silent when nothing to do;
+        posts to Discord when events end or fail.</p>
+      </div>
+      <div class="stage k8s">
+        <div class="stage-head"><span class="emoji">🛟</span><b>Fallback — every 5 min</b><span class="sys-tag k8s">Kubernetes</span></div>
+        <p>CronJob <code>live-events-auto-end</code> (<code>3-59/5 * * * *</code>) hits the same RPC,
+        so events still end even if n8n is down. The sweep is idempotent — double-firing is safe.</p>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage nakama">
+      <div class="stage-head"><span class="emoji">🏁</span><b>finalizeEndedEvent()</b><span class="sys-tag nakama">Nakama</span></div>
+      <p>For every published event past <code>scheduledAt + duration</code>: read the event leaderboard,
+      assign prize tiers, persist status <code>ended</code>, queue gift-card fulfillments, and emit
+      <code>EVENT_ENDED</code> (with a stable idempotency key). The same code path serves the manual
+      “End” button — Path&nbsp;B behaviour is untouched.</p>
+      <div class="chip-row">
+        <div class="chip">🏅 Prize tiers assigned<small>from final leaderboard</small></div>
+        <div class="chip">🎁 Gift cards queued<small>fulfillment pipeline</small></div>
+        <div class="chip">📡 EVENT_ENDED emitted<small>fans out via SatoriWebhooks</small></div>
+      </div>
+    </div>
+    <div class="arrow labeled"><span>EVENT_ENDED webhook</span></div>
+
+    <div class="stage cf">
+      <div class="stage-head"><span class="emoji">🎞️</span><b>Recap Video Pipeline</b><span class="sys-tag cf">Content Factory</span></div>
+      <p>The existing <code>quizverse-event-ended</code> n8n webhook triggers the recap video —
+      winners, top plays, and a call-to-action for the next event — published back to YouTube automatically.</p>
+    </div>
+  </div>
+
+  <!-- ============ 3. WEEKLY CHAMPIONS ============ -->
+  <div class="section-title"><span class="num">3</span> Sunday — Weekly Champions</div>
+  <p class="section-sub">Every play all week is silently tracked. Sunday evening, the crowns drop.</p>
+
+  <div class="flow">
+    <div class="stage nakama">
+      <div class="stage-head"><span class="emoji">📈</span><b>All Week — Silent Tracking</b><span class="sys-tag nakama">Nakama</span></div>
+      <p>Every answer submission emits <code>SCORE_SUBMITTED</code> on the EventBus. The
+      <code>weekly-champions</code> module listens (Path&nbsp;B submit RPCs untouched) and updates the regional
+      <code>weekly_total_score</code> leaderboard, player streaks, and daily-activity records.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage n8n">
+      <div class="stage-head"><span class="emoji">📅</span><b>Sunday Crons — per region</b><span class="sys-tag n8n">n8n</span></div>
+      <p><code>Weekly Champions Calculate</code> fires Sunday <b>20:00 IST</b> (India) and
+      <b>17:00 ET</b> (USA), calling Nakama RPC <code>weekly_champions_calculate</code> for that region,
+      then posts the winners board to Discord.</p>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="stage nakama">
+      <div class="stage-head"><span class="emoji">👑</span><b>Winners Crowned + Prizes Queued</b><span class="sys-tag nakama">Nakama</span></div>
+      <p>Gift cards are queued through the fulfillment pipeline, XUT bonuses are granted directly,
+      in-app notifications go out, and players claim via <code>weekly_champions_claim</code>.</p>
+    </div>
+  </div>
+
+  <div style="height:22px"></div>
+  <div class="awards">
+    <div class="award"><span class="emoji">🥇</span><b>Champion</b><p>#1 on the regional weekly leaderboard. Premium gift card.</p></div>
+    <div class="award"><span class="emoji">🥈</span><b>Runner-Ups ×2</b><p>#2 and #3 on the weekly leaderboard.</p></div>
+    <div class="award"><span class="emoji">🎯</span><b>Top Guesser</b><p>Most correct Part-1 YouTube guesses this week (from the comment monitor).</p></div>
+    <div class="award"><span class="emoji">🔥</span><b>Streak King</b><p>Longest consecutive-day play streak.</p></div>
+    <div class="award"><span class="emoji">🎲</span><b>Lucky Draw</b><p>Random pick from every player active ≥ 3 days this week.</p></div>
+    <div class="award"><span class="emoji">💰</span><b>Top-20 XUT Bonus</b><p>Leaderboard positions 4–20 earn an XUT currency bonus.</p></div>
+  </div>
+
+  <!-- ============ 4. DEPLOYMENT STATUS ============ -->
+  <div class="section-title"><span class="num">4</span> Production Status</div>
+  <table>
+    <thead><tr><th>Component</th><th>Where it runs</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>creator_event_auto_end_sweep</code> + <code>weekly_champions_*</code> RPCs</td>
+        <td>Nakama (aicart cluster)</td>
+        <td><span class="pill ok">● Live</span></td>
+      </tr>
+      <tr>
+        <td>Auto-End Sweep workflow (every minute)</td>
+        <td>n8n</td>
+        <td><span class="pill ok">● Active, running green</span></td>
+      </tr>
+      <tr>
+        <td>Weekly Champions workflow (Sun IST + ET)</td>
+        <td>n8n</td>
+        <td><span class="pill ok">● Active</span></td>
+      </tr>
+      <tr>
+        <td>Fallback CronJob <code>live-events-auto-end</code></td>
+        <td>Kubernetes / aicart</td>
+        <td><span class="pill ok">● Applied, HTTP 200</span></td>
+      </tr>
+      <tr>
+        <td>Comment monitor + mystery registry code</td>
+        <td>Content Factory API</td>
+        <td><span class="pill ok">● Deployed</span></td>
+      </tr>
+      <tr>
+        <td><code>YOUTUBE_API_KEY</code> (comment scanning)</td>
+        <td>Content Factory secrets</td>
+        <td><span class="pill pending">● Pending key</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="status-note">
+    ⚠️ Only remaining item: enable <b>YouTube Data API v3</b> in Google Cloud and add
+    <code>YOUTUBE_API_KEY</code> to <code>content-factory-secrets</code>. Until then comment scanning
+    no-ops gracefully — every other part of the loop runs.
+  </div>
+
+  <footer>
+    QuizVerse · Path A — Automated Live Events · Nakama × Content Factory × n8n × YouTube
+  </footer>
+</div>
+</body>
+</html>
