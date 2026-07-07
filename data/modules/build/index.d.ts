@@ -660,6 +660,16 @@ declare namespace QvAnalyticsCron {
 declare namespace BlogEmbed {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QvCacheRefreshCron {
+    function register(initializer: nkruntime.Initializer): void;
+    /**
+     * InitModule boot hook: seed video_quiz catalog from the postbuild embed, then
+     * force-warm qv_cache_video_quiz. Safe to call on every deploy/restart.
+     */
+    function bootOnInit(nk: nkruntime.Nakama, logger: nkruntime.Logger, env: {
+        [k: string]: string;
+    }): void;
+}
 declare namespace QvContextResolver {
     interface ResolvedContext {
         userId: string;
@@ -792,6 +802,11 @@ declare namespace QvQualityGate {
      */
     function normalizeForDedup(text: string): string;
     /**
+     * Dedup key for GATE 6 and buildSeenTextSet.
+     * Media questions share template prompts — key on provider_key / media.url instead.
+     */
+    function questionDedupeKey(q: any): string;
+    /**
      * Build a plain-object lookup set from an existing pool of validated questions.
      * Use this for O(1) duplicate detection inside validateQuestion().
      *
@@ -865,13 +880,25 @@ declare namespace QvQuestionCache {
         provider: string;
     }
     /**
+     * Idempotent seed: writes qv_catalog_video_quiz/catalog_{lang} + meta when the
+     * bundled version differs from storage. Reads globalThis.__QV_VIDEO_QUIZ_CATALOG__
+     * injected by postbuild.js at deploy time.
+     */
+    export function ensureVideoQuizCatalogSeeded(nk: nkruntime.Nakama, logger: nkruntime.Logger): {
+        ok: boolean;
+        version?: string;
+        question_count?: number;
+        skipped?: boolean;
+        error?: string;
+    };
+    /**
      * Full cache refresh pipeline for one topic.
      * Steps: circuit-check → fetch → validate+decode → shuffle+assign → enrich → store.
      * Falls back silently (keeps stale cache) on any error; records failure in circuit breaker.
      */
     export function refreshCache(nk: nkruntime.Nakama, logger: nkruntime.Logger, env: {
         [k: string]: string;
-    }, topic: string): {
+    }, topic: string, force?: boolean): {
         ok: boolean;
         topic: string;
         count: number;
@@ -1066,6 +1093,8 @@ declare namespace HiroBase {
         transactionId?: string;
         storeType: IAPStoreType;
         error?: string;
+        /** false when recordPurchase skipped a duplicate transactionId */
+        newPurchase?: boolean;
     }
     export function validateReceipt(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, request: IAPValidationRequest): IAPValidationResult;
     export function generateDefaultUsername(nk: nkruntime.Nakama): string;
@@ -1172,6 +1201,11 @@ declare namespace HiroTutorials {
 declare namespace HiroUnlockables {
     function getConfig(nk: nkruntime.Nakama): Hiro.UnlockablesConfig;
     function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace CoinPackCatalog {
+    /** Returns total coins to grant for a productId, or null if not a known coin pack. */
+    function resolveCoinGrant(productId: string): number | null;
+    function isCoinPack(productId: string): boolean;
 }
 declare namespace QvEntitlements {
     function grantSubscription(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, store: string, expiresAt: string | null): void;

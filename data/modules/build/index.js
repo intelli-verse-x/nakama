@@ -22660,7 +22660,7 @@ var HiroBase;
                 if (!allowFakeReceipts) {
                     return { valid: false, productId: request.productId, storeType: request.storeType, error: "Fake receipts disabled" };
                 }
-                return { valid: true, productId: request.productId, storeType: request.storeType, transactionId: "fake_" + nk.uuidv4() };
+                return { valid: true, productId: request.productId, storeType: request.storeType, transactionId: "fake_" + nk.uuidv4(), newPurchase: true };
             default:
                 return { valid: false, productId: request.productId, storeType: request.storeType, error: "Unknown store type" };
         }
@@ -22671,8 +22671,8 @@ var HiroBase;
             var validation = nk.purchaseValidateApple(userId, request.receipt);
             if (validation && validation.validatedPurchases && validation.validatedPurchases.length > 0) {
                 var purchase = validation.validatedPurchases[0];
-                recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "apple", request.price);
-                return { valid: true, productId: request.productId, storeType: "apple", transactionId: purchase.transactionId };
+                var isNewApple = recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "apple", request.price);
+                return { valid: true, productId: request.productId, storeType: "apple", transactionId: purchase.transactionId, newPurchase: isNewApple };
             }
             return { valid: false, productId: request.productId, storeType: "apple", error: "Validation failed" };
         }
@@ -22686,8 +22686,8 @@ var HiroBase;
             var validation = nk.purchaseValidateGoogle(userId, request.receipt);
             if (validation && validation.validatedPurchases && validation.validatedPurchases.length > 0) {
                 var purchase = validation.validatedPurchases[0];
-                recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "google", request.price);
-                return { valid: true, productId: request.productId, storeType: "google", transactionId: purchase.transactionId };
+                var isNewGoogle = recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "google", request.price);
+                return { valid: true, productId: request.productId, storeType: "google", transactionId: purchase.transactionId, newPurchase: isNewGoogle };
             }
             return { valid: false, productId: request.productId, storeType: "google", error: "Validation failed" };
         }
@@ -22701,8 +22701,8 @@ var HiroBase;
             var validation = nk.purchaseValidateFacebookInstant(userId, request.receipt);
             if (validation && validation.validatedPurchases && validation.validatedPurchases.length > 0) {
                 var purchase = validation.validatedPurchases[0];
-                recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "facebook", request.price);
-                return { valid: true, productId: request.productId, storeType: "facebook", transactionId: purchase.transactionId };
+                var isNewFacebook = recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "facebook", request.price);
+                return { valid: true, productId: request.productId, storeType: "facebook", transactionId: purchase.transactionId, newPurchase: isNewFacebook };
             }
             return { valid: false, productId: request.productId, storeType: "facebook", error: "Validation failed" };
         }
@@ -22721,7 +22721,7 @@ var HiroBase;
         if (transactionId && transactionId.indexOf("fake_") !== 0) {
             for (var i = 0; i < history.purchases.length; i++) {
                 if (history.purchases[i].transactionId === transactionId) {
-                    return; // already recorded — skip to prevent double-grant
+                    return false; // already recorded — skip to prevent double-grant
                 }
             }
         }
@@ -22733,6 +22733,7 @@ var HiroBase;
             price: price
         });
         Storage.writeJson(nk, IAP_COLLECTION, "history", userId, history);
+        return true;
     }
     // ---- Default Username Generation ----
     function generateDefaultUsername(nk) {
@@ -22794,6 +22795,40 @@ var HiroBase;
                 userId: userId, offerId: productId, reward: null, iap: true, price: data.price
             });
             return RpcHelpers.successResponse({ valid: true, reward: null, transactionId: result.transactionId });
+        }
+        // ── Coin packs: server-authoritative grant via WalletHelpers ───────────
+        if (isConsumableProduct && CoinPackCatalog.isCoinPack(productId)) {
+            var coinGrant = CoinPackCatalog.resolveCoinGrant(productId);
+            if (coinGrant === null) {
+                return RpcHelpers.errorResponse("Unknown coin pack product: " + productId);
+            }
+            var coinGameId = data.gameId || "default";
+            var coinWallet;
+            var isDuplicateTx = result.newPurchase === false;
+            if (isDuplicateTx) {
+                coinWallet = WalletHelpers.getGameWallet(nk, userId, coinGameId);
+                logger.info("[IAP] Coin pack already granted: userId=" + userId + " productId=" + productId + " tx=" + result.transactionId);
+                EventBus.emit(nk, logger, ctx, EventBus.Events.STORE_PURCHASE, {
+                    userId: userId, offerId: productId, reward: null, iap: true, price: data.price
+                });
+                return RpcHelpers.successResponse({
+                    valid: true,
+                    alreadyGranted: true,
+                    transactionId: result.transactionId,
+                    game_balance: coinWallet.currencies.game || 0
+                });
+            }
+            coinWallet = WalletHelpers.addCurrency(nk, logger, ctx, userId, coinGameId, "game", coinGrant);
+            logger.info("[IAP] Coin pack granted: userId=" + userId + " productId=" + productId + " coins=" + coinGrant + " tx=" + result.transactionId);
+            EventBus.emit(nk, logger, ctx, EventBus.Events.STORE_PURCHASE, {
+                userId: userId, offerId: productId, reward: { currencies: { game: coinGrant } }, iap: true, price: data.price
+            });
+            return RpcHelpers.successResponse({
+                valid: true,
+                transactionId: result.transactionId,
+                game_balance: coinWallet.currencies.game || 0,
+                coinsGranted: coinGrant
+            });
         }
         // Non-subscription: try Hiro store config for reward grant
         var storeConfig = HiroStore.getConfig(nk);
@@ -25106,6 +25141,58 @@ var HiroUnlockables;
     }
     HiroUnlockables.register = register;
 })(HiroUnlockables || (HiroUnlockables = {}));
+// ---------------------------------------------------------------------------
+//  coin-pack-catalog.ts — server-side coin pack grant amounts
+//
+//  Single source of truth for IAP coin pack rewards. Mirrors Unity
+//  ShopProductConfig.CoinPacks (base amount + bonus percent).
+//  Client amounts are never trusted — resolveCoinGrant() is used by
+//  hiro_iap_validate after receipt validation.
+// ---------------------------------------------------------------------------
+var CoinPackCatalog;
+(function (CoinPackCatalog) {
+    // Grant formula matches InAppPurchase.ResolveConsumableCoinAmount:
+    //   total = baseAmount + (baseAmount * bonusPercent) / 100
+    var COIN_PACKS = [
+        { productId: "com.intelliverse.quizverse.coins.500", baseAmount: 500, bonusPercent: 0 },
+        { productId: "com.intelliverse.quizverse.coins.1200", baseAmount: 1200, bonusPercent: 20 },
+        { productId: "com.intelliverse.quizverse.coins.2500", baseAmount: 2500, bonusPercent: 25 },
+        { productId: "com.intelliverse.quizverse.coins.6500", baseAmount: 6500, bonusPercent: 30 },
+        { productId: "com.intelliverse.quizverse.coins.15000", baseAmount: 15000, bonusPercent: 50 },
+    ];
+    function computeGrant(baseAmount, bonusPercent) {
+        if (bonusPercent <= 0)
+            return baseAmount;
+        return baseAmount + Math.floor((baseAmount * bonusPercent) / 100);
+    }
+    /** Returns total coins to grant for a productId, or null if not a known coin pack. */
+    function resolveCoinGrant(productId) {
+        if (!productId)
+            return null;
+        for (var i = 0; i < COIN_PACKS.length; i++) {
+            var pack = COIN_PACKS[i];
+            if (pack.productId === productId) {
+                return computeGrant(pack.baseAmount, pack.bonusPercent);
+            }
+        }
+        // Fallback: match by suffix (e.g. Play alias IDs that still end in coins.NNN)
+        if (productId.indexOf("coins.") === -1)
+            return null;
+        for (var j = 0; j < COIN_PACKS.length; j++) {
+            var canonical = COIN_PACKS[j];
+            var suffix = canonical.productId.substring(canonical.productId.indexOf("coins."));
+            if (productId.indexOf(suffix) !== -1) {
+                return computeGrant(canonical.baseAmount, canonical.bonusPercent);
+            }
+        }
+        return null;
+    }
+    CoinPackCatalog.resolveCoinGrant = resolveCoinGrant;
+    function isCoinPack(productId) {
+        return resolveCoinGrant(productId) !== null;
+    }
+    CoinPackCatalog.isCoinPack = isCoinPack;
+})(CoinPackCatalog || (CoinPackCatalog = {}));
 // ---------------------------------------------------------------------------
 //  entitlements.ts  —  quizverse_get_entitlements + quizverse_rc_sync
 //
