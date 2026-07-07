@@ -155985,12 +155985,17 @@ var SatoriCreatorEvents;
                 var ev = obj.value;
                 var eventId = String(ev.id || obj.key || "");
                 var creatorId = String(ev.creatorId || obj.userId || obj.user_id || "");
-                if (!eventId || !creatorId)
+                // The storage write MUST target the row's actual owner. Events published
+                // via the admin/system path are owned by the zero UUID while ev.creatorId
+                // holds the human creator - writing with creatorId + this row's version
+                // fails the OCC check on every sweep (event b108b2fb..., Jul 7 2026).
+                var rowOwner = String(obj.userId || obj.user_id || "");
+                if (!eventId || !rowOwner)
                     continue;
                 if (!shouldSpaAutoEnd(ev, now, graceSec))
                     continue;
                 try {
-                    var prizeQueue = finalizeSpaAutoEndedEvent(nk, logger, eventId, creatorId, ev, obj.version || "", "spa_auto_end_sweep");
+                    var prizeQueue = finalizeSpaAutoEndedEvent(nk, logger, eventId, rowOwner, ev, obj.version || "", "spa_auto_end_sweep");
                     ended.push({
                         eventId: eventId,
                         title: ev.title || "",
@@ -156003,7 +156008,7 @@ var SatoriCreatorEvents;
                     var msg = (err && err.message) ? err.message : String(err);
                     logger.error("[CreatorEvent SPA] auto-end failed for event %s: %s", eventId, msg);
                     try {
-                        var reread = nk.storageRead([{ collection: "live_events", key: eventId, userId: creatorId }]);
+                        var reread = nk.storageRead([{ collection: "live_events", key: eventId, userId: rowOwner }]);
                         if (reread && reread.length > 0 && reread[0].value &&
                             String(reread[0].value.status || "").toLowerCase() === "ended") {
                             var recovered = computeAndQueueWinners(nk, logger, reread[0].value, eventId);
