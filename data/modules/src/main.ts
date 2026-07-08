@@ -356,6 +356,65 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[Legacy] Registering groups RPCs...");
     LegacyGroups.register(initializer);
 
+    // ── Social maintenance tick (§19.7 / G-018 / B-005) ────────────────────
+    // Service-token cleanup RPC driven by the k8s CronJob
+    // (intelli-verse-kube-infra/nakama/social-maintenance-cronjob.yaml).
+    // Sweeps expired challenges, stale rate-limit buckets (incl. the B-009
+    // per-pair keys) and dead presence rows. Mounted after AnalyticsAlerts.init
+    // so it gets latency/error instrumentation like every other RPC.
+    // GUARD: If the module fails to compile (e.g., SYSTEM_USER_ID hoisting
+    // issue or tsconfig exclusion), fail FAST with a clear FATAL log
+    // instead of silently letting the legacy bridge register a broken stub
+    // that returns HTTP 500 "JavaScript runtime function invalid".
+    if (typeof SocialMaintenance === "undefined" || typeof SocialMaintenance.register !== "function") {
+      logger.error("[FATAL] SocialMaintenance module is undefined or missing register() — " +
+        "the TypeScript build did NOT include data/modules/src/social/maintenance.ts. " +
+        "The ivx_social_maintenance_tick RPC will fall through to the legacy bridge " +
+        "and produce HTTP 500. Rebuild the bundle and verify the file is in the tsconfig include list.");
+    } else {
+      logger.info("[SocialMaintenance] Registering ivx_social_maintenance_tick...");
+      SocialMaintenance.register(initializer);
+      SocialMaintenance.registerHooks(initializer); // GDPR after-delete-account cascade (needs real initializer)
+    }
+
+    // ── Group membership cap (beforeJoinGroup hook, hooks-only module) ─────
+    // Server-authoritative counterpart of the Unity client's MaxJoinedGroups
+    // check. Hooks need a real initializer, so this registers here in
+    // InitModule — same contract as SocialMaintenance.registerHooks above.
+    if (typeof SocialGroupLimits !== "undefined" && typeof SocialGroupLimits.registerHooks === "function") {
+      logger.info("[SocialGroupLimits] Registering beforeJoinGroup membership cap...");
+      SocialGroupLimits.registerHooks(initializer);
+    } else {
+      logger.warn("[SocialGroupLimits] module missing from bundle — group cap is client-side only.");
+    }
+
+    // ── Cold-start onboarding state (G-014, doc §E.4) ──────────────────────
+    logger.info("[SocialOnboarding] Registering ivx_social_onboarding_state...");
+    SocialOnboardingState.register(initializer);
+
+    // ── Social Layer v2 features (doc §8.2, §7.3, §7.4, §14A) ──────────────
+    logger.info("[SocialV2] Registering presence v2, group links, group search, friends feed...");
+    SocialPresenceV2.register(initializer);
+    SocialGroupLinks.register(initializer);
+    SocialGroupSearch.register(initializer);
+    SocialFriendsFeed.register(initializer);
+
+    // ── Multi-app registry + engagement systems (doc §19.3, G-020, Q-06, G-017) ──
+    logger.info("[SocialV2] Registering app registry, pressure summary, duo quests, fanout queue...");
+    SocialAppRegistry.register(initializer);
+    SocialPressureSummary.register(initializer);
+    DuoQuests.register(initializer);
+    FanoutQueue.register(initializer);
+    SocialReports.register(initializer);
+    // SocialPlayerStats has no RPCs — it's written by the quiz submit flow
+    // and read by friends_list; nothing to register.
+
+    // ── Phase-3 consolidation + engagement tail (doc §12/App.C, Q-11, G-003/015/016/021/022) ──
+    logger.info("[SocialV2] Registering ivx_social_* aliases, leagues, engagement extras...");
+    SocialRpcAliases.register(initializer);
+    SocialLeagues.register(initializer);
+    SocialEngagementExtras.register(initializer);
+
     // ── Group membership cross-device sync hooks ──────────────────────────
     // After a successful built-in JoinGroup / LeaveGroup, send the acting user
     // a self-notification (code 500 / 501) so ALL of their open sockets — i.e.
@@ -437,6 +496,12 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[PersonalizedQuests] Registering quizverse_get_personalized_quests...");
     PersonalizedQuests.register(initializer);
     logger.info("[PersonalizedQuests] DNA-personalized quest selection active");
+
+    // Register Battle Pass engine — consumes dashboard-configured seasons
+    // (incentives config) and accrues XP from the same quest event pipeline
+    logger.info("[BattlePassEngine] Registering battlepass_get / record_event / unlock_premium RPCs...");
+    BattlePassEngine.register(initializer);
+    logger.info("[BattlePassEngine] 3 RPCs registered successfully");
   } catch (err: any) {
     logger.error("[QuestEngine] Failed to register: " + (err && err.message ? err.message : String(err)));
   }

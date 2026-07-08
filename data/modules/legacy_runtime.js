@@ -7216,550 +7216,14 @@ function createGroupMetadata(gameId, groupType, customData) {
  * RPC: create_game_group
  * Create a group/clan/guild for a specific game
  */
-function rpcCreateGameGroup(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        // Validate required fields
-        if (!data.gameId || !data.name) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required fields: gameId, name"
-            });
-        }
-
-        var gameId = data.gameId;
-        var name = data.name;
-        var description = data.description || "";
-        var avatarUrl = data.avatarUrl || "";
-        var langTag = data.langTag || "en";
-        var open = data.open !== undefined ? data.open : false;
-        var maxCount = data.maxCount || 100;
-        var groupType = data.groupType || "guild";
-
-        // Create group metadata
-        var metadata = createGroupMetadata(gameId, groupType, data.customData);
-
-        // Create group using Nakama's built-in Groups API
-        var group;
-        try {
-            group = nk.groupCreate(
-                ctx.userId,
-                name,
-                description,
-                avatarUrl,
-                langTag,
-                JSON.stringify(metadata),
-                open,
-                maxCount
-            );
-        } catch (err) {
-            logger.error("[Groups] Failed to create group: " + err.message);
-            return JSON.stringify({
-                success: false,
-                error: "Failed to create group: " + err.message
-            });
-        }
-
-        // Initialize group wallet
-        try {
-            var walletKey = "group_wallet_" + group.id;
-            nk.storageWrite([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000",
-                value: {
-                    groupId: group.id,
-                    gameId: gameId,
-                    currencies: {
-                        tokens: 0,
-                        xp: 0
-                    },
-                    createdAt: new Date().toISOString()
-                },
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        } catch (err) {
-            logger.warn("[Groups] Failed to create group wallet: " + err.message);
-        }
-
-        logger.info("[Groups] Created group: " + group.id + " for game: " + gameId);
-
-        return JSON.stringify({
-            success: true,
-            group: {
-                id: group.id,
-                creatorId: group.creatorId,
-                name: group.name,
-                description: group.description,
-                avatarUrl: group.avatarUrl,
-                langTag: group.langTag,
-                open: group.open,
-                edgeCount: group.edgeCount,
-                maxCount: group.maxCount,
-                createTime: group.createTime,
-                updateTime: group.updateTime,
-                metadata: metadata
-            },
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in rpcCreateGameGroup: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: update_group_xp
- * Update group XP (for challenges/quests)
- */
-function rpcUpdateGroupXP(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        if (!data.groupId || data.xp === undefined) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required fields: groupId, xp"
-            });
-        }
-
-        var groupId = data.groupId;
-        var xpToAdd = parseInt(data.xp);
-
-        // Get group to verify it exists and get metadata
-        var groups;
-        try {
-            groups = nk.groupsGetId([groupId]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Group not found"
-            });
-        }
-
-        if (!groups || groups.length === 0) {
-            return JSON.stringify({
-                success: false,
-                error: "Group not found"
-            });
-        }
-
-        var group = groups[0];
-        var metadata = JSON.parse(group.metadata || "{}");
-
-        // Update XP
-        metadata.xp = (metadata.xp || 0) + xpToAdd;
-
-        // Calculate level (100 XP per level)
-        var newLevel = Math.floor(metadata.xp / 100) + 1;
-        var leveledUp = newLevel > (metadata.level || 1);
-        metadata.level = newLevel;
-
-        // Update group metadata
-        try {
-            nk.groupUpdate(
-                groupId,
-                ctx.userId,
-                group.name,
-                group.description,
-                group.avatarUrl,
-                group.langTag,
-                JSON.stringify(metadata),
-                group.open,
-                group.maxCount
-            );
-        } catch (err) {
-            logger.error("[Groups] Failed to update group: " + err.message);
-            return JSON.stringify({
-                success: false,
-                error: "Failed to update group XP"
-            });
-        }
-
-        logger.info("[Groups] Updated group XP: " + groupId + " +" + xpToAdd + " XP");
-
-        return JSON.stringify({
-            success: true,
-            groupId: groupId,
-            xpAdded: xpToAdd,
-            totalXP: metadata.xp,
-            level: metadata.level,
-            leveledUp: leveledUp,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in rpcUpdateGroupXP: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: get_group_wallet
- * Get group's shared wallet
- */
-function rpcGetGroupWallet(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        if (!data.groupId) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required field: groupId"
-            });
-        }
-
-        var groupId = data.groupId;
-        var walletKey = "group_wallet_" + groupId;
-
-        // Read wallet from storage
-        var records;
-        try {
-            records = nk.storageRead([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000"
-            }]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to read group wallet"
-            });
-        }
-
-        if (!records || records.length === 0) {
-            // Initialize wallet if it doesn't exist
-            var wallet = {
-                groupId: groupId,
-                gameId: data.gameId || "",
-                currencies: {
-                    tokens: 0,
-                    xp: 0
-                },
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                nk.storageWrite([{
-                    collection: "group_wallets",
-                    key: walletKey,
-                    userId: "00000000-0000-0000-0000-000000000000",
-                    value: wallet,
-                    permissionRead: 1,
-                    permissionWrite: 0
-                }]);
-            } catch (err) {
-                logger.warn("[Groups] Failed to create group wallet: " + err.message);
-            }
-
-            return JSON.stringify({
-                success: true,
-                wallet: wallet,
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        return JSON.stringify({
-            success: true,
-            wallet: records[0].value,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in rpcGetGroupWallet: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: update_group_wallet
- * Update group's shared wallet (admins only)
- */
-function rpcUpdateGroupWallet(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        if (!data.groupId || !data.currency || data.amount === undefined || !data.operation) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required fields: groupId, currency, amount, operation"
-            });
-        }
-
-        var groupId = data.groupId;
-        var currency = data.currency;
-        var amount = parseInt(data.amount);
-        var operation = data.operation; // "add" or "subtract"
-
-        // Verify user is admin of the group
-        var userGroups;
-        try {
-            userGroups = nk.userGroupsList(ctx.userId);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to verify group membership"
-            });
-        }
-
-        var isAdmin = false;
-        if (userGroups && userGroups.userGroups) {
-            for (var i = 0; i < userGroups.userGroups.length; i++) {
-                var ug = userGroups.userGroups[i];
-                if (ug.group.id === groupId && (ug.state <= GROUP_ROLES.ADMIN)) {
-                    isAdmin = true;
-                    break;
-                }
-            }
-        }
-
-        if (!isAdmin) {
-            return JSON.stringify({
-                success: false,
-                error: "Only group admins can update group wallet"
-            });
-        }
-
-        // Get current wallet
-        var walletKey = "group_wallet_" + groupId;
-        var records;
-        try {
-            records = nk.storageRead([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000"
-            }]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to read group wallet"
-            });
-        }
-
-        if (!records || records.length === 0) {
-            return JSON.stringify({
-                success: false,
-                error: "Group wallet not found"
-            });
-        }
-
-        var wallet = records[0].value;
-        var currentBalance = wallet.currencies[currency] || 0;
-        var newBalance;
-
-        if (operation === "add") {
-            newBalance = currentBalance + amount;
-        } else if (operation === "subtract") {
-            newBalance = currentBalance - amount;
-            if (newBalance < 0) {
-                return JSON.stringify({
-                    success: false,
-                    error: "Insufficient balance"
-                });
-            }
-        } else {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid operation. Use 'add' or 'subtract'"
-            });
-        }
-
-        wallet.currencies[currency] = newBalance;
-
-        // Update wallet
-        try {
-            nk.storageWrite([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000",
-                value: wallet,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to update group wallet"
-            });
-        }
-
-        logger.info("[Groups] Updated group wallet: " + groupId + " " + operation + " " + amount + " " + currency);
-
-        return JSON.stringify({
-            success: true,
-            groupId: groupId,
-            currency: currency,
-            operation: operation,
-            amount: amount,
-            newBalance: newBalance,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in rpcUpdateGroupWallet: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: get_user_groups
- * Get all groups for a user (filtered by gameId if provided)
- */
-function rpcGetUserGroups(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload || "{}");
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        var gameId = data.gameId || null;
-
-        // Get user groups
-        var userGroups;
-        try {
-            userGroups = nk.userGroupsList(ctx.userId);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to retrieve user groups"
-            });
-        }
-
-        var groups = [];
-        if (userGroups && userGroups.userGroups) {
-            for (var i = 0; i < userGroups.userGroups.length; i++) {
-                var ug = userGroups.userGroups[i];
-                var group = ug.group;
-                var metadata = JSON.parse(group.metadata || "{}");
-
-                // Filter by gameId if provided
-                if (gameId && metadata.gameId !== gameId) {
-                    continue;
-                }
-
-                groups.push({
-                    id: group.id,
-                    name: group.name,
-                    description: group.description,
-                    avatarUrl: group.avatarUrl,
-                    langTag: group.langTag,
-                    open: group.open,
-                    edgeCount: group.edgeCount,
-                    maxCount: group.maxCount,
-                    createTime: group.createTime,
-                    updateTime: group.updateTime,
-                    metadata: metadata,
-                    userRole: ug.state,
-                    userRoleName: getRoleName(ug.state)
-                });
-            }
-        }
-
-        return JSON.stringify({
-            success: true,
-            userId: ctx.userId,
-            gameId: gameId,
-            groups: groups,
-            count: groups.length,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in rpcGetUserGroups: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase-5 cleanup (2026-07-06): the five dead group RPC handler bodies that
+// lived here (rpcCreateGameGroup, rpcUpdateGroupXP, rpcGetGroupWallet,
+// rpcUpdateGroupWallet, rpcGetUserGroups) have been DELETED. They were
+// unreachable since the B-003 fix removed their registrations — the live,
+// canonical implementations are in data/modules/src/legacy/groups.ts.
+// (getRoleName below is still used by live code and is retained.)
+// ═══════════════════════════════════════════════════════════════════════════
 function getRoleName(state) {
     if (state === GROUP_ROLES.OWNER) return "Owner";
     if (state === GROUP_ROLES.ADMIN) return "Admin";
@@ -13440,78 +12904,47 @@ function lasttoliveJoinOrCreateMatch(context, logger, nk, payload) {
 // ============================================================================
 
 /**
- * RPC: quizverse_claim_daily_reward
- * Claim daily reward
+ * RPC: quizverse_claim_daily_reward (LEGACY-COMPATIBLE WRAPPER)
+ *
+ * DAILY PROGRESSION PLATFORM consolidation: this handler used to be a fully
+ * PARALLEL daily-reward system — its own storage ({gameID}_daily_rewards /
+ * daily_{userId}), its own streak formula (exact-yesterday string compare, no
+ * 48h grace), its own reward math (100 + 10·streak), and NO wallet grant. The
+ * same user therefore had two different "daily streaks" depending on which
+ * screen claimed (Arcade vs main Daily Rewards), and both could be claimed on
+ * the same day.
+ *
+ * It now delegates to performDailyClaim (daily_rewards.js) — the single OCC/
+ * idempotent claim core over the canonical daily_streaks record — and maps the
+ * result back to the legacy {success, data:{rewardAmount, streak, nextReward}}
+ * envelope the shipped Arcade client expects. New clients should call
+ * daily_progress_claim instead.
  */
 function quizverseClaimDailyReward(context, logger, nk, payload) {
     try {
-        var data = parseAndValidateGamePayload(payload, ["gameID"]);
-        var userId = getUserId(data, context);
-
-        var collection = getCollection(data.gameID, "daily_rewards");
-        var key = "daily_" + userId;
-
-        var now = new Date();
-        var today = now.toISOString().split('T')[0];
-
-        // Read reward state
-        var rewardState = { lastClaim: null, streak: 0 };
-        try {
-            var records = nk.storageRead([{
-                collection: collection,
-                key: key,
-                userId: userId
-            }]);
-            if (records && records.length > 0 && records[0].value) {
-                rewardState = records[0].value;
-            }
-        } catch (err) {
-            logger.debug("No existing reward state found");
+        var data = {};
+        try { data = JSON.parse(payload || "{}") || {}; } catch (e) { data = {}; }
+        var userId = context.userId;
+        if (!userId) {
+            return JSON.stringify({ success: false, error: "User not authenticated" });
         }
 
-        // Check if already claimed today
-        if (rewardState.lastClaim === today) {
-            return JSON.stringify({
-                success: false,
-                error: "Daily reward already claimed today"
-            });
+        var gameId = dpResolveGameId(data);
+        var result = performDailyClaim(nk, logger, userId, gameId);
+
+        if (!result.ok) {
+            return JSON.stringify({ success: false, error: result.error });
         }
 
-        // Calculate streak
-        var yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        var yesterdayStr = yesterday.toISOString().split('T')[0];
-
-        if (rewardState.lastClaim === yesterdayStr) {
-            rewardState.streak += 1;
-        } else {
-            rewardState.streak = 1;
-        }
-
-        rewardState.lastClaim = today;
-
-        // Calculate reward amount (increases with streak)
-        var baseReward = 100;
-        var rewardAmount = baseReward + (rewardState.streak - 1) * 10;
-
-        // Write reward state
-        nk.storageWrite([{
-            collection: collection,
-            key: key,
-            userId: userId,
-            value: rewardState,
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-
-        logger.info("[" + data.gameID + "] User " + userId + " claimed daily reward. Streak: " + rewardState.streak);
+        var nextReward = getRewardForDay(gameId, result.streakData.currentStreak + 1);
+        logger.info("[" + gameId + "] User " + userId + " claimed daily reward via legacy arcade RPC. Streak: " + result.streakData.currentStreak);
 
         return JSON.stringify({
             success: true,
             data: {
-                rewardAmount: rewardAmount,
-                streak: rewardState.streak,
-                nextReward: baseReward + rewardState.streak * 10
+                rewardAmount: (result.reward && result.reward.game) || 0,
+                streak: result.streakData.currentStreak,
+                nextReward: (nextReward && nextReward.game) || 0
             }
         });
 
@@ -19579,7 +19012,7 @@ function asyncChallengeGenerateShareCode(nk) {
  * @param {string} content - Notification message
  * @param {object} data - Additional notification data
  */
-function asyncChallengeSendNotification(nk, userId, subject, content, data, logger) {
+function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data, logger) {
     try {
         var notifications = [{
             userId: userId,
@@ -19599,6 +19032,65 @@ function asyncChallengeSendNotification(nk, userId, subject, content, data, logg
     } catch (e) {
         if (logger) {
             logger.warn('[AsyncChallenge] notify failed type=' + (data && data.type ? data.type : 'unknown') + ' target=' + userId + ' err=' + (e.message || String(e)));
+        }
+    }
+
+    // ── Device push bridge (2026-07-06, PHANTOM_ARENA_LAYMANS_GUIDE Phase 1) ──
+    // The in-app notification above only reaches the Nakama inbox + open
+    // sockets — offline players never knew it was their turn, which killed
+    // the async loop ("silent room" problem). Bridge to the LegacyPush global
+    // (same pattern as friends/friend_invites.js) for the four POSITIVE
+    // lifecycle events. opponent_left / challenge_cancelled stay in-app-only
+    // (AP-001: never push negative events; social push budget applies).
+    // ctx may be null (helpers without RPC scope) — push is skipped, in-app
+    // tier above already fired. Isolated try/catch — push failure must never
+    // affect the in-app tier.
+    try {
+        if (!ctx || !data || typeof LegacyPush === 'undefined' || !LegacyPush.sendLocalizedPushToUser) return;
+        var t = data.type;
+        var pushData = {
+            eventType:       'async_challenge',
+            screen:          'phantom_arena',
+            type:            String(t || ''),
+            sessionId:       String(data.sessionId || ''),
+            // iOS UNNotificationCategory identifier (AsyncChallengePushCategoryRegistrar.CategoryId).
+            // Firebase's APNs bridge maps this to the aps.category field so iOS presents
+            // "Play Now" / "Remind Me Later" action buttons on the lock screen.
+            action_category: 'async_challenge'
+        };
+        if (data.shareCode) {
+            pushData.shareCode = String(data.shareCode);
+            pushData.deepLink  = 'quizverse://challenge/join/' + String(data.shareCode);
+        }
+        var who = data.challengerName || data.opponentName || data.name || 'Someone';
+        if (t === 'challenge_received' || t === 'rematch_requested') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_received',
+                'friend_challenge_title', 'friend_challenge_body',
+                { name: who, mode: data.quizModeName || 'a quiz battle' },
+                { skipInAppNotification: true, data: pushData });
+        } else if (t === 'opponent_joined') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_joined',
+                'ac_opponent_joined_title', 'ac_opponent_joined_body',
+                { name: who, mode: (data.quizModeName || '') },
+                { skipInAppNotification: true, data: pushData });
+        } else if (t === 'opponent_completed') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_your_turn',
+                'ac_your_turn_title', 'ac_your_turn_body',
+                { name: who, score: String(data.score !== undefined ? data.score : '') },
+                { skipInAppNotification: true, data: pushData });
+        } else if (t === 'results_ready') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_results',
+                'ac_results_title', 'ac_results_body',
+                { name: who, score: String(data.score !== undefined ? data.score : '') },
+                { skipInAppNotification: true, data: pushData });
+        }
+    } catch (pushErr) {
+        if (logger) {
+            logger.warn('[AsyncChallenge] device push failed (non-fatal) type=' + (data && data.type) + ': ' + (pushErr.message || String(pushErr)));
         }
     }
 }
@@ -20177,7 +19669,9 @@ function asyncChallengeCommitOpponentLeave(nk, logger, sessionId, creatorId, ses
     asyncChallengePurgeJoinIdempotency(nk, logger, leavingOpponentId, sessionId);
 
     var formattedSession = asyncChallengeSessionToUnityFormat(updatedSession, nk);
-    asyncChallengeSendNotification(nk, updatedSession.creatorId,
+    // ctx not in scope in this helper — null skips the device-push bridge,
+    // which is correct: opponent_left is an in-app-only event (AP-001 budget).
+    asyncChallengeSendNotification(null, nk, updatedSession.creatorId,
         'Opponent Left',
         (leavingOpponentName || 'Player B') + ' has left your ' + updatedSession.quizModeName + ' challenge room. Waiting for a new opponent.',
         {
@@ -20383,7 +19877,7 @@ function rpcAsyncChallengeCreate(ctx, logger, nk, payload) {
 
         // Send notification to challenged user if specified
         if (challengedUserId && challengedUserId !== userId) {
-            asyncChallengeSendNotification(nk, challengedUserId,
+            asyncChallengeSendNotification(ctx, nk, challengedUserId,
                 'Challenge Received!',
                 creatorName + ' challenges you to a ' + quizModeName + ' battle!',
                 {
@@ -20597,7 +20091,7 @@ function rpcAsyncChallengeJoin(ctx, logger, nk, payload) {
         }
 
         // Notify creator that opponent joined
-        asyncChallengeSendNotification(nk, session.creatorId,
+        asyncChallengeSendNotification(ctx, nk, session.creatorId,
             'Challenge Accepted!',
             opponentName + ' has joined your ' + session.quizModeName + ' challenge!',
             {
@@ -21028,13 +20522,15 @@ function rpcAsyncChallengeSubmit(ctx, logger, nk, payload) {
         // Send notifications — subjects fixed so they make sense from the recipient's POV.
         if (isCreator && session.opponentId) {
             // Creator finished; notify the opponent who hasn't played yet.
-            asyncChallengeSendNotification(nk, session.opponentId,
+            asyncChallengeSendNotification(ctx, nk, session.opponentId,
                 'Your Opponent Has Played!',
                 session.creatorName + ' scored ' + score + ' points — your turn!',
                 {
                     type: 'opponent_completed',
                     sessionId: sessionId,
-                    score: score
+                    score: score,
+                    name: session.creatorName || '',
+                    shareCode: session.shareCode || ''
                 }
             );
         } else if (isCreator && !session.opponentId) {
@@ -21042,13 +20538,15 @@ function rpcAsyncChallengeSubmit(ctx, logger, nk, payload) {
             // The CREATOR_PLAYED status update above is the signal for anyone who polls.
         } else if (isOpponent) {
             // Both have now played — notify creator that final results are ready.
-            asyncChallengeSendNotification(nk, session.creatorId,
+            asyncChallengeSendNotification(ctx, nk, session.creatorId,
                 'Challenge Results Ready!',
                 session.opponentName + ' scored ' + score + ' points — see who won!',
                 {
                     type: 'results_ready',
                     sessionId: sessionId,
-                    score: score
+                    score: score,
+                    name: session.opponentName || '',
+                    shareCode: session.shareCode || ''
                 }
             );
         }
@@ -21420,7 +20918,7 @@ function rpcAsyncChallengeCancel(ctx, logger, nk, payload) {
 
         // Notify opponent if any
         if (session.opponentId) {
-            asyncChallengeSendNotification(nk, session.opponentId,
+            asyncChallengeSendNotification(ctx, nk, session.opponentId,
                 'Challenge Cancelled',
                 session.creatorName + ' has cancelled the ' + session.quizModeName + ' challenge.',
                 {
@@ -21857,7 +21355,7 @@ function rpcAsyncChallengeRematch(ctx, logger, nk, payload) {
         }]);
 
         // Notify challenged player
-        asyncChallengeSendNotification(nk, challengedUserId,
+        asyncChallengeSendNotification(ctx, nk, challengedUserId,
             'Rematch Challenge!',
             creatorName + ' wants a rematch in ' + originalSession.quizModeName + '!',
             {
@@ -22115,11 +21613,23 @@ function rpcAsyncChallengeStoreQuestions(ctx, logger, nk, payload) {
         // Don't overwrite if already stored (idempotency guard)
         if (session.questions && session.questions.length > 0) {
             logger.debug('[AsyncChallenge] Questions already stored for session: ' + sessionId);
-            return JSON.stringify({ success: true, message: 'Questions already stored', data: { count: session.questions.length } });
+            return JSON.stringify({ success: true, message: 'Questions already stored', data: { count: session.questions.length, schemaVersion: (session.questionsSchema && session.questionsSchema.schemaVersion) || 1 } });
         }
 
-        // Store questions in session
+        // Store questions in session.
+        // questionsSchema is a parallel metadata blob (Gap 8 / cross-platform parity fix):
+        //   schemaVersion 1 = legacy plain array (no schema tag, Unity compact q/o/c/e)
+        //   schemaVersion 2 = tagged blob with explicit format field (2026-07-07+)
+        // Existing clients ignore questionsSchema; new clients use it to select a parser.
+        // The `format` field defaults to 'compact' (Unity shorthand); web sends 'verbose'
+        // when it submits questions in question/options/correctIndex/explanation form.
         session.questions = questions;
+        session.questionsSchema = {
+            schemaVersion: 2,
+            format:        request.format || request.Format || 'compact',
+            storedAt:      new Date().toISOString(),
+            count:         questions.length
+        };
 
         nk.storageWrite([{
             collection: COLLECTION_ASYNC_CHALLENGES,
@@ -25105,23 +24615,19 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
         logger.error('[Friends] Failed to initialize: ' + err.message);
     }
 
-    // Register Groups/Clans/Guilds RPCs
-    try {
-        logger.info('[Groups] Initializing Groups/Clans/Guilds Module...');
-        initializer.registerRpc('create_game_group', rpcCreateGameGroup);
-        logger.info('[Groups] Registered RPC: create_game_group');
-        initializer.registerRpc('update_group_xp', rpcUpdateGroupXP);
-        logger.info('[Groups] Registered RPC: update_group_xp');
-        initializer.registerRpc('get_group_wallet', rpcGetGroupWallet);
-        logger.info('[Groups] Registered RPC: get_group_wallet');
-        initializer.registerRpc('update_group_wallet', rpcUpdateGroupWallet);
-        logger.info('[Groups] Registered RPC: update_group_wallet');
-        initializer.registerRpc('get_user_groups', rpcGetUserGroups);
-        logger.info('[Groups] Registered RPC: get_user_groups');
-        logger.info('[Groups] Successfully registered 5 Groups/Clans RPCs');
-    } catch (err) {
-        logger.error('[Groups] Failed to initialize: ' + err.message);
-    }
+    // ── Groups/Clans/Guilds RPCs — REMOVED (B-003 fix, 2026-07-06) ─────────
+    // The 5 registrations that lived here (create_game_group, update_group_xp,
+    // get_group_wallet, update_group_wallet, get_user_groups) competed with
+    // the IDENTICALLY-NAMED registrations in src/legacy/groups.ts. In the
+    // compiled bundle, postbuild guards legacy assignments with
+    // `__rpc_x = __rpc_x || __legacy_fn` while the TS module assigns
+    // unconditionally — so the TS handlers already won in production. These
+    // lines are physically removed (not commented) so postbuild's regex can
+    // never resurrect the ambiguity if merge order changes.
+    // CANONICAL SOURCE for these 5 RPCs: data/modules/src/legacy/groups.ts.
+    // (Per WORLD_CLASS_SOCIAL_FRIENDS_GROUPS_ARCHITECTURE.md §2.1 B-003 /
+    // §17.1. The rpcCreateGameGroup etc. functions below remain in this file
+    // as dead code for reference; delete them in the Phase-5 cleanup pass.)
 
     // Register Push Notifications RPCs
     try {

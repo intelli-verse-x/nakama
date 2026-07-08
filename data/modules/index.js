@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-06T13:45:06.470Z
-// RPC Count: 1177
+// Generated: 2026-07-08T03:16:50.982Z
+// RPC Count: 1237
 // ============================================================
 
 // --- CommonJS Compatibility Shim (Goja runtime) ---
@@ -61,7 +61,6 @@ var __rpc_quizverse_track_session_start;
 var __rpc_quizverse_track_session_end;
 var __rpc_quizverse_get_server_config;
 var __rpc_quizverse_admin_grant_item;
-var __rpc____;
 var __rpc_ai_pipeline_weekly_recap;
 var __rpc_ai_pipeline_monthly_recap;
 var __rpc_ai_pipeline_motion_graphics;
@@ -118,9 +117,13 @@ var __rpc_fantasy_transfer;
 var __rpc_fantasy_transfer_window;
 var __rpc_fantasy_transfer_history;
 var __rpc_intelliverse_find_friends;
+var __rpc_ivx_social_friend_search;
 var __rpc_intelliverse_find_nearby_players;
+var __rpc_ivx_social_friend_nearby;
 var __rpc_friends_list;
+var __rpc_ivx_social_friends_list;
 var __rpc_list_blocked_users;
+var __rpc_ivx_social_friends_blocked;
 var __rpc_ivx_set_player_presence;
 var __rpc_ivx_get_cross_game_messages;
 var __rpc_ivx_mark_message_read;
@@ -130,7 +133,9 @@ var __rpc_quizverse_blog_embed_get;
 var __rpc_quizverse_embed_quiz_complete;
 var __rpc_quizverse_embed_claim_pending;
 var __rpc_quizverse_blog_quiz_reward;
+var __rpc_quizverse_cache_refresh_tick;
 var __rpc_quizverse_get_questions;
+var __rpc_quizverse_abandon_pack;
 var __rpc_quizverse_get_review;
 var __rpc_quizverse_growth_snapshot;
 var __rpc_quizverse_create_match;
@@ -285,6 +290,9 @@ var __rpc_hiro_streak_shield_activate;
 var __rpc_hiro_streak_shield_replenish;
 var __rpc_hiro_iap_validate;
 var __rpc_hiro_iap_history;
+var __rpc_battlepass_get;
+var __rpc_battlepass_record_event;
+var __rpc_battlepass_unlock_premium;
 var __rpc_hiro_challenges_create;
 var __rpc_hiro_challenges_join;
 var __rpc_hiro_challenges_submit;
@@ -396,7 +404,6 @@ var __rpc_analytics_cohort_retention;
 var __rpc_analytics_track_retention_event;
 var __rpc_analytics_arpu;
 var __rpc_analytics_track_revenue;
-var __rpc_analytics_log_event;
 var __rpc_send_group_chat_message;
 var __rpc_send_direct_message;
 var __rpc_send_chat_room_message;
@@ -438,7 +445,6 @@ var __rpc_submit_score_and_sync;
 var __rpc_get_all_leaderboards;
 var __rpc_submit_leaderboard_score;
 var __rpc_get_leaderboard;
-var __rpc__prefix__suffix_;
 var __rpc_quizverse_get_quiz_categories;
 var __rpc_lasttolive_get_weapon_stats;
 var __rpc_get_player_portfolio;
@@ -610,9 +616,12 @@ var __rpc_creator_event_cancel;
 var __rpc_creator_event_update_promo;
 var __rpc_creator_event_fund_pool;
 var __rpc_creator_event_spa_claim;
+var __rpc_creator_event_spa_join;
 var __rpc_creator_event_spa_save_delivery;
 var __rpc_creator_event_spa_end_queue;
+var __rpc_creator_event_spa_auto_end_sweep;
 var __rpc_creator_event_fulfillments_list;
+var __rpc_creator_event_fulfillment_get;
 var __rpc_creator_event_fulfillment_settle;
 var __rpc_satori_live_events_list;
 var __rpc_satori_live_events_join;
@@ -658,10 +667,58 @@ var __rpc_fortune_wheel_ad_spin;
 var __rpc_fortune_wheel_skip_cooldown;
 var __rpc_country_tier_get;
 var __rpc_nakama_js_health;
-var __rpc_tournament_enter;
 var __rpc_storage_write;
 var __rpc_storage_read;
 var __rpc_quizverse_web_ad_reward;
+var __rpc_ivx_app_config_get;
+var __rpc_ivx_app_registry_upsert;
+var __rpc_ivx_duo_quest_create;
+var __rpc_ivx_duo_quest_accept;
+var __rpc_ivx_duo_quest_status;
+var __rpc_ivx_social_quiz_social_proof;
+var __rpc_ivx_social_group_streak_status;
+var __rpc_ivx_social_friend_recommendations;
+var __rpc_ivx_social_starter_groups;
+var __rpc_ivx_social_starter_groups_set;
+var __rpc_ivx_social_contact_hash_register;
+var __rpc_ivx_social_contacts_match;
+var __rpc_ivx_social_fanout_tick;
+var __rpc_ivx_social_friends_feed;
+var __rpc_ivx_social_feed_privacy_set;
+var __rpc_ivx_social_feed_privacy_get;
+var __rpc_ivx_social_group_invite_link;
+var __rpc_ivx_social_group_join_by_code;
+var __rpc_ivx_social_group_search;
+var __rpc_ivx_league_get;
+var __rpc_ivx_social_maintenance_tick;
+var __rpc_ivx_social_onboarding_state;
+var __rpc_ivx_social_presence_set;
+var __rpc_ivx_social_presence_bulk_get;
+var __rpc_ivx_social_pressure_summary;
+var __rpc_ivx_social_report;
+var __rpc_ivx_social_reports_list;
+var __rpc_ivx_social_invite_send;
+var __rpc_ivx_social_invite_accept;
+var __rpc_ivx_social_invite_decline;
+var __rpc_ivx_social_invite_cancel;
+var __rpc_ivx_social_invites_pending;
+var __rpc_ivx_social_challenge_send;
+var __rpc_ivx_social_challenge_accept;
+var __rpc_ivx_social_challenge_decline;
+var __rpc_ivx_social_challenge_cancel;
+var __rpc_ivx_social_challenges_pending;
+var __rpc_ivx_social_spectate;
+var __rpc_ivx_social_streak_get;
+var __rpc_ivx_social_streak_record;
+var __rpc_ivx_social_streak_nudge;
+var __rpc_ivx_social_streak_broken_log;
+var __rpc_ivx_social_streak_repair;
+var __rpc_ivx_social_friends_online_count;
+var __rpc_ivx_social_battle_create;
+var __rpc_ivx_social_invite_with_reward;
+var __rpc_ivx_social_dm_send;
+var __rpc_ivx_social_dm_history;
+var __rpc_ivx_social_dm_mark_read;
 var __rpc_tournament_cron_tick;
 var __rpc_tournament_cron_pregen;
 var __rpc_tournament_list;
@@ -670,6 +727,7 @@ var __rpc_tournament_caller_status;
 var __rpc_kyc_profile_sync;
 var __rpc_tournament_bracket_state;
 var __rpc_tournament_pre_enroll;
+var __rpc_tournament_enter;
 var __rpc_tournament_submit_pack_result;
 var __rpc_tournament_submit_picks;
 var __rpc_tournament_status_get;
@@ -753,6 +811,7 @@ var __rpc_tutorx_record_usage;
 var __rpc_tutorx_session_refresh;
 var __rpc_tutorx_get_config;
 var __rpc_tutorx_set_config;
+var __rpc_analytics_log_event;
 var __rpc_achievements_get_all;
 var __rpc_achievements_update_progress;
 var __rpc_achievements_create_definition;
@@ -1061,8 +1120,9 @@ var __rpc_cricket_get_prediction;
 var __rpc_cricket_get_prediction_leaderboard;
 var __rpc_cricket_get_prediction_stats;
 var __rpc_cricket_get_community_predictions;
+var __rpc_daily_progress_check;
+var __rpc_daily_progress_claim;
 var __rpc_daily_reward_get_calendar;
-var __rpc__id_;
 var __rpc_daily_rewards_get_history;
 var __rpc_analytics_appodeal;
 var __rpc_analytics_apple_appstore;
@@ -1078,7 +1138,6 @@ var __rpc_external_poll_all;
 var __rpc_external_poll_status;
 var __rpc_friend_streak_get_broken_log;
 var __rpc_friend_streak_repair;
-var __rpc_id;
 var __rpc_send_friend_challenge;
 var __rpc_friends_challenge_user;
 var __rpc_accept_friend_challenge;
@@ -1098,11 +1157,12 @@ var __rpc_friend_invite_with_reward;
 var __rpc_get_group_details;
 var __rpc_log_group_activity;
 var __rpc_create_quizverse_group;
-var __rpc_submit_score;
 var __rpc_ivx_quest_config;
 var __rpc_ivx_quest_get;
 var __rpc_ivx_quest_progress;
 var __rpc_ivx_quest_claim;
+var __rpc_quizverse_lap_badge_event;
+var __rpc_quizverse_lap_badge_sync;
 var __rpc_lt_home_widgets_get;
 var __rpc_lt_home_widgets_set;
 var __rpc_lt_widget_render;
@@ -1188,7 +1248,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"intelliverse_find_nearby_players":true,"friends_list":true,"list_blocked_users":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_get_questions":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_grant":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"analytics_log_event":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_settle":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"tournament_enter":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_cache_refresh_tick":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_grant":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (117 files) ---
 
@@ -1196,7 +1256,7 @@ var __TS_OWNED_RPCS = {"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_reca
 ﻿
 
 
-// --- Module: achievements\achievements.js ---
+// --- Module: achievements/achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1785,7 +1845,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player\ai_player.js ---
+// --- Module: ai_player/ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2584,7 +2644,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\admin\analytics_admin.js ---
+// --- Module: analytics/admin/analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3357,7 +3417,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\analytics.js ---
+// --- Module: analytics/analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -5299,7 +5359,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\backfill\analytics_backfill.js ---
+// --- Module: analytics/backfill/analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -6432,7 +6492,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\dropoff\analytics_dropoff.js ---
+// --- Module: analytics/dropoff/analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -7008,7 +7068,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\extended\analytics_extended.js ---
+// --- Module: analytics/extended/analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -10280,7 +10340,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
+// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -11021,7 +11081,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\hardening\analytics_hardening.js ---
+// --- Module: analytics/hardening/analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -11651,7 +11711,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\history\analytics_history.js ---
+// --- Module: analytics/history/analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -12597,7 +12657,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\modes\analytics_modes.js ---
+// --- Module: analytics/modes/analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -13199,7 +13259,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\ops\analytics_ops.js ---
+// --- Module: analytics/ops/analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -13842,7 +13902,7 @@ function __ModuleInit_12(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\player_analytics_store.js ---
+// --- Module: analytics/player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -14523,7 +14583,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics\player_profile\analytics_player_profile.js ---
+// --- Module: analytics/player_profile/analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -15312,7 +15372,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\read_models\analytics_read_models.js ---
+// --- Module: analytics/read_models/analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -15956,7 +16016,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\recap_signals\recap_signals.js ---
+// --- Module: analytics/recap_signals/recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -16259,7 +16319,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
+// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -16517,7 +16577,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\rollup\analytics_rollup.js ---
+// --- Module: analytics/rollup/analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -19486,7 +19546,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
+// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -20322,7 +20382,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\segments\analytics_segments.js ---
+// --- Module: analytics/segments/analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -20911,7 +20971,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
+// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -21346,7 +21406,7 @@ function __ModuleInit_21(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\v2\analytics_v2.js ---
+// --- Module: analytics/v2/analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -22364,7 +22424,7 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges\badge_definitions.js ---
+// --- Module: badges/badge_definitions.js ---
 /**
  * QuizVerse Badge Definitions — all 207 badges from the game manifest.
  * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
@@ -22522,6 +22582,9 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
 
         // ── CREATION ─────────────────────────────────────────────────────────────────
         { badge_id: "link_creator",          title: "Link Creator",              description: "Create your first LinkAndPlay quiz",             icon_url: BASE + "creation/link_creator.png",            category: "creation",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "link_quiz_created",        count: 1     }, rewards: { coins: 100,  xp: 50   }, points: 10  },
+        { badge_id: "lap_note_creator",      title: "Note Creator",              description: "Create 5 Link & Play notes",                   icon_url: BASE + "creation/lap_note_creator.png",       category: "creation",     rarity: "common",    type: "progressive", target: 5,     unlock_criteria: { event: "lap_note_created",         count: 5     }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "lap_sharer",            title: "Sharer",                    description: "Share 3 Link & Play notes",                      icon_url: BASE + "creation/lap_sharer.png",              category: "creation",     rarity: "rare",      type: "progressive", target: 3,     unlock_criteria: { event: "lap_note_shared",          count: 3     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "lap_explorer",          title: "Explorer",                  description: "Create notes from 5 different sources",          icon_url: BASE + "creation/lap_explorer.png",            category: "creation",     rarity: "rare",      type: "progressive", target: 5,     unlock_criteria: { event: "lap_note_created_unique",  count: 5     }, rewards: { coins: 250,  xp: 125  }, points: 25  },
         { badge_id: "image_master",          title: "Image Master",              description: "Play your first image quiz",                     icon_url: BASE + "creation/image_master.png",            category: "creation",     rarity: "common",    type: "one_time",    target: 1,     unlock_criteria: { event: "image_quiz_played",        count: 1     }, rewards: { coins: 75,   xp: 35   }, points: 8   },
         { badge_id: "influencer",            title: "Influencer",                description: "Your quiz has been played 100 times",            icon_url: BASE + "creation/influencer.png",              category: "creation",     rarity: "epic",      type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_reach_100_plays",     count: 1     }, rewards: { coins: 500,  xp: 250  }, points: 50  },
         { badge_id: "crowd_pleaser",         title: "Crowd Pleaser",             description: "Your quiz receives 10 positive ratings",         icon_url: BASE + "creation/crowd_pleaser.png",           category: "creation",     rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "quiz_liked",               count: 1     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
@@ -22632,12 +22695,20 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
         { badge_id: "finance_apprentice",    title: "Finance Apprentice",        description: "Complete 10 Finance quizzes",                    icon_url: BASE + "specialisation/finance/apprentice.png",category: "specialisation",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "topic_quiz_complete", count: 10,  topic: "finance"  }, rewards: { coins: 100, xp: 50  }, points: 10  },
         { badge_id: "finance_expert",        title: "Finance Expert",            description: "Complete 50 Finance quizzes",                    icon_url: BASE + "specialisation/finance/expert.png",    category: "specialisation",rarity: "rare",      type: "progressive", target: 50,    unlock_criteria: { event: "topic_quiz_complete", count: 50,  topic: "finance"  }, rewards: { coins: 200, xp: 100 }, points: 20  },
         { badge_id: "finance_master",        title: "Finance Master",            description: "Complete 100 Finance quizzes",                   icon_url: BASE + "specialisation/finance/master.png",    category: "specialisation",rarity: "epic",      type: "progressive", target: 100,   unlock_criteria: { event: "topic_quiz_complete", count: 100, topic: "finance"  }, rewards: { coins: 400, xp: 200 }, points: 40  },
-        { badge_id: "finance_legend",        title: "Finance Legend",            description: "Complete 200 Finance quizzes",                   icon_url: BASE + "specialisation/finance/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "finance"  }, rewards: { coins: 750, xp: 375 }, points: 75  }
+        { badge_id: "finance_legend",        title: "Finance Legend",            description: "Complete 200 Finance quizzes",                   icon_url: BASE + "specialisation/finance/legend.png",    category: "specialisation",rarity: "legendary", type: "progressive", target: 200,   unlock_criteria: { event: "topic_quiz_complete", count: 200, topic: "finance"  }, rewards: { coins: 750, xp: 375 }, points: 75  },
+
+        // ── LINK & PLAY ──────────────────────────────────────────────────────────────────
+        { badge_id: "lap_quiz_master",       title: "Quiz Master",               description: "Play 10 Link & Play quizzes",                    icon_url: BASE + "link_and_play/lap_quiz_master.png",   category: "link_and_play",rarity: "common",    type: "progressive", target: 10,    unlock_criteria: { event: "lap_quiz_played",        count: 10    }, rewards: { coins: 150,  xp: 75   }, points: 15  },
+        { badge_id: "lap_flash_ninja",       title: "Flash Ninja",               description: "Complete 20 flashcard sessions",               icon_url: BASE + "link_and_play/lap_flash_ninja.png",   category: "link_and_play",rarity: "rare",      type: "progressive", target: 20,    unlock_criteria: { event: "lap_flash_completed",    count: 20    }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "lap_streak_keeper",     title: "Streak Keeper",             description: "Maintain a 7-day note streak",                   icon_url: BASE + "link_and_play/lap_streak_keeper.png", category: "link_and_play",rarity: "epic",      type: "progressive", target: 7,     unlock_criteria: { event: "lap_streak_day",         count: 7     }, rewards: { coins: 300,  xp: 150  }, points: 30  },
+        { badge_id: "lap_battle_winner",     title: "Battle Winner",             description: "Win 3 Link & Play battles",                      icon_url: BASE + "link_and_play/lap_battle_winner.png", category: "link_and_play",rarity: "rare",      type: "progressive", target: 3,     unlock_criteria: { event: "lap_battle_won",         count: 3     }, rewards: { coins: 250,  xp: 125  }, points: 25  },
+        { badge_id: "lap_speed_demon",       title: "Speed Demon",               description: "Complete a quiz in under 30 seconds",            icon_url: BASE + "link_and_play/lap_speed_demon.png",   category: "link_and_play",rarity: "rare",      type: "one_time",    target: 1,     unlock_criteria: { event: "lap_speed_run",          count: 1     }, rewards: { coins: 200,  xp: 100  }, points: 20  },
+        { badge_id: "lap_perfectionist",     title: "Perfectionist",             description: "Score 100% on 5 quizzes",                        icon_url: BASE + "link_and_play/lap_perfectionist.png", category: "link_and_play",rarity: "epic",      type: "progressive", target: 5,     unlock_criteria: { event: "lap_perfect_score",      count: 5     }, rewards: { coins: 350,  xp: 175  }, points: 35  }
     ]
 };
 
 
-// --- Module: badges\badge_seed_definitions.js ---
+// --- Module: badges/badge_seed_definitions.js ---
 // badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
 // Run once via admin RPC or directly call badges_bulk_create
 // Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
@@ -22780,7 +22851,7 @@ var LEGENDARY_AND_SEASONAL_BADGES = {
 // Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
 
 
-// --- Module: badges\badges.js ---
+// --- Module: badges/badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -24246,7 +24317,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: characters\characters.js ---
+// --- Module: characters/characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -24710,7 +24781,7 @@ function rpcCharacterSetActive(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: chat_moderation\chat_moderation.js ---
+// --- Module: chat_moderation/chat_moderation.js ---
 // chat_moderation.js - Chat Moderation Pipeline
 // Storage collection: chat_reports, chat_filter_config
 // RPCs: chat_filter_message (public), chat_report_message (public),
@@ -25243,7 +25314,7 @@ function __ModuleInit_27(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chatbox\chatbox.js ---
+// --- Module: chatbox/chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -26481,7 +26552,7 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: copilot\cognito_wallet_mapper.js ---
+// --- Module: copilot/cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -26713,7 +26784,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_aggregate.js ---
+// --- Module: copilot/leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -26825,7 +26896,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_friends.js ---
+// --- Module: copilot/leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -27002,7 +27073,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_sync.js ---
+// --- Module: copilot/leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27077,256 +27148,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\social_features.js ---
-// ============================================================================
-// social_features.js — Social graph and notification features (DEPRECATED)
-// ============================================================================
-// ES5 compatible for Nakama goja runtime
-//
-// ⚠ THIS FILE IS DEAD CODE — DO NOT EDIT THE FUNCTIONS BELOW ⚠
-//
-// History
-// -------
-// This file once contained an alternative implementation of the friend-
-// invite RPCs (rpcSendFriendInvite / rpcAcceptFriendInvite /
-// rpcDeclineFriendInvite). They were never registered anywhere — neither
-// `index.js` (the bundled entry point produced by postbuild.js) nor
-// `legacy_runtime.js` ever called `initializer.registerRpc(...)` for any
-// of these handlers. So they sat in the source tree for years as
-// orphaned, untestable, and conflicting copies of the legacy_runtime
-// implementations.
-//
-// Why we don't just delete the file
-// ---------------------------------
-// 1. Removing the file would break a developer who happens to grep for
-//    `rpcSendFriendInvite` and expects to land on something authoritative.
-//    The pointer comment below (and the disabled blocks) make the
-//    redirection explicit and survive a quick search.
-// 2. postbuild.js auto-discovers every `*.js` file under data/modules/
-//    (excluding the obvious build artefacts). Deleting the file would
-//    remove ~150 lines from the bundle but is otherwise functionally
-//    indistinguishable from leaving the bodies commented out.
-// 3. Future audits can compare the disabled bodies here with the live
-//    implementations in `friends/friend_invites.js` to verify behaviour
-//    parity.
-//
-// Where the LIVE implementations live now
-// ---------------------------------------
-//   send_friend_invite     →  data/modules/friends/friend_invites.js
-//   accept_friend_invite   →  data/modules/friends/friend_invites.js
-//   decline_friend_invite  →  data/modules/friends/friend_invites.js
-//   cancel_friend_invite          (NEW)  →  friends/friend_invites.js
-//   list_pending_friend_invites   (NEW)  →  friends/friend_invites.js
-//
-// The new module also fixes the "split-brain" friend-graph bug: the
-// legacy send_friend_invite below NEVER called nk.friendsAdd(), leaving
-// Nakama's native user_friends table permanently out-of-sync with the
-// custom `friend_invites` storage rows. The new implementation calls
-// nk.friendsAdd(senderId, [targetUserId]) on send so every downstream
-// system that reads nk.friendsList sees a consistent picture.
-//
-// Notifications now use the canonical constants in
-//   data/modules/friends/notification_codes.js
-// (subject = stable machine id, code = canonical numeric filter,
-//  content.type = backup machine id) instead of ad-hoc subjects like
-// "Friend Request" / "Friend Request Accepted" that the client never
-// matched.
-//
-// IF YOU NEED TO MODIFY FRIEND INVITE BEHAVIOUR — DO IT IN
-//   data/modules/friends/friend_invites.js
-// NOT HERE.
-//
-// rpcGetNotifications below is also dead in this file (never registered
-// from here) but left untouched because it is a generic notification
-// helper, not friends-specific, and may be revived later by a different
-// subsystem. It is harmless: `function` declarations cost nothing at
-// runtime if never called.
-// ============================================================================
-
-/* ─── BEGIN DISABLED CODE — see header above ────────────────────────────────
-function rpcSendFriendInvite(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return copilotHandleError(ctx, null, "Authentication required");
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Invalid JSON payload");
-        }
-
-        var validation = copilotValidatePayload(data, ['targetUserId']);
-        if (!validation.valid) {
-            return copilotHandleError(ctx, null, "Missing required field: targetUserId");
-        }
-
-        var fromUserId = ctx.userId;
-        var fromUsername = ctx.username || fromUserId;
-        var targetUserId = data.targetUserId;
-        var message = data.message || "You have a new friend request";
-        var inviteId = fromUserId + "_" + targetUserId + "_" + Date.now();
-
-        var inviteData = {
-            inviteId: inviteId,
-            fromUserId: fromUserId,
-            fromUsername: fromUsername,
-            targetUserId: targetUserId,
-            message: message,
-            status: "pending",
-            createdAt: new Date().toISOString()
-        };
-
-        try {
-            nk.storageWrite([{
-                collection: "friend_invites",
-                key: inviteId,
-                userId: targetUserId,
-                value: inviteData,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Failed to store friend invite");
-        }
-
-        try {
-            nk.notificationSend(targetUserId, "Friend Request",
-                { type: "friend_invite", inviteId: inviteId, fromUserId: fromUserId, fromUsername: fromUsername, message: message },
-                1, fromUserId, true);
-        } catch (err) {
-            copilotLogWarn(logger, "Failed to send notification: " + err.message);
-        }
-
-        return JSON.stringify({ success: true, inviteId: inviteId, targetUserId: targetUserId, status: "sent" });
-
-    } catch (err) {
-        return copilotHandleError(ctx, err, "An error occurred while sending friend invite");
-    }
-}
-
-function rpcAcceptFriendInvite(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return copilotHandleError(ctx, null, "Authentication required");
-        }
-
-        var data;
-        try { data = JSON.parse(payload); } catch (err) { return copilotHandleError(ctx, err, "Invalid JSON payload"); }
-
-        var validation = copilotValidatePayload(data, ['inviteId']);
-        if (!validation.valid) {
-            return copilotHandleError(ctx, null, "Missing required field: inviteId");
-        }
-
-        var userId = ctx.userId;
-        var inviteId = data.inviteId;
-        var inviteData;
-
-        try {
-            var records = nk.storageRead([{ collection: "friend_invites", key: inviteId, userId: userId }]);
-            if (!records || records.length === 0) return copilotHandleError(ctx, null, "Friend invite not found");
-            inviteData = records[0].value;
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Failed to retrieve friend invite");
-        }
-
-        if (inviteData.targetUserId !== userId) return copilotHandleError(ctx, null, "This invite is not for you");
-        if (inviteData.status !== "pending") return copilotHandleError(ctx, null, "This invite has already been processed");
-
-        try {
-            nk.friendsAdd(userId, [inviteData.fromUserId], [inviteData.fromUsername]);
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Failed to add friend");
-        }
-
-        inviteData.status = "accepted";
-        inviteData.acceptedAt = new Date().toISOString();
-        try { nk.storageWrite([{ collection: "friend_invites", key: inviteId, userId: userId, value: inviteData, permissionRead: 1, permissionWrite: 0 }]); } catch (err) { }
-
-        try {
-            nk.notificationSend(inviteData.fromUserId, "Friend Request Accepted",
-                { type: "friend_invite_accepted", acceptedBy: userId, acceptedByUsername: ctx.username || userId },
-                2, userId, true);
-        } catch (err) { }
-
-        return JSON.stringify({ success: true, inviteId: inviteId, friendUserId: inviteData.fromUserId, friendUsername: inviteData.fromUsername });
-
-    } catch (err) {
-        return copilotHandleError(ctx, err, "An error occurred while accepting friend invite");
-    }
-}
-
-function rpcDeclineFriendInvite(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) return copilotHandleError(ctx, null, "Authentication required");
-
-        var data;
-        try { data = JSON.parse(payload); } catch (err) { return copilotHandleError(ctx, err, "Invalid JSON payload"); }
-
-        var validation = copilotValidatePayload(data, ['inviteId']);
-        if (!validation.valid) return copilotHandleError(ctx, null, "Missing required field: inviteId");
-
-        var userId = ctx.userId;
-        var inviteId = data.inviteId;
-        var inviteData;
-
-        try {
-            var records = nk.storageRead([{ collection: "friend_invites", key: inviteId, userId: userId }]);
-            if (!records || records.length === 0) return copilotHandleError(ctx, null, "Friend invite not found");
-            inviteData = records[0].value;
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Failed to retrieve friend invite");
-        }
-
-        if (inviteData.targetUserId !== userId) return copilotHandleError(ctx, null, "This invite is not for you");
-        if (inviteData.status !== "pending") return copilotHandleError(ctx, null, "This invite has already been processed");
-
-        inviteData.status = "declined";
-        inviteData.declinedAt = new Date().toISOString();
-
-        try {
-            nk.storageWrite([{ collection: "friend_invites", key: inviteId, userId: userId, value: inviteData, permissionRead: 1, permissionWrite: 0 }]);
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Failed to decline friend invite");
-        }
-
-        return JSON.stringify({ success: true, inviteId: inviteId, status: "declined" });
-
-    } catch (err) {
-        return copilotHandleError(ctx, err, "An error occurred while declining friend invite");
-    }
-}
-
-function rpcGetNotifications(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) return copilotHandleError(ctx, null, "Authentication required");
-
-        var data = {};
-        if (payload) { try { data = JSON.parse(payload); } catch (err) { } }
-
-        var userId = ctx.userId;
-        var limit = data.limit || 100;
-        var notifications = [];
-
-        try {
-            var result = nk.notificationsList(userId, limit, null);
-            if (result && result.notifications) notifications = result.notifications;
-        } catch (err) {
-            return copilotHandleError(ctx, err, "Failed to retrieve notifications");
-        }
-
-        return JSON.stringify({ success: true, notifications: notifications, count: notifications.length });
-
-    } catch (err) {
-        return copilotHandleError(ctx, err, "An error occurred while retrieving notifications");
-    }
-}
-─── END DISABLED CODE ──────────────────────────────────────────────────── */
-
-
-// --- Module: copilot\utils.js ---
+// --- Module: copilot/utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -27412,7 +27234,7 @@ var utils = {
 };
 
 
-// --- Module: copilot\wallet_registry.js ---
+// --- Module: copilot/wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -27567,7 +27389,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot\wallet_utils.js ---
+// --- Module: copilot/wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -27673,7 +27495,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket\cricket_ai_integration.js ---
+// --- Module: cricket/cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -28497,7 +28319,7 @@ function logAIRequest(nk, userId, requestType, data) {
 }
 
 // Register RPCs
-function __ModuleInit_37(ctx, logger, nk, initializer) {
+function __ModuleInit_36(ctx, logger, nk, initializer) {
     logger.info("Cricket AI Integration Module loaded");
 
     __rpc_cricket_create_ai_note = __rpc_cricket_create_ai_note || (rpcCreateAINote);
@@ -28514,7 +28336,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_daily_challenges.js ---
+// --- Module: cricket/cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -29073,7 +28895,7 @@ function calculateStreakDays(records) {
 }
 
 // Register RPCs
-function __ModuleInit_38(ctx, logger, nk, initializer) {
+function __ModuleInit_37(ctx, logger, nk, initializer) {
     logger.info("Cricket Daily Challenges Module loaded");
 
     __rpc_cricket_get_daily_challenges = __rpc_cricket_get_daily_challenges || (rpcGetDailyChallenges);
@@ -29089,7 +28911,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_economy.js ---
+// --- Module: cricket/cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -29747,7 +29569,7 @@ function validateCoinSource(nk, userId, source, requestedAmount) {
 }
 
 // Register RPCs
-function __ModuleInit_39(ctx, logger, nk, initializer) {
+function __ModuleInit_38(ctx, logger, nk, initializer) {
     logger.info("Cricket Economy Module loaded");
 
     __rpc_cricket_get_wallet = __rpc_cricket_get_wallet || (rpcGetWallet);
@@ -29766,7 +29588,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_engagement.js ---
+// --- Module: cricket/cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -30356,7 +30178,7 @@ function getTimeUntilNextDay() {
 }
 
 // Register RPCs
-function __ModuleInit_40(ctx, logger, nk, initializer) {
+function __ModuleInit_39(ctx, logger, nk, initializer) {
     logger.info("Cricket Engagement Module loaded");
 
     __rpc_cricket_track_engagement = __rpc_cricket_track_engagement || (rpcTrackEngagement);
@@ -30373,7 +30195,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_live_match.js ---
+// --- Module: cricket/cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -31114,7 +30936,7 @@ function getActiveFlashDrops(nk, matchId) {
 }
 
 // Register RPCs
-function __ModuleInit_41(ctx, logger, nk, initializer) {
+function __ModuleInit_40(ctx, logger, nk, initializer) {
     logger.info("Cricket Live Match Module loaded");
 
     __rpc_cricket_load_schedules = __rpc_cricket_load_schedules || (rpcLoadSchedules);
@@ -31133,7 +30955,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_predictions.js ---
+// --- Module: cricket/cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -31758,7 +31580,7 @@ function getUserDisplayName(nk, userId) {
 }
 
 // Register RPCs
-function __ModuleInit_42(ctx, logger, nk, initializer) {
+function __ModuleInit_41(ctx, logger, nk, initializer) {
     logger.info("Cricket Predictions Module loaded");
 
     // Register RPCs
@@ -31800,7 +31622,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_retention.js ---
+// --- Module: cricket/cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -32622,7 +32444,7 @@ function getRewardMessage(triggerType, reward) {
 }
 
 // Register RPCs
-function __ModuleInit_43(ctx, logger, nk, initializer) {
+function __ModuleInit_42(ctx, logger, nk, initializer) {
     logger.info("Cricket Retention Module loaded");
 
     __rpc_cricket_process_daily_login = __rpc_cricket_process_daily_login || (rpcProcessDailyLogin);
@@ -32638,7 +32460,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_season_pass.js ---
+// --- Module: cricket/cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -33235,7 +33057,7 @@ function getAvailableRewards(userPass) {
 }
 
 // Register RPCs
-function __ModuleInit_44(ctx, logger, nk, initializer) {
+function __ModuleInit_43(ctx, logger, nk, initializer) {
     logger.info("Cricket Season Pass Module loaded");
 
     __rpc_cricket_get_season_pass = __rpc_cricket_get_season_pass || (rpcGetSeasonPassStatus);
@@ -33250,7 +33072,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_trivia.js ---
+// --- Module: cricket/cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -34184,7 +34006,7 @@ function storeTriviaHistory(nk, userId, session) {
 }
 
 // Register RPCs
-function __ModuleInit_45(ctx, logger, nk, initializer) {
+function __ModuleInit_44(ctx, logger, nk, initializer) {
     logger.info("Cricket Trivia Module loaded");
 
     __rpc_cricket_start_trivia = __rpc_cricket_start_trivia || (rpcStartTriviaSession);
@@ -34200,7 +34022,7 @@ function __ModuleInit_45(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\engagement.js ---
+// --- Module: cricket_worldcup/engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -34869,7 +34691,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\predictions.js ---
+// --- Module: cricket_worldcup/predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -35446,7 +35268,7 @@ function rpcGetCommunityPredictions(ctx, logger, nk, payload) {
 // which then drops the ENTIRE JS runtime (every other module fails to
 // register too). Register each RPC with an explicit named handler so the
 // AST walker can resolve the key statically.
-function __ModuleInit_47(ctx, logger, nk, initializer) {
+function __ModuleInit_46(ctx, logger, nk, initializer) {
     __rpc_cricket_submit_prediction = __rpc_cricket_submit_prediction || (rpcSubmitPrediction);
     __rpc_cricket_add_trivia_boost = __rpc_cricket_add_trivia_boost || (rpcAddTriviaBoost);
     __rpc_cricket_lock_predictions = __rpc_cricket_lock_predictions || (rpcLockMatchPredictions);
@@ -35459,7 +35281,7 @@ function __ModuleInit_47(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game\cross_game.js ---
+// --- Module: cross_game/cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -35946,7 +35768,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions\daily_missions.js ---
+// --- Module: daily_missions/daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -36325,7 +36147,281 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards\daily_reward_calendar.js ---
+// --- Module: daily_rewards/daily_progress.js ---
+// daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
+//
+// This module is the OFFICIAL client-facing surface for daily login rewards,
+// login streaks, the streak dashboard, calendar, shield/freeze state, and any
+// future daily-progression feature. It exposes exactly TWO production RPCs:
+//
+//   1. daily_progress_check — one request returns EVERYTHING the client needs:
+//      streak, claim eligibility, countdown/next reset, next reward, 7-day
+//      reward table, 30-day calendar + milestones, claim history, shield state,
+//      server UTC time, and a payload version.
+//
+//   2. daily_progress_claim — validates, performs the ATOMIC/IDEMPOTENT claim
+//      (delegating to performDailyClaim in daily_rewards.js — the single claim
+//      core), and returns the SAME full state as check so the client never
+//      needs a follow-up refresh RPC.
+//
+// SINGLE SOURCE OF TRUTH RULES:
+//   - Streak storage:      daily_streaks / user_daily_streak (daily_rewards.js)
+//   - Claim core:          performDailyClaim (daily_rewards.js) — OCC versioned
+//   - Eligibility:         canClaimToday (daily_rewards.js) — UTC day window
+//   - Reward table:        REWARD_CONFIGS (daily_rewards.js)
+//   - Calendar config:     CALENDAR_REWARD_CONFIGS (daily_reward_calendar.js)
+//   - Shield storage:      streak_shield / shield (legacy_runtime.js retention)
+//
+// The legacy RPCs (daily_rewards_get_status/claim/get_history,
+// daily_reward_get_calendar, quizverse_claim_daily_reward) remain registered
+// ONLY for already-shipped clients and all delegate to the same core functions.
+// Do not add new callers to them.
+
+var DAILY_PROGRESS_VERSION = 1;
+var DP_QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+
+/**
+ * Accepts gameId under any historical alias (gameId / gameID / game_id) and
+ * normalizes non-UUID slugs to the QuizVerse UUID so legacy Arcade payloads
+ * ("quizverse") resolve to the SAME streak record as the main game.
+ */
+function dpResolveGameId(data) {
+    var raw = (data && (data.gameId || data.gameID || data.game_id)) || "";
+    if (raw && utils.isValidUUID(raw)) return raw;
+    return DP_QUIZVERSE_GAME_ID;
+}
+
+/** Next UTC midnight (the daily reset) as ISO string + seconds remaining. */
+function dpNextReset() {
+    var d = new Date();
+    d.setUTCHours(24, 0, 0, 0);
+    var resetUnix = Math.floor(d.getTime() / 1000);
+    return {
+        nextResetUtc: d.toISOString(),
+        countdownSeconds: Math.max(0, resetUnix - Math.floor(Date.now() / 1000))
+    };
+}
+
+/**
+ * Read streak shield state (retention system, legacy_runtime.js storage:
+ * collection "streak_shield", key "shield", ms-epoch expiryTime).
+ * Fail-open to "no shield" — shield display must never break the check RPC.
+ */
+function dpReadShield(nk, logger, userId) {
+    try {
+        var rows = nk.storageRead([{ collection: "streak_shield", key: "shield", userId: userId }]);
+        if (rows && rows.length > 0 && rows[0].value) {
+            var s = rows[0].value;
+            var nowMs = Date.now();
+            var active = !!s.isActive && (s.expiryTime || 0) > nowMs;
+            return {
+                isActive: active,
+                expiryUnix: active ? Math.floor(s.expiryTime / 1000) : 0,
+                hoursRemaining: active ? Math.ceil((s.expiryTime - nowMs) / 3600000) : 0
+            };
+        }
+    } catch (e) {
+        utils.logWarn(logger, "[DailyProgress] Shield read skipped: " + e.message);
+    }
+    return { isActive: false, expiryUnix: 0, hoursRemaining: 0 };
+}
+
+/**
+ * Build the 30-day calendar view + milestones from ALREADY-RESOLVED streak
+ * state. Extracted from rpcDailyRewardGetCalendar so the legacy calendar RPC
+ * and daily_progress_check share ONE implementation (the legacy copy also had
+ * a local-timezone eligibility bug and hand-rolled storage keys — both gone:
+ * callers now resolve state via the canonical getStreakData/canClaimToday).
+ */
+function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
+    var config = getCalendarConfig(gameId);
+    var calendar = [];
+    var milestones = [];
+    var totalTokens = 0;
+    var totalXp = 0;
+
+    for (var day = 1; day <= 30; day++) {
+        var dayConfig = null;
+        for (var c = 0; c < config.length; c++) {
+            if (config[c].day === day) { dayConfig = config[c]; break; }
+        }
+        if (!dayConfig) {
+            var weekDay = ((day - 1) % 7);
+            var base = config[weekDay] || config[0];
+            var weekNum = Math.floor((day - 1) / 7) + 1;
+            dayConfig = {
+                day: day,
+                xp: Math.round(base.xp * (1 + (weekNum - 1) * 0.15)),
+                tokens: Math.round(base.tokens * (1 + (weekNum - 1) * 0.15)),
+                name: base.name,
+                tier: base.tier,
+                icon: base.icon
+            };
+        }
+
+        totalTokens += dayConfig.tokens || 0;
+        totalXp += dayConfig.xp || 0;
+
+        var status = 'locked';
+        if (day <= currentStreak) {
+            status = 'claimed';
+        } else if (day === currentStreak + 1 && canClaim) {
+            status = 'available';
+        } else if (day === currentStreak + 1 && !canClaim) {
+            status = 'claimed_today';
+        }
+
+        calendar.push({
+            day: day,
+            name: dayConfig.name,
+            tier: dayConfig.tier || 'common',
+            icon: dayConfig.icon || 'coin_stack',
+            rewards: {
+                xp: dayConfig.xp || 0,
+                tokens: dayConfig.tokens || 0,
+                multiplier: dayConfig.multiplier || null,
+                bonus: dayConfig.bonus || null
+            },
+            status: status
+        });
+    }
+
+    for (var m = 0; m < config.length; m++) {
+        if (config[m].tier === 'rare' || config[m].tier === 'epic' || config[m].tier === 'legendary') {
+            milestones.push({
+                day: config[m].day,
+                name: config[m].name,
+                tier: config[m].tier,
+                reached: config[m].day <= currentStreak
+            });
+        }
+    }
+
+    return { calendar: calendar, milestones: milestones, totalTokens30: totalTokens, totalXp30: totalXp };
+}
+
+/**
+ * Assemble the FULL daily-progression state — the single response body used by
+ * both production RPCs. Flat legacy aliases (streak / currentStreak / canClaim
+ * / canClaimToday / lastClaimTimestamp / totalClaims / nextReward /
+ * claimHistory / bestStreak) are preserved so every shipped C# model
+ * deserializes this payload without change.
+ */
+function buildDailyProgressState(nk, logger, userId, gameId) {
+    var streakData = getStreakData(nk, logger, userId, gameId);
+    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+
+    var claimCheck = canClaimToday(streakData);
+    var nextReward = getRewardForDay(gameId, streakData.currentStreak + 1);
+    var rewardTable = REWARD_CONFIGS[gameId] || REWARD_CONFIGS["default"];
+    var cal = buildDailyRewardCalendarView(gameId, streakData.currentStreak, claimCheck.canClaim);
+    var shield = dpReadShield(nk, logger, userId);
+    var reset = dpNextReset();
+
+    return {
+        // ── envelope ──
+        v: DAILY_PROGRESS_VERSION,
+        serverTimeUtc: new Date().toISOString(),
+        serverUnix: Math.floor(Date.now() / 1000),
+        userId: userId,
+        gameId: gameId,
+
+        // ── streak (flat legacy aliases kept) ──
+        streak: streakData.currentStreak,
+        currentStreak: streakData.currentStreak,
+        bestStreak: streakData.bestStreak || 0,
+        totalClaims: streakData.totalClaims || 0,
+        lastClaimTimestamp: streakData.lastClaimTimestamp || 0,
+
+        // ── claim eligibility ──
+        canClaim: claimCheck.canClaim,
+        canClaimToday: claimCheck.canClaim,
+        claimReason: claimCheck.reason,
+        nextResetUtc: reset.nextResetUtc,
+        countdownSeconds: reset.countdownSeconds,
+
+        // ── rewards ──
+        nextReward: nextReward,
+        rewardTable: rewardTable,
+
+        // ── calendar / history ──
+        calendar: cal.calendar,
+        milestones: cal.milestones,
+        claimHistory: streakData.claimHistory || [],
+
+        // ── shield / freeze ──
+        shield: shield
+    };
+}
+
+/** Shared payload validation for both production RPCs. */
+function dpValidate(ctx, payload) {
+    var parsed = utils.safeJsonParse(payload || "{}");
+    if (!parsed.success) return { error: "Invalid JSON payload" };
+    if (!ctx.userId) return { error: "User not authenticated" };
+    return { data: parsed.data || {}, userId: ctx.userId };
+}
+
+/**
+ * RPC 1: daily_progress_check
+ * One request → everything the client UI needs.
+ * Payload: { gameId?: "uuid" } (defaults to QuizVerse)
+ */
+function rpcDailyProgressCheck(ctx, logger, nk, payload) {
+    var v = dpValidate(ctx, payload);
+    if (v.error) return JSON.stringify({ success: false, error: v.error });
+
+    var gameId = dpResolveGameId(v.data);
+    var state = buildDailyProgressState(nk, logger, v.userId, gameId);
+    state.success = true;
+    return JSON.stringify(state);
+}
+
+/**
+ * RPC 2: daily_progress_claim
+ * Atomic + idempotent claim (OCC versioned write via performDailyClaim), then
+ * returns the FULL refreshed state — no follow-up RPC required. On rejection
+ * the CURRENT full state is still included so the client can resync instantly.
+ * Payload: { gameId?: "uuid" }
+ */
+function rpcDailyProgressClaim(ctx, logger, nk, payload) {
+    var v = dpValidate(ctx, payload);
+    if (v.error) return JSON.stringify({ success: false, error: v.error });
+
+    var gameId = dpResolveGameId(v.data);
+    var result = performDailyClaim(nk, logger, v.userId, gameId);
+
+    var state = buildDailyProgressState(nk, logger, v.userId, gameId);
+
+    if (!result.ok) {
+        state.success = false;
+        state.error = result.error;
+        state.claimRejectedReason = result.reason;
+        return JSON.stringify(state);
+    }
+
+    state.success = true;
+    // Claim result block + flat legacy aliases used by the shipped
+    // C# DailyRewardClaim model ([JsonProperty("streak")] → newStreak, reward).
+    state.reward = result.reward;
+    state.walletGranted = result.walletGranted;
+    state.newStreak = result.streakData.currentStreak;
+    state.claimedAt = utils.getCurrentTimestamp();
+    return JSON.stringify(state);
+}
+
+// ============================================================================
+// Registration — postbuild.js renames InitModule → __ModuleInit_N and wires the
+// literal registerRpc calls into the master InitModule (see daily_rewards.js).
+// ============================================================================
+function __ModuleInit_49(ctx, logger, nk, initializer) {
+    __rpc_daily_progress_check = __rpc_daily_progress_check || (rpcDailyProgressCheck);
+    __rpc_daily_progress_claim = __rpc_daily_progress_claim || (rpcDailyProgressClaim);
+    logger.info("[DailyProgress] Platform registered: 2 RPCs (check, claim)");
+}
+
+
+// --- Module: daily_rewards/daily_reward_calendar.js ---
 // daily_reward_calendar.js - 30-Day Daily Reward Calendar View
 // Extends the daily rewards system with a full calendar preview
 // RPC: daily_reward_get_calendar
@@ -36373,8 +36469,18 @@ function getCalendarConfig(gameId) {
 }
 
 /**
- * RPC: daily_reward_get_calendar
- * Returns the full 30-day reward calendar with claimed/unclaimed status per day.
+ * RPC: daily_reward_get_calendar (LEGACY-COMPATIBLE WRAPPER)
+ *
+ * DAILY PROGRESSION PLATFORM consolidation: this handler previously duplicated
+ * streak resolution with TWO hand-rolled storage-key guesses (both wrong vs the
+ * canonical utils.makeGameStorageKey layout) and its own claim-eligibility
+ * check using LOCAL server timezone (setHours) instead of the platform's UTC
+ * day window — so the calendar could disagree with daily_rewards_get_status
+ * around midnight. It now delegates to the canonical state functions
+ * (getStreakData / updateStreakStatus / canClaimToday in daily_rewards.js) and
+ * the shared calendar builder (buildDailyRewardCalendarView in
+ * daily_progress.js). Response shape unchanged for shipped clients.
+ * New clients should use daily_progress_check instead.
  */
 function rpcDailyRewardGetCalendar(ctx, logger, nk, payload) {
     logger.info('[DailyRewardCalendar] daily_reward_get_calendar called');
@@ -36385,147 +36491,32 @@ function rpcDailyRewardGetCalendar(ctx, logger, nk, payload) {
         }
 
         var data = JSON.parse(payload || '{}');
-        var gameId = data.game_id || data.gameId || 'default';
+        var gameId = dpResolveGameId(data);
         var userId = ctx.userId;
 
-        // Get the player's current streak data from the daily_streaks collection
-        var streakData = null;
-        try {
-            var streakKey = gameId + '_user_daily_streak_' + userId;
-            var records = nk.storageRead([{
-                collection: 'daily_streaks',
-                key: streakKey,
-                userId: userId
-            }]);
-            if (records && records.length > 0) {
-                streakData = records[0].value;
-            }
-        } catch (e) {
-            logger.warn('[DailyRewardCalendar] Could not read streak data: ' + e.message);
-        }
+        var streakData = getStreakData(nk, logger, userId, gameId);
+        streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
 
-        // Also try the alternate key pattern
-        if (!streakData) {
-            try {
-                var altKey = 'user_daily_streak_' + userId + '_' + gameId;
-                var altRecords = nk.storageRead([{
-                    collection: 'daily_streaks',
-                    key: altKey,
-                    userId: userId
-                }]);
-                if (altRecords && altRecords.length > 0) {
-                    streakData = altRecords[0].value;
-                }
-            } catch (e) { /* no streak yet */ }
-        }
-
-        var currentStreak = streakData ? (streakData.currentStreak || 0) : 0;
-        var lastClaimTimestamp = streakData ? (streakData.lastClaimTimestamp || 0) : 0;
-        var totalClaims = streakData ? (streakData.totalClaims || 0) : 0;
-
-        // Check if they can claim today
-        var canClaimToday = true;
-        if (lastClaimTimestamp > 0) {
-            var lastClaimDate = new Date(lastClaimTimestamp * 1000);
-            var today = new Date();
-            lastClaimDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            if (lastClaimDate.getTime() === today.getTime()) {
-                canClaimToday = false;
-            }
-            // Check streak break (>48h)
-            var nowUnix = Math.floor(Date.now() / 1000);
-            if ((nowUnix - lastClaimTimestamp) > 48 * 3600) {
-                currentStreak = 0;
-            }
-        }
-
-        // Build 30-day calendar
-        var config = getCalendarConfig(gameId);
-        var calendar = [];
-        var totalTokens = 0;
-        var totalXp = 0;
-
-        for (var day = 1; day <= 30; day++) {
-            var dayConfig = null;
-            for (var c = 0; c < config.length; c++) {
-                if (config[c].day === day) {
-                    dayConfig = config[c];
-                    break;
-                }
-            }
-
-            if (!dayConfig) {
-                // Fallback: cycle week 1 rewards with scaling
-                var weekDay = ((day - 1) % 7);
-                dayConfig = config[weekDay] || config[0];
-                var weekNum = Math.floor((day - 1) / 7) + 1;
-                dayConfig = {
-                    day: day,
-                    xp: Math.round(dayConfig.xp * (1 + (weekNum - 1) * 0.15)),
-                    tokens: Math.round(dayConfig.tokens * (1 + (weekNum - 1) * 0.15)),
-                    name: dayConfig.name,
-                    tier: dayConfig.tier,
-                    icon: dayConfig.icon
-                };
-            }
-
-            totalTokens += dayConfig.tokens || 0;
-            totalXp += dayConfig.xp || 0;
-
-            var status = 'locked';
-            if (day <= currentStreak) {
-                status = 'claimed';
-            } else if (day === currentStreak + 1 && canClaimToday) {
-                status = 'available';
-            } else if (day === currentStreak + 1 && !canClaimToday) {
-                status = 'claimed_today';
-            }
-
-            calendar.push({
-                day: day,
-                name: dayConfig.name,
-                tier: dayConfig.tier || 'common',
-                icon: dayConfig.icon || 'coin_stack',
-                rewards: {
-                    xp: dayConfig.xp || 0,
-                    tokens: dayConfig.tokens || 0,
-                    multiplier: dayConfig.multiplier || null,
-                    bonus: dayConfig.bonus || null
-                },
-                status: status
-            });
-        }
-
-        // Milestones summary
-        var milestones = [];
-        for (var m = 0; m < config.length; m++) {
-            if (config[m].tier === 'rare' || config[m].tier === 'epic' || config[m].tier === 'legendary') {
-                milestones.push({
-                    day: config[m].day,
-                    name: config[m].name,
-                    tier: config[m].tier,
-                    reached: config[m].day <= currentStreak
-                });
-            }
-        }
+        var claimCheck = canClaimToday(streakData);
+        var currentStreak = streakData.currentStreak || 0;
+        var view = buildDailyRewardCalendarView(gameId, currentStreak, claimCheck.canClaim);
 
         return JSON.stringify({
             success: true,
             user_id: userId,
             game_id: gameId,
             current_streak: currentStreak,
-            total_claims: totalClaims,
-            can_claim_today: canClaimToday,
-            calendar: calendar,
-            milestones: milestones,
+            total_claims: streakData.totalClaims || 0,
+            can_claim_today: claimCheck.canClaim,
+            calendar: view.calendar,
+            milestones: view.milestones,
             totals: {
-                total_tokens_30_days: totalTokens,
-                total_xp_30_days: totalXp,
+                total_tokens_30_days: view.totalTokens30,
+                total_xp_30_days: view.totalXp30,
                 claimed_tokens: 0,
                 claimed_xp: 0
             },
-            streak_status: currentStreak === 0 ? 'new' : (canClaimToday ? 'active' : 'claimed_today'),
+            streak_status: currentStreak === 0 ? 'new' : (claimCheck.canClaim ? 'active' : 'claimed_today'),
             next_milestone: null
         });
 
@@ -36549,7 +36540,7 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_rewards.js ---
+// --- Module: daily_rewards/daily_rewards.js ---
 // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
 /**
@@ -36575,27 +36566,33 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 // currency displayed in the reward popup and granted to the wallet).
 // `tokens` is kept for legacy compatibility but is NOT granted to the wallet.
 // The client reads `reward.game` for the coin amount shown in the toast.
+// RCA fix (client/server reward mismatch): `game` (the coins actually granted to
+// the wallet) was a flat 50/day, contradicting BOTH the balanced-economy design
+// doc above (Day 1: 40 … Day 7: 200, weekly total 660) AND the client's canonical
+// display table (IVXDailyRewardsManager.DAILY_REWARD_COINS = 40,50,65,80,100,125,200).
+// The popup promised the ramp while the wallet received 50. `game` now follows the
+// documented ramp, so display == grant on every day.
 var REWARD_CONFIGS = {
     // Default rewards for any game - BALANCED FOR ENGAGEMENT + MONETIZATION
     "default": [
-        { day: 1, game: 50, xp: 50, tokens: 40, description: "Welcome Back!" },
+        { day: 1, game: 40, xp: 50, tokens: 40, description: "Welcome Back!" },
         { day: 2, game: 50, xp: 75, tokens: 50, description: "Day 2 Reward" },
-        { day: 3, game: 50, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
-        { day: 4, game: 50, xp: 150, tokens: 80, description: "Halfway There!" },
-        { day: 5, game: 50, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
-        { day: 6, game: 50, xp: 275, tokens: 125, description: "Almost There!" },
-        { day: 7, game: 50, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
+        { day: 3, game: 65, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
+        { day: 4, game: 80, xp: 150, tokens: 80, description: "Halfway There!" },
+        { day: 5, game: 100, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
+        { day: 6, game: 125, xp: 275, tokens: 125, description: "Almost There!" },
+        { day: 7, game: 200, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
     ],
 
     // QuizVerse specific - CORRECT GAME ID
     "126bf539-dae2-4bcf-964d-316c0fa1f92b": [
-        { day: 1, game: 50, xp: 50, tokens: 40, description: "Welcome Back!" },
+        { day: 1, game: 40, xp: 50, tokens: 40, description: "Welcome Back!" },
         { day: 2, game: 50, xp: 75, tokens: 50, description: "Day 2 Reward" },
-        { day: 3, game: 50, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
-        { day: 4, game: 50, xp: 150, tokens: 80, description: "Halfway There!" },
-        { day: 5, game: 50, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
-        { day: 6, game: 50, xp: 275, tokens: 125, description: "Almost There!" },
-        { day: 7, game: 50, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
+        { day: 3, game: 65, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
+        { day: 4, game: 80, xp: 150, tokens: 80, description: "Halfway There!" },
+        { day: 5, game: 100, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
+        { day: 6, game: 125, xp: 275, tokens: 125, description: "Almost There!" },
+        { day: 7, game: 200, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
     ]
 };
 
@@ -36784,6 +36781,47 @@ function saveStreakData(nk, logger, userId, gameId, data) {
 }
 
 /**
+ * OCC support (double-claim fix): raw read that also returns the storage object
+ * version, so the claim path can do a CONDITIONAL write. utils.readStorage
+ * discards the version, which forced blind writes — two concurrent
+ * daily_rewards_claim calls (double-tap, two devices, client retry) both passed
+ * canClaimToday and both granted the wallet.
+ */
+function readStreakRawWithVersion(nk, userId, gameId) {
+    var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
+    var objects = nk.storageRead([{ collection: "daily_streaks", key: key, userId: userId }]);
+    if (objects && objects.length > 0 && objects[0].value) {
+        return { value: objects[0].value, version: objects[0].version };
+    }
+    // "*" = Nakama conditional create: write succeeds only if the key does not exist yet.
+    return { value: null, version: "*" };
+}
+
+/**
+ * Conditional write — succeeds only if the record still has the version we read.
+ * Returns false on version conflict (a concurrent claim won the race).
+ */
+function saveStreakDataVersioned(nk, logger, userId, gameId, data, version) {
+    var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
+    try {
+        nk.storageWrite([{
+            collection: "daily_streaks",
+            key: key,
+            userId: userId,
+            value: data,
+            version: version,
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+        return true;
+    } catch (err) {
+        utils.logWarn(logger, "[DailyRewards] Versioned write rejected for " + userId +
+            " (concurrent claim?): " + err.message);
+        return false;
+    }
+}
+
+/**
  * Check if user can claim reward today
  * @param {object} streakData - Current streak data
  * @returns {object} { canClaim: boolean, reason: string }
@@ -36926,91 +36964,105 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
-    utils.logInfo(logger, "RPC daily_rewards_claim called");
-    
-    var parsed = utils.safeJsonParse(payload);
-    if (!parsed.success) {
-        return utils.handleError(ctx, null, "Invalid JSON payload");
-    }
-    
-    var data = parsed.data;
-    var validation = utils.validatePayload(data, ['gameId']);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-    }
-    
-    var gameId = data.gameId;
-    if (!utils.isValidUUID(gameId)) {
-        return utils.handleError(ctx, null, "Invalid gameId UUID format");
-    }
-    
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-    
-    // Get current streak data
+/**
+ * DAILY PROGRESSION PLATFORM — single claim core.
+ *
+ * This is the ONLY implementation of "claim today's daily reward" in the entire
+ * backend. Every claim RPC (canonical `daily_rewards_claim`, the consolidated
+ * `daily_progress_claim`, and the legacy Arcade `quizverse_claim_daily_reward`)
+ * MUST delegate here. Do not fork this logic.
+ *
+ * Returns:
+ *   { ok: true,  streakData, reward, walletGranted }
+ *   { ok: false, error, reason }
+ */
+function performDailyClaim(nk, logger, userId, gameId) {
+    // Get current streak data (runs migration/reconcile side-effects up front so
+    // the versioned read below sees a settled record).
     var streakData = getStreakData(nk, logger, userId, gameId);
     streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-    
-    // Check if can claim
+
+    // Fast pre-check (cheap rejection before the OCC loop).
     var claimCheck = canClaimToday(streakData);
     if (!claimCheck.canClaim) {
-        return JSON.stringify({
-            success: false,
-            error: "Cannot claim reward: " + claimCheck.reason,
-            canClaimToday: false
-        });
+        return { ok: false, error: "Cannot claim reward: " + claimCheck.reason, reason: claimCheck.reason };
     }
-    
-    // Reset streak when gap spans more than one UTC day or exceeds 48h grace
-    // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
-    var lastClaimTs = streakData.lastClaimTimestamp;
-    if (lastClaimTs > 0) {
-        var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-        var today = getTodayUtcDateString();
-        var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-        var todayDayStart = getUtcDayStartUnixFromDateString(today);
-        var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-        if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-            streakData.currentStreak = 0;
+
+    // ── ATOMIC CLAIM (OCC / double-claim fix) ────────────────────────────────
+    // The old path did read → check → walletUpdate → blind write. Two concurrent
+    // claims (double-tap, second device, client retry after timeout) both passed
+    // the check and BOTH granted coins. Now: re-read WITH the storage version,
+    // re-verify eligibility on that exact snapshot, mutate, and commit with a
+    // CONDITIONAL write. If a concurrent claim committed first, the write fails,
+    // we re-read, see lastClaim == today, and reject with "already claimed" —
+    // making retries idempotent and duplicate grants impossible.
+    var reward = null;
+    var committed = false;
+    for (var attempt = 0; attempt < 2 && !committed; attempt++) {
+        var raw = readStreakRawWithVersion(nk, userId, gameId);
+        // Fall back to the settled copy when the record does not exist yet
+        // (version "*" makes the write a conditional create).
+        var claimState = raw.value || streakData;
+        if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
+        if (!claimState.claimHistory) claimState.claimHistory = [];
+
+        var recheck = canClaimToday(claimState);
+        if (!recheck.canClaim) {
+            return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
         }
-    }
 
-    // Update streak
-    streakData.currentStreak += 1;
-    streakData.lastClaimTimestamp = utils.getUnixTimestamp();
-    streakData.totalClaims += 1;
-    streakData.updatedAt = utils.getCurrentTimestamp();
-
-    // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
-    if (streakData.currentStreak > (streakData.bestStreak || 0)) {
-        streakData.bestStreak = streakData.currentStreak;
-    }
-
-    // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
-    // Capped at 90 entries (~3 months) to keep the storage record small.
-    var claimDate = new Date(streakData.lastClaimTimestamp * 1000);
-    var claimDateStr = claimDate.getUTCFullYear() + "-" +
-        (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
-        (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
-    if (!streakData.claimHistory) streakData.claimHistory = [];
-    if (streakData.claimHistory[streakData.claimHistory.length - 1] !== claimDateStr) {
-        streakData.claimHistory.push(claimDateStr);
-        while (streakData.claimHistory.length > 90) {
-            streakData.claimHistory.shift();
+        // Reset streak when gap spans more than one UTC day or exceeds 48h grace
+        // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
+        var lastClaimTs = claimState.lastClaimTimestamp || 0;
+        if (lastClaimTs > 0) {
+            var lastDate = getUtcDateStringFromUnix(lastClaimTs);
+            var today = getTodayUtcDateString();
+            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
+            var todayDayStart = getUtcDayStartUnixFromDateString(today);
+            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
+            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
+                claimState.currentStreak = 0;
+            }
         }
+
+        // Update streak
+        claimState.currentStreak = (claimState.currentStreak || 0) + 1;
+        claimState.lastClaimTimestamp = utils.getUnixTimestamp();
+        claimState.totalClaims = (claimState.totalClaims || 0) + 1;
+        claimState.updatedAt = utils.getCurrentTimestamp();
+
+        // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
+        if (claimState.currentStreak > (claimState.bestStreak || 0)) {
+            claimState.bestStreak = claimState.currentStreak;
+        }
+
+        // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
+        // Capped at 90 entries (~3 months) to keep the storage record small.
+        var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
+        var claimDateStr = claimDate.getUTCFullYear() + "-" +
+            (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
+            (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
+        if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {
+            claimState.claimHistory.push(claimDateStr);
+            while (claimState.claimHistory.length > 90) {
+                claimState.claimHistory.shift();
+            }
+        }
+
+        reward = getRewardForDay(gameId, claimState.currentStreak);
+
+        if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
+            committed = true;
+            streakData = claimState;
+        }
+        // On conflict: loop re-reads the fresh record; the recheck above then
+        // returns "already_claimed_today" if the concurrent claim was today's.
     }
-    
-    // Get reward for current day
-    var reward = getRewardForDay(gameId, streakData.currentStreak);
-    
-    // Save updated streak
-    if (!saveStreakData(nk, logger, userId, gameId, streakData)) {
-        return utils.handleError(ctx, null, "Failed to save streak data");
+
+    if (!committed) {
+        return { ok: false, error: "Failed to save streak data (concurrent update)", reason: "concurrent_update" };
     }
-    
+
     // Log reward claim for transaction history
     var transactionKey = "transaction_log_" + userId + "_" + utils.getUnixTimestamp();
     var transactionData = {
@@ -37022,9 +37074,9 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
         timestamp: utils.getCurrentTimestamp()
     };
     utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, transactionData);
-    
+
     utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
-    
+
     // QVBF_166: Grant `game` (coins) to the wallet using the `game` currency key.
     // Previously mapped tokens→coins which was wrong when `game` and `tokens` differ.
     var walletChanges = {};
@@ -37039,19 +37091,62 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
         }
     }
 
+    return { ok: true, streakData: streakData, reward: reward, walletGranted: walletChanges };
+}
+
+/**
+ * RPC: Claim daily reward (LEGACY-COMPATIBLE WRAPPER).
+ * Thin shell over performDailyClaim — keeps the response shape shipped clients
+ * expect. New clients should use `daily_progress_claim` (daily_progress.js),
+ * which returns the full progression state in the same round-trip.
+ * @param {string} payload - JSON payload with { gameId: "uuid" }
+ */
+function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC daily_rewards_claim called");
+
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
+
+    var gameId = data.gameId;
+    if (!utils.isValidUUID(gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
+
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+
+    var result = performDailyClaim(nk, logger, userId, gameId);
+    if (!result.ok) {
+        return JSON.stringify({
+            success: false,
+            error: result.error,
+            canClaimToday: false
+        });
+    }
+
     // QVBF_166: emit both `streak`/`newStreak` so C# DailyRewardClaim
     // [JsonProperty("streak")] → newStreak deserializes the correct value.
     return JSON.stringify({
         success: true,
         userId: userId,
         gameId: gameId,
-        streak: streakData.currentStreak,        // canonical — C# [JsonProperty("streak")] → newStreak
-        newStreak: streakData.currentStreak,     // legacy alias
-        currentStreak: streakData.currentStreak, // extra alias for safety
-        bestStreak: streakData.bestStreak || 0,  // QVBF_51: lifetime best
-        totalClaims: streakData.totalClaims,
-        reward: reward,
-        walletGranted: walletChanges,
+        streak: result.streakData.currentStreak,        // canonical — C# [JsonProperty("streak")] → newStreak
+        newStreak: result.streakData.currentStreak,     // legacy alias
+        currentStreak: result.streakData.currentStreak, // extra alias for safety
+        bestStreak: result.streakData.bestStreak || 0,  // QVBF_51: lifetime best
+        totalClaims: result.streakData.totalClaims,
+        reward: result.reward,
+        walletGranted: result.walletGranted,
         claimedAt: utils.getCurrentTimestamp()
     });
 }
@@ -37111,7 +37206,7 @@ function rpcDailyRewardsGetHistory(ctx, logger, nk, payload) {
 //   2) rewrite each call into a guarded `__rpc_id = __rpc_id || handler`
 //   3) replay those assignments at global scope BEFORE legacy fallbacks
 //      (modules-first ordering), so THESE handlers win the stub race
-//   4) emit `__rpc__id_ = __rpc__id_ || (__rpc_<id>)` in the master InitModule
+//   4) emit `initializer.registerRpc("<id>", __rpc_<id>)` in the master InitModule
 //
 // Before this block existed, daily_rewards_get_status / daily_rewards_claim
 // were silently served by the stale TS LegacyDailyRewards copy (wrong response
@@ -37124,7 +37219,7 @@ function __ModuleInit_51(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: event_pipeline\event_pipeline.js ---
+// --- Module: event_pipeline/event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -37522,7 +37617,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics\external_analytics.js ---
+// --- Module: external_analytics/external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -38145,7 +38240,7 @@ function __ModuleInit_53(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers\external_pollers.js ---
+// --- Module: external_pollers/external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -38535,7 +38630,7 @@ function __ModuleInit_54(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel\fortune_wheel.js ---
+// --- Module: fortune_wheel/fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -38917,7 +39012,7 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friend_streaks\friend_streaks.js ---
+// --- Module: friend_streaks/friend_streaks.js ---
 // friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
 // RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
 // Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
@@ -39532,7 +39627,7 @@ function __ModuleInit_56(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_challenges.js ---
+// --- Module: friends/friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -39935,6 +40030,25 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
         return _fcErr('Unable to send challenge at this time', 'send_blocked');
     }
 
+    // ── Score integrity (G-013 / AP-007, 2026-07-06) ───────────────────────
+    // When the challenge carries a claimed score, require a server-signed
+    // token minted by the quiz submit RPC. Enforcement is flag-gated via the
+    // app registry ("scoreSigning") so existing clients keep working until
+    // the Unity build that attaches tokens has rolled out — then flipping
+    // the flag closes the { myScore: 999999 } exploit with zero deploys.
+    var claimedScore = (rawData && typeof rawData.myScore === 'number') ? rawData.myScore
+                     : (rawData && typeof rawData.targetScore === 'number') ? rawData.targetScore : null;
+    if (claimedScore !== null &&
+        typeof SocialAppRegistry !== 'undefined' && SocialAppRegistry.featureEnabled &&
+        typeof ScoreSigning !== 'undefined' && ScoreSigning.verify &&
+        SocialAppRegistry.featureEnabled(nk, gameId, 'scoreSigning')) {
+        var sv = ScoreSigning.verify(ctx, nk, rawData.scoreToken, senderId, claimedScore);
+        if (!sv.valid) {
+            return _fcErr('Score could not be verified — finish a quiz first, then challenge',
+                          'invalid_score_token', { reason: sv.reason });
+        }
+    }
+
     // ── Rate limits (STRICT — pair AND global) ─────────────────────────────
     var pairRl = _fcCheckPairRateLimit(nk, senderId, targetUserId);
     if (!pairRl.allowed) {
@@ -39997,7 +40111,7 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
 
     // ── Notify recipient (canonical Subject/Code contract) ─────────────────
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_CHALLENGE_RECEIVED', targetUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_CHALLENGE_RECEIVED', targetUserId, {
             challengeId:     challengeId,
             fromUserId:      senderId,
             fromUsername:    ctx.username || senderId,
@@ -40131,7 +40245,7 @@ function rpcAcceptFriendChallenge(ctx, logger, nk, payload) {
 
     // Notify the sender
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_CHALLENGE_ACCEPTED', challenge.fromUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_CHALLENGE_ACCEPTED', challenge.fromUserId, {
             challengeId:           challengeId,
             acceptedBy:            userId,
             acceptedByDisplayName: _fcDisplayName(nk, userId, ctx.username),
@@ -40213,7 +40327,7 @@ function rpcDeclineFriendChallenge(ctx, logger, nk, payload) {
     }
 
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_CHALLENGE_DECLINED', challenge.fromUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_CHALLENGE_DECLINED', challenge.fromUserId, {
             challengeId: challengeId,
             declinedBy:  userId,
             reason:      reason
@@ -40299,7 +40413,7 @@ function rpcCancelFriendChallenge(ctx, logger, nk, payload) {
     }
 
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_CHALLENGE_CANCELLED', recipientId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_CHALLENGE_CANCELLED', recipientId, {
             challengeId: challengeId,
             cancelledBy: userId
         }, userId);
@@ -40357,7 +40471,7 @@ function rpcListPendingFriendChallenges(ctx, logger, nk, payload) {
                 // Also fire an EXPIRED notification to the SENDER so their
                 // outbox UI clears without polling.
                 try {
-                    sendFriendsNotification(nk, logger, 'FRIEND_CHALLENGE_EXPIRED',
+                    sendFriendsNotification(ctx, nk, logger, 'FRIEND_CHALLENGE_EXPIRED',
                         c.fromUserId, {
                             challengeId: c.challengeId,
                             expiredFor:  userId
@@ -40538,7 +40652,7 @@ function rpcFriendsSpectate(ctx, logger, nk, payload) {
     // Notify the friend that someone wants to spectate (canonical code 105)
     try {
         var requesterName = _fcDisplayName(nk, userId, ctx.username);
-        sendFriendsNotification(nk, logger, 'FRIEND_SPECTATE_REQUEST', friendUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_SPECTATE_REQUEST', friendUserId, {
             fromUserId:      userId,
             fromUsername:    ctx.username || userId,
             fromDisplayName: requesterName,
@@ -40563,15 +40677,26 @@ function rpcFriendsSpectate(ctx, logger, nk, payload) {
 // ============================================================================
 // postbuild.js renames this `InitModule` to `__ModuleInit_N` (only one
 // InitModule allowed in the merged output) and rewrites every
-// `__rpc_id = __rpc_id || (handler)` into
+// `initializer.registerRpc("id", handler)` into
 // `__rpc_id = __rpc_id || handler` (guarded — first declaration wins) which
 // is then replayed at global scope on every Goja VM.
 //
 // IMPORTANT: legacy_runtime.js's `friends_challenge_user` registration must
 // stay removed / commented so it doesn't compete with our handler.
+// Phase-5 deprecation telemetry (2026-07-06): current Unity code now calls
+// the canonical 'send_friend_challenge' (FriendsNakamaService.cs). This
+// alias serves ONLY app builds already in the field. AnalyticsAlerts counts
+// per-RPC traffic — hard-remove once this shows zero calls for 14+ days.
+function rpcFriendsChallengeUserDeprecated(ctx, logger, nk, payload) {
+    try {
+        logger.warn('[FriendChallenges] DEPRECATED alias friends_challenge_user called (user=' + (ctx && ctx.userId) + ') — old client build');
+    } catch (_) {}
+    return rpcSendFriendChallenge(ctx, logger, nk, payload);
+}
+
 function __ModuleInit_57(ctx, logger, nk, initializer) {
     __rpc_send_friend_challenge = __rpc_send_friend_challenge || (rpcSendFriendChallenge);
-    __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcSendFriendChallenge); // legacy alias
+    __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcFriendsChallengeUserDeprecated); // field-only deprecated alias
     __rpc_accept_friend_challenge = __rpc_accept_friend_challenge || (rpcAcceptFriendChallenge);
     __rpc_decline_friend_challenge = __rpc_decline_friend_challenge || (rpcDeclineFriendChallenge);
     __rpc_cancel_friend_challenge = __rpc_cancel_friend_challenge || (rpcCancelFriendChallenge);
@@ -40584,7 +40709,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_invites.js ---
+// --- Module: friends/friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -40621,8 +40746,11 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 //  4. Block check in BOTH directions (sender->target and target->sender)
 //  5. Already-friends short-circuit (returns success without re-creating)
 //  6. Existing-pending-invite short-circuit (returns success with same id)
-//  7. Per-user rate limit (1 invite send / 5 seconds; 1 accept-or-decline
-//     per invite is intrinsic via storage status check)
+//  7. Rate limits (B-009 hardened 2026-07-06): per-user burst guard
+//     (1 send / 5s) + per-PAIR cooldown (1 / 30s, normalized pair key,
+//     system-owned so both directions share the bucket) + hourly cap
+//     (20 sends / user / hour). Accept-or-decline is intrinsically
+//     limited via the storage status check.
 //  8. Cancel-invite RPC (sender can rescind an outgoing invite, also
 //     cleans up the Nakama INVITE_SENT relation)
 //  9. List-pending-invites RPC (returns BOTH incoming and outgoing custom
@@ -40650,8 +40778,18 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 // ─── Tunables ───────────────────────────────────────────────────────────────
 var FRIEND_INVITES_COLLECTION  = 'friend_invites';
 var FRIEND_INV_RATELIMIT_KEY   = 'fr_invite_send';
-var FRIEND_INV_RATELIMIT_MS    = 5000; // 5s between sends per user
+var FRIEND_INV_RATELIMIT_MS    = 5000; // 5s between sends per user (burst guard)
 var FRIEND_INV_MAX_MESSAGE_LEN = 280;  // tweet-length
+
+// B-009 fix (2026-07-06, WORLD_CLASS_SOCIAL_FRIENDS_GROUPS_ARCHITECTURE.md §10.1):
+// the per-user 5s cooldown above lets one user spam a single target with a
+// fresh invite every 5s forever. Add (a) a per-PAIR cooldown on a NORMALIZED
+// pair key — both directions share the same bucket, stored system-owned so
+// A→B and B→A read the same row — and (b) a global hourly send cap per user.
+var FRIEND_INV_PAIR_COOLDOWN_MS = 30000;        // 1 invite per pair per 30s
+var FRIEND_INV_HOURLY_MAX       = 20;           // max sends per user per hour
+var FRIEND_INV_HOURLY_WINDOW_MS = 60 * 60 * 1000;
+var FRIEND_INV_SYSTEM_USER      = '00000000-0000-0000-0000-000000000000';
 
 var INVITE_STATUS_PENDING   = 'pending';
 var INVITE_STATUS_ACCEPTED  = 'accepted';
@@ -40811,6 +40949,130 @@ function _fiCheckRateLimit(nk, userId, action, cooldownMs) {
     return { allowed: true };
 }
 
+// B-009: normalized pair key — min(a,b)_max(a,b) so both directions share
+// one rate-limit bucket (the same convention the challenge module uses).
+function _fiPairKey(a, b) {
+    return (a < b) ? (a + '_' + b) : (b + '_' + a);
+}
+
+/**
+ * B-009: per-pair cooldown. Stored SYSTEM-owned so that A→B and B→A hit the
+ * same row regardless of who sends. Fail-open on read errors (rate limiting
+ * must never hard-block invites when storage hiccups), same as _fiCheckRateLimit.
+ */
+function _fiCheckPairRateLimit(nk, userIdA, userIdB) {
+    var key = 'rl_fr_invite_pair_' + _fiPairKey(userIdA, userIdB);
+    var now = _fiNowMs();
+    try {
+        var rows = nk.storageRead([{ collection: 'rate_limits', key: key, userId: FRIEND_INV_SYSTEM_USER }]);
+        if (rows && rows.length > 0 && rows[0].value && rows[0].value.timestamp) {
+            var elapsed = now - rows[0].value.timestamp;
+            if (elapsed < FRIEND_INV_PAIR_COOLDOWN_MS) {
+                return { allowed: false, retryAfterMs: FRIEND_INV_PAIR_COOLDOWN_MS - elapsed };
+            }
+        }
+    } catch (_) { /* fail-open */ }
+    try {
+        nk.storageWrite([{
+            collection:      'rate_limits',
+            key:             key,
+            userId:          FRIEND_INV_SYSTEM_USER,
+            value:           { timestamp: now },
+            permissionRead:  0,
+            permissionWrite: 0
+        }]);
+    } catch (_) { /* non-critical */ }
+    return { allowed: true };
+}
+
+/**
+ * B-009: sliding-window hourly cap per sender. Counter row resets when the
+ * window expires. Increment happens on every ALLOWED attempt (before deeper
+ * validation, matching the doc's §6.3 flow order).
+ */
+function _fiCheckHourlyCap(nk, userId) {
+    var key = 'rl_fr_invite_hourly_' + userId;
+    var now = _fiNowMs();
+    var count = 0;
+    var windowStart = now;
+    try {
+        var rows = nk.storageRead([{ collection: 'rate_limits', key: key, userId: userId }]);
+        if (rows && rows.length > 0 && rows[0].value) {
+            var v = rows[0].value;
+            if (typeof v.windowStart === 'number' && (now - v.windowStart) < FRIEND_INV_HOURLY_WINDOW_MS) {
+                windowStart = v.windowStart;
+                count = (typeof v.count === 'number') ? v.count : 0;
+            }
+        }
+    } catch (_) { /* fail-open */ }
+    if (count >= FRIEND_INV_HOURLY_MAX) {
+        return { allowed: false, retryAfterMs: (windowStart + FRIEND_INV_HOURLY_WINDOW_MS) - now };
+    }
+    try {
+        nk.storageWrite([{
+            collection:      'rate_limits',
+            key:             key,
+            userId:          userId,
+            value:           { count: count + 1, windowStart: windowStart },
+            permissionRead:  0,
+            permissionWrite: 0
+        }]);
+    } catch (_) { /* non-critical */ }
+    return { allowed: true };
+}
+
+/**
+ * G-002 (2026-07-06, doc §E.1/§F.5): K-factor viral-loop instrumentation.
+ * Emits into the Satori event-capture pipeline (global namespace compiled
+ * from src/satori/event-capture). Unknown event names pass taxonomy
+ * validation with a warning unless strict mode is enabled. Best-effort —
+ * analytics must NEVER fail the parent RPC. Metadata values must be strings
+ * (Satori.CapturedEvent contract).
+ */
+function _fiEmitKFactorEvent(nk, logger, userId, eventName, metadata) {
+    try {
+        if (typeof SatoriEventCapture !== 'undefined' && SatoriEventCapture.captureEvent) {
+            var meta = {};
+            if (metadata) {
+                for (var k in metadata) {
+                    if (Object.prototype.hasOwnProperty.call(metadata, k) &&
+                        metadata[k] !== null && metadata[k] !== undefined) {
+                        meta[k] = String(metadata[k]);
+                    }
+                }
+            }
+            SatoriEventCapture.captureEvent(nk, logger, userId, {
+                name: eventName,
+                timestamp: Date.now(),
+                metadata: meta
+            });
+        }
+    } catch (e) {
+        if (logger && logger.warn) logger.warn('[FriendInvites] K-factor emit failed (non-fatal): ' + (e.message || e));
+    }
+}
+
+/**
+ * G-002 helper: whole days since an account was created. Accepts the
+ * createTime shapes the runtime returns (epoch seconds number or ISO string).
+ * Returns -1 when unknown.
+ */
+function _fiDaysSinceJoined(user) {
+    try {
+        if (!user || user.createTime === undefined || user.createTime === null) return -1;
+        var ms = 0;
+        if (typeof user.createTime === 'number') {
+            // Heuristic: epoch seconds vs epoch millis
+            ms = user.createTime > 100000000000 ? user.createTime : user.createTime * 1000;
+        } else {
+            var t = Date.parse(String(user.createTime));
+            if (isNaN(t)) return -1;
+            ms = t;
+        }
+        return Math.max(0, Math.floor((Date.now() - ms) / 86400000));
+    } catch (_) { return -1; }
+}
+
 function _fiUserDisplayName(nk, userId, fallback) {
     try {
         var users = nk.usersGetId([userId]);
@@ -40902,13 +41164,38 @@ function rpcFriendsSendInvite(ctx, logger, nk, payload) {
             { retryAfterMs: rl.retryAfterMs });
     }
 
+    // B-009: per-pair cooldown — a user can no longer spam ONE target with
+    // repeat invites; both directions (A→B, B→A) share the same bucket.
+    var prl = _fiCheckPairRateLimit(nk, fromUserId, targetUserId);
+    if (!prl.allowed) {
+        return _fiErr('Please wait before re-inviting this player', 'pair_rate_limited',
+            { retryAfterMs: prl.retryAfterMs });
+    }
+
+    // B-009: global hourly cap — bounds total invite fan-out per sender
+    // (anti-spam; also protects the K-factor metric from bot inflation).
+    var hrl = _fiCheckHourlyCap(nk, fromUserId);
+    if (!hrl.allowed) {
+        return _fiErr('Invite limit reached — try again later', 'rate_limited_hourly',
+            { retryAfterMs: hrl.retryAfterMs });
+    }
+
     // Verify target exists (cheap usersGetId — also gives us their username
     // to feed into nk.friendsAdd as the second arg, which Nakama uses when
     // the target is identified by username rather than id).
+    // G-002: the sender is fetched in the SAME batch (no extra round-trip)
+    // so the K-factor event can carry daysSinceSourceJoined.
     var targetUser = null;
+    var senderUser = null;
     try {
-        var users = nk.usersGetId([targetUserId]);
-        if (users && users.length > 0) targetUser = users[0];
+        var users = nk.usersGetId([targetUserId, fromUserId]);
+        if (users) {
+            for (var ui = 0; ui < users.length; ui++) {
+                if (!users[ui]) continue;
+                if (users[ui].userId === targetUserId) targetUser = users[ui];
+                else if (users[ui].userId === fromUserId) senderUser = users[ui];
+            }
+        }
     } catch (e) {
         logger.warn('[FriendInvites] usersGetId failed: ' + e.message);
     }
@@ -40917,8 +41204,17 @@ function rpcFriendsSendInvite(ctx, logger, nk, payload) {
     }
 
     // ── Block checks (both directions) ─────────────────────────────────────
-    // 1. Caller's own block list (from Nakama state=3)
-    var callerRel = _fiNakamaRelation(nk, fromUserId, targetUserId);
+    // 1. Caller's own block list (from Nakama state=3).
+    // G-002: use the full relation map (same single friendsList scan as the
+    // old _fiNakamaRelation call) so we also get the sender's confirmed
+    // friend count for the K-factor event.
+    var relMapRes = _fiBuildRelationMap(nk, fromUserId);
+    var callerRel = _fiRelationFromMap(relMapRes.map, targetUserId);
+    var senderFriendCount = 0;
+    for (var rk in relMapRes.map) {
+        if (Object.prototype.hasOwnProperty.call(relMapRes.map, rk) &&
+            relMapRes.map[rk] === FR_STATE_FRIEND) senderFriendCount++;
+    }
     if (callerRel === FR_STATE_BLOCKED) {
         return _fiErr('You have blocked this user. Unblock them first.', 'caller_blocked_target');
     }
@@ -40961,7 +41257,7 @@ function rpcFriendsSendInvite(ctx, logger, nk, payload) {
         var reciprocalId = _fiInviteId(targetUserId, fromUserId);
         var autoAcceptorName = _fiUserDisplayName(nk, fromUserId, ctx.username);
         try {
-            sendFriendsNotification(nk, logger, 'FRIEND_REQUEST_ACCEPTED', targetUserId, {
+            sendFriendsNotification(ctx, nk, logger, 'FRIEND_REQUEST_ACCEPTED', targetUserId, {
                 inviteId:               reciprocalId,
                 acceptedBy:             fromUserId,
                 acceptedByUsername:     ctx.username || fromUserId,
@@ -41054,7 +41350,7 @@ function rpcFriendsSendInvite(ctx, logger, nk, payload) {
 
     // ── Notify the target with canonical Subject/Code/type contract ────────
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_REQUEST', targetUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_REQUEST', targetUserId, {
             inviteId:        inviteId,
             fromUserId:      fromUserId,
             fromUsername:    inviteData.fromUsername,
@@ -41099,6 +41395,16 @@ function rpcFriendsSendInvite(ctx, logger, nk, payload) {
         logger.warn('[FriendInvites] device push (friend_request) failed (non-fatal): ' + (pushErr.message || pushErr));
     }
 
+    // G-002: K-factor instrumentation — invite_sent (doc §E.1/§F.5 schema).
+    _fiEmitKFactorEvent(nk, logger, fromUserId, 'invite_sent', {
+        sourceUserId:          fromUserId,
+        targetUserId:          targetUserId,
+        channel:               'in_app',
+        gameId:                FRIEND_PUSH_GAME_ID,
+        daysSinceSourceJoined: _fiDaysSinceJoined(senderUser),
+        sourceFriendCount:     senderFriendCount
+    });
+
     return _fiOk({
         inviteId:     inviteId,
         targetUserId: targetUserId,
@@ -41136,6 +41442,66 @@ function rpcFriendsAcceptInvite(ctx, logger, nk, payload) {
     }
 
     if (!rows || rows.length === 0 || !rows[0].value) {
+        // ── B-007 root-cause fix (2026-07-06, doc §6.4) ─────────────────────
+        // No storage row — but the invite may still be REAL: legacy invites
+        // created via the native AddFriends path (or TTL-cleaned rows) exist
+        // only in Nakama's graph. The old behaviour ('invite_not_found')
+        // forced Unity into a 3-tier fallback whose tier 3 bypassed this RPC
+        // entirely (client.AddFriendsAsync), leaving rows forever 'pending'.
+        // New behaviour: derive the sender, and if the graph says
+        // INVITE_RECEIVED from them, accept HERE — single reliable server
+        // path, no client fallback needed.
+        var derivedFrom = (p.data || {}).fromUserId;
+        if (!derivedFrom) {
+            var m = /^inv_([0-9a-fA-F-]{36})_([0-9a-fA-F-]{36})$/.exec(inviteId);
+            if (m && m[2].toLowerCase() === userId.toLowerCase()) derivedFrom = m[1];
+        }
+        if (derivedFrom && _fiUuidValid(derivedFrom)) {
+            var graphRel = _fiNakamaRelation(nk, userId, derivedFrom);
+            if (graphRel === FR_STATE_INVITE_RECEIVED) {
+                try {
+                    nk.friendsAdd(userId, ctx.username || userId, [derivedFrom], [], {});
+                } catch (gfe) {
+                    return _fiErr('Failed to accept invite: ' + (gfe.message || gfe), 'friends_add_failed');
+                }
+                // Materialise the row as accepted so history/UI stay coherent.
+                var nowIsoGf = _fiNowIso();
+                var gfName = _fiUserDisplayName(nk, derivedFrom, '');
+                try {
+                    nk.storageWrite([{
+                        collection: FRIEND_INVITES_COLLECTION,
+                        key:        inviteId,
+                        userId:     userId,
+                        value: {
+                            inviteId: inviteId, fromUserId: derivedFrom,
+                            fromUsername: '', fromDisplayName: gfName,
+                            targetUserId: userId, message: '',
+                            status: INVITE_STATUS_ACCEPTED,
+                            createdAt: nowIsoGf, updatedAt: nowIsoGf, acceptedAt: nowIsoGf,
+                            source: 'graph_fallback'
+                        },
+                        permissionRead: 1, permissionWrite: 0
+                    }]);
+                } catch (_) { /* row is bookkeeping — accept already succeeded */ }
+                try {
+                    sendFriendsNotification(ctx, nk, logger, 'FRIEND_REQUEST_ACCEPTED', derivedFrom, {
+                        inviteId: inviteId, acceptedBy: userId,
+                        acceptedByUsername: ctx.username || userId,
+                        acceptedByDisplayName: _fiUserDisplayName(nk, userId, ctx.username)
+                    }, userId);
+                } catch (_) {}
+                _fiEmitKFactorEvent(nk, logger, userId, 'invite_accepted', {
+                    sourceUserId: derivedFrom, targetUserId: userId,
+                    channel: 'in_app', gameId: FRIEND_PUSH_GAME_ID, inviteId: inviteId
+                });
+                logger.info('[FriendInvites] accept via graph fallback | acceptor=' + userId + ' | sender=' + derivedFrom);
+                return _fiOk({ inviteId: inviteId, friendUserId: derivedFrom,
+                               friendDisplayName: gfName, viaGraphFallback: true });
+            }
+            if (graphRel === FR_STATE_FRIEND) {
+                return _fiOk({ inviteId: inviteId, alreadyFriends: true, friendUserId: derivedFrom });
+            }
+        }
         return _fiErr('Friend invite not found', 'invite_not_found');
     }
 
@@ -41223,7 +41589,7 @@ function rpcFriendsAcceptInvite(ctx, logger, nk, payload) {
     // Notify the original sender that their request was accepted.
     var acceptorName = _fiUserDisplayName(nk, userId, ctx.username);
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_REQUEST_ACCEPTED', invite.fromUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_REQUEST_ACCEPTED', invite.fromUserId, {
             inviteId:               inviteId,
             acceptedBy:             userId,
             acceptedByUsername:     ctx.username || userId,
@@ -41265,6 +41631,17 @@ function rpcFriendsAcceptInvite(ctx, logger, nk, payload) {
     }
 
     logger.info('[FriendInvites] accept_friend_invite OK | acceptor=' + userId + ' | sender=' + invite.fromUserId + ' | inviteId=' + inviteId);
+
+    // G-002: K-factor instrumentation — invite_accepted closes the loop
+    // opened by invite_sent (K = sends/DAU × acceptance rate, doc §F.5).
+    _fiEmitKFactorEvent(nk, logger, userId, 'invite_accepted', {
+        sourceUserId: invite.fromUserId,
+        targetUserId: userId,
+        channel:      'in_app',
+        gameId:       FRIEND_PUSH_GAME_ID,
+        inviteId:     inviteId
+    });
+
     return _fiOk({
         inviteId:           inviteId,
         friendUserId:       invite.fromUserId,
@@ -41301,6 +41678,27 @@ function rpcFriendsDeclineInvite(ctx, logger, nk, payload) {
     }
 
     if (!rows || rows.length === 0 || !rows[0].value) {
+        // B-007 sibling fix (2026-07-06, doc §6.4): graph fallback for
+        // declines of legacy/rowless invites — remove the INVITE_RECEIVED
+        // edge server-side instead of forcing the client to call the native
+        // DeleteFriends API (which left no decline record or notification).
+        var dDerivedFrom = (p.data || {}).fromUserId;
+        if (!dDerivedFrom) {
+            var dm = /^inv_([0-9a-fA-F-]{36})_([0-9a-fA-F-]{36})$/.exec(inviteId);
+            if (dm && dm[2].toLowerCase() === userId.toLowerCase()) dDerivedFrom = dm[1];
+        }
+        if (dDerivedFrom && _fiUuidValid(dDerivedFrom)) {
+            var dGraphRel = _fiNakamaRelation(nk, userId, dDerivedFrom);
+            if (dGraphRel === FR_STATE_INVITE_RECEIVED) {
+                try {
+                    nk.friendsDelete(userId, ctx.username || userId, [dDerivedFrom], []);
+                } catch (dgfe) {
+                    return _fiErr('Failed to decline invite: ' + (dgfe.message || dgfe), 'friends_delete_failed');
+                }
+                logger.info('[FriendInvites] decline via graph fallback | decliner=' + userId + ' | sender=' + dDerivedFrom);
+                return _fiOk({ inviteId: inviteId, declined: true, viaGraphFallback: true });
+            }
+        }
         return _fiErr('Friend invite not found', 'invite_not_found');
     }
 
@@ -41351,7 +41749,7 @@ function rpcFriendsDeclineInvite(ctx, logger, nk, payload) {
     // notification (rather than silently dropping) so the sender's UI
     // can move the row out of "pending sent" without polling.
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_REQUEST_DECLINED', invite.fromUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_REQUEST_DECLINED', invite.fromUserId, {
             inviteId:   inviteId,
             declinedBy: userId
         }, userId);
@@ -41444,7 +41842,7 @@ function rpcFriendsCancelInvite(ctx, logger, nk, payload) {
     // Optional: tell the target their pending request disappeared so their
     // UI can update without a refresh. Code is FRIEND_REQUEST_CANCELLED.
     try {
-        sendFriendsNotification(nk, logger, 'FRIEND_REQUEST_CANCELLED', targetUserId, {
+        sendFriendsNotification(ctx, nk, logger, 'FRIEND_REQUEST_CANCELLED', targetUserId, {
             inviteId:    inviteId,
             cancelledBy: userId
         }, userId);
@@ -41560,7 +41958,7 @@ function rpcFriendsListPendingInvites(ctx, logger, nk, payload) {
 // ============================================================================
 // Postbuild renames this `InitModule` to `__ModuleInit_N` (since there can
 // only be one InitModule in the merged output) and rewrites every
-// `__rpc_id = __rpc_id || (handler)` into a guarded global stub
+// `initializer.registerRpc("id", handler)` into a guarded global stub
 // assignment, then replays it at module-load time. The legacy
 // registrations for these same RPC ids in legacy_runtime.js have been
 // commented out so this module wins the "first to set the stub" race.
@@ -41577,7 +41975,7 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friends.js ---
+// --- Module: friends/friends.js ---
 // ============================================================================
 // friends.js — Helper-only module (Phase-4 C2 cleanup)
 // ============================================================================
@@ -41787,7 +42185,7 @@ function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, 
 }
 
 
-// --- Module: friends\friends_extras.js ---
+// --- Module: friends/friends_extras.js ---
 // ============================================================================
 // friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
 // ============================================================================
@@ -42346,7 +42744,7 @@ function __ModuleInit_60(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\notification_codes.js ---
+// --- Module: friends/notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -42518,39 +42916,53 @@ function mirrorFriendsNotificationToInbox(nk, logger, subjectKey, userId, payloa
 }
 
 /**
- * Best-effort FCM/APNS bridge for friend lifecycle (push.ts sendLocalizedPushToUser).
+ * Best-effort FCM/APNS bridge for friend lifecycle.
+ *
+ * ⚠️ FIXED 2026-07-06 (live bug, sibling of B-006): this bridge previously
+ * guarded on `typeof sendLocalizedPushToUser !== 'function'` — but push.ts
+ * compiles that function INSIDE the LegacyPush namespace; no bare global
+ * ever exists. The guard was therefore always true and this bridge has
+ * silently NO-OPed since it shipped: accept/challenge pushes never reached
+ * any device. Now calls LegacyPush.sendLocalizedPushToUser with a real ctx
+ * (required — the helper reads ctx.env for the push endpoint URL).
+ *
+ * Delivery matrix follows the architecture doc §9.3:
+ *   FRIEND_REQUEST            → NO push here — friend_invites.js sends its
+ *                               own richer direct push at send time; pushing
+ *                               here too would double-notify the target.
+ *   FRIEND_REQUEST_ACCEPTED   → NO push here — same reason: friend_invites.js
+ *                               accept path sends its own direct
+ *                               friend_accepted_* push with inviteId data.
+ *   FRIEND_CHALLENGE_RECEIVED → push (friend_challenge_* keys) — challenges
+ *                               have NO direct push anywhere; the bridge owns them.
+ *   FRIEND_CHALLENGE_ACCEPTED → push (challenge_accepted_* keys) — same.
+ *   declined / cancelled / removed / expired / spectate → in-app tiers only.
+ *
  * No-op when push module is not loaded. Never throws.
  */
-function sendFriendsPushBridge(nk, logger, subjectKey, userId, payload, senderId) {
-    if (typeof sendLocalizedPushToUser !== 'function') return;
+function sendFriendsPushBridge(ctx, nk, logger, subjectKey, userId, payload, senderId) {
+    if (typeof LegacyPush === 'undefined' || !LegacyPush.sendLocalizedPushToUser) return;
+    if (!ctx) return; // helper dereferences ctx.env — never call without a real ctx
     var p = payload || {};
     var data = friendNotifDataFromPayload(payload, senderId);
     data.screen = 'friends';
 
     try {
-        if (subjectKey === 'FRIEND_REQUEST') {
-            var reqName = p.fromDisplayName || p.fromUsername || 'Someone';
-            sendLocalizedPushToUser(nk, logger, userId, 'friend_request',
-                'friend_request_title', 'friend_request_body', { name: reqName },
-                { skipQuietHours: true, data: data });
-        } else if (subjectKey === 'FRIEND_REQUEST_ACCEPTED') {
-            var accName = p.acceptedByDisplayName || p.acceptedByUsername || 'Someone';
-            sendLocalizedPushToUser(nk, logger, userId, 'friend_request_accepted',
-                'friend_request_title', 'friend_request_body', { name: accName },
-                { skipQuietHours: true, data: data });
-        } else if (subjectKey === 'FRIEND_REQUEST_DECLINED') {
-            sendLocalizedPushToUser(nk, logger, userId, 'friend_request_declined',
-                'friend_request_title', 'friend_request_body', { name: 'Someone' },
-                { skipQuietHours: true, data: data });
-        } else if (subjectKey === 'FRIEND_REQUEST_CANCELLED') {
-            sendLocalizedPushToUser(nk, logger, userId, 'friend_request_cancelled',
-                'friend_request_title', 'friend_request_body', { name: 'Someone' },
-                { skipQuietHours: true, data: data });
-        } else if (subjectKey === 'FRIEND_REMOVED') {
-            sendLocalizedPushToUser(nk, logger, userId, 'friend_removed',
-                'friend_request_title', 'friend_request_body', { name: 'Someone' },
-                { skipQuietHours: true, data: data });
+        if (subjectKey === 'FRIEND_CHALLENGE_RECEIVED') {
+            var chName = p.fromDisplayName || p.fromUsername || 'Someone';
+            var chMode = (p.challengeData && (p.challengeData.modeName || p.challengeData.mode)) || p.gameId || 'a quiz battle';
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'friend_challenge',
+                'friend_challenge_title', 'friend_challenge_body', { name: chName, mode: chMode },
+                { skipQuietHours: true, skipInAppNotification: true, data: data });
+        } else if (subjectKey === 'FRIEND_CHALLENGE_ACCEPTED') {
+            var accByName = p.acceptedByDisplayName || p.acceptedByUsername || 'Someone';
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'friend_challenge_accepted',
+                'challenge_accepted_title', 'challenge_accepted_body', { name: accByName },
+                { skipQuietHours: true, skipInAppNotification: true, data: data });
         }
+        // All other subjects: in-app inbox + socket only (doc §9.3).
     } catch (err) {
         if (logger && logger.warn) {
             logger.warn('[FriendsNotif] sendFriendsPushBridge failed: ' + err.message);
@@ -42588,23 +43000,48 @@ function buildFriendsNotification(subjectKey, userId, payload, senderId) {
  * Convenience wrapper that sends a single friends-system notification.
  * Catches and logs failure (notifications must never break the parent RPC).
  */
-function sendFriendsNotification(nk, logger, subjectKey, userId, payload, senderId) {
+function sendFriendsNotification(ctx, nk, logger, subjectKey, userId, payload, senderId) {
+    // Signature change 2026-07-06: ctx added as first param so the push
+    // bridge can reach ctx.env (see sendFriendsPushBridge fix above). All
+    // call sites in friend_invites.js / friend_challenges.js updated.
+    // B-006 fix (2026-07-06): tier isolation. Previously all three delivery
+    // tiers shared ONE try/catch, so nk.notificationsSend (Tier 1, realtime
+    // socket) throwing silently skipped the durable inbox mirror (Tier 2)
+    // AND the device push (Tier 3). Per the architecture doc §9.4: Tier 2 is
+    // the durable record and runs FIRST; Tiers 1 and 3 are best-effort and
+    // each isolated so no tier's failure can mask another's.
+    var rec = null;
     try {
-        var rec = buildFriendsNotification(subjectKey, userId, payload, senderId);
-        nk.notificationsSend([rec]);
-        mirrorFriendsNotificationToInbox(nk, logger, subjectKey, userId, payload, senderId);
-        sendFriendsPushBridge(nk, logger, subjectKey, userId, payload, senderId);
-        return true;
+        rec = buildFriendsNotification(subjectKey, userId, payload, senderId);
     } catch (err) {
         if (logger && logger.warn) {
-            logger.warn('[FriendsNotif] Failed to send ' + subjectKey + ' to ' + userId + ': ' + err.message);
+            logger.warn('[FriendsNotif] build failed for ' + subjectKey + ': ' + err.message);
         }
         return false;
     }
+
+    // Tier 2 — durable inbox mirror (internally try/caught, never throws)
+    mirrorFriendsNotificationToInbox(nk, logger, subjectKey, userId, payload, senderId);
+
+    // Tier 1 — realtime socket + Nakama persistent notification (isolated)
+    var socketOk = false;
+    try {
+        nk.notificationsSend([rec]);
+        socketOk = true;
+    } catch (err) {
+        if (logger && logger.warn) {
+            logger.warn('[FriendsNotif] socket send failed for ' + subjectKey + ' to ' + userId + ' (non-fatal): ' + err.message);
+        }
+    }
+
+    // Tier 3 — device push via FCM/APNS bridge (internally try/caught)
+    sendFriendsPushBridge(ctx, nk, logger, subjectKey, userId, payload, senderId);
+
+    return socketOk;
 }
 
 
-// --- Module: game_metrics\game_metrics.js ---
+// --- Module: game_metrics/game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -42985,7 +43422,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups\groups.js ---
+// --- Module: groups/groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -43885,6 +44322,74 @@ function groupActivityCollection(groupId) {
  * Get comprehensive group details including members, stats, activity, and current user's role.
  * This provides all data needed for the Group Detail UI screen.
  */
+/**
+ * G-010 (2026-07-06, doc §E.3): mutual-block filter for group activity.
+ * Returns the activity array with entries removed when their author is
+ * blocked by the viewer (Nakama friend graph state=3) OR has blocked the
+ * viewer (user_blocks reverse rows — one batched storageRead for all
+ * distinct authors). Fail-open: any lookup error returns the input
+ * unfiltered, because the activity feed must never break over a block check.
+ */
+function _grpFilterActivityByBlocks(nk, logger, viewerId, activity) {
+    if (!viewerId || !activity || activity.length === 0) return activity;
+    try {
+        // Distinct non-self authors in this page.
+        var authorSet = {};
+        for (var i = 0; i < activity.length; i++) {
+            var aid = activity[i] && activity[i].user_id;
+            if (aid && aid !== viewerId) authorSet[aid] = true;
+        }
+        var authors = [];
+        for (var a in authorSet) {
+            if (Object.prototype.hasOwnProperty.call(authorSet, a)) authors.push(a);
+        }
+        if (authors.length === 0) return activity;
+
+        var hidden = {};
+
+        // (a) Authors the viewer blocked — single friendsList scan, state=3.
+        try {
+            var page = nk.friendsList(viewerId, 1000, 3, null);
+            if (page && page.friends) {
+                for (var f = 0; f < page.friends.length; f++) {
+                    var fr = page.friends[f];
+                    if (fr && fr.user && authorSet[fr.user.id]) hidden[fr.user.id] = true;
+                }
+            }
+        } catch (_) { /* fail-open */ }
+
+        // (b) Authors who blocked the viewer — one batched read of the
+        // user_blocks reverse rows (key blocked_{author}_{viewer}, owner=author).
+        try {
+            var reads = [];
+            for (var r = 0; r < authors.length; r++) {
+                reads.push({
+                    collection: 'user_blocks',
+                    key:        'blocked_' + authors[r] + '_' + viewerId,
+                    userId:     authors[r]
+                });
+            }
+            var rows = nk.storageRead(reads);
+            if (rows) {
+                for (var w = 0; w < rows.length; w++) {
+                    if (rows[w] && rows[w].value && rows[w].userId) hidden[rows[w].userId] = true;
+                }
+            }
+        } catch (_) { /* fail-open */ }
+
+        var out = [];
+        for (var o = 0; o < activity.length; o++) {
+            var entry = activity[o];
+            if (entry && entry.user_id && hidden[entry.user_id]) continue;
+            out.push(entry);
+        }
+        return out;
+    } catch (err) {
+        if (logger && logger.warn) logger.warn('[Groups] block filter failed (fail-open): ' + (err.message || err));
+        return activity;
+    }
+}
+
 function rpcGetGroupDetails(ctx, logger, nk, payload) {
     try {
         if (!ctx.userId) {
@@ -44009,7 +44514,12 @@ function rpcGetGroupDetails(ctx, logger, nk, payload) {
                         rawMembers.push({
                             userId: rawId,
                             username: gu.user.username || ("user_" + j),
-                            displayName: gu.user.displayName || gu.user.username || ("user_" + j),
+                            // Account-level display name only. The metadata-level
+                            // displayName (written by update_player_metadata) is
+                            // merged below from the batched usersGetId read —
+                            // falling straight through to username here leaked
+                            // auto-generated blobs like "nMAQcYVUPC" into the UI.
+                            accountDisplayName: gu.user.displayName || "",
                             avatarUrl: gu.user.avatarUrl || "",
                             role: typeof gu.state === "number" ? gu.state : GROUP_ROLES.MEMBER,
                             online: gu.user.online === true,
@@ -44019,12 +44529,14 @@ function rpcGetGroupDetails(ctx, logger, nk, payload) {
                         if (rawId) memberIds.push(rawId);
                     }
 
-                    // Batch-resolve player level from account metadata. groupUsersList
-                    // sometimes omits metadata, so a single usersGetId fills the gap.
-                    // Level is the only real per-player stat QuizVerse tracks; wins /
-                    // trophies do not exist per player, so they are intentionally
-                    // NOT returned (the client renders a level-only chip).
+                    // Batch-resolve player level AND profile display name from
+                    // account metadata. groupUsersList sometimes omits metadata,
+                    // so a single usersGetId fills the gap. Level is the only real
+                    // per-player stat QuizVerse tracks; wins / trophies do not
+                    // exist per player, so they are intentionally NOT returned
+                    // (the client renders a level-only chip).
                     var levelById = {};
+                    var displayNameById = {};
                     if (memberIds.length > 0) {
                         try {
                             var memberUsers = nk.usersGetId(memberIds);
@@ -44038,7 +44550,13 @@ function rpcGetGroupDetails(ctx, logger, nk, payload) {
                                             ? (typeof u.metadata === "string" ? JSON.parse(u.metadata) : u.metadata)
                                             : {};
                                         lvl = Math.max(1, parseInt(md.level, 10) || 1);
+                                        if (md.displayName && typeof md.displayName === "string" && md.displayName.trim()) {
+                                            displayNameById[u.userId] = md.displayName.trim();
+                                        }
                                     } catch (_) { lvl = 1; }
+                                    if (!displayNameById[u.userId] && u.displayName) {
+                                        displayNameById[u.userId] = u.displayName;
+                                    }
                                     levelById[u.userId] = lvl;
                                 }
                             }
@@ -44061,10 +44579,16 @@ function rpcGetGroupDetails(ctx, logger, nk, payload) {
                             } catch (_) { memberLevel = 1; }
                         }
 
+                        // Precedence: account display_name → metadata displayName
+                        // (profile name set in-game) → username as last resort.
+                        var resolvedName = rm.accountDisplayName
+                            || displayNameById[rm.userId]
+                            || rm.username;
+
                         members.push({
                             userId: rm.userId,
                             username: rm.username,
-                            displayName: rm.displayName,
+                            displayName: resolvedName,
                             avatarUrl: rm.avatarUrl,
                             role: rm.role,
                             roleName: getRoleName(rm.role),
@@ -44139,7 +44663,16 @@ function rpcGetGroupDetails(ctx, logger, nk, payload) {
                         group_id: act.group_id || groupId
                     });
                 }
-                
+
+                // ── G-010 fix (2026-07-06, doc §E.3 "Block Propagation") ────
+                // Mutual block filter on the activity feed: hide entries
+                // authored by (a) users the VIEWER blocked (Nakama state=3)
+                // and (b) users who blocked the viewer (user_blocks reverse
+                // rows, batched in ONE storageRead). The member list is
+                // intentionally NOT filtered — an owner must still see (and
+                // be able to kick) a member they blocked (doc §E.3 table).
+                activity = _grpFilterActivityByBlocks(nk, logger, ctx.userId, activity);
+
                 // Sort by timestamp descending
                 activity.sort(function(a, b) {
                     var tsA = a.timestamp || "";
@@ -44936,7 +45469,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure\batch_operations.js ---
+// --- Module: infrastructure/batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -45198,7 +45731,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure\caching.js ---
+// --- Module: infrastructure/caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -45436,7 +45969,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure\rate_limiting.js ---
+// --- Module: infrastructure/rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -45611,10 +46144,10 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 };
 
 // Example usage in index.js:
-// __rpc_submit_score = __rpc_submit_score || (withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
+// initializer.registerRpc("submit_score", withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest\ivx_quest.js ---
+// --- Module: ivx_quest/ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -45924,7 +46457,168 @@ function __ModuleInit_68(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth\lasttolive_depth.js ---
+// --- Module: lap-badges/lap-badges.js ---
+/**
+ * QuizVerse Link & Play Badge Event Bridge
+ *
+ * Provides a web-friendly RPC wrapper that auto-sets game_id="quizverse"
+ * and maps LAP client event names to existing badge events.
+ */
+
+// Player badge progress lives in the "badge_progress" collection (written by
+// rpcBadgesCheckEvent in badges/badges.js — BADGE_PROGRESS_COLLECTION). The
+// "badges" collection only holds system-owned definitions. Reading progress
+// from "badges" always returned empty — sync must read "badge_progress".
+var LAP_BADGE_PROGRESS_COLLECTION = "badge_progress";
+var LAP_SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+
+/**
+ * RPC: quizverse_lap_badge_event
+ * Payload: { event_type, event_data? }
+ *   event_type examples:
+ *     - "lap_quiz_played"          → triggers lap_quiz_master badge progression
+ *     - "lap_flash_completed"      → triggers lap_flash_ninja badge progression
+ *     - "lap_note_created"         → triggers lap_explorer / link_creator
+ *     - "lap_note_shared"          → triggers lap_sharer
+ *     - "lap_streak_day"           → triggers lap_streak_keeper
+ *     - "lap_battle_won"           → triggers lap_battle_winner
+ *
+ * Internally delegates to the existing badges_check_event RPC logic
+ * with game_id hard-coded to "quizverse".
+ */
+var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
+    try {
+        var data = JSON.parse(payload || '{}');
+        var userId = ctx.userId;
+
+        if (!data.event_type) {
+            return JSON.stringify({
+                success: false,
+                error: "event_type is required",
+            });
+        }
+
+        // Build the standard badges_check_event payload
+        var checkPayload = JSON.stringify({
+            game_id: "quizverse",
+            event_type: data.event_type,
+            event_data: data.event_data || {},
+        });
+
+        // Re-use the existing badge check function from badges.js
+        var resultRaw = rpcBadgesCheckEvent(ctx, logger, nk, checkPayload);
+        var result = JSON.parse(resultRaw);
+
+        // If badges were unlocked, send a persistent notification
+        if (result.badges_unlocked && result.badges_unlocked.length > 0) {
+            result.badges_unlocked.forEach(function(b) {
+                try {
+                    nk.notificationSend(userId, "badge_unlocked", {
+                        badge_id: b.badge_id,
+                        title: b.title,
+                        category: b.category,
+                    }, 1, userId, "");
+                } catch (notifyErr) {
+                    logger.warn("[LAP-Badges] Failed to send notification: " + notifyErr.message);
+                }
+            });
+        }
+
+        return JSON.stringify({
+            success: true,
+            badges_updated: result.badges_updated || [],
+            badges_unlocked: result.badges_unlocked || [],
+            event_type: data.event_type,
+        });
+    } catch (err) {
+        logger.error("[LAP-Badges] Error in quizverse_lap_badge_event: " + err.message);
+        return JSON.stringify({
+            success: false,
+            error: err.message,
+        });
+    }
+};
+
+/**
+ * RPC: quizverse_lap_badge_sync
+ *
+ * Called by Unity BadgeServiceMono on startup or when the user returns
+ * from the Link & Play WebView. Returns the user's current badge progress
+ * for all LAP-related badges so Unity can update its local cache.
+ *
+ * Payload: { }
+ * Response: { success, lap_badges: [...] }
+ */
+var rpcQuizverseLapBadgeSync = function(ctx, logger, nk, payload) {
+    try {
+        var userId = ctx.userId;
+        var gameId = "quizverse";
+
+        // Read player progress
+        var progressKey = "progress_" + userId + "_" + gameId;
+        var progressData = {};
+        try {
+            var pRecords = nk.storageRead([{
+                collection: LAP_BADGE_PROGRESS_COLLECTION,
+                key: progressKey,
+                userId: userId,
+            }]);
+            if (pRecords && pRecords.length > 0 && pRecords[0].value) {
+                progressData = pRecords[0].value;
+            }
+        } catch (e) {
+            // No progress yet → return empty
+        }
+
+        // Filter only LAP badge keys
+        var lapBadgeKeys = Object.keys(progressData).filter(function(k) {
+            return k.indexOf("lap_") === 0;
+        });
+
+        var lapBadges = lapBadgeKeys.map(function(k) {
+            var badge = progressData[k];
+            return {
+                badge_id: k,
+                progress: badge.progress || 0,
+                unlocked: !!badge.unlocked,
+                unlock_date: badge.unlock_date || null,
+                displayed: !!badge.displayed,
+            };
+        });
+
+        return JSON.stringify({
+            success: true,
+            lap_badges: lapBadges,
+        });
+    } catch (err) {
+        logger.error("[LAP-Badges] Sync error: " + err.message);
+        return JSON.stringify({
+            success: false,
+            error: err.message,
+        });
+    }
+};
+
+function __ModuleInit_69(ctx, logger, nk, initializer) {
+    try {
+        __rpc_quizverse_lap_badge_event = __rpc_quizverse_lap_badge_event || (rpcQuizverseLapBadgeEvent);
+        logger.info("[LAP-Badges] Registered RPC: quizverse_lap_badge_event");
+    } catch (e) {
+        logger.error("[LAP-Badges] Failed to register quizverse_lap_badge_event: " + e.message);
+    }
+
+    try {
+        __rpc_quizverse_lap_badge_sync = __rpc_quizverse_lap_badge_sync || (rpcQuizverseLapBadgeSync);
+        logger.info("[LAP-Badges] Registered RPC: quizverse_lap_badge_sync");
+    } catch (e) {
+        logger.error("[LAP-Badges] Failed to register quizverse_lap_badge_sync: " + e.message);
+    }
+
+    logger.info("[LAP-Badges] LAP badge bridge module initialized");
+}
+
+
+// --- Module: lasttolive_depth/lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -47648,7 +48342,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leagues\leagues.js ---
+// --- Module: leagues/leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -48271,7 +48965,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: learner_home_widgets\learner_home_widgets.js ---
+// --- Module: learner_home_widgets/learner_home_widgets.js ---
 // learner_home_widgets.js — Per-user Home-screen widget configs for TutorX
 // Nakama V8 JavaScript runtime (Goja ES5 — no ES modules, no Node built-ins).
 //
@@ -48565,7 +49259,7 @@ function rpcLtWidgetRender(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_73(ctx, logger, nk, initializer) {
+function __ModuleInit_74(ctx, logger, nk, initializer) {
     __rpc_lt_home_widgets_get = __rpc_lt_home_widgets_get || (rpcLtHomeWidgetsGet);
     __rpc_lt_home_widgets_set = __rpc_lt_home_widgets_set || (rpcLtHomeWidgetsSet);
     __rpc_lt_widget_render = __rpc_lt_widget_render || (rpcLtWidgetRender);
@@ -48573,7 +49267,7 @@ function __ModuleInit_73(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_quotes\learner_quotes.js ---
+// --- Module: learner_quotes/learner_quotes.js ---
 // learner_quotes.js — Daily LLM-personalized "confidence boost" quotes for TutorX
 // (Goja ES5, no Node built-ins, no global-scope state).
 //
@@ -48925,7 +49619,7 @@ function rpcLtPricingGet(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_74(ctx, logger, nk, initializer) {
+function __ModuleInit_75(ctx, logger, nk, initializer) {
     __rpc_lt_daily_quote = __rpc_lt_daily_quote || (rpcLtDailyQuote);
     __rpc_lt_pep_talk = __rpc_lt_pep_talk || (rpcLtPepTalk);
     __rpc_lt_pricing_get = __rpc_lt_pricing_get || (rpcLtPricingGet);
@@ -48933,7 +49627,7 @@ function __ModuleInit_74(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_reminders\learner_reminders.js ---
+// --- Module: learner_reminders/learner_reminders.js ---
 // learner_reminders.js — Per-user study reminders for TutorX (Goja ES5, no Node built-ins).
 //
 // Lets a learner create study reminders (one-off or recurring: daily / weekdays /
@@ -49134,7 +49828,7 @@ function rpcLtRemindersSet(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_75(ctx, logger, nk, initializer) {
+function __ModuleInit_76(ctx, logger, nk, initializer) {
     __rpc_lt_reminders_get = __rpc_lt_reminders_get || (rpcLtRemindersGet);
     __rpc_lt_reminders_add = __rpc_lt_reminders_add || (rpcLtRemindersAdd);
     __rpc_lt_reminders_set = __rpc_lt_reminders_set || (rpcLtRemindersSet);
@@ -49142,7 +49836,7 @@ function __ModuleInit_75(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_review\learner_review.js ---
+// --- Module: learner_review/learner_review.js ---
 // learner_review.js — First-class spaced-repetition review queue for TutorX
 // (Goja ES5, no Node built-ins, all RPC fns at global scope).
 //
@@ -49484,7 +50178,7 @@ function rpcLtReviewDue(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_76(ctx, logger, nk, initializer) {
+function __ModuleInit_77(ctx, logger, nk, initializer) {
     __rpc_lt_review_get = __rpc_lt_review_get || (rpcLtReviewGet);
     __rpc_lt_review_set = __rpc_lt_review_set || (rpcLtReviewSet);
     __rpc_lt_review_add = __rpc_lt_review_add || (rpcLtReviewAdd);
@@ -49494,7 +50188,7 @@ function __ModuleInit_76(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: live_ops\live_ops.js ---
+// --- Module: live_ops/live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -50127,7 +50821,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest\manifest.js ---
+// --- Module: manifest/manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -50239,7 +50933,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking\matchmaking.js ---
+// --- Module: matchmaking/matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -51939,7 +52633,7 @@ function registerMultiGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: multiplayer\multiplayer_locks.js ---
+// --- Module: multiplayer/multiplayer_locks.js ---
 // multiplayer_locks.js — Multiplayer Account Lock System (QVVBS189)
 
 var LOCK_COLLECTION = "multiplayer_locks";
@@ -52141,14 +52835,14 @@ function rpcReleaseMultiplayerLock(ctx, logger, nk, payload) {
     });
 }
 
-function __ModuleInit_81(ctx, logger, nk, initializer) {
+function __ModuleInit_82(ctx, logger, nk, initializer) {
     __rpc_rpc_acquire_multiplayer_lock = __rpc_rpc_acquire_multiplayer_lock || (rpcAcquireMultiplayerLock);
     __rpc_rpc_heartbeat_multiplayer_lock = __rpc_rpc_heartbeat_multiplayer_lock || (rpcHeartbeatMultiplayerLock);
     __rpc_rpc_release_multiplayer_lock = __rpc_rpc_release_multiplayer_lock || (rpcReleaseMultiplayerLock);
     logger.info("[MultiplayerLock] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -52603,7 +53297,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications\notification_gate.js ---
+// --- Module: notifications/notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -52763,7 +53457,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications\notification_inbox.js ---
+// --- Module: notifications/notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -53216,7 +53910,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine\offer_engine.js ---
+// --- Module: offer_engine/offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -54118,7 +54812,7 @@ function oeSeedDefaultOffers(nk, logger) {
     if (seeded > 0) logger.info("[offer_engine] Seeded " + seeded + " default offer(s) into catalog.");
 }
 
-function __ModuleInit_85(ctx, logger, nk, initializer) {
+function __ModuleInit_86(ctx, logger, nk, initializer) {
     // Player-facing
     __rpc_offer_get_eligible = __rpc_offer_get_eligible || (rpcOfferGetEligible);
     __rpc_offer_record_view = __rpc_offer_record_view || (rpcOfferRecordView);
@@ -54137,7 +54831,7 @@ function __ModuleInit_85(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding\ob_analytics_emit.js ---
+// --- Module: onboarding/ob_analytics_emit.js ---
 /**
  * Server-side ob_* analytics for Unity onboarding hooks (D1/D7, welcome bonus, streak shield).
  * Writes to qv_onboarding_events — same lake as web onboarding_events_batch.
@@ -54189,7 +54883,7 @@ function obAnalyticsEmitEvent(nk, nakamaUserId, eventName, data) {
 }
 
 
-// --- Module: onboarding\onboarding.js ---
+// --- Module: onboarding/onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -55270,7 +55964,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization\personalization.js ---
+// --- Module: personalization/personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -55877,7 +56571,7 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: player\player_full_profile.js ---
+// --- Module: player/player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -56092,7 +56786,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts\player_gifts.js ---
+// --- Module: player_gifts/player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -56961,7 +57655,7 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 // These will be registered in the main index.js
 
 
-// --- Module: progression\mastery_system.js ---
+// --- Module: progression/mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -57297,7 +57991,7 @@ module.exports = {
 
 
 
-// --- Module: progression\progressive_unlocks.js ---
+// --- Module: progression/progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -59104,7 +59798,7 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quiz_results\quiz_results.js ---
+// --- Module: quiz_results/quiz_results.js ---
 // quiz_results.js - Quiz Results Tracking & Analytics System
 // Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
 //
@@ -60261,7 +60955,7 @@ function rpcQuizverseBackfillPlayerSummaries(ctx, logger, nk, payload) {
 // version wins at the global scope when the guarded `||` assignments are
 // replayed (modules first, legacy fallback second).
 // ============================================================================
-function __ModuleInit_96(ctx, logger, nk, initializer) {
+function __ModuleInit_97(ctx, logger, nk, initializer) {
     __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult);
     __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory);
     __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats);
@@ -60282,7 +60976,7 @@ function __ModuleInit_96(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_depth\quizverse_depth.js ---
+// --- Module: quizverse_depth/quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -61280,7 +61974,7 @@ function registerQuizverseDepthRPCs(initializer, logger) {
 }
 
 
-// --- Module: quizverse_seen\quizverse_seen.js ---
+// --- Module: quizverse_seen/quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -61776,9 +62470,9 @@ function registerQuizverseSeenRPCs(initializer, logger) {
 //   1) Generate `var __rpc_<id>;` stub declarations at the top of index.js
 //   2) Rewrite the literal calls below into guarded `__rpc_<id> = __rpc_<id> || (handler)`
 //   3) Replay those assignments at IIFE/global scope so every Goja VM has them
-//   4) Emit `__rpc__id_ = __rpc__id_ || (__rpc_<id>)` inside the master InitModule
+//   4) Emit `initializer.registerRpc("<id>", __rpc_<id>)` inside the master InitModule
 // ============================================================================
-function __ModuleInit_98(ctx, logger, nk, initializer) {
+function __ModuleInit_99(ctx, logger, nk, initializer) {
     __rpc_quizverse_seen_get = __rpc_quizverse_seen_get || (rpcQuizverseSeenGet);
     __rpc_quizverse_seen_merge = __rpc_quizverse_seen_merge || (rpcQuizverseSeenMerge);
     __rpc_quizverse_seen_purge = __rpc_quizverse_seen_purge || (rpcQuizverseSeenPurge);
@@ -61788,7 +62482,7 @@ function __ModuleInit_98(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: retention\collections.js ---
+// --- Module: retention/collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -62302,7 +62996,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\retention_v2.js ---
+// --- Module: retention/retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -62709,7 +63403,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\season_pass.js ---
+// --- Module: retention/season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -63371,7 +64065,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\winback.js ---
+// --- Module: retention/winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -63932,7 +64626,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads\rewarded_ads.js ---
+// --- Module: rewarded_ads/rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -64833,7 +65527,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets\s3_assets.js ---
+// --- Module: s3_assets/s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -65234,7 +65928,7 @@ function isAdmin(ctx, nk) {
 }
 
 // Register RPCs
-function __ModuleInit_104(ctx, logger, nk, initializer) {
+function __ModuleInit_105(ctx, logger, nk, initializer) {
     logger.info('Initializing S3 Assets module...');
 
     const config = getAwsConfig(ctx);
@@ -65256,7 +65950,7 @@ function __ModuleInit_104(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat\satori_compat.js ---
+// --- Module: satori_compat/satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -65431,7 +66125,7 @@ function rpcSatoriFlagsGetAll(ctx, logger, nk, payload) {
 }
 
 // ── Module init ───────────────────────────────────────────
-function __ModuleInit_105(ctx, logger, nk, initializer) {
+function __ModuleInit_106(ctx, logger, nk, initializer) {
     __rpc_satori_event = __rpc_satori_event || (rpcSatoriEvent);
     __rpc_satori_events_batch = __rpc_satori_events_batch || (rpcSatoriEventsBatch);
     __rpc_satori_identity_get = __rpc_satori_identity_get || (rpcSatoriIdentityGet);
@@ -65443,7 +66137,7 @@ function __ModuleInit_105(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct\satori_direct.js ---
+// --- Module: satori_direct/satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -66474,7 +67168,7 @@ function rpcSatoriFlush(ctx, logger, nk, payload) {
     });
 }
 
-function __ModuleInit_106(ctx, logger, nk, initializer) {
+function __ModuleInit_107(ctx, logger, nk, initializer) {
     __rpc_satori_diag = __rpc_satori_diag || (rpcSatoriDiag);
     __rpc_satori_flush = __rpc_satori_flush || (rpcSatoriFlush);
     if (logger && logger.info) {
@@ -66485,7 +67179,7 @@ function __ModuleInit_106(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases\sdk_aliases.js ---
+// --- Module: sdk_aliases/sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -66570,7 +67264,42 @@ function _stubFriendBattlesGetActive() { return JSON.stringify({ success: true, 
 
 // ── Module init ───────────────────────────────────────────────────
 
-function __ModuleInit_107(ctx, logger, nk, initializer) {
+// Phase-5 deprecation telemetry (2026-07-06): the hiro_* friend aliases have
+// ZERO references in any current client codebase (Unity games + web checked).
+// They remain registered only in case old field builds used them. Each call
+// logs loudly; hard-remove once AnalyticsAlerts shows zero traffic for 14+ days.
+function _sdkDeprecatedAlias(aliasName, target) {
+    return function (ctx, logger, nk, payload) {
+        try {
+            logger.warn('[SdkAliases] DEPRECATED alias ' + aliasName + ' called (user=' + (ctx && ctx.userId) + ')');
+        } catch (_) {}
+        if (typeof target !== 'function') {
+            return JSON.stringify({ success: false, error: 'alias_target_unavailable:' + aliasName });
+        }
+        return target(ctx, logger, nk, payload);
+    };
+}
+
+var _dep_hiro_friends_list             = null;
+var _dep_hiro_friends_remove           = null;
+var _dep_hiro_friends_block            = null;
+var _dep_hiro_friend_quests_get_active = null;
+var _dep_hiro_friend_quests_contribute = null;
+var _dep_hiro_friend_battles_challenge = null;
+var _dep_hiro_friends_add              = null;
+
+function __ModuleInit_108(ctx, logger, nk, initializer) {
+    _dep_hiro_friends_list             = _sdkDeprecatedAlias("hiro_friends_list", __rpc_friends_list);
+    _dep_hiro_friends_remove           = _sdkDeprecatedAlias("hiro_friends_remove", __rpc_friends_remove);
+    _dep_hiro_friends_block            = _sdkDeprecatedAlias("hiro_friends_block", __rpc_friends_block);
+    _dep_hiro_friend_quests_get_active = _sdkDeprecatedAlias("hiro_friend_quests_get_active", __rpc_friend_quest_get_state);
+    // Bound to the Hiro friend-quests bridge handler. The previous target,
+    // __rpc_friend_quest_record_progress, no longer exists as a declared stub —
+    // referencing it threw a ReferenceError that aborted the rest of this init.
+    _dep_hiro_friend_quests_contribute = _sdkDeprecatedAlias("hiro_friend_quests_contribute", __rpc_hiro_friend_quests_contribute);
+    _dep_hiro_friend_battles_challenge = _sdkDeprecatedAlias("hiro_friend_battles_challenge", __rpc_friend_battle_create);
+    _dep_hiro_friends_add              = _sdkDeprecatedAlias("hiro_friends_add", _aliasHiroFriendsAdd);
+
     // ─── Hiro naming aliases (singular/plural + verb-position swaps) ──
     __rpc_hiro_get_streaks = __rpc_hiro_get_streaks || (__rpc_hiro_streaks_get);
     __rpc_hiro_streak_get = __rpc_hiro_streak_get || (__rpc_hiro_streaks_get);
@@ -66581,12 +67310,12 @@ function __ModuleInit_107(ctx, logger, nk, initializer) {
     __rpc_hiro_spin_wheel = __rpc_hiro_spin_wheel || (__rpc_fortune_wheel_spin);
     __rpc_hiro_spin_wheel_config = __rpc_hiro_spin_wheel_config || (__rpc_fortune_wheel_get_state);
 
-    __rpc_hiro_friends_list = __rpc_hiro_friends_list || (__rpc_friends_list);
-    __rpc_hiro_friends_remove = __rpc_hiro_friends_remove || (__rpc_friends_remove);
-    __rpc_hiro_friends_block = __rpc_hiro_friends_block || (__rpc_friends_block);
-    __rpc_hiro_friend_quests_get_active = __rpc_hiro_friend_quests_get_active || (__rpc_friend_quest_get_state);
-    __rpc_hiro_friend_quests_contribute = __rpc_hiro_friend_quests_contribute || (__rpc_friend_quest_record_progress);
-    __rpc_hiro_friend_battles_challenge = __rpc_hiro_friend_battles_challenge || (__rpc_friend_battle_create);
+    __rpc_hiro_friends_list = __rpc_hiro_friends_list || (_dep_hiro_friends_list);
+    __rpc_hiro_friends_remove = __rpc_hiro_friends_remove || (_dep_hiro_friends_remove);
+    __rpc_hiro_friends_block = __rpc_hiro_friends_block || (_dep_hiro_friends_block);
+    __rpc_hiro_friend_quests_get_active = __rpc_hiro_friend_quests_get_active || (_dep_hiro_friend_quests_get_active);
+    __rpc_hiro_friend_quests_contribute = __rpc_hiro_friend_quests_contribute || (_dep_hiro_friend_quests_contribute);
+    __rpc_hiro_friend_battles_challenge = __rpc_hiro_friend_battles_challenge || (_dep_hiro_friend_battles_challenge);
 
     // ─── Satori naming aliases (verb-position swap) ──────────────────
     __rpc_satori_publish_events = __rpc_satori_publish_events || (__rpc_satori_events_batch);
@@ -66596,7 +67325,7 @@ function __ModuleInit_107(ctx, logger, nk, initializer) {
 
     // ─── Composite aliases (route or wrap) ───────────────────────────
     __rpc_ivx_sync_metadata = __rpc_ivx_sync_metadata || (_aliasIvxSyncMetadata);
-    __rpc_hiro_friends_add = __rpc_hiro_friends_add || (_aliasHiroFriendsAdd);
+    __rpc_hiro_friends_add = __rpc_hiro_friends_add || (_dep_hiro_friends_add);
 
     // ─── Soft-stubs (unblock SDK; replace with real impl later) ──────
     __rpc_hiro_get_offerwall = __rpc_hiro_get_offerwall || (_stubOfferwallList);
@@ -66612,7 +67341,7 @@ function __ModuleInit_107(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review\smart_review.js ---
+// --- Module: smart_review/smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -67390,13 +68119,13 @@ function rpcSmartReviewGetForecast(ctx, logger, nk, payload) {
 // Module Init — register Smart Review RPCs
 // ============================================================================
 // postbuild.js renames `InitModule` to `__ModuleInit_N` and rewrites every
-// `__rpc_id = __rpc_id || (handler)` into a guarded
+// `initializer.registerRpc("id", handler)` into a guarded
 // `__rpc_id = __rpc_id || handler` assignment that gets replayed at global
 // scope on every Goja VM. Because the modules section is concatenated BEFORE
 // legacy_runtime.js, the module-level handler wins — even if legacy still
 // has its own registration for `smart_review_get_cards` /
 // `smart_review_rate_card`, our handler is what actually fires.
-function __ModuleInit_108(ctx, logger, nk, initializer) {
+function __ModuleInit_109(ctx, logger, nk, initializer) {
     __rpc_smart_review_get_cards = __rpc_smart_review_get_cards || (rpcSmartReviewGetCards);
     __rpc_smart_review_rate_card = __rpc_smart_review_rate_card || (rpcSmartReviewRateCard);
     __rpc_smart_review_add_card = __rpc_smart_review_add_card || (rpcSmartReviewAddCard);
@@ -67410,657 +68139,7 @@ function __ModuleInit_108(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: social_v2\social_v2.js ---
-// social_v2.js - Social features: challenges, rivalries, teams, duos, group quests
-// Compatible with Nakama JavaScript runtime (no ES modules)
-
-var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
-
-// Notification codes (arbitrary ints, must be > 0)
-var NOTIFY_CHALLENGE_ACCEPTED = 100;
-var NOTIFY_CHALLENGE_DECLINED = 101;
-var NOTIFY_CHALLENGE_RECEIVED = 102;
-var NOTIFY_DUO_INVITE = 110;
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function generateUUID() {
-    var d = new Date().getTime();
-    var d2 = (typeof performance !== 'undefined' && performance.now && (performance.now() * 1000)) || 0;
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16;
-        if (d > 0) {
-            r = (d + r) % 16 | 0;
-            d = Math.floor(d / 16);
-        } else {
-            r = (d2 + r) % 16 | 0;
-            d2 = Math.floor(d2 / 16);
-        }
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-}
-
-function nowISO() {
-    return new Date().toISOString();
-}
-
-function safeRead(nk, collection, key, userId) {
-    try {
-        var recs = nk.storageRead([{ collection: collection, key: key, userId: userId }]);
-        if (recs && recs.length > 0) return recs[0].value;
-    } catch (_) { /* swallow */ }
-    return null;
-}
-
-function safeWrite(nk, collection, key, userId, value) {
-    nk.storageWrite([{
-        collection: collection,
-        key: key,
-        userId: userId,
-        value: value,
-        permissionRead: 1,
-        permissionWrite: 0
-    }]);
-}
-
-function generateJoinCode() {
-    // 6-digit numeric (100000–999999) — unified room-code format across QuizVerse
-    // so the 6-box numeric input field on the join-code page accepts every char.
-    return String(100000 + Math.floor(Math.random() * 900000));
-}
-
-// Local wrapper around the global resolveGameIdAlias helper exposed by
-// analytics.js (via postbuild bundling). Falls back to identity if the helper
-// has not been bundled yet so this module remains loadable in isolation.
-function svResolveGameId(gameId) {
-    if (!gameId) return gameId;
-    try {
-        if (typeof resolveGameIdAlias === 'function') {
-            return resolveGameIdAlias(gameId);
-        }
-    } catch (e) { /* helper not bundled — keep raw value */ }
-    return gameId;
-}
-
-// ---------------------------------------------------------------------------
-// 1. rpcChallengeAccept
-// ---------------------------------------------------------------------------
-
-function rpcChallengeAccept(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcChallengeAccept called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.challenge_id) {
-            return JSON.stringify({ success: false, error: "challenge_id is required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var challenge = safeRead(nk, "challenges", data.challenge_id, SYSTEM_USER_ID);
-        if (!challenge) {
-            return JSON.stringify({ success: false, error: "Challenge not found" });
-        }
-        if (challenge.status !== "pending") {
-            return JSON.stringify({ success: false, error: "Challenge is not pending" });
-        }
-
-        challenge.status = "accepted";
-        challenge.accepted_by = userId;
-        challenge.accepted_at = nowISO();
-        safeWrite(nk, "challenges", data.challenge_id, SYSTEM_USER_ID, challenge);
-
-        try {
-            nk.notificationSend(
-                challenge.challenger_id,
-                "Challenge accepted",
-                NOTIFY_CHALLENGE_ACCEPTED,
-                { challenge_id: data.challenge_id, accepted_by: userId },
-                userId
-            );
-        } catch (e) {
-            logger.warn("[social_v2] notification send failed: " + e.message);
-        }
-
-        return JSON.stringify({ success: true, challenge: challenge });
-    } catch (err) {
-        logger.error("[social_v2] rpcChallengeAccept error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 2. rpcChallengeDecline
-// ---------------------------------------------------------------------------
-
-function rpcChallengeDecline(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcChallengeDecline called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.challenge_id) {
-            return JSON.stringify({ success: false, error: "challenge_id is required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var challenge = safeRead(nk, "challenges", data.challenge_id, SYSTEM_USER_ID);
-        if (!challenge) {
-            return JSON.stringify({ success: false, error: "Challenge not found" });
-        }
-
-        challenge.status = "declined";
-        challenge.declined_by = userId;
-        challenge.declined_at = nowISO();
-        safeWrite(nk, "challenges", data.challenge_id, SYSTEM_USER_ID, challenge);
-
-        try {
-            nk.notificationSend(
-                challenge.challenger_id,
-                "Challenge declined",
-                NOTIFY_CHALLENGE_DECLINED,
-                { challenge_id: data.challenge_id, declined_by: userId },
-                userId
-            );
-        } catch (e) {
-            logger.warn("[social_v2] notification send failed: " + e.message);
-        }
-
-        return JSON.stringify({ success: true, challenge: challenge });
-    } catch (err) {
-        logger.error("[social_v2] rpcChallengeDecline error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 3. rpcChallengeList
-// ---------------------------------------------------------------------------
-
-function rpcChallengeList(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcChallengeList called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var gameId = svResolveGameId(data.game_id) || "";
-        var statusFilter = data.status || "";
-
-        var records = [];
-        try {
-            var result = nk.storageList(userId, "challenges_v2", 100, "");
-            if (result && result.length) {
-                records = result;
-            } else if (result && result.objects) {
-                records = result.objects;
-            }
-        } catch (e) {
-            logger.warn("[social_v2] storageList failed: " + e.message);
-        }
-
-        var filtered = [];
-        for (var i = 0; i < records.length; i++) {
-            var val = records[i].value || records[i];
-            if (gameId && val.game_id && val.game_id !== gameId) continue;
-            if (statusFilter && val.status && val.status !== statusFilter) continue;
-            filtered.push(val);
-        }
-
-        return JSON.stringify({ success: true, challenges: filtered, count: filtered.length });
-    } catch (err) {
-        logger.error("[social_v2] rpcChallengeList error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 4. rpcGetRivalry
-// ---------------------------------------------------------------------------
-
-function rpcGetRivalry(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcGetRivalry called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.target_user_id) {
-            return JSON.stringify({ success: false, error: "target_user_id is required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var gameId = svResolveGameId(data.game_id) || "";
-        var pairKey = [userId, data.target_user_id].sort().join(":");
-        var key = "rivalry:" + gameId + ":" + pairKey;
-
-        var rivalry = safeRead(nk, "rivalries", key, SYSTEM_USER_ID);
-        if (!rivalry) {
-            return JSON.stringify({
-                success: true,
-                rivalry: { wins: 0, losses: 0, draws: 0, last_match: null, streak: 0 },
-                exists: false
-            });
-        }
-
-        var perspective = {
-            wins: (rivalry.player_a === userId) ? rivalry.a_wins : rivalry.b_wins,
-            losses: (rivalry.player_a === userId) ? rivalry.b_wins : rivalry.a_wins,
-            draws: rivalry.draws || 0,
-            last_match: rivalry.last_match || null,
-            streak: rivalry.streak || 0
-        };
-
-        return JSON.stringify({ success: true, rivalry: perspective, exists: true });
-    } catch (err) {
-        logger.error("[social_v2] rpcGetRivalry error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 5. rpcFriendScoreAlert
-// ---------------------------------------------------------------------------
-
-function rpcFriendScoreAlert(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcFriendScoreAlert called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var gameId = svResolveGameId(data.game_id) || "";
-
-        var friends = [];
-        try {
-            var friendsResult = nk.friendsList(userId, 100, 0, "");
-            if (friendsResult && friendsResult.friends) {
-                friends = friendsResult.friends;
-            } else if (friendsResult && friendsResult.length) {
-                friends = friendsResult;
-            }
-        } catch (e) {
-            logger.warn("[social_v2] friendsList failed: " + e.message);
-            return JSON.stringify({ success: true, alerts: [], message: "Could not retrieve friends" });
-        }
-
-        var leaderboardId = "leaderboard_" + gameId;
-        var userRecord = null;
-        try {
-            var ownerRecords = nk.leaderboardRecordsList(leaderboardId, [userId], 1, "", 0);
-            if (ownerRecords && ownerRecords.ownerRecords && ownerRecords.ownerRecords.length > 0) {
-                userRecord = ownerRecords.ownerRecords[0];
-            } else if (ownerRecords && ownerRecords.records && ownerRecords.records.length > 0) {
-                userRecord = ownerRecords.records[0];
-            }
-        } catch (e) {
-            logger.warn("[social_v2] leaderboard lookup failed: " + e.message);
-        }
-
-        var userScore = userRecord ? (userRecord.score || 0) : 0;
-        var alerts = [];
-
-        for (var i = 0; i < friends.length; i++) {
-            var friend = friends[i];
-            var friendId = friend.user ? friend.user.userId : (friend.userId || friend.id);
-            if (!friendId) continue;
-
-            try {
-                var friendRecords = nk.leaderboardRecordsList(leaderboardId, [friendId], 1, "", 0);
-                var friendRec = null;
-                if (friendRecords && friendRecords.ownerRecords && friendRecords.ownerRecords.length > 0) {
-                    friendRec = friendRecords.ownerRecords[0];
-                } else if (friendRecords && friendRecords.records && friendRecords.records.length > 0) {
-                    friendRec = friendRecords.records[0];
-                }
-                if (friendRec && (friendRec.score || 0) > userScore) {
-                    var friendUsername = friend.user ? friend.user.username : (friend.username || "Friend");
-                    alerts.push({
-                        friend_id: friendId,
-                        friend_username: friendUsername,
-                        friend_score: friendRec.score,
-                        your_score: userScore,
-                        difference: friendRec.score - userScore
-                    });
-                }
-            } catch (_) { /* skip friend */ }
-        }
-
-        alerts.sort(function (a, b) { return b.difference - a.difference; });
-
-        return JSON.stringify({ success: true, alerts: alerts, count: alerts.length });
-    } catch (err) {
-        logger.error("[social_v2] rpcFriendScoreAlert error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 6. rpcTeamQuizCreate
-// ---------------------------------------------------------------------------
-
-function rpcTeamQuizCreate(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcTeamQuizCreate called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        // Canonicalize game_id (slug -> UUID) once so persisted records and
-        // downstream filters always see the canonical UUID.
-        var gameId = svResolveGameId(data.game_id);
-        if (!gameId || !data.team_name) {
-            return JSON.stringify({ success: false, error: "game_id and team_name are required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var quizId = generateUUID();
-        var joinCode = generateJoinCode();
-        var maxMembers = data.max_members || 4;
-
-        var teamQuiz = {
-            quiz_id: quizId,
-            game_id: gameId,
-            team_name: data.team_name,
-            join_code: joinCode,
-            max_members: maxMembers,
-            creator_id: userId,
-            members: [userId],
-            status: "waiting",
-            created_at: nowISO()
-        };
-
-        safeWrite(nk, "team_quizzes", quizId, SYSTEM_USER_ID, teamQuiz);
-
-        // Also index by join_code for quick lookup
-        safeWrite(nk, "team_quiz_codes", joinCode, SYSTEM_USER_ID, { quiz_id: quizId });
-
-        return JSON.stringify({ success: true, quiz_id: quizId, join_code: joinCode, team_quiz: teamQuiz });
-    } catch (err) {
-        logger.error("[social_v2] rpcTeamQuizCreate error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 7. rpcTeamQuizJoin
-// ---------------------------------------------------------------------------
-
-function rpcTeamQuizJoin(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcTeamQuizJoin called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.join_code) {
-            return JSON.stringify({ success: false, error: "join_code is required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var codeEntry = safeRead(nk, "team_quiz_codes", data.join_code, SYSTEM_USER_ID);
-        if (!codeEntry || !codeEntry.quiz_id) {
-            return JSON.stringify({ success: false, error: "Invalid join code" });
-        }
-
-        var quiz = safeRead(nk, "team_quizzes", codeEntry.quiz_id, SYSTEM_USER_ID);
-        if (!quiz) {
-            return JSON.stringify({ success: false, error: "Team quiz not found" });
-        }
-        if (quiz.status !== "waiting") {
-            return JSON.stringify({ success: false, error: "Team quiz is no longer accepting members" });
-        }
-        if (quiz.members.length >= quiz.max_members) {
-            return JSON.stringify({ success: false, error: "Team quiz is full" });
-        }
-
-        for (var i = 0; i < quiz.members.length; i++) {
-            if (quiz.members[i] === userId) {
-                return JSON.stringify({ success: false, error: "Already a member of this team quiz" });
-            }
-        }
-
-        quiz.members.push(userId);
-        quiz.updated_at = nowISO();
-        safeWrite(nk, "team_quizzes", codeEntry.quiz_id, SYSTEM_USER_ID, quiz);
-
-        return JSON.stringify({ success: true, quiz_id: codeEntry.quiz_id, team_quiz: quiz });
-    } catch (err) {
-        logger.error("[social_v2] rpcTeamQuizJoin error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 8. rpcDailyDuoCreate
-// ---------------------------------------------------------------------------
-
-function rpcDailyDuoCreate(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcDailyDuoCreate called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        // Canonicalize game_id (slug -> UUID) once at entry so duo records and
-        // notifications carry the canonical UUID for downstream filtering.
-        var gameId = svResolveGameId(data.game_id);
-        if (!gameId || !data.partner_user_id) {
-            return JSON.stringify({ success: false, error: "game_id and partner_user_id are required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var duoId = generateUUID();
-        var today = nowISO().substring(0, 10);
-
-        var duo = {
-            duo_id: duoId,
-            game_id: gameId,
-            creator_id: userId,
-            partner_id: data.partner_user_id,
-            date: today,
-            creator_completed: false,
-            partner_completed: false,
-            status: "active",
-            created_at: nowISO()
-        };
-
-        safeWrite(nk, "daily_duos", duoId, SYSTEM_USER_ID, duo);
-
-        try {
-            nk.notificationSend(
-                data.partner_user_id,
-                "You've been invited to a Daily Duo!",
-                NOTIFY_DUO_INVITE,
-                { duo_id: duoId, game_id: gameId, from: userId },
-                userId
-            );
-        } catch (e) {
-            logger.warn("[social_v2] duo notification failed: " + e.message);
-        }
-
-        return JSON.stringify({ success: true, duo_id: duoId, duo: duo });
-    } catch (err) {
-        logger.error("[social_v2] rpcDailyDuoCreate error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 9. rpcDailyDuoStatus
-// ---------------------------------------------------------------------------
-
-function rpcDailyDuoStatus(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcDailyDuoStatus called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.duo_id) {
-            return JSON.stringify({ success: false, error: "duo_id is required" });
-        }
-
-        var duo = safeRead(nk, "daily_duos", data.duo_id, SYSTEM_USER_ID);
-        if (!duo) {
-            return JSON.stringify({ success: false, error: "Daily duo not found" });
-        }
-
-        var bothDone = duo.creator_completed && duo.partner_completed;
-
-        return JSON.stringify({
-            success: true,
-            duo: duo,
-            both_completed: bothDone,
-            status: bothDone ? "completed" : "in_progress"
-        });
-    } catch (err) {
-        logger.error("[social_v2] rpcDailyDuoStatus error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 10. rpcGroupQuestCreate
-// ---------------------------------------------------------------------------
-
-function rpcGroupQuestCreate(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcGroupQuestCreate called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.group_id || !data.quest_name || !data.target_type || !data.target_value) {
-            return JSON.stringify({ success: false, error: "group_id, quest_name, target_type, and target_value are required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var questId = generateUUID();
-        var durationHours = data.duration_hours || 24;
-        var expiresAt = new Date(Date.now() + durationHours * 3600000).toISOString();
-
-        var quest = {
-            quest_id: questId,
-            group_id: data.group_id,
-            quest_name: data.quest_name,
-            target_type: data.target_type,
-            target_value: Number(data.target_value),
-            current_value: 0,
-            duration_hours: durationHours,
-            expires_at: expiresAt,
-            creator_id: userId,
-            contributors: {},
-            status: "active",
-            created_at: nowISO()
-        };
-
-        safeWrite(nk, "group_quests", questId, SYSTEM_USER_ID, quest);
-
-        return JSON.stringify({ success: true, quest_id: questId, quest: quest });
-    } catch (err) {
-        logger.error("[social_v2] rpcGroupQuestCreate error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 11. rpcGroupQuestProgress
-// ---------------------------------------------------------------------------
-
-function rpcGroupQuestProgress(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcGroupQuestProgress called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.quest_id) {
-            return JSON.stringify({ success: false, error: "quest_id is required" });
-        }
-
-        var userId = ctx.userId || SYSTEM_USER_ID;
-        var increment = Number(data.increment) || 1;
-
-        var quest = safeRead(nk, "group_quests", data.quest_id, SYSTEM_USER_ID);
-        if (!quest) {
-            return JSON.stringify({ success: false, error: "Quest not found" });
-        }
-        if (quest.status !== "active") {
-            return JSON.stringify({ success: false, error: "Quest is no longer active" });
-        }
-
-        if (new Date(quest.expires_at) < new Date()) {
-            quest.status = "expired";
-            safeWrite(nk, "group_quests", data.quest_id, SYSTEM_USER_ID, quest);
-            return JSON.stringify({ success: false, error: "Quest has expired" });
-        }
-
-        quest.current_value += increment;
-        quest.contributors[userId] = (quest.contributors[userId] || 0) + increment;
-        quest.updated_at = nowISO();
-
-        var justCompleted = false;
-        if (quest.current_value >= quest.target_value && quest.status === "active") {
-            quest.status = "completed";
-            quest.completed_at = nowISO();
-            justCompleted = true;
-        }
-
-        safeWrite(nk, "group_quests", data.quest_id, SYSTEM_USER_ID, quest);
-
-        // Log activity
-        try {
-            var activityId = generateUUID();
-            safeWrite(nk, "group_activity", activityId, SYSTEM_USER_ID, {
-                group_id: quest.group_id,
-                user_id: userId,
-                action: justCompleted ? "quest_completed" : "quest_progress",
-                quest_id: data.quest_id,
-                quest_name: quest.quest_name,
-                increment: increment,
-                new_total: quest.current_value,
-                timestamp: nowISO()
-            });
-        } catch (_) { /* best effort */ }
-
-        return JSON.stringify({
-            success: true,
-            quest: quest,
-            just_completed: justCompleted,
-            progress_percent: Math.min(100, Math.floor((quest.current_value / quest.target_value) * 100))
-        });
-    } catch (err) {
-        logger.error("[social_v2] rpcGroupQuestProgress error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 12. rpcGroupActivityFeed
-// ---------------------------------------------------------------------------
-
-function rpcGroupActivityFeed(ctx, logger, nk, payload) {
-    logger.info("[social_v2] rpcGroupActivityFeed called");
-    try {
-        var data = JSON.parse(payload || '{}');
-        if (!data.group_id) {
-            return JSON.stringify({ success: false, error: "group_id is required" });
-        }
-
-        var limit = data.limit || 20;
-        if (limit > 100) limit = 100;
-
-        var allRecords = [];
-        try {
-            var result = nk.storageList(SYSTEM_USER_ID, "group_activity", limit, "");
-            if (result && result.objects) {
-                allRecords = result.objects;
-            } else if (result && result.length) {
-                allRecords = result;
-            }
-        } catch (e) {
-            logger.warn("[social_v2] storageList failed: " + e.message);
-        }
-
-        var events = [];
-        for (var i = 0; i < allRecords.length; i++) {
-            var val = allRecords[i].value || allRecords[i];
-            if (val.group_id === data.group_id) {
-                events.push(val);
-            }
-        }
-
-        events.sort(function (a, b) {
-            return (b.timestamp || "").localeCompare(a.timestamp || "");
-        });
-
-        if (events.length > limit) {
-            events = events.slice(0, limit);
-        }
-
-        return JSON.stringify({ success: true, events: events, count: events.length });
-    } catch (err) {
-        logger.error("[social_v2] rpcGroupActivityFeed error: " + err.message);
-        return JSON.stringify({ success: false, error: err.message });
-    }
-}
-
-
-// --- Module: tournaments\tournaments.js ---
+// --- Module: tournaments/tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -68613,7 +68692,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: tutorx\tutorx_coin_gate.js ---
+// --- Module: tutorx/tutorx_coin_gate.js ---
 // tutorx_coin_gate.js — per-service TutorX AI coin pricing (mirrors TutorX SPA catalog)
 
 var TUTORX_SERVICE_CATALOG = {
@@ -68750,7 +68829,7 @@ function tutorxWriteUsage(nk, collection, userId, today, usage) {
 }
 
 
-// --- Module: visual_path\visual_path.js ---
+// --- Module: visual_path/visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -69101,7 +69180,7 @@ function __ModuleInit_112(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet\wallet.js ---
+// --- Module: wallet/wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -77530,550 +77609,14 @@ function __legacy_createGroupMetadata(gameId, groupType, customData) {
  * RPC: create_game_group
  * Create a group/clan/guild for a specific game
  */
-function __legacy_rpcCreateGameGroup(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        // Validate required fields
-        if (!data.gameId || !data.name) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required fields: gameId, name"
-            });
-        }
-
-        var gameId = data.gameId;
-        var name = data.name;
-        var description = data.description || "";
-        var avatarUrl = data.avatarUrl || "";
-        var langTag = data.langTag || "en";
-        var open = data.open !== undefined ? data.open : false;
-        var maxCount = data.maxCount || 100;
-        var groupType = data.groupType || "guild";
-
-        // Create group metadata
-        var metadata = __legacy_createGroupMetadata(gameId, groupType, data.customData);
-
-        // Create group using Nakama's built-in Groups API
-        var group;
-        try {
-            group = nk.groupCreate(
-                ctx.userId,
-                name,
-                description,
-                avatarUrl,
-                langTag,
-                JSON.stringify(metadata),
-                open,
-                maxCount
-            );
-        } catch (err) {
-            logger.error("[Groups] Failed to create group: " + err.message);
-            return JSON.stringify({
-                success: false,
-                error: "Failed to create group: " + err.message
-            });
-        }
-
-        // Initialize group wallet
-        try {
-            var walletKey = "group_wallet_" + group.id;
-            nk.storageWrite([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000",
-                value: {
-                    groupId: group.id,
-                    gameId: gameId,
-                    currencies: {
-                        tokens: 0,
-                        xp: 0
-                    },
-                    createdAt: new Date().toISOString()
-                },
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        } catch (err) {
-            logger.warn("[Groups] Failed to create group wallet: " + err.message);
-        }
-
-        logger.info("[Groups] Created group: " + group.id + " for game: " + gameId);
-
-        return JSON.stringify({
-            success: true,
-            group: {
-                id: group.id,
-                creatorId: group.creatorId,
-                name: group.name,
-                description: group.description,
-                avatarUrl: group.avatarUrl,
-                langTag: group.langTag,
-                open: group.open,
-                edgeCount: group.edgeCount,
-                maxCount: group.maxCount,
-                createTime: group.createTime,
-                updateTime: group.updateTime,
-                metadata: metadata
-            },
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in __legacy_rpcCreateGameGroup: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: update_group_xp
- * Update group XP (for challenges/quests)
- */
-function __legacy_rpcUpdateGroupXP(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        if (!data.groupId || data.xp === undefined) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required fields: groupId, xp"
-            });
-        }
-
-        var groupId = data.groupId;
-        var xpToAdd = parseInt(data.xp);
-
-        // Get group to verify it exists and get metadata
-        var groups;
-        try {
-            groups = nk.groupsGetId([groupId]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Group not found"
-            });
-        }
-
-        if (!groups || groups.length === 0) {
-            return JSON.stringify({
-                success: false,
-                error: "Group not found"
-            });
-        }
-
-        var group = groups[0];
-        var metadata = JSON.parse(group.metadata || "{}");
-
-        // Update XP
-        metadata.xp = (metadata.xp || 0) + xpToAdd;
-
-        // Calculate level (100 XP per level)
-        var newLevel = Math.floor(metadata.xp / 100) + 1;
-        var leveledUp = newLevel > (metadata.level || 1);
-        metadata.level = newLevel;
-
-        // Update group metadata
-        try {
-            nk.groupUpdate(
-                groupId,
-                ctx.userId,
-                group.name,
-                group.description,
-                group.avatarUrl,
-                group.langTag,
-                JSON.stringify(metadata),
-                group.open,
-                group.maxCount
-            );
-        } catch (err) {
-            logger.error("[Groups] Failed to update group: " + err.message);
-            return JSON.stringify({
-                success: false,
-                error: "Failed to update group XP"
-            });
-        }
-
-        logger.info("[Groups] Updated group XP: " + groupId + " +" + xpToAdd + " XP");
-
-        return JSON.stringify({
-            success: true,
-            groupId: groupId,
-            xpAdded: xpToAdd,
-            totalXP: metadata.xp,
-            level: metadata.level,
-            leveledUp: leveledUp,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in __legacy_rpcUpdateGroupXP: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: get_group_wallet
- * Get group's shared wallet
- */
-function __legacy_rpcGetGroupWallet(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        if (!data.groupId) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required field: groupId"
-            });
-        }
-
-        var groupId = data.groupId;
-        var walletKey = "group_wallet_" + groupId;
-
-        // Read wallet from storage
-        var records;
-        try {
-            records = nk.storageRead([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000"
-            }]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to read group wallet"
-            });
-        }
-
-        if (!records || records.length === 0) {
-            // Initialize wallet if it doesn't exist
-            var wallet = {
-                groupId: groupId,
-                gameId: data.gameId || "",
-                currencies: {
-                    tokens: 0,
-                    xp: 0
-                },
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                nk.storageWrite([{
-                    collection: "group_wallets",
-                    key: walletKey,
-                    userId: "00000000-0000-0000-0000-000000000000",
-                    value: wallet,
-                    permissionRead: 1,
-                    permissionWrite: 0
-                }]);
-            } catch (err) {
-                logger.warn("[Groups] Failed to create group wallet: " + err.message);
-            }
-
-            return JSON.stringify({
-                success: true,
-                wallet: wallet,
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        return JSON.stringify({
-            success: true,
-            wallet: records[0].value,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in __legacy_rpcGetGroupWallet: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: update_group_wallet
- * Update group's shared wallet (admins only)
- */
-function __legacy_rpcUpdateGroupWallet(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        if (!data.groupId || !data.currency || data.amount === undefined || !data.operation) {
-            return JSON.stringify({
-                success: false,
-                error: "Missing required fields: groupId, currency, amount, operation"
-            });
-        }
-
-        var groupId = data.groupId;
-        var currency = data.currency;
-        var amount = parseInt(data.amount);
-        var operation = data.operation; // "add" or "subtract"
-
-        // Verify user is admin of the group
-        var userGroups;
-        try {
-            userGroups = nk.userGroupsList(ctx.userId);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to verify group membership"
-            });
-        }
-
-        var isAdmin = false;
-        if (userGroups && userGroups.userGroups) {
-            for (var i = 0; i < userGroups.userGroups.length; i++) {
-                var ug = userGroups.userGroups[i];
-                if (ug.group.id === groupId && (ug.state <= GROUP_ROLES.ADMIN)) {
-                    isAdmin = true;
-                    break;
-                }
-            }
-        }
-
-        if (!isAdmin) {
-            return JSON.stringify({
-                success: false,
-                error: "Only group admins can update group wallet"
-            });
-        }
-
-        // Get current wallet
-        var walletKey = "group_wallet_" + groupId;
-        var records;
-        try {
-            records = nk.storageRead([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000"
-            }]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to read group wallet"
-            });
-        }
-
-        if (!records || records.length === 0) {
-            return JSON.stringify({
-                success: false,
-                error: "Group wallet not found"
-            });
-        }
-
-        var wallet = records[0].value;
-        var currentBalance = wallet.currencies[currency] || 0;
-        var newBalance;
-
-        if (operation === "add") {
-            newBalance = currentBalance + amount;
-        } else if (operation === "subtract") {
-            newBalance = currentBalance - amount;
-            if (newBalance < 0) {
-                return JSON.stringify({
-                    success: false,
-                    error: "Insufficient balance"
-                });
-            }
-        } else {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid operation. Use 'add' or 'subtract'"
-            });
-        }
-
-        wallet.currencies[currency] = newBalance;
-
-        // Update wallet
-        try {
-            nk.storageWrite([{
-                collection: "group_wallets",
-                key: walletKey,
-                userId: "00000000-0000-0000-0000-000000000000",
-                value: wallet,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to update group wallet"
-            });
-        }
-
-        logger.info("[Groups] Updated group wallet: " + groupId + " " + operation + " " + amount + " " + currency);
-
-        return JSON.stringify({
-            success: true,
-            groupId: groupId,
-            currency: currency,
-            operation: operation,
-            amount: amount,
-            newBalance: newBalance,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in __legacy_rpcUpdateGroupWallet: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
-/**
- * RPC: get_user_groups
- * Get all groups for a user (filtered by gameId if provided)
- */
-function __legacy_rpcGetUserGroups(ctx, logger, nk, payload) {
-    try {
-        if (!ctx.userId) {
-            return JSON.stringify({
-                success: false,
-                error: "Authentication required"
-            });
-        }
-
-        var data;
-        try {
-            data = JSON.parse(payload || "{}");
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Invalid JSON payload"
-            });
-        }
-
-        var gameId = data.gameId || null;
-
-        // Get user groups
-        var userGroups;
-        try {
-            userGroups = nk.userGroupsList(ctx.userId);
-        } catch (err) {
-            return JSON.stringify({
-                success: false,
-                error: "Failed to retrieve user groups"
-            });
-        }
-
-        var groups = [];
-        if (userGroups && userGroups.userGroups) {
-            for (var i = 0; i < userGroups.userGroups.length; i++) {
-                var ug = userGroups.userGroups[i];
-                var group = ug.group;
-                var metadata = JSON.parse(group.metadata || "{}");
-
-                // Filter by gameId if provided
-                if (gameId && metadata.gameId !== gameId) {
-                    continue;
-                }
-
-                groups.push({
-                    id: group.id,
-                    name: group.name,
-                    description: group.description,
-                    avatarUrl: group.avatarUrl,
-                    langTag: group.langTag,
-                    open: group.open,
-                    edgeCount: group.edgeCount,
-                    maxCount: group.maxCount,
-                    createTime: group.createTime,
-                    updateTime: group.updateTime,
-                    metadata: metadata,
-                    userRole: ug.state,
-                    userRoleName: __legacy_getRoleName(ug.state)
-                });
-            }
-        }
-
-        return JSON.stringify({
-            success: true,
-            userId: ctx.userId,
-            gameId: gameId,
-            groups: groups,
-            count: groups.length,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (err) {
-        logger.error("[Groups] Unexpected error in __legacy_rpcGetUserGroups: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: "An unexpected error occurred"
-        });
-    }
-}
-
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase-5 cleanup (2026-07-06): the five dead group RPC handler bodies that
+// lived here (rpcCreateGameGroup, rpcUpdateGroupXP, rpcGetGroupWallet,
+// rpcUpdateGroupWallet, rpcGetUserGroups) have been DELETED. They were
+// unreachable since the B-003 fix removed their registrations — the live,
+// canonical implementations are in data/modules/src/legacy/groups.ts.
+// (__legacy_getRoleName below is still used by live code and is retained.)
+// ═══════════════════════════════════════════════════════════════════════════
 function __legacy_getRoleName(state) {
     if (state === GROUP_ROLES.OWNER) return "Owner";
     if (state === GROUP_ROLES.ADMIN) return "Admin";
@@ -83754,78 +83297,47 @@ function __legacy_lasttoliveJoinOrCreateMatch(context, logger, nk, payload) {
 // ============================================================================
 
 /**
- * RPC: quizverse_claim_daily_reward
- * Claim daily reward
+ * RPC: quizverse_claim_daily_reward (LEGACY-COMPATIBLE WRAPPER)
+ *
+ * DAILY PROGRESSION PLATFORM consolidation: this handler used to be a fully
+ * PARALLEL daily-reward system — its own storage ({gameID}_daily_rewards /
+ * daily_{userId}), its own streak formula (exact-yesterday string compare, no
+ * 48h grace), its own reward math (100 + 10·streak), and NO wallet grant. The
+ * same user therefore had two different "daily streaks" depending on which
+ * screen claimed (Arcade vs main Daily Rewards), and both could be claimed on
+ * the same day.
+ *
+ * It now delegates to performDailyClaim (daily_rewards.js) — the single OCC/
+ * idempotent claim core over the canonical daily_streaks record — and maps the
+ * result back to the legacy {success, data:{rewardAmount, streak, nextReward}}
+ * envelope the shipped Arcade client expects. New clients should call
+ * daily_progress_claim instead.
  */
 function __legacy_quizverseClaimDailyReward(context, logger, nk, payload) {
     try {
-        var data = __legacy_parseAndValidateGamePayload(payload, ["gameID"]);
-        var userId = __legacy_getUserId(data, context);
-
-        var collection = __legacy_getCollection(data.gameID, "daily_rewards");
-        var key = "daily_" + userId;
-
-        var now = new Date();
-        var today = now.toISOString().split('T')[0];
-
-        // Read reward state
-        var rewardState = { lastClaim: null, streak: 0 };
-        try {
-            var records = nk.storageRead([{
-                collection: collection,
-                key: key,
-                userId: userId
-            }]);
-            if (records && records.length > 0 && records[0].value) {
-                rewardState = records[0].value;
-            }
-        } catch (err) {
-            logger.debug("No existing reward state found");
+        var data = {};
+        try { data = JSON.parse(payload || "{}") || {}; } catch (e) { data = {}; }
+        var userId = context.userId;
+        if (!userId) {
+            return JSON.stringify({ success: false, error: "User not authenticated" });
         }
 
-        // Check if already claimed today
-        if (rewardState.lastClaim === today) {
-            return JSON.stringify({
-                success: false,
-                error: "Daily reward already claimed today"
-            });
+        var gameId = dpResolveGameId(data);
+        var result = performDailyClaim(nk, logger, userId, gameId);
+
+        if (!result.ok) {
+            return JSON.stringify({ success: false, error: result.error });
         }
 
-        // Calculate streak
-        var yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        var yesterdayStr = yesterday.toISOString().split('T')[0];
-
-        if (rewardState.lastClaim === yesterdayStr) {
-            rewardState.streak += 1;
-        } else {
-            rewardState.streak = 1;
-        }
-
-        rewardState.lastClaim = today;
-
-        // Calculate reward amount (increases with streak)
-        var baseReward = 100;
-        var rewardAmount = baseReward + (rewardState.streak - 1) * 10;
-
-        // Write reward state
-        nk.storageWrite([{
-            collection: collection,
-            key: key,
-            userId: userId,
-            value: rewardState,
-            permissionRead: 1,
-            permissionWrite: 0
-        }]);
-
-        logger.info("[" + data.gameID + "] User " + userId + " claimed daily reward. Streak: " + rewardState.streak);
+        var nextReward = __legacy_getRewardForDay(gameId, result.streakData.currentStreak + 1);
+        logger.info("[" + gameId + "] User " + userId + " claimed daily reward via legacy arcade RPC. Streak: " + result.streakData.currentStreak);
 
         return JSON.stringify({
             success: true,
             data: {
-                rewardAmount: rewardAmount,
-                streak: rewardState.streak,
-                nextReward: baseReward + rewardState.streak * 10
+                rewardAmount: (result.reward && result.reward.game) || 0,
+                streak: result.streakData.currentStreak,
+                nextReward: (nextReward && nextReward.game) || 0
             }
         });
 
@@ -89893,7 +89405,7 @@ function asyncChallengeGenerateShareCode(nk) {
  * @param {string} content - Notification message
  * @param {object} data - Additional notification data
  */
-function asyncChallengeSendNotification(nk, userId, subject, content, data, logger) {
+function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data, logger) {
     try {
         var notifications = [{
             userId: userId,
@@ -89913,6 +89425,65 @@ function asyncChallengeSendNotification(nk, userId, subject, content, data, logg
     } catch (e) {
         if (logger) {
             logger.warn('[AsyncChallenge] notify failed type=' + (data && data.type ? data.type : 'unknown') + ' target=' + userId + ' err=' + (e.message || String(e)));
+        }
+    }
+
+    // ── Device push bridge (2026-07-06, PHANTOM_ARENA_LAYMANS_GUIDE Phase 1) ──
+    // The in-app notification above only reaches the Nakama inbox + open
+    // sockets — offline players never knew it was their turn, which killed
+    // the async loop ("silent room" problem). Bridge to the LegacyPush global
+    // (same pattern as friends/friend_invites.js) for the four POSITIVE
+    // lifecycle events. opponent_left / challenge_cancelled stay in-app-only
+    // (AP-001: never push negative events; social push budget applies).
+    // ctx may be null (helpers without RPC scope) — push is skipped, in-app
+    // tier above already fired. Isolated try/catch — push failure must never
+    // affect the in-app tier.
+    try {
+        if (!ctx || !data || typeof LegacyPush === 'undefined' || !LegacyPush.sendLocalizedPushToUser) return;
+        var t = data.type;
+        var pushData = {
+            eventType:       'async_challenge',
+            screen:          'phantom_arena',
+            type:            String(t || ''),
+            sessionId:       String(data.sessionId || ''),
+            // iOS UNNotificationCategory identifier (AsyncChallengePushCategoryRegistrar.CategoryId).
+            // Firebase's APNs bridge maps this to the aps.category field so iOS presents
+            // "Play Now" / "Remind Me Later" action buttons on the lock screen.
+            action_category: 'async_challenge'
+        };
+        if (data.shareCode) {
+            pushData.shareCode = String(data.shareCode);
+            pushData.deepLink  = 'quizverse://challenge/join/' + String(data.shareCode);
+        }
+        var who = data.challengerName || data.opponentName || data.name || 'Someone';
+        if (t === 'challenge_received' || t === 'rematch_requested') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_received',
+                'friend_challenge_title', 'friend_challenge_body',
+                { name: who, mode: data.quizModeName || 'a quiz battle' },
+                { skipInAppNotification: true, data: pushData });
+        } else if (t === 'opponent_joined') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_joined',
+                'ac_opponent_joined_title', 'ac_opponent_joined_body',
+                { name: who, mode: (data.quizModeName || '') },
+                { skipInAppNotification: true, data: pushData });
+        } else if (t === 'opponent_completed') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_your_turn',
+                'ac_your_turn_title', 'ac_your_turn_body',
+                { name: who, score: String(data.score !== undefined ? data.score : '') },
+                { skipInAppNotification: true, data: pushData });
+        } else if (t === 'results_ready') {
+            LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
+                'async_challenge_results',
+                'ac_results_title', 'ac_results_body',
+                { name: who, score: String(data.score !== undefined ? data.score : '') },
+                { skipInAppNotification: true, data: pushData });
+        }
+    } catch (pushErr) {
+        if (logger) {
+            logger.warn('[AsyncChallenge] device push failed (non-fatal) type=' + (data && data.type) + ': ' + (pushErr.message || String(pushErr)));
         }
     }
 }
@@ -90491,7 +90062,9 @@ function asyncChallengeCommitOpponentLeave(nk, logger, sessionId, creatorId, ses
     asyncChallengePurgeJoinIdempotency(nk, logger, leavingOpponentId, sessionId);
 
     var formattedSession = asyncChallengeSessionToUnityFormat(updatedSession, nk);
-    asyncChallengeSendNotification(nk, updatedSession.creatorId,
+    // ctx not in scope in this helper — null skips the device-push bridge,
+    // which is correct: opponent_left is an in-app-only event (AP-001 budget).
+    asyncChallengeSendNotification(null, nk, updatedSession.creatorId,
         'Opponent Left',
         (leavingOpponentName || 'Player B') + ' has left your ' + updatedSession.quizModeName + ' challenge room. Waiting for a new opponent.',
         {
@@ -90697,7 +90270,7 @@ function rpcAsyncChallengeCreate(ctx, logger, nk, payload) {
 
         // Send notification to challenged user if specified
         if (challengedUserId && challengedUserId !== userId) {
-            asyncChallengeSendNotification(nk, challengedUserId,
+            asyncChallengeSendNotification(ctx, nk, challengedUserId,
                 'Challenge Received!',
                 creatorName + ' challenges you to a ' + quizModeName + ' battle!',
                 {
@@ -90911,7 +90484,7 @@ function rpcAsyncChallengeJoin(ctx, logger, nk, payload) {
         }
 
         // Notify creator that opponent joined
-        asyncChallengeSendNotification(nk, session.creatorId,
+        asyncChallengeSendNotification(ctx, nk, session.creatorId,
             'Challenge Accepted!',
             opponentName + ' has joined your ' + session.quizModeName + ' challenge!',
             {
@@ -91342,13 +90915,15 @@ function rpcAsyncChallengeSubmit(ctx, logger, nk, payload) {
         // Send notifications — subjects fixed so they make sense from the recipient's POV.
         if (isCreator && session.opponentId) {
             // Creator finished; notify the opponent who hasn't played yet.
-            asyncChallengeSendNotification(nk, session.opponentId,
+            asyncChallengeSendNotification(ctx, nk, session.opponentId,
                 'Your Opponent Has Played!',
                 session.creatorName + ' scored ' + score + ' points — your turn!',
                 {
                     type: 'opponent_completed',
                     sessionId: sessionId,
-                    score: score
+                    score: score,
+                    name: session.creatorName || '',
+                    shareCode: session.shareCode || ''
                 }
             );
         } else if (isCreator && !session.opponentId) {
@@ -91356,13 +90931,15 @@ function rpcAsyncChallengeSubmit(ctx, logger, nk, payload) {
             // The CREATOR_PLAYED status update above is the signal for anyone who polls.
         } else if (isOpponent) {
             // Both have now played — notify creator that final results are ready.
-            asyncChallengeSendNotification(nk, session.creatorId,
+            asyncChallengeSendNotification(ctx, nk, session.creatorId,
                 'Challenge Results Ready!',
                 session.opponentName + ' scored ' + score + ' points — see who won!',
                 {
                     type: 'results_ready',
                     sessionId: sessionId,
-                    score: score
+                    score: score,
+                    name: session.opponentName || '',
+                    shareCode: session.shareCode || ''
                 }
             );
         }
@@ -91734,7 +91311,7 @@ function rpcAsyncChallengeCancel(ctx, logger, nk, payload) {
 
         // Notify opponent if any
         if (session.opponentId) {
-            asyncChallengeSendNotification(nk, session.opponentId,
+            asyncChallengeSendNotification(ctx, nk, session.opponentId,
                 'Challenge Cancelled',
                 session.creatorName + ' has cancelled the ' + session.quizModeName + ' challenge.',
                 {
@@ -92171,7 +91748,7 @@ function rpcAsyncChallengeRematch(ctx, logger, nk, payload) {
         }]);
 
         // Notify challenged player
-        asyncChallengeSendNotification(nk, challengedUserId,
+        asyncChallengeSendNotification(ctx, nk, challengedUserId,
             'Rematch Challenge!',
             creatorName + ' wants a rematch in ' + originalSession.quizModeName + '!',
             {
@@ -92429,11 +92006,23 @@ function rpcAsyncChallengeStoreQuestions(ctx, logger, nk, payload) {
         // Don't overwrite if already stored (idempotency guard)
         if (session.questions && session.questions.length > 0) {
             logger.debug('[AsyncChallenge] Questions already stored for session: ' + sessionId);
-            return JSON.stringify({ success: true, message: 'Questions already stored', data: { count: session.questions.length } });
+            return JSON.stringify({ success: true, message: 'Questions already stored', data: { count: session.questions.length, schemaVersion: (session.questionsSchema && session.questionsSchema.schemaVersion) || 1 } });
         }
 
-        // Store questions in session
+        // Store questions in session.
+        // questionsSchema is a parallel metadata blob (Gap 8 / cross-platform parity fix):
+        //   schemaVersion 1 = legacy plain array (no schema tag, Unity compact q/o/c/e)
+        //   schemaVersion 2 = tagged blob with explicit format field (2026-07-07+)
+        // Existing clients ignore questionsSchema; new clients use it to select a parser.
+        // The `format` field defaults to 'compact' (Unity shorthand); web sends 'verbose'
+        // when it submits questions in question/options/correctIndex/explanation form.
         session.questions = questions;
+        session.questionsSchema = {
+            schemaVersion: 2,
+            format:        request.format || request.Format || 'compact',
+            storedAt:      new Date().toISOString(),
+            count:         questions.length
+        };
 
         nk.storageWrite([{
             collection: COLLECTION_ASYNC_CHALLENGES,
@@ -95419,23 +95008,19 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
         logger.error('[Friends] Failed to initialize: ' + err.message);
     }
 
-    // Register Groups/Clans/Guilds RPCs
-    try {
-        logger.info('[Groups] Initializing Groups/Clans/Guilds Module...');
-        __rpc_create_game_group = __rpc_create_game_group || (__legacy_rpcCreateGameGroup);
-        logger.info('[Groups] Registered RPC: create_game_group');
-        __rpc_update_group_xp = __rpc_update_group_xp || (__legacy_rpcUpdateGroupXP);
-        logger.info('[Groups] Registered RPC: update_group_xp');
-        __rpc_get_group_wallet = __rpc_get_group_wallet || (__legacy_rpcGetGroupWallet);
-        logger.info('[Groups] Registered RPC: get_group_wallet');
-        __rpc_update_group_wallet = __rpc_update_group_wallet || (__legacy_rpcUpdateGroupWallet);
-        logger.info('[Groups] Registered RPC: update_group_wallet');
-        __rpc_get_user_groups = __rpc_get_user_groups || (__legacy_rpcGetUserGroups);
-        logger.info('[Groups] Registered RPC: get_user_groups');
-        logger.info('[Groups] Successfully registered 5 Groups/Clans RPCs');
-    } catch (err) {
-        logger.error('[Groups] Failed to initialize: ' + err.message);
-    }
+    // ── Groups/Clans/Guilds RPCs — REMOVED (B-003 fix, 2026-07-06) ─────────
+    // The 5 registrations that lived here (create_game_group, update_group_xp,
+    // get_group_wallet, update_group_wallet, get_user_groups) competed with
+    // the IDENTICALLY-NAMED registrations in src/legacy/groups.ts. In the
+    // compiled bundle, postbuild guards legacy assignments with
+    // `__rpc_x = __rpc_x || __legacy_fn` while the TS module assigns
+    // unconditionally — so the TS handlers already won in production. These
+    // lines are physically removed (not commented) so postbuild's regex can
+    // never resurrect the ambiguity if merge order changes.
+    // CANONICAL SOURCE for these 5 RPCs: data/modules/src/legacy/groups.ts.
+    // (Per WORLD_CLASS_SOCIAL_FRIENDS_GROUPS_ARCHITECTURE.md §2.1 B-003 /
+    // §17.1. The rpcCreateGameGroup etc. functions below remain in this file
+    // as dead code for reference; delete them in the Phase-5 cleanup pass.)
 
     // Register Push Notifications RPCs
     try {
@@ -96754,6 +96339,24 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[QvPrewarm] failed to register: " + (err && err.message ? err.message : String(err)));
     }
+    // ---- QuizVerse topic-cache refresh (qv_cache_{topic}) ----
+    // quizverse_cache_refresh_tick: populates qv_cache_{topic} via QvQuestionCache.
+    // Modes: cold_start (anime/pokemon/movies bootstrap), all (6 h gate), topic (single).
+    // Post-deploy bootstrap: { "mode": "cold_start" }. Daily full refresh: { "mode": "all" }.
+    //
+    // NOT quizverse_refresh_server_cache — that is a separate legacy no-op registered from
+    // legacy_runtime.js (ack-only stub) and LegacyMultiGame.refreshServerCache (invalidates
+    // ConfigLoader in-memory config only). It does NOT read or write qv_cache_* storage.
+    // For question-cache ops use quizverse_cache_refresh_tick; never conflate the two names
+    // in runbooks, n8n workflows, or deploy scripts.
+    try {
+        QvCacheRefreshCron.register(initializer);
+        logger.info("[QvCacheRefresh] quizverse_cache_refresh_tick RPC registered");
+        QvCacheRefreshCron.bootOnInit(nk, logger, ctx.env || {});
+    }
+    catch (err) {
+        logger.error("[QvCacheRefresh] failed to register: " + (err && err.message ? err.message : String(err)));
+    }
     // quizverse_pack_cleanup_tick: daily job that sweeps expired/abandoned
     // qv_question_packs across all recently active users (30-day window).
     // Gate-limited to once per 24 h. Call from external scheduler (n8n / k8s).
@@ -96939,6 +96542,61 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
         IvxPresence.register(initializer);
         logger.info("[Legacy] Registering groups RPCs...");
         LegacyGroups.register(initializer);
+        // ── Social maintenance tick (§19.7 / G-018 / B-005) ────────────────────
+        // Service-token cleanup RPC driven by the k8s CronJob
+        // (intelli-verse-kube-infra/nakama/social-maintenance-cronjob.yaml).
+        // Sweeps expired challenges, stale rate-limit buckets (incl. the B-009
+        // per-pair keys) and dead presence rows. Mounted after AnalyticsAlerts.init
+        // so it gets latency/error instrumentation like every other RPC.
+        // GUARD: If the module fails to compile (e.g., SYSTEM_USER_ID hoisting
+        // issue or tsconfig exclusion), fail FAST with a clear FATAL log
+        // instead of silently letting the legacy bridge register a broken stub
+        // that returns HTTP 500 "JavaScript runtime function invalid".
+        if (typeof SocialMaintenance === "undefined" || typeof SocialMaintenance.register !== "function") {
+            logger.error("[FATAL] SocialMaintenance module is undefined or missing register() — " +
+                "the TypeScript build did NOT include data/modules/src/social/maintenance.ts. " +
+                "The ivx_social_maintenance_tick RPC will fall through to the legacy bridge " +
+                "and produce HTTP 500. Rebuild the bundle and verify the file is in the tsconfig include list.");
+        }
+        else {
+            logger.info("[SocialMaintenance] Registering ivx_social_maintenance_tick...");
+            SocialMaintenance.register(initializer);
+            SocialMaintenance.registerHooks(initializer); // GDPR after-delete-account cascade (needs real initializer)
+        }
+        // ── Group membership cap (beforeJoinGroup hook, hooks-only module) ─────
+        // Server-authoritative counterpart of the Unity client's MaxJoinedGroups
+        // check. Hooks need a real initializer, so this registers here in
+        // InitModule — same contract as SocialMaintenance.registerHooks above.
+        if (typeof SocialGroupLimits !== "undefined" && typeof SocialGroupLimits.registerHooks === "function") {
+            logger.info("[SocialGroupLimits] Registering beforeJoinGroup membership cap...");
+            SocialGroupLimits.registerHooks(initializer);
+        }
+        else {
+            logger.warn("[SocialGroupLimits] module missing from bundle — group cap is client-side only.");
+        }
+        // ── Cold-start onboarding state (G-014, doc §E.4) ──────────────────────
+        logger.info("[SocialOnboarding] Registering ivx_social_onboarding_state...");
+        SocialOnboardingState.register(initializer);
+        // ── Social Layer v2 features (doc §8.2, §7.3, §7.4, §14A) ──────────────
+        logger.info("[SocialV2] Registering presence v2, group links, group search, friends feed...");
+        SocialPresenceV2.register(initializer);
+        SocialGroupLinks.register(initializer);
+        SocialGroupSearch.register(initializer);
+        SocialFriendsFeed.register(initializer);
+        // ── Multi-app registry + engagement systems (doc §19.3, G-020, Q-06, G-017) ──
+        logger.info("[SocialV2] Registering app registry, pressure summary, duo quests, fanout queue...");
+        SocialAppRegistry.register(initializer);
+        SocialPressureSummary.register(initializer);
+        DuoQuests.register(initializer);
+        FanoutQueue.register(initializer);
+        SocialReports.register(initializer);
+        // SocialPlayerStats has no RPCs — it's written by the quiz submit flow
+        // and read by friends_list; nothing to register.
+        // ── Phase-3 consolidation + engagement tail (doc §12/App.C, Q-11, G-003/015/016/021/022) ──
+        logger.info("[SocialV2] Registering ivx_social_* aliases, leagues, engagement extras...");
+        SocialRpcAliases.register(initializer);
+        SocialLeagues.register(initializer);
+        SocialEngagementExtras.register(initializer);
         // ── Group membership cross-device sync hooks ──────────────────────────
         // After a successful built-in JoinGroup / LeaveGroup, send the acting user
         // a self-notification (code 500 / 501) so ALL of their open sockets — i.e.
@@ -97010,6 +96668,11 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
         logger.info("[PersonalizedQuests] Registering quizverse_get_personalized_quests...");
         PersonalizedQuests.register(initializer);
         logger.info("[PersonalizedQuests] DNA-personalized quest selection active");
+        // Register Battle Pass engine — consumes dashboard-configured seasons
+        // (incentives config) and accrues XP from the same quest event pipeline
+        logger.info("[BattlePassEngine] Registering battlepass_get / record_event / unlock_premium RPCs...");
+        BattlePassEngine.register(initializer);
+        logger.info("[BattlePassEngine] 3 RPCs registered successfully");
     }
     catch (err) {
         logger.error("[QuestEngine] Failed to register: " + (err && err.message ? err.message : String(err)));
@@ -97448,7 +97111,7 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
     // The set of TS-owned RPC IDs (so the bridge knows which legacy IDs to
     // skip) is now AUTO-POPULATED by data/modules/postbuild.js as the global
     // `__TS_OWNED_RPCS`. It is built by scanning every
-    // `__rpc____ = ...` call in src/**/*.ts at build time
+    // `initializer.registerRpc("...", ...)` call in src/**/*.ts at build time
     // and so cannot drift when a TS RPC is added/renamed/removed. If the
     // global is missing (e.g. the file is loaded outside the postbuild
     // pipeline), we fall back to an empty allow-set — i.e. legacy wins for
@@ -97926,6 +97589,24 @@ var AiPipelines;
         }
         if (!statusOk) {
             return errEnvelope("invalid_status", "status must be one of: " + allowedStatus.join(", "));
+        }
+        // The job ran async — the target user may have been deleted between job
+        // start and completion (e.g. the user-backend guest-cleanup job).
+        // storageWrite/notificationsSend for a missing user violates the `users`
+        // FK (storage_user_id_fkey, SQLSTATE 23503), so probe first and abandon
+        // the fan-out gracefully. The job itself stays terminal on the AI svc;
+        // there is simply nobody left to deliver to.
+        try {
+            var existing = nk.usersGetId([targetUserId]);
+            if (!existing || existing.length === 0) {
+                logger.warn("[AiPipelines] user %s no longer exists — abandoning completion fan-out for job %s (pipeline=%s status=%s)", targetUserId, jobId, pipeline, status);
+                return okEnvelope({ delivered: false, skipped: "user_deleted" });
+            }
+        }
+        catch (e) {
+            // A probe failure is not proof of deletion — fall through and let the
+            // individually-guarded writes below surface any real error.
+            logger.warn("[AiPipelines] usersGetId probe failed for user %s: %s", targetUserId, (e && e.message) || String(e));
         }
         // Compose a compact, push-safe snapshot for the storage row + the
         // notification body. We deliberately keep the surface narrow — full
@@ -103044,53 +102725,11 @@ var IntelliverseFriends;
      *
      * Returns a { userId: boolean } map. Missing entries default to false.
      */
+    // B-004 fix (2026-07-06): canonical implementation lives in
+    // FriendsPresenceShared (presence_shared.ts). This wrapper keeps every
+    // call site unchanged while eliminating the triple copy-paste.
     function loadOnlineMap(nk, userIds) {
-        var map = {};
-        if (!userIds || userIds.length === 0)
-            return map;
-        var reads = [];
-        for (var i = 0; i < userIds.length; i++) {
-            reads.push({
-                collection: PRESENCE_COLLECTION,
-                key: PRESENCE_KEY,
-                userId: userIds[i]
-            });
-        }
-        var rows = null;
-        try {
-            rows = nk.storageRead(reads);
-        }
-        catch (e) {
-            // Presence is optional context — never fail the search because of it.
-            return map;
-        }
-        if (!rows)
-            return map;
-        var nowMs = Date.now();
-        for (var r = 0; r < rows.length; r++) {
-            var row = rows[r];
-            if (!row || !row.value)
-                continue;
-            var v = row.value;
-            var online = false;
-            if (v.online === true) {
-                var lastSeenMs = 0;
-                if (typeof v.lastSeenMs === "number")
-                    lastSeenMs = v.lastSeenMs;
-                else if (typeof v.last_seen_ms === "number")
-                    lastSeenMs = v.last_seen_ms;
-                else if (typeof v.lastSeen === "string") {
-                    var t = Date.parse(v.lastSeen);
-                    if (!isNaN(t))
-                        lastSeenMs = t;
-                }
-                if (lastSeenMs === 0 || (nowMs - lastSeenMs) <= ONLINE_THRESHOLD_MS) {
-                    online = true;
-                }
-            }
-            map[row.userId] = online;
-        }
-        return map;
+        return FriendsPresenceShared.loadOnlineMap(nk, userIds);
     }
     /**
      * Collapse Nakama's friend graph into:
@@ -103501,6 +103140,7 @@ var IntelliverseFriends;
     // ── Public registration ────────────────────────────────────────────────
     function register(initializer) {
         __rpc_intelliverse_find_friends = rpcIntelliverseFindFriends;
+        __rpc_ivx_social_friend_search = rpcIntelliverseFindFriends; // Phase-3 alias (doc Appendix C)
     }
     IntelliverseFriends.register = register;
     register();
@@ -103605,47 +103245,11 @@ var IntelliverseNearbyPlayers;
      * Returns a { userId: boolean } map; missing entries default to false.
      * Presence is best-effort context — never fails the suggestion query.
      */
+    // B-004 fix (2026-07-06): canonical implementation lives in
+    // FriendsPresenceShared (presence_shared.ts). This wrapper keeps every
+    // call site unchanged while eliminating the triple copy-paste.
     function loadOnlineMap(nk, userIds) {
-        var map = {};
-        if (!userIds || userIds.length === 0)
-            return map;
-        var reads = [];
-        for (var i = 0; i < userIds.length; i++) {
-            reads.push({ collection: PRESENCE_COLLECTION, key: PRESENCE_KEY, userId: userIds[i] });
-        }
-        var rows = null;
-        try {
-            rows = nk.storageRead(reads);
-        }
-        catch (e) {
-            return map;
-        }
-        if (!rows)
-            return map;
-        var nowMs = Date.now();
-        for (var r = 0; r < rows.length; r++) {
-            var row = rows[r];
-            if (!row || !row.value)
-                continue;
-            var v = row.value;
-            var online = false;
-            if (v.online === true) {
-                var lastSeenMs = 0;
-                if (typeof v.lastSeenMs === "number")
-                    lastSeenMs = v.lastSeenMs;
-                else if (typeof v.last_seen_ms === "number")
-                    lastSeenMs = v.last_seen_ms;
-                else if (typeof v.lastSeen === "string") {
-                    var t = Date.parse(v.lastSeen);
-                    if (!isNaN(t))
-                        lastSeenMs = t;
-                }
-                if (lastSeenMs === 0 || (nowMs - lastSeenMs) <= ONLINE_THRESHOLD_MS)
-                    online = true;
-            }
-            map[row.userId] = online;
-        }
-        return map;
+        return FriendsPresenceShared.loadOnlineMap(nk, userIds);
     }
     /**
      * Build a set of every userId the caller already has a relationship with
@@ -103835,6 +103439,7 @@ var IntelliverseNearbyPlayers;
     // ── Public registration ────────────────────────────────────────────────
     function register(initializer) {
         __rpc_intelliverse_find_nearby_players = rpcFindNearbyPlayers;
+        __rpc_ivx_social_friend_nearby = rpcFindNearbyPlayers; // Phase-3 alias (doc Appendix C)
     }
     IntelliverseNearbyPlayers.register = register;
     register();
@@ -103944,53 +103549,11 @@ var IntelliverseFriendsList;
      * once postbuild has merged everything; namespace boundaries are real.
      * Keeping these in sync is enforced by code review.
      */
+    // B-004 fix (2026-07-06): canonical implementation lives in
+    // FriendsPresenceShared (presence_shared.ts). This wrapper keeps every
+    // call site unchanged while eliminating the triple copy-paste.
     function loadOnlineMap(nk, userIds) {
-        var map = {};
-        if (!userIds || userIds.length === 0)
-            return map;
-        var reads = [];
-        for (var i = 0; i < userIds.length; i++) {
-            reads.push({
-                collection: PRESENCE_COLLECTION,
-                key: PRESENCE_KEY,
-                userId: userIds[i]
-            });
-        }
-        var rows = null;
-        try {
-            rows = nk.storageRead(reads);
-        }
-        catch (e) {
-            // Presence is optional context — never fail the list because of it.
-            return map;
-        }
-        if (!rows)
-            return map;
-        var nowMs = Date.now();
-        for (var r = 0; r < rows.length; r++) {
-            var row = rows[r];
-            if (!row || !row.value)
-                continue;
-            var v = row.value;
-            var online = false;
-            if (v.online === true) {
-                var lastSeenMs = 0;
-                if (typeof v.lastSeenMs === "number")
-                    lastSeenMs = v.lastSeenMs;
-                else if (typeof v.last_seen_ms === "number")
-                    lastSeenMs = v.last_seen_ms;
-                else if (typeof v.lastSeen === "string") {
-                    var t = Date.parse(v.lastSeen);
-                    if (!isNaN(t))
-                        lastSeenMs = t;
-                }
-                if (lastSeenMs === 0 || (nowMs - lastSeenMs) <= ONLINE_THRESHOLD_MS) {
-                    online = true;
-                }
-            }
-            map[row.userId] = online;
-        }
-        return map;
+        return FriendsPresenceShared.loadOnlineMap(nk, userIds);
     }
     /**
      * Map a Nakama `friend.state` int to the canonical relationshipStatus
@@ -104068,10 +103631,15 @@ var IntelliverseFriendsList;
      * Caller supplies the resolved `online` flag (from loadOnlineMap) and the
      * resolved alpha-2 `country` (from loadCountryMap; "" when unknown).
      */
-    function flattenFriend(fr, online, country) {
+    function flattenFriend(fr, online, country, gameActivity) {
         var u = fr.user || {};
         var state = unwrapState(fr.state);
         return {
+            // ML-002 fix (2026-07-06): per-friend weekly activity ("xpThisWeek",
+            // "quizzesThisWeek", "bestScoreThisWeek", "lastPlayedAt") from
+            // ivx_game_player_stats, written by the quiz submit flow. null =
+            // friend hasn't played this week; clients render zeros/dashes.
+            gameActivity: gameActivity || null,
             userId: u.id || "",
             username: u.username || "",
             displayName: u.displayName || u.display_name || u.username || "",
@@ -104153,6 +103721,14 @@ var IntelliverseFriendsList;
         catch (e) {
             myCountry = "";
         }
+        // ── Bulk-load weekly game activity (ML-002 — one batched read) ──────
+        var statsMap = {};
+        try {
+            if (typeof SocialPlayerStats !== "undefined" && SocialPlayerStats.loadStatsMap) {
+                statsMap = SocialPlayerStats.loadStatsMap(nk, "quizverse", ids);
+            }
+        }
+        catch (_) { /* optional enrichment — cards degrade to no-activity */ }
         // ── Flatten ─────────────────────────────────────────────────────────
         var results = [];
         for (var j = 0; j < rawFriends.length; j++) {
@@ -104161,7 +103737,7 @@ var IntelliverseFriendsList;
                 continue;
             var online = !!onlineMap[fr.user.id];
             var fcountry = countryMap[fr.user.id] || "";
-            results.push(flattenFriend(fr, online, fcountry));
+            results.push(flattenFriend(fr, online, fcountry, statsMap[fr.user.id] || null));
         }
         if (logger && logger.info) {
             logger.info("[FriendsList] user=" + userId +
@@ -104235,7 +103811,13 @@ var IntelliverseFriendsList;
     // ── Public registration ────────────────────────────────────────────────
     function register(initializer) {
         __rpc_friends_list = rpcFriendsList;
+        // Phase-3 canonical aliases (doc Appendix C): same handlers, new ivx_
+        // names. These keep the module's existing flat shape — the unified
+        // envelope for this cluster ships when the module migrates natively
+        // (its shape is already flat + presence-enriched, the Phase-4 target).
+        __rpc_ivx_social_friends_list = rpcFriendsList;
         __rpc_list_blocked_users = rpcListBlockedUsers;
+        __rpc_ivx_social_friends_blocked = rpcListBlockedUsers;
     }
     IntelliverseFriendsList.register = register;
     register();
@@ -104483,6 +104065,80 @@ var IvxPresence;
     IvxPresence.register = register;
     register();
 })(IvxPresence || (IvxPresence = {}));
+// presence_shared.ts — canonical presence read helper for the friends domain.
+//
+// B-004 fix (2026-07-06): `loadOnlineMap` was copy-pasted (semantically
+// identical, whitespace-only drift) across THREE namespaces:
+//   - IntelliverseFriendsList  (friends_list.ts)
+//   - IntelliverseFriends      (find_friends.ts)
+//   - IntelliverseNearbyPlayers(find_nearby_players.ts)
+// Any future presence-format change would have had to be applied three
+// times. This file is now the single source of truth; each namespace keeps
+// a one-line local wrapper delegating here so call sites stay unchanged.
+//
+// See docs/plans/WORLD_CLASS_SOCIAL_FRIENDS_GROUPS_ARCHITECTURE.md §8.2:
+// the 5-minute window is the CURRENT contract. When Presence v2 ships
+// (per-game keys + 150s window) only THIS file changes.
+var FriendsPresenceShared;
+(function (FriendsPresenceShared) {
+    var PRESENCE_COLLECTION = "player_presence";
+    var PRESENCE_KEY = "status";
+    var ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // last_seen within 5 min ⇒ online
+    /**
+     * Batch-read presence rows for the given users and collapse each into a
+     * boolean online flag. One nk.storageRead call regardless of list size.
+     * Presence is optional context — any read failure returns an empty map
+     * and must never fail the calling RPC.
+     */
+    function loadOnlineMap(nk, userIds) {
+        var map = {};
+        if (!userIds || userIds.length === 0)
+            return map;
+        var reads = [];
+        for (var i = 0; i < userIds.length; i++) {
+            reads.push({
+                collection: PRESENCE_COLLECTION,
+                key: PRESENCE_KEY,
+                userId: userIds[i]
+            });
+        }
+        var rows = null;
+        try {
+            rows = nk.storageRead(reads);
+        }
+        catch (e) {
+            return map;
+        }
+        if (!rows)
+            return map;
+        var nowMs = Date.now();
+        for (var r = 0; r < rows.length; r++) {
+            var row = rows[r];
+            if (!row || !row.value)
+                continue;
+            var v = row.value;
+            var online = false;
+            if (v.online === true) {
+                var lastSeenMs = 0;
+                if (typeof v.lastSeenMs === "number")
+                    lastSeenMs = v.lastSeenMs;
+                else if (typeof v.last_seen_ms === "number")
+                    lastSeenMs = v.last_seen_ms;
+                else if (typeof v.lastSeen === "string") {
+                    var t = Date.parse(v.lastSeen);
+                    if (!isNaN(t))
+                        lastSeenMs = t;
+                }
+                if (lastSeenMs === 0 || (nowMs - lastSeenMs) <= ONLINE_THRESHOLD_MS) {
+                    online = true;
+                }
+            }
+            map[row.userId] = online;
+        }
+        return map;
+    }
+    FriendsPresenceShared.loadOnlineMap = loadOnlineMap;
+})(FriendsPresenceShared || (FriendsPresenceShared = {}));
 // analytics_cron.ts — Daily expired qv_question_packs cleanup job.
 //
 // ── Purpose ───────────────────────────────────────────────────────────────────
@@ -105226,6 +104882,242 @@ var BlogEmbed;
     BlogEmbed.register = register;
     register();
 })(BlogEmbed || (BlogEmbed = {}));
+// cache_refresh_cron.ts — Scheduled topic-cache refresh for QuizVerse question delivery.
+//
+// Populates qv_cache_{topic} via QvQuestionCache.refreshCache / refreshAllTopics.
+// Unlike quizverse_prewarm_tick (qv_readyqueue), this RPC fills the server-side
+// topic cache that get_questions reads on cache miss.
+//
+// RPC: quizverse_cache_refresh_tick
+// Auth: RpcHelpers.requireAdmin (IVX admin / http_key server-to-server)
+// Payload: { "mode": "cold_start" | "all" | "topic", "topic": "anime" }
+//
+// Modes:
+//   cold_start — refresh anime, pokemon, movies, dog, flags, countries, video_quiz with 2 s stagger (post-deploy bootstrap)
+//   all        — refreshAllTopics, gated to once per 6 h (qv_cache_refresh_state/last_full_run)
+//   topic      — single-topic refreshCache (no global gate)
+var QvCacheRefreshCron;
+(function (QvCacheRefreshCron) {
+    var LOG_PREFIX = "[QvCacheRefresh]";
+    var COLD_START_TOPICS = ["anime", "pokemon", "movies", "dog", "flags", "countries", "video_quiz"];
+    var FULL_REFRESH_GATE_MS = 6 * 3600000;
+    var COLD_STAGGER_MS = 2000;
+    var GATE_COL = "qv_cache_refresh_state";
+    var GATE_KEY = "last_full_run";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    function nowMs() { return Date.now(); }
+    function sleep(ms) {
+        var end = nowMs() + ms;
+        while (nowMs() < end) { /* spin — safe in admin/cron RPC only */ }
+    }
+    function formatLog(tag, fields) {
+        var parts = [LOG_PREFIX + tag];
+        for (var fk in fields) {
+            if (!fields.hasOwnProperty(fk))
+                continue;
+            var fv = fields[fk];
+            if (typeof fv === "boolean") {
+                parts.push(fk + "=" + (fv ? "true" : "false"));
+            }
+            else if (typeof fv === "number") {
+                parts.push(fk + "=" + String(fv));
+            }
+            else {
+                parts.push(fk + "=" + String(fv).replace(/\s+/g, "_"));
+            }
+        }
+        return parts.join(" ");
+    }
+    function acquireFullRefreshGate(nk) {
+        try {
+            var rows = nk.storageRead([{ collection: GATE_COL, key: GATE_KEY, userId: SYSTEM_USER }]);
+            var lastRun = (rows && rows.length > 0 && rows[0].value && rows[0].value.last_run_ms)
+                ? rows[0].value.last_run_ms : 0;
+            if (nowMs() - lastRun < FULL_REFRESH_GATE_MS)
+                return false;
+            nk.storageWrite([{
+                    collection: GATE_COL, key: GATE_KEY, userId: SYSTEM_USER,
+                    value: { last_run_ms: nowMs() },
+                    permissionRead: 0, permissionWrite: 0
+                }]);
+            return true;
+        }
+        catch (_e) {
+            return false;
+        }
+    }
+    function refreshOneTopic(nk, logger, env, topic) {
+        var t0 = nowMs();
+        var r = QvQuestionCache.refreshCache(nk, logger, env, topic);
+        var elapsed = nowMs() - t0;
+        logger.info(formatLog("[topic_result]", {
+            event: "cache_refresh_topic",
+            topic: topic,
+            ok: r.ok,
+            count: r.count,
+            error: r.error || "none",
+            elapsed_ms: elapsed
+        }));
+        return {
+            topic: topic,
+            ok: r.ok,
+            count: r.count,
+            error: r.error,
+            elapsed_ms: elapsed
+        };
+    }
+    function runModeColdStart(nk, logger, env) {
+        var results = [];
+        for (var i = 0; i < COLD_START_TOPICS.length; i++) {
+            if (i > 0)
+                sleep(COLD_STAGGER_MS);
+            results.push(refreshOneTopic(nk, logger, env, COLD_START_TOPICS[i]));
+        }
+        return results;
+    }
+    function runModeTopic(nk, logger, env, topic) {
+        return [refreshOneTopic(nk, logger, env, topic)];
+    }
+    function runModeAll(nk, logger, env) {
+        if (!acquireFullRefreshGate(nk)) {
+            return { gated: true, results: [] };
+        }
+        var raw = QvQuestionCache.refreshAllTopics(nk, logger, env);
+        var results = [];
+        for (var i = 0; i < raw.length; i++) {
+            results.push({
+                topic: raw[i].topic,
+                ok: raw[i].ok,
+                count: raw[i].count,
+                error: raw[i].error
+            });
+        }
+        return { gated: false, results: results };
+    }
+    function countSucceeded(results) {
+        var n = 0;
+        for (var i = 0; i < results.length; i++) {
+            if (results[i].ok)
+                n++;
+        }
+        return n;
+    }
+    function rpcCacheRefreshTick(ctx, logger, nk, payload) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        var req = {};
+        try {
+            req = JSON.parse(payload || "{}");
+        }
+        catch (_pe) {
+            throw new Error(JSON.stringify({ code: 3, message: "invalid JSON payload" }));
+        }
+        var mode = (typeof req.mode === "string") ? req.mode.toLowerCase().trim() : "";
+        if (mode !== "cold_start" && mode !== "all" && mode !== "topic") {
+            throw new Error(JSON.stringify({ code: 3, message: "mode must be cold_start, all, or topic" }));
+        }
+        var topic = (typeof req.topic === "string") ? req.topic.toLowerCase().trim() : "";
+        if (mode === "topic" && !topic) {
+            throw new Error(JSON.stringify({ code: 3, message: "topic is required when mode=topic" }));
+        }
+        var env = ctx.env || {};
+        var started = nowMs();
+        var topicCount = mode === "cold_start" ? COLD_START_TOPICS.length : (mode === "topic" ? 1 : 0);
+        logger.info(formatLog("[tick_start]", {
+            event: "cache_refresh_tick_start",
+            mode: mode,
+            topic_count: topicCount,
+            topic: topic || "none"
+        }));
+        var results = [];
+        var gated = false;
+        if (mode === "cold_start") {
+            results = runModeColdStart(nk, logger, env);
+        }
+        else if (mode === "topic") {
+            results = runModeTopic(nk, logger, env, topic);
+        }
+        else {
+            var allRun = runModeAll(nk, logger, env);
+            gated = allRun.gated;
+            results = allRun.results;
+            if (gated) {
+                var elapsedGated = nowMs() - started;
+                logger.info(formatLog("[tick_done]", {
+                    event: "cache_refresh_tick_done",
+                    mode: mode,
+                    gated: true,
+                    succeeded: 0,
+                    failed: 0,
+                    elapsed_ms: elapsedGated
+                }));
+                return JSON.stringify({
+                    ok: true,
+                    skipped: true,
+                    mode: mode,
+                    reason: "within_full_refresh_gate",
+                    elapsed_ms: elapsedGated
+                });
+            }
+        }
+        var elapsedMs = nowMs() - started;
+        var succeeded = countSucceeded(results);
+        var failed = results.length - succeeded;
+        logger.info(formatLog("[tick_done]", {
+            event: "cache_refresh_tick_done",
+            mode: mode,
+            succeeded: succeeded,
+            failed: failed,
+            elapsed_ms: elapsedMs
+        }));
+        return JSON.stringify({
+            ok: true,
+            mode: mode,
+            results: results,
+            elapsed_ms: elapsedMs
+        });
+    }
+    function register(initializer) {
+        __rpc_quizverse_cache_refresh_tick = rpcCacheRefreshTick;
+    }
+    QvCacheRefreshCron.register = register;
+    register();
+    /**
+     * InitModule boot hook: seed video_quiz catalog from the postbuild embed, then
+     * force-warm qv_cache_video_quiz. Safe to call on every deploy/restart.
+     */
+    function bootOnInit(nk, logger, env) {
+        try {
+            var seed = QvQuestionCache.ensureVideoQuizCatalogSeeded(nk, logger);
+            if (!seed.ok) {
+                logger.warn(formatLog("[boot_video_quiz]", {
+                    event: "video_quiz_catalog_seed_skipped",
+                    error: seed.error || "unknown"
+                }));
+                return;
+            }
+            var warm = QvQuestionCache.refreshCache(nk, logger, env, "video_quiz", true);
+            logger.info(formatLog("[boot_video_quiz]", {
+                event: "video_quiz_boot_complete",
+                seed_ok: seed.ok,
+                seed_skipped: !!seed.skipped,
+                version: seed.version || "none",
+                question_count: seed.question_count || 0,
+                cache_ok: warm.ok,
+                cache_count: warm.count,
+                cache_error: warm.error || "none"
+            }));
+        }
+        catch (err) {
+            logger.error(formatLog("[boot_video_quiz]", {
+                event: "video_quiz_boot_failed",
+                error: (err && err.message) ? err.message : String(err)
+            }));
+        }
+    }
+    QvCacheRefreshCron.bootOnInit = bootOnInit;
+    var _NOOP = { registerRpc: function () { } };
+    register(_NOOP);
+})(QvCacheRefreshCron || (QvCacheRefreshCron = {}));
 // QuizVerse — Context Resolver
 //
 // Provides a single resolveContext() helper that every QuizVerse RPC
@@ -105528,7 +105420,8 @@ var QuizVerseGenerator;
 //   qv_question_packs  user-owned    key={packId}  — full pack doc for scoring / review
 //
 // Request  → { topic, count?, lang?, game_id? }
-// Response → { ok, pack_id, topic, lang, lang_actual?, question_count, questions[], cache_expired }
+// Response → { ok, pack_id, topic, lang, lang_actual?, question_count, requested_count?,
+//              partial?, pool_size?, questions[], cache_expired }
 var QvGetQuestions;
 (function (QvGetQuestions) {
     // ── Storage collection names ───────────────────────────────────────────────
@@ -105540,12 +105433,14 @@ var QvGetQuestions;
     var COL_SEEN = "qv_seen";
     // ── Limits ─────────────────────────────────────────────────────────────────
     var RATE_WINDOW_MS = 60000; // 1-minute sliding window
-    var RATE_MAX = 5; // max requests per user per minute
+    var RATE_MAX_DEFAULT = 10000; // max requests per user per minute (override via QV_GET_QUESTIONS_RATE_MAX)
     var PACK_MAX = 3; // max concurrent active packs per user
     var INFLIGHT_TTL_MS = 1800000; // 30 minutes
+    var ABANDON_TTL_GETQUESTIONS_MS = 5 * 60 * 1000; // 5 min — purge unsubmitted packs per request
     var DEFAULT_COUNT = 10;
-    var MAX_COUNT = 20;
+    var MAX_COUNT = 100;
     var MIN_COUNT = 1;
+    var MAX_FULFILL_ATTEMPTS = 3;
     var SEEN_MAX = 500; // cap the seen-IDs array to keep storage lean
     var COL_READYQUEUE = "qv_readyqueue"; // pre-warmed per-user question pool
     var READYQUEUE_TTL_MS = 2 * 3600000; // 2 h — discard stale readyqueue entries
@@ -105558,7 +105453,20 @@ var QvGetQuestions;
         "guesspokemon": "pokemon",
         "guess_pokemon": "pokemon",
         "guessdog": "dog",
-        "guess_dog": "dog"
+        "guess_dog": "dog",
+        "flagquiz": "flags",
+        "newsquiz": "news",
+        "starwarsquiz": "starwars",
+        "disneyquiz": "disney",
+        "ghibli": "ghibli",
+        "iqrush": "iqrush",
+        "speedquiz": "speed_quiz",
+        "speed-quiz": "speed_quiz",
+        "truefalse": "true_false",
+        "true-false": "true_false",
+        "true_false_quiz": "true_false",
+        "videoquiz": "video_quiz",
+        "video-quiz": "video_quiz"
     };
     // ── Allowed game IDs (org2) ────────────────────────────────────────────────
     var ALLOWED_GAME_IDS = {
@@ -105601,6 +105509,120 @@ var QvGetQuestions;
             .replace(/^_|_$/g, "")
             .substring(0, 64);
     }
+    var CACHE_REFRESH_RETRY_SEC = 30;
+    var POOL_EXHAUSTED_RETRY_SEC = 30;
+    // Grafana/Loki-friendly log line: tag + flat key=value tokens (spaces → underscores in values).
+    function formatQvLog(tag, fields) {
+        var parts = [tag];
+        for (var fk in fields) {
+            if (!fields.hasOwnProperty(fk))
+                continue;
+            var fv = fields[fk];
+            if (typeof fv === "boolean") {
+                parts.push(fk + "=" + (fv ? "true" : "false"));
+            }
+            else if (typeof fv === "number") {
+                parts.push(fk + "=" + String(fv));
+            }
+            else {
+                parts.push(fk + "=" + String(fv).replace(/\s+/g, "_"));
+            }
+        }
+        return parts.join(" ");
+    }
+    function resolveRateMax(env) {
+        if (env && env["QV_GET_QUESTIONS_RATE_MAX"]) {
+            var parsed = parseInt(env["QV_GET_QUESTIONS_RATE_MAX"], 10);
+            if (!isNaN(parsed) && parsed >= 1)
+                return parsed;
+        }
+        return RATE_MAX_DEFAULT;
+    }
+    function topicProviderForLog(topic) {
+        var map = {
+            opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
+            cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
+            ghibli: "ghibli", disney: "disney", starwars: "swapi",
+            countries: "restcountries", flags: "restcountries",
+            space: "nasa", movies: "tmdb", sports: "sportsdb",
+            music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
+            video_quiz: "catalog", ai: "claude"
+        };
+        return map[topic] || topic;
+    }
+    /**
+     * On cache miss: invoke refreshCache, always re-read, emit Grafana event= logs.
+     * Returns earlyReturn JSON when pool is still empty after refresh attempt.
+     */
+    function handleEmptyTopicCache(nk, logger, env, topic, traceId, coldStartApplied, userId) {
+        logger.warn(formatQvLog("[QvGetQ][GATE:cache_miss]", {
+            event: "cache_miss",
+            traceId: traceId,
+            topic: topic,
+            coldStart: coldStartApplied,
+            userId: userId,
+            rpc: "quizverse_get_questions"
+        }));
+        var t0 = nowMs();
+        var refreshResult = QvQuestionCache.refreshCache(nk, logger, env, topic);
+        var gated = refreshResult.ok && refreshResult.count === 0 && !refreshResult.error;
+        var cacheResult = QvQuestionCache.readCache(nk, logger, topic);
+        var pool = cacheResult.questions;
+        var elapsedMs = nowMs() - t0;
+        var provider = topicProviderForLog(topic);
+        logger.info(formatQvLog("[QvGetQ][DEBUG:cache_refresh]", {
+            event: "cache_refresh",
+            traceId: traceId,
+            topic: topic,
+            ok: refreshResult.ok,
+            count: refreshResult.count,
+            gated: gated,
+            error: refreshResult.error || "none",
+            elapsed_ms: elapsedMs,
+            provider: provider
+        }));
+        if (pool.length > 0) {
+            logger.info(formatQvLog("[QvGetQ][GATE:cache_recovered]", {
+                event: "cache_recovered",
+                traceId: traceId,
+                topic: topic,
+                poolSize: pool.length,
+                elapsed_ms: elapsedMs
+            }));
+            return { pool: pool, cacheResult: cacheResult, earlyReturn: null };
+        }
+        var refreshErr = refreshResult.error || "none";
+        logger.warn(formatQvLog("[QvGetQ][GATE:cache_empty]", {
+            event: "cache_empty",
+            traceId: traceId,
+            topic: topic,
+            refresh_attempted: true,
+            refresh_error: refreshErr,
+            retry_after_seconds: CACHE_REFRESH_RETRY_SEC
+        }));
+        if (coldStartApplied) {
+            logger.error(formatQvLog("[QvGetQ][COLD_START_BLOCKED]", {
+                event: "cold_start_blocked",
+                traceId: traceId,
+                topic: topic,
+                error: refreshErr,
+                userId: userId
+            }));
+        }
+        return {
+            pool: [],
+            cacheResult: cacheResult,
+            earlyReturn: JSON.stringify({
+                ok: false,
+                error: "cache_empty",
+                topic: topic,
+                message: "No questions cached for this topic yet. Refresh was attempted — retry shortly.",
+                refresh_attempted: true,
+                refresh_error: refreshResult.error || null,
+                retry_after_seconds: CACHE_REFRESH_RETRY_SEC
+            })
+        };
+    }
     // Key format used by quizverse_seen.js: "global_{topic_slug}"
     function seenStorageKey(topic) {
         return slugify("global") + "_" + slugify(topic);
@@ -105609,8 +105631,8 @@ var QvGetQuestions;
     //
     // Sliding-window counter stored in qv_rate/{userId} (system-owned, no-read,
     // no-write from client).  Prunes timestamps older than RATE_WINDOW_MS,
-    // checks count ≤ RATE_MAX, then appends current timestamp and writes back.
-    function enforceRateLimit(nk, userId) {
+    // checks count ≤ rateMax, then appends current timestamp and writes back.
+    function enforceRateLimit(nk, userId, logger, logCtx, rateMax) {
         // User-owned storage (userId = actual user UUID) — system-owned (userId="")
         // is rejected by production Nakama JS runtime with "expects 'userId' value to be a valid id".
         var rows = nk.storageRead([{ collection: COL_RATE, key: "rl", userId: userId }]);
@@ -105622,9 +105644,17 @@ var QvGetQuestions;
             if (timestamps[i] > windowStart)
                 fresh.push(timestamps[i]);
         }
-        if (fresh.length >= RATE_MAX) {
+        if (fresh.length >= rateMax) {
             var retryInSec = Math.ceil((fresh[0] + RATE_WINDOW_MS - nowMs()) / 1000);
-            throw nakamaError("Rate limit exceeded: max " + RATE_MAX + " requests/min. Retry in " + retryInSec + "s.", 8 /* nkruntime.Codes.RESOURCE_EXHAUSTED */);
+            logger.warn(formatQvLog("[QvGetQ][GATE:rate_limited]", {
+                event: "rate_limited",
+                traceId: logCtx.traceId,
+                userId: userId,
+                topic: logCtx.topic,
+                window_count: fresh.length,
+                retry_in_sec: retryInSec
+            }));
+            throw nakamaError("Rate limit exceeded: max " + rateMax + " requests/min. Retry in " + retryInSec + "s.", 8 /* nkruntime.Codes.RESOURCE_EXHAUSTED */);
         }
         fresh.push(nowMs());
         nk.storageWrite([{
@@ -105740,6 +105770,15 @@ var QvGetQuestions;
         }
         return out;
     }
+    function filterToTextPool(pool) {
+        var out = [];
+        for (var ti = 0; ti < pool.length; ti++) {
+            var q = pool[ti];
+            if (!q || !q.has_media || !q.media || !q.media.url)
+                out.push(q);
+        }
+        return out;
+    }
     function filterAndPick(pool, seenIds, inflightIds, count) {
         // Build exclusion set
         var excluded = {};
@@ -105761,21 +105800,233 @@ var QvGetQuestions;
         }
         if (fresh.length >= count)
             return fresh.slice(0, count);
-        // --- Backfill from oldest-seen -------------------------------------------
+        // --- Backfill tiers until count or unique pool is consumed ---------------
         // Build a lookup of questions that ARE in the pool (some seen IDs may
         // have been evicted from the cache since they were first delivered).
         var poolById = {};
         for (var pb = 0; pb < pool.length; pb++)
             poolById[pool[pb].id] = pool[pb];
-        // Walk seenIds oldest-first; collect those still in pool
-        var backfill = [];
-        var needed = count - fresh.length;
-        for (var oi = 0; oi < seenIds.length && backfill.length < needed; oi++) {
-            var q = poolById[seenIds[oi]];
-            if (q)
-                backfill.push(q);
+        var pickedIds = {};
+        for (var pk = 0; pk < fresh.length; pk++) {
+            if (fresh[pk] && fresh[pk].id)
+                pickedIds[fresh[pk].id] = true;
         }
-        return fresh.concat(backfill);
+        // Tier 2: walk seenIds oldest-first; collect those still in pool, not picked
+        var tier2 = [];
+        var needed = count - fresh.length;
+        for (var oi = 0; oi < seenIds.length && tier2.length < needed; oi++) {
+            var sid = seenIds[oi];
+            if (pickedIds[sid])
+                continue;
+            var q2 = poolById[sid];
+            if (q2) {
+                tier2.push(q2);
+                pickedIds[sid] = true;
+            }
+        }
+        needed = count - fresh.length - tier2.length;
+        if (needed <= 0)
+            return fresh.concat(tier2).slice(0, count);
+        // Tier 3: any remaining pool question (covers inflight-reserved IDs)
+        var tier3 = [];
+        for (var ti = 0; ti < pool.length && tier3.length < needed; ti++) {
+            var pq = pool[ti];
+            if (!pq || !pq.id)
+                continue;
+            if (pickedIds[pq.id])
+                continue;
+            tier3.push(pq);
+            pickedIds[pq.id] = true;
+        }
+        return fresh.concat(tier2).concat(tier3).slice(0, count);
+    }
+    function collectInflightIdsForTopic(inflightPacks, topic) {
+        var ids = [];
+        for (var ip = 0; ip < inflightPacks.length; ip++) {
+            var pack = inflightPacks[ip];
+            if (pack.topic !== topic)
+                continue;
+            var qids = pack.question_ids;
+            if (Array.isArray(qids)) {
+                for (var qi = 0; qi < qids.length; qi++)
+                    ids.push(qids[qi]);
+            }
+        }
+        return ids;
+    }
+    function snapshotInflightStats(inflightPacks, topic) {
+        var total = 0;
+        var same = 0;
+        for (var i = 0; i < inflightPacks.length; i++) {
+            var qids = inflightPacks[i].question_ids;
+            if (!Array.isArray(qids))
+                continue;
+            total += qids.length;
+            if (inflightPacks[i].topic === topic)
+                same += qids.length;
+        }
+        return {
+            inflight_packs: inflightPacks.length,
+            inflight_ids_total: total,
+            inflight_ids_same_topic: same,
+            inflight_ids_other_topic: total - same
+        };
+    }
+    function countPickBreakdown(picked, seenIds) {
+        var seenSet = {};
+        for (var si = 0; si < seenIds.length; si++)
+            seenSet[seenIds[si]] = true;
+        var backfill = 0;
+        for (var pi = 0; pi < picked.length; pi++) {
+            if (seenSet[picked[pi].id])
+                backfill++;
+        }
+        return { freshCount: picked.length - backfill, backfillCount: backfill };
+    }
+    function rebuildLangPool(pool, lang, requireMedia, reqMediaType, excludeMedia) {
+        var langActual = lang;
+        var langPool = [];
+        if (lang !== "en") {
+            for (var lp = 0; lp < pool.length; lp++) {
+                if (pool[lp].lang === lang)
+                    langPool.push(pool[lp]);
+            }
+        }
+        if (langPool.length === 0) {
+            if (lang !== "en")
+                langActual = "en";
+            for (var ep = 0; ep < pool.length; ep++) {
+                if (!pool[ep].lang || pool[ep].lang === "en")
+                    langPool.push(pool[ep]);
+            }
+        }
+        if (langPool.length === 0)
+            langPool = pool;
+        if (requireMedia) {
+            var mediaPool = filterToMediaPool(langPool, reqMediaType);
+            if (mediaPool.length > 0)
+                langPool = mediaPool;
+        }
+        else if (excludeMedia) {
+            var textPool = filterToTextPool(langPool);
+            if (textPool.length > 0)
+                langPool = textPool;
+        }
+        return { langPool: langPool, langActual: langActual };
+    }
+    function evictUnsubmittedInflightForTopic(nk, logger, userId, topic) {
+        var deleted = 0;
+        try {
+            var result = nk.storageList(userId, COL_PACKS, 10, "");
+            if (!result || !Array.isArray(result.objects) || result.objects.length === 0)
+                return 0;
+            var toDelete = [];
+            for (var i = 0; i < result.objects.length; i++) {
+                var obj = result.objects[i];
+                if (!obj || !obj.value || !obj.key)
+                    continue;
+                var v = obj.value;
+                if (v.submitted === true)
+                    continue;
+                if (v.topic !== topic)
+                    continue;
+                toDelete.push({ collection: COL_PACKS, key: obj.key, userId: userId });
+                toDelete.push({ collection: COL_INFLT, key: obj.key, userId: userId });
+                deleted++;
+            }
+            if (toDelete.length > 0) {
+                nk.storageDelete(toDelete);
+                logger.info("[QvGetQ] self-heal evicted " + deleted + " unsubmitted packs topic=" + topic);
+            }
+        }
+        catch (_e) { /* non-fatal */ }
+        return deleted;
+    }
+    /**
+     * Retry picking until requestedCount is met or attempts are exhausted.
+     * Merges inflight eviction + forced cache refresh into one bounded loop.
+     */
+    function fulfillRequestedCount(nk, logger, env, userId, topic, lang, requireMedia, reqMediaType, excludeMedia, requestedCount, seenIds, inflightPacks, pool, langPool, langActual, cacheResult, picked, traceId) {
+        var cacheRefreshAttempted = false;
+        var inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
+        var fulfillAttempts = 0;
+        while (fulfillAttempts < MAX_FULFILL_ATTEMPTS && picked.length < requestedCount) {
+            fulfillAttempts++;
+            var poolBefore = pool.length;
+            var pickedBefore = picked.length;
+            var inflightEvicted = 0;
+            var refreshForced = false;
+            if (picked.length < requestedCount && inflightIds.length > 0) {
+                inflightEvicted = evictUnsubmittedInflightForTopic(nk, logger, userId, topic);
+                inflightPacks = listInflight(nk, userId);
+                inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
+                picked = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
+            }
+            if (picked.length < requestedCount) {
+                refreshForced = true;
+                cacheRefreshAttempted = true;
+                QvQuestionCache.refreshCache(nk, logger, env, topic, true);
+                cacheResult = QvQuestionCache.readCache(nk, logger, topic);
+                pool = cacheResult.questions;
+                var rebuilt = rebuildLangPool(pool, lang, requireMedia, reqMediaType, excludeMedia);
+                langPool = rebuilt.langPool;
+                langActual = rebuilt.langActual;
+                picked = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
+            }
+            logger.info(formatQvLog("[QvGetQ][FULFILL:attempt]", {
+                event: "fulfill_attempt",
+                traceId: traceId,
+                topic: topic,
+                attempt: fulfillAttempts,
+                requested: requestedCount,
+                picked: picked.length,
+                pool_before: poolBefore,
+                pool_after: pool.length,
+                inflight_evicted: inflightEvicted,
+                refresh_forced: refreshForced
+            }));
+            if (picked.length >= requestedCount)
+                break;
+            if (pool.length <= poolBefore && picked.length <= pickedBefore)
+                break;
+        }
+        logger.info(formatQvLog("[QvGetQ][FULFILL:done]", {
+            event: "fulfill_done",
+            traceId: traceId,
+            topic: topic,
+            requested: requestedCount,
+            delivered: picked.length,
+            attempts_used: fulfillAttempts,
+            partial: picked.length < requestedCount,
+            served_from: "cache"
+        }));
+        return {
+            picked: picked,
+            pool: pool,
+            langPool: langPool,
+            langActual: langActual,
+            cacheResult: cacheResult,
+            inflightPacks: inflightPacks,
+            inflightIds: inflightIds,
+            cacheRefreshAttempted: cacheRefreshAttempted,
+            fulfillAttempts: fulfillAttempts
+        };
+    }
+    function determinePoolExhaustedReason(seenIds, inflightIds, langPool, count) {
+        if (langPool.length < count)
+            return "cache_thin";
+        if (inflightIds.length > 0 && seenIds.length === 0)
+            return "inflight_blocked";
+        return "all_seen";
+    }
+    function poolExhaustedMessage(reason) {
+        if (reason === "inflight_blocked") {
+            return "Questions reserved from a previous session. Retry shortly.";
+        }
+        if (reason === "cache_thin") {
+            return "Not enough questions cached yet. Retry shortly.";
+        }
+        return "All available questions for this topic have been seen. New questions are being fetched.";
     }
     // ── Opportunistic expired-pack cleanup (org5) ─────────────────────────────
     //
@@ -105801,6 +106052,74 @@ var QvGetQuestions;
                 nk.storageDelete(toDelete);
                 logger.info("[QvGetQ] cleaned " + toDelete.length + " expired packs for user=" + userId);
             }
+        }
+        catch (_e) { /* non-fatal */ }
+    }
+    // Shared delete path for unsubmitted packs — used by abandon RPC and opportunistic cleanup.
+    function deleteUnsubmittedPack(nk, userId, packId, logger) {
+        try {
+            var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+            if (!rows || rows.length === 0 || !rows[0].value) {
+                return { deleted: false, reason: "not_found" };
+            }
+            var v = rows[0].value;
+            if (v.submitted === true) {
+                return { deleted: false, reason: "already_submitted" };
+            }
+            nk.storageDelete([
+                { collection: COL_PACKS, key: packId, userId: userId },
+                { collection: COL_INFLT, key: packId, userId: userId }
+            ]);
+            return { deleted: true };
+        }
+        catch (e) {
+            var errMsg = (e && e.message) ? e.message : String(e);
+            logger.warn("[QvAbandonPack] delete failed pack=" + packId + " err=" + errMsg);
+            return { deleted: false, reason: "error" };
+        }
+    }
+    // Deletes unsubmitted packs older than ABANDON_TTL_GETQUESTIONS_MS and their
+    // matching qv_inflight sentinels. Runs before listInflight so stale locks
+    // from abandoned ImageGuess sessions do not block the next request.
+    function cleanAbandonedPacksOpportunistic(nk, logger, userId, traceId) {
+        var t0 = nowMs();
+        var packsDeleted = 0;
+        try {
+            var result = nk.storageList(userId, COL_PACKS, 10, "");
+            if (!result || !Array.isArray(result.objects) || result.objects.length === 0) {
+                logger.info(formatQvLog("[QvGetQ][DEBUG:abandon_cleanup]", {
+                    event: "abandon_cleanup",
+                    traceId: traceId,
+                    userId: userId,
+                    packs_deleted: 0,
+                    inflight_deleted: 0,
+                    elapsed_ms: nowMs() - t0
+                }));
+                return;
+            }
+            var now = nowMs();
+            for (var i = 0; i < result.objects.length; i++) {
+                var obj = result.objects[i];
+                if (!obj || !obj.value || !obj.key)
+                    continue;
+                var v = obj.value;
+                var isAbandoned = v.submitted !== true &&
+                    typeof v.created_at_ms === "number" &&
+                    v.created_at_ms < now - ABANDON_TTL_GETQUESTIONS_MS;
+                if (isAbandoned) {
+                    var delResult = deleteUnsubmittedPack(nk, userId, obj.key, logger);
+                    if (delResult.deleted)
+                        packsDeleted++;
+                }
+            }
+            logger.info(formatQvLog("[QvGetQ][DEBUG:abandon_cleanup]", {
+                event: "abandon_cleanup",
+                traceId: traceId,
+                userId: userId,
+                packs_deleted: packsDeleted,
+                inflight_deleted: packsDeleted,
+                elapsed_ms: nowMs() - t0
+            }));
         }
         catch (_e) { /* non-fatal */ }
     }
@@ -105918,9 +106237,12 @@ var QvGetQuestions;
      *     topic:          string,
      *     lang:           string,      // requested lang
      *     lang_actual?:   string,      // only present when lang fell back to "en"
-     *     question_count: number,
-     *     questions:      Question[],  // pre-shuffled, A/B/C/D already assigned
-     *     cache_expired:  boolean      // hint: cache refresh may be due
+     *     question_count:  number,
+     *     requested_count: number,      // echo of input count
+     *     partial:         boolean,     // question_count < requested_count
+     *     pool_size:       number,      // cache pool size before pick
+     *     questions:       Question[],  // pre-shuffled, A/B/C/D already assigned
+     *     cache_expired:   boolean      // hint: cache refresh may be due
      *   }
      *
      * Output (soft error):
@@ -105962,10 +106284,13 @@ var QvGetQuestions;
         }
         var lang = (typeof req.lang === "string" && req.lang) ? req.lang.toLowerCase().trim() : "en";
         var requireMedia = req.has_media === true;
+        var excludeMedia = req.exclude_media === true;
         var reqMediaType = (typeof req.media_type === "string" && req.media_type)
             ? req.media_type.toLowerCase().trim() : "";
         if (!requireMedia && reqMediaType)
             requireMedia = true;
+        if (requireMedia)
+            excludeMedia = false;
         // ── game_id: validate against allowlist (org2) ─────────────────────────
         var rawGameId = (typeof req.game_id === "string" && req.game_id) ? req.game_id : "";
         var defaultGameId = (ctx.env && ctx.env["DEFAULT_GAME_ID"]) ? ctx.env["DEFAULT_GAME_ID"] : "";
@@ -105998,16 +106323,17 @@ var QvGetQuestions;
         }
         // ── mode: "standard" | "personalized" (org3) ──────────────────────────
         var mode = (typeof req.mode === "string" && req.mode) ? req.mode : "standard";
+        var requestedTopic = topic;
+        var requestedCount = count;
         logger.info("[QvGetQ][REQ] traceId=" + traceId +
             " user=" + userId + " topic=" + topic +
             " count=" + count + " lang=" + lang + " gameId=" + gameId +
             " mode=" + mode + " country=" + countryCode);
         // ── 0a. Cold start protocol ─────────────────────────────────────────────
         //
-        // New players (total_sessions < 3) get a guided onboarding experience:
-        //   - Force topic to one of the universally-familiar starter topics
-        //     (anime → pokemon → movies, cycling by session number)
-        //   - Cap the pack at 5 easy questions so first sessions feel achievable
+        // New players (total_sessions < 3) get a guided onboarding experience when
+        // they request the session's guided topic (anime → pokemon → movies).
+        // Question count is honored; cold_start flag hints Unity to show onboarding UI.
         //
         // cold_start_done is set to true by submit_result after the 3rd session;
         // afterwards this block is a no-op (PlayerDNA.load returns cold_start_done=true).
@@ -106016,37 +106342,58 @@ var QvGetQuestions;
             var coldDna = PlayerDNA.load(nk, userId);
             var beh = coldDna.behavioral;
             if (!beh.cold_start_done && beh.total_sessions < 3) {
-                var COLD_TOPICS = ["anime", "pokemon", "movies"];
-                var forcedTopic = COLD_TOPICS[beh.total_sessions % COLD_TOPICS.length];
-                logger.info("[QvGetQ] cold-start user=" + userId +
-                    " sessions=" + beh.total_sessions +
-                    " overriding topic=" + topic + " → " + forcedTopic + " count=" + count + " → 5");
-                topic = forcedTopic;
-                count = 5;
-                coldStartApplied = true;
-                // Force standard mode so ready-queue / cache path is used (personalized path
-                // skips topic override and would call PlayerDNA again unnecessarily)
-                mode = "standard";
+                var forcedTopic = PlayerDNA.coldStartTopic(beh.total_sessions);
+                if (topic === forcedTopic) {
+                    coldStartApplied = true;
+                    mode = "standard";
+                    logger.info(formatQvLog("[QvGetQ][COLD_START:apply]", {
+                        event: "cold_start_apply",
+                        traceId: traceId,
+                        userId: userId,
+                        sessions: beh.total_sessions,
+                        requested_topic: requestedTopic,
+                        guided_topic: forcedTopic,
+                        requested_count: requestedCount,
+                        cold_start_done: beh.cold_start_done
+                    }));
+                }
+                else {
+                    logger.info(formatQvLog("[QvGetQ][COLD_START:skip]", {
+                        event: "cold_start_skip",
+                        traceId: traceId,
+                        userId: userId,
+                        sessions: beh.total_sessions,
+                        requested_topic: requestedTopic,
+                        guided_topic: forcedTopic,
+                        reason: "explicit_topic_mismatch",
+                        cold_start_done: beh.cold_start_done
+                    }));
+                }
             }
         }
         catch (_cse) { /* non-fatal: proceed with original topic */ }
-        // ── 0. Opportunistic expired-pack cleanup (org5) ────────────────────────
+        // ── 0. Opportunistic pack cleanup (org5) ────────────────────────────────
         cleanExpiredPacksOpportunistic(nk, logger, userId);
+        cleanAbandonedPacksOpportunistic(nk, logger, userId, traceId);
         // ── 1. Rate limit (Task 1b.1) ──────────────────────────────────────────
         logger.info("[QvGetQ][GATE:rate_check] traceId=" + traceId + " user=" + userId);
-        enforceRateLimit(nk, userId);
+        enforceRateLimit(nk, userId, logger, { traceId: traceId, topic: topic }, resolveRateMax(ctx.env));
         // ── 2. Pack limit — evict oldest if at cap (Task 1b.1) ─────────────────
         var inflightPacks = listInflight(nk, userId);
+        var inflightSnap = snapshotInflightStats(inflightPacks, topic);
+        logger.info(formatQvLog("[QvGetQ][DEBUG:inflight_snapshot]", {
+            event: "inflight_snapshot",
+            traceId: traceId,
+            userId: userId,
+            topic: topic,
+            inflight_packs: inflightSnap.inflight_packs,
+            inflight_ids_total: inflightSnap.inflight_ids_total,
+            inflight_ids_same_topic: inflightSnap.inflight_ids_same_topic,
+            inflight_ids_other_topic: inflightSnap.inflight_ids_other_topic
+        }));
         inflightPacks = enforcePacks(nk, logger, userId, inflightPacks);
-        // Collect all question IDs currently in any active session for this user
-        var inflightIds = [];
-        for (var ip = 0; ip < inflightPacks.length; ip++) {
-            var ids = inflightPacks[ip].question_ids;
-            if (Array.isArray(ids)) {
-                for (var qi = 0; qi < ids.length; qi++)
-                    inflightIds.push(ids[qi]);
-            }
-        }
+        // Collect question IDs reserved by active packs for this topic only
+        var inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
         // ── 3. Ready-queue fast path (prewarm hit) ─────────────────────────────
         //
         // Checks qv_readyqueue first — pre-filtered, per-user question pool
@@ -106092,6 +106439,8 @@ var QvGetQuestions;
                     mode: mode,
                     country_code: countryCode,
                     question_count: rqClientQs.length,
+                    requested_count: requestedCount,
+                    partial: rqClientQs.length < requestedCount,
                     questions: rqClientQs,
                     cache_expired: false,
                     served_from: "readyqueue"
@@ -106103,14 +106452,11 @@ var QvGetQuestions;
         var cacheResult = QvQuestionCache.readCache(nk, logger, topic);
         var pool = cacheResult.questions;
         if (pool.length === 0) {
-            logger.warn("[QvGetQ][GATE:cache_empty] traceId=" + traceId + " topic=" + topic +
-                " cacheExpired=" + cacheResult.expired + " — pipeline may still be building");
-            return JSON.stringify({
-                ok: false,
-                error: "cache_empty",
-                topic: topic,
-                message: "No questions cached for this topic yet. The pipeline is building — retry in ~60s."
-            });
+            var emptyCache = handleEmptyTopicCache(nk, logger, ctx.env || {}, topic, traceId, coldStartApplied, userId);
+            pool = emptyCache.pool;
+            cacheResult = emptyCache.cacheResult;
+            if (emptyCache.earlyReturn)
+                return emptyCache.earlyReturn;
         }
         logger.info("[QvGetQ][GATE:cache_ok] traceId=" + traceId + " topic=" + topic +
             " poolSize=" + pool.length + " cacheExpired=" + cacheResult.expired);
@@ -106140,17 +106486,51 @@ var QvGetQuestions;
         // ── 4a. Media filter (ImageGuess / audio quiz modes) ────────────────────
         if (requireMedia) {
             var mediaPool = filterToMediaPool(langPool, reqMediaType);
+            if (mediaPool.length === 0 && langPool.length > 0) {
+                logger.warn(formatQvLog("[QvGetQ][GATE:stale_cache_media]", {
+                    event: "stale_cache_media_heal",
+                    traceId: traceId,
+                    topic: topic,
+                    langPool: langPool.length,
+                    media_type: reqMediaType || "any"
+                }));
+                QvQuestionCache.refreshCache(nk, logger, ctx.env || {}, topic, true);
+                cacheResult = QvQuestionCache.readCache(nk, logger, topic);
+                pool = cacheResult.questions;
+                var rebuilt = rebuildLangPool(pool, lang, requireMedia, reqMediaType, excludeMedia);
+                langPool = rebuilt.langPool;
+                langActual = rebuilt.langActual;
+                mediaPool = filterToMediaPool(langPool, reqMediaType);
+                logger.info(formatQvLog("[QvGetQ][GATE:stale_cache_media_done]", {
+                    event: "stale_cache_media_heal_done",
+                    traceId: traceId,
+                    topic: topic,
+                    pool_after: pool.length,
+                    media_after: mediaPool.length
+                }));
+            }
             if (mediaPool.length === 0) {
-                logger.warn("[QvGetQ] no media questions topic=" + topic +
-                    " media_type=" + (reqMediaType || "any"));
+                logger.warn("[QvGetQ] no media questions topic=" + topic + " pool_size=" + pool.length +
+                    " langPool=" + langPool.length + " media_type=" + (reqMediaType || "any"));
                 return JSON.stringify({
                     ok: false,
                     error: "no_media_questions",
                     topic: topic,
-                    message: "No questions with media available for this topic."
+                    message: "No questions with media available for this topic.",
+                    pool_size: pool.length
                 });
             }
             langPool = mediaPool;
+        }
+        else if (excludeMedia) {
+            var textOnlyPool = filterToTextPool(langPool);
+            if (textOnlyPool.length > 0) {
+                langPool = textOnlyPool;
+            }
+            else if (langPool.length > 0) {
+                logger.warn("[QvGetQ] exclude_media but no text questions topic=" + topic +
+                    " langPool=" + langPool.length);
+            }
         }
         // ── 4b. Elo-range filter ────────────────────────────────────────────────
         //
@@ -106187,21 +106567,66 @@ var QvGetQuestions;
         }
         catch (_efe) { /* non-fatal */ }
         // ── 5. Read seen IDs + filter pool (Task 1b.2) ─────────────────────────
+        var poolSizeBeforePick = pool.length;
         var seenIds = readSeenIds(nk, userId, topic);
-        var picked = filterAndPick(langPool, seenIds, inflightIds, count);
+        var picked = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
+        var fulfillResult = fulfillRequestedCount(nk, logger, ctx.env || {}, userId, topic, lang, requireMedia, reqMediaType, excludeMedia, requestedCount, seenIds, inflightPacks, pool, langPool, langActual, cacheResult, picked, traceId);
+        picked = fulfillResult.picked;
+        pool = fulfillResult.pool;
+        langPool = fulfillResult.langPool;
+        langActual = fulfillResult.langActual;
+        cacheResult = fulfillResult.cacheResult;
+        inflightPacks = fulfillResult.inflightPacks;
+        inflightIds = fulfillResult.inflightIds;
+        var cacheRefreshAttempted = fulfillResult.cacheRefreshAttempted;
         if (picked.length === 0) {
-            logger.warn("[QvGetQ][GATE:pool_exhausted] traceId=" + traceId + " topic=" + topic +
-                " seen=" + seenIds.length + " langPool=" + langPool.length + " inflight=" + inflightIds.length);
+            var exhaustedReason = determinePoolExhaustedReason(seenIds, inflightIds, langPool, requestedCount);
+            var blockedQId = inflightIds.length > 0 ? inflightIds[0] : "";
+            logger.warn(formatQvLog("[QvGetQ][GATE:pool_exhausted]", {
+                event: "pool_exhausted",
+                traceId: traceId,
+                topic: topic,
+                reason: exhaustedReason,
+                seen: seenIds.length,
+                langPool: langPool.length,
+                inflight_same_topic: inflightIds.length,
+                blocked_q_id: blockedQId,
+                cache_refresh_attempted: cacheRefreshAttempted
+            }));
             return JSON.stringify({
                 ok: false,
                 error: "pool_exhausted",
+                reason: exhaustedReason,
                 topic: topic,
-                message: "All available questions for this topic have been seen. New questions are being fetched."
+                message: poolExhaustedMessage(exhaustedReason),
+                retry_after_seconds: POOL_EXHAUSTED_RETRY_SEC
             });
         }
-        logger.info("[QvGetQ][GATE:picked] traceId=" + traceId + " topic=" + topic +
-            " picked=" + picked.length + " from langPool=" + langPool.length +
-            " seen=" + seenIds.length + " inflightExcluded=" + inflightIds.length);
+        if (picked.length > 0 && picked.length < requestedCount) {
+            logger.warn(formatQvLog("[QvGetQ][FULFILL:exhausted]", {
+                event: "fulfill_exhausted",
+                traceId: traceId,
+                topic: topic,
+                requested: requestedCount,
+                delivered: picked.length,
+                pool_size: pool.length,
+                seen: seenIds.length,
+                inflight_same_topic: inflightIds.length
+            }));
+        }
+        var pickBreakdown = countPickBreakdown(picked, seenIds);
+        logger.info(formatQvLog("[QvGetQ][GATE:picked]", {
+            event: "picked",
+            traceId: traceId,
+            topic: topic,
+            picked: picked.length,
+            from_langPool: langPool.length,
+            seen: seenIds.length,
+            inflightExcluded: inflightIds.length,
+            fresh_count: pickBreakdown.freshCount,
+            backfill_count: pickBreakdown.backfillCount,
+            inflight_excluded_same_topic: inflightIds.length
+        }));
         // ── 5b. Personalized mix algorithm (org3) ──────────────────────────────
         //
         // When mode="personalized":
@@ -106290,7 +106715,10 @@ var QvGetQuestions;
         writePackStorage(nk, userId, packId, topic, lang, langActual, gameId, picked);
         logger.info("[QvGetQ][DONE] traceId=" + traceId +
             " pack=" + packId + " topic=" + topic +
-            " delivered=" + picked.length + "/" + count +
+            " requested_topic=" + requestedTopic +
+            " topic_mismatch=" + (topic !== requestedTopic ? "true" : "false") +
+            " delivered=" + picked.length + "/" + requestedCount +
+            " partial=" + (picked.length < requestedCount ? "true" : "false") +
             " pool=" + pool.length + " seen=" + seenIds.length +
             " inflight=" + inflightIds.length + " cache_expired=" + cacheResult.expired +
             " coldStart=" + coldStartApplied + " mode=" + mode);
@@ -106320,6 +106748,9 @@ var QvGetQuestions;
             mode: mode,
             country_code: countryCode,
             question_count: clientQs.length,
+            requested_count: requestedCount,
+            partial: clientQs.length < requestedCount,
+            pool_size: poolSizeBeforePick,
             questions: clientQs,
             cache_expired: cacheResult.expired // hint: client may show "refreshing…"
         };
@@ -106337,9 +106768,60 @@ var QvGetQuestions;
         catch (_pt) { /* non-fatal */ }
         return JSON.stringify(resp);
     }
+    /**
+     * quizverse_abandon_pack
+     *
+     * Immediately releases an unsubmitted question pack and its inflight sentinel.
+     * Idempotent — safe to call multiple times on the same pack_id.
+     *
+     * Input:  { pack_id: string } | { pack_ids: string[] }
+     * Output: { ok: true, abandoned: number, skipped: number, details: [...] }
+     */
+    function rpcAbandonPack(ctx, logger, nk, payload) {
+        var userId = ctx.userId || "";
+        if (!userId) {
+            throw nakamaError("authentication required", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        }
+        var req = parseJson(payload);
+        var packIds = [];
+        if (req.pack_id) {
+            packIds.push(String(req.pack_id));
+        }
+        if (Array.isArray(req.pack_ids)) {
+            for (var pi = 0; pi < req.pack_ids.length; pi++) {
+                if (req.pack_ids[pi])
+                    packIds.push(String(req.pack_ids[pi]));
+            }
+        }
+        if (packIds.length === 0) {
+            throw nakamaError("pack_id or pack_ids required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        var abandoned = 0;
+        var skipped = 0;
+        var details = [];
+        for (var i = 0; i < packIds.length; i++) {
+            var packId = packIds[i];
+            var result = deleteUnsubmittedPack(nk, userId, packId, logger);
+            var reason = result.reason || (result.deleted ? "deleted" : "skipped");
+            details.push({ pack_id: packId, deleted: result.deleted, reason: reason });
+            logger.info(formatQvLog("[QvAbandonPack]", {
+                pack_id: packId,
+                abandoned: result.deleted ? 1 : 0,
+                reason: reason
+            }));
+            if (result.deleted) {
+                abandoned++;
+            }
+            else {
+                skipped++;
+            }
+        }
+        return JSON.stringify({ ok: true, abandoned: abandoned, skipped: skipped, details: details });
+    }
     // ── Registration ───────────────────────────────────────────────────────────
     function register(initializer) {
         __rpc_quizverse_get_questions = rpcGetQuestions;
+        __rpc_quizverse_abandon_pack = rpcAbandonPack;
     }
     QvGetQuestions.register = register;
     register();
@@ -108226,8 +108708,8 @@ var QuizVerseMigration;
         cocktaildb: { name: "cocktaildb", method: "get", url: "https://www.thecocktaildb.com/api/json/v1/1/search.php?f=m", cacheTtlMs: 60 * 60 * 1000 },
         foodish: { name: "foodish", method: "get", url: "https://foodish-api.com/api/", cacheTtlMs: 5 * 60 * 1000 },
         nasa: { name: "nasa", method: "get", url: "https://images-api.nasa.gov/search?q={query}", cacheTtlMs: 60 * 60 * 1000 },
-        // restcountries v3.1 now REJECTS /all without an explicit ?fields= list (HTTP 400).
-        countries: { name: "countries", method: "get", url: "https://restcountries.com/v3.1/all?fields=name,flags,capital,region,subregion,population,cca2", cacheTtlMs: 24 * 60 * 60 * 1000 },
+        // RestCountries v5 — requires REST_COUNTRIES_API_KEY (Bearer auth, paginated list).
+        countries: { name: "countries", method: "get", url: "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100&offset=0", cacheTtlMs: 24 * 60 * 60 * 1000 },
         ghibli: { name: "ghibli", method: "get", url: "https://ghibliapi.vercel.app/films", cacheTtlMs: 24 * 60 * 60 * 1000 },
         disney: { name: "disney", method: "get", url: "https://api.disneyapi.dev/character", cacheTtlMs: 24 * 60 * 60 * 1000 },
         dog: { name: "dog", method: "get", url: "https://dog.ceo/api/breeds/image/random/50", cacheTtlMs: 60 * 60 * 1000 },
@@ -108259,6 +108741,44 @@ var QuizVerseMigration;
             paramStr = parts.join("&");
         }
         return provider + ":" + paramStr;
+    }
+    function fetchCountriesV5AllPages(nk, baseUrl, headers, logger) {
+        var allObjects = [];
+        var offset = 0;
+        var total = 0;
+        while (true) {
+            var pageUrl = baseUrl.replace(/offset=\d+/, "offset=" + offset);
+            if (pageUrl.indexOf("offset=") === -1)
+                pageUrl = pageUrl + (pageUrl.indexOf("?") === -1 ? "?" : "&") + "offset=" + offset;
+            var resp = nk.httpRequest(pageUrl, "get", headers, "");
+            if (resp.code < 200 || resp.code >= 300) {
+                throw new Error("upstream_http_" + resp.code);
+            }
+            var parsed;
+            try {
+                parsed = JSON.parse(resp.body);
+            }
+            catch (_) {
+                throw new Error("invalid_json");
+            }
+            if (parsed && parsed.success === false && parsed.errors) {
+                throw new Error("restcountries_v3_deprecated");
+            }
+            if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
+                throw new Error("unexpected_response_shape");
+            }
+            var meta = parsed.data.meta || {};
+            for (var i = 0; i < parsed.data.objects.length; i++)
+                allObjects.push(parsed.data.objects[i]);
+            total = meta.total || allObjects.length;
+            if (!meta.more)
+                break;
+            offset += 100;
+            if (offset > 1000)
+                break;
+        }
+        logger.info("[Migration/External] countries v5 fetched object_count=" + allObjects.length + " meta_total=" + total);
+        return { data: { objects: allObjects, meta: { total: total, count: allObjects.length, more: false } } };
     }
     function rpcFetchExternalQuiz(ctx, logger, nk, payload) {
         var userId = requireAuth(ctx);
@@ -108292,21 +108812,32 @@ var QuizVerseMigration;
         catch (_e) { }
         // Live fetch.
         var url = expandUrl(provider.url, req.params || {});
+        var headers = { "Accept": "application/json" };
+        if (provider.name === "countries") {
+            var rcKey = (ctx.env && ctx.env["REST_COUNTRIES_API_KEY"]) ? String(ctx.env["REST_COUNTRIES_API_KEY"]).trim() : "";
+            if (rcKey)
+                headers["Authorization"] = "Bearer " + rcKey;
+        }
         try {
-            var resp = nk.httpRequest(url, provider.method, { "Accept": "application/json" }, "");
-            if (resp.code < 200 || resp.code >= 300) {
-                logger.warn("[Migration/External] " + provider.name + " HTTP " + resp.code);
-                return JSON.stringify({
-                    ok: false, error: "upstream_http_" + resp.code,
-                    provider: provider.name, fallback_to_client: true
-                });
-            }
             var parsed;
-            try {
-                parsed = JSON.parse(resp.body);
+            if (provider.name === "countries") {
+                parsed = fetchCountriesV5AllPages(nk, url, headers, logger);
             }
-            catch (_) {
-                parsed = resp.body;
+            else {
+                var resp = nk.httpRequest(url, provider.method, headers, "");
+                if (resp.code < 200 || resp.code >= 300) {
+                    logger.warn("[Migration/External] " + provider.name + " HTTP " + resp.code);
+                    return JSON.stringify({
+                        ok: false, error: "upstream_http_" + resp.code,
+                        provider: provider.name, fallback_to_client: true
+                    });
+                }
+                try {
+                    parsed = JSON.parse(resp.body);
+                }
+                catch (_) {
+                    parsed = resp.body;
+                }
             }
             // Cache write (best-effort; permissionRead=2 = public so multi-user serves from one entry).
             try {
@@ -110708,9 +111239,10 @@ var QuizVerseProductMetrics;
 //             Catches providers that embed <br/>, <sup>, <em> etc. in content.
 //
 //   GATE 6 — duplicate question in pool
-//             Reject if normalized(question_text) already exists in seenTextSet.
-//             Prevents the same question from appearing twice in a topic's pool,
-//             e.g. when two providers both return "Who created Pikachu?".
+//             Reject if the question's copy key already exists in seenTextSet.
+//             Text questions: normalized(question_text).
+//             Media questions (has_media): provider_key, else media.url, else id.
+//             ImageGuess templates share one prompt; uniqueness is image + options.
 //
 // ── Usage pattern in question_cache.ts ───────────────────────────────────────
 //
@@ -110846,6 +111378,27 @@ var QvQualityGate;
     }
     QvQualityGate.normalizeForDedup = normalizeForDedup;
     /**
+     * Dedup key for GATE 6 and buildSeenTextSet.
+     * Media questions share template prompts — key on provider_key / media.url instead.
+     */
+    function questionDedupeKey(q) {
+        if (q && q.has_media === true) {
+            if (q.provider_key && typeof q.provider_key === "string") {
+                return normalizeForDedup("media_pk:" + q.provider_key);
+            }
+            if (q.media && q.media.url && typeof q.media.url === "string") {
+                return normalizeForDedup("media_url:" + q.media.url);
+            }
+            if (q.id && typeof q.id === "string") {
+                return normalizeForDedup("media_id:" + q.id);
+            }
+        }
+        var qText = (q && q.question_text && typeof q.question_text === "string")
+            ? q.question_text : "";
+        return normalizeForDedup(qText);
+    }
+    QvQualityGate.questionDedupeKey = questionDedupeKey;
+    /**
      * Decode HTML entities in question_text and every option text, in-place.
      * Also strips residual raw HTML tags and returns whether any stripping occurred.
      */
@@ -110901,8 +111454,8 @@ var QvQualityGate;
             return set;
         for (var i = 0; i < questions.length; i++) {
             var q = questions[i];
-            if (q && q.question_text) {
-                set[normalizeForDedup(q.question_text)] = true;
+            if (q) {
+                set[questionDedupeKey(q)] = true;
             }
         }
         return set;
@@ -111014,11 +111567,10 @@ var QvQualityGate;
         }
         // ══════════════════════════════════════════════════════════════════════
         // GATE 6 — duplicate question in pool
-        // Compare normalized question_text against the caller-supplied seen set.
-        // Catches cross-provider duplicates ("Who created Pikachu?" from two APIs).
+        // Text: normalized question_text. Media: provider_key / media.url / id.
         // ══════════════════════════════════════════════════════════════════════
-        var normalizedQ = normalizeForDedup(qText);
-        if (seenTextSet[normalizedQ]) {
+        var dedupeKey = questionDedupeKey(q);
+        if (seenTextSet[dedupeKey]) {
             return { valid: false, reject_reason: "duplicate_question_text" };
         }
         // ── All gates passed ──────────────────────────────────────────────────
@@ -111069,7 +111621,7 @@ var QvQualityGate;
                 continue;
             }
             // Gate passed: add to seen set to catch within-batch duplicates
-            seen[normalizeForDedup(q.question_text)] = true;
+            seen[questionDedupeKey(q)] = true;
             passed.push(q);
         }
         return {
@@ -111118,9 +111670,9 @@ var QvQualityGate;
 //
 // ── Providers ─────────────────────────────────────────────────────────────────
 //   No-auth (always available): OpenTDB, Jikan, PokeAPI, CocktailDB, MealDB,
-//     Dog CEO, Disney, Ghibli, SWAPI, RestCountries
-//   Key-gated (env var required): NASA, TMDB, TheSportsDB, Last.fm,
-//     GNews/Currents/MediaStack/NewsAPI
+//     Dog CEO, Disney, Ghibli, SWAPI
+//   Key-gated (env var required): RestCountries (v5), NASA, TMDB, TheSportsDB,
+//     Last.fm, GNews/Currents/MediaStack/NewsAPI
 //   S3-based (env S3_BASE_URL): daily, weekly
 //
 // ── postbuild note ────────────────────────────────────────────────────────────
@@ -111139,6 +111691,8 @@ var QvQuestionCache;
     // Per-topic cache TTL (ms)
     var TOPIC_TTL = {
         opentdb: 1 * 3600000,
+        speed_quiz: 1 * 3600000,
+        true_false: 1 * 3600000,
         movies: 2 * 3600000,
         music: 2 * 3600000,
         sports: 2 * 3600000,
@@ -111156,8 +111710,10 @@ var QvQuestionCache;
         flags: 7 * 24 * 3600000,
         daily: 24 * 3600000,
         weekly: 7 * 24 * 3600000,
+        video_quiz: 7 * 24 * 3600000,
         ai: 0 // never cached
     };
+    var COL_VIDEO_CATALOG = "qv_catalog_video_quiz";
     // ── Hardcoded fallback API keys ───────────────────────────────────────────
     //
     // These are the LAST-RESORT fallbacks used when a key is not present in
@@ -111181,6 +111737,8 @@ var QvQuestionCache;
     //   CURRENTS    → https://currentsapi.services/en/register  (1000/day)
     //   MEDIASTACK  → https://mediastack.com/signup/free  (500/month)
     //   NEWSAPI     → https://newsapi.org/register  (100/day)
+    //   GUARDIAN    → https://open-platform.theguardian.com/access/  (free dev key; "test" works)
+    //   SPACEFLIGHT → https://api.spaceflightnewsapi.net/v4/  (no key — open API, 100% images)
     //   NASA        → https://api.nasa.gov  (already defaults to DEMO_KEY)
     var FALLBACK_KEYS = {
         TMDB_API_KEY: "93ca6d6373e2584a56bfe144bee48280",
@@ -111189,7 +111747,8 @@ var QvQuestionCache;
         CURRENTS_API_KEY: "vJ7f8IPcf_vrhpwk2_-wqzVOpFCxHV26zMhKv4NPV_KiXb-r",
         MEDIASTACK_API_KEY: "ec6ef35b59624891e5604efb140adefb",
         NEWSAPI_API_KEY: "5cbc52d4e9e14df683ed965b04cbf6fb",
-        NASA_API_KEY: "DEMO_KEY" // safe public fallback (50 req/day)
+        GUARDIAN_API_KEY: "test", // Guardian developer tier — replace with production key when ready
+        NASA_API_KEY: "g2ofGlzt9YRi0pt2xHhLjCygLWdi6536mEGezmr9" // safe public fallback (50 req/day)
     };
     function envKey(env, key) {
         if (env && env[key] && String(env[key]).trim())
@@ -111279,12 +111838,13 @@ var QvQuestionCache;
     }
     function topicProvider(topic) {
         var map = {
-            opentdb: "opentdb", anime: "jikan", pokemon: "pokeapi",
+            opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
             cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
             ghibli: "ghibli", disney: "disney", starwars: "swapi",
             countries: "restcountries", flags: "restcountries",
             space: "nasa", movies: "tmdb", sports: "sportsdb",
-            music: "lastfm", news: "gnews", daily: "s3", weekly: "s3", ai: "claude"
+            music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
+            video_quiz: "catalog", ai: "claude"
         };
         return map[topic] || topic;
     }
@@ -111390,7 +111950,10 @@ var QvQuestionCache;
         var bridge = {
             question_text: raw.question_text,
             options: bridgeOpts,
-            correct_option_ids: correctIds
+            correct_option_ids: correctIds,
+            has_media: raw.has_media,
+            provider_key: raw.provider_key,
+            media: raw.media
         };
         // Run gate (mutates bridge.question_text and bridge.options[].text)
         var result = QvQualityGate.validateQuestion(bridge, seenSet);
@@ -111495,16 +112058,19 @@ var QvQuestionCache;
     // Quality gate + shuffle happen in refreshCache().
     // ══════════════════════════════════════════════════════════════════════════
     // ── 1. OpenTDB ────────────────────────────────────────────────────────────
-    function fetchOpentdb(nk, logger) {
+    function fetchOpenTdbCategory(nk, logger, categoryId, amount, topicSlug, subtopic) {
         var results = [];
         // url3986 encoding — decode with decodeURIComponent
-        var data = httpGet(nk, "https://opentdb.com/api.php?amount=50&encode=url3986&type=multiple");
+        var url = "https://opentdb.com/api.php?amount=" + amount + "&category=" + categoryId + "&type=multiple";
+        var data = httpGet(nk, url);
         if (!data || !Array.isArray(data.results) || data.response_code !== 0) {
-            throw new Error("OpenTDB response_code=" + (data && data.response_code));
+            throw new Error("OpenTDB response_code=" + (data && data.response_code) + " category=" + categoryId);
         }
         for (var i = 0; i < data.results.length; i++) {
             var item = data.results[i];
             try {
+                if (item.type !== "multiple")
+                    continue;
                 var qText = decodeURIComponent(item.question || "");
                 var correct = decodeURIComponent(item.correct_answer || "");
                 var wrongs = [];
@@ -111521,24 +112087,152 @@ var QvQuestionCache;
                 for (var wi = 0; wi < wrongs.length; wi++)
                     opts.push({ text: wrongs[wi], is_correct: false });
                 var diff = item.difficulty === "hard" ? "hard" : item.difficulty === "easy" ? "easy" : "medium";
+                var meta = {};
+                if (subtopic)
+                    meta.subtopic = subtopic;
                 results.push({
                     provider_key: djb2(qText),
-                    topic: "opentdb",
+                    topic: topicSlug,
                     lang: "en",
                     question_text: qText,
-                    question_type: item.type === "boolean" ? "true_false" : "single_select",
+                    question_type: "single_select",
                     raw_options: opts,
                     has_media: false,
                     media: null,
                     explanation: decodeURIComponent(item.category || ""),
                     difficulty: diff,
                     provider: "opentdb",
-                    meta: {}
+                    meta: meta
                 });
             }
             catch (e) {
-                logger.debug("[QvQCache/opentdb] skip[" + i + "]: " + (e && e.message));
+                logger.debug("[QvQCache/opentdb] skip[" + i + "] cat=" + categoryId + ": " + (e && e.message));
             }
+        }
+        return results;
+    }
+    function fetchOpenTdbBoolean(nk, logger, categoryId, amount, topicSlug, subtopic) {
+        var results = [];
+        var url = "https://opentdb.com/api.php?amount=" + amount + "&category=" + categoryId + "&type=boolean";
+        var data = httpGet(nk, url);
+        if (!data || !Array.isArray(data.results) || data.response_code !== 0) {
+            throw new Error("OpenTDB boolean response_code=" + (data && data.response_code) + " category=" + categoryId);
+        }
+        for (var i = 0; i < data.results.length; i++) {
+            var item = data.results[i];
+            try {
+                if (item.type !== "boolean")
+                    continue;
+                var qText = decodeURIComponent(item.question || "");
+                var correct = decodeURIComponent(item.correct_answer || "");
+                var wrong = "";
+                if (Array.isArray(item.incorrect_answers) && item.incorrect_answers.length > 0) {
+                    wrong = decodeURIComponent(item.incorrect_answers[0] || "");
+                }
+                if (!qText || !correct || !wrong)
+                    continue;
+                var opts = [
+                    { text: correct, is_correct: true },
+                    { text: wrong, is_correct: false }
+                ];
+                var diff = item.difficulty === "hard" ? "hard" : item.difficulty === "easy" ? "easy" : "medium";
+                var meta = {};
+                if (subtopic)
+                    meta.subtopic = subtopic;
+                results.push({
+                    provider_key: djb2(qText),
+                    topic: topicSlug,
+                    lang: "en",
+                    question_text: qText,
+                    question_type: "true_false",
+                    raw_options: opts,
+                    has_media: false,
+                    media: null,
+                    explanation: decodeURIComponent(item.category || ""),
+                    difficulty: diff,
+                    provider: "opentdb",
+                    meta: meta
+                });
+            }
+            catch (e) {
+                logger.debug("[QvQCache/opentdb-boolean] skip[" + i + "] cat=" + categoryId + ": " + (e && e.message));
+            }
+        }
+        return results;
+    }
+    function fetchGeoQuiz(nk, logger) {
+        return fetchOpenTdbCategory(nk, logger, 22, 50, "opentdb", "");
+    }
+    var SPEED_QUIZ_CATEGORY_POOL = [
+        { id: 17, key: "science_nature", label: "Science & Nature" },
+        { id: 18, key: "science_computers", label: "Science: Computers" },
+        { id: 19, key: "science_mathematics", label: "Science: Mathematics" },
+        { id: 20, key: "mythology", label: "Mythology" },
+        { id: 15, key: "video_games", label: "Video Games" },
+        { id: 27, key: "animals", label: "Animals" },
+        { id: 9, key: "general_knowledge", label: "General Knowledge" }
+    ];
+    function fetchSpeedQuiz(nk, logger) {
+        var picked = pick(SPEED_QUIZ_CATEGORY_POOL, 3);
+        var perCat = Math.ceil(50 / picked.length);
+        var results = [];
+        var pickedIds = [];
+        var pickedKeys = [];
+        for (var p = 0; p < picked.length; p++) {
+            var cat = picked[p];
+            pickedIds.push(cat.id);
+            pickedKeys.push(cat.key);
+            try {
+                var batch = fetchOpenTdbCategory(nk, logger, cat.id, perCat, "speed_quiz", cat.key);
+                for (var b = 0; b < batch.length; b++)
+                    results.push(batch[b]);
+            }
+            catch (e) {
+                logger.warn("[QvQCache/speed_quiz] category " + cat.id + " failed: " + (e && e.message));
+            }
+        }
+        logger.info("[QvQCache/speed_quiz] event=speed_quiz_fetch categories=" + pickedIds.join(",") +
+            " keys=" + pickedKeys.join(",") + " per_cat=" + perCat + " count=" + results.length);
+        if (results.length === 0) {
+            throw new Error("speed_quiz: all OpenTDB category fetches failed or returned 0 questions");
+        }
+        return results;
+    }
+    var TRUE_FALSE_CATEGORY_POOL = [
+        { id: 23, key: "history", label: "History" },
+        { id: 9, key: "general_knowledge", label: "General Knowledge" },
+        { id: 17, key: "science_nature", label: "Science & Nature" },
+        { id: 21, key: "sports", label: "Sports" },
+        { id: 22, key: "geography", label: "Geography" },
+        { id: 27, key: "animals", label: "Animals" },
+        { id: 10, key: "books", label: "Books" },
+        { id: 11, key: "film", label: "Film" },
+        { id: 12, key: "music", label: "Music" },
+        { id: 14, key: "television", label: "Television" }
+    ];
+    function fetchTrueFalseQuiz(nk, logger) {
+        var picked = pick(TRUE_FALSE_CATEGORY_POOL, 3);
+        var perCat = Math.ceil(50 / picked.length);
+        var results = [];
+        var pickedIds = [];
+        var pickedKeys = [];
+        for (var p = 0; p < picked.length; p++) {
+            var cat = picked[p];
+            pickedIds.push(cat.id);
+            pickedKeys.push(cat.key);
+            try {
+                var batch = fetchOpenTdbBoolean(nk, logger, cat.id, perCat, "true_false", cat.key);
+                for (var b = 0; b < batch.length; b++)
+                    results.push(batch[b]);
+            }
+            catch (e) {
+                logger.warn("[QvQCache/true_false] category " + cat.id + " failed: " + (e && e.message));
+            }
+        }
+        logger.info("[QvQCache/true_false] event=true_false_fetch categories=" + pickedIds.join(",") +
+            " keys=" + pickedKeys.join(",") + " per_cat=" + perCat + " count=" + results.length);
+        if (results.length === 0) {
+            throw new Error("true_false: all OpenTDB boolean category fetches failed or returned 0 questions");
         }
         return results;
     }
@@ -111659,7 +112353,7 @@ var QvQuestionCache;
         var listData = httpGet(nk, "https://pokeapi.co/api/v2/pokemon?limit=151&offset=0");
         if (!listData || !Array.isArray(listData.results))
             throw new Error("PokeAPI: no list");
-        var sample = pick(listData.results, 12); // 12 fetches to stay fast
+        var sample = pick(listData.results, 40);
         for (var pi = 0; pi < sample.length; pi++) {
             try {
                 var detail = httpGet(nk, sample[pi].url);
@@ -111706,7 +112400,7 @@ var QvQuestionCache;
     function fetchCocktaildb(nk, logger) {
         var results = [];
         var seen = {};
-        for (var ci = 0; ci < 20; ci++) {
+        for (var ci = 0; ci < 40; ci++) {
             try {
                 var data = httpGet(nk, "https://www.thecocktaildb.com/api/json/v1/1/random.php");
                 if (!data || !data.drinks || !data.drinks[0])
@@ -111750,7 +112444,7 @@ var QvQuestionCache;
     function fetchMealdb(nk, logger) {
         var results = [];
         var seen2 = {};
-        for (var mi = 0; mi < 20; mi++) {
+        for (var mi = 0; mi < 40; mi++) {
             try {
                 var data2 = httpGet(nk, "https://www.themealdb.com/api/json/v1/1/random.php");
                 if (!data2 || !data2.meals || !data2.meals[0])
@@ -111790,7 +112484,7 @@ var QvQuestionCache;
         return results;
     }
     // ── 6. Dog CEO ────────────────────────────────────────────────────────────
-    function fetchDogceo(nk, logger) {
+    function fetchDogceo(nk, env, logger) {
         var results = [];
         var breedsData = httpGet(nk, "https://dog.ceo/api/breeds/list/all");
         if (!breedsData || !breedsData.message)
@@ -111809,20 +112503,32 @@ var QvQuestionCache;
                 allBreeds.push(breed);
             }
         }
-        var selected = pick(allBreeds, 10);
+        var breedSample = 40;
+        if (env && env["QV_DOGCEO_BREED_SAMPLE"]) {
+            var parsed = parseInt(env["QV_DOGCEO_BREED_SAMPLE"], 40);
+            if (!isNaN(parsed) && parsed > 0)
+                breedSample = parsed;
+        }
+        var selected = pick(allBreeds, breedSample);
         for (var bi = 0; bi < selected.length; bi++) {
             var breedName = selected[bi];
             try {
                 var parts = breedName.indexOf(" ") !== -1 ? breedName.split(" ") : [breedName];
                 var breedKey = parts.length >= 2 ? parts[1] + "/" + parts[0] : parts[0];
                 var imgData = httpGet(nk, "https://dog.ceo/api/breed/" + breedKey + "/images/random");
-                if (!imgData || !imgData.message)
+                if (!imgData || !imgData.message) {
+                    logger.info("[QvQCache/dogceo] event=dogceo_breed_skip breed=" +
+                        breedName.replace(/\s+/g, "_") + " reason=no_image");
                     continue;
+                }
                 var exSet3 = {};
                 exSet3[breedName] = true;
                 var wb = pickExcluding(allBreeds, exSet3, 3);
-                if (wb.length < 3)
+                if (wb.length < 3) {
+                    logger.info("[QvQCache/dogceo] event=dogceo_breed_skip breed=" +
+                        breedName.replace(/\s+/g, "_") + " reason=insufficient_wrong_options");
                     continue;
+                }
                 var dOpts = [{ text: capitalize(breedName), is_correct: true }];
                 for (var wbi = 0; wbi < wb.length; wbi++)
                     dOpts.push({ text: capitalize(wb[wbi]), is_correct: false });
@@ -111840,7 +112546,9 @@ var QvQuestionCache;
                 });
             }
             catch (e) {
-                logger.debug("[QvQCache/dogceo] skip " + breedName + ": " + (e && e.message));
+                var skipReason = e && e.message ? String(e.message).replace(/\s+/g, "_") : "unknown";
+                logger.info("[QvQCache/dogceo] event=dogceo_breed_skip breed=" +
+                    breedName.replace(/\s+/g, "_") + " reason=" + skipReason);
             }
         }
         return results;
@@ -111851,52 +112559,66 @@ var QvQuestionCache;
         var data3 = httpGet(nk, "https://ghibliapi.vercel.app/films");
         if (!Array.isArray(data3))
             throw new Error("Ghibli API: no array");
-        var directorPool = [];
+        var titlePool = [];
         for (var gx2 = 0; gx2 < data3.length; gx2++) {
-            if (data3[gx2].director)
-                directorPool.push(data3[gx2].director);
+            if (data3[gx2].title)
+                titlePool.push(data3[gx2].title);
         }
-        var extraDirs = ["Akira Kurosawa", "Satoshi Kon", "Mamoru Hosoda", "Makoto Shinkai",
-            "Hideaki Anno", "Katsuhiro Otomo", "Yoshiyuki Tomino"];
-        var fullDirPool = directorPool.concat(extraDirs);
+        var withImage = 0;
+        var skipped = 0;
         for (var gi4 = 0; gi4 < data3.length; gi4++) {
             var film = data3[gi4];
             try {
-                var ftitle = film.title || "Unknown";
+                var ftitle = film.title || null;
+                var filmImage = film.movie_banner || null;
                 var fdirector = film.director || null;
                 var fyear = film.release_date || null;
-                if (!fdirector)
+                if (!ftitle || !filmImage) {
+                    skipped++;
                     continue;
-                var exDir = {};
-                exDir[fdirector] = true;
-                var wd = pickExcluding(fullDirPool, exDir, 3);
-                if (wd.length < 3)
+                }
+                withImage++;
+                var exTitle = {};
+                exTitle[ftitle] = true;
+                var wt = pickExcluding(titlePool, exTitle, 3);
+                if (wt.length < 3) {
+                    skipped++;
                     continue;
-                var gOpts2 = [{ text: fdirector, is_correct: true }];
-                for (var wdi = 0; wdi < wd.length; wdi++)
-                    gOpts2.push({ text: wd[wdi], is_correct: false });
+                }
+                var gOpts2 = [{ text: ftitle, is_correct: true }];
+                for (var wti = 0; wti < wt.length; wti++)
+                    gOpts2.push({ text: wt[wti], is_correct: false });
                 results.push({
-                    provider_key: "ghibli_dir_" + djb2(ftitle),
+                    provider_key: "ghibli_poster_" + (film.id || djb2(ftitle)),
                     topic: "ghibli", lang: "en",
-                    question_text: "Who directed the Studio Ghibli film \"" + ftitle + "\"?",
+                    question_text: "Which Studio Ghibli film is this?",
                     question_type: "single_select",
                     raw_options: gOpts2,
-                    has_media: false, media: null,
-                    explanation: "\"" + ftitle + "\" (" + (fyear || "?") + ") was directed by " + fdirector + " and produced by Studio Ghibli.",
+                    has_media: true,
+                    media: { type: "image", url: filmImage, thumbnail_url: filmImage, duration_seconds: null, mime_type: "image/jpeg" },
+                    explanation: "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".",
                     difficulty: "medium", provider: "ghibli",
                     meta: { title: ftitle, director: fdirector, year: fyear }
                 });
             }
             catch (e) {
+                skipped++;
                 logger.debug("[QvQCache/ghibli] skip: " + (e && e.message));
             }
         }
+        logger.info("[QvQCache/ghibli] event=ghibli_fetch_summary total_films=" + data3.length +
+            " with_image=" + withImage + " skipped=" + skipped + " emitted=" + results.length);
         return results;
+    }
+    function getRandomInt(min, max) {
+        // Use Math.floor to round down to the nearest whole number
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
     // ── 8. Disney API ─────────────────────────────────────────────────────────
     function fetchDisney(nk, logger) {
         var results = [];
-        var data4 = httpGet(nk, "https://api.disneyapi.dev/character?pageSize=50&page=1");
+        // Random offset for Disney API pagination
+        var data4 = httpGet(nk, "https://api.disneyapi.dev/character?pageSize=50&page=" + getRandomInt(1, 50));
         if (!data4 || !Array.isArray(data4.data))
             throw new Error("Disney API: no data");
         var chars = data4.data;
@@ -112013,33 +112735,128 @@ var QvQuestionCache;
         }
         return results;
     }
-    // ── 10. RestCountries (Countries + Flags) ─────────────────────────────────
-    function fetchRestcountries(nk, logger) {
+    // ── 10. RestCountries v5 (Countries + Flags) — key-gated ─────────────────
+    function rcV5Str(obj, flatKey, nestedKeys) {
+        if (obj && obj[flatKey] !== undefined && obj[flatKey] !== null)
+            return String(obj[flatKey]);
+        var cur = obj;
+        for (var ni = 0; ni < nestedKeys.length; ni++) {
+            if (!cur)
+                return "";
+            cur = cur[nestedKeys[ni]];
+        }
+        return cur ? String(cur) : "";
+    }
+    function rcV5CommonName(country) {
+        return rcV5Str(country, "names.common", ["names", "common"]);
+    }
+    function rcV5Capital(country) {
+        if (country && country["capitals.name"])
+            return String(country["capitals.name"]);
+        if (country && country.capitals && country.capitals.length > 0) {
+            var cap = country.capitals[0];
+            if (typeof cap === "string")
+                return cap;
+            if (cap && cap.name)
+                return String(cap.name);
+        }
+        return "";
+    }
+    function rcV5Alpha2(country) {
+        return rcV5Str(country, "codes.alpha_2", ["codes", "alpha_2"]);
+    }
+    function rcV5Region(country) {
+        var region = rcV5Str(country, "region", ["region"]);
+        return region || "Unknown";
+    }
+    function rcV5FlagPng(country, alpha2) {
+        var url = rcV5Str(country, "flag.url_png", ["flag", "url_png"]);
+        if (url)
+            return url;
+        if (alpha2)
+            return "https://flags.restcountries.com/v5/w320/" + alpha2.toLowerCase() + ".png";
+        return null;
+    }
+    function fetchRestcountries(nk, env, logger, topic) {
         var results = [];
-        var data6 = httpGet(nk, "https://restcountries.com/v3.1/all?fields=name,capital,region,flags,population");
-        if (!Array.isArray(data6))
-            throw new Error("RestCountries: no array");
+        var apiKey = envKey(env, "REST_COUNTRIES_API_KEY");
+        var keyPresent = !!apiKey;
+        logger.info("[QvQCache/restcountries] event=provider_v5_fetch_start topic=" + topic +
+            " key_present=" + (keyPresent ? "true" : "false") +
+            " host=api.restcountries.com limit=100 paginated=true");
+        if (!apiKey)
+            throw new Error("missing_api_key");
+        var authHeaders = { "Authorization": "Bearer " + apiKey };
+        var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
+        var objects = [];
+        var offset = 0;
+        var pagesFetched = 0;
+        while (true) {
+            var pageUrl = baseUrl + "&offset=" + offset;
+            var parsed;
+            try {
+                parsed = httpGet(nk, pageUrl, authHeaders);
+            }
+            catch (he) {
+                var hmsg = he && he.message ? he.message : String(he);
+                if (hmsg.indexOf("HTTP 401") !== -1)
+                    throw new Error("http_401");
+                if (hmsg.indexOf("HTTP 403") !== -1)
+                    throw new Error("http_403");
+                throw he;
+            }
+            if (parsed && parsed.success === false && parsed.errors) {
+                throw new Error("restcountries_v3_deprecated");
+            }
+            if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
+                throw new Error("unexpected_response_shape");
+            }
+            var pageObjects = parsed.data.objects;
+            var meta = parsed.data.meta || {};
+            pagesFetched++;
+            logger.info("[QvQCache/restcountries] event=provider_v5_page_done topic=" + topic +
+                " offset=" + offset +
+                " page_count=" + pageObjects.length +
+                " meta_total=" + (meta.total ? meta.total : 0) +
+                " meta_more=" + (meta.more ? "true" : "false"));
+            for (var pi = 0; pi < pageObjects.length; pi++)
+                objects.push(pageObjects[pi]);
+            if (!meta.more)
+                break;
+            offset += 100;
+            if (offset > 1000)
+                break;
+        }
+        logger.info("[QvQCache/restcountries] event=provider_v5_fetch_done topic=" + topic +
+            " object_count=" + objects.length +
+            " pages_fetched=" + pagesFetched);
+        if (objects.length === 0)
+            throw new Error("provider_returned_zero");
         var withCap = [];
-        for (var rc = 0; rc < data6.length; rc++) {
-            if (data6[rc].capital && data6[rc].capital.length > 0 && data6[rc].name && data6[rc].name.common) {
-                withCap.push(data6[rc]);
+        for (var rc = 0; rc < objects.length; rc++) {
+            if (rcV5CommonName(objects[rc]) && rcV5Capital(objects[rc])) {
+                withCap.push(objects[rc]);
             }
         }
         var allCaps = [];
         var allCNames = [];
         for (var rc2 = 0; rc2 < withCap.length; rc2++) {
-            if (withCap[rc2].capital[0])
-                allCaps.push(withCap[rc2].capital[0]);
-            allCNames.push(withCap[rc2].name.common);
+            var capName = rcV5Capital(withCap[rc2]);
+            if (capName)
+                allCaps.push(capName);
+            allCNames.push(rcV5CommonName(withCap[rc2]));
         }
+        var flagRawCount = 0;
+        var capRawCount = 0;
         var sample2 = pick(withCap, 40);
         for (var ci3 = 0; ci3 < sample2.length; ci3++) {
             var country = sample2[ci3];
             try {
-                var cname2 = country.name.common;
-                var capital = country.capital[0];
-                var region = country.region || "Unknown";
-                var flagPng = (country.flags && country.flags.png) ? country.flags.png : null;
+                var cname2 = rcV5CommonName(country);
+                var capital = rcV5Capital(country);
+                var region = rcV5Region(country);
+                var alpha2 = rcV5Alpha2(country);
+                var flagPng = rcV5FlagPng(country, alpha2);
                 // Capital question
                 var exCap = {};
                 exCap[capital] = true;
@@ -112060,6 +112877,7 @@ var QvQuestionCache;
                         difficulty: "medium", provider: "restcountries",
                         meta: { name: cname2, capital: capital, region: region }
                     });
+                    capRawCount++;
                 }
                 // Flag question (topic = "flags")
                 if (flagPng) {
@@ -112082,20 +112900,25 @@ var QvQuestionCache;
                             difficulty: "medium", provider: "restcountries",
                             meta: { name: cname2, capital: capital, region: region }
                         });
+                        flagRawCount++;
                     }
                 }
             }
             catch (e) {
-                logger.debug("[QvQCache/restcountries] skip " + (country && country.name && country.name.common) + ": " + (e && e.message));
+                logger.debug("[QvQCache/restcountries] skip " + rcV5CommonName(country) + ": " + (e && e.message));
             }
         }
+        logger.info("[QvQCache/restcountries] event=provider_v5_raw_built topic=" + topic +
+            " countries_sampled=" + sample2.length +
+            " raw_flags=" + flagRawCount +
+            " raw_countries=" + capRawCount);
         return results;
     }
     // ── 11. NASA APOD (Space) — key-gated; falls back to DEMO_KEY ─────────────
     function fetchNasa(nk, env, logger) {
         var results = [];
         var apiKey = envKey(env, "NASA_API_KEY") || "DEMO_KEY";
-        var data7 = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=20&thumbs=true");
+        var data7 = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=50&thumbs=true");
         if (!Array.isArray(data7))
             throw new Error("NASA APOD: expected array");
         for (var ni = 0; ni < data7.length; ni++) {
@@ -112193,6 +113016,9 @@ var QvQuestionCache;
             { id: "4424", name: "NFL" },
             { id: "4346", name: "NHL" }
         ];
+        var totalTeams = 0;
+        var withBadge = 0;
+        var skipped = 0;
         for (var li = 0; li < leagues.length; li++) {
             var league = leagues[li];
             try {
@@ -112200,42 +113026,48 @@ var QvQuestionCache;
                 if (!sdata || !Array.isArray(sdata.teams))
                     continue;
                 var teams = sdata.teams.slice(0, 20);
-                var stadiums = [];
+                var teamPool = [];
                 for (var sx = 0; sx < teams.length; sx++) {
-                    if (teams[sx].strStadium)
-                        stadiums.push(teams[sx].strStadium);
+                    if (teams[sx].strTeam)
+                        teamPool.push(teams[sx].strTeam);
                 }
                 for (var ti2 = 0; ti2 < teams.length; ti2++) {
                     var team = teams[ti2];
+                    totalTeams++;
                     try {
-                        var tname = team.strTeam || "Unknown";
-                        var stadium = team.strStadium || null;
-                        var tbadge = team.strTeamBadge || null;
+                        var tname = team.strTeam || null;
+                        var tbadge = team.strFanart1 || team.strBadge || null;
                         var tfounded = team.intFormedYear || null;
-                        if (!stadium)
+                        if (!tname || !tbadge) {
+                            skipped++;
                             continue;
-                        var exStad = {};
-                        exStad[stadium] = true;
-                        var ws2 = pickExcluding(stadiums, exStad, 3);
-                        if (ws2.length < 3)
+                        }
+                        withBadge++;
+                        var exTeam = {};
+                        exTeam[tname] = true;
+                        var ws2 = pickExcluding(teamPool, exTeam, 3);
+                        if (ws2.length < 3) {
+                            skipped++;
                             continue;
-                        var stOpts = [{ text: stadium, is_correct: true }];
+                        }
+                        var stOpts = [{ text: tname, is_correct: true }];
                         for (var wsi2 = 0; wsi2 < ws2.length; wsi2++)
                             stOpts.push({ text: ws2[wsi2], is_correct: false });
                         results.push({
-                            provider_key: "sdb_stad_" + (team.idTeam || djb2(tname)),
+                            provider_key: "sdb_badge_" + (team.idTeam || djb2(tname)),
                             topic: "sports", lang: "en",
-                            question_text: "What is the home stadium of " + tname + "?",
+                            question_text: "Who is this athlete/team?",
                             question_type: "single_select",
                             raw_options: stOpts,
-                            has_media: !!tbadge,
-                            media: tbadge ? { type: "image", url: tbadge, thumbnail_url: null, duration_seconds: null, mime_type: "image/png" } : null,
-                            explanation: tname + " (" + league.name + ") plays at " + stadium + (tfounded ? ", founded in " + tfounded : "") + ".",
+                            has_media: true,
+                            media: { type: "image", url: tbadge, thumbnail_url: tbadge, duration_seconds: null, mime_type: "image/png" },
+                            explanation: tname + " (" + league.name + ")" + (tfounded ? ", founded in " + tfounded : "") + ".",
                             difficulty: "medium", provider: "sportsdb",
-                            meta: {}
+                            meta: { team: tname, league: league.name }
                         });
                     }
                     catch (e) {
+                        skipped++;
                         logger.debug("[QvQCache/sdb] skip team: " + (e && e.message));
                     }
                 }
@@ -112244,6 +113076,8 @@ var QvQuestionCache;
                 logger.debug("[QvQCache/sdb] skip league " + league.name + ": " + (e && e.message));
             }
         }
+        logger.info("[QvQCache/sdb] event=sports_fetch_summary total_teams=" + totalTeams +
+            " with_badge=" + withBadge + " skipped=" + skipped + " emitted=" + results.length);
         return results;
     }
     // ── 14. Last.fm (Music) — requires LASTFM_API_KEY ─────────────────────────
@@ -112298,7 +113132,68 @@ var QvQuestionCache;
         }
         return results;
     }
-    // ── 15. News — GNews → Currents → MediaStack → NewsAPI failover chain ──────
+    // ── 15. News — keyed APIs + Guardian + Spaceflight News (open) ─────────────
+    function newsArticleImage(art) {
+        if (!art)
+            return null;
+        if (art.image && String(art.image).trim())
+            return String(art.image).trim();
+        if (art.urlToImage && String(art.urlToImage).trim())
+            return String(art.urlToImage).trim();
+        if (art.image_url && String(art.image_url).trim())
+            return String(art.image_url).trim();
+        if (art.fields && art.fields.thumbnail && String(art.fields.thumbnail).trim()) {
+            return String(art.fields.thumbnail).trim();
+        }
+        return null;
+    }
+    function appendGuardianArticles(nk, logger, articles, apiKey) {
+        if (!apiKey)
+            return;
+        try {
+            var gdata = httpGet(nk, "https://content.guardianapis.com/search?show-fields=thumbnail,trailText&page-size=20&order-by=newest&api-key=" + apiKey);
+            if (!gdata || !gdata.response || !Array.isArray(gdata.response.results))
+                return;
+            var gr = gdata.response.results;
+            for (var gi = 0; gi < gr.length; gi++) {
+                var item = gr[gi];
+                if (!item.webTitle)
+                    continue;
+                articles.push({
+                    title: item.webTitle,
+                    description: (item.fields && item.fields.trailText) ? item.fields.trailText : "",
+                    image: (item.fields && item.fields.thumbnail) ? item.fields.thumbnail : null,
+                    source: { name: "The Guardian" },
+                    provider: "guardian"
+                });
+            }
+        }
+        catch (e) {
+            logger.warn("[QvQCache/news] Guardian: " + (e && e.message));
+        }
+    }
+    function appendSpaceflightArticles(nk, logger, articles) {
+        try {
+            var sf = httpGet(nk, "https://api.spaceflightnewsapi.net/v4/articles/?limit=20");
+            if (!sf || !Array.isArray(sf.results))
+                return;
+            for (var si = 0; si < sf.results.length; si++) {
+                var item = sf.results[si];
+                if (!item.title)
+                    continue;
+                articles.push({
+                    title: item.title,
+                    description: item.summary || "",
+                    image: item.image_url || null,
+                    source: { name: item.news_site || "Spaceflight News" },
+                    provider: "spaceflightnews"
+                });
+            }
+        }
+        catch (e) {
+            logger.warn("[QvQCache/news] SpaceflightNews: " + (e && e.message));
+        }
+    }
     function fetchNews(nk, env, logger) {
         var results = [];
         var articles = [];
@@ -112306,37 +113201,19 @@ var QvQuestionCache;
         var curKey = envKey(env, "CURRENTS_API_KEY");
         var msKey = envKey(env, "MEDIASTACK_API_KEY");
         var naKey = envKey(env, "NEWSAPI_API_KEY");
-        if (gnKey) {
+        var guKey = envKey(env, "GUARDIAN_API_KEY");
+        if (msKey) {
             try {
-                var gd = httpGet(nk, "https://gnews.io/api/v4/top-headlines?token=" + gnKey + "&lang=en&max=10");
-                if (gd && gd.articles)
-                    articles = articles.concat(gd.articles);
-            }
-            catch (e) {
-                logger.warn("[QvQCache/news] GNews: " + (e && e.message));
-            }
-        }
-        if (curKey && articles.length < 10) {
-            try {
-                var cd = httpGet(nk, "https://api.currentsapi.services/v1/latest-news?apiKey=" + curKey + "&language=en");
-                if (cd && Array.isArray(cd.news)) {
-                    for (var cni = 0; cni < cd.news.length; cni++) {
-                        var cn = cd.news[cni];
-                        articles.push({ title: cn.title, description: cn.description, source: { name: cn.author || "Currents" } });
-                    }
-                }
-            }
-            catch (e) {
-                logger.warn("[QvQCache/news] Currents: " + (e && e.message));
-            }
-        }
-        if (msKey && articles.length < 10) {
-            try {
-                var md = httpGet(nk, "http://api.mediastack.com/v1/news?access_key=" + msKey + "&languages=en&limit=10");
+                var md = httpGet(nk, "http://api.mediastack.com/v1/news?access_key=" + msKey + "&languages=en&limit=50");
                 if (md && Array.isArray(md.data)) {
                     for (var mni = 0; mni < md.data.length; mni++) {
                         var mn = md.data[mni];
-                        articles.push({ title: mn.title, description: mn.description, source: { name: mn.source || "MediaStack" } });
+                        articles.push({
+                            title: mn.title, description: mn.description || "",
+                            image: mn.image || null,
+                            source: { name: mn.source || "MediaStack" },
+                            provider: "mediastack"
+                        });
                     }
                 }
             }
@@ -112344,48 +113221,280 @@ var QvQuestionCache;
                 logger.warn("[QvQCache/news] MediaStack: " + (e && e.message));
             }
         }
-        if (naKey && articles.length < 10) {
+        if (gnKey) {
             try {
-                var nd = httpGet(nk, "https://newsapi.org/v2/top-headlines?apiKey=" + naKey + "&language=en&pageSize=10");
-                if (nd && Array.isArray(nd.articles))
-                    articles = articles.concat(nd.articles);
+                var gd = httpGet(nk, "https://gnews.io/api/v4/top-headlines?token=" + gnKey + "&lang=en&max=50");
+                if (gd && gd.articles) {
+                    for (var gni = 0; gni < gd.articles.length; gni++) {
+                        var ga = gd.articles[gni];
+                        articles.push({
+                            title: ga.title, description: ga.description || "",
+                            image: ga.image || null,
+                            source: ga.source || { name: "GNews" },
+                            provider: "gnews"
+                        });
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn("[QvQCache/news] GNews: " + (e && e.message));
+            }
+        }
+        if (curKey) {
+            try {
+                var cd = httpGet(nk, "https://api.currentsapi.services/v1/latest-news?apiKey=" + curKey + "&language=en");
+                if (cd && Array.isArray(cd.news)) {
+                    for (var cni = 0; cni < cd.news.length; cni++) {
+                        var cn = cd.news[cni];
+                        articles.push({
+                            title: cn.title, description: cn.description || "",
+                            image: cn.image || null,
+                            source: { name: cn.author || "Currents" },
+                            provider: "currents"
+                        });
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn("[QvQCache/news] Currents: " + (e && e.message));
+            }
+        }
+        if (naKey) {
+            try {
+                var nd = httpGet(nk, "https://newsapi.org/v2/top-headlines?apiKey=" + naKey + "&language=en&pageSize=50");
+                if (nd && Array.isArray(nd.articles)) {
+                    for (var nai = 0; nai < nd.articles.length; nai++) {
+                        var na = nd.articles[nai];
+                        articles.push({
+                            title: na.title, description: na.description || "",
+                            image: na.urlToImage || null,
+                            source: na.source || { name: "NewsAPI" },
+                            provider: "newsapi"
+                        });
+                    }
+                }
             }
             catch (e) {
                 logger.warn("[QvQCache/news] NewsAPI: " + (e && e.message));
             }
         }
-        if (articles.length === 0)
-            throw new Error("All news providers failed or not configured (set at least one of GNEWS_API_KEY, CURRENTS_API_KEY, MEDIASTACK_API_KEY, NEWSAPI_API_KEY)");
+        // Open fallbacks — no paid keys required; guarantee image+headline coverage
+        appendGuardianArticles(nk, logger, articles, guKey);
+        appendSpaceflightArticles(nk, logger, articles);
+        if (articles.length === 0) {
+            throw new Error("All news providers failed (GNews, Currents, MediaStack, NewsAPI, Guardian, Spaceflight News API)");
+        }
+        var headlinePool = [];
+        for (var hpi = 0; hpi < articles.length; hpi++) {
+            var ht = (articles[hpi].title || "").trim();
+            if (ht.length >= 20)
+                headlinePool.push(ht);
+        }
+        var withImage = 0;
+        var skipped = 0;
         for (var ni2 = 0; ni2 < articles.length; ni2++) {
             var art = articles[ni2];
             try {
                 var headline = (art.title || "").trim();
                 var desc = art.description || "";
                 var srcName = art.source && art.source.name ? art.source.name : "News";
-                if (!headline || headline.length < 20)
+                var imgUrl = newsArticleImage(art);
+                var artProvider = art.provider || "gnews";
+                if (!headline || headline.length < 20 || !imgUrl) {
+                    skipped++;
+                    continue;
+                }
+                withImage++;
+                var exHead = {};
+                exHead[headline] = true;
+                var wh = pickExcluding(headlinePool, exHead, 3);
+                if (wh.length < 3) {
+                    skipped++;
+                    continue;
+                }
+                var hlShort = headline.length > 120 ? headline.substring(0, 117) + "..." : headline;
+                var nOpts = [{ text: hlShort, is_correct: true }];
+                for (var whi = 0; whi < wh.length; whi++) {
+                    var wrongHl = wh[whi];
+                    nOpts.push({
+                        text: wrongHl.length > 120 ? wrongHl.substring(0, 117) + "..." : wrongHl,
+                        is_correct: false
+                    });
+                }
+                results.push({
+                    provider_key: "news_img_" + djb2(headline),
+                    topic: "news", lang: "en",
+                    question_text: "What is shown in this news image?",
+                    question_type: "single_select",
+                    raw_options: nOpts,
+                    has_media: true,
+                    media: { type: "image", url: imgUrl, thumbnail_url: imgUrl, duration_seconds: null, mime_type: "image/jpeg" },
+                    explanation: "This headline is from " + srcName + ". " + desc.substring(0, 150),
+                    difficulty: "medium", provider: artProvider,
+                    meta: { headline: headline, source: srcName }
+                });
+            }
+            catch (e) {
+                skipped++;
+                logger.debug("[QvQCache/news] skip: " + (e && e.message));
+            }
+        }
+        logger.info("[QvQCache/news] event=news_fetch_summary total_articles=" + articles.length +
+            " with_image=" + withImage + " skipped=" + skipped + " emitted=" + results.length);
+        if (results.length === 0) {
+            throw new Error("No news articles with images — total_articles=" + articles.length + " with_image=" + withImage);
+        }
+        return results;
+    }
+    // ── 16. Video Quiz catalog (Nakama storage, seeded from build embed) ───────
+    /**
+     * Idempotent seed: writes qv_catalog_video_quiz/catalog_{lang} + meta when the
+     * bundled version differs from storage. Reads globalThis.__QV_VIDEO_QUIZ_CATALOG__
+     * injected by postbuild.js at deploy time.
+     */
+    function ensureVideoQuizCatalogSeeded(nk, logger) {
+        var bundle = null;
+        try {
+            var g = globalThis.__QV_VIDEO_QUIZ_CATALOG__;
+            if (g && typeof g === "object")
+                bundle = g;
+        }
+        catch (_ge) { }
+        if (!bundle || !bundle.version || !bundle.langs || typeof bundle.langs !== "object") {
+            logger.warn("[QvQCache/video_quiz] catalog bundle missing or empty — postbuild embed absent?");
+            return { ok: false, error: "catalog_bundle_missing" };
+        }
+        var needsWrite = false;
+        try {
+            var metaRows = nk.storageRead([{
+                    collection: COL_VIDEO_CATALOG, key: "meta", userId: Constants.SYSTEM_USER_ID
+                }]);
+            if (!metaRows || metaRows.length === 0 || !metaRows[0].value) {
+                needsWrite = true;
+            }
+            else {
+                var storedVersion = metaRows[0].value.version || "";
+                if (storedVersion !== bundle.version)
+                    needsWrite = true;
+            }
+        }
+        catch (_re) {
+            needsWrite = true;
+        }
+        if (!needsWrite) {
+            logger.info("[QvQCache/video_quiz] catalog already seeded version=" + bundle.version);
+            return { ok: true, version: bundle.version, skipped: true };
+        }
+        var totalCount = 0;
+        var langCount = 0;
+        var writes = [];
+        var langKeys = Object.keys(bundle.langs);
+        for (var li = 0; li < langKeys.length; li++) {
+            var lang = langKeys[li];
+            var questions = bundle.langs[lang];
+            if (!Array.isArray(questions) || questions.length === 0)
+                continue;
+            totalCount += questions.length;
+            langCount++;
+            writes.push({
+                collection: COL_VIDEO_CATALOG,
+                key: "catalog_" + lang,
+                userId: Constants.SYSTEM_USER_ID,
+                value: {
+                    topic: "video_quiz",
+                    lang: lang,
+                    version: bundle.version,
+                    questions: questions
+                },
+                permissionRead: 1,
+                permissionWrite: 0
+            });
+        }
+        if (langCount === 0) {
+            logger.warn("[QvQCache/video_quiz] catalog bundle has no lang entries");
+            return { ok: false, error: "catalog_no_langs" };
+        }
+        writes.push({
+            collection: COL_VIDEO_CATALOG,
+            key: "meta",
+            userId: Constants.SYSTEM_USER_ID,
+            value: {
+                version: bundle.version,
+                seeded_at_ms: nowMs(),
+                question_count: totalCount,
+                source: bundle.source || "FallbackQuestions_csv"
+            },
+            permissionRead: 1,
+            permissionWrite: 0
+        });
+        nk.storageWrite(writes);
+        logger.info("[QvQCache/video_quiz] seeded catalog version=" + bundle.version +
+            " questions=" + totalCount + " langs=" + langCount);
+        return { ok: true, version: bundle.version, question_count: totalCount };
+    }
+    QvQuestionCache.ensureVideoQuizCatalogSeeded = ensureVideoQuizCatalogSeeded;
+    function fetchVideoQuiz(nk, env, logger) {
+        var seedResult = ensureVideoQuizCatalogSeeded(nk, logger);
+        if (!seedResult.ok) {
+            throw new Error("video_quiz: catalog not seeded — " + (seedResult.error || "unknown"));
+        }
+        var lang = "en";
+        var rows = nk.storageRead([{
+                collection: COL_VIDEO_CATALOG, key: "catalog_" + lang, userId: Constants.SYSTEM_USER_ID
+            }]);
+        if (!rows || rows.length === 0 || !rows[0].value || !Array.isArray(rows[0].value.questions)) {
+            throw new Error("video_quiz: catalog_" + lang + " missing or empty");
+        }
+        var catalogQs = rows[0].value.questions;
+        var results = [];
+        for (var vi = 0; vi < catalogQs.length; vi++) {
+            var cq = catalogQs[vi];
+            try {
+                if (!cq.has_media || !cq.media || cq.media.type !== "video")
+                    continue;
+                if (!cq.media.url || String(cq.media.url).trim().length === 0)
+                    continue;
+                if (!cq.question_text || !Array.isArray(cq.options) || cq.options.length < 2)
+                    continue;
+                if (!Array.isArray(cq.correct_option_ids) || cq.correct_option_ids.length === 0)
+                    continue;
+                var rOpts = [];
+                for (var oi = 0; oi < cq.options.length; oi++) {
+                    var opt = cq.options[oi];
+                    if (!opt || !opt.text)
+                        continue;
+                    var optId = opt.id || LETTERS[oi];
+                    var isC = cq.correct_option_ids.indexOf(optId) !== -1;
+                    rOpts.push({ text: String(opt.text), is_correct: isC });
+                }
+                if (rOpts.filter(function (o) { return o.is_correct; }).length === 0)
                     continue;
                 results.push({
-                    provider_key: "news_" + djb2(headline),
-                    topic: "news", lang: "en",
-                    question_text: "Is this a real news headline: \"" + headline.substring(0, 120) + "\"?",
-                    question_type: "true_false",
-                    raw_options: [
-                        { text: "True — this is a real headline", is_correct: true },
-                        { text: "False — this is a fake headline", is_correct: false }
-                    ],
-                    has_media: false, media: null,
-                    explanation: "This headline is from " + srcName + ". " + desc.substring(0, 150),
-                    difficulty: "easy", provider: "gnews",
+                    provider_key: cq.id || djb2(cq.question_text),
+                    topic: "video_quiz",
+                    lang: lang,
+                    question_text: cq.question_text,
+                    question_type: "single_select",
+                    raw_options: rOpts,
+                    has_media: true,
+                    media: cq.media,
+                    explanation: cq.explanation || "",
+                    difficulty: cq.difficulty || "medium",
+                    provider: "catalog",
                     meta: {}
                 });
             }
             catch (e) {
-                logger.debug("[QvQCache/news] skip: " + (e && e.message));
+                logger.debug("[QvQCache/video_quiz] skip[" + vi + "]: " + (e && e.message));
             }
         }
+        if (results.length === 0) {
+            throw new Error("video_quiz: zero valid questions after validation");
+        }
+        logger.info("[QvQCache/video_quiz] loaded " + results.length + " questions from catalog_" + lang);
         return results;
     }
-    // ── 16. S3 (daily / weekly) ───────────────────────────────────────────────
+    // ── 17. S3 (daily / weekly) ───────────────────────────────────────────────
     function fetchS3(nk, env, logger, topic) {
         var results = [];
         var base = (env && env.S3_BASE_URL) ? env.S3_BASE_URL : "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com";
@@ -112446,21 +113555,23 @@ var QvQuestionCache;
     // ── Provider router ────────────────────────────────────────────────────────
     function fetchForTopic(nk, env, logger, topic) {
         switch (topic) {
-            case "opentdb": return fetchOpentdb(nk, logger);
+            case "geography": return fetchGeoQuiz(nk, logger);
+            case "speed_quiz": return fetchSpeedQuiz(nk, logger);
+            case "true_false": return fetchTrueFalseQuiz(nk, logger);
             case "anime": return fetchJikan(nk, logger);
             case "pokemon": return fetchPokeapi(nk, logger);
             case "cocktail": return fetchCocktaildb(nk, logger);
             case "food": return fetchMealdb(nk, logger);
-            case "dog": return fetchDogceo(nk, logger);
+            case "dog": return fetchDogceo(nk, env, logger);
             case "ghibli": return fetchGhibli(nk, logger);
             case "disney": return fetchDisney(nk, logger);
             case "starwars": return fetchSwapi(nk, logger);
             case "countries": {
-                var all = fetchRestcountries(nk, logger);
+                var all = fetchRestcountries(nk, env, logger, "countries");
                 return all.filter(function (q) { return q.topic === "countries"; });
             }
             case "flags": {
-                var all2 = fetchRestcountries(nk, logger);
+                var all2 = fetchRestcountries(nk, env, logger, "flags");
                 return all2.filter(function (q) { return q.topic === "flags"; });
             }
             case "space": return fetchNasa(nk, env, logger);
@@ -112470,6 +113581,7 @@ var QvQuestionCache;
             case "news": return fetchNews(nk, env, logger);
             case "daily":
             case "weekly": return fetchS3(nk, env, logger, topic);
+            case "video_quiz": return fetchVideoQuiz(nk, env, logger);
             case "ai": throw new Error("ai topic is generated on-demand — never cached");
             default: throw new Error("Unknown topic: " + topic);
         }
@@ -112589,23 +113701,26 @@ var QvQuestionCache;
      * Steps: circuit-check → fetch → validate+decode → shuffle+assign → enrich → store.
      * Falls back silently (keeps stale cache) on any error; records failure in circuit breaker.
      */
-    function refreshCache(nk, logger, env, topic) {
+    function refreshCache(nk, logger, env, topic, force) {
         if (topic === "ai")
             return { ok: false, topic: topic, count: 0, error: "ai topic is never cached" };
         var ttlMs = TOPIC_TTL[topic] !== undefined ? TOPIC_TTL[topic] : 24 * 3600000;
         var provider = topicProvider(topic);
         if (circuitIsOpen(nk, provider)) {
             var cbMsg = "circuit open for provider=" + provider + " — skipping refresh";
-            logger.warn("[QvQCache/" + topic + "] " + cbMsg);
+            logger.warn("[QvQCache/" + topic + "] " + cbMsg +
+                " event=circuit_open provider=" + provider + " topic=" + topic);
             return { ok: false, topic: topic, count: 0, error: cbMsg };
         }
-        if (!tryAcquireRefreshGate(nk, topic)) {
-            logger.info("[QvQCache/" + topic + "] refresh gated — recent refresh in progress or completed");
+        if (!force && !tryAcquireRefreshGate(nk, topic)) {
+            logger.info("[QvQCache/" + topic + "] refresh gated — recent refresh in progress or completed" +
+                " event=provider_refresh_gated topic=" + topic);
             return { ok: true, topic: topic, count: 0 };
         }
         try {
             // ── Fetch ─────────────────────────────────────────────────────────────
-            logger.info("[QvQCache/" + topic + "] fetching from " + provider + "…");
+            logger.info("[QvQCache/" + topic + "] fetching from " + provider + "…" +
+                " event=provider_fetch_start topic=" + topic + " provider=" + provider);
             var rawList = fetchForTopic(nk, env, logger, topic);
             logger.info("[QvQCache/" + topic + "] fetched " + rawList.length + " raw questions");
             if (rawList.length === 0)
@@ -112624,11 +113739,21 @@ var QvQuestionCache;
                     continue;
                 }
                 // Gate passed — add to seen set to catch within-batch duplicates
-                seenSet[QvQualityGate.normalizeForDedup(rawList[qi].question_text)] = true;
+                seenSet[QvQualityGate.questionDedupeKey(rawList[qi])] = true;
                 passed.push(rawList[qi]);
             }
             logger.info("[QvQCache/" + topic + "] gate: " + passed.length + "/" + rawList.length +
                 " passed (rejected=" + rejected + ", top_reason=" + topRejectReason + ")");
+            if (topic === "dog") {
+                var dogBreedSample = 40;
+                if (env && env["QV_DOGCEO_BREED_SAMPLE"]) {
+                    var dogSampleParsed = parseInt(env["QV_DOGCEO_BREED_SAMPLE"], 10);
+                    if (!isNaN(dogSampleParsed) && dogSampleParsed > 0)
+                        dogBreedSample = dogSampleParsed;
+                }
+                logger.info("[QvQCache/dog] event=provider_gate_summary topic=dog raw_count=" + rawList.length +
+                    " passed_count=" + passed.length + " breed_sample=" + dogBreedSample + " provider=dogceo");
+            }
             if (passed.length === 0)
                 throw new Error("All questions rejected by quality gate. top_reason=" + topRejectReason);
             // ── Shuffle + A/B/C/D + Template Enrich ──────────────────────────────
@@ -112653,14 +113778,16 @@ var QvQuestionCache;
             };
             writeCache(nk, logger, topic, capped, provider, qStats, ttlMs);
             recordSuccess(nk, provider);
-            logger.info("[QvQCache/" + topic + "] refresh complete — " + capped.length + " stored, TTL=" + (ttlMs / 3600000).toFixed(1) + "h");
+            logger.info("[QvQCache/" + topic + "] refresh complete — " + capped.length + " stored, TTL=" + (ttlMs / 3600000).toFixed(1) + "h" +
+                " event=provider_refresh_done topic=" + topic + " count=" + capped.length + " provider=" + provider);
             return { ok: true, topic: topic, count: capped.length };
         }
         catch (err) {
             var errMsg = err && err.message ? err.message : String(err);
             // Existing cached data (stale or not) is intentionally NOT overwritten —
             // Unity clients keep serving from the last good cache until next refresh.
-            logger.error("[QvQCache/" + topic + "] refresh FAILED — keeping stale cache: " + errMsg);
+            logger.error("[QvQCache/" + topic + "] refresh FAILED — keeping stale cache: " + errMsg +
+                " event=provider_refresh_failed topic=" + topic + " error=" + errMsg.replace(/\s+/g, "_"));
             recordFailure(nk, provider, errMsg);
             return { ok: false, topic: topic, count: 0, error: errMsg };
         }
@@ -112676,7 +113803,7 @@ var QvQuestionCache;
         try {
             var rows = nk.storageRead([{ collection: COL_CACHE + topic, key: "pool_0", userId: "00000000-0000-0000-0000-000000000000" }]);
             if (!rows || rows.length === 0 || !rows[0].value) {
-                logger.info("[QvQCache/" + topic + "] cache miss");
+                logger.info("[QvQCache/" + topic + "] cache miss event=provider_cache_miss topic=" + topic);
                 return { questions: [], expired: true, cached_at_ms: 0 };
             }
             var page0 = rows[0].value;
@@ -112799,8 +113926,10 @@ var QvRemoteConfig;
     var COL_CONFIG = "qv_config";
     var COL_CACHE_PREFIX = "qv_cache_"; // qv_cache_{topic}
     var COL_CIRCUIT_BREAKER = "qv_circuit_breakers";
+    var COL_REFRESH_GATE = "qv_cache_refresh_gate";
     var COL_STATS = "qv_stats"; // aggregate rollup (Phase 1b)
     var KEY_GLOBAL = "global";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
     // S3 base for default topic icon URLs. Overridable per-topic in the stored doc.
     var S3_ICONS_BASE = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com/quiz-verse/topic-icons/";
     // ── Domain constants ──────────────────────────────────────────────────────
@@ -112808,7 +113937,8 @@ var QvRemoteConfig;
     var KNOWN_TOPICS = [
         "anime", "pokemon", "movies", "sports", "countries", "flags",
         "space", "music", "disney", "ghibli", "starwars", "food",
-        "cocktail", "dog", "news", "opentdb", "ai", "daily", "weekly"
+        "cocktail", "dog", "news", "opentdb", "speed_quiz", "true_false",
+        "video_quiz", "ai", "daily", "weekly"
     ];
     // Every external API provider the cache layer calls. Sync with question_cache.ts.
     var KNOWN_PROVIDERS = [
@@ -112816,11 +113946,51 @@ var QvRemoteConfig;
         "lastfm", "deezer", "gnews", "currents",
         "mediastack", "newsapi", "opentdb", "disney",
         "ghibli", "swapi", "thesportsdb", "cocktaildb",
-        "themealdb", "foodfacts", "dogceo", "restcountries"
+        "themealdb", "foodfacts", "dogceo", "restcountries",
+        "catalog"
     ];
     // Cache is considered "near expiry" when ≤ 10 min remain.
     // Ops gets a warning window before questions run dry.
     var STALE_WARNING_MS = 10 * 60 * 1000;
+    // Per-topic refresh dedupe gate — sync with question_cache.ts REFRESH_GATE_MS.
+    var REFRESH_GATE_MS = 30 * 1000;
+    // Topic → primary provider — sync with question_cache.ts topicProvider().
+    function topicProvider(topic) {
+        var map = {
+            opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
+            cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
+            ghibli: "ghibli", disney: "disney", starwars: "swapi",
+            countries: "restcountries", flags: "restcountries",
+            space: "nasa", movies: "tmdb", sports: "thesportsdb",
+            music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
+            video_quiz: "catalog", ai: "claude"
+        };
+        return map[topic] || topic;
+    }
+    function cacheActionHint(topic) {
+        return "POST quizverse_cache_refresh_tick { \"mode\": \"topic\", \"topic\": \"" + topic + "\" }";
+    }
+    function circuitStateForProvider(provider, circuitByKey, now) {
+        var v = circuitByKey[provider];
+        if (!v)
+            return "no_data";
+        var state = v.state || "unknown";
+        var openUntilMs = v.open_until_ms || 0;
+        if (state === "open" && openUntilMs > 0 && openUntilMs <= now)
+            return "half_open";
+        return state;
+    }
+    function buildTopicCacheMeta(topic, gateByTopic, circuitByKey, now) {
+        var provider = topicProvider(topic);
+        var lastGateMs = gateByTopic[topic] || 0;
+        return {
+            provider: provider,
+            circuit_state: circuitStateForProvider(provider, circuitByKey, now),
+            last_refresh_gate_ms: lastGateMs,
+            refresh_gate_active: lastGateMs > 0 && (now - lastGateMs) < REFRESH_GATE_MS,
+            action_hint: cacheActionHint(topic)
+        };
+    }
     // ── Shared helpers ────────────────────────────────────────────────────────
     function nakamaError(msg, code) {
         return { message: msg, code: code };
@@ -112845,25 +114015,28 @@ var QvRemoteConfig;
     // ══════════════════════════════════════════════════════════════════════════
     function buildDefaultTopics() {
         return [
-            { id: "anime", label: "Anime", icon_url: S3_ICONS_BASE + "anime.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 1, max_count: 20 },
-            { id: "pokemon", label: "Pokémon", icon_url: S3_ICONS_BASE + "pokemon.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 2, max_count: 20 },
-            { id: "movies", label: "Movies", icon_url: S3_ICONS_BASE + "movies.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 3, max_count: 20 },
-            { id: "sports", label: "Sports", icon_url: S3_ICONS_BASE + "sports.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 4, max_count: 20 },
-            { id: "countries", label: "Countries", icon_url: S3_ICONS_BASE + "countries.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 5, max_count: 20 },
-            { id: "flags", label: "Flags", icon_url: S3_ICONS_BASE + "flags.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 6, max_count: 20 },
-            { id: "space", label: "Space", icon_url: S3_ICONS_BASE + "space.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 7, max_count: 10 },
-            { id: "music", label: "Music", icon_url: S3_ICONS_BASE + "music.png", has_media: true, media_type: "audio", enabled: true, is_new: false, badge: null, sort_order: 8, max_count: 15 },
-            { id: "disney", label: "Disney", icon_url: S3_ICONS_BASE + "disney.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 9, max_count: 20 },
-            { id: "ghibli", label: "Studio Ghibli", icon_url: S3_ICONS_BASE + "ghibli.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 10, max_count: 20 },
-            { id: "starwars", label: "Star Wars", icon_url: S3_ICONS_BASE + "starwars.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 11, max_count: 20 },
-            { id: "food", label: "Food", icon_url: S3_ICONS_BASE + "food.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 12, max_count: 20 },
-            { id: "cocktail", label: "Cocktails", icon_url: S3_ICONS_BASE + "cocktail.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 13, max_count: 20 },
-            { id: "dog", label: "Dogs", icon_url: S3_ICONS_BASE + "dog.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 14, max_count: 20 },
-            { id: "news", label: "News", icon_url: S3_ICONS_BASE + "news.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 15, max_count: 10 },
-            { id: "opentdb", label: "General Trivia", icon_url: S3_ICONS_BASE + "general.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 16, max_count: 20 },
-            { id: "ai", label: "AI Quiz", icon_url: S3_ICONS_BASE + "ai.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 17, max_count: 10 },
-            { id: "daily", label: "Daily Quiz", icon_url: S3_ICONS_BASE + "daily.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 18, max_count: 10 },
-            { id: "weekly", label: "Weekly Quiz", icon_url: S3_ICONS_BASE + "weekly.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 19, max_count: 10 }
+            { id: "anime", label: "Anime", icon_url: S3_ICONS_BASE + "anime.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 1, max_count: 30 },
+            { id: "pokemon", label: "Pokémon", icon_url: S3_ICONS_BASE + "pokemon.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 2, max_count: 30 },
+            { id: "movies", label: "Movies", icon_url: S3_ICONS_BASE + "movies.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 3, max_count: 30 },
+            { id: "sports", label: "Sports", icon_url: S3_ICONS_BASE + "sports.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 4, max_count: 30 },
+            { id: "countries", label: "Countries", icon_url: S3_ICONS_BASE + "countries.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 5, max_count: 30 },
+            { id: "flags", label: "Flags", icon_url: S3_ICONS_BASE + "flags.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 6, max_count: 30 },
+            { id: "space", label: "Space", icon_url: S3_ICONS_BASE + "space.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 7, max_count: 30 },
+            { id: "music", label: "Music", icon_url: S3_ICONS_BASE + "music.png", has_media: true, media_type: "audio", enabled: true, is_new: false, badge: null, sort_order: 8, max_count: 30 },
+            { id: "disney", label: "Disney", icon_url: S3_ICONS_BASE + "disney.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 9, max_count: 30 },
+            { id: "ghibli", label: "Studio Ghibli", icon_url: S3_ICONS_BASE + "ghibli.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 10, max_count: 30 },
+            { id: "starwars", label: "Star Wars", icon_url: S3_ICONS_BASE + "starwars.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 11, max_count: 30 },
+            { id: "food", label: "Food", icon_url: S3_ICONS_BASE + "food.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 12, max_count: 30 },
+            { id: "cocktail", label: "Cocktails", icon_url: S3_ICONS_BASE + "cocktail.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 13, max_count: 30 },
+            { id: "dog", label: "Dogs", icon_url: S3_ICONS_BASE + "dog.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 14, max_count: 30 },
+            { id: "news", label: "News", icon_url: S3_ICONS_BASE + "news.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 15, max_count: 30 },
+            { id: "opentdb", label: "General Trivia", icon_url: S3_ICONS_BASE + "general.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 16, max_count: 30 },
+            { id: "speed_quiz", label: "Speed Quiz", icon_url: S3_ICONS_BASE + "general.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 20, max_count: 30 },
+            { id: "true_false", label: "True / False", icon_url: S3_ICONS_BASE + "general.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 21, max_count: 30 },
+            { id: "video_quiz", label: "Video Quiz", icon_url: S3_ICONS_BASE + "general.png", has_media: true, media_type: "video", enabled: true, is_new: false, badge: null, sort_order: 22, max_count: 30 },
+            { id: "ai", label: "AI Quiz", icon_url: S3_ICONS_BASE + "ai.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 17, max_count: 30 },
+            { id: "daily", label: "Daily Quiz", icon_url: S3_ICONS_BASE + "daily.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 18, max_count: 30 },
+            { id: "weekly", label: "Weekly Quiz", icon_url: S3_ICONS_BASE + "weekly.png", has_media: false, media_type: null, enabled: true, is_new: false, badge: null, sort_order: 19, max_count: 30 }
         ];
     }
     function buildDefaultSupportedLangs() {
@@ -112884,6 +114057,9 @@ var QvRemoteConfig;
             dog: ["en"],
             news: ["en", "es", "fr", "de", "pt", "it"],
             opentdb: ["en"],
+            speed_quiz: ["en"],
+            true_false: ["en"],
+            video_quiz: ["en"],
             ai: ["en", "hi", "es", "fr", "de", "ja", "ko", "pt", "ar", "ru", "id"],
             daily: ["en"],
             weekly: ["en"]
@@ -113085,23 +114261,52 @@ var QvRemoteConfig;
         var missingCount = 0;
         var probe = [];
         for (var i = 0; i < KNOWN_TOPICS.length; i++) {
-            probe.push({ collection: COL_CACHE_PREFIX + KNOWN_TOPICS[i], key: "pool_0", userId: "00000000-0000-0000-0000-000000000000" });
+            probe.push({ collection: COL_CACHE_PREFIX + KNOWN_TOPICS[i], key: "pool_0", userId: SYSTEM_USER });
+            probe.push({ collection: COL_REFRESH_GATE, key: KNOWN_TOPICS[i], userId: SYSTEM_USER });
+        }
+        var circuitProbe = [];
+        for (var ci = 0; ci < KNOWN_PROVIDERS.length; ci++) {
+            circuitProbe.push({ collection: COL_CIRCUIT_BREAKER, key: KNOWN_PROVIDERS[ci], userId: SYSTEM_USER });
         }
         try {
             var rows = nk.storageRead(probe);
+            var circuitRows = nk.storageRead(circuitProbe);
             var byCol = {};
+            var gateByTopic = {};
             if (rows) {
                 for (var ri = 0; ri < rows.length; ri++) {
                     var r = rows[ri];
-                    if (r && r.value)
+                    if (!r || !r.value)
+                        continue;
+                    if (r.collection === COL_REFRESH_GATE) {
+                        gateByTopic[r.key] = r.value.last_refresh_ms || 0;
+                    }
+                    else {
                         byCol[r.collection] = r;
+                    }
+                }
+            }
+            var circuitByKey = {};
+            if (circuitRows) {
+                for (var cri = 0; cri < circuitRows.length; cri++) {
+                    var cr = circuitRows[cri];
+                    if (cr && cr.value)
+                        circuitByKey[cr.key] = cr.value;
                 }
             }
             for (var ti = 0; ti < KNOWN_TOPICS.length; ti++) {
                 var topic = KNOWN_TOPICS[ti];
                 var row = byCol[COL_CACHE_PREFIX + topic];
+                var meta = buildTopicCacheMeta(topic, gateByTopic, circuitByKey, now);
                 if (!row || !row.value) {
-                    topics[topic] = { present: false };
+                    topics[topic] = {
+                        present: false,
+                        provider: meta.provider,
+                        circuit_state: meta.circuit_state,
+                        last_refresh_gate_ms: meta.last_refresh_gate_ms,
+                        refresh_gate_active: meta.refresh_gate_active,
+                        action_hint: meta.action_hint
+                    };
                     missingCount++;
                     continue;
                 }
@@ -113132,6 +114337,11 @@ var QvRemoteConfig;
                     stale_reason: isExpired ? "expired" : isNearExpiry ? "near_expiry" : null,
                     providers_used: v.providers_used || [],
                     lang_breakdown: v.lang_breakdown || {},
+                    provider: meta.provider,
+                    circuit_state: meta.circuit_state,
+                    last_refresh_gate_ms: meta.last_refresh_gate_ms,
+                    refresh_gate_active: meta.refresh_gate_active,
+                    action_hint: meta.action_hint,
                     quality_gate: {
                         total_processed: qg.total_processed || 0,
                         passed: qg.passed || 0,
@@ -114251,9 +115461,57 @@ var QvSubmitResult;
             personalization.srq_due_count = QvSRQ.countDue(nk, userId);
         }
         catch (_pe) { }
+        // ── Friends activity feed (doc §14A.6) ────────────────────────────────
+        // Feed-worthiness is decided HERE (the game layer), rendering is done by
+        // the social layer. Best-effort — feed failure never affects the result.
+        try {
+            var feedAuthorName = username || userId;
+            try {
+                var feedUsers = nk.usersGetId([userId]);
+                if (feedUsers && feedUsers.length > 0 && feedUsers[0]) {
+                    feedAuthorName = feedUsers[0].displayName || feedUsers[0].username || feedAuthorName;
+                }
+            }
+            catch (_) { }
+            SocialFriendsFeed.writeEvent(nk, logger, userId, feedAuthorName, "quizverse", "quiz_completed", { quizId: packId, quizTitle: topic, topic: slugify(topic),
+                score: totalScore, correct: correct, total: total, isPerfect: isPerfect }, { type: "challenge", label: "Beat this score",
+                payload: { challengeFriendId: userId, quizId: packId, topic: slugify(topic), targetScore: totalScore } });
+        }
+        catch (_feedErr) {
+            logger.warn("[QvSubmit] feed event write failed (non-fatal): " + (_feedErr && _feedErr.message));
+        }
+        // ── Duo Quest credit (server-authoritative — never client-claimed) ────
+        try {
+            DuoQuests.creditQuizCompletion(nk, logger, userId, "quizverse");
+        }
+        catch (_duoErr) {
+            logger.warn("[QvSubmit] duo credit failed (non-fatal): " + (_duoErr && _duoErr.message));
+        }
+        // ── Weekly player stats (ML-002 — feeds friends_list gameActivity) ────
+        try {
+            SocialPlayerStats.recordQuizCompletion(nk, logger, userId, "quizverse", totalXp, totalScore);
+        }
+        catch (_statsErr) {
+            logger.warn("[QvSubmit] player stats failed (non-fatal): " + (_statsErr && _statsErr.message));
+        }
+        // ── Group streaks (G-022 — any member playing keeps the streak alive) ─
+        try {
+            SocialEngagementExtras.creditGroupStreaks(nk, logger, userId);
+        }
+        catch (_gsErr) {
+            logger.warn("[QvSubmit] group streak credit failed (non-fatal): " + (_gsErr && _gsErr.message));
+        }
+        // ── Score token (G-013): lets the client attach a server-signed proof
+        // of this score to a friend challenge; friend_challenges.js verifies it.
+        var scoreToken = "";
+        try {
+            scoreToken = ScoreSigning.sign(ctx, nk, userId, totalScore, packId);
+        }
+        catch (_) { /* token absent = feature dark, never fatal */ }
         // ── Response ──────────────────────────────────────────────────────────
         return JSON.stringify({
             ok: true,
+            score_token: scoreToken,
             pack_id: packId,
             topic: topic,
             correct: correct,
@@ -115941,24 +117199,38 @@ var AdminConsole;
         return RpcHelpers.successResponse(leaderboardRecordToAdmin(record));
     }
     // ---- Wallet Direct Operations ----
+    function adminUserId(data) {
+        return String(data.userId || data.user_id || "").trim();
+    }
+    // The bare (unscoped) wallet is the legacy owner's wallet — fold a
+    // "quizverse" scope (any alias) down to the bare path so admin grants land
+    // where the QuizVerse game actually reads.
+    function walletGameId(nk, data) {
+        var gameId = adminGameId(data);
+        if (gameId && ConfigLoader.isLegacyBareKeyOwner(nk, gameId))
+            return "";
+        return gameId;
+    }
     function rpcWalletView(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
-        if (!data.userId)
+        var userId = adminUserId(data);
+        if (!userId)
             return RpcHelpers.errorResponse("userId required");
-        var gameId = adminGameId(data);
+        var gameId = walletGameId(nk, data);
         var wallet = gameId
-            ? WalletHelpers.getGameWallet(nk, data.userId, gameId)
-            : Storage.readJson(nk, Constants.WALLETS_COLLECTION, "wallet", data.userId);
-        return RpcHelpers.successResponse({ userId: data.userId, wallet: wallet || {} });
+            ? WalletHelpers.getGameWallet(nk, userId, gameId)
+            : Storage.readJson(nk, Constants.WALLETS_COLLECTION, "wallet", userId);
+        return RpcHelpers.successResponse({ userId: userId, wallet: wallet || {} });
     }
     function rpcWalletGrant(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
-        if (!data.userId || !data.currencies)
+        var userId = adminUserId(data);
+        if (!userId || !data.currencies)
             return RpcHelpers.errorResponse("userId and currencies required (e.g. { userId: '...', currencies: { coins: 100, gems: 5 } })");
-        var gameId = adminGameId(data);
-        var wallet = gameId ? WalletHelpers.getGameWallet(nk, data.userId, gameId) : (Storage.readJson(nk, Constants.WALLETS_COLLECTION, "wallet", data.userId) || {});
+        var gameId = walletGameId(nk, data);
+        var wallet = gameId ? WalletHelpers.getGameWallet(nk, userId, gameId) : (Storage.readJson(nk, Constants.WALLETS_COLLECTION, "wallet", userId) || {});
         for (var currency in data.currencies) {
             if (gameId) {
                 wallet.currencies[currency] = (wallet.currencies[currency] || 0) + data.currencies[currency];
@@ -115970,17 +117242,33 @@ var AdminConsole;
         if (gameId)
             WalletHelpers.saveGameWallet(nk, wallet);
         else
-            Storage.writeJson(nk, Constants.WALLETS_COLLECTION, "wallet", data.userId, wallet);
-        EventBus.emit(nk, logger, ctx, "wallet_updated", { userId: data.userId, wallet: wallet, granted: data.currencies });
-        logAdminAudit(nk, ctx, "admin_wallet_grant", { userId: data.userId, gameId: gameId || Constants.DEFAULT_GAME_ID }, { currencies: data.currencies });
-        return RpcHelpers.successResponse({ userId: data.userId, wallet: wallet });
+            Storage.writeJson(nk, Constants.WALLETS_COLLECTION, "wallet", userId, wallet);
+        // The console (Economy / Players pages) displays the NATIVE Nakama wallet,
+        // so mirror bare-scope grants there too; otherwise admin grants look like
+        // no-ops in the UI even though the storage wallet changed.
+        var nativeUpdated = false;
+        var nativeError = "";
+        if (!gameId) {
+            try {
+                nk.walletUpdate(userId, data.currencies, { source: "admin_wallet_grant" }, true);
+                nativeUpdated = true;
+            }
+            catch (e) {
+                nativeError = String(e && e.message ? e.message : e);
+                logger.warn("[AdminWallet] native walletUpdate failed for %s: %s", userId, nativeError);
+            }
+        }
+        EventBus.emit(nk, logger, ctx, "wallet_updated", { userId: userId, wallet: wallet, granted: data.currencies });
+        logAdminAudit(nk, ctx, "admin_wallet_grant", { userId: userId, gameId: gameId || Constants.DEFAULT_GAME_ID }, { currencies: data.currencies });
+        return RpcHelpers.successResponse({ userId: userId, wallet: wallet, nativeUpdated: nativeUpdated, nativeError: nativeError || undefined });
     }
     function rpcWalletReset(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
+        data.userId = adminUserId(data);
         if (!data.userId)
             return RpcHelpers.errorResponse("userId required");
-        var gameId = adminGameId(data);
+        var gameId = walletGameId(nk, data);
         var defaults = data.defaults || {};
         if (gameId) {
             WalletHelpers.saveGameWallet(nk, {
@@ -117506,7 +118794,16 @@ var AdminConsole;
         var limit = Math.min(200, Math.max(1, Number(data.limit) || 100));
         var offset = Math.max(0, Number(data.offset) || 0);
         var storageCursor = (typeof data.cursor === "string" && data.cursor) ? String(data.cursor) : "";
-        function mapFulfillmentRow(key, v) {
+        function prizeFulfillmentStorageCreateTimeSec(storageObj) {
+            if (!storageObj)
+                return 0;
+            var ct = Number(storageObj.createTime || 0);
+            return ct > 0 ? ct : 0;
+        }
+        function mapFulfillmentRow(key, v, storageObj) {
+            var createTime = prizeFulfillmentStorageCreateTimeSec(storageObj);
+            var queuedAt = v.queuedAt || v.claimedAt || 0;
+            var sortAt = createTime || queuedAt;
             return {
                 key: key,
                 userId: v.userId || "",
@@ -117518,7 +118815,10 @@ var AdminConsole;
                 region: v.region || "",
                 email: v.email || "",
                 source: v.source || "",
-                queuedAt: v.queuedAt || v.claimedAt || 0,
+                queuedAt: queuedAt,
+                createTime: createTime,
+                sortAt: sortAt,
+                emailPatchedAt: v.emailPatchedAt || 0,
                 settledAt: v.settledAt || 0,
                 voucher: v.voucher || null,
                 error: v.error || "",
@@ -117546,13 +118846,13 @@ var AdminConsole;
                     var pv = pageObjs[pi].value || {};
                     if (!rowMatchesFilters(pv))
                         continue;
-                    allRows.push(mapFulfillmentRow(pageObjs[pi].key, pv));
+                    allRows.push(mapFulfillmentRow(pageObjs[pi].key, pv, pageObjs[pi]));
                 }
                 scanCursor = (page && page.cursor) ? String(page.cursor) : "";
                 pages++;
             } while (scanCursor && pages < maxPages);
             allRows.sort(function (a, b) {
-                return (b.queuedAt || 0) - (a.queuedAt || 0);
+                return (b.sortAt || 0) - (a.sortAt || 0);
             });
             var total = allRows.length;
             var pageRows = allRows.slice(offset, offset + limit);
@@ -117571,7 +118871,7 @@ var AdminConsole;
             var v = objs[i].value || {};
             if (!rowMatchesFilters(v))
                 continue;
-            rows.push(mapFulfillmentRow(objs[i].key, v));
+            rows.push(mapFulfillmentRow(objs[i].key, v, objs[i]));
         }
         return RpcHelpers.successResponse({
             fulfillments: rows,
@@ -117706,7 +119006,10 @@ var AdminConsole;
                     skippedNoAccount++;
                     continue;
                 }
-                var updated = Object.assign({}, entry.value, { email: foundEmail });
+                var updated = Object.assign({}, entry.value, {
+                    email: foundEmail,
+                    emailPatchedAt: Math.floor(Date.now() / 1000),
+                });
                 try {
                     Storage.writeSystemJson(nk, "prize_fulfillments", entry.key, updated);
                     patched++;
@@ -117960,6 +119263,288 @@ var HiroBase;
     HiroBase.register = register;
     register();
 })(HiroBase || (HiroBase = {}));
+var BattlePassEngine;
+(function (BattlePassEngine) {
+    // ─── Types ────────────────────────────────────────────────────────────────
+    // Season shape matches what the admin dashboard BattlepassConfigPage saves
+    // under hiro_configs "incentives" → { incentives: { <seasonId>: SeasonDef } }.
+    // ─── Storage ──────────────────────────────────────────────────────────────
+    var STATE_COLLECTION = "battlepass_state";
+    function stateKey(gameId, userId) {
+        return gameId + "_" + userId;
+    }
+    function loadPlayerState(nk, userId, gameId) {
+        var rows = [];
+        try {
+            rows = nk.storageRead([{ collection: STATE_COLLECTION, key: stateKey(gameId, userId), userId: userId }]);
+        }
+        catch (_) { }
+        if (rows && rows.length > 0 && rows[0].value)
+            return rows[0].value;
+        return { seasons: {} };
+    }
+    function savePlayerState(nk, userId, gameId, state) {
+        nk.storageWrite([{
+                collection: STATE_COLLECTION,
+                key: stateKey(gameId, userId),
+                userId: userId,
+                value: state,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    function getOrCreateSeasonState(state, seasonId) {
+        if (!state.seasons[seasonId]) {
+            state.seasons[seasonId] = {
+                seasonId: seasonId, xp: 0, premium: false, premiumUnlockedAt: null,
+                claimedFree: [], claimedPremium: [], updatedAt: 0
+            };
+        }
+        return state.seasons[seasonId];
+    }
+    // ─── Config ───────────────────────────────────────────────────────────────
+    function loadSeasons(nk, gameId) {
+        var cfg = ConfigLoader.loadConfigForGame(nk, "incentives", gameId, {});
+        var map = (cfg && cfg.incentives) ? cfg.incentives : {};
+        var out = [];
+        for (var key in map) {
+            var s = map[key];
+            if (!s || s.disabled)
+                continue;
+            // The incentives map can also hold non-battlepass campaign entries;
+            // only entries with a tier ladder are seasons.
+            if (!s.tiers || !s.tiers.length)
+                continue;
+            if (s.type && s.type !== "battle_pass" && s.type !== "season_pass" && s.type !== "event_pass")
+                continue;
+            if (!s.id)
+                s.id = key;
+            out.push(s);
+        }
+        return out;
+    }
+    function isSeasonActive(s, now) {
+        if (s.start_time_sec && now < s.start_time_sec)
+            return false;
+        if (s.end_time_sec && now > s.end_time_sec)
+            return false;
+        return true;
+    }
+    function sortedTiers(s) {
+        return (s.tiers || []).slice().sort(function (a, b) { return a.points_required - b.points_required; });
+    }
+    function tierForXp(tiers, xp) {
+        var t = 0;
+        for (var i = 0; i < tiers.length; i++) {
+            if (xp >= tiers[i].points_required)
+                t = tiers[i].tier;
+        }
+        return t;
+    }
+    // Dashboard reward JSON is a bare grant ({currencies:{...}}); wrap it so
+    // RewardEngine sees a canonical Hiro.Reward. Full rewards pass through.
+    function normalizeReward(reward) {
+        if (!reward)
+            return null;
+        if (reward.guaranteed || reward.weighted)
+            return reward;
+        return { guaranteed: reward };
+    }
+    function grantTierReward(nk, logger, ctx, userId, gameId, reward, seasonId, tier, track) {
+        var normalized = normalizeReward(reward);
+        if (!normalized)
+            return false;
+        try {
+            var resolved = RewardEngine.resolveReward(nk, normalized);
+            RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
+            logger.info("[BattlePass] Tier reward granted: season=%s tier=%d track=%s user=%s", seasonId, tier, track, userId);
+            return true;
+        }
+        catch (e) {
+            logger.error("[BattlePass] Tier reward grant failed: season=%s tier=%d err=%s", seasonId, tier, (e && e.message ? e.message : String(e)));
+            return false;
+        }
+    }
+    // ─── Core: XP accrual + tier auto-grant ───────────────────────────────────
+    // Called from QuestEngine.processEventInternal so both the record_event RPC
+    // and the EventBus analytics bridge feed battle pass XP automatically.
+    function processEvent(nk, logger, ctx, userId, gameId, eventType, value) {
+        var now = Math.floor(Date.now() / 1000);
+        var seasons = loadSeasons(nk, gameId);
+        if (seasons.length === 0)
+            return;
+        var state = null;
+        var stateModified = false;
+        for (var i = 0; i < seasons.length; i++) {
+            var season = seasons[i];
+            if (!isSeasonActive(season, now))
+                continue;
+            var xpSources = (season.metadata && season.metadata.xp_sources) || {};
+            var xpGain = xpSources[eventType];
+            if (!xpGain || xpGain <= 0)
+                continue;
+            if (!state)
+                state = loadPlayerState(nk, userId, gameId);
+            var ss = getOrCreateSeasonState(state, season.id);
+            var tiers = sortedTiers(season);
+            var prevXp = ss.xp;
+            ss.xp = prevXp + xpGain;
+            ss.updatedAt = now;
+            stateModified = true;
+            // Auto-grant every tier crossed by this XP gain.
+            for (var t = 0; t < tiers.length; t++) {
+                var tier = tiers[t];
+                if (tier.points_required > prevXp && tier.points_required <= ss.xp) {
+                    if (tier.free_reward && ss.claimedFree.indexOf(tier.tier) === -1) {
+                        if (grantTierReward(nk, logger, ctx, userId, gameId, tier.free_reward, season.id, tier.tier, "free")) {
+                            ss.claimedFree.push(tier.tier);
+                        }
+                    }
+                    if (ss.premium && tier.premium_reward && ss.claimedPremium.indexOf(tier.tier) === -1) {
+                        if (grantTierReward(nk, logger, ctx, userId, gameId, tier.premium_reward, season.id, tier.tier, "premium")) {
+                            ss.claimedPremium.push(tier.tier);
+                        }
+                    }
+                    try {
+                        EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_STEP_COMPLETED, {
+                            userId: userId, questId: "battlepass:" + season.id, stepId: "tier_" + tier.tier
+                        });
+                    }
+                    catch (_) { }
+                }
+            }
+        }
+        if (state && stateModified) {
+            savePlayerState(nk, userId, gameId, state);
+        }
+    }
+    BattlePassEngine.processEvent = processEvent;
+    // ─── RPC: battlepass_get ──────────────────────────────────────────────────
+    function rpcBattlePassGet(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var gameId = RpcHelpers.gameId(data) || Constants.DEFAULT_GAME_ID;
+        var now = Math.floor(Date.now() / 1000);
+        var seasons = loadSeasons(nk, gameId);
+        var state = loadPlayerState(nk, userId, gameId);
+        var out = [];
+        for (var i = 0; i < seasons.length; i++) {
+            var season = seasons[i];
+            var active = isSeasonActive(season, now);
+            if (!active && !(data.includeInactive === true))
+                continue;
+            var ss = state.seasons[season.id] || null;
+            var tiers = sortedTiers(season);
+            var xp = ss ? ss.xp : 0;
+            out.push({
+                id: season.id,
+                name: season.name,
+                active: active,
+                startTimeSec: season.start_time_sec || null,
+                endTimeSec: season.end_time_sec || null,
+                premiumPrice: (season.metadata && season.metadata.premium_price) || null,
+                xpSources: (season.metadata && season.metadata.xp_sources) || {},
+                tiers: tiers.map(function (t) {
+                    return {
+                        tier: t.tier,
+                        pointsRequired: t.points_required,
+                        freeReward: t.free_reward || null,
+                        premiumReward: t.premium_reward || null,
+                        freeClaimed: !!(ss && ss.claimedFree.indexOf(t.tier) !== -1),
+                        premiumClaimed: !!(ss && ss.claimedPremium.indexOf(t.tier) !== -1)
+                    };
+                }),
+                player: {
+                    xp: xp,
+                    tier: tierForXp(tiers, xp),
+                    premium: !!(ss && ss.premium),
+                    premiumUnlockedAt: ss ? ss.premiumUnlockedAt : null
+                }
+            });
+        }
+        return RpcHelpers.successResponse({ seasons: out });
+    }
+    // ─── RPC: battlepass_record_event ────────────────────────────────────────
+    // Direct XP path for apps that call RPCs instead of emitting analytics
+    // events (mirrors quest_engine_record_event's trust model).
+    function rpcBattlePassRecordEvent(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var gameId = RpcHelpers.gameId(data) || Constants.DEFAULT_GAME_ID;
+        var eventType = data.eventType;
+        if (!eventType)
+            return RpcHelpers.errorResponse("eventType is required");
+        var value = (data.value !== undefined && data.value !== null) ? Number(data.value) : 0;
+        processEvent(nk, logger, ctx, userId, gameId, eventType, value);
+        // Return fresh state so clients can update the pass UI in one call.
+        return rpcBattlePassGet(ctx, logger, nk, payload);
+    }
+    // ─── RPC: battlepass_unlock_premium ──────────────────────────────────────
+    // Spends premium_price from the game wallet, flips premium on, and
+    // retro-grants premium rewards for tiers the player already reached.
+    function rpcBattlePassUnlockPremium(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var gameId = RpcHelpers.gameId(data) || Constants.DEFAULT_GAME_ID;
+        var seasonId = data.seasonId;
+        if (!seasonId)
+            return RpcHelpers.errorResponse("seasonId is required");
+        var now = Math.floor(Date.now() / 1000);
+        var seasons = loadSeasons(nk, gameId);
+        var season = null;
+        for (var i = 0; i < seasons.length; i++) {
+            if (seasons[i].id === seasonId) {
+                season = seasons[i];
+                break;
+            }
+        }
+        if (!season)
+            return RpcHelpers.errorResponse("Unknown season: " + seasonId);
+        if (!isSeasonActive(season, now))
+            return RpcHelpers.errorResponse("Season is not active");
+        var state = loadPlayerState(nk, userId, gameId);
+        var ss = getOrCreateSeasonState(state, seasonId);
+        if (ss.premium)
+            return RpcHelpers.errorResponse("Premium already unlocked");
+        var price = (season.metadata && season.metadata.premium_price) || {};
+        for (var cur in price) {
+            if (price[cur] > 0) {
+                try {
+                    WalletHelpers.spendCurrency(nk, logger, ctx, userId, gameId, cur, price[cur]);
+                }
+                catch (e) {
+                    return RpcHelpers.errorResponse((e && e.message ? e.message : "Insufficient balance"));
+                }
+            }
+        }
+        ss.premium = true;
+        ss.premiumUnlockedAt = now;
+        ss.updatedAt = now;
+        // Retro-grant premium rewards for tiers already reached.
+        var tiers = sortedTiers(season);
+        var granted = [];
+        for (var t = 0; t < tiers.length; t++) {
+            var tier = tiers[t];
+            if (tier.points_required <= ss.xp && tier.premium_reward && ss.claimedPremium.indexOf(tier.tier) === -1) {
+                if (grantTierReward(nk, logger, ctx, userId, gameId, tier.premium_reward, seasonId, tier.tier, "premium-retro")) {
+                    ss.claimedPremium.push(tier.tier);
+                    granted.push(tier.tier);
+                }
+            }
+        }
+        savePlayerState(nk, userId, gameId, state);
+        logger.info("[BattlePass] Premium unlocked: season=%s user=%s retroTiers=%d", seasonId, userId, granted.length);
+        return RpcHelpers.successResponse({ unlocked: true, seasonId: seasonId, retroGrantedTiers: granted });
+    }
+    // ─── Register ─────────────────────────────────────────────────────────────
+    function register(initializer) {
+        __rpc_battlepass_get = rpcBattlePassGet;
+        __rpc_battlepass_record_event = rpcBattlePassRecordEvent;
+        __rpc_battlepass_unlock_premium = rpcBattlePassUnlockPremium;
+    }
+    BattlePassEngine.register = register;
+    register();
+})(BattlePassEngine || (BattlePassEngine = {}));
 var HiroChallenges;
 (function (HiroChallenges) {
     var DEFAULT_CONFIG = { challenges: {} };
@@ -118526,6 +120111,149 @@ var HiroEventLeaderboards;
         return ConfigLoader.loadConfigForGame(nk, "event_leaderboards", gameId, DEFAULT_CONFIG);
     }
     HiroEventLeaderboards.getConfig = getConfig;
+    function adminRewardToHiro(r) {
+        if (!r)
+            return {};
+        var currencies = {};
+        var hasCur = false;
+        if (r.currencies) {
+            for (var c in r.currencies) {
+                currencies[c] = r.currencies[c];
+                hasCur = true;
+            }
+        }
+        if (r.xp) {
+            currencies["xp"] = (currencies["xp"] || 0) + r.xp;
+            hasCur = true;
+        }
+        var items = {};
+        var hasItems = false;
+        if (r.items && r.items.length) {
+            for (var i = 0; i < r.items.length; i++) {
+                var it = r.items[i];
+                if (it && it.id) {
+                    items[it.id] = it.count || 1;
+                    hasItems = true;
+                }
+            }
+        }
+        var grant = {};
+        if (hasCur)
+            grant.currencies = currencies;
+        if (hasItems)
+            grant.items = items;
+        if (r.energies)
+            grant.energies = r.energies;
+        return { guaranteed: grant };
+    }
+    function normalizeAdminDef(id, def) {
+        var tiers = [];
+        var src = def.tiers || [];
+        for (var i = 0; i < src.length; i++) {
+            var t = src[i];
+            tiers.push({
+                rankMin: t.rank_min != null ? t.rank_min : (t.rankMin || 1),
+                rankMax: t.rank_max != null ? t.rank_max : (t.rankMax || 1),
+                // Admin tiers carry a flat reward object; runtime tiers already carry Hiro.Reward.
+                reward: (t.reward && (t.reward.guaranteed || t.reward.weighted)) ? t.reward : adminRewardToHiro(t.reward),
+            });
+        }
+        var startAt = def.start_time_sec || 0;
+        var endAt = def.end_time_sec || 0;
+        if (!endAt && startAt && def.duration_sec)
+            endAt = startAt + def.duration_sec;
+        return {
+            id: id,
+            name: def.name || id,
+            description: def.description,
+            operator: def.operator || "best",
+            sortOrder: def.sort_order === 1 || def.sort_order === "ascending" ? "asc" : "desc",
+            startAt: startAt,
+            endAt: endAt,
+            disabled: !!def.disabled,
+            tiers: tiers,
+            resetSchedule: def.reset_schedule || undefined,
+            metadata: def.metadata,
+        };
+    }
+    function normalizeRuntimeDef(id, def) {
+        var tiers = [];
+        var src = def.tiers || [];
+        for (var i = 0; i < src.length; i++) {
+            var t = src[i];
+            tiers.push({ rankMin: t.rankMin || 1, rankMax: t.rankMax || 1, reward: t.reward || {} });
+        }
+        return {
+            id: id,
+            name: def.name || id,
+            description: def.description,
+            operator: def.operator || "best",
+            sortOrder: def.sortOrder === "asc" ? "asc" : "desc",
+            startAt: def.startAt || 0,
+            endAt: def.endAt || (def.startAt && def.durationSec ? def.startAt + def.durationSec : 0),
+            disabled: !!def.disabled,
+            tiers: tiers,
+            metadata: def.metadata,
+        };
+    }
+    function getEvents(nk, gameId) {
+        var raw = getConfig(nk, gameId);
+        var out = {};
+        var id;
+        if (raw && raw.events) {
+            for (id in raw.events)
+                out[id] = normalizeRuntimeDef(id, raw.events[id]);
+        }
+        // Admin console schema wins on id collision — it is the actively managed store.
+        if (raw && raw.event_leaderboards) {
+            for (id in raw.event_leaderboards)
+                out[id] = normalizeAdminDef(id, raw.event_leaderboards[id]);
+        }
+        return out;
+    }
+    function eventStatus(def, now) {
+        if (def.startAt && now < def.startAt)
+            return "upcoming";
+        if (def.endAt && now > def.endAt)
+            return "ended";
+        return "active";
+    }
+    /* ------------------------------------------------------------------ *
+     * Leaderboard provisioning
+     * ------------------------------------------------------------------ */
+    function canonicalGameId(nk, gameId) {
+        try {
+            if (typeof LegacyGameRegistry !== "undefined" && LegacyGameRegistry.resolveCanonicalGameId) {
+                return LegacyGameRegistry.resolveCanonicalGameId(nk, gameId);
+            }
+        }
+        catch (_e) { /* fall through */ }
+        return gameId;
+    }
+    function eventLeaderboardId(nk, gameId, eventId) {
+        var canonical = canonicalGameId(nk, gameId);
+        return canonical ? "event_lb_" + canonical + "_" + eventId : "event_lb_" + eventId;
+    }
+    HiroEventLeaderboards.eventLeaderboardId = eventLeaderboardId;
+    var ensuredLbs = {};
+    function ensureLeaderboard(nk, logger, lbId, def) {
+        if (ensuredLbs[lbId])
+            return;
+        var operatorMap = {
+            best: "best" /* nkruntime.Operator.BEST */, set: "set" /* nkruntime.Operator.SET */,
+            incr: "increment" /* nkruntime.Operator.INCREMENTAL */, decr: "decrement",
+        };
+        var sort = def.sortOrder === "asc" ? "ascending" /* nkruntime.SortOrder.ASCENDING */ : "descending" /* nkruntime.SortOrder.DESCENDING */;
+        try {
+            nk.leaderboardCreate(lbId, false, sort, operatorMap[def.operator] || "best" /* nkruntime.Operator.BEST */, def.resetSchedule || null, { eventId: def.id, source: "event_leaderboards" }, true);
+            ensuredLbs[lbId] = true;
+        }
+        catch (e) {
+            // Already-exists is fine; anything else will surface again on record write.
+            ensuredLbs[lbId] = true;
+            logger.debug("[EventLB] leaderboardCreate %s: %s", lbId, String(e && e.message ? e.message : e));
+        }
+    }
     function getUserEventState(nk, userId, gameId) {
         var data = Storage.readJson(nk, Constants.HIRO_CONFIGS_COLLECTION, Constants.gameKey(gameId, "event_lb_state_" + userId), userId);
         return data || { events: {} };
@@ -118533,34 +120261,30 @@ var HiroEventLeaderboards;
     function saveUserEventState(nk, userId, data, gameId) {
         Storage.writeJson(nk, Constants.HIRO_CONFIGS_COLLECTION, Constants.gameKey(gameId, "event_lb_state_" + userId), userId, data);
     }
-    function getActiveEvents(nk) {
-        var data = Storage.readSystemJson(nk, Constants.HIRO_CONFIGS_COLLECTION, "active_event_lbs");
-        return (data && data.events) || [];
-    }
+    /* ------------------------------------------------------------------ *
+     * RPCs
+     * ------------------------------------------------------------------ */
     function rpcList(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = RpcHelpers.gameId(data);
-        var config = getConfig(nk, gameId);
-        var activeEvents = getActiveEvents(nk);
+        var events = getEvents(nk, gameId);
         var userState = getUserEventState(nk, userId, gameId);
         var now = Math.floor(Date.now() / 1000);
         var result = [];
-        for (var i = 0; i < activeEvents.length; i++) {
-            var ae = activeEvents[i];
-            var def = config.events[ae.eventId];
-            if (!def)
+        for (var id in events) {
+            var def = events[id];
+            if (def.disabled)
                 continue;
-            var status = now < ae.startAt ? "upcoming" : now > ae.endAt ? "ended" : "active";
-            var us = userState.events[ae.eventId];
+            var us = userState.events[id];
             result.push({
-                eventId: ae.eventId,
+                eventId: id,
                 name: def.name,
                 description: def.description,
-                leaderboardId: ae.leaderboardId,
-                startAt: ae.startAt,
-                endAt: ae.endAt,
-                status: status,
+                leaderboardId: eventLeaderboardId(nk, gameId, id),
+                startAt: def.startAt,
+                endAt: def.endAt,
+                status: eventStatus(def, now),
                 joined: us ? us.joined : false,
                 claimed: us ? !!us.claimedAt : false,
                 tiers: def.tiers
@@ -118574,30 +120298,30 @@ var HiroEventLeaderboards;
         if (!data.eventId || data.score === undefined)
             return RpcHelpers.errorResponse("eventId and score required");
         var gameId = RpcHelpers.gameId(data);
-        var config = getConfig(nk, gameId);
-        var def = config.events[data.eventId];
+        var events = getEvents(nk, gameId);
+        var def = events[data.eventId];
         if (!def)
             return RpcHelpers.errorResponse("Unknown event");
-        var activeEvents = getActiveEvents(nk);
-        var ae = activeEvents.find(function (e) { return e.eventId === data.eventId; });
-        if (!ae)
-            return RpcHelpers.errorResponse("Event not active");
+        if (def.disabled)
+            return RpcHelpers.errorResponse("Event disabled");
         var now = Math.floor(Date.now() / 1000);
-        if (now < ae.startAt || now > ae.endAt)
+        if (eventStatus(def, now) !== "active")
             return RpcHelpers.errorResponse("Event not in active window");
+        var lbId = eventLeaderboardId(nk, gameId, data.eventId);
+        ensureLeaderboard(nk, logger, lbId, def);
         var userState = getUserEventState(nk, userId, gameId);
         if (!userState.events[data.eventId]) {
-            userState.events[data.eventId] = { joined: true, cohortId: ae.cohortId || "default" };
+            userState.events[data.eventId] = { joined: true, cohortId: "default" };
         }
         userState.events[data.eventId].joined = true;
         saveUserEventState(nk, userId, userState, gameId);
         var operatorMap = { best: "best" /* nkruntime.OverrideOperator.BEST */, set: "set" /* nkruntime.OverrideOperator.SET */, incr: "increment" /* nkruntime.OverrideOperator.INCREMENTAL */, decr: "decrement" /* nkruntime.OverrideOperator.DECREMENTAL */ };
         var op = operatorMap[def.operator] || "best" /* nkruntime.OverrideOperator.BEST */;
-        nk.leaderboardRecordWrite(ae.leaderboardId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, op);
+        nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, op);
         EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, {
             userId: userId, eventId: data.eventId, score: data.score
         });
-        return RpcHelpers.successResponse({ success: true });
+        return RpcHelpers.successResponse({ success: true, leaderboardId: lbId });
     }
     function rpcClaim(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
@@ -118605,8 +120329,8 @@ var HiroEventLeaderboards;
         if (!data.eventId)
             return RpcHelpers.errorResponse("eventId required");
         var gameId = RpcHelpers.gameId(data);
-        var config = getConfig(nk, gameId);
-        var def = config.events[data.eventId];
+        var events = getEvents(nk, gameId);
+        var def = events[data.eventId];
         if (!def)
             return RpcHelpers.errorResponse("Unknown event");
         var userState = getUserEventState(nk, userId, gameId);
@@ -118615,11 +120339,8 @@ var HiroEventLeaderboards;
             return RpcHelpers.errorResponse("Not joined");
         if (us.claimedAt)
             return RpcHelpers.errorResponse("Already claimed");
-        var activeEvents = getActiveEvents(nk);
-        var ae = activeEvents.find(function (e) { return e.eventId === data.eventId; });
-        if (!ae)
-            return RpcHelpers.errorResponse("Event not found");
-        var records = nk.leaderboardRecordsList(ae.leaderboardId, [userId], 1, undefined, 0);
+        var lbId = eventLeaderboardId(nk, gameId, data.eventId);
+        var records = nk.leaderboardRecordsList(lbId, [userId], 1, undefined, 0);
         var rank = 0;
         if (records.records && records.records.length > 0) {
             rank = records.records[0].rank;
@@ -118641,15 +120362,16 @@ var HiroEventLeaderboards;
         var data = RpcHelpers.parseRpcPayload(payload);
         if (!data.eventId)
             return RpcHelpers.errorResponse("eventId required");
-        var activeEvents = getActiveEvents(nk);
-        var ae = activeEvents.find(function (e) { return e.eventId === data.eventId; });
-        if (!ae)
-            return RpcHelpers.errorResponse("Event not found or not active");
-        var config = getConfig(nk, RpcHelpers.gameId(data));
-        var def = config.events[ae.eventId];
+        var gameId = RpcHelpers.gameId(data);
+        var events = getEvents(nk, gameId);
+        var def = events[data.eventId];
+        if (!def)
+            return RpcHelpers.errorResponse("Event not found");
+        var lbId = eventLeaderboardId(nk, gameId, data.eventId);
+        ensureLeaderboard(nk, logger, lbId, def);
         var limit = data.limit || 50;
         var cursor = data.cursor || undefined;
-        var result = nk.leaderboardRecordsList(ae.leaderboardId, [], limit, cursor, 0);
+        var result = nk.leaderboardRecordsList(lbId, [], limit, cursor, 0);
         var rankings = [];
         if (result.records) {
             for (var i = 0; i < result.records.length; i++) {
@@ -118668,7 +120390,7 @@ var HiroEventLeaderboards;
         var callerRank = null;
         var userId = ctx.userId;
         if (userId) {
-            var ownerRecords = nk.leaderboardRecordsList(ae.leaderboardId, [userId], 1, undefined, 0);
+            var ownerRecords = nk.leaderboardRecordsList(lbId, [userId], 1, undefined, 0);
             if (ownerRecords.records && ownerRecords.records.length > 0) {
                 var cr = ownerRecords.records[0];
                 callerRank = {
@@ -118682,8 +120404,8 @@ var HiroEventLeaderboards;
         }
         return RpcHelpers.successResponse({
             eventId: data.eventId,
-            name: def ? def.name : data.eventId,
-            leaderboardId: ae.leaderboardId,
+            name: def.name,
+            leaderboardId: lbId,
             rankings: rankings,
             nextCursor: result.nextCursor || "",
             prevCursor: result.prevCursor || "",
@@ -128508,8 +130230,29 @@ var LegacyGroups;
             var state = data.state;
             var cursor = data.cursor || "";
             var result = nk.userGroupsList(userId, limit, state, cursor);
+            var userGroups = result.userGroups || [];
+            // B-008 fix (2026-07-06, WORLD_CLASS_SOCIAL_FRIENDS_GROUPS_ARCHITECTURE.md
+            // §2.1/§7.2): optional server-side gameId filter. Previously every
+            // group (all games) was shipped to the client, which then filtered by
+            // metadata.gameId — wasted bandwidth and a cross-game data leak.
+            // Backward compatible: when the caller omits gameId, behaviour is
+            // byte-identical to the old implementation.
+            // NOTE on pagination: the filter runs on the current page, so a page
+            // can legitimately return fewer than `limit` groups while `cursor` is
+            // still set — clients must key "end of list" off cursor, not count.
+            var gameId = data.gameId;
+            if (gameId && typeof gameId === "string") {
+                var filtered = [];
+                for (var i = 0; i < userGroups.length; i++) {
+                    var ug = userGroups[i];
+                    var meta = (ug && ug.group && ug.group.metadata) || {};
+                    if (meta.gameId === gameId)
+                        filtered.push(ug);
+                }
+                userGroups = filtered;
+            }
             return RpcHelpers.successResponse({
-                userGroups: result.userGroups || [],
+                userGroups: userGroups,
                 cursor: result.cursor || ""
             });
         }
@@ -129025,7 +130768,7 @@ var LegacyLeaderboards;
 // postbuild.js text-scans this file for the
 // `initializer.registerRpc(prefix + "<suffix>", gameRpcHandler(gameId, fn))`
 // pattern and emits explicit
-// `__rpc__prefix__suffix_ = ...` calls into the
+// `initializer.registerRpc("<prefix><suffix>", ...)` calls into the
 // generated bundle for every (prefix, suffix) pair declared at the
 // `register(...)` call sites below. The dynamic-looking source is
 // the input to that generator, not the runtime form.
@@ -129121,20 +130864,27 @@ var LegacyMultiGame;
     function joinOrCreateMatch(ctx, logger, nk, data, userId, gId) {
         return { success: true, message: "Matchmaking handled by client" };
     }
+    /**
+     * LEGACY-COMPATIBLE WRAPPER — {prefix}claim_daily_reward (e.g.
+     * quizverse_claim_daily_reward). This used to be a FOURTH independent
+     * daily-reward implementation: own storage (daily_rewards/daily_{gId}_{uid}),
+     * own streak formula (hard reset after day 7, no 48h grace), own reward math
+     * (streak*10), and a different wallet system (WalletHelpers storage wallet vs
+     * nk.walletUpdate). The same user could hold four disagreeing streaks.
+     * It now delegates to performDailyClaim — the single OCC/idempotent claim
+     * core — while preserving this endpoint's historical response shape.
+     */
     function claimDailyReward(ctx, logger, nk, data, userId, gId) {
-        var key = "daily_" + gId + "_" + userId;
-        var state = Storage.readJson(nk, "daily_rewards", key, userId) || { lastClaimDate: "", streak: 0 };
-        var today = new Date().toISOString().slice(0, 10);
-        if (state.lastClaimDate === today)
-            return { alreadyClaimed: true, streak: state.streak };
-        state.streak = state.lastClaimDate ? state.streak + 1 : 1;
-        if (state.streak > 7)
-            state.streak = 1;
-        state.lastClaimDate = today;
-        var rewardAmount = state.streak * 10;
-        WalletHelpers.addCurrency(nk, logger, ctx, userId, gId, "game", rewardAmount);
-        Storage.writeJson(nk, "daily_rewards", key, userId, state);
-        return { streak: state.streak, reward: rewardAmount };
+        var gameId = dpResolveGameId({ gameId: gId });
+        var result = performDailyClaim(nk, logger, userId, gameId);
+        if (!result.ok) {
+            if (result.reason === "already_claimed_today") {
+                var current = getStreakData(nk, logger, userId, gameId);
+                return { alreadyClaimed: true, streak: (current && current.currentStreak) || 0 };
+            }
+            throw new Error(result.error || "Daily reward claim failed");
+        }
+        return { streak: result.streakData.currentStreak, reward: (result.reward && result.reward.game) || 0 };
     }
     // ⚠ DEAD CODE — superseded by src/friends/find_friends.ts ⚠
     // The per-game `<game>_find_friends` registration has been removed in
@@ -131507,6 +133257,113 @@ var LegacyPush;
             ar: "قبل {name} طلب صداقتك. قل مرحباً!", id: "{name} menerima permintaan temanmu. Sapa dia!",
             zu: "U-{name} wamukel' isicelo sakho somngane. Sho sawubona!"
         },
+        // ── Challenge accepted ({name} = the acceptor's display name) ───────────
+        // Sent to the CHALLENGER when their outgoing challenge is accepted.
+        // Added 2026-07-06 for the revived sendFriendsPushBridge (notification_codes.js).
+        challenge_accepted_title: {
+            en: "🔥 Challenge Accepted!", hi: "🔥 चैलेंज स्वीकार हो गया!", es: "🔥 ¡Reto aceptado!", fr: "🔥 Défi accepté !",
+            de: "🔥 Herausforderung angenommen!", pt: "🔥 Desafio aceito!", ru: "🔥 Вызов принят!", ja: "🔥 挑戦が受理されました！",
+            ko: "🔥 도전 수락됨!", "zh-Hans": "🔥 挑战已接受！", ar: "🔥 تم قبول التحدي!", id: "🔥 Tantangan diterima!", zu: "🔥 Inselelo yamukelwe!"
+        },
+        challenge_accepted_body: {
+            en: "{name} accepted your challenge. Game on!", hi: "{name} ने आपका चैलेंज स्वीकार कर लिया। खेल शुरू!",
+            es: "{name} aceptó tu reto. ¡Que empiece el juego!", fr: "{name} a accepté ton défi. Que le jeu commence !",
+            de: "{name} hat deine Herausforderung angenommen. Los geht's!", pt: "{name} aceitou seu desafio. Valendo!",
+            ru: "{name} принял(а) твой вызов. Игра началась!", ja: "{name}さんが挑戦を受けました。勝負開始！",
+            ko: "{name}님이 도전을 수락했어요. 게임 시작!", "zh-Hans": "{name} 接受了你的挑战。开战吧！",
+            ar: "قبل {name} تحديك. لتبدأ اللعبة!", id: "{name} menerima tantanganmu. Ayo main!",
+            zu: "U-{name} uyamukele inselelo yakho. Umdlalo usuqalile!"
+        },
+        // ── Async challenge (Phantom Arena) lifecycle — added 2026-07-06 ─────────
+        // Consumed by the asyncChallengeSendNotification push bridge in
+        // legacy_runtime.js. {name} = the other player, {mode} = quiz mode name,
+        // {score} = the other player's score.
+        ac_opponent_joined_title: {
+            en: "🎮 Challenge Accepted!", hi: "🎮 चैलेंज स्वीकार!", es: "🎮 ¡Reto aceptado!", fr: "🎮 Défi accepté !",
+            de: "🎮 Herausforderung angenommen!", pt: "🎮 Desafio aceito!", ru: "🎮 Вызов принят!", ja: "🎮 対戦相手が参加！",
+            ko: "🎮 도전 수락!", "zh-Hans": "🎮 挑战已接受！", ar: "🎮 تم قبول التحدي!", id: "🎮 Tantangan diterima!", zu: "🎮 Inselelo yamukelwe!"
+        },
+        ac_opponent_joined_body: {
+            en: "{name} joined your challenge. Play now!", hi: "{name} आपके चैलेंज में शामिल हो गए। अभी खेलें!",
+            es: "{name} se unió a tu reto. ¡Juega ya!", fr: "{name} a rejoint ton défi. Joue maintenant !",
+            de: "{name} ist deiner Herausforderung beigetreten. Spiel jetzt!", pt: "{name} entrou no seu desafio. Jogue agora!",
+            ru: "{name} присоединился(ась) к твоему вызову. Играй!", ja: "{name}さんが挑戦に参加しました。今すぐプレイ！",
+            ko: "{name}님이 도전에 참여했어요. 지금 플레이하세요!", "zh-Hans": "{name} 加入了你的挑战。快来玩！",
+            ar: "انضم {name} إلى تحديك. العب الآن!", id: "{name} bergabung dengan tantanganmu. Main sekarang!",
+            zu: "U-{name} ujoyine inselelo yakho. Dlala manje!"
+        },
+        ac_your_turn_title: {
+            en: "⏰ Your Turn!", hi: "⏰ आपकी बारी!", es: "⏰ ¡Tu turno!", fr: "⏰ À ton tour !",
+            de: "⏰ Du bist dran!", pt: "⏰ Sua vez!", ru: "⏰ Твой ход!", ja: "⏰ あなたの番！",
+            ko: "⏰ 당신 차례!", "zh-Hans": "⏰ 该你了！", ar: "⏰ دورك!", id: "⏰ Giliranmu!", zu: "⏰ Ithuba lakho!"
+        },
+        ac_your_turn_body: {
+            en: "{name} scored {score} — beat it if you can!", hi: "{name} ने {score} अंक बनाए — हरा सकें तो हराइए!",
+            es: "{name} logró {score} puntos. ¡Supéralo si puedes!", fr: "{name} a marqué {score} points. Fais mieux si tu peux !",
+            de: "{name} hat {score} Punkte. Schlag das, wenn du kannst!", pt: "{name} fez {score} pontos. Supere se puder!",
+            ru: "{name} набрал(а) {score}. Побей рекорд!", ja: "{name}さんが{score}点獲得。超えられるか？",
+            ko: "{name}님이 {score}점 기록! 이겨보세요!", "zh-Hans": "{name} 得了 {score} 分——有本事就超过他！",
+            ar: "سجل {name} {score} نقطة — تفوق عليه إن استطعت!", id: "{name} mencetak {score} — kalahkan kalau bisa!",
+            zu: "U-{name} uthole u-{score} — mehlule uma ukwazi!"
+        },
+        ac_results_title: {
+            en: "🏆 Results Are In!", hi: "🏆 नतीजे आ गए!", es: "🏆 ¡Resultados listos!", fr: "🏆 Résultats disponibles !",
+            de: "🏆 Ergebnisse sind da!", pt: "🏆 Saíram os resultados!", ru: "🏆 Результаты готовы!", ja: "🏆 結果発表！",
+            ko: "🏆 결과 발표!", "zh-Hans": "🏆 结果揭晓！", ar: "🏆 ظهرت النتائج!", id: "🏆 Hasil sudah keluar!", zu: "🏆 Imiphumela isifikile!"
+        },
+        ac_results_body: {
+            en: "{name} scored {score} — see who won!", hi: "{name} ने {score} अंक बनाए — देखें कौन जीता!",
+            es: "{name} logró {score} puntos. ¡Mira quién ganó!", fr: "{name} a marqué {score} points. Regarde qui a gagné !",
+            de: "{name} hat {score} Punkte. Sieh nach, wer gewonnen hat!", pt: "{name} fez {score} pontos. Veja quem venceu!",
+            ru: "{name} набрал(а) {score}. Узнай, кто победил!", ja: "{name}さんが{score}点。勝者は誰だ？",
+            ko: "{name}님이 {score}점! 누가 이겼는지 확인하세요!", "zh-Hans": "{name} 得了 {score} 分——看看谁赢了！",
+            ar: "سجل {name} {score} نقطة — شاهد من فاز!", id: "{name} mencetak {score} — lihat siapa menang!",
+            zu: "U-{name} uthole u-{score} — bheka ukuthi ubani ophumelele!"
+        },
+        // ── Async challenge expiry warning ({hours} = hours remaining) ──────────
+        ac_expiry_title: {
+            en: "⏳ Challenge Expiring!", hi: "⏳ चैलेंज खत्म होने वाला है!", es: "⏳ ¡El reto expira!", fr: "⏳ Le défi expire !",
+            de: "⏳ Herausforderung läuft ab!", pt: "⏳ Desafio expirando!", ru: "⏳ Вызов истекает!", ja: "⏳ 挑戦がまもなく終了！",
+            ko: "⏳ 도전 만료 임박!", "zh-Hans": "⏳ 挑战即将到期！", ar: "⏳ التحدي على وشك الانتهاء!", id: "⏳ Tantangan segera berakhir!", zu: "⏳ Inselelo isizophela!"
+        },
+        ac_expiry_body: {
+            en: "Your challenge expires in {hours}h — finish it before it's gone!", hi: "आपका चैलेंज {hours} घंटे में खत्म हो जाएगा — जल्दी पूरा करें!",
+            es: "Tu reto expira en {hours} h. ¡Termínalo antes de que desaparezca!", fr: "Ton défi expire dans {hours} h. Termine-le vite !",
+            de: "Deine Herausforderung läuft in {hours} Std. ab — schnell beenden!", pt: "Seu desafio expira em {hours}h — conclua antes que suma!",
+            ru: "Твой вызов истекает через {hours} ч. Успей завершить!", ja: "挑戦は残り{hours}時間で終了します。お早めに！",
+            ko: "도전이 {hours}시간 후 만료됩니다. 서두르세요!", "zh-Hans": "你的挑战将在 {hours} 小时后到期——抓紧完成！",
+            ar: "ينتهي تحديك خلال {hours} ساعة — أنجزه قبل فوات الأوان!", id: "Tantanganmu berakhir dalam {hours} jam — selesaikan sekarang!",
+            zu: "Inselelo yakho iphela emahoreni angu-{hours} — yiqede ngokushesha!"
+        },
+        // ── Duo Quest pairing / completion ({name} = partner, {coins} = reward) ─
+        duo_paired_title: {
+            en: "🤝 Duo Quest!", hi: "🤝 डुओ क्वेस्ट!", es: "🤝 ¡Misión en dúo!", fr: "🤝 Quête en duo !",
+            de: "🤝 Duo-Quest!", pt: "🤝 Missão em dupla!", ru: "🤝 Дуо-квест!", ja: "🤝 デュオクエスト！",
+            ko: "🤝 듀오 퀘스트!", "zh-Hans": "🤝 双人任务！", ar: "🤝 مهمة ثنائية!", id: "🤝 Misi Duo!", zu: "🤝 I-Duo Quest!"
+        },
+        duo_paired_body: {
+            en: "You and {name} share a quest this week — team up and win together!", hi: "इस हफ्ते आप और {name} की साझा क्वेस्ट है — मिलकर जीतें!",
+            es: "Tú y {name} comparten una misión esta semana. ¡Ganen juntos!", fr: "Toi et {name} partagez une quête cette semaine. Gagnez ensemble !",
+            de: "Du und {name} teilt diese Woche eine Quest — gewinnt zusammen!", pt: "Você e {name} têm uma missão juntos esta semana. Vençam juntos!",
+            ru: "У тебя и {name} общий квест на этой неделе — победите вместе!", ja: "今週は{name}さんと共同クエスト！力を合わせて勝とう！",
+            ko: "이번 주 {name}님과 공동 퀘스트! 함께 승리하세요!", "zh-Hans": "本周你和 {name} 共享任务——组队共赢！",
+            ar: "أنت و{name} تتشاركان مهمة هذا الأسبوع — تعاونا وافوزا معاً!", id: "Kamu dan {name} berbagi misi minggu ini — menang bersama!",
+            zu: "Wena no-{name} nabelana ngomsebenzi kuleli sonto — nqobani ndawonye!"
+        },
+        duo_done_title: {
+            en: "🏆 Duo Quest Complete!", hi: "🏆 डुओ क्वेस्ट पूरी!", es: "🏆 ¡Misión en dúo completa!", fr: "🏆 Quête en duo terminée !",
+            de: "🏆 Duo-Quest geschafft!", pt: "🏆 Missão em dupla concluída!", ru: "🏆 Дуо-квест завершён!", ja: "🏆 デュオクエスト達成！",
+            ko: "🏆 듀오 퀘스트 완료!", "zh-Hans": "🏆 双人任务完成！", ar: "🏆 اكتملت المهمة الثنائية!", id: "🏆 Misi Duo selesai!", zu: "🏆 I-Duo Quest iphelile!"
+        },
+        duo_done_body: {
+            en: "You both did it! +{coins} coins each. 🎉", hi: "आप दोनों ने कर दिखाया! दोनों को +{coins} सिक्के। 🎉",
+            es: "¡Lo lograron! +{coins} monedas para cada uno. 🎉", fr: "Vous avez réussi ! +{coins} pièces chacun. 🎉",
+            de: "Ihr habt es geschafft! Je +{coins} Münzen. 🎉", pt: "Vocês conseguiram! +{coins} moedas cada. 🎉",
+            ru: "Вы справились! По +{coins} монет каждому. 🎉", ja: "二人ともクリア！それぞれ+{coins}コイン獲得！🎉",
+            ko: "둘 다 해냈어요! 각자 +{coins} 코인! 🎉", "zh-Hans": "你们做到了！每人 +{coins} 金币。🎉",
+            ar: "نجحتما معاً! +{coins} عملة لكل منكما. 🎉", id: "Kalian berhasil! +{coins} koin masing-masing. 🎉",
+            zu: "Nikwenzile nobabili! +{coins} izinhlamvu ngamunye. 🎉"
+        },
         // ── Chat: new direct message ({name} = sender, {text} = message preview) ──
         chat_message_title: {
             en: "💬 {name}", hi: "💬 {name}", es: "💬 {name}", fr: "💬 {name}",
@@ -132251,6 +134108,21 @@ var LegacyPush;
         var byLocale = {};
         var gateReasons = { quietHours: 0, alreadySent: 0, noToken: 0, sendFailed: 0 };
         var quizMissedAll = false;
+        // Per-run memo of the premium quiz per base language. The old code called
+        // fetchPremiumDailyQuizForToday PER USER inside the loop — every in-window
+        // user cost up to 2 S3 GETs, and on a missing-file day every user re-hit the
+        // same 404. One fetch per language per run is the correct amortization
+        // (null is memoized too, so a 404 is paid once per language, not per user).
+        var quizByLang = {};
+        var quizFetched = {};
+        function premiumQuizForLocale(locale) {
+            var base = String(locale || "en").split("-")[0].toLowerCase();
+            if (!quizFetched[base]) {
+                quizFetched[base] = true;
+                quizByLang[base] = fetchPremiumDailyQuizForToday(nk, logger, locale);
+            }
+            return quizByLang[base];
+        }
         // Shared per-run device set — see rpcNotifCronDailyQuiz for rationale.
         var runDedupArns = {};
         var runDedupStats = { skippedDevices: 0 };
@@ -132282,7 +134154,7 @@ var LegacyPush;
                     byLocale[locale].gated++;
                     continue;
                 }
-                var quiz = fetchPremiumDailyQuizForToday(nk, logger, locale);
+                var quiz = premiumQuizForLocale(locale);
                 if (!quiz) {
                     gated++;
                     byLocale[locale].gated++;
@@ -132311,16 +134183,45 @@ var LegacyPush;
             if (users.length < batch)
                 break;
         }
-        // Fetch English quiz for report topic label (best-effort, ignore failure)
-        var engQuiz = fetchPremiumDailyQuizForToday(nk, logger, "en");
+        // Fetch English quiz for report topic label (reuses the per-run memo)
+        var engQuiz = premiumQuizForLocale("en");
         var reportTopic = engQuiz ? pickQuizTopic(engQuiz, "en") : undefined;
-        PushAlerts.postCronReport(nk, logger, {
-            cronName: "premium_daily_quiz", dateKey: todayKey, topic: reportTopic,
-            scanned: scanned, sent: sent, gated: gated,
-            noQuiz: quizMissedAll && sent === 0,
-            byLocale: byLocale, gateReasons: gateReasons,
-            dedupedDevices: runDedupStats.skippedDevices
-        });
+        // Report discipline: this cron runs every 30 minutes, but the old code
+        // posted a Discord report on EVERY invocation — 48 near-identical reports
+        // a day, including a repeated "no quiz" alert while content was missing.
+        // Now: a no-quiz alert fires at most ONCE per day (tracked in the same
+        // notif_cron_state collection the daily cron uses), and normal reports
+        // post only on runs that actually delivered pushes.
+        var isNoQuiz = quizMissedAll && sent === 0;
+        var shouldReport = sent > 0;
+        if (isNoQuiz) {
+            var PQ_STATE_KEY = "premium_daily_quiz_noquiz_reported";
+            var alreadyReported = false;
+            try {
+                var st = nk.storageRead([{ collection: DQ_CURSOR_COLLECTION, key: PQ_STATE_KEY, userId: Constants.SYSTEM_USER_ID }]);
+                alreadyReported = !!(st && st.length > 0 && st[0].value && st[0].value.dateKey === todayKey);
+            }
+            catch (_) { }
+            if (!alreadyReported) {
+                shouldReport = true;
+                try {
+                    nk.storageWrite([{
+                            collection: DQ_CURSOR_COLLECTION, key: PQ_STATE_KEY, userId: Constants.SYSTEM_USER_ID,
+                            value: { dateKey: todayKey }, permissionRead: 0, permissionWrite: 0
+                        }]);
+                }
+                catch (_) { }
+            }
+        }
+        if (shouldReport) {
+            PushAlerts.postCronReport(nk, logger, {
+                cronName: "premium_daily_quiz", dateKey: todayKey, topic: reportTopic,
+                scanned: scanned, sent: sent, gated: gated,
+                noQuiz: isNoQuiz,
+                byLocale: byLocale, gateReasons: gateReasons,
+                dedupedDevices: runDedupStats.skippedDevices
+            });
+        }
         return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dateKey: todayKey });
     }
     function runPremiumDailyQuizCron(ctx, logger, nk, payload) {
@@ -133774,6 +135675,33 @@ var LegacyWallet;
         var key = "global_" + userId;
         Storage.writeJson(nk, Constants.WALLETS_COLLECTION, key, userId, wallet);
     }
+    /**
+     * Server-side credit for another user's global/XUT balance.
+     * Mirrors wallet_update_game_wallet with currency "global"/"xut" and operation "add".
+     */
+    function addGlobalWalletCurrency(nk, userId, amount) {
+        var amt = Math.floor(Number(amount || 0));
+        if (!userId || amt <= 0) {
+            return { success: false, newBalance: 0, error: "invalid userId or amount" };
+        }
+        try {
+            var globalWallet = getGlobalWallet(nk, userId);
+            var globalKeys = ["global", "xut"];
+            for (var gi = 0; gi < globalKeys.length; gi++) {
+                var gk = globalKeys[gi];
+                if (globalWallet.currencies[gk] === undefined)
+                    globalWallet.currencies[gk] = 0;
+                globalWallet.currencies[gk] += amt;
+            }
+            saveGlobalWallet(nk, userId, globalWallet);
+            var newBalance = globalWallet.currencies.global || globalWallet.currencies.xut || 0;
+            return { success: true, newBalance: newBalance };
+        }
+        catch (e) {
+            return { success: false, newBalance: 0, error: e.message || String(e) };
+        }
+    }
+    LegacyWallet.addGlobalWalletCurrency = addGlobalWalletCurrency;
     // ---- RPC implementations ----
     function rpcGetUserWallet(ctx, logger, nk, payload) {
         try {
@@ -146370,6 +148298,10 @@ var QuestEngine;
                 resetQuestProgress(progress, now);
                 stateModified = true;
             }
+            // Hidden (surprise) quests stay invisible until the player completes
+            // them organically — after that they're revealed as a completed entry.
+            if (qConfig.hidden && !progress.completedAt)
+                continue;
             var unlocked = isQuestUnlocked(qConfig, state);
             var stepsOut = [];
             for (var s = 0; s < qConfig.steps.length; s++) {
@@ -146388,6 +148320,7 @@ var QuestEngine;
                 description: qConfig.description || null,
                 category: qConfig.category || null,
                 unlocked: unlocked,
+                hidden: !!qConfig.hidden,
                 steps: stepsOut,
                 startedAt: progress.startedAt,
                 completedAt: progress.completedAt,
@@ -146514,6 +148447,18 @@ var QuestEngine;
         // Only write again if at least one claimedAt was actually set in Phase 3
         if (anyClaimedAt) {
             saveUserState(nk, userId, gameId, state);
+        }
+        // ── Battle pass XP hook ──────────────────────────────────────────────────
+        // The same gameplay events that progress quests also accrue battle pass XP
+        // (both the record_event RPC and the EventBus bridge funnel through here).
+        // Isolated so a battle pass failure never breaks quest processing.
+        try {
+            if (typeof BattlePassEngine !== "undefined" && BattlePassEngine.processEvent) {
+                BattlePassEngine.processEvent(nk, logger, ctx, userId, gameId, eventType, value);
+            }
+        }
+        catch (bpErr) {
+            logger.warn("[QuestEngine] BattlePass hook failed: " + (bpErr && bpErr.message ? bpErr.message : String(bpErr)));
         }
         return { updatedCount: updatedCount, updatedQuests: updatedQuests };
     }
@@ -152433,8 +154378,12 @@ var SatoriCreatorEvents;
             keys.push("4th");
         else if (rank === 5)
             keys.push("5th");
-        else if (rank >= 6 && rank <= 10)
-            keys.push("6_10");
+        else if (rank === 6)
+            keys.push("6th", "6_10");
+        else if (rank === 7)
+            keys.push("7th", "6_10");
+        else if (rank === 8)
+            keys.push("8th", "6_10");
         if (rank > 3 && rank <= 10)
             keys.push("top_10");
         if (rank > 10)
@@ -152675,7 +154624,7 @@ var SatoriCreatorEvents;
             return 12;
         return 18;
     }
-    function findLiveEventDefinition(nk, logger, eventId, creatorId) {
+    function findLiveEventStorageRecord(nk, logger, eventId, creatorId) {
         var seen = {};
         var owners = [];
         if (creatorId)
@@ -152689,7 +154638,11 @@ var SatoriCreatorEvents;
             try {
                 var records = nk.storageRead([{ collection: "live_events", key: eventId, userId: owner }]);
                 if (records && records.length > 0 && records[0].value) {
-                    return records[0].value;
+                    return {
+                        def: records[0].value,
+                        creatorId: owner,
+                        version: records[0].version || "",
+                    };
                 }
             }
             catch (readErr) {
@@ -152704,7 +154657,12 @@ var SatoriCreatorEvents;
                 for (var i = 0; i < objects.length; i++) {
                     var obj = objects[i];
                     if (obj && obj.key === eventId && obj.value) {
-                        return obj.value;
+                        var objOwner = (obj.userId || obj.user_id || "").toString();
+                        return {
+                            def: obj.value,
+                            creatorId: objOwner,
+                            version: obj.version || "",
+                        };
                     }
                 }
                 cursor = result.cursor || "";
@@ -152717,6 +154675,10 @@ var SatoriCreatorEvents;
             }
         }
         return null;
+    }
+    function findLiveEventDefinition(nk, logger, eventId, creatorId) {
+        var located = findLiveEventStorageRecord(nk, logger, eventId, creatorId);
+        return located ? located.def : null;
     }
     function loadSubmitEventDefinition(nk, logger, data, eventId) {
         var def = getEventDefinition(nk, eventId);
@@ -152984,6 +154946,7 @@ var SatoriCreatorEvents;
             logger.warn("[CreatorEvent] Duplicate/failed answer write for user=%s event=%s: %s", userId, eventId, writeErr.message || String(writeErr));
             return RpcHelpers.errorResponse("You have already completed this event.");
         }
+        writeSpaAnswerIndexEntry(nk, logger, eventId, userId, scoreResult.score, nowMs);
         var leaderboardId = LEADERBOARD_PREFIX + eventId;
         try {
             var lbUsername = String(data.playerName || data.displayName || data.player_name || ctx.username || "").trim();
@@ -153896,9 +155859,12 @@ var SatoriCreatorEvents;
         __rpc_creator_event_update_promo = rpcUpdatePromo;
         __rpc_creator_event_fund_pool = rpcFundPool;
         __rpc_creator_event_spa_claim = rpcSpaClaim;
+        __rpc_creator_event_spa_join = rpcSpaJoin;
         __rpc_creator_event_spa_save_delivery = rpcSpaSaveDelivery;
         __rpc_creator_event_spa_end_queue = rpcSpaEndQueue;
+        __rpc_creator_event_spa_auto_end_sweep = rpcSpaAutoEndSweep;
         __rpc_creator_event_fulfillments_list = rpcFulfillmentsList;
+        __rpc_creator_event_fulfillment_get = rpcFulfillmentGet;
         __rpc_creator_event_fulfillment_settle = rpcFulfillmentSettle;
     }
     SatoriCreatorEvents.register = register;
@@ -153950,6 +155916,227 @@ var SatoriCreatorEvents;
                 "Earn more XUT or pick a different funding method.");
         }
     }
+    var SPA_PARTICIPANTS_COLLECTION = "event_participants";
+    var SPA_ANSWERS_COLLECTION = "event_answers";
+    var SPA_ANSWER_INDEX_COLLECTION = "event_answer_index";
+    var SPA_ANSWER_SCAN_MAX_PAGES = 10;
+    var SPA_PARTICIPANT_SCAN_MAX_PAGES = 50;
+    function spaAnswerIndexKey(eventId, userId) {
+        return eventId + ":" + userId;
+    }
+    function writeSpaAnswerIndexEntry(nk, logger, eventId, userId, score, submitMs) {
+        try {
+            Storage.writeSystemJson(nk, SPA_ANSWER_INDEX_COLLECTION, spaAnswerIndexKey(eventId, userId), {
+                userId: userId,
+                eventId: eventId,
+                score: score,
+                submitMs: submitMs,
+            });
+        }
+        catch (idxErr) {
+            logger.warn("[CreatorEvent SPA] answer index write failed event=%s user=%s: %s", eventId, userId, idxErr.message || String(idxErr));
+        }
+    }
+    function readSpaAnswerIndexEntry(nk, eventId, userId) {
+        var iv = Storage.readSystemJson(nk, SPA_ANSWER_INDEX_COLLECTION, spaAnswerIndexKey(eventId, userId));
+        if (!iv || !iv.userId)
+            return null;
+        return {
+            userId: iv.userId,
+            score: typeof iv.score === "number" ? iv.score : 0,
+            submitMs: typeof iv.submitMs === "number" ? iv.submitMs : 0,
+        };
+    }
+    function answerRowFromStorageValue(uid, v) {
+        if (!v || !uid)
+            return null;
+        return {
+            userId: uid,
+            score: typeof v.score === "number" ? v.score : 0,
+            submitMs: typeof v.submitMs === "number" ? v.submitMs : 0,
+        };
+    }
+    function mergeRankingRow(byUser, row) {
+        if (!row || !row.userId)
+            return false;
+        var existing = byUser[row.userId];
+        if (!existing || row.score > existing.score ||
+            (row.score === existing.score && row.submitMs < (existing.submitMs || 0))) {
+            byUser[row.userId] = row;
+            return true;
+        }
+        return false;
+    }
+    /** Legacy global scan — fallback for events created before the answer index existed. */
+    function collectSpaAnswersLegacyScan(nk, logger, eventId, byUser) {
+        var answerCount = 0;
+        var cursor = "";
+        var pages = 0;
+        do {
+            var page;
+            try {
+                page = nk.storageList(null, SPA_ANSWERS_COLLECTION, 100, cursor);
+            }
+            catch (lerr) {
+                logger.warn("[collectSpaAnswersLegacyScan] event_answers list failed: %s", lerr.message || String(lerr));
+                break;
+            }
+            var objs = (page && page.objects) || [];
+            for (var i = 0; i < objs.length; i++) {
+                var o = objs[i];
+                var v = o.value;
+                if (!o || o.key !== eventId)
+                    continue;
+                if (!v || v.eventId !== eventId)
+                    continue;
+                answerCount++;
+                var uid = o.userId;
+                if (!uid)
+                    continue;
+                mergeRankingRow(byUser, answerRowFromStorageValue(uid, v));
+            }
+            cursor = (page && page.cursor) || "";
+            pages++;
+        } while (cursor && pages < SPA_ANSWER_SCAN_MAX_PAGES);
+        return answerCount;
+    }
+    /**
+     * O(participants) targeted reads: index entry per player, then direct
+     * event_answers read as fallback. Avoids scanning the global collection.
+     */
+    function collectSpaAnswersTargeted(nk, logger, eventId, participantUserIds, byUser) {
+        var answerCount = 0;
+        var seen = {};
+        for (var pi = 0; pi < participantUserIds.length; pi++) {
+            var uid = participantUserIds[pi];
+            if (!uid || seen[uid])
+                continue;
+            seen[uid] = true;
+            var indexed = readSpaAnswerIndexEntry(nk, eventId, uid);
+            if (indexed) {
+                if (mergeRankingRow(byUser, indexed))
+                    answerCount++;
+                continue;
+            }
+            var direct = readCompletedAnswer(nk, eventId, uid);
+            var row = answerRowFromStorageValue(uid, direct);
+            if (row && mergeRankingRow(byUser, row))
+                answerCount++;
+        }
+        return answerCount;
+    }
+    /** List joined players for one SPA event (key === eventId in event_participants). */
+    function listSpaEventParticipants(nk, logger, eventId, maxPages) {
+        var participants = [];
+        var seen = {};
+        var cursor = "";
+        var pages = 0;
+        do {
+            var page;
+            try {
+                page = nk.storageList(null, SPA_PARTICIPANTS_COLLECTION, 100, cursor);
+            }
+            catch (err) {
+                logger.warn("[CreatorEvent SPA] participants storageList failed: %s", err.message || String(err));
+                break;
+            }
+            var objs = (page && page.objects) || [];
+            for (var i = 0; i < objs.length; i++) {
+                var o = objs[i];
+                if (!o || o.key !== eventId)
+                    continue;
+                var uid = o.userId;
+                if (!uid || seen[uid])
+                    continue;
+                seen[uid] = true;
+                var joinedAtSec = 0;
+                var playerEmail = "";
+                var pv = o.value;
+                if (pv && typeof pv.joinedAt === "number")
+                    joinedAtSec = pv.joinedAt;
+                if (pv) {
+                    var emRaw = pv.playerEmail || pv.email || "";
+                    if (typeof emRaw === "string") {
+                        var emTrim = emRaw.trim();
+                        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emTrim))
+                            playerEmail = emTrim;
+                    }
+                }
+                participants.push({ userId: uid, joinedAtSec: joinedAtSec, playerEmail: playerEmail });
+            }
+            cursor = (page && page.cursor) || "";
+            pages++;
+        } while (cursor && pages < maxPages);
+        return participants;
+    }
+    /**
+     * Canonical SPA ranking: event_answers for this event, plus event_participants
+     * who never submitted (score 0, tie-break by joinedAt). Shared by prize
+     * auto-queue and spa_claim so ranks stay consistent.
+     */
+    function collectSpaEventRankings(nk, logger, eventId, opts) {
+        var byUser = {};
+        var participants = listSpaEventParticipants(nk, logger, eventId, SPA_PARTICIPANT_SCAN_MAX_PAGES);
+        var participantUserIds = [];
+        for (var pIdx = 0; pIdx < participants.length; pIdx++) {
+            if (participants[pIdx].userId)
+                participantUserIds.push(participants[pIdx].userId);
+        }
+        var answerCount = collectSpaAnswersTargeted(nk, logger, eventId, participantUserIds, byUser);
+        var ensureUid = opts && opts.ensureUserId;
+        var ensureAnswer = opts && opts.ensureAnswer;
+        if (ensureUid && ensureAnswer) {
+            if (mergeRankingRow(byUser, answerRowFromStorageValue(ensureUid, ensureAnswer))) {
+                answerCount++;
+            }
+        }
+        else if (ensureUid && !byUser[ensureUid]) {
+            var ensuredIndexed = readSpaAnswerIndexEntry(nk, eventId, ensureUid);
+            if (ensuredIndexed && mergeRankingRow(byUser, ensuredIndexed)) {
+                answerCount++;
+            }
+            else {
+                var ensuredDirect = readCompletedAnswer(nk, eventId, ensureUid);
+                if (mergeRankingRow(byUser, answerRowFromStorageValue(ensureUid, ensuredDirect))) {
+                    answerCount++;
+                }
+            }
+        }
+        if (answerCount === 0) {
+            answerCount = collectSpaAnswersLegacyScan(nk, logger, eventId, byUser);
+            if (answerCount > 0) {
+                logger.info("[collectSpaEventRankings] event=%s used legacy global answer scan (%d rows)", eventId, answerCount);
+            }
+        }
+        var backfilledCount = 0;
+        for (var pi = 0; pi < participants.length; pi++) {
+            var p = participants[pi];
+            if (!p.userId || byUser[p.userId])
+                continue;
+            backfilledCount++;
+            var joinMs = p.joinedAtSec > 0 ? p.joinedAtSec * 1000 : 2147483647000;
+            byUser[p.userId] = { userId: p.userId, score: 0, submitMs: joinMs };
+        }
+        var rankings = [];
+        for (var uidKey in byUser) {
+            if (byUser.hasOwnProperty(uidKey))
+                rankings.push(byUser[uidKey]);
+        }
+        rankings.sort(function (a, b) {
+            if (a.score !== b.score)
+                return b.score - a.score;
+            return (a.submitMs || 0) - (b.submitMs || 0);
+        });
+        if (backfilledCount > 0 || answerCount > 0) {
+            logger.info("[collectSpaEventRankings] event=%s answers=%d participants=%d backfilled=%d ranked=%d", eventId, answerCount, participants.length, backfilledCount, rankings.length);
+        }
+        return {
+            rankings: rankings,
+            answerCount: answerCount,
+            participantCount: participants.length,
+            backfilledCount: backfilledCount,
+        };
+    }
     function findTierForRank(tiers, rank) {
         if (!tiers || tiers.length === 0)
             return null;
@@ -153962,6 +156149,36 @@ var SatoriCreatorEvents;
             }
         }
         return null;
+    }
+    function isXutFulfillmentTier(tier) {
+        if (!tier)
+            return false;
+        return (tier.currency || "").toUpperCase() === "XUT" || (tier.fulfillment || "") === "nakama";
+    }
+    function spaEventCoinAmountForRank(tier, rank) {
+        if (!isXutFulfillmentTier(tier))
+            return 0;
+        if (rank === 6)
+            return 75;
+        if (rank === 7)
+            return 50;
+        if (rank === 8)
+            return 25;
+        if (rank === 9 || rank === 10)
+            return 0;
+        return Math.max(0, Math.floor((tier && tier.value) || 0));
+    }
+    function creditSpaEventCoinPrize(nk, logger, winnerId, amount, eventId, rank) {
+        var amt = Math.max(0, Math.floor(amount || 0));
+        if (amt <= 0)
+            return { credited: 0, balanceAfter: 0, error: "" };
+        var result = LegacyWallet.addGlobalWalletCurrency(nk, winnerId, amt);
+        if (result.success) {
+            logger.info("[CreatorEvent SPA] Auto-credited %d coins to %s for event %s rank=%d balanceAfter=%d", amt, winnerId, eventId, rank, result.newBalance);
+            return { credited: amt, balanceAfter: result.newBalance, error: "" };
+        }
+        logger.error("[CreatorEvent SPA] Auto-credit FAILED for %s event %s rank=%d: %s", winnerId, eventId, rank, result.error || "unknown");
+        return { credited: 0, balanceAfter: result.newBalance || 0, error: result.error || "wallet credit failed" };
     }
     function spaGiftCardTier(rank) {
         // Map server rank → quests-api SES "tier" enum (cosmetic for the email).
@@ -153994,6 +156211,19 @@ var SatoriCreatorEvents;
             playerName: typeof pref.playerName === "string" ? pref.playerName.trim().slice(0, 120) : "",
         };
     }
+    function applyFulfillmentEmailPatch(existing, email) {
+        if (!existing || !email)
+            return false;
+        if (existing.email && String(existing.email).trim())
+            return false;
+        var originalQueuedAt = existing.queuedAt;
+        existing.email = email;
+        existing.emailPatchedAt = Math.floor(Date.now() / 1000);
+        if (originalQueuedAt !== undefined && originalQueuedAt !== null) {
+            existing.queuedAt = originalQueuedAt;
+        }
+        return true;
+    }
     function patchFulfillmentEmailIfEmpty(nk, logger, eventId, userId, email) {
         if (!email)
             return;
@@ -154001,11 +156231,16 @@ var SatoriCreatorEvents;
         var existing = Storage.readSystemJson(nk, "prize_fulfillments", fKey);
         if (!existing)
             return;
-        if (existing.email && String(existing.email).trim())
+        if (!applyFulfillmentEmailPatch(existing, email))
             return;
-        existing.email = email;
         Storage.writeSystemJson(nk, "prize_fulfillments", fKey, existing);
         logger.info("[CreatorEvent SPA] Patched fulfillment email: event=%s user=%s", eventId, userId);
+    }
+    function fulfillmentStorageCreateTimeSec(storageObj) {
+        if (!storageObj)
+            return 0;
+        var ct = Number(storageObj.createTime || 0);
+        return ct > 0 ? ct : 0;
     }
     /**
      * Rank every player in an event from `event_answers` and queue a
@@ -154017,57 +156252,25 @@ var SatoriCreatorEvents;
      * Safety:
      *  - Idempotent: skips any (event,user) that already has a fulfillment record
      *    (incl. ones written by the self-claim flow), so re-runs never duplicate.
-     *  - XUT / Nakama-fulfilled tiers are NOT credited here — wallet grants stay
-     *    with the idempotent self-claim flow to avoid double-crediting; we only
-     *    count them for reporting.
+     *  - XUT / Nakama-fulfilled tiers are credited here at event end via the global
+     *    wallet (same storage path as wallet_update_game_wallet). An audit row is
+     *    written to prize_fulfillments with source auto_winner_xut.
      *  - Records are queued as `pending`; an operator still manually approves each
      *    one before any real gift card is minted, so a mis-rank is human-reviewable.
      */
     function computeAndQueueWinners(nk, logger, def, eventId) {
         var tiers = def && def.giftCardPrizes && def.giftCardPrizes.tiers ? def.giftCardPrizes.tiers : undefined;
-        // Rank all players (score desc, submit-time asc) — mirrors the self-claim flow.
-        var allAnswers = [];
-        var cursor = "";
-        var pages = 0;
-        do {
-            var page;
-            try {
-                page = nk.storageList(null, "event_answers", 100, cursor);
-            }
-            catch (lerr) {
-                logger.warn("[computeAndQueueWinners] event_answers list failed: %s", lerr.message || String(lerr));
-                break;
-            }
-            var objs = (page && page.objects) || [];
-            for (var i = 0; i < objs.length; i++) {
-                var o = objs[i];
-                var v = o.value;
-                if (!o || o.key !== eventId)
-                    continue;
-                if (!v || v.eventId !== eventId)
-                    continue;
-                allAnswers.push({
-                    userId: o.userId,
-                    score: typeof v.score === "number" ? v.score : 0,
-                    submitMs: typeof v.submitMs === "number" ? v.submitMs : 0,
-                });
-            }
-            cursor = (page && page.cursor) || "";
-            pages++;
-        } while (cursor && pages < 10);
-        allAnswers.sort(function (a, b) {
-            if (a.score !== b.score)
-                return b.score - a.score;
-            return (a.submitMs || 0) - (b.submitMs || 0);
-        });
+        var rankingResult = collectSpaEventRankings(nk, logger, eventId);
+        var allAnswers = rankingResult.rankings;
         var ranked = allAnswers.length;
         if (!tiers || tiers.length === 0) {
-            return { ranked: ranked, queued: 0, skippedExisting: 0, xutWinners: 0, tiersConfigured: false };
+            return { ranked: ranked, queued: 0, skippedExisting: 0, xutWinners: 0, xutCredited: 0, tiersConfigured: false };
         }
         var nowSec = Math.floor(Date.now() / 1000);
         var queued = 0;
         var skipped = 0;
         var xutWinners = 0;
+        var xutCredited = 0;
         // Pre-fetch emails for all ranked players in one batch call.
         var emailByUserId = {};
         var allWinnerIds = [];
@@ -154091,13 +156294,20 @@ var SatoriCreatorEvents;
                 logger.warn("[computeAndQueueWinners] Failed to batch-fetch account emails: %s", emailErr.message || String(emailErr));
             }
         }
-        // Player-submitted delivery emails (saved on results screen before event end)
-        // override empty Nakama account emails for device-authenticated winners.
+        // Player-submitted delivery emails (lobby / results screen) override empty
+        // Nakama account emails for device-authenticated winners.
         for (var di = 0; di < allWinnerIds.length; di++) {
             var du = allWinnerIds[di];
             var savedPref = readDeliveryPref(nk, du, eventId);
             if (savedPref && savedPref.email) {
                 emailByUserId[du] = savedPref.email;
+            }
+        }
+        var joinedPlayers = listSpaEventParticipants(nk, logger, eventId, SPA_PARTICIPANT_SCAN_MAX_PAGES);
+        for (var je = 0; je < joinedPlayers.length; je++) {
+            var jp = joinedPlayers[je];
+            if (jp.userId && jp.playerEmail && !emailByUserId[jp.userId]) {
+                emailByUserId[jp.userId] = jp.playerEmail;
             }
         }
         for (var r = 0; r < allAnswers.length; r++) {
@@ -154108,18 +156318,59 @@ var SatoriCreatorEvents;
             var winnerId = allAnswers[r].userId;
             var fKey = eventId + ":" + winnerId;
             var existing = Storage.readSystemJson(nk, "prize_fulfillments", fKey);
+            var isXut = isXutFulfillmentTier(tier);
             if (existing) {
                 var patchEmail = emailByUserId[winnerId] || "";
-                if (patchEmail && !(existing.email && String(existing.email).trim())) {
-                    existing.email = patchEmail;
+                if (applyFulfillmentEmailPatch(existing, patchEmail)) {
                     Storage.writeSystemJson(nk, "prize_fulfillments", fKey, existing);
+                }
+                if (isXut) {
+                    xutWinners++;
+                    if (existing.source === "auto_winner_xut" && existing.status === "fulfilled") {
+                        skipped++;
+                        continue;
+                    }
+                    if (existing.source === "auto_winner_xut" && existing.status === "failed") {
+                        var retryAmt = spaEventCoinAmountForRank(tier, rank);
+                        var retryCredit = creditSpaEventCoinPrize(nk, logger, winnerId, retryAmt, eventId, rank);
+                        existing.status = retryCredit.credited > 0 ? "fulfilled" : "failed";
+                        existing.xutGranted = retryCredit.credited;
+                        existing.fulfilledAt = retryCredit.credited > 0 ? nowSec : existing.fulfilledAt;
+                        existing.walletBalanceAfter = retryCredit.balanceAfter;
+                        existing.walletError = retryCredit.error || "";
+                        Storage.writeSystemJson(nk, "prize_fulfillments", fKey, existing);
+                        if (retryCredit.credited > 0)
+                            xutCredited++;
+                        continue;
+                    }
                 }
                 skipped++;
                 continue;
             }
-            var isXut = (tier.currency || "").toUpperCase() === "XUT" || (tier.fulfillment || "") === "nakama";
             if (isXut) {
                 xutWinners++;
+                var xutAmount = spaEventCoinAmountForRank(tier, rank);
+                if (xutAmount <= 0)
+                    continue;
+                var credit = creditSpaEventCoinPrize(nk, logger, winnerId, xutAmount, eventId, rank);
+                Storage.writeSystemJson(nk, "prize_fulfillments", fKey, {
+                    userId: winnerId,
+                    eventId: eventId,
+                    rank: rank,
+                    giftCard: tier,
+                    status: credit.credited > 0 ? "fulfilled" : "failed",
+                    queuedAt: nowSec,
+                    fulfilledAt: credit.credited > 0 ? nowSec : undefined,
+                    eventTitle: (def && def.title) || "",
+                    region: (def && def.region) || (def && def.giftCardPrizes && def.giftCardPrizes.region) || "global",
+                    source: "auto_winner_xut",
+                    email: emailByUserId[winnerId] || "",
+                    xutGranted: credit.credited,
+                    walletBalanceAfter: credit.balanceAfter,
+                    walletError: credit.error || "",
+                });
+                if (credit.credited > 0)
+                    xutCredited++;
                 continue;
             }
             Storage.writeSystemJson(nk, "prize_fulfillments", fKey, {
@@ -154136,10 +156387,139 @@ var SatoriCreatorEvents;
             });
             queued++;
         }
-        logger.info("[computeAndQueueWinners] event=%s ranked=%d queued=%d skipped=%d xut=%d", eventId, ranked, queued, skipped, xutWinners);
-        return { ranked: ranked, queued: queued, skippedExisting: skipped, xutWinners: xutWinners, tiersConfigured: true };
+        logger.info("[computeAndQueueWinners] event=%s ranked=%d queued=%d skipped=%d xut=%d credited=%d", eventId, ranked, queued, skipped, xutWinners, xutCredited);
+        return { ranked: ranked, queued: queued, skippedExisting: skipped, xutWinners: xutWinners, xutCredited: xutCredited, tiersConfigured: true };
     }
     SatoriCreatorEvents.computeAndQueueWinners = computeAndQueueWinners;
+    function validateSpaJoinWindow(def, nowSec) {
+        var status = (def.status || "published").toString().toLowerCase();
+        if (status === "cancelled" || status === "draft")
+            return "Event is not accepting participants";
+        if (status === "ended" || status === "distributed")
+            return "Event has ended";
+        var startAt = Math.floor(numericValue(def.scheduledAt, 0));
+        var durationMin = numericValue(def.duration, 30);
+        if (startAt > 0 && durationMin > 0) {
+            var endAt = startAt + Math.floor(durationMin * 60);
+            if (nowSec >= endAt)
+                return "Event has ended";
+        }
+        return "";
+    }
+    function parsePlayerEmailFromPayload(data) {
+        var candidates = [data.email, data.playerEmail, data.player_email];
+        for (var i = 0; i < candidates.length; i++) {
+            if (typeof candidates[i] === "string") {
+                var em = candidates[i].trim();
+                if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))
+                    return em;
+            }
+        }
+        return "";
+    }
+    function incrementSpaParticipantCount(nk, logger, creatorId, eventId, delta) {
+        var attempts = 0;
+        var maxAttempts = 3;
+        while (attempts < maxAttempts) {
+            attempts++;
+            try {
+                var recs = nk.storageRead([{ collection: "live_events", key: eventId, userId: creatorId }]);
+                if (!recs || recs.length === 0 || !recs[0].value)
+                    return -1;
+                var evDef = recs[0].value;
+                var current = Math.max(0, Math.floor(numericValue(evDef.participantCount, 0)));
+                evDef.participantCount = current + delta;
+                nk.storageWrite([{
+                        collection: "live_events",
+                        key: eventId,
+                        userId: creatorId,
+                        value: evDef,
+                        permissionRead: 2,
+                        permissionWrite: 1,
+                        version: recs[0].version,
+                    }]);
+                return evDef.participantCount;
+            }
+            catch (pcErr) {
+                if (attempts >= maxAttempts) {
+                    logger.warn("[CreatorEvent] participantCount increment failed for event %s: %s", eventId, pcErr.message || String(pcErr));
+                    return -1;
+                }
+            }
+        }
+        return -1;
+    }
+    /**
+     * Server-authoritative SPA join: writes event_participants and increments
+     * live_events.participantCount (Gap 2). The SPA hybrid router previously
+     * wrote participants via client storage only, leaving participantCount at 0.
+     */
+    function rpcSpaJoin(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!data.eventId)
+            return RpcHelpers.errorResponse("eventId required");
+        var eventId = String(data.eventId);
+        var located = findLiveEventStorageRecord(nk, logger, eventId, data.creatorId || data.creator_id);
+        if (!located || !located.creatorId)
+            return RpcHelpers.errorResponse("Event not found");
+        var def = located.def;
+        var creatorId = located.creatorId;
+        var nowSec = Math.floor(Date.now() / 1000);
+        var windowErr = validateSpaJoinWindow(def, nowSec);
+        if (windowErr)
+            return RpcHelpers.errorResponse(windowErr);
+        var existing = Storage.readJson(nk, "event_participants", eventId, userId);
+        if (existing && existing.joinedAt) {
+            var existingCount = Math.max(0, Math.floor(numericValue(def.participantCount, 0)));
+            return RpcHelpers.successResponse({
+                success: true,
+                eventId: eventId,
+                joinedAt: existing.joinedAt,
+                participantCount: existingCount,
+                alreadyJoined: true,
+            });
+        }
+        var playerName = "";
+        if (typeof data.playerName === "string") {
+            playerName = data.playerName.trim().slice(0, 120);
+        }
+        else if (typeof data.displayName === "string") {
+            playerName = data.displayName.trim().slice(0, 120);
+        }
+        var playerEmail = parsePlayerEmailFromPayload(data);
+        var deviceId = "";
+        if (typeof data.deviceId === "string")
+            deviceId = data.deviceId.trim().slice(0, 120);
+        else if (typeof data.device_id === "string")
+            deviceId = data.device_id.trim().slice(0, 120);
+        var participantRecord = {
+            eventId: eventId,
+            playerId: userId,
+            joinedAt: nowSec,
+            deviceId: deviceId,
+            playerName: playerName,
+            playerEmail: playerEmail,
+            email: playerEmail,
+        };
+        try {
+            Storage.writeJson(nk, "event_participants", eventId, userId, participantRecord, 2, 1);
+        }
+        catch (joinErr) {
+            return RpcHelpers.errorResponse("Failed to join event: " + (joinErr.message || String(joinErr)));
+        }
+        var newCount = incrementSpaParticipantCount(nk, logger, creatorId, eventId, 1);
+        if (newCount < 0) {
+            newCount = Math.max(0, Math.floor(numericValue(def.participantCount, 0))) + 1;
+        }
+        logger.info("[CreatorEvent SPA] Joined user=%s event=%s count=%d", userId, eventId, newCount);
+        return RpcHelpers.successResponse({
+            success: true,
+            eventId: eventId,
+            joinedAt: nowSec,
+            participantCount: newCount,
+        });
+    }
     /**
      * SPA event-end hook: rank all players and queue gift-card fulfillments
      * immediately when the creator ends an event.
@@ -154177,6 +156557,143 @@ var SatoriCreatorEvents;
         logger.info("[SpaEndQueue] event=%s ranked=%d queued=%d skipped=%d xut=%d", data.eventId, result.ranked, result.queued, result.skippedExisting, result.xutWinners);
         return RpcHelpers.successResponse({ eventId: data.eventId, prizeQueue: result });
     }
+    function spaEventStorageEndAtSec(ev) {
+        var scheduledAt = Math.floor(numericValue(ev && ev.scheduledAt, 0));
+        var durationMin = numericValue(ev && ev.duration, 30);
+        if (scheduledAt <= 0 || durationMin <= 0)
+            return 0;
+        return scheduledAt + Math.floor(durationMin * 60);
+    }
+    function shouldSpaAutoEnd(ev, nowSec, graceSec) {
+        if (!ev)
+            return false;
+        var status = (ev.status || "published").toString().toLowerCase();
+        if (status === "ended" || status === "cancelled" || status === "draft" || status === "funded")
+            return false;
+        var endAt = spaEventStorageEndAtSec(ev);
+        if (endAt <= 0)
+            return false;
+        return nowSec > endAt + graceSec;
+    }
+    function finalizeSpaAutoEndedEvent(nk, logger, eventId, creatorId, ev, version, endedBy) {
+        var nowSec = Math.floor(Date.now() / 1000);
+        ev.status = "ended";
+        ev.endedAt = nowSec;
+        if (!ev.id)
+            ev.id = eventId;
+        nk.storageWrite([{
+                collection: "live_events",
+                key: eventId,
+                userId: creatorId,
+                value: ev,
+                permissionRead: 2,
+                permissionWrite: 1,
+                version: version,
+            }]);
+        var prizeQueue = computeAndQueueWinners(nk, logger, ev, eventId);
+        logger.info("[CreatorEvent SPA] Auto-ended event=%s by=%s ranked=%d queued=%d", eventId, endedBy, prizeQueue.ranked, prizeQueue.queued);
+        return prizeQueue;
+    }
+    /**
+     * creator_event_spa_auto_end_sweep — system/admin only (n8n cron alongside
+     * creator_event_auto_end_sweep).
+     *
+     * SPA events live in creator-owned `live_events` storage; the module-path
+     * auto-end sweep only reads `satori_creator_events`. This sweep ends expired
+     * SPA events and calls computeAndQueueWinners so prizes queue even when the
+     * creator never clicks End in the web UI.
+     *
+     * Payload: { graceSec?: number, limit?: number }
+     */
+    function rpcSpaAutoEndSweep(ctx, logger, nk, payload) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var graceSec = typeof data.graceSec === "number" ? Math.max(0, Math.floor(data.graceSec)) : 0;
+        var limit = typeof data.limit === "number" ? Math.max(1, Math.floor(data.limit)) : 25;
+        var now = serverNowSec();
+        var cursor = "";
+        var pages = 0;
+        var maxPages = 20;
+        var scanned = 0;
+        var ended = [];
+        var failed = [];
+        do {
+            var res;
+            try {
+                res = nk.storageList(null, "live_events", 100, cursor);
+            }
+            catch (listErr) {
+                return RpcHelpers.errorResponse("live_events list failed: " + (listErr.message || String(listErr)));
+            }
+            var objs = (res && res.objects) || [];
+            for (var i = 0; i < objs.length; i++) {
+                if (ended.length >= limit)
+                    break;
+                var obj = objs[i];
+                if (!obj || !obj.value)
+                    continue;
+                scanned++;
+                var ev = obj.value;
+                var eventId = String(ev.id || obj.key || "");
+                var creatorId = String(ev.creatorId || obj.userId || obj.user_id || "");
+                // The storage write MUST target the row's actual owner. Events published
+                // via the admin/system path are owned by the zero UUID while ev.creatorId
+                // holds the human creator — writing with creatorId + this row's version
+                // fails the OCC check on every sweep (event b108b2fb…, Jul 7 2026).
+                var rowOwner = String(obj.userId || obj.user_id || "");
+                if (!eventId || !rowOwner)
+                    continue;
+                if (!shouldSpaAutoEnd(ev, now, graceSec))
+                    continue;
+                try {
+                    var prizeQueue = finalizeSpaAutoEndedEvent(nk, logger, eventId, rowOwner, ev, obj.version || "", "spa_auto_end_sweep");
+                    ended.push({
+                        eventId: eventId,
+                        title: ev.title || "",
+                        creatorId: creatorId,
+                        ranked: prizeQueue.ranked,
+                        queued: prizeQueue.queued,
+                    });
+                }
+                catch (err) {
+                    var msg = (err && err.message) ? err.message : String(err);
+                    logger.error("[CreatorEvent SPA] auto-end failed for event %s: %s", eventId, msg);
+                    try {
+                        var reread = nk.storageRead([{ collection: "live_events", key: eventId, userId: rowOwner }]);
+                        if (reread && reread.length > 0 && reread[0].value &&
+                            String(reread[0].value.status || "").toLowerCase() === "ended") {
+                            var recovered = computeAndQueueWinners(nk, logger, reread[0].value, eventId);
+                            ended.push({
+                                eventId: eventId,
+                                title: reread[0].value.title || "",
+                                creatorId: creatorId,
+                                ranked: recovered.ranked,
+                                queued: recovered.queued,
+                                recovered: true,
+                            });
+                            continue;
+                        }
+                    }
+                    catch (_recoverErr) {
+                        // fall through to failed
+                    }
+                    failed.push({ eventId: eventId, error: msg });
+                }
+            }
+            cursor = (res && res.cursor) || "";
+            pages++;
+        } while (cursor && ended.length < limit && pages < maxPages);
+        if (ended.length > 0) {
+            logger.info("[CreatorEvent SPA] Auto-end sweep finalized %d event(s)", ended.length);
+        }
+        return RpcHelpers.successResponse({
+            now: now,
+            scanned: scanned,
+            endedCount: ended.length,
+            ended: ended,
+            failed: failed,
+        });
+    }
     /**
      * Persist a player's prize-delivery email before the event ends.
      * The SPA results screen collects email while the quiz is still live;
@@ -154199,9 +156716,11 @@ var SatoriCreatorEvents;
         if (!defRecords || defRecords.length === 0 || !defRecords[0].value) {
             return RpcHelpers.errorResponse("Event not found in SPA storage");
         }
+        var joined = Storage.readJson(nk, "event_participants", eventId, userId);
         var myRecords = nk.storageRead([{ collection: "event_answers", key: eventId, userId: userId }]);
-        if (!myRecords || myRecords.length === 0 || !myRecords[0].value) {
-            return RpcHelpers.errorResponse("You did not participate in this event");
+        var hasAnswer = myRecords && myRecords.length > 0 && myRecords[0].value;
+        if (!joined && !hasAnswer) {
+            return RpcHelpers.errorResponse("You did not join this event");
         }
         var deliveryName = "";
         if (typeof data.playerName === "string") {
@@ -154261,92 +156780,22 @@ var SatoriCreatorEvents;
             return RpcHelpers.errorResponse("You did not participate in this event");
         }
         var myAnswer = myRecords[0].value;
-        // 5. List all answers across players (paginated, capped at 5 pages × 100 = 500)
-        var allAnswers = [];
-        var cursor = "";
-        var pages = 0;
-        do {
-            var page;
-            try {
-                page = nk.storageList(null, "event_answers", 100, cursor);
-            }
-            catch (lerr) {
-                logger.warn("[CreatorEvent SPA] storageList failed: %s", lerr.message || String(lerr));
-                break;
-            }
-            var objs = (page && page.objects) || [];
-            for (var i = 0; i < objs.length; i++) {
-                var o = objs[i];
-                var v = o.value;
-                if (!o || o.key !== eventId)
-                    continue;
-                if (!v || v.eventId !== eventId)
-                    continue;
-                allAnswers.push({
-                    userId: o.userId,
-                    score: typeof v.score === "number" ? v.score : 0,
-                    submitMs: typeof v.submitMs === "number" ? v.submitMs : 0,
-                });
-            }
-            cursor = (page && page.cursor) || "";
-            pages++;
-        } while (cursor && pages < 5);
-        // 5b. storageList can lag behind storageRead — always include caller's own answer
-        var selfInList = false;
-        for (var sj = 0; sj < allAnswers.length; sj++) {
-            if (allAnswers[sj].userId === userId) {
-                selfInList = true;
-                break;
-            }
-        }
-        if (!selfInList && myAnswer) {
-            allAnswers.push({
-                userId: userId,
-                score: typeof myAnswer.score === "number" ? myAnswer.score : 0,
-                submitMs: typeof myAnswer.submitMs === "number" ? myAnswer.submitMs : 0,
-            });
-        }
-        // 5c. Premature-claim guard — the same storageList lag that 5b works
-        // around for the caller ALSO hides other players' answers right after
-        // the event ends. Ranking against that incomplete list hands a rank-1
-        // prize to whoever claims first (real bug: player ranked #2 on the
-        // final leaderboard claimed a #1-tier prize). While inside a short
-        // grace window after the end, require the answer list to cover the
-        // joined participant count; otherwise return the rank-sync error so
-        // the client's pending-retry flow claims again once the list settles.
+        var rankingResult = collectSpaEventRankings(nk, logger, eventId, {
+            ensureUserId: userId,
+            ensureAnswer: myAnswer,
+        });
+        var allAnswers = rankingResult.rankings;
+        // Premature-claim guard — storageList can lag right after event end.
+        // After participant backfill, only hold when participant rows are still
+        // not fully visible (participantCount > ranked list length).
         var CLAIM_GRACE_SEC = 120;
         if (nowSec < endAt + CLAIM_GRACE_SEC) {
-            var participantCount = 0;
-            var pCursor = "";
-            var pPages = 0;
-            do {
-                var pPage;
-                try {
-                    pPage = nk.storageList(null, "event_participants", 100, pCursor);
-                }
-                catch (perr) {
-                    logger.warn("[CreatorEvent SPA] participants storageList failed: %s", perr.message || String(perr));
-                    break;
-                }
-                var pObjs = (pPage && pPage.objects) || [];
-                for (var pi = 0; pi < pObjs.length; pi++) {
-                    if (pObjs[pi] && pObjs[pi].key === eventId)
-                        participantCount++;
-                }
-                pCursor = (pPage && pPage.cursor) || "";
-                pPages++;
-            } while (pCursor && pPages < 5);
-            if (participantCount > allAnswers.length) {
-                logger.info("[CreatorEvent SPA] Claim held for %s on %s: %d participants vs %d answers visible (grace window)", userId, eventId, participantCount, allAnswers.length);
+            if (rankingResult.participantCount > rankingResult.answerCount &&
+                rankingResult.participantCount > allAnswers.length) {
+                logger.info("[CreatorEvent SPA] Claim held for %s on %s: %d participants vs %d answers visible (%d ranked, grace window)", userId, eventId, rankingResult.participantCount, rankingResult.answerCount, allAnswers.length);
                 return RpcHelpers.errorResponse("Your score is still syncing to the final leaderboard. Your answers were received — please wait a moment and try again.");
             }
         }
-        // 6. Sort: score desc, submit-time asc (ties broken by speed)
-        allAnswers.sort(function (a, b) {
-            if (a.score !== b.score)
-                return b.score - a.score;
-            return (a.submitMs || 0) - (b.submitMs || 0);
-        });
         var myRank = 0;
         for (var ri = 0; ri < allAnswers.length; ri++) {
             if (allAnswers[ri].userId === userId) {
@@ -154380,22 +156829,42 @@ var SatoriCreatorEvents;
         var xutGranted = 0;
         var giftCard = null;
         if (tier) {
-            var isXut = (tier.currency || "").toUpperCase() === "XUT" || (tier.fulfillment || "") === "nakama";
+            var isXut = isXutFulfillmentTier(tier);
             if (isXut) {
-                xutGranted = Math.max(0, Math.floor(tier.value || 0));
-                if (xutGranted > 0) {
-                    try {
-                        nk.walletUpdate(userId, { xut: xutGranted }, {
-                            reason: "spa_event_prize:" + eventId,
-                            tier: tier.rank,
-                            rank: myRank,
-                        }, true);
-                        logger.info("[CreatorEvent SPA] Granted %d XUT to %s for event %s rank=%d", xutGranted, userId, eventId, myRank);
-                    }
-                    catch (werr) {
-                        logger.error("[CreatorEvent SPA] walletUpdate FAILED for %s: %s", userId, werr.message || String(werr));
-                        xutGranted = 0;
-                    }
+                var fKey = eventId + ":" + userId;
+                var priorFulfillment = Storage.readSystemJson(nk, "prize_fulfillments", fKey);
+                if (priorFulfillment && priorFulfillment.source === "auto_winner_xut" && priorFulfillment.status === "fulfilled") {
+                    xutGranted = Math.max(0, Math.floor(priorFulfillment.xutGranted || tier.value || 0));
+                }
+                else if (priorFulfillment && priorFulfillment.source === "auto_winner_xut" && priorFulfillment.status === "failed") {
+                    var retryCredit = creditSpaEventCoinPrize(nk, logger, userId, spaEventCoinAmountForRank(tier, myRank), eventId, myRank);
+                    xutGranted = retryCredit.credited;
+                    priorFulfillment.status = retryCredit.credited > 0 ? "fulfilled" : "failed";
+                    priorFulfillment.xutGranted = retryCredit.credited;
+                    priorFulfillment.fulfilledAt = retryCredit.credited > 0 ? nowSec : priorFulfillment.fulfilledAt;
+                    priorFulfillment.walletBalanceAfter = retryCredit.balanceAfter;
+                    priorFulfillment.walletError = retryCredit.error || "";
+                    Storage.writeSystemJson(nk, "prize_fulfillments", fKey, priorFulfillment);
+                }
+                else if (!priorFulfillment) {
+                    var claimCredit = creditSpaEventCoinPrize(nk, logger, userId, spaEventCoinAmountForRank(tier, myRank), eventId, myRank);
+                    xutGranted = claimCredit.credited;
+                    Storage.writeSystemJson(nk, "prize_fulfillments", fKey, {
+                        userId: userId,
+                        eventId: eventId,
+                        rank: myRank,
+                        giftCard: tier,
+                        status: claimCredit.credited > 0 ? "fulfilled" : "failed",
+                        queuedAt: nowSec,
+                        fulfilledAt: claimCredit.credited > 0 ? nowSec : undefined,
+                        eventTitle: def.title || "",
+                        region: def.region || (def.giftCardPrizes && def.giftCardPrizes.region) || "global",
+                        source: "auto_winner_xut",
+                        email: deliveryEmail || "",
+                        xutGranted: claimCredit.credited,
+                        walletBalanceAfter: claimCredit.balanceAfter,
+                        walletError: claimCredit.error || "",
+                    });
                 }
             }
             else {
@@ -154528,6 +156997,7 @@ var SatoriCreatorEvents;
     //  Reloadly:
     //
     //    creator_event_fulfillments_list   → list queue (filter by status)
+    //    creator_event_fulfillment_get     → direct read by eventId + userId key
     //    creator_event_fulfillment_settle  → mark fulfilled/failed + mirror
     //                                        voucher status onto the player's
     //                                        claim record for the SPA UI
@@ -154548,6 +157018,7 @@ var SatoriCreatorEvents;
             return RpcHelpers.errorResponse("Unauthorized — valid service_token required");
         }
         var statusFilter = typeof data.status === "string" ? String(data.status) : "";
+        var eventIdFilter = typeof data.eventId === "string" ? String(data.eventId) : (typeof data.event_id === "string" ? String(data.event_id) : "");
         var limit = Math.min(100, Math.max(1, Number(data.limit) || 100));
         var cursor = (typeof data.cursor === "string" && data.cursor) ? String(data.cursor) : undefined;
         var res = nk.storageList(Constants.SYSTEM_USER_ID, "prize_fulfillments", limit, cursor);
@@ -154557,27 +157028,55 @@ var SatoriCreatorEvents;
             var v = objs[i].value || {};
             if (statusFilter && v.status !== statusFilter)
                 continue;
-            rows.push({
-                key: objs[i].key,
-                userId: v.userId || "",
-                eventId: v.eventId || "",
-                eventTitle: v.eventTitle || "",
-                rank: v.rank || 0,
-                giftCard: v.giftCard || null,
-                status: v.status || "pending",
-                region: v.region || "",
-                email: v.email || "",
-                source: v.source || "",
-                queuedAt: v.queuedAt || v.claimedAt || 0,
-                settledAt: v.settledAt || 0,
-                voucher: v.voucher || null,
-                error: v.error || "",
-            });
+            if (eventIdFilter && String(v.eventId || "") !== eventIdFilter)
+                continue;
+            rows.push(mapFulfillmentRow(objs[i].key, v, objs[i]));
         }
         return RpcHelpers.successResponse({
             fulfillments: rows,
             cursor: (res && res.cursor) || "",
         });
+    }
+    function mapFulfillmentRow(key, v, storageObj) {
+        var createTime = fulfillmentStorageCreateTimeSec(storageObj);
+        var queuedAt = v.queuedAt || v.claimedAt || 0;
+        var sortAt = createTime || queuedAt;
+        return {
+            key: key,
+            userId: v.userId || "",
+            eventId: v.eventId || "",
+            eventTitle: v.eventTitle || "",
+            rank: v.rank || 0,
+            giftCard: v.giftCard || null,
+            status: v.status || "pending",
+            region: v.region || "",
+            email: v.email || "",
+            source: v.source || "",
+            queuedAt: queuedAt,
+            createTime: createTime,
+            sortAt: sortAt,
+            emailPatchedAt: v.emailPatchedAt || 0,
+            settledAt: v.settledAt || 0,
+            voucher: v.voucher || null,
+            error: v.error || "",
+        };
+    }
+    function rpcFulfillmentGet(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!isFulfillServiceCaller(ctx, data)) {
+            return RpcHelpers.errorResponse("Unauthorized — valid service_token required");
+        }
+        if (!data.eventId || !data.userId) {
+            return RpcHelpers.errorResponse("eventId and userId required");
+        }
+        var eventId = String(data.eventId);
+        var targetUserId = String(data.userId);
+        var fKey = eventId + ":" + targetUserId;
+        var rec = Storage.readSystemJson(nk, "prize_fulfillments", fKey);
+        if (!rec) {
+            return RpcHelpers.errorResponse("Fulfillment record not found: " + fKey);
+        }
+        return RpcHelpers.successResponse(mapFulfillmentRow(fKey, rec));
     }
     function rpcFulfillmentSettle(ctx, logger, nk, payload) {
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -159125,6 +161624,3721 @@ var WebAdReward;
     WebAdReward.register = register;
     register();
 })(WebAdReward || (WebAdReward = {}));
+// app_registry.ts — storage-backed multi-app registry (doc §19.3).
+//
+// Replaces hardcoded game-id lists scattered through modules with ONE
+// server-owned document per app. Onboarding a new app = one Console write
+// (the proven qv_config/global pattern) — no build, no deploy.
+//
+// STORAGE
+//   ivx_app_registry / {appId}    system-owned, permRead 2 (public read —
+//   registry entries hold config, never secrets), permWrite 0.
+//
+// RPCs
+//   ivx_app_config_get       — client fetch of one app's public config
+//   ivx_app_registry_upsert  — service-token admin write (deep-merged)
+//
+// RESOLUTION CONTRACT (SocialAppRegistry.resolveApp):
+//   unknown/missing appId → the built-in "quizverse" default entry, never an
+//   error — an older client must never brick on registry lookups. Every
+//   entry carries features (per-app kill switches) and limits (quotas).
+var SocialAppRegistry;
+(function (SocialAppRegistry) {
+    var COLLECTION = "ivx_app_registry";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var DEFAULT_FEATURES = {
+        friends: true, groups: true, challenges: true, feed: true,
+        presence: true, inviteLinks: true, duoQuests: true, chat: true,
+        // Progressive-enable flags: default OFF until the client build that
+        // supports them has rolled out (doc §19.9 flag-first shipping).
+        leagues: false, contactImport: false, scoreSigning: false
+    };
+    var DEFAULT_LIMITS = {
+        maxFriends: 1000, maxGroupsPerUser: 20, maxGroupSize: 100,
+        invitesPerHour: 20, pushPerUserPerDay: 2
+    };
+    // Built-in seeds — used when no storage doc exists yet. Writing a storage
+    // doc OVERRIDES these field-by-field (shallow merge, stored wins).
+    var SEEDS = {
+        "quizverse": {
+            appId: "quizverse", appUuid: "126bf539-dae2-4bcf-964d-316c0fa1f92b",
+            status: "active", features: DEFAULT_FEATURES, limits: DEFAULT_LIMITS,
+            branding: { displayName: "QuizVerse", deepLinkHost: "quizverse.world", scheme: "quizverse" }
+        },
+        "lasttolive": {
+            appId: "lasttolive", appUuid: "", status: "active",
+            features: DEFAULT_FEATURES, limits: DEFAULT_LIMITS,
+            branding: { displayName: "LastToLive", deepLinkHost: "", scheme: "lasttolive" }
+        },
+        "cricket": {
+            appId: "cricket", appUuid: "", status: "active",
+            features: DEFAULT_FEATURES, limits: DEFAULT_LIMITS,
+            branding: { displayName: "Cricket King", deepLinkHost: "", scheme: "cricket" }
+        }
+    };
+    function shallowMerge(base, over) {
+        var out = {};
+        var k;
+        for (k in base) {
+            if (Object.prototype.hasOwnProperty.call(base, k))
+                out[k] = base[k];
+        }
+        for (k in over) {
+            if (!Object.prototype.hasOwnProperty.call(over, k))
+                continue;
+            if (out[k] && typeof out[k] === "object" && typeof over[k] === "object" &&
+                !Array.isArray(out[k]) && !Array.isArray(over[k])) {
+                var inner = {};
+                var ik;
+                for (ik in out[k]) {
+                    if (Object.prototype.hasOwnProperty.call(out[k], ik))
+                        inner[ik] = out[k][ik];
+                }
+                for (ik in over[k]) {
+                    if (Object.prototype.hasOwnProperty.call(over[k], ik))
+                        inner[ik] = over[k][ik];
+                }
+                out[k] = inner;
+            }
+            else {
+                out[k] = over[k];
+            }
+        }
+        return out;
+    }
+    /**
+     * Resolve an appId to its full registry entry. Storage doc wins over the
+     * built-in seed field-by-field; unknown ids fall back to quizverse.
+     * One storage read per call (Goja VMs are pooled — no module-level cache,
+     * per AGENTS.md rule 4). Callers on hot paths should resolve once per RPC.
+     */
+    function resolveApp(nk, rawAppId) {
+        var appId = (typeof rawAppId === "string" && rawAppId) ? rawAppId.toLowerCase() : "quizverse";
+        var seed = SEEDS[appId] || SEEDS["quizverse"];
+        try {
+            var rows = nk.storageRead([{ collection: COLLECTION, key: appId, userId: SYSTEM_USER }]);
+            if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                return shallowMerge(seed, rows[0].value);
+            }
+        }
+        catch (_) { /* seed applies */ }
+        return seed;
+    }
+    SocialAppRegistry.resolveApp = resolveApp;
+    /** Convenience: is a feature enabled for this app? Missing key = seed default. */
+    function featureEnabled(nk, appId, feature) {
+        var entry = resolveApp(nk, appId);
+        if (entry.status !== "active")
+            return false;
+        return !entry.features || entry.features[feature] !== false;
+    }
+    SocialAppRegistry.featureEnabled = featureEnabled;
+    function rpcAppConfigGet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var entry = resolveApp(nk, data.appId || data.gameId);
+            return RpcHelpers.successResponse({ app: entry });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to read app config");
+        }
+    }
+    function rpcRegistryUpsert(ctx, logger, nk, payload) {
+        try {
+            var data = {};
+            try {
+                data = payload ? JSON.parse(payload) : {};
+            }
+            catch (_) { }
+            var expected = "" + ((ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) ||
+                (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
+            if (!expected || data.service_token !== expected) {
+                return RpcHelpers.errorResponse("service-only", 401);
+            }
+            var appId = (typeof data.appId === "string" && data.appId) ? data.appId.toLowerCase() : "";
+            if (!appId || !data.entry || typeof data.entry !== "object") {
+                return RpcHelpers.errorResponse("appId and entry are required");
+            }
+            // Merge over the current effective entry so partial updates are safe.
+            var merged = shallowMerge(resolveApp(nk, appId), data.entry);
+            merged.appId = appId;
+            merged.updatedAt = new Date().toISOString();
+            nk.storageWrite([{
+                    collection: COLLECTION, key: appId, userId: SYSTEM_USER,
+                    value: merged, permissionRead: 2, permissionWrite: 0
+                }]);
+            logger.info("[AppRegistry] upsert " + appId);
+            return RpcHelpers.successResponse({ app: merged });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to upsert app registry");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_app_config_get = rpcAppConfigGet;
+        __rpc_ivx_app_registry_upsert = rpcRegistryUpsert;
+    }
+    SocialAppRegistry.register = register;
+    register();
+})(SocialAppRegistry || (SocialAppRegistry = {}));
+// duo_quests.ts — Duo Quests revival (Q-06, doc §17.5 / §F.2 rank #1).
+//
+// Revives the dead social_v2.js rpcDailyDuoCreate/rpcDailyDuoStatus handlers
+// (never registered — 100% unreachable) as a hardened Duolingo-Friends-Quests
+// mechanic: two players share a joint goal with a deadline; completing quizzes
+// credits each side SERVER-side; both done → both rewarded.
+//
+// RPCs
+//   ivx_duo_quest_create   — manual pairing: invite one mutual friend
+//   ivx_duo_quest_status   — my active duo(s) + progress
+//   ivx_duo_quest_accept   — partner accepts the invite (activates the duo)
+//
+// WEEKLY RANDOM PAIRING (the Duolingo cold-start trick — §17.5):
+//   weeklyPairingTick() is invoked from ivx_social_maintenance_tick. Once per
+//   ISO week (idempotent via a system marker row) it pairs users who were
+//   active in the last 7 days (ivx_presence_v2 rows) into auto-accepted duos
+//   and notifies both. Random partner ≠ requires existing friendship — this
+//   is deliberately a cold-start tool, not just a retention tool.
+//
+// ANTI-CHEAT: progress is NEVER client-claimed. creditQuizCompletion() is
+// called from the server-side quiz submit flow only — the dead code's design
+// (and the friend-quest PlayerPrefs exploit in §18.1) accepted client claims;
+// this does not.
+//
+// STORAGE
+//   ivx_duo_quests / duo_{id}            system-owned canonical row
+//   ivx_duo_quests / idx_{userId}_{id}   thin per-user index (owner=user)
+//   ivx_duo_quests / weekly_marker_{isoWeek}  pairing idempotency marker
+var DuoQuests;
+(function (DuoQuests) {
+    var COLLECTION = "ivx_duo_quests";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var STATE_FRIEND = 0;
+    var DUO_DURATION_DAYS = 5; // §17.5: 5-day joint goal
+    var DUO_GOAL_QUIZZES = 5; // "complete 5 quizzes together" (per side: any mix)
+    var REWARD_COINS = 100; // §F.6 free-tier reward, each
+    var NOTIF_CODE_DUO = 31; // social_nudge range (doc §9.3)
+    var MAX_ACTIVE_PER_USER = 3;
+    function isoWeek(d) {
+        // ISO-8601 week id, e.g. "2026-W28" — stable pairing idempotency key.
+        var t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        var dayNum = (t.getUTCDay() + 6) % 7;
+        t.setUTCDate(t.getUTCDate() - dayNum + 3);
+        var firstThursday = t.getTime();
+        t.setUTCMonth(0, 1);
+        if (t.getUTCDay() !== 4)
+            t.setUTCMonth(0, 1 + ((4 - t.getUTCDay()) + 7) % 7);
+        var week = 1 + Math.ceil((firstThursday - t.getTime()) / 604800000);
+        return d.getUTCFullYear() + "-W" + (week < 10 ? "0" + week : week);
+    }
+    function newDuoId() {
+        return "duo_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 1679616).toString(36);
+    }
+    function readDuo(nk, duoId) {
+        try {
+            var rows = nk.storageRead([{ collection: COLLECTION, key: duoId, userId: SYSTEM_USER }]);
+            if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                return { value: rows[0].value, version: rows[0].version || "" };
+            }
+        }
+        catch (_) { }
+        return null;
+    }
+    function writeDuo(nk, duo, version) {
+        var req = {
+            collection: COLLECTION, key: duo.duoId, userId: SYSTEM_USER,
+            value: duo, permissionRead: 2, permissionWrite: 0
+        };
+        if (version)
+            req.version = version;
+        nk.storageWrite([req]);
+    }
+    function writeUserIndex(nk, userId, duoId, expiresAt) {
+        try {
+            nk.storageWrite([{
+                    collection: COLLECTION, key: "idx_" + userId + "_" + duoId, userId: userId,
+                    value: { duoId: duoId, expiresAt: expiresAt }, permissionRead: 1, permissionWrite: 0
+                }]);
+        }
+        catch (_) { }
+    }
+    function buildDuo(gameId, aId, aName, bId, bName, status, source) {
+        var nowMs = Date.now();
+        return {
+            duoId: newDuoId(), gameId: gameId,
+            playerA: aId, playerAName: aName || "",
+            playerB: bId, playerBName: bName || "",
+            goalQuizzes: DUO_GOAL_QUIZZES,
+            progressA: 0, progressB: 0,
+            status: status, // "invited" | "active" | "completed" | "expired"
+            source: source, // "manual" | "weekly_pairing"
+            createdAt: new Date(nowMs).toISOString(),
+            expiresAt: new Date(nowMs + DUO_DURATION_DAYS * 86400000).toISOString(),
+            rewardCoins: REWARD_COINS,
+            rewarded: false
+        };
+    }
+    function notifyDuo(nk, logger, targetId, senderId, subject, content) {
+        try {
+            content.type = subject;
+            content.code = NOTIF_CODE_DUO;
+            nk.notificationsSend([{
+                    userId: targetId, subject: subject, content: content,
+                    code: NOTIF_CODE_DUO, senderId: senderId || undefined, persistent: true
+                }]);
+        }
+        catch (e) {
+            logger.warn("[DuoQuests] notify failed (non-fatal): " + (e && e.message));
+        }
+        // Device push via the fan-out queue (AP-008: never inline). Offline
+        // players are the entire point of duo nudges — in-app alone is not enough.
+        try {
+            if (typeof FanoutQueue === "undefined" || !FanoutQueue.enqueue)
+                return;
+            var pushData = { eventType: "duo_quest", screen: "duo_quest", type: subject, duoId: content.duoId || "" };
+            if (subject === "duo_quest_invite" || subject === "duo_quest_paired") {
+                FanoutQueue.enqueue(nk, logger, [{
+                        targetUserId: targetId, eventType: "duo_quest",
+                        titleKey: "duo_paired_title", bodyKey: "duo_paired_body",
+                        vars: { name: content.partnerName || content.fromName || "a player" }, data: pushData
+                    }]);
+            }
+            else if (subject === "duo_quest_completed") {
+                FanoutQueue.enqueue(nk, logger, [{
+                        targetUserId: targetId, eventType: "duo_quest",
+                        titleKey: "duo_done_title", bodyKey: "duo_done_body",
+                        vars: { coins: String(content.rewardCoins || "") }, data: pushData
+                    }]);
+            }
+            // duo_quest_accepted: in-app only — acceptance implies the other side
+            // is actively playing; a push would burn the daily budget (AP-001).
+        }
+        catch (pe) {
+            logger.warn("[DuoQuests] push enqueue failed (non-fatal): " + (pe && pe.message));
+        }
+    }
+    function activeDuosFor(nk, userId) {
+        var out = [];
+        try {
+            var res = nk.storageList(userId, COLLECTION, 50, undefined);
+            var objs = (res && res.objects) ? res.objects : [];
+            var now = Date.now();
+            for (var i = 0; i < objs.length; i++) {
+                var idx = objs[i] && objs[i].value;
+                if (!idx || !idx.duoId)
+                    continue;
+                if (idx.expiresAt && Date.parse(idx.expiresAt) < now)
+                    continue;
+                var found = readDuo(nk, idx.duoId);
+                if (found && (found.value.status === "active" || found.value.status === "invited")) {
+                    out.push(found.value);
+                }
+            }
+        }
+        catch (_) { }
+        return out;
+    }
+    function areFriends(nk, a, b) {
+        try {
+            var page = nk.friendsList(a, 1000, STATE_FRIEND, null);
+            if (page && page.friends) {
+                for (var i = 0; i < page.friends.length; i++) {
+                    var fr = page.friends[i];
+                    if (fr && fr.user && fr.user.id === b)
+                        return true;
+                }
+            }
+        }
+        catch (_) { }
+        return false;
+    }
+    function displayName(nk, userId, fallback) {
+        try {
+            var users = nk.usersGetId([userId]);
+            if (users && users.length > 0 && users[0]) {
+                return users[0].displayName || users[0].username || fallback;
+            }
+        }
+        catch (_) { }
+        return fallback;
+    }
+    // ── RPC: ivx_duo_quest_create ─────────────────────────────────────────────
+    function rpcCreate(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var partnerId = data.partnerUserId || data.partner_user_id;
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            if (!partnerId || typeof partnerId !== "string")
+                return RpcHelpers.errorResponse("partnerUserId is required");
+            if (partnerId === userId)
+                return RpcHelpers.errorResponse("You cannot duo with yourself");
+            if (!areFriends(nk, userId, partnerId))
+                return RpcHelpers.errorResponse("You can only invite mutual friends to a Duo Quest");
+            // One active/invited duo per pair; cap per user.
+            var mine = activeDuosFor(nk, userId);
+            if (mine.length >= MAX_ACTIVE_PER_USER)
+                return RpcHelpers.errorResponse("You already have " + MAX_ACTIVE_PER_USER + " active Duo Quests");
+            for (var i = 0; i < mine.length; i++) {
+                var d = mine[i];
+                if ((d.playerA === userId && d.playerB === partnerId) || (d.playerB === userId && d.playerA === partnerId)) {
+                    return RpcHelpers.successResponse({ duo: d, alreadyExists: true });
+                }
+            }
+            var myName = displayName(nk, userId, ctx.username || "");
+            var duo = buildDuo(gameId, userId, myName, partnerId, displayName(nk, partnerId, ""), "invited", "manual");
+            writeDuo(nk, duo);
+            writeUserIndex(nk, userId, duo.duoId, duo.expiresAt);
+            writeUserIndex(nk, partnerId, duo.duoId, duo.expiresAt);
+            notifyDuo(nk, logger, partnerId, userId, "duo_quest_invite", { duoId: duo.duoId, gameId: gameId, fromUserId: userId, fromName: myName, goalQuizzes: duo.goalQuizzes, expiresAt: duo.expiresAt });
+            return RpcHelpers.successResponse({ duo: duo });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to create duo quest");
+        }
+    }
+    // ── RPC: ivx_duo_quest_accept ─────────────────────────────────────────────
+    function rpcAccept(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            if (!data.duoId || typeof data.duoId !== "string")
+                return RpcHelpers.errorResponse("duoId is required");
+            var found = readDuo(nk, data.duoId);
+            if (!found)
+                return RpcHelpers.errorResponse("Duo quest not found");
+            var duo = found.value;
+            if (duo.playerB !== userId)
+                return RpcHelpers.errorResponse("This invite is not for you");
+            if (duo.status === "active")
+                return RpcHelpers.successResponse({ duo: duo, alreadyActive: true });
+            if (duo.status !== "invited")
+                return RpcHelpers.errorResponse("This duo quest is " + duo.status);
+            if (Date.parse(duo.expiresAt) < Date.now())
+                return RpcHelpers.errorResponse("This duo quest has expired");
+            duo.status = "active";
+            duo.acceptedAt = new Date().toISOString();
+            writeDuo(nk, duo, found.version);
+            notifyDuo(nk, logger, duo.playerA, userId, "duo_quest_accepted", { duoId: duo.duoId, byUserId: userId, byName: duo.playerBName });
+            return RpcHelpers.successResponse({ duo: duo });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to accept duo quest");
+        }
+    }
+    // ── RPC: ivx_duo_quest_status ─────────────────────────────────────────────
+    function rpcStatus(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var duos = activeDuosFor(nk, userId);
+            var shaped = [];
+            for (var i = 0; i < duos.length; i++) {
+                var d = duos[i];
+                var mine = (d.playerA === userId);
+                shaped.push({
+                    duoId: d.duoId, gameId: d.gameId, status: d.status, source: d.source,
+                    partnerUserId: mine ? d.playerB : d.playerA,
+                    partnerName: mine ? d.playerBName : d.playerAName,
+                    goalQuizzes: d.goalQuizzes,
+                    myProgress: mine ? d.progressA : d.progressB,
+                    partnerProgress: mine ? d.progressB : d.progressA,
+                    expiresAt: d.expiresAt, rewardCoins: d.rewardCoins,
+                    bothCompleted: (d.progressA >= d.goalQuizzes && d.progressB >= d.goalQuizzes)
+                });
+            }
+            return RpcHelpers.successResponse({ duos: shaped, count: shaped.length });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to read duo status");
+        }
+    }
+    // ── SERVER-side progress credit — called from quiz submit flow only ──────
+    function creditQuizCompletion(nk, logger, userId, gameId) {
+        try {
+            var duos = activeDuosFor(nk, userId);
+            for (var i = 0; i < duos.length; i++) {
+                var d = duos[i];
+                if (d.status !== "active" || d.gameId !== gameId)
+                    continue;
+                // Re-read with version for OCC (ML-008 pattern: retry once on clash).
+                for (var attempt = 0; attempt < 2; attempt++) {
+                    var found = readDuo(nk, d.duoId);
+                    if (!found || found.value.status !== "active")
+                        break;
+                    var duo = found.value;
+                    if (duo.playerA === userId)
+                        duo.progressA = (duo.progressA || 0) + 1;
+                    else if (duo.playerB === userId)
+                        duo.progressB = (duo.progressB || 0) + 1;
+                    else
+                        break;
+                    var done = duo.progressA >= duo.goalQuizzes && duo.progressB >= duo.goalQuizzes;
+                    if (done && !duo.rewarded) {
+                        duo.status = "completed";
+                        duo.rewarded = true;
+                        duo.completedAt = new Date().toISOString();
+                    }
+                    try {
+                        writeDuo(nk, duo, found.version);
+                    }
+                    catch (occErr) {
+                        if (attempt === 0)
+                            continue; // version clash — retry once
+                        break;
+                    }
+                    if (done && duo.rewarded) {
+                        // Reward BOTH sides exactly once (rewarded flag flipped in the
+                        // same OCC write that completed the duo).
+                        try {
+                            nk.walletUpdate(duo.playerA, { coins: duo.rewardCoins }, { source: "duo_quest", duoId: duo.duoId }, true);
+                        }
+                        catch (_) { }
+                        try {
+                            nk.walletUpdate(duo.playerB, { coins: duo.rewardCoins }, { source: "duo_quest", duoId: duo.duoId }, true);
+                        }
+                        catch (_) { }
+                        notifyDuo(nk, logger, duo.playerA, duo.playerB, "duo_quest_completed", { duoId: duo.duoId, rewardCoins: duo.rewardCoins });
+                        notifyDuo(nk, logger, duo.playerB, duo.playerA, "duo_quest_completed", { duoId: duo.duoId, rewardCoins: duo.rewardCoins });
+                    }
+                    break;
+                }
+            }
+        }
+        catch (e) {
+            if (logger && logger.warn)
+                logger.warn("[DuoQuests] credit failed (non-fatal): " + (e && e.message));
+        }
+    }
+    DuoQuests.creditQuizCompletion = creditQuizCompletion;
+    // ── Weekly random pairing — invoked from ivx_social_maintenance_tick ─────
+    function weeklyPairingTick(ctx, logger, nk) {
+        var week = isoWeek(new Date());
+        var markerKey = "weekly_marker_" + week;
+        try {
+            var marker = nk.storageRead([{ collection: COLLECTION, key: markerKey, userId: SYSTEM_USER }]);
+            if (marker && marker.length > 0 && marker[0] && marker[0].value) {
+                return { skipped: true, week: week };
+            }
+        }
+        catch (_) { }
+        // Claim the marker FIRST (conditional create) so concurrent ticks can't
+        // double-pair; the loser of the race gets a version conflict and skips.
+        try {
+            nk.storageWrite([{
+                    collection: COLLECTION, key: markerKey, userId: SYSTEM_USER,
+                    value: { week: week, startedAt: new Date().toISOString() },
+                    permissionRead: 0, permissionWrite: 0, version: "*"
+                }]);
+        }
+        catch (raceErr) {
+            return { skipped: true, week: week, reason: "marker_race" };
+        }
+        // Recently-active users (presence v2 heartbeats in last 7 days), capped.
+        var candidates = [];
+        try {
+            var rows = nk.sqlQuery("SELECT DISTINCT user_id FROM storage " +
+                "WHERE collection = 'ivx_presence_v2' AND update_time > now() - INTERVAL '7 days' " +
+                "LIMIT 500", []);
+            if (rows) {
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i] && rows[i].user_id)
+                        candidates.push(String(rows[i].user_id));
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[DuoQuests] candidate query failed: " + (e && e.message));
+        }
+        // Fisher-Yates shuffle, then pair adjacent.
+        for (var s = candidates.length - 1; s > 0; s--) {
+            var j = Math.floor(Math.random() * (s + 1));
+            var tmp = candidates[s];
+            candidates[s] = candidates[j];
+            candidates[j] = tmp;
+        }
+        var paired = 0;
+        for (var p = 0; p + 1 < candidates.length; p += 2) {
+            var a = candidates[p], b = candidates[p + 1];
+            try {
+                var duo = buildDuo("quizverse", a, displayName(nk, a, ""), b, displayName(nk, b, ""), "active", "weekly_pairing");
+                writeDuo(nk, duo);
+                writeUserIndex(nk, a, duo.duoId, duo.expiresAt);
+                writeUserIndex(nk, b, duo.duoId, duo.expiresAt);
+                notifyDuo(nk, logger, a, b, "duo_quest_paired", { duoId: duo.duoId, partnerName: duo.playerBName, goalQuizzes: duo.goalQuizzes, expiresAt: duo.expiresAt });
+                notifyDuo(nk, logger, b, a, "duo_quest_paired", { duoId: duo.duoId, partnerName: duo.playerAName, goalQuizzes: duo.goalQuizzes, expiresAt: duo.expiresAt });
+                paired++;
+            }
+            catch (pairErr) {
+                logger.warn("[DuoQuests] pairing failed for " + a + "/" + b + ": " + (pairErr && pairErr.message));
+            }
+        }
+        logger.info("[DuoQuests] weekly pairing " + week + ": " + paired + " duos from " + candidates.length + " candidates");
+        return { week: week, candidates: candidates.length, paired: paired };
+    }
+    DuoQuests.weeklyPairingTick = weeklyPairingTick;
+    function register(initializer) {
+        __rpc_ivx_duo_quest_create = rpcCreate;
+        __rpc_ivx_duo_quest_accept = rpcAccept;
+        __rpc_ivx_duo_quest_status = rpcStatus;
+    }
+    DuoQuests.register = register;
+    register();
+})(DuoQuests || (DuoQuests = {}));
+// engagement_extras.ts — five compact engagement systems from the doc's
+// Appendix E action list, grouped because each is a thin RPC over data that
+// already exists elsewhere in the platform:
+//
+//   G-021 ivx_social_quiz_social_proof   — "Ana and 2 friends played this"
+//   G-022 ivx_social_group_streak_status — collaborative group streaks
+//   G-003 ivx_social_friend_recommendations — friends-of-friends via SQL
+//   G-016 ivx_social_starter_groups      — curated cold-start groups
+//   G-015 ivx_social_contact_hash_register / ivx_social_contacts_match
+//         — privacy-preserving phone-contact matching (SHA-256 hashes only)
+var SocialEngagementExtras;
+(function (SocialEngagementExtras) {
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var STATE_FRIEND = 0;
+    // ═══ G-021: quiz social proof ═════════════════════════════════════════════
+    // Source: the friends feed events already written by quiz completion
+    // (7-day window) — no new write path needed.
+    function rpcQuizSocialProof(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            var quizIds = [];
+            if (data.quizIds && Object.prototype.toString.call(data.quizIds) === "[object Array]") {
+                for (var q = 0; q < data.quizIds.length && quizIds.length < 20; q++) {
+                    if (typeof data.quizIds[q] === "string" && data.quizIds[q])
+                        quizIds.push(data.quizIds[q]);
+                }
+            }
+            if (quizIds.length === 0)
+                return RpcHelpers.errorResponse("quizIds (non-empty array, max 20) required");
+            var friendIds = [];
+            try {
+                var page = nk.friendsList(userId, 1000, STATE_FRIEND, null);
+                if (page && page.friends) {
+                    for (var i = 0; i < page.friends.length && friendIds.length < 100; i++) {
+                        var fr = page.friends[i];
+                        if (fr && fr.user && fr.user.id)
+                            friendIds.push(fr.user.id);
+                    }
+                }
+            }
+            catch (_) { }
+            var proof = {};
+            for (var z = 0; z < quizIds.length; z++) {
+                proof[quizIds[z]] = { friendsCompleted: 0, topFriendScore: 0, friendNames: [] };
+            }
+            if (friendIds.length === 0)
+                return RpcHelpers.successResponse({ proof: proof });
+            // One SQL over feed events: friends' quiz_completed rows for these quizzes.
+            var params = [];
+            var fph = [];
+            for (var f = 0; f < friendIds.length; f++) {
+                params.push(friendIds[f]);
+                fph.push("$" + params.length);
+            }
+            var qph = [];
+            for (var qq = 0; qq < quizIds.length; qq++) {
+                params.push(quizIds[qq]);
+                qph.push("$" + params.length);
+            }
+            params.push(gameId);
+            var gp = "$" + params.length;
+            var rows = [];
+            try {
+                rows = nk.sqlQuery("SELECT value FROM storage " +
+                    "WHERE collection = 'ivx_friends_feed_events' " +
+                    "  AND user_id IN (" + fph.join(",") + ") " +
+                    "  AND (value->>'eventType') = 'quiz_completed' " +
+                    "  AND (value->'data'->>'quizId') IN (" + qph.join(",") + ") " +
+                    "  AND (value->>'gameId') = " + gp + " " +
+                    "LIMIT 500", params);
+            }
+            catch (e) {
+                logger.warn("[SocialProof] SQL failed: " + (e && e.message));
+                return RpcHelpers.successResponse({ proof: proof, degraded: true });
+            }
+            if (!rows)
+                rows = [];
+            var seenPerQuiz = {};
+            for (var r = 0; r < rows.length; r++) {
+                var v = rows[r] && rows[r].value;
+                if (typeof v === "string") {
+                    try {
+                        v = JSON.parse(v);
+                    }
+                    catch (_) {
+                        v = null;
+                    }
+                }
+                if (!v || !v.data || !v.data.quizId || !proof[v.data.quizId])
+                    continue;
+                var slot = proof[v.data.quizId];
+                var dedupKey = v.data.quizId + "|" + v.authorId;
+                if (seenPerQuiz[dedupKey]) {
+                    // Same friend replayed — only track best score, not count.
+                }
+                else {
+                    seenPerQuiz[dedupKey] = true;
+                    slot.friendsCompleted++;
+                    if (slot.friendNames.length < 3 && v.authorName)
+                        slot.friendNames.push(v.authorName);
+                }
+                var sc = (typeof v.data.score === "number") ? v.data.score : 0;
+                if (sc > slot.topFriendScore)
+                    slot.topFriendScore = sc;
+            }
+            return RpcHelpers.successResponse({ proof: proof });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to compute social proof");
+        }
+    }
+    // ═══ G-022: group streaks ═════════════════════════════════════════════════
+    // The group streak survives if ANY member plays each day (collaborative,
+    // unlike individual streaks). Contribution is recorded from the quiz
+    // submit flow for every group the player belongs to (capped).
+    var GROUP_STREAK_COLLECTION = "ivx_group_streaks";
+    var MAX_GROUPS_PER_CREDIT = 10;
+    function dayStr(offsetDays) {
+        return new Date(Date.now() + offsetDays * 86400000).toISOString().slice(0, 10);
+    }
+    function creditGroupStreaks(nk, logger, userId) {
+        try {
+            var res = nk.userGroupsList(userId, MAX_GROUPS_PER_CREDIT, undefined, undefined);
+            var list = (res && res.userGroups) ? res.userGroups : [];
+            var today = dayStr(0), yesterday = dayStr(-1);
+            for (var i = 0; i < list.length; i++) {
+                var ug = list[i];
+                if (!ug || !ug.group || !ug.group.id)
+                    continue;
+                if (typeof ug.state === "number" && ug.state > 2)
+                    continue; // join-request only
+                var gid = ug.group.id;
+                for (var attempt = 0; attempt < 2; attempt++) {
+                    var cur = null, version = "";
+                    try {
+                        var rows = nk.storageRead([{ collection: GROUP_STREAK_COLLECTION, key: gid, userId: SYSTEM_USER }]);
+                        if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                            cur = rows[0].value;
+                            version = rows[0].version || "";
+                        }
+                    }
+                    catch (_) { }
+                    if (cur && cur.lastContributionDate === today)
+                        break; // already alive today
+                    var streak;
+                    if (cur && cur.lastContributionDate === yesterday) {
+                        streak = cur;
+                        streak.streakDays = (streak.streakDays || 0) + 1;
+                    }
+                    else {
+                        streak = { groupId: gid, streakDays: 1, bestStreakDays: (cur && cur.bestStreakDays) || 0 };
+                    }
+                    streak.lastContributionDate = today;
+                    streak.lastContributorId = userId;
+                    streak.bestStreakDays = Math.max(streak.bestStreakDays || 0, streak.streakDays);
+                    var req = { collection: GROUP_STREAK_COLLECTION, key: gid, userId: SYSTEM_USER,
+                        value: streak, permissionRead: 2, permissionWrite: 0 };
+                    if (version)
+                        req.version = version;
+                    try {
+                        nk.storageWrite([req]);
+                        break;
+                    }
+                    catch (occ) {
+                        if (attempt === 1)
+                            break;
+                    }
+                }
+            }
+        }
+        catch (e) {
+            if (logger && logger.warn)
+                logger.warn("[GroupStreaks] credit failed (non-fatal): " + (e && e.message));
+        }
+    }
+    SocialEngagementExtras.creditGroupStreaks = creditGroupStreaks;
+    function rpcGroupStreakStatus(ctx, logger, nk, payload) {
+        try {
+            RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            if (!data.groupId || typeof data.groupId !== "string")
+                return RpcHelpers.errorResponse("groupId is required");
+            var value = { groupId: data.groupId, streakDays: 0, bestStreakDays: 0, lastContributionDate: "", lastContributorId: "" };
+            try {
+                var rows = nk.storageRead([{ collection: GROUP_STREAK_COLLECTION, key: data.groupId, userId: SYSTEM_USER }]);
+                if (rows && rows.length > 0 && rows[0] && rows[0].value)
+                    value = rows[0].value;
+            }
+            catch (_) { }
+            var today = dayStr(0), yesterday = dayStr(-1);
+            // A streak whose last contribution predates yesterday is broken —
+            // report zero live days but keep best/history fields.
+            var alive = (value.lastContributionDate === today || value.lastContributionDate === yesterday);
+            return RpcHelpers.successResponse({
+                groupId: data.groupId,
+                streakDays: alive ? (value.streakDays || 0) : 0,
+                bestStreakDays: value.bestStreakDays || 0,
+                contributedToday: value.lastContributionDate === today,
+                atRisk: value.lastContributionDate === yesterday, // nobody played yet today
+                lastContributorId: value.lastContributorId || ""
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to read group streak");
+        }
+    }
+    // ═══ G-003: friend-of-friend recommendations ══════════════════════════════
+    // Graph distance beats geography (§E.1): 2nd-degree connections ranked by
+    // mutual-friend count, in ONE SQL over Nakama's user_edge table
+    // (source_id, destination_id, state; 0=friend, 3=blocked).
+    function rpcFriendRecommendations(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var limit = (typeof data.limit === "number" && data.limit > 0) ? Math.min(Math.floor(data.limit), 25) : 10;
+            var rows = [];
+            try {
+                rows = nk.sqlQuery(
+                // fof = friends of my friends, excluding me, anyone already in my
+                // graph (any state — friend/pending/blocked), and anyone who
+                // blocked me. Ranked by mutual count.
+                "SELECT fof.destination_id AS user_id, count(*) AS mutual_count " +
+                    "FROM user_edge me " +
+                    "JOIN user_edge fof ON fof.source_id = me.destination_id AND fof.state = 0 " +
+                    "WHERE me.source_id = $1 AND me.state = 0 " +
+                    "  AND fof.destination_id <> $1 " +
+                    "  AND NOT EXISTS (SELECT 1 FROM user_edge mine WHERE mine.source_id = $1 AND mine.destination_id = fof.destination_id) " +
+                    "  AND NOT EXISTS (SELECT 1 FROM user_edge blk  WHERE blk.source_id = fof.destination_id AND blk.destination_id = $1 AND blk.state = 3) " +
+                    "GROUP BY fof.destination_id " +
+                    "ORDER BY mutual_count DESC " +
+                    "LIMIT $2", [userId, limit]);
+            }
+            catch (e) {
+                logger.warn("[FoF] SQL failed: " + (e && e.message));
+                return RpcHelpers.successResponse({ recommendations: [], degraded: true });
+            }
+            if (!rows)
+                rows = [];
+            var ids = [];
+            var mutual = {};
+            for (var i = 0; i < rows.length; i++) {
+                var r = rows[i];
+                if (!r || !r.user_id)
+                    continue;
+                var uid = String(r.user_id);
+                ids.push(uid);
+                mutual[uid] = (typeof r.mutual_count === "number") ? r.mutual_count : parseInt(String(r.mutual_count || 0), 10);
+            }
+            var recs = [];
+            if (ids.length > 0) {
+                try {
+                    var users = nk.usersGetId(ids);
+                    if (users) {
+                        for (var u = 0; u < users.length; u++) {
+                            var usr = users[u];
+                            if (!usr || !usr.userId)
+                                continue;
+                            recs.push({
+                                userId: usr.userId,
+                                username: usr.username || "",
+                                displayName: usr.displayName || usr.username || "",
+                                avatarUrl: usr.avatarUrl || "",
+                                mutualFriends: mutual[usr.userId] || 0,
+                                reason: "mutual_friends"
+                            });
+                        }
+                    }
+                }
+                catch (_) { }
+            }
+            recs.sort(function (a, b) { return b.mutualFriends - a.mutualFriends; });
+            return RpcHelpers.successResponse({ recommendations: recs, count: recs.length });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to compute recommendations");
+        }
+    }
+    // ═══ G-016: curated starter groups ════════════════════════════════════════
+    var STARTER_COLLECTION = "ivx_starter_groups";
+    function rpcStarterGroups(ctx, logger, nk, payload) {
+        try {
+            RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            var groupIds = [];
+            try {
+                var rows = nk.storageRead([{ collection: STARTER_COLLECTION, key: gameId, userId: SYSTEM_USER }]);
+                if (rows && rows.length > 0 && rows[0] && rows[0].value && rows[0].value.groupIds) {
+                    groupIds = rows[0].value.groupIds;
+                }
+            }
+            catch (_) { }
+            if (groupIds.length === 0)
+                return RpcHelpers.successResponse({ groups: [], curated: false });
+            var cards = [];
+            try {
+                var groups = nk.groupsGetId(groupIds.slice(0, 20));
+                if (groups) {
+                    for (var g = 0; g < groups.length; g++) {
+                        var grp = groups[g];
+                        if (!grp || !grp.id)
+                            continue;
+                        var meta = {};
+                        try {
+                            meta = (typeof grp.metadata === "string") ? JSON.parse(grp.metadata || "{}") : (grp.metadata || {});
+                        }
+                        catch (_) { }
+                        cards.push({
+                            id: grp.id, name: grp.name || "", description: grp.description || "",
+                            avatarUrl: grp.avatarUrl || "", memberCount: grp.edgeCount || 0,
+                            maxCount: grp.maxCount || 0, groupType: meta.groupType || "", badge: meta.badge || ""
+                        });
+                    }
+                }
+            }
+            catch (_) { }
+            return RpcHelpers.successResponse({ groups: cards, curated: true });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to load starter groups");
+        }
+    }
+    function rpcStarterGroupsSet(ctx, logger, nk, payload) {
+        try {
+            var data = {};
+            try {
+                data = payload ? JSON.parse(payload) : {};
+            }
+            catch (_) { }
+            var expected = "" + ((ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) ||
+                (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
+            if (!expected || data.service_token !== expected)
+                return RpcHelpers.errorResponse("service-only", 401);
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            var groupIds = (data.groupIds && Object.prototype.toString.call(data.groupIds) === "[object Array]") ? data.groupIds : [];
+            nk.storageWrite([{
+                    collection: STARTER_COLLECTION, key: gameId, userId: SYSTEM_USER,
+                    value: { gameId: gameId, groupIds: groupIds.slice(0, 20), updatedAt: new Date().toISOString() },
+                    permissionRead: 2, permissionWrite: 0
+                }]);
+            return RpcHelpers.successResponse({ gameId: gameId, count: groupIds.length });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to save starter groups");
+        }
+    }
+    // ═══ G-015: contact matching (privacy-preserving) ═════════════════════════
+    // Clients hash phone numbers (SHA-256 of E.164) LOCALLY — raw numbers
+    // never reach the server (the WhatsApp/Snapchat/Duolingo pattern, §E.4).
+    //   register: user stores their OWN hash → userId mapping (opt-in).
+    //   match:    caller submits contact hashes; server returns matches.
+    var CONTACTS_COLLECTION = "ivx_contact_hashes";
+    var HASH_RE = /^[0-9a-f]{64}$/i;
+    var MAX_MATCH_BATCH = 500;
+    function rpcContactHashRegister(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            if (data.remove === true) {
+                // Opt-out: remove any prior registration (needs the hash to locate it).
+                if (typeof data.phoneHash === "string" && HASH_RE.test(data.phoneHash)) {
+                    try {
+                        nk.storageDelete([{ collection: CONTACTS_COLLECTION, key: data.phoneHash.toLowerCase(), userId: SYSTEM_USER }]);
+                    }
+                    catch (_) { }
+                }
+                return RpcHelpers.successResponse({ removed: true });
+            }
+            if (typeof data.phoneHash !== "string" || !HASH_RE.test(data.phoneHash)) {
+                return RpcHelpers.errorResponse("phoneHash must be a 64-char SHA-256 hex string");
+            }
+            nk.storageWrite([{
+                    collection: CONTACTS_COLLECTION, key: data.phoneHash.toLowerCase(), userId: SYSTEM_USER,
+                    value: { userId: userId, registeredAt: new Date().toISOString() },
+                    permissionRead: 0, permissionWrite: 0
+                }]);
+            return RpcHelpers.successResponse({ registered: true });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to register contact hash");
+        }
+    }
+    function rpcContactsMatch(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var hashes = [];
+            if (data.hashedPhones && Object.prototype.toString.call(data.hashedPhones) === "[object Array]") {
+                for (var i = 0; i < data.hashedPhones.length && hashes.length < MAX_MATCH_BATCH; i++) {
+                    var h = data.hashedPhones[i];
+                    if (typeof h === "string" && HASH_RE.test(h))
+                        hashes.push(h.toLowerCase());
+                }
+            }
+            if (hashes.length === 0)
+                return RpcHelpers.errorResponse("hashedPhones (array of SHA-256 hex, max " + MAX_MATCH_BATCH + ") required");
+            var reads = [];
+            for (var r = 0; r < hashes.length; r++) {
+                reads.push({ collection: CONTACTS_COLLECTION, key: hashes[r], userId: SYSTEM_USER });
+            }
+            var matchedIds = [];
+            var byUser = {};
+            try {
+                var rows = nk.storageRead(reads);
+                if (rows) {
+                    for (var w = 0; w < rows.length; w++) {
+                        var v = rows[w] && rows[w].value;
+                        if (v && v.userId && v.userId !== userId && !byUser[v.userId]) {
+                            byUser[v.userId] = true;
+                            matchedIds.push(v.userId);
+                        }
+                    }
+                }
+            }
+            catch (_) { }
+            var matches = [];
+            if (matchedIds.length > 0) {
+                try {
+                    var users = nk.usersGetId(matchedIds.slice(0, 100));
+                    if (users) {
+                        for (var u = 0; u < users.length; u++) {
+                            var usr = users[u];
+                            if (!usr || !usr.userId)
+                                continue;
+                            matches.push({
+                                userId: usr.userId, username: usr.username || "",
+                                displayName: usr.displayName || usr.username || "",
+                                avatarUrl: usr.avatarUrl || ""
+                            });
+                        }
+                    }
+                }
+                catch (_) { }
+            }
+            return RpcHelpers.successResponse({ matches: matches, count: matches.length });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to match contacts");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_quiz_social_proof = rpcQuizSocialProof;
+        __rpc_ivx_social_group_streak_status = rpcGroupStreakStatus;
+        __rpc_ivx_social_friend_recommendations = rpcFriendRecommendations;
+        __rpc_ivx_social_starter_groups = rpcStarterGroups;
+        __rpc_ivx_social_starter_groups_set = rpcStarterGroupsSet;
+        __rpc_ivx_social_contact_hash_register = rpcContactHashRegister;
+        __rpc_ivx_social_contacts_match = rpcContactsMatch;
+    }
+    SocialEngagementExtras.register = register;
+    register();
+})(SocialEngagementExtras || (SocialEngagementExtras = {}));
+// fanout_queue.ts — async notification fan-out queue (G-017 / AP-008).
+//
+// RULE (doc §E.5): fan-out NEVER happens inline in an RPC handler. A
+// 50-member group event = 50 pushes; inline that's a multi-second RPC and a
+// Goja-call timeout waiting to happen. Producers enqueue cheap rows; the
+// drain tick delivers in bounded batches out-of-band.
+//
+// PRODUCER API (internal):
+//   FanoutQueue.enqueue(nk, logger, items[])
+//     item = { targetUserId, eventType, titleKey, bodyKey, vars, data,
+//              inAppSubject?, inAppContent? }   — localized push via
+//     LegacyPush keys; optional in-app notification mirrored first.
+//
+// DRAIN:
+//   ivx_social_fanout_tick (service token) — also invoked from the hourly
+//   maintenance tick as a backstop. Dedicated CronJob runs it every minute
+//   (intelli-verse-kube-infra/nakama/social-fanout-cronjob.yaml) so
+//   fan-out latency is ≤~60s, not ≤1h.
+//   Per-row failures increment attempts; rows are dropped after 3 attempts
+//   (push is best-effort by contract — doc §9.1 Tier 3).
+//
+// STORAGE: ivx_notification_fanout / q_{tsMs}_{rand}   (system-owned).
+// Key embeds enqueue time so storageList order approximates FIFO.
+var FanoutQueue;
+(function (FanoutQueue) {
+    var COLLECTION = "ivx_notification_fanout";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var MAX_ATTEMPTS = 3;
+    var DRAIN_BATCH = 200;
+    function enqueue(nk, logger, items) {
+        if (!items || items.length === 0)
+            return 0;
+        var writes = [];
+        var nowMs = Date.now();
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (!it || !it.targetUserId || !it.eventType)
+                continue;
+            writes.push({
+                collection: COLLECTION,
+                key: "q_" + nowMs.toString(36) + "_" + i.toString(36) + "_" + Math.floor(Math.random() * 46656).toString(36),
+                userId: SYSTEM_USER,
+                value: {
+                    targetUserId: it.targetUserId, eventType: it.eventType,
+                    titleKey: it.titleKey || "", bodyKey: it.bodyKey || "",
+                    vars: it.vars || {}, data: it.data || {},
+                    inAppSubject: it.inAppSubject || "", inAppContent: it.inAppContent || null,
+                    inAppCode: (typeof it.inAppCode === "number") ? it.inAppCode : 0,
+                    enqueuedAt: new Date(nowMs).toISOString(), attempts: 0
+                },
+                permissionRead: 0, permissionWrite: 0
+            });
+        }
+        if (writes.length === 0)
+            return 0;
+        try {
+            nk.storageWrite(writes);
+            return writes.length;
+        }
+        catch (e) {
+            if (logger && logger.warn)
+                logger.warn("[Fanout] enqueue failed: " + (e && e.message));
+            return 0;
+        }
+    }
+    FanoutQueue.enqueue = enqueue;
+    function drain(ctx, logger, nk, maxRows) {
+        var batch = (typeof maxRows === "number" && maxRows > 0) ? Math.min(maxRows, DRAIN_BATCH) : DRAIN_BATCH;
+        var objs = [];
+        try {
+            var res = nk.storageList(SYSTEM_USER, COLLECTION, batch, undefined);
+            objs = (res && res.objects) ? res.objects : [];
+        }
+        catch (e) {
+            logger.warn("[Fanout] list failed: " + (e && e.message));
+            return { sent: 0, failed: 0, dropped: 0 };
+        }
+        var sent = 0, failed = 0, dropped = 0;
+        var deletes = [];
+        var retries = [];
+        var pushAvailable = (typeof LegacyPush !== "undefined" && !!LegacyPush.sendLocalizedPushToUser);
+        for (var i = 0; i < objs.length; i++) {
+            var row = objs[i];
+            if (!row || !row.value)
+                continue;
+            var v = row.value;
+            var ok = true;
+            try {
+                // Optional in-app tier first (durable), then device push.
+                if (v.inAppSubject && v.inAppContent) {
+                    try {
+                        var content = v.inAppContent;
+                        content.type = v.inAppSubject;
+                        nk.notificationsSend([{
+                                userId: v.targetUserId, subject: v.inAppSubject, content: content,
+                                code: v.inAppCode || 0, persistent: true
+                            }]);
+                    }
+                    catch (_) { /* in-app best effort inside fan-out */ }
+                }
+                if (pushAvailable && v.titleKey && v.bodyKey) {
+                    LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, v.targetUserId, v.eventType, v.titleKey, v.bodyKey, v.vars || {}, { skipInAppNotification: true, data: v.data || {} });
+                }
+            }
+            catch (sendErr) {
+                ok = false;
+            }
+            if (ok) {
+                sent++;
+                deletes.push({ collection: COLLECTION, key: row.key, userId: SYSTEM_USER });
+            }
+            else {
+                var attempts = (typeof v.attempts === "number" ? v.attempts : 0) + 1;
+                if (attempts >= MAX_ATTEMPTS) {
+                    dropped++;
+                    deletes.push({ collection: COLLECTION, key: row.key, userId: SYSTEM_USER });
+                }
+                else {
+                    failed++;
+                    v.attempts = attempts;
+                    retries.push({
+                        collection: COLLECTION, key: row.key, userId: SYSTEM_USER,
+                        value: v, permissionRead: 0, permissionWrite: 0
+                    });
+                }
+            }
+        }
+        try {
+            if (deletes.length > 0)
+                nk.storageDelete(deletes);
+        }
+        catch (delErr) {
+            logger.warn("[Fanout] delete failed: " + (delErr && delErr.message));
+        }
+        try {
+            if (retries.length > 0)
+                nk.storageWrite(retries);
+        }
+        catch (_) { }
+        if (sent + failed + dropped > 0) {
+            logger.info("[Fanout] drained: sent=" + sent + " retry=" + failed + " dropped=" + dropped);
+        }
+        return { sent: sent, failed: failed, dropped: dropped, remainingHint: objs.length >= batch };
+    }
+    FanoutQueue.drain = drain;
+    function rpcFanoutTick(ctx, logger, nk, payload) {
+        var data = {};
+        try {
+            data = payload ? JSON.parse(payload) : {};
+        }
+        catch (_) { }
+        var expected = "" + ((ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) ||
+            (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
+        if (!expected || data.service_token !== expected) {
+            return RpcHelpers.errorResponse("service-only", 401);
+        }
+        return RpcHelpers.successResponse(drain(ctx, logger, nk, data.max_rows));
+    }
+    function register(initializer) {
+        __rpc_ivx_social_fanout_tick = rpcFanoutTick;
+    }
+    FanoutQueue.register = register;
+    register();
+})(FanoutQueue || (FanoutQueue = {}));
+// friends_feed.ts — Gizmo-style friends activity feed (doc §14A).
+//
+// "Without this, the Social Zone answers 'who are my friends?'
+//  With this, it answers 'what did my friends DO today — and can I beat them?'"
+//
+// RPCs:
+//   ivx_social_friends_feed      — merged, time-sorted stream of friends' events
+//   ivx_social_feed_privacy_set  — per-user control of what their friends see
+//   ivx_social_feed_privacy_get  — read own settings (settings UI needs it)
+//
+// WRITER (internal, not an RPC): SocialFriendsFeed.writeEvent(...) — called
+// by game flows (quizverse submit_result hooks quiz_completed; other emitters
+// opt in the same way). Deliberate separation of concerns per §14A.6: the
+// social layer renders the feed, game layers decide what is feed-worthy.
+//
+// STORAGE  (all corrections from the 2026-07-06 architecture pass applied)
+//   ivx_friends_feed_events / {gameId}_{authorId}_{eventId}   owner = author
+//     permissionRead: 1  (C-002: owner-only — public read would let ANY
+//     client bypass both the friend check and privacy settings; this RPC
+//     reads with server privileges so owner-read is sufficient)
+//     expiresAt field + maintenance-tick sweep (C-001: Nakama has NO native
+//     TTL; retention = 7 days via ivx_social_maintenance_tick)
+//   ivx_user_settings / feed_privacy                          owner = user
+//
+// READ PATH (C-003): ONE SQL query over the storage table with a generated
+// IN-list — NOT per-friend storageList calls (50 sequential round-trips
+// would blow the 300ms budget). Ordered by the indexed create_time column
+// (feed events are immutable, so create_time == occurredAt ordering).
+var SocialFriendsFeed;
+(function (SocialFriendsFeed) {
+    var EVENTS_COLLECTION = "ivx_friends_feed_events";
+    var SETTINGS_COLLECTION = "ivx_user_settings";
+    var SETTINGS_KEY = "feed_privacy";
+    var RETENTION_DAYS = 7;
+    var MAX_FRIENDS_SCANNED = 100; // newest-relationship first beyond this
+    var MAX_LIMIT = 50;
+    var STATE_FRIEND = 0;
+    // Event types the feed understands. displayText templates are rendered
+    // SERVER-side (§14A.5) so all clients show identical copy.
+    var EVENT_TYPES = {
+        "quiz_completed": true, "challenge_won": true, "streak_milestone": true,
+        "group_joined": true, "group_level_up": true, "badge_earned": true,
+        "friend_joined": true, "challenge_sent": true
+    };
+    // Which privacy toggle gates each event type.
+    var TYPE_TO_PRIVACY_FIELD = {
+        "quiz_completed": "shareQuizScores",
+        "challenge_won": "shareQuizScores",
+        "challenge_sent": "shareQuizScores",
+        "streak_milestone": "shareStreakMilestones",
+        "badge_earned": "shareBadges",
+        "group_joined": "shareFeedEvents",
+        "group_level_up": "shareFeedEvents",
+        "friend_joined": "shareFeedEvents"
+    };
+    var DEFAULT_PRIVACY = {
+        shareFeedEvents: true,
+        shareQuizScores: true,
+        shareStreakMilestones: true,
+        shareBadges: true
+    };
+    // ── Internal writer — call from game flows, never throws ─────────────────
+    function writeEvent(nk, logger, authorId, authorName, gameId, eventType, eventData, cta) {
+        try {
+            if (!authorId || !EVENT_TYPES[eventType])
+                return;
+            var nowMs = Date.now();
+            var eventId = "evt_" + nowMs.toString(36) + "_" + Math.floor(Math.random() * 1679616).toString(36);
+            nk.storageWrite([{
+                    collection: EVENTS_COLLECTION,
+                    key: gameId + "_" + authorId + "_" + eventId,
+                    userId: authorId,
+                    value: {
+                        eventId: eventId,
+                        eventType: eventType,
+                        gameId: gameId,
+                        authorId: authorId,
+                        authorName: authorName || "",
+                        occurredAt: new Date(nowMs).toISOString(),
+                        expiresAt: new Date(nowMs + RETENTION_DAYS * 86400000).toISOString(),
+                        data: eventData || {},
+                        ctaType: cta ? cta.type : "",
+                        ctaLabel: cta ? cta.label : "",
+                        ctaPayload: cta ? cta.payload : null
+                    },
+                    permissionRead: 1, // C-002: owner-only; served via this RPC only
+                    permissionWrite: 0
+                }]);
+        }
+        catch (e) {
+            if (logger && logger.warn)
+                logger.warn("[FriendsFeed] writeEvent failed (non-fatal): " + (e && e.message));
+        }
+    }
+    SocialFriendsFeed.writeEvent = writeEvent;
+    // ── Server-side display text (§14A.5) ─────────────────────────────────────
+    function renderDisplayText(ev) {
+        var name = ev.authorName || "A friend";
+        var d = ev.data || {};
+        switch (ev.eventType) {
+            case "quiz_completed":
+                return name + " scored " + (d.score !== undefined ? d.score : "?") +
+                    (d.quizTitle ? " in " + d.quizTitle : (d.topic ? " in " + d.topic : ""));
+            case "challenge_won":
+                return name + " won a challenge" + (d.opponentName ? " against " + d.opponentName : "");
+            case "challenge_sent":
+                return name + " sent a challenge" + (d.targetScore ? " — beat " + d.targetScore + "!" : "");
+            case "streak_milestone":
+                return name + " hit a " + (d.days || "?") + "-day streak 🔥";
+            case "group_joined":
+                return name + " joined " + (d.groupName || "a group");
+            case "group_level_up":
+                return (d.groupName || "Your group") + " reached Level " + (d.level || "?") + "! 🎉";
+            case "badge_earned":
+                return name + " earned the " + (d.badgeName || "a") + " badge 🏅";
+            case "friend_joined":
+                return name + " just joined QuizVerse";
+            default:
+                return name + " did something awesome";
+        }
+    }
+    function timeAgo(iso) {
+        var t = Date.parse(iso || "");
+        if (isNaN(t))
+            return "";
+        var s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+        if (s < 60)
+            return "just now";
+        if (s < 3600)
+            return Math.floor(s / 60) + " minutes ago";
+        if (s < 86400)
+            return Math.floor(s / 3600) + " hours ago";
+        return Math.floor(s / 86400) + " days ago";
+    }
+    function loadPrivacyFor(nk, userIds) {
+        var out = {};
+        if (!userIds || userIds.length === 0)
+            return out;
+        var reads = [];
+        for (var i = 0; i < userIds.length; i++) {
+            reads.push({ collection: SETTINGS_COLLECTION, key: SETTINGS_KEY, userId: userIds[i] });
+        }
+        try {
+            var rows = nk.storageRead(reads);
+            if (rows) {
+                for (var r = 0; r < rows.length; r++) {
+                    if (rows[r] && rows[r].value && rows[r].userId)
+                        out[rows[r].userId] = rows[r].value;
+                }
+            }
+        }
+        catch (_) { /* defaults apply */ }
+        return out;
+    }
+    function allows(privacy, eventType) {
+        var p = privacy || DEFAULT_PRIVACY;
+        if (p.shareFeedEvents === false)
+            return false; // global kill switch
+        var field = TYPE_TO_PRIVACY_FIELD[eventType] || "shareFeedEvents";
+        return p[field] !== false;
+    }
+    // ── RPC: ivx_social_friends_feed ──────────────────────────────────────────
+    // Payload: { gameId?, limit?, cursor?, eventTypes?: string[] }
+    function rpcFriendsFeed(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            var limit = (typeof data.limit === "number" && data.limit > 0) ? Math.min(Math.floor(data.limit), MAX_LIMIT) : 20;
+            var typeFilter = null;
+            if (data.eventTypes && Object.prototype.toString.call(data.eventTypes) === "[object Array]" && data.eventTypes.length > 0) {
+                typeFilter = {};
+                for (var tf = 0; tf < data.eventTypes.length; tf++) {
+                    if (typeof data.eventTypes[tf] === "string")
+                        typeFilter[data.eventTypes[tf]] = true;
+                }
+            }
+            // 1. Confirmed friends (state=0), capped.
+            var friendIds = [];
+            try {
+                var page = nk.friendsList(userId, 1000, STATE_FRIEND, null);
+                if (page && page.friends) {
+                    for (var f = 0; f < page.friends.length && friendIds.length < MAX_FRIENDS_SCANNED; f++) {
+                        var fr = page.friends[f];
+                        if (fr && fr.user && fr.user.id)
+                            friendIds.push(fr.user.id);
+                    }
+                }
+            }
+            catch (fe) {
+                logger.warn("[FriendsFeed] friendsList failed: " + (fe && fe.message));
+            }
+            if (friendIds.length === 0) {
+                return RpcHelpers.successResponse({ events: [], count: 0, nextCursor: "", emptyReason: "no_friends" });
+            }
+            // 2. ONE SQL query (C-003). Generated IN-list placeholders — the JS
+            // runtime's sqlQuery does not take array parameters.
+            var params = [EVENTS_COLLECTION];
+            var placeholders = [];
+            for (var p = 0; p < friendIds.length; p++) {
+                params.push(friendIds[p]);
+                placeholders.push("$" + (params.length));
+            }
+            params.push(gameId);
+            var gameParam = "$" + params.length;
+            var cursorClause = "";
+            if (typeof data.cursor === "string" && data.cursor) {
+                var cur = Date.parse(data.cursor);
+                if (!isNaN(cur)) {
+                    params.push(new Date(cur).toISOString());
+                    cursorClause = " AND create_time < $" + params.length;
+                }
+            }
+            params.push(limit + 1);
+            var limitParam = "$" + params.length;
+            var rows = [];
+            try {
+                rows = nk.sqlQuery("SELECT value, create_time FROM storage " +
+                    "WHERE collection = " + "$1" +
+                    "  AND user_id IN (" + placeholders.join(",") + ") " +
+                    "  AND (value->>'gameId') = " + gameParam +
+                    cursorClause + " " +
+                    "ORDER BY create_time DESC " +
+                    "LIMIT " + limitParam, params);
+            }
+            catch (sqlErr) {
+                logger.error("[FriendsFeed] SQL failed: " + (sqlErr && sqlErr.message));
+                return RpcHelpers.errorResponse("Feed unavailable — try again");
+            }
+            if (!rows)
+                rows = [];
+            var hasMore = rows.length > limit;
+            if (hasMore)
+                rows = rows.slice(0, limit);
+            // 3. Author privacy (one batched read for distinct authors on this page).
+            var authorSet = {};
+            var parsed = [];
+            for (var i = 0; i < rows.length; i++) {
+                var v = rows[i] && rows[i].value;
+                if (typeof v === "string") {
+                    try {
+                        v = JSON.parse(v);
+                    }
+                    catch (_) {
+                        v = null;
+                    }
+                }
+                if (!v || !v.authorId)
+                    continue;
+                v.__createTime = rows[i].create_time;
+                parsed.push(v);
+                authorSet[v.authorId] = true;
+            }
+            var authors = [];
+            for (var ak in authorSet) {
+                if (Object.prototype.hasOwnProperty.call(authorSet, ak))
+                    authors.push(ak);
+            }
+            var privacyById = loadPrivacyFor(nk, authors);
+            // 4. Filter + render.
+            var events = [];
+            var lastCreate = "";
+            for (var e = 0; e < parsed.length; e++) {
+                var ev = parsed[e];
+                lastCreate = ev.__createTime || lastCreate;
+                if (ev.expiresAt && Date.parse(ev.expiresAt) < Date.now())
+                    continue; // belt-and-braces vs sweep lag
+                if (typeFilter && !typeFilter[ev.eventType])
+                    continue;
+                if (!allows(privacyById[ev.authorId], ev.eventType))
+                    continue;
+                events.push({
+                    eventId: ev.eventId,
+                    eventType: ev.eventType,
+                    authorId: ev.authorId,
+                    authorName: ev.authorName || "",
+                    occurredAt: ev.occurredAt,
+                    timeAgo: timeAgo(ev.occurredAt),
+                    displayText: renderDisplayText(ev),
+                    data: ev.data || {},
+                    cta: ev.ctaType ? { type: ev.ctaType, label: ev.ctaLabel || "", payload: ev.ctaPayload || null } : null
+                });
+            }
+            return RpcHelpers.successResponse({
+                events: events,
+                count: events.length,
+                nextCursor: hasMore && lastCreate ? String(lastCreate) : ""
+            });
+        }
+        catch (err) {
+            return RpcHelpers.errorResponse((err && err.message) || "Failed to load feed");
+        }
+    }
+    // ── RPC: ivx_social_feed_privacy_set / _get ───────────────────────────────
+    function rpcPrivacySet(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var incoming = data.settings || data; // accept flat or wrapped
+            // Merge over current (or defaults) — partial updates allowed.
+            var current = null;
+            try {
+                var rows = nk.storageRead([{ collection: SETTINGS_COLLECTION, key: SETTINGS_KEY, userId: userId }]);
+                if (rows && rows.length > 0 && rows[0] && rows[0].value)
+                    current = rows[0].value;
+            }
+            catch (_) { }
+            var merged = {};
+            for (var dk in DEFAULT_PRIVACY) {
+                if (!Object.prototype.hasOwnProperty.call(DEFAULT_PRIVACY, dk))
+                    continue;
+                if (incoming[dk] !== undefined)
+                    merged[dk] = incoming[dk] === true;
+                else if (current && current[dk] !== undefined)
+                    merged[dk] = current[dk] === true;
+                else
+                    merged[dk] = DEFAULT_PRIVACY[dk];
+            }
+            merged.updatedAt = new Date().toISOString();
+            nk.storageWrite([{
+                    collection: SETTINGS_COLLECTION, key: SETTINGS_KEY, userId: userId,
+                    value: merged, permissionRead: 1, permissionWrite: 0
+                }]);
+            return RpcHelpers.successResponse({ settings: merged });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to save feed privacy");
+        }
+    }
+    function rpcPrivacyGet(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var settings = DEFAULT_PRIVACY;
+            try {
+                var rows = nk.storageRead([{ collection: SETTINGS_COLLECTION, key: SETTINGS_KEY, userId: userId }]);
+                if (rows && rows.length > 0 && rows[0] && rows[0].value)
+                    settings = rows[0].value;
+            }
+            catch (_) { }
+            return RpcHelpers.successResponse({ settings: settings });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to read feed privacy");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_friends_feed = rpcFriendsFeed;
+        __rpc_ivx_social_feed_privacy_set = rpcPrivacySet;
+        __rpc_ivx_social_feed_privacy_get = rpcPrivacyGet;
+    }
+    SocialFriendsFeed.register = register;
+    register();
+})(SocialFriendsFeed || (SocialFriendsFeed = {}));
+// group_limits.ts — server-side cap on concurrent group memberships.
+//
+// The Unity client blocks joins past the limit for instant feedback
+// (GroupsNakamaService.MaxJoinedGroups), but client checks are bypassable —
+// this beforeJoinGroup hook is the authoritative gate. Keep the two constants
+// in sync when changing the limit.
+//
+// POSTBUILD CONTRACT: hooks register via registerHooks() called from main.ts
+// InitModule with a REAL initializer — never from a register() body, which
+// postbuild.js auto-invokes at IIFE scope where initializer is undefined
+// (that exact bug shipped 2026-07 in SocialMaintenance; see maintenance.ts).
+var SocialGroupLimits;
+(function (SocialGroupLimits) {
+    SocialGroupLimits.MAX_JOINED_GROUPS = 10;
+    function registerHooks(initializer) {
+        try {
+            initializer.registerBeforeJoinGroup(beforeJoinGroupLimit);
+        }
+        catch (e) {
+            // Older runtimes without the hook: limit is then enforced client-side
+            // only — degraded but not broken.
+        }
+    }
+    SocialGroupLimits.registerHooks = registerHooks;
+    function beforeJoinGroupLimit(ctx, logger, nk, data) {
+        var userId = ctx.userId;
+        if (!userId)
+            return data;
+        var activeCount = 0;
+        try {
+            // States: 0 superadmin, 1 admin, 2 member, 3 join-request-pending.
+            // Pending requests don't count against the cap — they may be declined.
+            var res = nk.userGroupsList(userId, 100);
+            var userGroups = (res && res.userGroups) || [];
+            for (var i = 0; i < userGroups.length; i++) {
+                var ug = userGroups[i];
+                if (ug && typeof ug.state === "number" && ug.state <= 2)
+                    activeCount++;
+            }
+        }
+        catch (e) {
+            // Fail-open: a listing error must never block legitimate joins.
+            logger.warn("[SocialGroupLimits] userGroupsList failed for " + userId +
+                ": " + (e && e.message || e) + " — allowing join.");
+            return data;
+        }
+        if (activeCount >= SocialGroupLimits.MAX_JOINED_GROUPS) {
+            logger.info("[SocialGroupLimits] join blocked for " + userId +
+                ": already in " + activeCount + " groups (max " + SocialGroupLimits.MAX_JOINED_GROUPS + ")");
+            throw new Error("You can join up to " + SocialGroupLimits.MAX_JOINED_GROUPS +
+                " groups. Leave one first.");
+        }
+        return data;
+    }
+})(SocialGroupLimits || (SocialGroupLimits = {}));
+// group_links.ts — shareable group invite codes (doc §7.3, §E.2; Q-05 —
+// flagged the highest-K-factor item in the quick-win backlog).
+//
+// RPCs:
+//   ivx_social_group_invite_link   — owner/admin mints a 6-char code
+//   ivx_social_group_join_by_code  — anyone with the code joins directly
+//
+// STORAGE
+//   ivx_groups_invite_codes / {CODE}   (system-owned, server-only perms)
+//     { groupId, gameId, createdBy, createdAt, expiresAt|null,
+//       maxUses|null, useCount, revoked }
+//
+// DESIGN NOTES
+//   - Codes are 6 chars from an unambiguous alphabet (no 0/O/1/I/L) →
+//     ~887M combinations; collision handled by retry-on-existing.
+//   - Join uses nk.groupUsersAdd (server authority) — an invite code IS the
+//     authorization, so private/invite-only groups are joined directly
+//     rather than creating a state-3 join request.
+//   - deepLink uses the web fallback domain (quizverse.world — the REAL
+//     production domain per web/lib/site.ts; NOT quizverse.app, see the
+//     Phantom guide Gap 11) plus the custom scheme for installed clients.
+//   - shareText included per §E.2 so Unity can hand it straight to the
+//     native Share Sheet.
+//   - Used/expired codes are swept by ivx_social_maintenance_tick.
+var SocialGroupLinks;
+(function (SocialGroupLinks) {
+    var CODES_COLLECTION = "ivx_groups_invite_codes";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
+    var CODE_LEN = 6;
+    var MAX_MINT_RETRIES = 5;
+    var MAX_EXPIRES_HOURS = 24 * 30; // 30 days cap
+    var WEB_LINK_BASE = "https://quizverse.world/join/group/";
+    var SCHEME_LINK_BASE = "quizverse://group/join/";
+    // Nakama group member states.
+    var ROLE_SUPERADMIN = 0;
+    var ROLE_ADMIN = 1;
+    function mintCode(nk) {
+        var code = "";
+        for (var i = 0; i < CODE_LEN; i++) {
+            code += CODE_ALPHABET.charAt(Math.floor(Math.random() * CODE_ALPHABET.length));
+        }
+        return code;
+    }
+    function readCode(nk, code) {
+        try {
+            var rows = nk.storageRead([{ collection: CODES_COLLECTION, key: code, userId: SYSTEM_USER }]);
+            if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                return { value: rows[0].value, version: rows[0].version || "" };
+            }
+        }
+        catch (_) { }
+        return null;
+    }
+    function callerRoleInGroup(nk, userId, groupId) {
+        try {
+            var res = nk.userGroupsList(userId, 100, undefined, undefined);
+            var list = (res && res.userGroups) ? res.userGroups : [];
+            for (var i = 0; i < list.length; i++) {
+                var ug = list[i];
+                if (ug && ug.group && ug.group.id === groupId && typeof ug.state === "number") {
+                    return ug.state;
+                }
+            }
+        }
+        catch (_) { }
+        return -1;
+    }
+    // ── RPC: ivx_social_group_invite_link ─────────────────────────────────────
+    // Payload: { groupId, expiresInHours?: number, maxUses?: number }
+    function rpcInviteLink(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var groupId = data.groupId;
+            if (!groupId || typeof groupId !== "string") {
+                return RpcHelpers.errorResponse("groupId is required");
+            }
+            // Auth: only owner (superadmin) or admin may mint share links.
+            var role = callerRoleInGroup(nk, userId, groupId);
+            if (role !== ROLE_SUPERADMIN && role !== ROLE_ADMIN) {
+                return RpcHelpers.errorResponse("Only the group owner or an admin can create invite links");
+            }
+            // Group must exist; pull name + gameId for the link payload.
+            var groups = nk.groupsGetId([groupId]);
+            if (!groups || groups.length === 0) {
+                return RpcHelpers.errorResponse("Group not found");
+            }
+            var group = groups[0];
+            var meta = {};
+            try {
+                meta = (typeof group.metadata === "string") ? JSON.parse(group.metadata || "{}") : (group.metadata || {});
+            }
+            catch (_) { }
+            var gameId = meta.gameId || "quizverse";
+            var expiresAt = null;
+            if (typeof data.expiresInHours === "number" && data.expiresInHours > 0) {
+                var hours = Math.min(data.expiresInHours, MAX_EXPIRES_HOURS);
+                expiresAt = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+            }
+            var maxUses = null;
+            if (typeof data.maxUses === "number" && data.maxUses > 0) {
+                maxUses = Math.min(Math.floor(data.maxUses), 10000);
+            }
+            // Mint a unique code (retry on the astronomically-unlikely collision).
+            var code = "";
+            var minted = false;
+            for (var attempt = 0; attempt < MAX_MINT_RETRIES && !minted; attempt++) {
+                code = mintCode(nk);
+                if (readCode(nk, code) === null)
+                    minted = true;
+            }
+            if (!minted) {
+                return RpcHelpers.errorResponse("Could not mint a unique invite code — try again");
+            }
+            nk.storageWrite([{
+                    collection: CODES_COLLECTION, key: code, userId: SYSTEM_USER,
+                    value: {
+                        groupId: groupId,
+                        gameId: gameId,
+                        groupName: group.name || "",
+                        createdBy: userId,
+                        createdAt: new Date().toISOString(),
+                        expiresAt: expiresAt,
+                        maxUses: maxUses,
+                        useCount: 0,
+                        revoked: false
+                    },
+                    permissionRead: 0, permissionWrite: 0
+                }]);
+            var deepLink = WEB_LINK_BASE + code;
+            return RpcHelpers.successResponse({
+                inviteCode: code,
+                deepLink: deepLink,
+                schemeLink: SCHEME_LINK_BASE + code,
+                expiresAt: expiresAt,
+                maxUses: maxUses,
+                shareText: "Join my QuizVerse group \"" + (group.name || "my group") + "\"! 🎯 " + deepLink
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to create invite link");
+        }
+    }
+    // ── RPC: ivx_social_group_join_by_code ────────────────────────────────────
+    // Payload: { inviteCode, gameId? }
+    function rpcJoinByCode(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var rawCode = data.inviteCode;
+            if (!rawCode || typeof rawCode !== "string") {
+                return RpcHelpers.errorResponse("inviteCode is required");
+            }
+            var code = rawCode.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, CODE_LEN);
+            var found = readCode(nk, code);
+            if (!found) {
+                return RpcHelpers.errorResponse("Invalid or expired invite code");
+            }
+            var row = found.value;
+            if (row.revoked === true) {
+                return RpcHelpers.errorResponse("This invite link has been revoked");
+            }
+            if (row.expiresAt && Date.parse(row.expiresAt) < Date.now()) {
+                return RpcHelpers.errorResponse("This invite link has expired");
+            }
+            if (typeof row.maxUses === "number" && row.maxUses > 0 && row.useCount >= row.maxUses) {
+                return RpcHelpers.errorResponse("This invite link has reached its usage limit");
+            }
+            if (data.gameId && typeof data.gameId === "string" &&
+                row.gameId && data.gameId.toLowerCase() !== String(row.gameId).toLowerCase()) {
+                return RpcHelpers.errorResponse("This invite is for a different game");
+            }
+            // Group must still exist and have room.
+            var groups = nk.groupsGetId([row.groupId]);
+            if (!groups || groups.length === 0) {
+                return RpcHelpers.errorResponse("This group no longer exists");
+            }
+            var group = groups[0];
+            if (typeof group.edgeCount === "number" && typeof group.maxCount === "number" &&
+                group.maxCount > 0 && group.edgeCount >= group.maxCount) {
+                return RpcHelpers.errorResponse("This group is full");
+            }
+            // Already a member? Idempotent success.
+            var existingRole = callerRoleInGroup(nk, userId, row.groupId);
+            var alreadyMember = (existingRole >= ROLE_SUPERADMIN && existingRole <= 2);
+            if (!alreadyMember) {
+                // Server-authority add — the code IS the authorization, so this works
+                // for private/invite-only groups without a join-request round-trip.
+                nk.groupUsersAdd(row.groupId, [userId]);
+                // Bump useCount (version-checked, best-effort — a lost increment is
+                // an acceptable, conservative failure: the code allows one extra use).
+                try {
+                    row.useCount = (typeof row.useCount === "number" ? row.useCount : 0) + 1;
+                    row.lastUsedAt = new Date().toISOString();
+                    nk.storageWrite([{
+                            collection: CODES_COLLECTION, key: code, userId: SYSTEM_USER,
+                            value: row, version: found.version,
+                            permissionRead: 0, permissionWrite: 0
+                        }]);
+                }
+                catch (_) { /* non-fatal */ }
+                // ML-004 fix: notify the group owner someone joined via their link.
+                try {
+                    var joinerName = ctx.username || userId;
+                    try {
+                        var users = nk.usersGetId([userId]);
+                        if (users && users.length > 0 && users[0]) {
+                            joinerName = users[0].displayName || users[0].username || joinerName;
+                        }
+                    }
+                    catch (_) { }
+                    nk.notificationsSend([{
+                            userId: row.createdBy,
+                            subject: "group_member_joined",
+                            content: {
+                                type: "group_member_joined", code: 22,
+                                groupId: row.groupId, groupName: group.name || "",
+                                joinedUserId: userId, joinedName: joinerName,
+                                viaInviteCode: code
+                            },
+                            code: 22, senderId: userId, persistent: true
+                        }]);
+                }
+                catch (notifErr) {
+                    logger.warn("[GroupLinks] owner notification failed (non-fatal): " + (notifErr && notifErr.message));
+                }
+            }
+            return RpcHelpers.successResponse({
+                joined: !alreadyMember,
+                alreadyMember: alreadyMember,
+                group: {
+                    id: row.groupId,
+                    name: group.name || "",
+                    description: group.description || "",
+                    avatarUrl: group.avatarUrl || "",
+                    memberCount: group.edgeCount || 0,
+                    maxCount: group.maxCount || 0,
+                    gameId: row.gameId || ""
+                }
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to join by code");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_group_invite_link = rpcInviteLink;
+        __rpc_ivx_social_group_join_by_code = rpcJoinByCode;
+    }
+    SocialGroupLinks.register = register;
+    register();
+})(SocialGroupLinks || (SocialGroupLinks = {}));
+// group_search.ts — server-side, gameId-filtered group discovery (doc §7.4).
+//
+// REPLACES the Unity client calling raw client.ListGroupsAsync, which cannot
+// filter by metadata.gameId — the client currently downloads every game's
+// groups and filters locally (bandwidth waste + cross-game leak, B-008's
+// sibling on the discovery path).
+//
+// Single SQL query over Nakama's first-class `groups` table (NOT the storage
+// table — groups have their own schema with a JSONB metadata column).
+// Precedent for raw SQL in this runtime: find_friends.ts, insights-aggregator.
+// Every group created via create_quizverse_group / create_game_group has
+// metadata.gameId set (createGroupMetadata in groups/groups.js), so the
+// strict filter matches all platform-created groups.
+//
+// Pagination: numeric offset cursor (opaque string to clients — doc §19.5:
+// clients must never parse cursors).
+var SocialGroupSearch;
+(function (SocialGroupSearch) {
+    var MAX_LIMIT = 50;
+    var MAX_QUERY = 64;
+    function rpcGroupSearch(ctx, logger, nk, payload) {
+        try {
+            RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            var limit = (typeof data.limit === "number" && data.limit > 0) ? Math.min(Math.floor(data.limit), MAX_LIMIT) : 20;
+            var offset = 0;
+            if (typeof data.cursor === "string" && data.cursor) {
+                var parsedOffset = parseInt(data.cursor, 10);
+                if (!isNaN(parsedOffset) && parsedOffset > 0)
+                    offset = parsedOffset;
+            }
+            var query = "";
+            if (typeof data.query === "string" && data.query.trim()) {
+                query = data.query.trim().substring(0, MAX_QUERY);
+            }
+            // open-only filter (default true): closed groups are invite-only and
+            // should not surface in public discovery unless explicitly requested.
+            var openOnly = data.openOnly !== false;
+            var rows = [];
+            try {
+                if (query) {
+                    // Escape ILIKE wildcards in user input, then wrap in %...%.
+                    var escaped = query.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+                    rows = nk.sqlQuery("SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
+                        "FROM groups " +
+                        "WHERE (metadata->>'gameId') = $1 " +
+                        "  AND ($2 = false OR state = 0) " +
+                        "  AND name ILIKE $3 " +
+                        "ORDER BY edge_count DESC, name ASC " +
+                        "LIMIT $4 OFFSET $5", [gameId, openOnly, "%" + escaped + "%", limit + 1, offset]);
+                }
+                else {
+                    rows = nk.sqlQuery("SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
+                        "FROM groups " +
+                        "WHERE (metadata->>'gameId') = $1 " +
+                        "  AND ($2 = false OR state = 0) " +
+                        "ORDER BY edge_count DESC, name ASC " +
+                        "LIMIT $3 OFFSET $4", [gameId, openOnly, limit + 1, offset]);
+                }
+            }
+            catch (sqlErr) {
+                logger.error("[GroupSearch] SQL failed: " + (sqlErr && sqlErr.message));
+                return RpcHelpers.errorResponse("Group search unavailable — try again");
+            }
+            if (!rows)
+                rows = [];
+            // We fetched limit+1 to detect whether another page exists.
+            var hasMore = rows.length > limit;
+            if (hasMore)
+                rows = rows.slice(0, limit);
+            var groups = [];
+            for (var i = 0; i < rows.length; i++) {
+                var r = rows[i];
+                if (!r)
+                    continue;
+                var meta = {};
+                try {
+                    meta = (typeof r.metadata === "string") ? JSON.parse(r.metadata || "{}") : (r.metadata || {});
+                }
+                catch (_) { }
+                groups.push({
+                    id: r.id,
+                    name: r.name || "",
+                    description: r.description || "",
+                    avatarUrl: r.avatar_url || "",
+                    memberCount: (typeof r.edge_count === "number") ? r.edge_count : parseInt(String(r.edge_count || 0), 10),
+                    maxCount: (typeof r.max_count === "number") ? r.max_count : parseInt(String(r.max_count || 0), 10),
+                    open: String(r.state) === "0",
+                    gameId: meta.gameId || gameId,
+                    groupType: meta.groupType || "",
+                    level: (typeof meta.level === "number") ? meta.level : 1,
+                    badge: meta.badge || "",
+                    joinPolicy: meta.joinPolicy || (String(r.state) === "0" ? "open" : "private")
+                });
+            }
+            return RpcHelpers.successResponse({
+                groups: groups,
+                count: groups.length,
+                nextCursor: hasMore ? String(offset + limit) : ""
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to search groups");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_group_search = rpcGroupSearch;
+    }
+    SocialGroupSearch.register = register;
+    register();
+})(SocialGroupSearch || (SocialGroupSearch = {}));
+// leagues.ts — Duolingo-style weekly Leagues (Q-11, doc §17.5 / §F.2 rank #2).
+//
+// THE MECHANIC: every player sits in a ≤30-person pool within a 10-tier
+// ladder (Bronze → Legend). Standings are weekly XP (ivx_game_player_stats —
+// the ML-002 system, so NO separate score submission exists to cheat).
+// At the ISO-week rollover, top finishers promote a tier, bottom finishers
+// demote. This is deliberately NOT relationship-scoped: it solves
+// "engagement with zero friends" — the cold-start segment nothing else
+// reaches (doc §17.5).
+//
+// RPCs
+//   ivx_league_get — auto-enrolls the caller into this week's pool for their
+//     tier (first call of the week) and returns live standings.
+//
+// ROLLOVER: weeklyLeagueTick() from ivx_social_maintenance_tick — idempotent
+// per ISO week via conditional-create marker. It ranks LAST week's pools
+// using last week's stats rows (safe: the lazy weekly reset in player_stats
+// preserves old values until the user next plays) and writes each member's
+// new tier + promotion/demotion notification (via the fan-out queue).
+//
+// FLAG-GATED: app registry feature "leagues" (default OFF) — ships dark,
+// one Console write turns it on per app (doc §19.9).
+//
+// STORAGE (collection ivx_leagues, system-owned)
+//   pool_{week}_{tier}_{n}   { members: [userId...], week, tier, n }
+//   poolidx_{week}_{tier}    { openPool: n }        (assignment cursor)
+//   member_{userId}          { tier, week, poolKey } (current placement)
+//   roll_marker_{week}       rollover idempotency marker
+var SocialLeagues;
+(function (SocialLeagues) {
+    var COLLECTION = "ivx_leagues";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var POOL_SIZE = 30;
+    var PROMOTE_N = 10; // top 10 promote
+    var DEMOTE_N = 5; // bottom 5 demote
+    var TIERS = ["bronze", "silver", "gold", "sapphire", "ruby", "emerald", "amethyst", "pearl", "obsidian", "legend"];
+    function isoWeek(d) {
+        var t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        var dayNum = (t.getUTCDay() + 6) % 7;
+        t.setUTCDate(t.getUTCDate() - dayNum + 3);
+        var firstThursday = t.getTime();
+        t.setUTCMonth(0, 1);
+        if (t.getUTCDay() !== 4)
+            t.setUTCMonth(0, 1 + ((4 - t.getUTCDay()) + 7) % 7);
+        var week = 1 + Math.ceil((firstThursday - t.getTime()) / 604800000);
+        return d.getUTCFullYear() + "-W" + (week < 10 ? "0" + week : week);
+    }
+    function prevIsoWeek() {
+        return isoWeek(new Date(Date.now() - 7 * 86400000));
+    }
+    function readSys(nk, key) {
+        try {
+            var rows = nk.storageRead([{ collection: COLLECTION, key: key, userId: SYSTEM_USER }]);
+            if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                return { value: rows[0].value, version: rows[0].version || "" };
+            }
+        }
+        catch (_) { }
+        return null;
+    }
+    function writeSys(nk, key, value, version) {
+        var req = { collection: COLLECTION, key: key, userId: SYSTEM_USER, value: value, permissionRead: 2, permissionWrite: 0 };
+        if (version !== undefined)
+            req.version = version;
+        nk.storageWrite([req]);
+    }
+    function tierIndex(tier) {
+        for (var i = 0; i < TIERS.length; i++) {
+            if (TIERS[i] === tier)
+                return i;
+        }
+        return 0;
+    }
+    /** Assign a user to this week's open pool in their tier (OCC append, retried). */
+    function enroll(nk, logger, userId, week, tier) {
+        for (var attempt = 0; attempt < 3; attempt++) {
+            var idxKey = "poolidx_" + week + "_" + tier;
+            var idx = readSys(nk, idxKey);
+            var n = idx ? (idx.value.openPool || 0) : 0;
+            var poolKey = "pool_" + week + "_" + tier + "_" + n;
+            var pool = readSys(nk, poolKey);
+            var members = pool ? (pool.value.members || []) : [];
+            // Already in? (idempotency under retry)
+            for (var m = 0; m < members.length; m++) {
+                if (members[m] === userId)
+                    return poolKey;
+            }
+            if (members.length >= POOL_SIZE) {
+                // Pool full — advance the cursor and retry with the next pool.
+                try {
+                    writeSys(nk, idxKey, { openPool: n + 1 }, idx ? idx.version : "*");
+                }
+                catch (_) { }
+                continue;
+            }
+            members.push(userId);
+            try {
+                writeSys(nk, poolKey, { week: week, tier: tier, n: n, members: members }, pool ? pool.version : "*");
+                writeSys(nk, "member_" + userId, { userId: userId, tier: tier, week: week, poolKey: poolKey });
+                return poolKey;
+            }
+            catch (occ) { /* clash — retry */ }
+        }
+        logger.warn("[Leagues] enroll contention for " + userId + " tier=" + tier);
+        return "";
+    }
+    function rpcLeagueGet(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            if (typeof SocialAppRegistry !== "undefined" && SocialAppRegistry.featureEnabled &&
+                !SocialAppRegistry.featureEnabled(nk, gameId, "leagues")) {
+                return RpcHelpers.errorResponse("Leagues are not enabled yet", 404);
+            }
+            var week = isoWeek(new Date());
+            // Current placement (tier survives across weeks; pool is per-week).
+            var member = readSys(nk, "member_" + userId);
+            var tier = (member && member.value.tier) ? member.value.tier : TIERS[0];
+            var poolKey = (member && member.value.week === week) ? member.value.poolKey : "";
+            if (!poolKey) {
+                poolKey = enroll(nk, logger, userId, week, tier);
+                if (!poolKey)
+                    return RpcHelpers.errorResponse("League enrollment busy — try again");
+            }
+            var pool = readSys(nk, poolKey);
+            var members = pool ? (pool.value.members || []) : [userId];
+            // Live standings = this week's XP from player stats (one batched read).
+            var statsMap = {};
+            if (typeof SocialPlayerStats !== "undefined" && SocialPlayerStats.loadStatsMap) {
+                statsMap = SocialPlayerStats.loadStatsMap(nk, gameId, members);
+            }
+            var names = {};
+            try {
+                var users = nk.usersGetId(members);
+                if (users) {
+                    for (var u = 0; u < users.length; u++) {
+                        var usr = users[u];
+                        if (usr && usr.userId)
+                            names[usr.userId] = { name: usr.displayName || usr.username || "", avatar: usr.avatarUrl || "" };
+                    }
+                }
+            }
+            catch (_) { }
+            var standings = [];
+            for (var i = 0; i < members.length; i++) {
+                var mid = members[i];
+                standings.push({
+                    userId: mid,
+                    displayName: (names[mid] && names[mid].name) || "",
+                    avatarUrl: (names[mid] && names[mid].avatar) || "",
+                    xpThisWeek: (statsMap[mid] && statsMap[mid].xpThisWeek) || 0,
+                    isMe: mid === userId
+                });
+            }
+            standings.sort(function (a, b) { return b.xpThisWeek - a.xpThisWeek; });
+            var myRank = 0;
+            for (var r = 0; r < standings.length; r++) {
+                standings[r].rank = r + 1;
+                if (standings[r].isMe)
+                    myRank = r + 1;
+            }
+            return RpcHelpers.successResponse({
+                week: week, tier: tier, tierIndex: tierIndex(tier), tiers: TIERS,
+                poolSize: standings.length, myRank: myRank,
+                promoteCount: PROMOTE_N, demoteCount: DEMOTE_N,
+                standings: standings
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to load league");
+        }
+    }
+    /** Weekly rollover — promotions/demotions for LAST week's pools. */
+    function weeklyLeagueTick(ctx, logger, nk) {
+        var lastWeek = prevIsoWeek();
+        var markerKey = "roll_marker_" + lastWeek;
+        if (readSys(nk, markerKey))
+            return { skipped: true, week: lastWeek };
+        try {
+            writeSys(nk, markerKey, { week: lastWeek, startedAt: new Date().toISOString() }, "*");
+        }
+        catch (race) {
+            return { skipped: true, week: lastWeek, reason: "marker_race" };
+        }
+        var processed = 0, promoted = 0, demoted = 0;
+        for (var t = 0; t < TIERS.length; t++) {
+            var tier = TIERS[t];
+            // Sweep pools 0..N until a gap.
+            for (var n = 0; n < 1000; n++) {
+                var pool = readSys(nk, "pool_" + lastWeek + "_" + tier + "_" + n);
+                if (!pool)
+                    break;
+                var members = pool.value.members || [];
+                if (members.length === 0)
+                    continue;
+                // Last week's stats rows still carry last week's numbers until each
+                // user plays again (lazy reset) — rank by them.
+                var xp = {};
+                try {
+                    var reads = [];
+                    for (var m = 0; m < members.length; m++) {
+                        reads.push({ collection: "ivx_game_player_stats", key: "quizverse_" + members[m], userId: members[m] });
+                    }
+                    var rows = nk.storageRead(reads);
+                    if (rows) {
+                        for (var rr = 0; rr < rows.length; rr++) {
+                            var row = rows[rr];
+                            if (row && row.value && row.userId && row.value.weekId === lastWeek) {
+                                xp[row.userId] = row.value.xpThisWeek || 0;
+                            }
+                        }
+                    }
+                }
+                catch (_) { }
+                var ranked = members.slice(0);
+                ranked.sort(function (a, b) { return (xp[b] || 0) - (xp[a] || 0); });
+                for (var k = 0; k < ranked.length; k++) {
+                    var uid = ranked[k];
+                    var newTier = tier;
+                    var moved = "";
+                    if (k < PROMOTE_N && (xp[uid] || 0) > 0 && t < TIERS.length - 1) {
+                        newTier = TIERS[t + 1];
+                        moved = "promoted";
+                        promoted++;
+                    }
+                    else if (k >= ranked.length - DEMOTE_N && t > 0 && ranked.length > DEMOTE_N) {
+                        newTier = TIERS[t - 1];
+                        moved = "demoted";
+                        demoted++;
+                    }
+                    try {
+                        writeSys(nk, "member_" + uid, { userId: uid, tier: newTier, week: "", poolKey: "" });
+                    }
+                    catch (_) { }
+                    if (moved && typeof FanoutQueue !== "undefined" && FanoutQueue.enqueue) {
+                        FanoutQueue.enqueue(nk, logger, [{
+                                targetUserId: uid, eventType: "league_" + moved,
+                                titleKey: "", bodyKey: "", vars: {},
+                                data: { screen: "leagues", type: moved, newTier: newTier },
+                                inAppSubject: "league_" + moved, inAppCode: 32,
+                                inAppContent: { type: "league_" + moved, fromTier: tier, newTier: newTier, week: lastWeek, rank: k + 1 }
+                            }]);
+                    }
+                    processed++;
+                }
+            }
+        }
+        logger.info("[Leagues] rollover " + lastWeek + ": processed=" + processed + " up=" + promoted + " down=" + demoted);
+        return { week: lastWeek, processed: processed, promoted: promoted, demoted: demoted };
+    }
+    SocialLeagues.weeklyLeagueTick = weeklyLeagueTick;
+    function register(initializer) {
+        __rpc_ivx_league_get = rpcLeagueGet;
+    }
+    SocialLeagues.register = register;
+    register();
+})(SocialLeagues || (SocialLeagues = {}));
+// maintenance.ts — ivx_social_maintenance_tick: the single cleanup job family
+// for the social layer (WORLD_CLASS_SOCIAL_FRIENDS_GROUPS_ARCHITECTURE.md
+// §19.7, gaps G-018 + B-005).
+//
+// WHY THIS EXISTS
+//   Nakama storage has no TTL. Without offline cleanup:
+//   - friend_challenges / friend_challenges_outbox rows accumulate forever
+//     ("lazy expiry sweep at read time" = anti-pattern AP-002).
+//   - rate_limits rows (including the B-009 per-pair keys, one row per user
+//     pair) grow unboundedly.
+//   - player_presence rows for churned users show "last seen 14 months ago"
+//     forever (B-005).
+//
+// HOW IT'S DRIVEN
+//   The JS runtime has NO cron scheduler. This RPC is invoked by a
+//   Kubernetes CronJob (intelli-verse-kube-infra/nakama/
+//   social-maintenance-cronjob.yaml) — the same delivery pattern as
+//   tournament-cron-*.yaml. concurrencyPolicy: Forbid on the CronJob is the
+//   concurrency guard; no storage leader-lock needed.
+//
+// STALENESS SOURCE
+//   Sweeps filter on the storage table's `update_time` column, NOT on JSON
+//   fields inside `value`. Every targeted row is rewritten on use
+//   (rate-limit buckets on every check, presence on every heartbeat,
+//   challenges on every lifecycle transition), so update_time is an honest
+//   "last touched" signal — and it avoids JSONB casts entirely, so a single
+//   malformed value can never abort a sweep.
+//
+// AUTH
+//   Same service-token contract as tournament crons: payload.service_token
+//   must equal TOURNAMENT_SERVICE_TOKEN (or BRAIN_COINS_SERVICE_TOKEN
+//   fallback) from ctx.env. Both are already wired into the prod runtime
+//   env — zero new secrets needed.
+var SocialMaintenance;
+(function (SocialMaintenance) {
+    // ── Shared constants — defined FIRST so every function below can reference them
+    // safely regardless of hoisting rules.  (The original file had this at the
+    // bottom, which breaks some bundlers.)
+    var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+    var NUDGE_LOG_COLLECTION = "ivx_nudge_log";
+    // Per-collection retention windows (hours) — deliberately conservative.
+    // friend_challenges expire in ≤24h; 720h (30d) past last touch is
+    // unambiguously dead data while preserving a generous forensic window.
+    var SWEEPS = [
+        { collection: "friend_challenges", retentionHours: 720, reason: "expired/terminal challenges (G-018)" },
+        { collection: "friend_challenges_outbox", retentionHours: 720, reason: "sender-side challenge index (G-018)" },
+        { collection: "rate_limits", retentionHours: 24, reason: "transient cooldown/counter buckets incl. B-009 pair keys" },
+        { collection: "player_presence", retentionHours: 2160, reason: "stale presence, 90 days (B-005)" },
+        { collection: "ivx_presence_v2", retentionHours: 2160, reason: "stale per-game presence v2 rows (doc §8.2)" },
+        { collection: "ivx_friends_feed_events", retentionHours: 168, reason: "feed events, 7-day retention (doc §14A.4 / C-001 — no native TTL)" },
+        { collection: "ivx_groups_invite_codes", retentionHours: 2160, reason: "old invite codes; expiry/maxUses enforced at read, rows swept after 90 days" },
+        { collection: "ivx_nudge_log", retentionHours: 720, reason: "expiry-warning dedup markers; challenges are long gone after 30 days" },
+        { collection: "ivx_duo_quests", retentionHours: 720, reason: "finished/expired duo quests + user index rows (30 days)" },
+        { collection: "ivx_game_player_stats", retentionHours: 2160, reason: "weekly activity stats; rows untouched 90 days = churned player (ML-002)" },
+        { collection: "ivx_moderation_reports", retentionHours: 2160, reason: "report rows + dedup markers, 90-day forensic window (G-011)" },
+        { collection: "ivx_moderation_counters", retentionHours: 720, reason: "rolling 7-day report counters + reporter daily caps (G-011)" },
+        { collection: "ivx_moderation_flags", retentionHours: 2160, reason: "auto-flag rows; 90 days for ops review before sweep (G-011)" },
+        // Phantom Arena async challenge collections (Gap 5 / 2026-07-07 hardening pass).
+        // Challenges expire in max 7 days (ASYNC_CHALLENGE_EXPIRY_HOURS=168). Any row
+        // untouched for 30 days (720h) is unambiguously in a terminal state — sweeping
+        // by update_time avoids JSON parsing entirely and handles corrupt blobs safely.
+        { collection: "async_challenges", retentionHours: 720, reason: "expired/terminal sessions; 7d window → safe to sweep after 30d by update_time" },
+        { collection: "async_challenge_index", retentionHours: 720, reason: "opponent lookup index rows; expire with parent challenge" },
+        { collection: "async_idempotency", retentionHours: 720, reason: "submit idempotency keys; challenge gone after 30d → dedup useless" },
+        { collection: "async_challenge_stats", retentionHours: 4320, reason: "player career stats, 180d — kept intentionally long for leaderboard history" }
+    ];
+    var DEFAULT_MAX_ROWS_PER_COLLECTION = 1000;
+    var HARD_MAX_ROWS_PER_COLLECTION = 5000;
+    function requireServiceToken(ctx, data) {
+        var expected = "" + ((ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) ||
+            (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
+        return !!(expected && data && data.service_token === expected);
+    }
+    function rpcMaintenanceTick(ctx, logger, nk, payload) {
+        var data = {};
+        try {
+            data = payload ? JSON.parse(payload) : {};
+        }
+        catch (_) {
+            data = {};
+        }
+        if (!requireServiceToken(ctx, data)) {
+            return RpcHelpers.errorResponse("service-only", 401);
+        }
+        var maxRows = DEFAULT_MAX_ROWS_PER_COLLECTION;
+        if (typeof data.max_rows === "number" && data.max_rows > 0) {
+            maxRows = Math.min(Math.floor(data.max_rows), HARD_MAX_ROWS_PER_COLLECTION);
+        }
+        var dryRun = data.dry_run === true;
+        var results = {};
+        var totalDeleted = 0;
+        for (var i = 0; i < SWEEPS.length; i++) {
+            var sweep = SWEEPS[i];
+            // Each sweep is isolated — one broken collection must never abort the rest.
+            try {
+                if (dryRun) {
+                    var countRows = nk.sqlQuery("SELECT count(*) AS n FROM storage " +
+                        "WHERE collection = $1 AND update_time < now() - ($2 * INTERVAL '1 hour')", [sweep.collection, sweep.retentionHours]);
+                    var n = (countRows && countRows.length > 0) ? parseInt(String(countRows[0].n), 10) : 0;
+                    results[sweep.collection] = { wouldDelete: n, retentionHours: sweep.retentionHours };
+                }
+                else {
+                    // PostgreSQL (RDS) does not support DELETE...LIMIT directly.
+                    // Use a ctid subquery to cap the batch size per tick. ctid is the
+                    // physical row pointer — stable within a single statement and safe
+                    // for this pattern. The next tick picks up any remaining rows.
+                    var res = nk.sqlExec("DELETE FROM storage WHERE ctid IN (" +
+                        "  SELECT ctid FROM storage" +
+                        "  WHERE collection = $1 AND update_time < now() - ($2 * INTERVAL '1 hour')" +
+                        "  LIMIT $3" +
+                        ")", [sweep.collection, sweep.retentionHours, maxRows]);
+                    var deleted = (res && typeof res.rowsAffected === "number") ? res.rowsAffected : 0;
+                    totalDeleted += deleted;
+                    results[sweep.collection] = { deleted: deleted, retentionHours: sweep.retentionHours, capped: deleted >= maxRows };
+                }
+            }
+            catch (e) {
+                results[sweep.collection] = { error: String(e && e.message || e) };
+                logger.warn("[SocialMaintenance] sweep failed for " + sweep.collection + ": " + (e && e.message || e));
+            }
+        }
+        // ── Nudge: async-challenge expiry warnings (Phantom guide Phase 4) ─────
+        // "Expires in 24h" push to participants of still-open challenges.
+        // Dedup: one conditional-create marker row per session in ivx_nudge_log —
+        // the hourly cadence re-scans, the marker guarantees exactly one warning.
+        var nudge = { scanned: 0, warned: 0 };
+        if (!dryRun) {
+            try {
+                nudge = runExpiryWarnings(ctx, logger, nk);
+            }
+            catch (ne) {
+                logger.warn("[SocialMaintenance] expiry warnings failed: " + (ne && ne.message));
+            }
+        }
+        // ── Nudge: 48h inactivity re-engagement (Phantom guide Phase 4) ────────
+        // Nudges participants of open challenges (status 1/5) when neither side has
+        // updated the session for 48h — the "silent room" mid-session problem.
+        // Separate dedup key (inact48_*) so a session can receive both an inactivity
+        // nudge and a 24h expiry warning (different urgency levels, different timing).
+        var inactivity = { scanned: 0, nudged: 0 };
+        if (!dryRun) {
+            try {
+                inactivity = runInactivityNudges(ctx, logger, nk);
+            }
+            catch (ie) {
+                logger.warn("[SocialMaintenance] inactivity nudges failed: " + (ie && ie.message));
+            }
+        }
+        // ── Duo Quests weekly pairing (idempotent per ISO week) ────────────────
+        var pairing = { skipped: true };
+        if (!dryRun) {
+            try {
+                if (typeof DuoQuests !== "undefined" && DuoQuests.weeklyPairingTick) {
+                    pairing = DuoQuests.weeklyPairingTick(ctx, logger, nk);
+                }
+            }
+            catch (pe) {
+                logger.warn("[SocialMaintenance] duo pairing failed: " + (pe && pe.message));
+            }
+        }
+        // ── League weekly rollover (Q-11 — idempotent per ISO week) ────────────
+        var league = { skipped: true };
+        if (!dryRun) {
+            try {
+                if (typeof SocialLeagues !== "undefined" && SocialLeagues.weeklyLeagueTick) {
+                    league = SocialLeagues.weeklyLeagueTick(ctx, logger, nk);
+                }
+            }
+            catch (le) {
+                logger.warn("[SocialMaintenance] league rollover failed: " + (le && le.message));
+            }
+        }
+        // ── Fan-out queue backstop drain (primary drain = per-minute CronJob) ──
+        var fanout = { sent: 0 };
+        if (!dryRun) {
+            try {
+                if (typeof FanoutQueue !== "undefined" && FanoutQueue.drain) {
+                    fanout = FanoutQueue.drain(ctx, logger, nk, 500);
+                }
+            }
+            catch (fe) {
+                logger.warn("[SocialMaintenance] fanout backstop failed: " + (fe && fe.message));
+            }
+        }
+        logger.info("[SocialMaintenance] tick complete: " + (dryRun ? "dry_run" : (totalDeleted + " rows deleted")));
+        return RpcHelpers.successResponse({
+            dryRun: dryRun,
+            totalDeleted: totalDeleted,
+            maxRowsPerCollection: maxRows,
+            collections: results,
+            expiryWarnings: nudge,
+            inactivityNudges: inactivity,
+            duoPairing: pairing,
+            leagueRollover: league,
+            fanoutBackstop: fanout
+        });
+    }
+    // ── Async-challenge expiry warnings ───────────────────────────────────────
+    // Warn creator (+opponent if joined) when a still-open challenge expires
+    // within 24h. Statuses: 0 WAITING, 1 OPPONENT_JOINED, 5 CREATOR_PLAYED
+    // (legacy_runtime.js ASYNC_STATUS_* constants).
+    // NUDGE_LOG_COLLECTION is declared with the shared constants at the top of
+    // the namespace.
+    function runExpiryWarnings(ctx, logger, nk) {
+        var scanned = 0, warned = 0;
+        var rows = [];
+        try {
+            rows = nk.sqlQuery("SELECT key, value FROM storage " +
+                "WHERE collection = 'async_challenges' " +
+                "  AND (value->>'status') IN ('0','1','5') " +
+                "  AND (value->>'expiresAt') > $1 " +
+                "  AND (value->>'expiresAt') < $2 " +
+                "LIMIT 200", [new Date().toISOString(), new Date(Date.now() + 24 * 3600 * 1000).toISOString()]);
+        }
+        catch (e) {
+            logger.warn("[SocialMaintenance] expiry scan SQL failed: " + (e && e.message));
+            return { scanned: 0, warned: 0 };
+        }
+        if (!rows)
+            rows = [];
+        for (var i = 0; i < rows.length; i++) {
+            var v = rows[i] && rows[i].value;
+            if (typeof v === "string") {
+                try {
+                    v = JSON.parse(v);
+                }
+                catch (_) {
+                    v = null;
+                }
+            }
+            if (!v || !v.sessionId)
+                continue;
+            scanned++;
+            // Dedup marker — conditional create; loser of any race just skips.
+            try {
+                nk.storageWrite([{
+                        collection: NUDGE_LOG_COLLECTION, key: "exp24_" + v.sessionId, userId: SYSTEM_USER_ID,
+                        value: { sessionId: v.sessionId, warnedAt: new Date().toISOString() },
+                        permissionRead: 0, permissionWrite: 0, version: "*"
+                    }]);
+            }
+            catch (_) {
+                continue;
+            } // already warned
+            var hoursLeft = Math.max(1, Math.round((Date.parse(v.expiresAt) - Date.now()) / 3600000));
+            var items = [];
+            var pushData = {
+                eventType: "async_challenge", screen: "phantom_arena",
+                type: "expiry_warning", sessionId: String(v.sessionId),
+                shareCode: String(v.shareCode || ""),
+                deepLink: v.shareCode ? ("quizverse://challenge/join/" + v.shareCode) : ""
+            };
+            if (v.creatorId) {
+                items.push({ targetUserId: v.creatorId, eventType: "async_challenge_expiry",
+                    titleKey: "ac_expiry_title", bodyKey: "ac_expiry_body",
+                    vars: { hours: String(hoursLeft) }, data: pushData });
+            }
+            if (v.opponentId) {
+                items.push({ targetUserId: v.opponentId, eventType: "async_challenge_expiry",
+                    titleKey: "ac_expiry_title", bodyKey: "ac_expiry_body",
+                    vars: { hours: String(hoursLeft) }, data: pushData });
+            }
+            if (items.length > 0 && typeof FanoutQueue !== "undefined" && FanoutQueue.enqueue) {
+                warned += FanoutQueue.enqueue(nk, logger, items);
+            }
+        }
+        return { scanned: scanned, warned: warned };
+    }
+    // ── 48h inactivity nudge (Phantom guide Phase 4 / 2026-07-07) ───────────
+    // Scan for still-open challenges where NEITHER party has touched the session
+    // for ≥48h. Uses `update_time` (the storage table's last-write timestamp)
+    // as the staleness signal — this is the same field the collection sweeps use,
+    // requires no JSONB parsing, and is honest because every state transition
+    // rewrites the row (join, submit, rematch all update the session value).
+    //
+    // Status legend (legacy_runtime.js ASYNC_STATUS_* constants):
+    //   1 = OPPONENT_JOINED — opponent joined, nobody has submitted scores yet
+    //   5 = CREATOR_PLAYED  — creator submitted before anyone joined; waiting for opponent
+    //
+    // Push routing:
+    //   status=5 → nudge opponentId (creator already played, opponent is inactive)
+    //   status=1 → nudge BOTH participants (join happened but no scores in 48h)
+    //
+    // The separate dedup key `inact48_{sessionId}` (distinct from `exp24_{sessionId}`)
+    // means a session can correctly receive both an inactivity nudge AND a 24h expiry
+    // warning — they represent different urgency levels at different points in time.
+    function runInactivityNudges(ctx, logger, nk) {
+        var scanned = 0, nudged = 0;
+        var rows = [];
+        try {
+            rows = nk.sqlQuery("SELECT key, value FROM storage " +
+                "WHERE collection = 'async_challenges' " +
+                "  AND (value->>'status') IN ('1','5') " +
+                "  AND update_time < now() - INTERVAL '48 hours' " +
+                "  AND (value->>'expiresAt') > $1 " +
+                "LIMIT 200", [new Date().toISOString()]);
+        }
+        catch (e) {
+            logger.warn("[SocialMaintenance] inactivity scan SQL failed: " + (e && e.message));
+            return { scanned: 0, nudged: 0 };
+        }
+        if (!rows)
+            rows = [];
+        for (var i = 0; i < rows.length; i++) {
+            var v = rows[i] && rows[i].value;
+            if (typeof v === "string") {
+                try {
+                    v = JSON.parse(v);
+                }
+                catch (_) {
+                    v = null;
+                }
+            }
+            if (!v || !v.sessionId)
+                continue;
+            scanned++;
+            // Dedup — one nudge per session lifetime (conditional-create; write fails if key exists).
+            try {
+                nk.storageWrite([{
+                        collection: NUDGE_LOG_COLLECTION, key: "inact48_" + v.sessionId, userId: SYSTEM_USER_ID,
+                        value: { sessionId: v.sessionId, nudgedAt: new Date().toISOString() },
+                        permissionRead: 0, permissionWrite: 0, version: "*"
+                    }]);
+            }
+            catch (_) {
+                continue;
+            } // already nudged this session
+            var status = parseInt(String(v.status), 10);
+            var pushData = {
+                eventType: "async_challenge_inactivity",
+                screen: "phantom_arena",
+                type: "inactivity",
+                sessionId: String(v.sessionId),
+                shareCode: String(v.shareCode || ""),
+                deepLink: v.shareCode ? ("quizverse://challenge/join/" + v.shareCode) : "",
+                action_category: "async_challenge"
+            };
+            var items = [];
+            if (status === 5) {
+                // Creator played, opponent hasn't joined/played — nudge opponent.
+                if (v.opponentId) {
+                    items.push({
+                        targetUserId: v.opponentId,
+                        eventType: "async_challenge_inactivity",
+                        titleKey: "ac_inactivity_opp_title",
+                        bodyKey: "ac_inactivity_opp_body",
+                        vars: { name: String(v.creatorName || "Someone") },
+                        data: pushData
+                    });
+                }
+            }
+            else if (status === 1) {
+                // Opponent joined but no scores yet — nudge both sides.
+                if (v.creatorId) {
+                    items.push({
+                        targetUserId: v.creatorId,
+                        eventType: "async_challenge_inactivity",
+                        titleKey: "ac_inactivity_title",
+                        bodyKey: "ac_inactivity_body",
+                        vars: { name: String(v.opponentName || v.opponentId || "Your opponent") },
+                        data: pushData
+                    });
+                }
+                if (v.opponentId) {
+                    items.push({
+                        targetUserId: v.opponentId,
+                        eventType: "async_challenge_inactivity",
+                        titleKey: "ac_inactivity_title",
+                        bodyKey: "ac_inactivity_body",
+                        vars: { name: String(v.creatorName || "Your challenger") },
+                        data: pushData
+                    });
+                }
+            }
+            if (items.length > 0 && typeof FanoutQueue !== "undefined" && FanoutQueue.enqueue) {
+                nudged += FanoutQueue.enqueue(nk, logger, items);
+            }
+        }
+        return { scanned: scanned, nudged: nudged };
+    }
+    // ── G-012: GDPR cascade delete (doc §E.3) ──────────────────────────────
+    //
+    // Nakama's built-in account deletion wipes rows OWNED by the deleted user
+    // automatically. What it does NOT touch are social rows that merely
+    // REFERENCE the user while being owned by someone else or by the system:
+    //   - friend_invites rows stored under the OTHER user (key inv_{A}_{B})
+    //   - friend_challenges rows under recipients where deleted user is sender
+    //   - system-owned B-009 pair rate-limit rows (rl_fr_invite_pair_{a}_{b})
+    //   - user_blocks rows under other users (blocked_{other}_{deleted})
+    //   - friend_streaks pair rows
+    // All of these embed the userId in the storage KEY, so a key-pattern SQL
+    // sweep finds them without JSON parsing. Runs in the after-delete hook —
+    // best-effort per collection; failures are logged, and any survivor rows
+    // reference a user that no longer resolves (harmless until swept again).
+    var CASCADE_COLLECTIONS = [
+        "friend_invites",
+        "friend_challenges",
+        "friend_challenges_outbox",
+        "friend_streaks",
+        "rate_limits",
+        "user_blocks"
+    ];
+    function afterDeleteAccountCascade(ctx, logger, nk) {
+        var deletedId = ctx.userId;
+        if (!deletedId)
+            return;
+        var pattern = "%" + deletedId + "%";
+        var total = 0;
+        for (var i = 0; i < CASCADE_COLLECTIONS.length; i++) {
+            var coll = CASCADE_COLLECTIONS[i];
+            try {
+                var res = nk.sqlExec("DELETE FROM storage WHERE ctid IN (" +
+                    "  SELECT ctid FROM storage WHERE collection = $1 AND key LIKE $2 LIMIT 5000" +
+                    ")", [coll, pattern]);
+                total += (res && typeof res.rowsAffected === "number") ? res.rowsAffected : 0;
+            }
+            catch (e) {
+                logger.warn("[SocialMaintenance] GDPR cascade failed for " + coll + ": " + (e && e.message || e));
+            }
+        }
+        logger.info("[SocialMaintenance] GDPR cascade for " + deletedId + ": " + total + " referencing rows removed");
+    }
+    // register() must contain ONLY registerRpc calls. postbuild.js rewrites
+    // them into __rpc_* stub assignments and auto-invokes register() at IIFE
+    // scope so the stub is populated in EVERY pooled Goja VM. Any other
+    // initializer.<x>() call in the body makes postbuild skip the auto-invoke
+    // (initializer is undefined at IIFE time), leaving the stub unpopulated in
+    // pooled VMs → "JavaScript runtime function invalid" / HTTP 500 on every
+    // invocation. That exact bug shipped 2026-07 when the GDPR hook lived here;
+    // the hook now registers via registerHooks() from main.ts InitModule.
+    function register(initializer) {
+        __rpc_ivx_social_maintenance_tick = rpcMaintenanceTick;
+    }
+    SocialMaintenance.register = register;
+    register();
+    // Hook registration needs a REAL initializer, so it can only run inside
+    // InitModule (main.ts calls this right after register()). Hooks don't have
+    // the VM-pool stub problem — Nakama resolves them differently from RPCs.
+    function registerHooks(initializer) {
+        try {
+            initializer.registerAfterDeleteAccount(afterDeleteAccountCascade);
+        }
+        catch (e) {
+            // Older runtimes without the hook: cascade is then covered only by the
+            // hourly tick sweeps — degraded but not broken.
+            // (registerAfterDeleteAccount exists in nakama-common for this server's
+            // pinned version; this guard is belt-and-braces for local dev images.)
+        }
+    }
+    SocialMaintenance.registerHooks = registerHooks;
+})(SocialMaintenance || (SocialMaintenance = {}));
+// onboarding_state.ts — ivx_social_onboarding_state (G-014, doc §E.4).
+//
+// THE COLD-START PROBLEM
+//   A new user's Social Zone is an empty list — the worst first impression a
+//   social feature can make. This RPC gives the client a server-authoritative
+//   answer to "what should this user see FIRST in the Social Zone?" based on
+//   the Cold-Start Ladder (§E.4):
+//     Stage 0: 0 friends    → "Find Friends" is the only CTA
+//     Stage 1: 1-2 friends  → suggestions strip + celebrate the first friend
+//     Stage 2: 3-9 friends  → friend leaderboard, social pressure kicks in
+//     Stage 3: 10+ friends  → full social zone
+//
+// Pure read: one nk.friendsList scan (same cost every friends RPC already
+// pays). No writes, no state. The client may cache the response until the
+// friend count changes (notification codes 2/5 invalidate).
+var SocialOnboardingState;
+(function (SocialOnboardingState) {
+    var STATE_FRIEND = 0;
+    var STATE_INVITE_RECEIVED = 2;
+    function rpcOnboardingState(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var friendCount = 0;
+            var pendingReceived = 0;
+            try {
+                var page = nk.friendsList(userId, 1000, undefined, undefined);
+                if (page && page.friends) {
+                    for (var i = 0; i < page.friends.length; i++) {
+                        var f = page.friends[i];
+                        if (!f)
+                            continue;
+                        var s = (f.state && typeof f.state === "object" && "value" in f.state) ? f.state.value : f.state;
+                        if (s === STATE_FRIEND)
+                            friendCount++;
+                        else if (s === STATE_INVITE_RECEIVED)
+                            pendingReceived++;
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn("[SocialOnboarding] friendsList failed: " + (e && e.message));
+            }
+            var stage = 0;
+            if (friendCount >= 10)
+                stage = 3;
+            else if (friendCount >= 3)
+                stage = 2;
+            else if (friendCount >= 1)
+                stage = 1;
+            // Suggested actions, most important first. Pending incoming invites
+            // always outrank everything — accepting one is the cheapest possible
+            // path to the next stage.
+            var actions = [];
+            if (pendingReceived > 0) {
+                actions.push({ action: "review_pending_invites", priority: 1,
+                    cta: pendingReceived === 1 ? "You have a friend request waiting!" : ("You have " + pendingReceived + " friend requests waiting!") });
+            }
+            if (stage === 0) {
+                actions.push({ action: "find_friends", priority: 2, cta: "Find your first friend" });
+                actions.push({ action: "join_group", priority: 3, cta: "Join a group — you don't need friends to start" });
+            }
+            else if (stage === 1) {
+                actions.push({ action: "send_challenge", priority: 2, cta: "Challenge a friend to a quiz!" });
+                actions.push({ action: "find_friends", priority: 3, cta: "Find more friends" });
+            }
+            else if (stage === 2) {
+                actions.push({ action: "view_leaderboard", priority: 2, cta: "See where you rank among friends" });
+                actions.push({ action: "send_challenge", priority: 3, cta: "Challenge a friend to a quiz!" });
+            }
+            else {
+                actions.push({ action: "create_group", priority: 2, cta: "Start a group with your friends" });
+                actions.push({ action: "send_challenge", priority: 3, cta: "Challenge a friend to a quiz!" });
+            }
+            return RpcHelpers.successResponse({
+                friendCount: friendCount,
+                pendingReceived: pendingReceived,
+                stage: stage,
+                suggestedActions: actions
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to compute onboarding state");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_onboarding_state = rpcOnboardingState;
+    }
+    SocialOnboardingState.register = register;
+    register();
+})(SocialOnboardingState || (SocialOnboardingState = {}));
+// player_stats.ts — per-game weekly activity stats (ML-002, doc §6.2 / §D.4).
+//
+// THE MISSING LINK THIS CLOSES: friends_list was designed to show
+// gameActivity ("xpThisWeek", "quizzesThisWeek") on every friend card —
+// Duolingo-style "XP this week, not lifetime" competition — but NOTHING ever
+// wrote those stats, so the field could only ever be empty (ML-004's sibling,
+// flagged in the doc's interlinking health table as a broken link).
+//
+// WRITER: recordQuizCompletion() — called from the server quiz submit flow
+// only (same trust boundary as duo credits: never client-claimed).
+// WEEKLY RESET: rows carry an ISO weekId; the first write of a new week
+// resets the counters in place. No cron needed — reset is lazy per user.
+//
+// STORAGE
+//   ivx_game_player_stats / {gameId}_{userId}   owner = user, permRead 2
+//   (public-read is safe and intended: these are the social-comparison
+//   numbers friends are SUPPOSED to see; nothing sensitive lives here.)
+//
+// READERS: friends_list.ts enriches friend cards via loadStatsMap (one
+// batched read); pressure summary and future league placement can reuse it.
+var SocialPlayerStats;
+(function (SocialPlayerStats) {
+    var COLLECTION = "ivx_game_player_stats";
+    function isoWeek(d) {
+        var t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        var dayNum = (t.getUTCDay() + 6) % 7;
+        t.setUTCDate(t.getUTCDate() - dayNum + 3);
+        var firstThursday = t.getTime();
+        t.setUTCMonth(0, 1);
+        if (t.getUTCDay() !== 4)
+            t.setUTCMonth(0, 1 + ((4 - t.getUTCDay()) + 7) % 7);
+        var week = 1 + Math.ceil((firstThursday - t.getTime()) / 604800000);
+        return d.getUTCFullYear() + "-W" + (week < 10 ? "0" + week : week);
+    }
+    function statKey(gameId, userId) {
+        return gameId + "_" + userId;
+    }
+    /**
+     * Record one completed quiz. OCC with one retry — a lost increment under
+     * pathological contention shows a friend 1 XP low on a card; acceptable.
+     * Never throws.
+     */
+    function recordQuizCompletion(nk, logger, userId, gameId, xpEarned, score) {
+        try {
+            if (!userId || !gameId)
+                return;
+            var week = isoWeek(new Date());
+            var key = statKey(gameId, userId);
+            for (var attempt = 0; attempt < 2; attempt++) {
+                var current = null;
+                var version = "";
+                try {
+                    var rows = nk.storageRead([{ collection: COLLECTION, key: key, userId: userId }]);
+                    if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                        current = rows[0].value;
+                        version = rows[0].version || "";
+                    }
+                }
+                catch (_) { }
+                var stats;
+                if (current && current.weekId === week) {
+                    stats = current;
+                    stats.xpThisWeek = (stats.xpThisWeek || 0) + Math.max(0, xpEarned || 0);
+                    stats.quizzesThisWeek = (stats.quizzesThisWeek || 0) + 1;
+                    stats.bestScoreThisWeek = Math.max(stats.bestScoreThisWeek || 0, score || 0);
+                }
+                else {
+                    // New week (or first ever write) — lazy reset.
+                    stats = {
+                        gameId: gameId, userId: userId, weekId: week,
+                        xpThisWeek: Math.max(0, xpEarned || 0),
+                        quizzesThisWeek: 1,
+                        bestScoreThisWeek: Math.max(0, score || 0),
+                        lifetimeQuizzes: ((current && current.lifetimeQuizzes) || 0)
+                    };
+                }
+                stats.lifetimeQuizzes = (stats.lifetimeQuizzes || 0) + 1;
+                stats.lastPlayedAt = new Date().toISOString();
+                var req = {
+                    collection: COLLECTION, key: key, userId: userId,
+                    value: stats, permissionRead: 2, permissionWrite: 0
+                };
+                if (version)
+                    req.version = version;
+                try {
+                    nk.storageWrite([req]);
+                    return;
+                }
+                catch (occ) {
+                    if (attempt === 0)
+                        continue; // version clash — retry once
+                }
+            }
+        }
+        catch (e) {
+            if (logger && logger.warn)
+                logger.warn("[PlayerStats] record failed (non-fatal): " + (e && e.message));
+        }
+    }
+    SocialPlayerStats.recordQuizCompletion = recordQuizCompletion;
+    /**
+     * Batch-load stats for many users in ONE storageRead. Returns only rows
+     * from the CURRENT ISO week — a friend whose row is from last week simply
+     * hasn't played this week, and their card should show zeros, not stale XP.
+     */
+    function loadStatsMap(nk, gameId, userIds) {
+        var out = {};
+        if (!userIds || userIds.length === 0)
+            return out;
+        var week = isoWeek(new Date());
+        var reads = [];
+        for (var i = 0; i < userIds.length; i++) {
+            reads.push({ collection: COLLECTION, key: statKey(gameId, userIds[i]), userId: userIds[i] });
+        }
+        try {
+            var rows = nk.storageRead(reads);
+            if (rows) {
+                for (var r = 0; r < rows.length; r++) {
+                    var row = rows[r];
+                    if (!row || !row.value || !row.userId)
+                        continue;
+                    var v = row.value;
+                    if (v.weekId !== week)
+                        continue; // stale week → treat as no activity
+                    out[row.userId] = {
+                        xpThisWeek: v.xpThisWeek || 0,
+                        quizzesThisWeek: v.quizzesThisWeek || 0,
+                        bestScoreThisWeek: v.bestScoreThisWeek || 0,
+                        lastPlayedAt: v.lastPlayedAt || ""
+                    };
+                }
+            }
+        }
+        catch (_) { /* enrichment is optional context — empty map on failure */ }
+        return out;
+    }
+    SocialPlayerStats.loadStatsMap = loadStatsMap;
+})(SocialPlayerStats || (SocialPlayerStats = {}));
+// presence_v2.ts — per-game presence (doc §8.2, Phase 2 migration).
+//
+// WHAT CHANGES VS player_presence/status (the legacy single-key presence):
+//   - Storage key is {gameId}_{userId} in collection ivx_presence_v2, so a
+//     player's presence in QuizVerse is distinct from LastToLive ("is my
+//     friend in THIS game right now?").
+//   - Explicit heartbeat contract: client calls ivx_social_presence_set every
+//     60s while active + once with online:false on quit/background.
+//   - Online window is 150 SECONDS (doc C-007: two missed heartbeats +
+//     jitter; the legacy 5-minute window shows long-gone players as online).
+//   - sessionId + deviceType tracked for multi-device disambiguation.
+//   - ivx_social_presence_bulk_get replaces per-caller loadOnlineMap copies
+//     as the public batch-read surface (the shared FriendsPresenceShared
+//     helper remains for legacy readers during the transition).
+//
+// MIGRATION (dual-write): every v2 heartbeat ALSO writes the legacy
+// player_presence/status row in its exact legacy shape, so friends_list /
+// find_friends / find_nearby (which read via FriendsPresenceShared) keep
+// working unchanged until they migrate to bulk reads of v2. bulk_get reads
+// v2 first and falls back to the legacy row per-user when v2 is absent.
+//
+// RETENTION: stale v2 rows are swept by ivx_social_maintenance_tick
+// (90 days on update_time — see maintenance.ts SWEEPS).
+var SocialPresenceV2;
+(function (SocialPresenceV2) {
+    var COLLECTION_V2 = "ivx_presence_v2";
+    var LEGACY_COLLECTION = "player_presence";
+    var LEGACY_KEY = "status";
+    var ONLINE_WINDOW_MS = 150 * 1000; // doc §8.2 (corrected from 90s → 150s, C-007)
+    var MAX_BULK_USERS = 200;
+    var MAX_STATUS_LEN = 64;
+    // Minimal game registry (doc §5.3). The full storage-backed app registry
+    // (§19.3) replaces this when it ships; until then unknown ids fall back to
+    // "quizverse" instead of erroring so older clients can never brick presence.
+    var KNOWN_GAME_IDS = {
+        "quizverse": true, "lasttolive": true, "cricket": true
+    };
+    function resolveGameId(raw) {
+        var g = (typeof raw === "string" && raw) ? raw.toLowerCase() : "quizverse";
+        return KNOWN_GAME_IDS[g] ? g : "quizverse";
+    }
+    function v2Key(gameId, userId) {
+        return gameId + "_" + userId;
+    }
+    function collapse(value, nowMs) {
+        var out = { online: false, status: "", lastSeenMs: 0 };
+        if (!value)
+            return out;
+        var last = (typeof value.lastSeenMs === "number") ? value.lastSeenMs : 0;
+        out.lastSeenMs = last;
+        out.status = (typeof value.status === "string") ? value.status : "";
+        if (value.online === true && last > 0 && (nowMs - last) <= ONLINE_WINDOW_MS) {
+            out.online = true;
+        }
+        return out;
+    }
+    // ── RPC: ivx_social_presence_set ──────────────────────────────────────────
+    // Payload: { gameId?, online?: bool (default true), status?: string,
+    //            deviceType?: string, sessionId?: string, gameName?: string }
+    function rpcPresenceSet(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = resolveGameId(data.gameId);
+            var online = data.online !== false; // default true — heartbeat implies presence
+            var status = (typeof data.status === "string") ? data.status.substring(0, MAX_STATUS_LEN) : (online ? "browsing" : "");
+            var nowMs = Date.now();
+            var v2Value = {
+                userId: userId,
+                gameId: gameId,
+                online: online,
+                status: status,
+                lastSeenMs: nowMs,
+                sessionId: (typeof data.sessionId === "string") ? data.sessionId.substring(0, 64) : "",
+                deviceType: (typeof data.deviceType === "string") ? data.deviceType.substring(0, 32) : "",
+                updatedAt: nowMs
+            };
+            // Legacy mirror — EXACT shape rpcSetPlayerPresence writes today, so
+            // FriendsPresenceShared.loadOnlineMap keeps working during migration.
+            var legacyValue = {
+                online: online,
+                lastSeenMs: nowMs,
+                gameId: gameId,
+                gameName: (typeof data.gameName === "string") ? data.gameName : "",
+                updatedAt: Math.floor(nowMs / 1000)
+            };
+            nk.storageWrite([
+                {
+                    collection: COLLECTION_V2, key: v2Key(gameId, userId), userId: userId,
+                    value: v2Value, permissionRead: 2, permissionWrite: 0
+                },
+                {
+                    collection: LEGACY_COLLECTION, key: LEGACY_KEY, userId: userId,
+                    value: legacyValue, permissionRead: 2, permissionWrite: 0
+                }
+            ]);
+            return RpcHelpers.successResponse({
+                gameId: gameId, online: online, status: status,
+                lastSeenMs: nowMs, onlineWindowMs: ONLINE_WINDOW_MS,
+                heartbeatSeconds: 60
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to set presence");
+        }
+    }
+    // ── RPC: ivx_social_presence_bulk_get ─────────────────────────────────────
+    // Payload: { gameId?, userIds: string[] (max 200) }
+    // Response data: { presence: { [userId]: { online, status, lastSeenMs, source } } }
+    function rpcPresenceBulkGet(ctx, logger, nk, payload) {
+        try {
+            RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = resolveGameId(data.gameId);
+            var userIds = [];
+            if (data.userIds && Object.prototype.toString.call(data.userIds) === "[object Array]") {
+                for (var i = 0; i < data.userIds.length && userIds.length < MAX_BULK_USERS; i++) {
+                    if (typeof data.userIds[i] === "string" && data.userIds[i])
+                        userIds.push(data.userIds[i]);
+                }
+            }
+            if (userIds.length === 0) {
+                return RpcHelpers.errorResponse("userIds (non-empty array, max " + MAX_BULK_USERS + ") is required");
+            }
+            var nowMs = Date.now();
+            var out = {};
+            // Pass 1 — v2 rows (one batched read).
+            var v2Reads = [];
+            for (var a = 0; a < userIds.length; a++) {
+                v2Reads.push({ collection: COLLECTION_V2, key: v2Key(gameId, userIds[a]), userId: userIds[a] });
+            }
+            var missing = {};
+            for (var m = 0; m < userIds.length; m++)
+                missing[userIds[m]] = true;
+            try {
+                var v2Rows = nk.storageRead(v2Reads);
+                if (v2Rows) {
+                    for (var r = 0; r < v2Rows.length; r++) {
+                        var row = v2Rows[r];
+                        if (!row || !row.value || !row.userId)
+                            continue;
+                        var c = collapse(row.value, nowMs);
+                        out[row.userId] = { online: c.online, status: c.status, lastSeenMs: c.lastSeenMs, source: "v2" };
+                        delete missing[row.userId];
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn("[PresenceV2] v2 bulk read failed: " + (e && e.message));
+            }
+            // Pass 2 — legacy fallback for users without a v2 row yet (one batched read).
+            var legacyIds = [];
+            for (var mk in missing) {
+                if (Object.prototype.hasOwnProperty.call(missing, mk))
+                    legacyIds.push(mk);
+            }
+            if (legacyIds.length > 0) {
+                var legReads = [];
+                for (var l = 0; l < legacyIds.length; l++) {
+                    legReads.push({ collection: LEGACY_COLLECTION, key: LEGACY_KEY, userId: legacyIds[l] });
+                }
+                try {
+                    var legRows = nk.storageRead(legReads);
+                    if (legRows) {
+                        for (var lr = 0; lr < legRows.length; lr++) {
+                            var lrow = legRows[lr];
+                            if (!lrow || !lrow.value || !lrow.userId)
+                                continue;
+                            var lc = collapse(lrow.value, nowMs);
+                            out[lrow.userId] = { online: lc.online, status: lc.status, lastSeenMs: lc.lastSeenMs, source: "legacy" };
+                        }
+                    }
+                }
+                catch (e2) {
+                    logger.warn("[PresenceV2] legacy fallback read failed: " + (e2 && e2.message));
+                }
+            }
+            // Users with no row anywhere: explicit offline (never omit — clients
+            // must not have to distinguish "missing key" from "offline").
+            for (var u = 0; u < userIds.length; u++) {
+                if (!out[userIds[u]]) {
+                    out[userIds[u]] = { online: false, status: "", lastSeenMs: 0, source: "none" };
+                }
+            }
+            return RpcHelpers.successResponse({
+                gameId: gameId,
+                onlineWindowMs: ONLINE_WINDOW_MS,
+                presence: out
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to read presence");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_presence_set = rpcPresenceSet;
+        __rpc_ivx_social_presence_bulk_get = rpcPresenceBulkGet;
+    }
+    SocialPresenceV2.register = register;
+    register();
+})(SocialPresenceV2 || (SocialPresenceV2 = {}));
+// pressure_summary.ts — REAL social pressure data (G-020 / Q-02).
+//
+// Unity's SocialPressureManager has shipped rendering MOCK friend activity
+// since launch (architecture doc §17.3). This module revives the useful
+// halves of the dead social_v2.js handlers (rpcGetRivalry / the
+// rpcFriendScoreAlert idea) into ONE hardened RPC that feeds that UI slot
+// real numbers:
+//
+//   ivx_social_pressure_summary → {
+//     friendsAheadOfMe: [{ userId, displayName, score, gapScore }...],
+//     friendsBehindMe, myScore, myRankInFriendList, totalFriendsRanked,
+//     rivalry?: { targetUserId, wins, losses, draws, streak }   (optional)
+//   }
+//
+// HARDENING VS THE DEAD CODE
+//   - social_v2's rpcFriendScoreAlert called leaderboardRecordsList once PER
+//     FRIEND (N round-trips). The API accepts an ownerIds ARRAY — this does
+//     ONE call for up to 100 friends.
+//   - Board id follows the live convention (src/legacy/leaderboards.ts):
+//     leaderboard_{gameId}_weekly, falling back to leaderboard_{gameId} when
+//     the weekly board doesn't exist. Weekly is the right psychology per
+//     Duolingo research (§3.2): "XP this week", not lifetime totals.
+//   - Rivalry read ported intact from rpcGetRivalry (same rivalries
+//     collection + key scheme, so any historical rows still resolve).
+var SocialPressureSummary;
+(function (SocialPressureSummary) {
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var STATE_FRIEND = 0;
+    var MAX_FRIENDS = 100;
+    var MAX_AHEAD = 10;
+    function readBoardScores(nk, logger, boardId, ownerIds) {
+        try {
+            var res = nk.leaderboardRecordsList(boardId, ownerIds, ownerIds.length, undefined, undefined);
+            var records = [];
+            if (res && res.ownerRecords)
+                records = res.ownerRecords;
+            else if (res && res.records)
+                records = res.records;
+            var out = {};
+            for (var i = 0; i < records.length; i++) {
+                var r = records[i];
+                if (r && r.ownerId)
+                    out[r.ownerId] = (typeof r.score === "number") ? r.score : parseInt(String(r.score || 0), 10);
+            }
+            return out;
+        }
+        catch (e) {
+            // Board may not exist for this game — caller tries the fallback id.
+            return null;
+        }
+    }
+    function rpcPressureSummary(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            // 1. Confirmed friends with display names (single scan).
+            var friendIds = [];
+            var nameById = {};
+            try {
+                var page = nk.friendsList(userId, 1000, STATE_FRIEND, null);
+                if (page && page.friends) {
+                    for (var i = 0; i < page.friends.length && friendIds.length < MAX_FRIENDS; i++) {
+                        var fr = page.friends[i];
+                        if (fr && fr.user && fr.user.id) {
+                            friendIds.push(fr.user.id);
+                            nameById[fr.user.id] = fr.user.displayName || fr.user.username || "";
+                        }
+                    }
+                }
+            }
+            catch (fe) {
+                logger.warn("[PressureSummary] friendsList failed: " + (fe && fe.message));
+            }
+            if (friendIds.length === 0) {
+                return RpcHelpers.successResponse({
+                    friendsAheadOfMe: [], friendsBehindMe: 0, myScore: 0,
+                    myRankInFriendList: 0, totalFriendsRanked: 0, boardId: "", emptyReason: "no_friends"
+                });
+            }
+            // 2. One leaderboard read for me + all friends. Weekly board first
+            //    (the Duolingo-correct scope), main board as fallback.
+            var owners = friendIds.concat([userId]);
+            var boardId = "leaderboard_" + gameId + "_weekly";
+            var scores = readBoardScores(nk, logger, boardId, owners);
+            if (scores === null) {
+                boardId = "leaderboard_" + gameId;
+                scores = readBoardScores(nk, logger, boardId, owners);
+            }
+            if (scores === null)
+                scores = {};
+            var myScore = scores[userId] || 0;
+            // 3. Rank + ahead/behind. Friends with no record score 0 and are
+            //    counted as "behind" (they haven't played this week).
+            var ahead = [];
+            var behind = 0;
+            for (var f = 0; f < friendIds.length; f++) {
+                var fid = friendIds[f];
+                var fscore = scores[fid] || 0;
+                if (fscore > myScore) {
+                    ahead.push({
+                        userId: fid,
+                        displayName: nameById[fid] || "",
+                        score: fscore,
+                        gapScore: fscore - myScore
+                    });
+                }
+                else {
+                    behind++;
+                }
+            }
+            // Closest rivals first — "Maria passed you, 120 XP to get back ahead"
+            // is actionable; the friend 50,000 XP ahead is not (loss-aversion §E.6).
+            ahead.sort(function (a, b) { return a.gapScore - b.gapScore; });
+            if (ahead.length > MAX_AHEAD)
+                ahead = ahead.slice(0, MAX_AHEAD);
+            // 4. Optional head-to-head rivalry (ported from dead rpcGetRivalry —
+            //    same collection + key scheme so historical rows still resolve).
+            var rivalry = null;
+            if (typeof data.rivalUserId === "string" && data.rivalUserId) {
+                try {
+                    var pairKey = [userId, data.rivalUserId].sort().join(":");
+                    var rows = nk.storageRead([{
+                            collection: "rivalries", key: "rivalry:" + gameId + ":" + pairKey, userId: SYSTEM_USER
+                        }]);
+                    if (rows && rows.length > 0 && rows[0] && rows[0].value) {
+                        var rv = rows[0].value;
+                        rivalry = {
+                            targetUserId: data.rivalUserId,
+                            wins: (rv.player_a === userId) ? (rv.a_wins || 0) : (rv.b_wins || 0),
+                            losses: (rv.player_a === userId) ? (rv.b_wins || 0) : (rv.a_wins || 0),
+                            draws: rv.draws || 0,
+                            streak: rv.streak || 0,
+                            lastMatch: rv.last_match || null
+                        };
+                    }
+                }
+                catch (_) { /* optional — omit on failure */ }
+            }
+            return RpcHelpers.successResponse({
+                boardId: boardId,
+                myScore: myScore,
+                friendsAheadOfMe: ahead,
+                friendsBehindMe: behind,
+                myRankInFriendList: ahead.length + 1,
+                totalFriendsRanked: friendIds.length,
+                rivalry: rivalry
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to compute pressure summary");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_pressure_summary = rpcPressureSummary;
+    }
+    SocialPressureSummary.register = register;
+    register();
+})(SocialPressureSummary || (SocialPressureSummary = {}));
+// reports.ts — user/content reporting (G-011, doc §E.3 "Report System —
+// Missing Entirely").
+//
+// Without this: toxic players can't be actioned without ad-hoc admin work,
+// spam groups surface in search forever, abusive challenges sit in inboxes.
+//
+// RPCs
+//   ivx_social_report        — session RPC: report a user/group/challenge/chat
+//   ivx_social_reports_list  — service-token: moderation queue for ops tooling
+//
+// PIPELINE (minimum-viable per the doc — flag for review, never auto-ban):
+//   1. Report row written (system-owned, immutable).
+//   2. Rolling 7-day counter per target incremented (OCC, retry once).
+//   3. Counter crossing REPORT_AUTO_FLAG_THRESHOLD (per-app registry
+//      moderation config, default 5) writes a review-flag row — ops tooling
+//      and the admin console query flagged targets from one collection.
+//
+// ABUSE-OF-ABUSE CONTROLS: 10 reports/reporter/day cap; duplicate report of
+// the same target by the same reporter within 7 days is idempotent (returns
+// the original, does not re-increment).
+//
+// RETENTION: reports 90d, counters/flags 90d (maintenance-tick sweeps).
+var SocialReports;
+(function (SocialReports) {
+    var REPORTS_COLLECTION = "ivx_moderation_reports";
+    var COUNTERS_COLLECTION = "ivx_moderation_counters";
+    var FLAGS_COLLECTION = "ivx_moderation_flags";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var VALID_TARGET_TYPES = { user: true, group: true, challenge: true, chat: true };
+    var VALID_REASONS = {
+        spam: true, harassment: true, inappropriate_name: true, inappropriate_content: true,
+        cheating: true, impersonation: true, other: true
+    };
+    var MAX_DETAILS_LEN = 500;
+    var REPORTER_DAILY_CAP = 10;
+    var COUNTER_WINDOW_MS = 7 * 24 * 3600 * 1000;
+    var DEFAULT_FLAG_THRESHOLD = 5;
+    function pairDedupKey(reporterId, targetType, targetId) {
+        return "dedup_" + reporterId + "_" + targetType + "_" + targetId;
+    }
+    function rpcReport(ctx, logger, nk, payload) {
+        try {
+            var reporterId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var targetType = (typeof data.targetType === "string") ? data.targetType.toLowerCase() : "";
+            var targetId = (typeof data.targetId === "string") ? data.targetId : "";
+            var reason = (typeof data.reason === "string") ? data.reason.toLowerCase() : "";
+            var details = (typeof data.details === "string") ? data.details.substring(0, MAX_DETAILS_LEN) : "";
+            var gameId = (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+            if (!VALID_TARGET_TYPES[targetType])
+                return RpcHelpers.errorResponse("targetType must be one of: user, group, challenge, chat");
+            if (!targetId)
+                return RpcHelpers.errorResponse("targetId is required");
+            if (!VALID_REASONS[reason])
+                return RpcHelpers.errorResponse("reason must be one of: spam, harassment, inappropriate_name, inappropriate_content, cheating, impersonation, other");
+            if (targetType === "user" && targetId === reporterId)
+                return RpcHelpers.errorResponse("You cannot report yourself");
+            // ── Reporter daily cap (report-bombing guard) ───────────────────────
+            var dayKey = "rl_reports_" + reporterId + "_" + new Date().toISOString().slice(0, 10);
+            var used = 0;
+            try {
+                var rlRows = nk.storageRead([{ collection: COUNTERS_COLLECTION, key: dayKey, userId: SYSTEM_USER }]);
+                if (rlRows && rlRows.length > 0 && rlRows[0] && rlRows[0].value)
+                    used = rlRows[0].value.count || 0;
+            }
+            catch (_) { }
+            if (used >= REPORTER_DAILY_CAP) {
+                return RpcHelpers.errorResponse("Daily report limit reached — thank you, our team is on it");
+            }
+            // ── Duplicate-report idempotency (same reporter → same target, 7d) ──
+            var dedupKey = pairDedupKey(reporterId, targetType, targetId);
+            try {
+                var dupRows = nk.storageRead([{ collection: REPORTS_COLLECTION, key: dedupKey, userId: SYSTEM_USER }]);
+                if (dupRows && dupRows.length > 0 && dupRows[0] && dupRows[0].value) {
+                    var prior = dupRows[0].value;
+                    if (Date.parse(prior.reportedAt || "") > Date.now() - COUNTER_WINDOW_MS) {
+                        return RpcHelpers.successResponse({ reportId: prior.reportId, alreadyReported: true });
+                    }
+                }
+            }
+            catch (_) { }
+            // ── Write the report (immutable row + dedup marker) ─────────────────
+            var reportId = "rpt_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 1679616).toString(36);
+            var report = {
+                reportId: reportId, gameId: gameId,
+                reporterId: reporterId,
+                targetType: targetType, targetId: targetId,
+                reason: reason, details: details,
+                status: "open", // open | reviewed | actioned | dismissed
+                reportedAt: new Date().toISOString()
+            };
+            nk.storageWrite([
+                { collection: REPORTS_COLLECTION, key: reportId, userId: SYSTEM_USER,
+                    value: report, permissionRead: 0, permissionWrite: 0 },
+                { collection: REPORTS_COLLECTION, key: dedupKey, userId: SYSTEM_USER,
+                    value: { reportId: reportId, reportedAt: report.reportedAt }, permissionRead: 0, permissionWrite: 0 },
+                { collection: COUNTERS_COLLECTION, key: dayKey, userId: SYSTEM_USER,
+                    value: { count: used + 1 }, permissionRead: 0, permissionWrite: 0 }
+            ]);
+            // ── Rolling 7-day target counter + auto-flag (OCC, retry once) ──────
+            var counterKey = targetType + "_" + targetId;
+            var total = 1;
+            for (var attempt = 0; attempt < 2; attempt++) {
+                var cur = null, version = "";
+                try {
+                    var cRows = nk.storageRead([{ collection: COUNTERS_COLLECTION, key: counterKey, userId: SYSTEM_USER }]);
+                    if (cRows && cRows.length > 0 && cRows[0] && cRows[0].value) {
+                        cur = cRows[0].value;
+                        version = cRows[0].version || "";
+                    }
+                }
+                catch (_) { }
+                var counter;
+                if (cur && typeof cur.windowStart === "number" && (Date.now() - cur.windowStart) < COUNTER_WINDOW_MS) {
+                    counter = cur;
+                    counter.count = (counter.count || 0) + 1;
+                }
+                else {
+                    counter = { targetType: targetType, targetId: targetId, count: 1, windowStart: Date.now() };
+                }
+                total = counter.count;
+                var wreq = { collection: COUNTERS_COLLECTION, key: counterKey, userId: SYSTEM_USER,
+                    value: counter, permissionRead: 0, permissionWrite: 0 };
+                if (version)
+                    wreq.version = version;
+                try {
+                    nk.storageWrite([wreq]);
+                    break;
+                }
+                catch (occ) {
+                    if (attempt === 1)
+                        break;
+                }
+            }
+            // Per-app threshold from the registry moderation config (default 5).
+            var threshold = DEFAULT_FLAG_THRESHOLD;
+            try {
+                if (typeof SocialAppRegistry !== "undefined" && SocialAppRegistry.resolveApp) {
+                    var app = SocialAppRegistry.resolveApp(nk, gameId);
+                    if (app && app.moderation && typeof app.moderation.reportAutoFlagThreshold === "number") {
+                        threshold = app.moderation.reportAutoFlagThreshold;
+                    }
+                }
+            }
+            catch (_) { }
+            var flagged = false;
+            if (total >= threshold) {
+                flagged = true;
+                try {
+                    nk.storageWrite([{
+                            collection: FLAGS_COLLECTION, key: counterKey, userId: SYSTEM_USER,
+                            value: { targetType: targetType, targetId: targetId, gameId: gameId,
+                                reportCount7d: total, flaggedAt: new Date().toISOString(), status: "pending_review" },
+                            permissionRead: 0, permissionWrite: 0
+                        }]);
+                    logger.warn("[Reports] AUTO-FLAGGED " + targetType + " " + targetId + " (" + total + " reports/7d)");
+                }
+                catch (_) { }
+            }
+            return RpcHelpers.successResponse({ reportId: reportId, received: true, flaggedForReview: flagged });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to submit report");
+        }
+    }
+    // ── Moderation queue read for ops tooling (service token) ────────────────
+    function rpcReportsList(ctx, logger, nk, payload) {
+        try {
+            var data = {};
+            try {
+                data = payload ? JSON.parse(payload) : {};
+            }
+            catch (_) { }
+            var expected = "" + ((ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) ||
+                (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
+            if (!expected || data.service_token !== expected) {
+                return RpcHelpers.errorResponse("service-only", 401);
+            }
+            var flaggedOnly = data.flaggedOnly === true;
+            var limit = (typeof data.limit === "number" && data.limit > 0) ? Math.min(data.limit, 200) : 50;
+            var collection = flaggedOnly ? FLAGS_COLLECTION : REPORTS_COLLECTION;
+            var rows = nk.storageList(SYSTEM_USER, collection, limit, (typeof data.cursor === "string" && data.cursor) ? data.cursor : undefined);
+            var objs = (rows && rows.objects) ? rows.objects : [];
+            var items = [];
+            for (var i = 0; i < objs.length; i++) {
+                var v = objs[i] && objs[i].value;
+                // Skip dedup marker rows (they live in the same collection).
+                if (!v || (!flaggedOnly && !v.reportId))
+                    continue;
+                items.push(v);
+            }
+            return RpcHelpers.successResponse({
+                items: items, count: items.length,
+                nextCursor: (rows && rows.cursor) ? rows.cursor : ""
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to list reports");
+        }
+    }
+    function register(initializer) {
+        __rpc_ivx_social_report = rpcReport;
+        __rpc_ivx_social_reports_list = rpcReportsList;
+    }
+    SocialReports.register = register;
+    register();
+})(SocialReports || (SocialReports = {}));
+// rpc_aliases.ts — Phase-3 RPC consolidation (doc §12 / Appendix C).
+//
+// Registers the canonical `ivx_social_*` names as wrappers over the existing
+// battle-tested handlers, translating every response into the UNIFIED
+// ENVELOPE (doc §6.1):
+//
+//   { success, data: {...}, meta: { gameId, timestamp, apiVersion } }
+//   { success: false, error, errorCode, meta: {...} }
+//
+// This kills the dual-envelope problem (TS modules returned nested
+// {success,data}, JS modules returned flat {success,...}) WITHOUT touching a
+// single legacy handler: old names keep answering with their exact legacy
+// shapes forever (Unity untouched — Phase 4 migrates at its own pace), new
+// names answer with the standard envelope.
+//
+// MECHANICS: the merged bundle hoists every module-JS handler (function
+// rpcFriendsSendInvite(...) { ... }) to global scope — postbuild only
+// prefixes legacy_runtime.js functions. Each alias resolves its handler by
+// bare global reference behind a typeof guard: if a handler is missing
+// (module dropped from a build), the alias returns a clean error instead of
+// crashing registration.
+var SocialRpcAliases;
+(function (SocialRpcAliases) {
+    var API_VERSION = 1;
+    // typeof-guarded accessors — evaluated at CALL time, so bundle load order
+    // can never break registration.
+    var ALIASES = [
+        { newId: "ivx_social_invite_send", handler: function () { return typeof rpcFriendsSendInvite !== "undefined" ? rpcFriendsSendInvite : null; } },
+        { newId: "ivx_social_invite_accept", handler: function () { return typeof rpcFriendsAcceptInvite !== "undefined" ? rpcFriendsAcceptInvite : null; } },
+        { newId: "ivx_social_invite_decline", handler: function () { return typeof rpcFriendsDeclineInvite !== "undefined" ? rpcFriendsDeclineInvite : null; } },
+        { newId: "ivx_social_invite_cancel", handler: function () { return typeof rpcFriendsCancelInvite !== "undefined" ? rpcFriendsCancelInvite : null; } },
+        { newId: "ivx_social_invites_pending", handler: function () { return typeof rpcFriendsListPendingInvites !== "undefined" ? rpcFriendsListPendingInvites : null; } },
+        { newId: "ivx_social_challenge_send", handler: function () { return typeof rpcSendFriendChallenge !== "undefined" ? rpcSendFriendChallenge : null; } },
+        { newId: "ivx_social_challenge_accept", handler: function () { return typeof rpcAcceptFriendChallenge !== "undefined" ? rpcAcceptFriendChallenge : null; } },
+        { newId: "ivx_social_challenge_decline", handler: function () { return typeof rpcDeclineFriendChallenge !== "undefined" ? rpcDeclineFriendChallenge : null; } },
+        { newId: "ivx_social_challenge_cancel", handler: function () { return typeof rpcCancelFriendChallenge !== "undefined" ? rpcCancelFriendChallenge : null; } },
+        { newId: "ivx_social_challenges_pending", handler: function () { return typeof rpcListPendingFriendChallenges !== "undefined" ? rpcListPendingFriendChallenges : null; } },
+        { newId: "ivx_social_spectate", handler: function () { return typeof rpcFriendsSpectate !== "undefined" ? rpcFriendsSpectate : null; } },
+        { newId: "ivx_social_streak_get", handler: function () { return typeof rpcFriendStreakGetState !== "undefined" ? rpcFriendStreakGetState : null; } },
+        { newId: "ivx_social_streak_record", handler: function () { return typeof rpcFriendStreakRecordContribution !== "undefined" ? rpcFriendStreakRecordContribution : null; } },
+        { newId: "ivx_social_streak_nudge", handler: function () { return typeof rpcFriendStreakSendNudge !== "undefined" ? rpcFriendStreakSendNudge : null; } },
+        { newId: "ivx_social_streak_broken_log", handler: function () { return typeof rpcFriendStreakGetBrokenLog !== "undefined" ? rpcFriendStreakGetBrokenLog : null; } },
+        { newId: "ivx_social_streak_repair", handler: function () { return typeof rpcFriendStreakRepair !== "undefined" ? rpcFriendStreakRepair : null; } },
+        { newId: "ivx_social_friends_online_count", handler: function () { return typeof rpcFriendsGetOnlineCount !== "undefined" ? rpcFriendsGetOnlineCount : null; } },
+        { newId: "ivx_social_battle_create", handler: function () { return typeof rpcFriendBattleCreate !== "undefined" ? rpcFriendBattleCreate : null; } },
+        { newId: "ivx_social_invite_with_reward", handler: function () { return typeof rpcFriendInviteWithReward !== "undefined" ? rpcFriendInviteWithReward : null; } },
+        { newId: "ivx_social_dm_send", handler: function () { return typeof rpcSendDirectMessage !== "undefined" ? rpcSendDirectMessage : null; } },
+        { newId: "ivx_social_dm_history", handler: function () { return typeof rpcGetDirectMessageHistory !== "undefined" ? rpcGetDirectMessageHistory : null; } },
+        { newId: "ivx_social_dm_mark_read", handler: function () { return typeof rpcMarkDirectMessagesRead !== "undefined" ? rpcMarkDirectMessagesRead : null; } }
+    ];
+    /**
+     * Translate a legacy response (flat `{success, ...fields}` OR nested
+     * `{success, data}` OR `{ok, ...}`) into the unified §6.1 envelope.
+     * Unknown/unparseable output is passed through inside data.raw so nothing
+     * is ever lost.
+     */
+    function toEnvelope(raw, gameId) {
+        var meta = { gameId: gameId || "quizverse", timestamp: new Date().toISOString(), apiVersion: API_VERSION };
+        var parsed = null;
+        try {
+            parsed = JSON.parse(raw);
+        }
+        catch (_) {
+            return JSON.stringify({ success: true, data: { raw: raw }, meta: meta });
+        }
+        if (parsed === null || typeof parsed !== "object") {
+            return JSON.stringify({ success: true, data: { value: parsed }, meta: meta });
+        }
+        var success = (parsed.success === true) || (parsed.ok === true) ||
+            (parsed.success === undefined && parsed.ok === undefined && !parsed.error);
+        if (!success) {
+            return JSON.stringify({
+                success: false,
+                error: parsed.error || parsed.message || "Request failed",
+                errorCode: parsed.errorCode || parsed.error_code || "unknown",
+                meta: meta
+            });
+        }
+        // Nested shape already? Keep its data. Flat shape? Lift all non-envelope
+        // fields into data.
+        var data;
+        if (parsed.data !== undefined && typeof parsed.data === "object") {
+            data = parsed.data;
+        }
+        else {
+            data = {};
+            for (var k in parsed) {
+                if (!Object.prototype.hasOwnProperty.call(parsed, k))
+                    continue;
+                if (k === "success" || k === "ok" || k === "error" || k === "errorCode")
+                    continue;
+                data[k] = parsed[k];
+            }
+        }
+        return JSON.stringify({ success: true, data: data, meta: meta });
+    }
+    function makeAlias(def) {
+        return function (ctx, logger, nk, payload) {
+            var gameId = "quizverse";
+            try {
+                var p = payload ? JSON.parse(payload) : {};
+                if (p && typeof p.gameId === "string" && p.gameId)
+                    gameId = p.gameId;
+            }
+            catch (_) { }
+            var fn = def.handler();
+            if (typeof fn !== "function") {
+                return JSON.stringify({
+                    success: false, error: "Handler unavailable", errorCode: "handler_missing",
+                    meta: { gameId: gameId, timestamp: new Date().toISOString(), apiVersion: API_VERSION }
+                });
+            }
+            var raw = "";
+            try {
+                raw = fn(ctx, logger, nk, payload);
+            }
+            catch (e) {
+                return JSON.stringify({
+                    success: false, error: (e && e.message) || "Internal error", errorCode: "internal",
+                    meta: { gameId: gameId, timestamp: new Date().toISOString(), apiVersion: API_VERSION }
+                });
+            }
+            return toEnvelope(raw, gameId);
+        };
+    }
+    function register(initializer) {
+        // NOTE: postbuild requires literal RPC id strings in registerRpc calls —
+        // a loop with variable ids would not survive the AST walker. Each alias
+        // is therefore registered with its literal id below.
+        __rpc_ivx_social_invite_send = makeAlias(ALIASES[0]);
+        __rpc_ivx_social_invite_accept = makeAlias(ALIASES[1]);
+        __rpc_ivx_social_invite_decline = makeAlias(ALIASES[2]);
+        __rpc_ivx_social_invite_cancel = makeAlias(ALIASES[3]);
+        __rpc_ivx_social_invites_pending = makeAlias(ALIASES[4]);
+        __rpc_ivx_social_challenge_send = makeAlias(ALIASES[5]);
+        __rpc_ivx_social_challenge_accept = makeAlias(ALIASES[6]);
+        __rpc_ivx_social_challenge_decline = makeAlias(ALIASES[7]);
+        __rpc_ivx_social_challenge_cancel = makeAlias(ALIASES[8]);
+        __rpc_ivx_social_challenges_pending = makeAlias(ALIASES[9]);
+        __rpc_ivx_social_spectate = makeAlias(ALIASES[10]);
+        __rpc_ivx_social_streak_get = makeAlias(ALIASES[11]);
+        __rpc_ivx_social_streak_record = makeAlias(ALIASES[12]);
+        __rpc_ivx_social_streak_nudge = makeAlias(ALIASES[13]);
+        __rpc_ivx_social_streak_broken_log = makeAlias(ALIASES[14]);
+        __rpc_ivx_social_streak_repair = makeAlias(ALIASES[15]);
+        __rpc_ivx_social_friends_online_count = makeAlias(ALIASES[16]);
+        __rpc_ivx_social_battle_create = makeAlias(ALIASES[17]);
+        __rpc_ivx_social_invite_with_reward = makeAlias(ALIASES[18]);
+        __rpc_ivx_social_dm_send = makeAlias(ALIASES[19]);
+        __rpc_ivx_social_dm_history = makeAlias(ALIASES[20]);
+        __rpc_ivx_social_dm_mark_read = makeAlias(ALIASES[21]);
+    }
+    SocialRpcAliases.register = register;
+    register();
+})(SocialRpcAliases || (SocialRpcAliases = {}));
+// score_signing.ts — server-signed score tokens (G-013, doc §E.3 / AP-007).
+//
+// THE EXPLOIT THIS CLOSES: async/friend challenges accept a client-supplied
+// score. Any client can send { myScore: 999999 } — the server range-checks
+// but cannot know whether the score was EARNED. This module lets the quiz
+// completion RPC (the only place a score is truly known) mint a short-lived
+// HMAC token binding (userId, score, refId); consumers verify the token
+// before trusting the number.
+//
+// TOKEN FORMAT:  v1.<base64(json payload)>.<hex hmac-sha256>
+//   payload = { u: userId, s: score, r: refId (packId etc.), t: mintedAtMs }
+//   TTL: 15 minutes (a challenge is sent right after finishing the quiz).
+//
+// SECRET: env SCORE_SIGNING_SECRET, falling back to TOURNAMENT_SERVICE_TOKEN
+// (already present in the prod runtime env — zero new secret plumbing needed
+// on day one; move to a dedicated secret when convenient).
+//
+// ROLLOUT (doc §19.9 — flag-first): verification is enforced only when the
+// app registry feature "scoreSigning" is on for the app. Until then tokens
+// are minted (clients can start attaching them) but absence is tolerated —
+// no client-breaking flag-day.
+var ScoreSigning;
+(function (ScoreSigning) {
+    var TOKEN_TTL_MS = 15 * 60 * 1000;
+    function secret(ctx) {
+        return "" + ((ctx.env && ctx.env["SCORE_SIGNING_SECRET"]) ||
+            (ctx.env && ctx.env["TOURNAMENT_SERVICE_TOKEN"]) ||
+            (ctx.env && ctx.env["BRAIN_COINS_SERVICE_TOKEN"]) || "");
+    }
+    function toHex(buf) {
+        var bytes = new Uint8Array(buf);
+        var hex = "";
+        for (var i = 0; i < bytes.length; i++) {
+            var h = bytes[i].toString(16);
+            hex += (h.length === 1 ? "0" : "") + h;
+        }
+        return hex;
+    }
+    function hmacHex(nk, input, key) {
+        return toHex(nk.hmacSha256Hash(input, key));
+    }
+    // base64Decode returns an ArrayBuffer in this runtime; the payload is
+    // ASCII JSON so a byte-wise charCode rebuild is lossless.
+    function bufToString(buf) {
+        if (typeof buf === "string")
+            return buf;
+        var bytes = new Uint8Array(buf);
+        var out = "";
+        for (var i = 0; i < bytes.length; i++)
+            out += String.fromCharCode(bytes[i]);
+        return out;
+    }
+    /** Mint a token. Returns "" when no secret is configured (fail-open mint). */
+    function sign(ctx, nk, userId, score, refId) {
+        var key = secret(ctx);
+        if (!key)
+            return "";
+        try {
+            var body = JSON.stringify({ u: userId, s: score, r: refId || "", t: Date.now() });
+            var b64 = nk.base64Encode(body);
+            return "v1." + b64 + "." + hmacHex(nk, b64, key);
+        }
+        catch (_) {
+            return "";
+        }
+    }
+    ScoreSigning.sign = sign;
+    /** Verify a token against the expected user + claimed score. */
+    function verify(ctx, nk, token, expectedUserId, claimedScore) {
+        var fail = function (reason) { return { valid: false, reason: reason, score: 0, refId: "" }; };
+        var key = secret(ctx);
+        if (!key)
+            return fail("signing_not_configured");
+        if (!token || typeof token !== "string")
+            return fail("missing_token");
+        var parts = token.split(".");
+        if (parts.length !== 3 || parts[0] !== "v1")
+            return fail("malformed_token");
+        var expectedMac = hmacHex(nk, parts[1], key);
+        // Constant-time-ish compare (Goja strings; length check + full scan).
+        if (expectedMac.length !== parts[2].length)
+            return fail("bad_signature");
+        var diff = 0;
+        for (var i = 0; i < expectedMac.length; i++) {
+            diff |= expectedMac.charCodeAt(i) ^ parts[2].charCodeAt(i);
+        }
+        if (diff !== 0)
+            return fail("bad_signature");
+        var body;
+        try {
+            body = JSON.parse(bufToString(nk.base64Decode(parts[1])));
+        }
+        catch (_) {
+            return fail("bad_payload");
+        }
+        if (!body || body.u !== expectedUserId)
+            return fail("wrong_user");
+        if (typeof body.t !== "number" || (Date.now() - body.t) > TOKEN_TTL_MS)
+            return fail("token_expired");
+        if (typeof claimedScore === "number" && typeof body.s === "number" && body.s !== claimedScore)
+            return fail("score_mismatch");
+        return { valid: true, reason: "", score: body.s, refId: body.r || "" };
+    }
+    ScoreSigning.verify = verify;
+})(ScoreSigning || (ScoreSigning = {}));
 // =============================================================================
 // anticheat.ts — Server-side cheat detection for tournament submits
 //
@@ -166107,6 +172321,8 @@ try { __rpc_cricket_get_prediction = __rpc_cricket_get_prediction || (rpcGetPred
 try { __rpc_cricket_get_prediction_leaderboard = __rpc_cricket_get_prediction_leaderboard || (rpcGetPredictionLeaderboard); } catch(e) {}
 try { __rpc_cricket_get_prediction_stats = __rpc_cricket_get_prediction_stats || (rpcGetPredictionStats); } catch(e) {}
 try { __rpc_cricket_get_community_predictions = __rpc_cricket_get_community_predictions || (rpcGetCommunityPredictions); } catch(e) {}
+try { __rpc_daily_progress_check = __rpc_daily_progress_check || (rpcDailyProgressCheck); } catch(e) {}
+try { __rpc_daily_progress_claim = __rpc_daily_progress_claim || (rpcDailyProgressClaim); } catch(e) {}
 try { __rpc_daily_reward_get_calendar = __rpc_daily_reward_get_calendar || (rpcDailyRewardGetCalendar); } catch(e) {}
 try { __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus); } catch(e) {}
 try { __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim); } catch(e) {}
@@ -166128,15 +172344,13 @@ try { __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contr
 try { __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge); } catch(e) {}
 try { __rpc_friend_streak_get_broken_log = __rpc_friend_streak_get_broken_log || (rpcFriendStreakGetBrokenLog); } catch(e) {}
 try { __rpc_friend_streak_repair = __rpc_friend_streak_repair || (rpcFriendStreakRepair); } catch(e) {}
-try { __rpc_id = __rpc_id || (handler); } catch(e) {}
 try { __rpc_send_friend_challenge = __rpc_send_friend_challenge || (rpcSendFriendChallenge); } catch(e) {}
-try { __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcSendFriendChallenge); } catch(e) {}
+try { __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcFriendsChallengeUserDeprecated); } catch(e) {}
 try { __rpc_accept_friend_challenge = __rpc_accept_friend_challenge || (rpcAcceptFriendChallenge); } catch(e) {}
 try { __rpc_decline_friend_challenge = __rpc_decline_friend_challenge || (rpcDeclineFriendChallenge); } catch(e) {}
 try { __rpc_cancel_friend_challenge = __rpc_cancel_friend_challenge || (rpcCancelFriendChallenge); } catch(e) {}
 try { __rpc_list_pending_friend_challenges = __rpc_list_pending_friend_challenges || (rpcListPendingFriendChallenges); } catch(e) {}
 try { __rpc_friends_spectate = __rpc_friends_spectate || (rpcFriendsSpectate); } catch(e) {}
-try { __rpc_id = __rpc_id || (handler); } catch(e) {}
 try { __rpc_send_friend_invite = __rpc_send_friend_invite || (rpcFriendsSendInvite); } catch(e) {}
 try { __rpc_accept_friend_invite = __rpc_accept_friend_invite || (rpcFriendsAcceptInvite); } catch(e) {}
 try { __rpc_decline_friend_invite = __rpc_decline_friend_invite || (rpcFriendsDeclineInvite); } catch(e) {}
@@ -166153,6 +172367,8 @@ try { __rpc_ivx_quest_config = __rpc_ivx_quest_config || (rpcIvxQuestConfig); } 
 try { __rpc_ivx_quest_get = __rpc_ivx_quest_get || (rpcIvxQuestGet); } catch(e) {}
 try { __rpc_ivx_quest_progress = __rpc_ivx_quest_progress || (rpcIvxQuestProgress); } catch(e) {}
 try { __rpc_ivx_quest_claim = __rpc_ivx_quest_claim || (rpcIvxQuestClaim); } catch(e) {}
+try { __rpc_quizverse_lap_badge_event = __rpc_quizverse_lap_badge_event || (rpcQuizverseLapBadgeEvent); } catch(e) {}
+try { __rpc_quizverse_lap_badge_sync = __rpc_quizverse_lap_badge_sync || (rpcQuizverseLapBadgeSync); } catch(e) {}
 try { __rpc_lt_home_widgets_get = __rpc_lt_home_widgets_get || (rpcLtHomeWidgetsGet); } catch(e) {}
 try { __rpc_lt_home_widgets_set = __rpc_lt_home_widgets_set || (rpcLtHomeWidgetsSet); } catch(e) {}
 try { __rpc_lt_widget_render = __rpc_lt_widget_render || (rpcLtWidgetRender); } catch(e) {}
@@ -166240,18 +172456,18 @@ try { __rpc_hiro_economy_grant = __rpc_hiro_economy_grant || (__rpc_hiro_invento
 try { __rpc_hiro_economy_list = __rpc_hiro_economy_list || (__rpc_hiro_inventory_list); } catch(e) {}
 try { __rpc_hiro_spin_wheel = __rpc_hiro_spin_wheel || (__rpc_fortune_wheel_spin); } catch(e) {}
 try { __rpc_hiro_spin_wheel_config = __rpc_hiro_spin_wheel_config || (__rpc_fortune_wheel_get_state); } catch(e) {}
-try { __rpc_hiro_friends_list = __rpc_hiro_friends_list || (__rpc_friends_list); } catch(e) {}
-try { __rpc_hiro_friends_remove = __rpc_hiro_friends_remove || (__rpc_friends_remove); } catch(e) {}
-try { __rpc_hiro_friends_block = __rpc_hiro_friends_block || (__rpc_friends_block); } catch(e) {}
-try { __rpc_hiro_friend_quests_get_active = __rpc_hiro_friend_quests_get_active || (__rpc_friend_quest_get_state); } catch(e) {}
-try { __rpc_hiro_friend_quests_contribute = __rpc_hiro_friend_quests_contribute || (__rpc_friend_quest_record_progress); } catch(e) {}
-try { __rpc_hiro_friend_battles_challenge = __rpc_hiro_friend_battles_challenge || (__rpc_friend_battle_create); } catch(e) {}
+try { __rpc_hiro_friends_list = __rpc_hiro_friends_list || (_dep_hiro_friends_list); } catch(e) {}
+try { __rpc_hiro_friends_remove = __rpc_hiro_friends_remove || (_dep_hiro_friends_remove); } catch(e) {}
+try { __rpc_hiro_friends_block = __rpc_hiro_friends_block || (_dep_hiro_friends_block); } catch(e) {}
+try { __rpc_hiro_friend_quests_get_active = __rpc_hiro_friend_quests_get_active || (_dep_hiro_friend_quests_get_active); } catch(e) {}
+try { __rpc_hiro_friend_quests_contribute = __rpc_hiro_friend_quests_contribute || (_dep_hiro_friend_quests_contribute); } catch(e) {}
+try { __rpc_hiro_friend_battles_challenge = __rpc_hiro_friend_battles_challenge || (_dep_hiro_friend_battles_challenge); } catch(e) {}
 try { __rpc_satori_publish_events = __rpc_satori_publish_events || (__rpc_satori_events_batch); } catch(e) {}
 try { __rpc_satori_get_flags = __rpc_satori_get_flags || (__rpc_satori_flags_get); } catch(e) {}
 try { __rpc_satori_get_experiments = __rpc_satori_get_experiments || (__rpc_satori_experiments_get); } catch(e) {}
 try { __rpc_satori_get_live_events = __rpc_satori_get_live_events || (__rpc_satori_live_events_list); } catch(e) {}
 try { __rpc_ivx_sync_metadata = __rpc_ivx_sync_metadata || (_aliasIvxSyncMetadata); } catch(e) {}
-try { __rpc_hiro_friends_add = __rpc_hiro_friends_add || (_aliasHiroFriendsAdd); } catch(e) {}
+try { __rpc_hiro_friends_add = __rpc_hiro_friends_add || (_dep_hiro_friends_add); } catch(e) {}
 try { __rpc_hiro_get_offerwall = __rpc_hiro_get_offerwall || (_stubOfferwallList); } catch(e) {}
 try { __rpc_hiro_offerwall_list = __rpc_hiro_offerwall_list || (_stubOfferwallList); } catch(e) {}
 try { __rpc_hiro_offerwall_claim = __rpc_hiro_offerwall_claim || (_stubOfferwallClaim); } catch(e) {}
@@ -166260,7 +172476,6 @@ try { __rpc_hiro_smart_ad_can_show = __rpc_hiro_smart_ad_can_show || (_stubSmart
 try { __rpc_hiro_retention_get = __rpc_hiro_retention_get || (_stubRetentionGet); } catch(e) {}
 try { __rpc_hiro_retention_update = __rpc_hiro_retention_update || (_stubRetentionUpdate); } catch(e) {}
 try { __rpc_hiro_friend_battles_get_active = __rpc_hiro_friend_battles_get_active || (_stubFriendBattlesGetActive); } catch(e) {}
-try { __rpc_id = __rpc_id || (handler); } catch(e) {}
 try { __rpc_smart_review_get_cards = __rpc_smart_review_get_cards || (rpcSmartReviewGetCards); } catch(e) {}
 try { __rpc_smart_review_rate_card = __rpc_smart_review_rate_card || (rpcSmartReviewRateCard); } catch(e) {}
 try { __rpc_smart_review_add_card = __rpc_smart_review_add_card || (rpcSmartReviewAddCard); } catch(e) {}
@@ -166316,11 +172531,6 @@ try { __rpc_friends_block = __rpc_friends_block || (rpcFriendsBlock); } catch(e)
 try { __rpc_friends_unblock = __rpc_friends_unblock || (rpcFriendsUnblock); } catch(e) {}
 try { __rpc_friends_remove = __rpc_friends_remove || (rpcFriendsRemove); } catch(e) {}
 try { __rpc_friends_list = __rpc_friends_list || (rpcFriendsList); } catch(e) {}
-try { __rpc_create_game_group = __rpc_create_game_group || (__legacy_rpcCreateGameGroup); } catch(e) {}
-try { __rpc_update_group_xp = __rpc_update_group_xp || (__legacy_rpcUpdateGroupXP); } catch(e) {}
-try { __rpc_get_group_wallet = __rpc_get_group_wallet || (__legacy_rpcGetGroupWallet); } catch(e) {}
-try { __rpc_update_group_wallet = __rpc_update_group_wallet || (__legacy_rpcUpdateGroupWallet); } catch(e) {}
-try { __rpc_get_user_groups = __rpc_get_user_groups || (__legacy_rpcGetUserGroups); } catch(e) {}
 try { __rpc_push_register_token = __rpc_push_register_token || (rpcPushRegisterToken); } catch(e) {}
 try { __rpc_push_send_event = __rpc_push_send_event || (rpcPushSendEvent); } catch(e) {}
 try { __rpc_push_get_endpoints = __rpc_push_get_endpoints || (rpcPushGetEndpoints); } catch(e) {}
@@ -166591,6 +172801,188 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(__origErr) {
     try { logger.error("[Postbuild] __OriginalInitModule threw — RPC registration will proceed from cached __rpc_* stubs. Error: " + (__origErr && __origErr.message ? __origErr.message : String(__origErr))); } catch(_) {}
   }
+  // --- Module init invocations (see section 5a-bis in postbuild.js) ---
+  // Runs the renamed per-module InitModule bodies (__ModuleInit_N) so their
+  // one-time side effects (badge seeding etc.) actually execute. Guarded
+  // stub assignments inside them are idempotent no-ops at this point.
+  try { __ModuleInit_2(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (ai_player/ai_player.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_3(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/admin/analytics_admin.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_4(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/analytics.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_5(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/backfill/analytics_backfill.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_6(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/dropoff/analytics_dropoff.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_7(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/extended/analytics_extended.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_8(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/firecrawl/analytics_firecrawl.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_9(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/hardening/analytics_hardening.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_10(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/history/analytics_history.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_11(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/modes/analytics_modes.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_12(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/ops/analytics_ops.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_14(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/player_profile/analytics_player_profile.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_15(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/read_models/analytics_read_models.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_16(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/recap_signals/recap_signals.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_17(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/retention_curves/analytics_retention_curves.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_18(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/rollup/analytics_rollup.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_19(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/satori_identity/analytics_satori_identity.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_20(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/segments/analytics_segments.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_21(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (analytics/tracking_plan/analytics_tracking_plan.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_25(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (badges/badges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_27(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (chat_moderation/chat_moderation.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_28(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (chatbox/chatbox.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_36(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_ai_integration.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_37(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_daily_challenges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_38(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_economy.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_39(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_engagement.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_40(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_live_match.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_41(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_predictions.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_42(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_retention.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_43(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_season_pass.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_44(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket/cricket_trivia.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_46(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (cricket_worldcup/predictions.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_49(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (daily_rewards/daily_progress.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_50(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (daily_rewards/daily_reward_calendar.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_51(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (daily_rewards/daily_rewards.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_53(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (external_analytics/external_analytics.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_54(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (external_pollers/external_pollers.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_56(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (friend_streaks/friend_streaks.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_57(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (friends/friend_challenges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_58(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (friends/friend_invites.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_60(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (friends/friends_extras.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_63(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (groups/groups.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_68(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (ivx_quest/ivx_quest.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_69(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (lap-badges/lap-badges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_74(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (learner_home_widgets/learner_home_widgets.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_75(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (learner_quotes/learner_quotes.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_76(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (learner_reminders/learner_reminders.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_77(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (learner_review/learner_review.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_82(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (multiplayer/multiplayer_locks.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_86(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (offer_engine/offer_engine.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_97(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (quiz_results/quiz_results.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_99(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (quizverse_seen/quizverse_seen.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_105(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (s3_assets/s3_assets.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_106(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (satori_compat/satori_compat.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_107(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (satori_direct/satori_direct.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_108(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (sdk_aliases/sdk_aliases.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_109(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (smart_review/smart_review.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_112(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (visual_path/visual_path.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  try { __ModuleInit_113(ctx, logger, nk, initializer); } catch(__miErr) {
+    try { logger.error("[Postbuild] Module init failed (wallet/wallet.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
+  }
+  logger.info("[Postbuild] Invoked 59 module init functions (__ModuleInit_N)");
   // --- RPC alias overrides (post-Hiro, pre-registration) ---
   try { if (typeof rpcDashboardEventsTimeline !== "undefined") { __rpc_admin_events_timeline = rpcDashboardEventsTimeline; } } catch(e) {}
   try { if (typeof rpcDashboardStorageList !== "undefined") { __rpc_admin_storage_list = rpcDashboardStorageList; } } catch(e) {}
@@ -166646,7 +173038,6 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("quizverse_track_session_end", __rpc_quizverse_track_session_end); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_server_config", __rpc_quizverse_get_server_config); } catch(e) {}
   try { initializer.registerRpc("quizverse_admin_grant_item", __rpc_quizverse_admin_grant_item); } catch(e) {}
-  try { initializer.registerRpc("...", __rpc____); } catch(e) {}
   try { initializer.registerRpc("ai_pipeline_weekly_recap", __rpc_ai_pipeline_weekly_recap); } catch(e) {}
   try { initializer.registerRpc("ai_pipeline_monthly_recap", __rpc_ai_pipeline_monthly_recap); } catch(e) {}
   try { initializer.registerRpc("ai_pipeline_motion_graphics", __rpc_ai_pipeline_motion_graphics); } catch(e) {}
@@ -166703,9 +173094,13 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("fantasy_transfer_window", __rpc_fantasy_transfer_window); } catch(e) {}
   try { initializer.registerRpc("fantasy_transfer_history", __rpc_fantasy_transfer_history); } catch(e) {}
   try { initializer.registerRpc("intelliverse_find_friends", __rpc_intelliverse_find_friends); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friend_search", __rpc_ivx_social_friend_search); } catch(e) {}
   try { initializer.registerRpc("intelliverse_find_nearby_players", __rpc_intelliverse_find_nearby_players); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friend_nearby", __rpc_ivx_social_friend_nearby); } catch(e) {}
   try { initializer.registerRpc("friends_list", __rpc_friends_list); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friends_list", __rpc_ivx_social_friends_list); } catch(e) {}
   try { initializer.registerRpc("list_blocked_users", __rpc_list_blocked_users); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friends_blocked", __rpc_ivx_social_friends_blocked); } catch(e) {}
   try { initializer.registerRpc("ivx_set_player_presence", __rpc_ivx_set_player_presence); } catch(e) {}
   try { initializer.registerRpc("ivx_get_cross_game_messages", __rpc_ivx_get_cross_game_messages); } catch(e) {}
   try { initializer.registerRpc("ivx_mark_message_read", __rpc_ivx_mark_message_read); } catch(e) {}
@@ -166715,7 +173110,9 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("quizverse_embed_quiz_complete", __rpc_quizverse_embed_quiz_complete); } catch(e) {}
   try { initializer.registerRpc("quizverse_embed_claim_pending", __rpc_quizverse_embed_claim_pending); } catch(e) {}
   try { initializer.registerRpc("quizverse_blog_quiz_reward", __rpc_quizverse_blog_quiz_reward); } catch(e) {}
+  try { initializer.registerRpc("quizverse_cache_refresh_tick", __rpc_quizverse_cache_refresh_tick); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_questions", __rpc_quizverse_get_questions); } catch(e) {}
+  try { initializer.registerRpc("quizverse_abandon_pack", __rpc_quizverse_abandon_pack); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_review", __rpc_quizverse_get_review); } catch(e) {}
   try { initializer.registerRpc("quizverse_growth_snapshot", __rpc_quizverse_growth_snapshot); } catch(e) {}
   try { initializer.registerRpc("quizverse_create_match", __rpc_quizverse_create_match); } catch(e) {}
@@ -166870,6 +173267,9 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("hiro_streak_shield_replenish", __rpc_hiro_streak_shield_replenish); } catch(e) {}
   try { initializer.registerRpc("hiro_iap_validate", __rpc_hiro_iap_validate); } catch(e) {}
   try { initializer.registerRpc("hiro_iap_history", __rpc_hiro_iap_history); } catch(e) {}
+  try { initializer.registerRpc("battlepass_get", __rpc_battlepass_get); } catch(e) {}
+  try { initializer.registerRpc("battlepass_record_event", __rpc_battlepass_record_event); } catch(e) {}
+  try { initializer.registerRpc("battlepass_unlock_premium", __rpc_battlepass_unlock_premium); } catch(e) {}
   try { initializer.registerRpc("hiro_challenges_create", __rpc_hiro_challenges_create); } catch(e) {}
   try { initializer.registerRpc("hiro_challenges_join", __rpc_hiro_challenges_join); } catch(e) {}
   try { initializer.registerRpc("hiro_challenges_submit", __rpc_hiro_challenges_submit); } catch(e) {}
@@ -166981,7 +173381,6 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("analytics_track_retention_event", __rpc_analytics_track_retention_event); } catch(e) {}
   try { initializer.registerRpc("analytics_arpu", __rpc_analytics_arpu); } catch(e) {}
   try { initializer.registerRpc("analytics_track_revenue", __rpc_analytics_track_revenue); } catch(e) {}
-  try { initializer.registerRpc("analytics_log_event", __rpc_analytics_log_event); } catch(e) {}
   try { initializer.registerRpc("send_group_chat_message", __rpc_send_group_chat_message); } catch(e) {}
   try { initializer.registerRpc("send_direct_message", __rpc_send_direct_message); } catch(e) {}
   try { initializer.registerRpc("send_chat_room_message", __rpc_send_chat_room_message); } catch(e) {}
@@ -167023,7 +173422,6 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("get_all_leaderboards", __rpc_get_all_leaderboards); } catch(e) {}
   try { initializer.registerRpc("submit_leaderboard_score", __rpc_submit_leaderboard_score); } catch(e) {}
   try { initializer.registerRpc("get_leaderboard", __rpc_get_leaderboard); } catch(e) {}
-  try { initializer.registerRpc("<prefix><suffix>", __rpc__prefix__suffix_); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_quiz_categories", __rpc_quizverse_get_quiz_categories); } catch(e) {}
   try { initializer.registerRpc("lasttolive_get_weapon_stats", __rpc_lasttolive_get_weapon_stats); } catch(e) {}
   try { initializer.registerRpc("get_player_portfolio", __rpc_get_player_portfolio); } catch(e) {}
@@ -167195,9 +173593,12 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("creator_event_update_promo", __rpc_creator_event_update_promo); } catch(e) {}
   try { initializer.registerRpc("creator_event_fund_pool", __rpc_creator_event_fund_pool); } catch(e) {}
   try { initializer.registerRpc("creator_event_spa_claim", __rpc_creator_event_spa_claim); } catch(e) {}
+  try { initializer.registerRpc("creator_event_spa_join", __rpc_creator_event_spa_join); } catch(e) {}
   try { initializer.registerRpc("creator_event_spa_save_delivery", __rpc_creator_event_spa_save_delivery); } catch(e) {}
   try { initializer.registerRpc("creator_event_spa_end_queue", __rpc_creator_event_spa_end_queue); } catch(e) {}
+  try { initializer.registerRpc("creator_event_spa_auto_end_sweep", __rpc_creator_event_spa_auto_end_sweep); } catch(e) {}
   try { initializer.registerRpc("creator_event_fulfillments_list", __rpc_creator_event_fulfillments_list); } catch(e) {}
+  try { initializer.registerRpc("creator_event_fulfillment_get", __rpc_creator_event_fulfillment_get); } catch(e) {}
   try { initializer.registerRpc("creator_event_fulfillment_settle", __rpc_creator_event_fulfillment_settle); } catch(e) {}
   try { initializer.registerRpc("satori_live_events_list", __rpc_satori_live_events_list); } catch(e) {}
   try { initializer.registerRpc("satori_live_events_join", __rpc_satori_live_events_join); } catch(e) {}
@@ -167243,10 +173644,58 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("fortune_wheel_skip_cooldown", __rpc_fortune_wheel_skip_cooldown); } catch(e) {}
   try { initializer.registerRpc("country_tier_get", __rpc_country_tier_get); } catch(e) {}
   try { initializer.registerRpc("nakama_js_health", __rpc_nakama_js_health); } catch(e) {}
-  try { initializer.registerRpc("tournament_enter", __rpc_tournament_enter); } catch(e) {}
   try { initializer.registerRpc("storage_write", __rpc_storage_write); } catch(e) {}
   try { initializer.registerRpc("storage_read", __rpc_storage_read); } catch(e) {}
   try { initializer.registerRpc("quizverse_web_ad_reward", __rpc_quizverse_web_ad_reward); } catch(e) {}
+  try { initializer.registerRpc("ivx_app_config_get", __rpc_ivx_app_config_get); } catch(e) {}
+  try { initializer.registerRpc("ivx_app_registry_upsert", __rpc_ivx_app_registry_upsert); } catch(e) {}
+  try { initializer.registerRpc("ivx_duo_quest_create", __rpc_ivx_duo_quest_create); } catch(e) {}
+  try { initializer.registerRpc("ivx_duo_quest_accept", __rpc_ivx_duo_quest_accept); } catch(e) {}
+  try { initializer.registerRpc("ivx_duo_quest_status", __rpc_ivx_duo_quest_status); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_quiz_social_proof", __rpc_ivx_social_quiz_social_proof); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_group_streak_status", __rpc_ivx_social_group_streak_status); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friend_recommendations", __rpc_ivx_social_friend_recommendations); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_starter_groups", __rpc_ivx_social_starter_groups); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_starter_groups_set", __rpc_ivx_social_starter_groups_set); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_contact_hash_register", __rpc_ivx_social_contact_hash_register); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_contacts_match", __rpc_ivx_social_contacts_match); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_fanout_tick", __rpc_ivx_social_fanout_tick); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friends_feed", __rpc_ivx_social_friends_feed); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_feed_privacy_set", __rpc_ivx_social_feed_privacy_set); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_feed_privacy_get", __rpc_ivx_social_feed_privacy_get); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_group_invite_link", __rpc_ivx_social_group_invite_link); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_group_join_by_code", __rpc_ivx_social_group_join_by_code); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_group_search", __rpc_ivx_social_group_search); } catch(e) {}
+  try { initializer.registerRpc("ivx_league_get", __rpc_ivx_league_get); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_maintenance_tick", __rpc_ivx_social_maintenance_tick); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_onboarding_state", __rpc_ivx_social_onboarding_state); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_presence_set", __rpc_ivx_social_presence_set); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_presence_bulk_get", __rpc_ivx_social_presence_bulk_get); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_pressure_summary", __rpc_ivx_social_pressure_summary); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_report", __rpc_ivx_social_report); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_reports_list", __rpc_ivx_social_reports_list); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_invite_send", __rpc_ivx_social_invite_send); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_invite_accept", __rpc_ivx_social_invite_accept); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_invite_decline", __rpc_ivx_social_invite_decline); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_invite_cancel", __rpc_ivx_social_invite_cancel); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_invites_pending", __rpc_ivx_social_invites_pending); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_challenge_send", __rpc_ivx_social_challenge_send); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_challenge_accept", __rpc_ivx_social_challenge_accept); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_challenge_decline", __rpc_ivx_social_challenge_decline); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_challenge_cancel", __rpc_ivx_social_challenge_cancel); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_challenges_pending", __rpc_ivx_social_challenges_pending); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_spectate", __rpc_ivx_social_spectate); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_streak_get", __rpc_ivx_social_streak_get); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_streak_record", __rpc_ivx_social_streak_record); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_streak_nudge", __rpc_ivx_social_streak_nudge); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_streak_broken_log", __rpc_ivx_social_streak_broken_log); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_streak_repair", __rpc_ivx_social_streak_repair); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_friends_online_count", __rpc_ivx_social_friends_online_count); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_battle_create", __rpc_ivx_social_battle_create); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_invite_with_reward", __rpc_ivx_social_invite_with_reward); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_dm_send", __rpc_ivx_social_dm_send); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_dm_history", __rpc_ivx_social_dm_history); } catch(e) {}
+  try { initializer.registerRpc("ivx_social_dm_mark_read", __rpc_ivx_social_dm_mark_read); } catch(e) {}
   try { initializer.registerRpc("tournament_cron_tick", __rpc_tournament_cron_tick); } catch(e) {}
   try { initializer.registerRpc("tournament_cron_pregen", __rpc_tournament_cron_pregen); } catch(e) {}
   try { initializer.registerRpc("tournament_list", __rpc_tournament_list); } catch(e) {}
@@ -167255,6 +173704,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("kyc_profile_sync", __rpc_kyc_profile_sync); } catch(e) {}
   try { initializer.registerRpc("tournament_bracket_state", __rpc_tournament_bracket_state); } catch(e) {}
   try { initializer.registerRpc("tournament_pre_enroll", __rpc_tournament_pre_enroll); } catch(e) {}
+  try { initializer.registerRpc("tournament_enter", __rpc_tournament_enter); } catch(e) {}
   try { initializer.registerRpc("tournament_submit_pack_result", __rpc_tournament_submit_pack_result); } catch(e) {}
   try { initializer.registerRpc("tournament_submit_picks", __rpc_tournament_submit_picks); } catch(e) {}
   try { initializer.registerRpc("tournament_status_get", __rpc_tournament_status_get); } catch(e) {}
@@ -167338,6 +173788,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("tutorx_session_refresh", __rpc_tutorx_session_refresh); } catch(e) {}
   try { initializer.registerRpc("tutorx_get_config", __rpc_tutorx_get_config); } catch(e) {}
   try { initializer.registerRpc("tutorx_set_config", __rpc_tutorx_set_config); } catch(e) {}
+  try { initializer.registerRpc("analytics_log_event", __rpc_analytics_log_event); } catch(e) {}
   try { initializer.registerRpc("achievements_get_all", __rpc_achievements_get_all); } catch(e) {}
   try { initializer.registerRpc("achievements_update_progress", __rpc_achievements_update_progress); } catch(e) {}
   try { initializer.registerRpc("achievements_create_definition", __rpc_achievements_create_definition); } catch(e) {}
@@ -167646,8 +174097,9 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("cricket_get_prediction_leaderboard", __rpc_cricket_get_prediction_leaderboard); } catch(e) {}
   try { initializer.registerRpc("cricket_get_prediction_stats", __rpc_cricket_get_prediction_stats); } catch(e) {}
   try { initializer.registerRpc("cricket_get_community_predictions", __rpc_cricket_get_community_predictions); } catch(e) {}
+  try { initializer.registerRpc("daily_progress_check", __rpc_daily_progress_check); } catch(e) {}
+  try { initializer.registerRpc("daily_progress_claim", __rpc_daily_progress_claim); } catch(e) {}
   try { initializer.registerRpc("daily_reward_get_calendar", __rpc_daily_reward_get_calendar); } catch(e) {}
-  try { initializer.registerRpc("<id>", __rpc__id_); } catch(e) {}
   try { initializer.registerRpc("daily_rewards_get_history", __rpc_daily_rewards_get_history); } catch(e) {}
   try { initializer.registerRpc("analytics_appodeal", __rpc_analytics_appodeal); } catch(e) {}
   try { initializer.registerRpc("analytics_apple_appstore", __rpc_analytics_apple_appstore); } catch(e) {}
@@ -167663,7 +174115,6 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("external_poll_status", __rpc_external_poll_status); } catch(e) {}
   try { initializer.registerRpc("friend_streak_get_broken_log", __rpc_friend_streak_get_broken_log); } catch(e) {}
   try { initializer.registerRpc("friend_streak_repair", __rpc_friend_streak_repair); } catch(e) {}
-  try { initializer.registerRpc("id", __rpc_id); } catch(e) {}
   try { initializer.registerRpc("send_friend_challenge", __rpc_send_friend_challenge); } catch(e) {}
   try { initializer.registerRpc("friends_challenge_user", __rpc_friends_challenge_user); } catch(e) {}
   try { initializer.registerRpc("accept_friend_challenge", __rpc_accept_friend_challenge); } catch(e) {}
@@ -167683,11 +174134,12 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("get_group_details", __rpc_get_group_details); } catch(e) {}
   try { initializer.registerRpc("log_group_activity", __rpc_log_group_activity); } catch(e) {}
   try { initializer.registerRpc("create_quizverse_group", __rpc_create_quizverse_group); } catch(e) {}
-  try { initializer.registerRpc("submit_score", __rpc_submit_score); } catch(e) {}
   try { initializer.registerRpc("ivx_quest_config", __rpc_ivx_quest_config); } catch(e) {}
   try { initializer.registerRpc("ivx_quest_get", __rpc_ivx_quest_get); } catch(e) {}
   try { initializer.registerRpc("ivx_quest_progress", __rpc_ivx_quest_progress); } catch(e) {}
   try { initializer.registerRpc("ivx_quest_claim", __rpc_ivx_quest_claim); } catch(e) {}
+  try { initializer.registerRpc("quizverse_lap_badge_event", __rpc_quizverse_lap_badge_event); } catch(e) {}
+  try { initializer.registerRpc("quizverse_lap_badge_sync", __rpc_quizverse_lap_badge_sync); } catch(e) {}
   try { initializer.registerRpc("lt_home_widgets_get", __rpc_lt_home_widgets_get); } catch(e) {}
   try { initializer.registerRpc("lt_home_widgets_set", __rpc_lt_home_widgets_set); } catch(e) {}
   try { initializer.registerRpc("lt_widget_render", __rpc_lt_widget_render); } catch(e) {}
@@ -167898,5 +174350,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerMatch mixed-reality-anchor-v1 failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1177 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
+  logger.info("[Postbuild] Registered " + 1237 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
 }
