@@ -81,13 +81,21 @@ namespace LegacyMultiGame {
     return { success: true };
   }
 
+  /**
+   * Secondary to BestScore persistence (save_player_data / stats). Home arcade
+   * leaderboards already read leaderboard_{uuid}_* from submit_score_to_time_periods;
+   * this path restores the legacy {gameID}_weekly BEST write using the payload
+   * arcade UUID (not the registerGameRpcs pin "quizverse").
+   */
   function submitScore(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
     if (data.score === undefined) throw new Error("score required");
-    var lbId = gId + "_leaderboard";
+    var resolvedId = data.gameID || data.gameId || gId;
+    var lbId = resolvedId + "_weekly";
     try { nk.leaderboardCreate(lbId, false, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST); } catch (_) { }
     nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, nkruntime.OverrideOperator.BEST);
-    EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: gId, score: data.score });
-    return { success: true };
+    EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: resolvedId, score: data.score });
+    logger.info("[submitScore] gameId=" + resolvedId + " score=" + data.score + " lb=" + lbId);
+    return { success: true, leaderboardId: lbId };
   }
 
   function getLeaderboard(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
@@ -197,15 +205,116 @@ namespace LegacyMultiGame {
     return { success: true, data: { results: results, query: query, count: results.length, searcherId: userId } };
   }
 
+  /**
+   * Unity arcade contract: { gameID|gameId, key, value }.
+   * Compat blob: { data } (no key/value) → player_data/{gId}_save.
+   * When key === "stats", max-merge BestScore / BestStreak / GamesPlayed so
+   * cloud BestScore never decreases.
+   * Returns inner { key, saved } — gameRpcHandler wraps successResponse.
+   */
   function savePlayerData(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
-    if (!data.data) throw new Error("data required");
-    Storage.writeJson(nk, "player_data", gId + "_save", userId, data.data);
-    return { success: true };
+    var resolvedId = data.gameID || data.gameId || gId;
+    var hasKeyValue = data.key !== undefined && data.key !== null && data.key !== ""
+      && data.value !== undefined && data.value !== null;
+
+    // Compat: blob write used by older callers (no Unity arcade key/value).
+    if (!hasKeyValue && data.data !== undefined && data.data !== null) {
+      Storage.writeJson(nk, "player_data", gId + "_save", userId, data.data);
+      return { success: true };
+    }
+
+    if (!hasKeyValue) throw new Error("key and value required");
+
+    var collection = resolvedId + "_player_data";
+    var storageKey = String(data.key);
+    var valueToStore: any = data.value;
+    var bestScore = -1;
+
+    if (storageKey === "stats") {
+      var existing = Storage.readJson<any>(nk, collection, storageKey, userId);
+      var incomingStats: any = null;
+      var existingStats: any = null;
+
+      try {
+        if (typeof valueToStore === "string") {
+          incomingStats = JSON.parse(valueToStore);
+        } else {
+          incomingStats = valueToStore;
+        }
+      } catch (_parseIn) {
+        incomingStats = {};
+      }
+
+      if (existing && existing.value !== undefined && existing.value !== null) {
+        try {
+          if (typeof existing.value === "string") {
+            existingStats = JSON.parse(existing.value);
+          } else {
+            existingStats = existing.value;
+          }
+        } catch (_parseEx) {
+          existingStats = {};
+        }
+      }
+
+      if (!incomingStats || typeof incomingStats !== "object") incomingStats = {};
+      if (!existingStats || typeof existingStats !== "object") existingStats = {};
+
+      var merged: any = {};
+      for (var field in incomingStats) {
+        if (Object.prototype.hasOwnProperty.call(incomingStats, field)) {
+          merged[field] = incomingStats[field];
+        }
+      }
+      // Never lower stored bests; GamesPlayed uses max (not sum) to avoid double-count.
+      merged.BestScore = Math.max(existingStats.BestScore || 0, incomingStats.BestScore || 0);
+      merged.BestStreak = Math.max(existingStats.BestStreak || 0, incomingStats.BestStreak || 0);
+      merged.GamesPlayed = Math.max(existingStats.GamesPlayed || 0, incomingStats.GamesPlayed || 0);
+
+      valueToStore = JSON.stringify(merged);
+      bestScore = merged.BestScore || 0;
+    }
+
+    var playerData = {
+      value: valueToStore,
+      updatedAt: new Date().toISOString()
+    };
+    // Match legacy multigame_rpcs: owner-read, no client write.
+    Storage.writeJson(nk, collection, storageKey, userId, playerData, 1 as nkruntime.ReadPermissionValues, 0 as nkruntime.WritePermissionValues);
+
+    logger.info("[savePlayerData] gameId=" + resolvedId + " key=" + storageKey
+      + (bestScore >= 0 ? (" bestScore=" + bestScore) : ""));
+
+    var result: any = { key: storageKey, saved: true };
+    if (bestScore >= 0) result.bestScore = bestScore;
+    return result;
   }
 
+  /**
+   * Unity arcade contract: { gameID|gameId, key } → { key, value, updatedAt }.
+   * Missing record throws so Unity LoadPlayerDataAsync treats it as null.
+   */
   function loadPlayerData(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
-    var saved = Storage.readJson<any>(nk, "player_data", gId + "_save", userId);
-    return { data: saved || {} };
+    var resolvedId = data.gameID || data.gameId || gId;
+    var storageKey = data.key;
+
+    // Compat: no key → return legacy blob under player_data/{gId}_save.
+    if (storageKey === undefined || storageKey === null || storageKey === "") {
+      var blob = Storage.readJson<any>(nk, "player_data", gId + "_save", userId);
+      return { data: blob || {} };
+    }
+
+    var collection = resolvedId + "_player_data";
+    var stored = Storage.readJson<any>(nk, collection, String(storageKey), userId);
+    if (!stored || stored.value === undefined || stored.value === null) {
+      throw new Error("Player data not found");
+    }
+
+    return {
+      key: String(storageKey),
+      value: stored.value,
+      updatedAt: stored.updatedAt || null
+    };
   }
 
   function getItemCatalog(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {

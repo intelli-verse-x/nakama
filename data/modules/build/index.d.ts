@@ -1219,9 +1219,13 @@ declare namespace HiroUnlockables {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace CoinPackCatalog {
-    /** Returns total coins to grant for a productId, or null if not a known coin pack. */
-    function resolveCoinGrant(productId: string): number | null;
+    /** True when the productId is any coin pack (mirrors client ShopProductConfig.IsCoinPack). */
     function isCoinPack(productId: string): boolean;
+    /**
+     * Resolve the total coins to grant for a coin pack product, including bonus.
+     * Returns null when the productId is not a known coin pack.
+     */
+    function resolveCoinGrant(productId: string): number | null;
 }
 declare namespace QvEntitlements {
     function grantSubscription(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, store: string, expiresAt: string | null): void;

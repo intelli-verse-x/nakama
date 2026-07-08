@@ -25705,57 +25705,63 @@ var HiroUnlockables;
     }
     HiroUnlockables.register = register;
 })(HiroUnlockables || (HiroUnlockables = {}));
-// ---------------------------------------------------------------------------
-//  coin-pack-catalog.ts — server-side coin pack grant amounts
-//
-//  Single source of truth for IAP coin pack rewards. Mirrors Unity
-//  ShopProductConfig.CoinPacks (base amount + bonus percent).
-//  Client amounts are never trusted — resolveCoinGrant() is used by
-//  hiro_iap_validate after receipt validation.
-// ---------------------------------------------------------------------------
 var CoinPackCatalog;
 (function (CoinPackCatalog) {
-    // Grant formula matches InAppPurchase.ResolveConsumableCoinAmount:
-    //   total = baseAmount + (baseAmount * bonusPercent) / 100
+    // Single server-side source of truth. Mirrors client ShopProductConfig.CoinPacks.
+    // grant = base + round(base * bonusPercent / 100)
     var COIN_PACKS = [
-        { productId: "com.intelliverse.quizverse.coins.500", baseAmount: 500, bonusPercent: 0 },
-        { productId: "com.intelliverse.quizverse.coins.1200", baseAmount: 1200, bonusPercent: 20 },
-        { productId: "com.intelliverse.quizverse.coins.2500", baseAmount: 2500, bonusPercent: 25 },
-        { productId: "com.intelliverse.quizverse.coins.6500", baseAmount: 6500, bonusPercent: 30 },
-        { productId: "com.intelliverse.quizverse.coins.15000", baseAmount: 15000, bonusPercent: 50 },
+        { productId: "com.intelliverse.quizverse.coins.500", base: 500, bonusPercent: 0 },
+        { productId: "com.intelliverse.quizverse.coins.1200", base: 1200, bonusPercent: 20 },
+        { productId: "com.intelliverse.quizverse.coins.2500", base: 2500, bonusPercent: 25 },
+        { productId: "com.intelliverse.quizverse.coins.6500", base: 6500, bonusPercent: 30 },
+        { productId: "com.intelliverse.quizverse.coins.15000", base: 15000, bonusPercent: 50 }
     ];
-    function computeGrant(baseAmount, bonusPercent) {
-        if (bonusPercent <= 0)
-            return baseAmount;
-        return baseAmount + Math.floor((baseAmount * bonusPercent) / 100);
-    }
-    /** Returns total coins to grant for a productId, or null if not a known coin pack. */
-    function resolveCoinGrant(productId) {
-        if (!productId)
-            return null;
-        for (var i = 0; i < COIN_PACKS.length; i++) {
-            var pack = COIN_PACKS[i];
-            if (pack.productId === productId) {
-                return computeGrant(pack.baseAmount, pack.bonusPercent);
-            }
+    /** True when the productId is any coin pack (mirrors client ShopProductConfig.IsCoinPack). */
+    function isCoinPack(productId) {
+        if (!productId) {
+            return false;
         }
-        // Fallback: match by suffix (e.g. Play alias IDs that still end in coins.NNN)
-        if (productId.indexOf("coins.") === -1)
+        return productId.indexOf("coins.") !== -1;
+    }
+    CoinPackCatalog.isCoinPack = isCoinPack;
+    /**
+     * Resolve the total coins to grant for a coin pack product, including bonus.
+     * Returns null when the productId is not a known coin pack.
+     */
+    function resolveCoinGrant(productId) {
+        if (!productId) {
             return null;
-        for (var j = 0; j < COIN_PACKS.length; j++) {
-            var canonical = COIN_PACKS[j];
-            var suffix = canonical.productId.substring(canonical.productId.indexOf("coins."));
-            if (productId.indexOf(suffix) !== -1) {
-                return computeGrant(canonical.baseAmount, canonical.bonusPercent);
+        }
+        var normalized = stripStoreSuffix(productId);
+        for (var i = 0; i < COIN_PACKS.length; i++) {
+            var entry = COIN_PACKS[i];
+            if (matchesProduct(normalized, entry.productId)) {
+                return entry.base + Math.round((entry.base * entry.bonusPercent) / 100);
             }
         }
         return null;
     }
     CoinPackCatalog.resolveCoinGrant = resolveCoinGrant;
-    function isCoinPack(productId) {
-        return resolveCoinGrant(productId) !== null;
+    // Strip Android base-plan suffix ("productId:baseplan").
+    function stripStoreSuffix(productId) {
+        var colon = productId.indexOf(":");
+        if (colon > 0) {
+            return productId.substring(0, colon);
+        }
+        return productId;
     }
-    CoinPackCatalog.isCoinPack = isCoinPack;
+    // Exact canonical match, or trailing "coins.<n>" segment match so store-prefixed IDs resolve.
+    function matchesProduct(productId, canonical) {
+        if (productId === canonical) {
+            return true;
+        }
+        var suffix = canonical.substring(canonical.indexOf("coins."));
+        return endsWith(productId, suffix);
+    }
+    function endsWith(value, suffix) {
+        return value.length >= suffix.length &&
+            value.substring(value.length - suffix.length) === suffix;
+    }
 })(CoinPackCatalog || (CoinPackCatalog = {}));
 // ---------------------------------------------------------------------------
 //  entitlements.ts  —  quizverse_get_entitlements + quizverse_rc_sync
@@ -34642,17 +34648,25 @@ var LegacyMultiGame;
         Storage.writeJson(nk, "game_inventory", gId + "_" + userId, userId, inv);
         return { success: true };
     }
+    /**
+     * Secondary to BestScore persistence (save_player_data / stats). Home arcade
+     * leaderboards already read leaderboard_{uuid}_* from submit_score_to_time_periods;
+     * this path restores the legacy {gameID}_weekly BEST write using the payload
+     * arcade UUID (not the registerGameRpcs pin "quizverse").
+     */
     function submitScore(ctx, logger, nk, data, userId, gId) {
         if (data.score === undefined)
             throw new Error("score required");
-        var lbId = gId + "_leaderboard";
+        var resolvedId = data.gameID || data.gameId || gId;
+        var lbId = resolvedId + "_weekly";
         try {
             nk.leaderboardCreate(lbId, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */);
         }
         catch (_) { }
         nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, "best" /* nkruntime.OverrideOperator.BEST */);
-        EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: gId, score: data.score });
-        return { success: true };
+        EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: resolvedId, score: data.score });
+        logger.info("[submitScore] gameId=" + resolvedId + " score=" + data.score + " lb=" + lbId);
+        return { success: true, leaderboardId: lbId };
     }
     function getLeaderboard(ctx, logger, nk, data, userId, gId) {
         var lbId = gId + "_leaderboard";
@@ -34748,15 +34762,108 @@ var LegacyMultiGame;
         });
         return { success: true, data: { results: results, query: query, count: results.length, searcherId: userId } };
     }
+    /**
+     * Unity arcade contract: { gameID|gameId, key, value }.
+     * Compat blob: { data } (no key/value) → player_data/{gId}_save.
+     * When key === "stats", max-merge BestScore / BestStreak / GamesPlayed so
+     * cloud BestScore never decreases.
+     * Returns inner { key, saved } — gameRpcHandler wraps successResponse.
+     */
     function savePlayerData(ctx, logger, nk, data, userId, gId) {
-        if (!data.data)
-            throw new Error("data required");
-        Storage.writeJson(nk, "player_data", gId + "_save", userId, data.data);
-        return { success: true };
+        var resolvedId = data.gameID || data.gameId || gId;
+        var hasKeyValue = data.key !== undefined && data.key !== null && data.key !== ""
+            && data.value !== undefined && data.value !== null;
+        // Compat: blob write used by older callers (no Unity arcade key/value).
+        if (!hasKeyValue && data.data !== undefined && data.data !== null) {
+            Storage.writeJson(nk, "player_data", gId + "_save", userId, data.data);
+            return { success: true };
+        }
+        if (!hasKeyValue)
+            throw new Error("key and value required");
+        var collection = resolvedId + "_player_data";
+        var storageKey = String(data.key);
+        var valueToStore = data.value;
+        var bestScore = -1;
+        if (storageKey === "stats") {
+            var existing = Storage.readJson(nk, collection, storageKey, userId);
+            var incomingStats = null;
+            var existingStats = null;
+            try {
+                if (typeof valueToStore === "string") {
+                    incomingStats = JSON.parse(valueToStore);
+                }
+                else {
+                    incomingStats = valueToStore;
+                }
+            }
+            catch (_parseIn) {
+                incomingStats = {};
+            }
+            if (existing && existing.value !== undefined && existing.value !== null) {
+                try {
+                    if (typeof existing.value === "string") {
+                        existingStats = JSON.parse(existing.value);
+                    }
+                    else {
+                        existingStats = existing.value;
+                    }
+                }
+                catch (_parseEx) {
+                    existingStats = {};
+                }
+            }
+            if (!incomingStats || typeof incomingStats !== "object")
+                incomingStats = {};
+            if (!existingStats || typeof existingStats !== "object")
+                existingStats = {};
+            var merged = {};
+            for (var field in incomingStats) {
+                if (Object.prototype.hasOwnProperty.call(incomingStats, field)) {
+                    merged[field] = incomingStats[field];
+                }
+            }
+            // Never lower stored bests; GamesPlayed uses max (not sum) to avoid double-count.
+            merged.BestScore = Math.max(existingStats.BestScore || 0, incomingStats.BestScore || 0);
+            merged.BestStreak = Math.max(existingStats.BestStreak || 0, incomingStats.BestStreak || 0);
+            merged.GamesPlayed = Math.max(existingStats.GamesPlayed || 0, incomingStats.GamesPlayed || 0);
+            valueToStore = JSON.stringify(merged);
+            bestScore = merged.BestScore || 0;
+        }
+        var playerData = {
+            value: valueToStore,
+            updatedAt: new Date().toISOString()
+        };
+        // Match legacy multigame_rpcs: owner-read, no client write.
+        Storage.writeJson(nk, collection, storageKey, userId, playerData, 1, 0);
+        logger.info("[savePlayerData] gameId=" + resolvedId + " key=" + storageKey
+            + (bestScore >= 0 ? (" bestScore=" + bestScore) : ""));
+        var result = { key: storageKey, saved: true };
+        if (bestScore >= 0)
+            result.bestScore = bestScore;
+        return result;
     }
+    /**
+     * Unity arcade contract: { gameID|gameId, key } → { key, value, updatedAt }.
+     * Missing record throws so Unity LoadPlayerDataAsync treats it as null.
+     */
     function loadPlayerData(ctx, logger, nk, data, userId, gId) {
-        var saved = Storage.readJson(nk, "player_data", gId + "_save", userId);
-        return { data: saved || {} };
+        var resolvedId = data.gameID || data.gameId || gId;
+        var storageKey = data.key;
+        // Compat: no key → return legacy blob under player_data/{gId}_save.
+        if (storageKey === undefined || storageKey === null || storageKey === "") {
+            var blob = Storage.readJson(nk, "player_data", gId + "_save", userId);
+            return { data: blob || {} };
+        }
+        var collection = resolvedId + "_player_data";
+        var stored = Storage.readJson(nk, collection, String(storageKey), userId);
+        if (!stored || stored.value === undefined || stored.value === null) {
+            throw new Error("Player data not found");
+        }
+        return {
+            key: String(storageKey),
+            value: stored.value,
+            updatedAt: stored.updatedAt || null
+        };
     }
     function getItemCatalog(ctx, logger, nk, data, userId, gId) {
         var catalog = Storage.readSystemJson(nk, "game_catalogs", gId + "_catalog");
