@@ -16,8 +16,11 @@
 
 set -euo pipefail
 
+# INGRESS can be overridden via env if the cluster ingress is renamed again.
+# The ingress serving nakama-rest.intelli-verse-x.ai was renamed from
+# `intelliverse-user-frontend` to `intelliverse-user-frontend-v2-m` (2026-07).
 NS="aicart"
-INGRESS="intelliverse-user-frontend"
+INGRESS="${INGRESS:-intelliverse-user-frontend-v2-m}"
 HOST="nakama-rest.intelli-verse-x.ai"
 DASHBOARD_PATH="/admin-dashboard"
 BACKEND_SVC="nakama-admin-dashboard"
