@@ -11,6 +11,7 @@ import {
 } from "@nakama/shared";
 import { cn } from "@/lib/utils";
 import { useAdminStore } from "@/stores/admin-store";
+import { useConfirm } from "@/components/ui";
 import {
   Save,
   RotateCcw,
@@ -182,6 +183,7 @@ export function HiroConfigPage() {
 
   const configQuery = useHiroConfig(activeSystem, gameScope);
   const saveMutation = useSaveHiroConfig(activeSystem, gameScope);
+  const confirm = useConfirm();
 
   const serverConfig = configQuery.data
     ? JSON.stringify(configQuery.data, null, 2)
@@ -235,11 +237,14 @@ export function HiroConfigPage() {
     [activeSystem, serverConfig],
   );
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (parseError || schemaError) return;
-    if (!window.confirm(`Save ${SYSTEM_LABELS[activeSystem]} config to production?`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: "Save configuration?",
+      description: `${SYSTEM_LABELS[activeSystem]} config will be written to production.`,
+      confirmText: "Save to production",
+    });
+    if (!ok) return;
     try {
       const parsed = JSON.parse(editorValue);
       saveMutation.mutate(parsed, {
@@ -257,7 +262,7 @@ export function HiroConfigPage() {
     } catch {
       setToast({ message: "Cannot save — invalid JSON", variant: "error" });
     }
-  }, [editorValue, parseError, schemaError, saveMutation, activeSystem]);
+  }, [editorValue, parseError, schemaError, saveMutation, activeSystem, confirm]);
 
   const handleReset = useCallback(() => {
     setEditorValue(serverConfig);

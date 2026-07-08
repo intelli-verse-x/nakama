@@ -35,7 +35,9 @@ import {
   SATORI_SYSTEMS,
 } from "@nakama/shared";
 import type { HealthStatus } from "@nakama/shared";
+import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
+import { PageHeader, Button } from "@/components/ui";
 
 /* ── Types ────────────────────────────────────────────────────────────── */
 
@@ -220,7 +222,7 @@ function MetricCard({
   color?: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-md">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft-md">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -237,7 +239,7 @@ function MetricCard({
             <p className="text-[10px] text-muted-foreground">{subtitle}</p>
           )}
         </div>
-        <div className={cn("rounded-md bg-primary/10 p-2", color)}>
+        <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10", color)}>
           {icon}
         </div>
       </div>
@@ -285,20 +287,15 @@ function HealthSparkline({ history }: { history: HealthSnapshot[] }) {
     );
   }
 
-  const maxLatency = Math.max(...history.map((h) => h.latencyMs), 1);
-  const width = 100;
-  const height = 40;
-  const points = history.map((h, i) => {
-    const x = (i / (history.length - 1)) * width;
-    const y = height - (h.latencyMs / maxLatency) * height * 0.85;
-    return `${x},${y}`;
-  });
-
   const avgLatency = Math.round(
     history.reduce((s, h) => s + h.latencyMs, 0) / history.length,
   );
   const minLatency = Math.min(...history.map((h) => h.latencyMs));
   const maxLat = Math.max(...history.map((h) => h.latencyMs));
+  const data = history.map((h) => ({
+    t: fmtTime(h.timestamp),
+    latency: h.latencyMs,
+  }));
 
   return (
     <div className="space-y-2">
@@ -307,37 +304,40 @@ function HealthSparkline({ history }: { history: HealthSnapshot[] }) {
           Response latency &middot; {history.length} samples &middot; tracking{" "}
           {uptimeStr(history)}
         </span>
-        <span>
+        <span className="tnum">
           min {minLatency}ms &middot; avg {avgLatency}ms &middot; max {maxLat}ms
         </span>
       </div>
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="h-20 w-full rounded-md border border-border bg-muted/30"
-        preserveAspectRatio="none"
-      >
-        <polyline
-          points={points.join(" ")}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          className="text-primary"
-          vectorEffect="non-scaling-stroke"
-        />
-        {history.map((h, i) => {
-          const x = (i / (history.length - 1)) * width;
-          const y = height - (h.latencyMs / maxLatency) * height * 0.85;
-          return (
-            <circle
-              key={i}
-              cx={x}
-              cy={y}
-              r="0.8"
-              className="fill-primary"
+      <div className="h-20 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="logs-latency" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Tooltip
+              contentStyle={{
+                background: "hsl(var(--popover))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "0.5rem",
+                fontSize: "11px",
+              }}
+              labelStyle={{ color: "hsl(var(--muted-foreground))" }}
             />
-          );
-        })}
-      </svg>
+            <Area
+              type="monotone"
+              dataKey="latency"
+              name="Latency (ms)"
+              stroke="hsl(var(--chart-1))"
+              strokeWidth={2}
+              fill="url(#logs-latency)"
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -347,50 +347,52 @@ function HealthSparkline({ history }: { history: HealthSnapshot[] }) {
 function SessionChart({ history }: { history: HealthSnapshot[] }) {
   if (history.length < 2) return null;
 
-  const maxSessions = Math.max(...history.map((h) => h.data.session_count), 1);
-  const width = 100;
-  const height = 32;
-  const points = history.map((h, i) => {
-    const x = (i / (history.length - 1)) * width;
-    const y = height - (h.data.session_count / maxSessions) * height * 0.85;
-    return `${x},${y}`;
-  });
-
-  const areaPoints = [
-    `0,${height}`,
-    ...points,
-    `${width},${height}`,
-  ].join(" ");
+  const data = history.map((h) => ({
+    t: fmtTime(h.timestamp),
+    sessions: h.data.session_count,
+  }));
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-[10px] text-muted-foreground">
         <span>Active sessions over time</span>
-        <span>
+        <span className="tnum">
           current:{" "}
           {history.length > 0
             ? history[history.length - 1].data.session_count
             : 0}
         </span>
       </div>
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="h-14 w-full rounded-md border border-border bg-muted/30"
-        preserveAspectRatio="none"
-      >
-        <polygon
-          points={areaPoints}
-          className="fill-emerald-500/10"
-        />
-        <polyline
-          points={points.join(" ")}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          className="text-emerald-500"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
+      <div className="h-[72px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="logs-sessions" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--chart-3))" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="hsl(var(--chart-3))" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Tooltip
+              contentStyle={{
+                background: "hsl(var(--popover))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "0.5rem",
+                fontSize: "11px",
+              }}
+              labelStyle={{ color: "hsl(var(--muted-foreground))" }}
+            />
+            <Area
+              type="monotone"
+              dataKey="sessions"
+              name="Sessions"
+              stroke="hsl(var(--chart-3))"
+              strokeWidth={2}
+              fill="url(#logs-sessions)"
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -482,7 +484,7 @@ function SystemsPanel({
     : 0;
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="rounded-2xl border border-border bg-card shadow-soft">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           {icon}
@@ -626,72 +628,62 @@ export function LogsPage() {
   return (
     <div className="space-y-6">
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <Terminal className="h-6 w-6 text-primary" />
-            Runtime Diagnostics
-          </h2>
-          <p className="text-muted-foreground">
-            Server health, system status, and activity monitoring.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Connection indicator */}
-          <div
-            className={cn(
-              "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
-              health.isError
-                ? "border-destructive/40 bg-destructive/10 text-destructive"
-                : isHealthy
-                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-            )}
-          >
-            {health.isError ? (
-              <WifiOff className="h-3 w-3" />
-            ) : (
-              <Wifi className="h-3 w-3" />
-            )}
-            {health.isError ? "Disconnected" : isHealthy ? "Connected" : "Degraded"}
-          </div>
+      <PageHeader
+        icon={Terminal}
+        title="Runtime Diagnostics"
+        description="Server health, system status, and activity monitoring."
+        actions={
+          <>
+            <div
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
+                health.isError
+                  ? "border-destructive/40 bg-destructive/10 text-destructive"
+                  : isHealthy
+                    ? "border-success/40 bg-success/10 text-success"
+                    : "border-warning/40 bg-warning/10 text-warning",
+              )}
+            >
+              {health.isError ? (
+                <WifiOff className="h-3 w-3" />
+              ) : (
+                <Wifi className="h-3 w-3" />
+              )}
+              {health.isError ? "Disconnected" : isHealthy ? "Connected" : "Degraded"}
+            </div>
 
-          {/* Polling toggle */}
-          <button
-            onClick={() => setPolling((p) => !p)}
-            className={cn(
-              "inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors",
-              polling
-                ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400"
-                : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-            )}
-          >
-            {polling ? (
-              <Pause className="h-3.5 w-3.5" />
-            ) : (
-              <Play className="h-3.5 w-3.5" />
-            )}
-            {polling ? "Pause" : "Resume"}
-          </button>
+            <Button
+              variant={polling ? "secondary" : "outline"}
+              onClick={() => setPolling((p) => !p)}
+              leftIcon={
+                polling ? (
+                  <Pause className="h-3.5 w-3.5" />
+                ) : (
+                  <Play className="h-3.5 w-3.5" />
+                )
+              }
+            >
+              {polling ? "Pause" : "Resume"}
+            </Button>
 
-          {/* Manual refresh */}
-          <button
-            onClick={() => {
-              health.refetch();
-              hiroStatus.refetch();
-              satoriStatus.refetch();
-              activityLog.push("info", "Manual refresh triggered");
-            }}
-            disabled={health.isFetching}
-            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
-          >
-            <RefreshCw
-              className={cn("h-4 w-4", health.isFetching && "animate-spin")}
-            />
-            Refresh
-          </button>
-        </div>
-      </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                health.refetch();
+                hiroStatus.refetch();
+                satoriStatus.refetch();
+                activityLog.push("info", "Manual refresh triggered");
+              }}
+              disabled={health.isFetching}
+              leftIcon={
+                <RefreshCw className={cn("h-4 w-4", health.isFetching && "animate-spin")} />
+              }
+            >
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* ── Server Status Banner ────────────────────────────────────────── */}
       <div
@@ -803,14 +795,14 @@ export function LogsPage() {
 
       {/* ── Charts ──────────────────────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
           <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <BarChart3 className="h-3.5 w-3.5" />
             Response Latency
           </h3>
           <HealthSparkline history={health.history} />
         </div>
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
           <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
             Session Count
@@ -844,7 +836,7 @@ export function LogsPage() {
       </div>
 
       {/* ── Activity Log ────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-border bg-card">
+      <div className="rounded-2xl border border-border bg-card shadow-soft">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <Terminal className="h-4 w-4 text-primary" />

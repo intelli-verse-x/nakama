@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { serverKeyAuth, satori, type FeatureFlag } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui";
 
 type FilterMode = "all" | "enabled" | "disabled";
 const GLOBAL_CONFIG_SCOPE = "global";
@@ -431,6 +432,7 @@ export function FlagsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
   const [togglingName, setTogglingName] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const filtered = useMemo(() => {
     let list = flags.data ?? [];
@@ -458,21 +460,28 @@ export function FlagsPage() {
   }, [flags.data]);
 
   const handleToggle = useCallback(
-    (name: string, enabled: boolean) => {
-      if (!window.confirm(`${enabled ? "Enable" : "Disable"} feature flag "${name}" in production?`)) {
-        return;
-      }
+    async (name: string, enabled: boolean) => {
+      const ok = await confirm({
+        title: `${enabled ? "Enable" : "Disable"} feature flag?`,
+        description: `"${name}" will be ${enabled ? "enabled" : "disabled"} in production.`,
+        confirmText: enabled ? "Enable" : "Disable",
+        tone: enabled ? "default" : "destructive",
+      });
+      if (!ok) return;
       setTogglingName(name);
       toggle.mutate({ name, enabled }, { onSettled: () => setTogglingName(null) });
     },
-    [toggle],
+    [toggle, confirm],
   );
 
   const handleFormSubmit = useCallback(
-    (params: Parameters<typeof satori.toggleFlag>[0]) => {
-      if (!window.confirm(`Save feature flag "${params.name}" in production?`)) {
-        return;
-      }
+    async (params: Parameters<typeof satori.toggleFlag>[0]) => {
+      const ok = await confirm({
+        title: "Save feature flag?",
+        description: `"${params.name}" will be saved to production.`,
+        confirmText: "Save",
+      });
+      if (!ok) return;
       toggle.mutate(params, {
         onSuccess: () => {
           setShowForm(false);
@@ -480,7 +489,7 @@ export function FlagsPage() {
         },
       });
     },
-    [toggle],
+    [toggle, confirm],
   );
 
   return (

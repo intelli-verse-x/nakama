@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { serverKeyAuth, satori, type SatoriMessage, type Audience } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui";
 
 /* ── Queries / Mutations ──────────────────────────────────────────── */
 
@@ -227,6 +228,7 @@ function BroadcastForm({
   gameScope: string;
 }) {
   const broadcast = useBroadcast(gameScope);
+  const confirm = useConfirm();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [audienceId, setAudienceId] = useState("");
@@ -235,7 +237,7 @@ function BroadcastForm({
 
   const canSend = title.trim().length > 0 && !broadcast.isPending;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSend) return;
 
@@ -250,9 +252,12 @@ function BroadcastForm({
     }
 
     const scope = audienceId ? `audience "${audienceId}"` : "all players";
-    if (!window.confirm(`${scheduleAt ? "Schedule" : "Create"} message "${title.trim()}" for ${scope} in production?`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: `${scheduleAt ? "Schedule" : "Send"} message?`,
+      description: `"${title.trim()}" will be delivered to ${scope} in production.`,
+      confirmText: scheduleAt ? "Schedule" : "Send",
+    });
+    if (!ok) return;
 
     broadcast.mutate(params, { onSuccess: onClose });
   }

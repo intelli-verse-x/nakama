@@ -34,6 +34,7 @@ import {
   type StorageObject,
 } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/ui";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -1093,14 +1094,11 @@ export function PlayersPage() {
   if (selectedUserId) {
     return (
       <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Player Inspector
-          </h2>
-          <p className="text-muted-foreground">
-            Search and inspect player profiles.
-          </p>
-        </div>
+        <PageHeader
+          icon={User}
+          title="Player Inspector"
+          description="Search and inspect player profiles."
+        />
         <PlayerDetail
           userId={selectedUserId}
           onBack={() => setSelectedUserId(null)}
@@ -1111,19 +1109,16 @@ export function PlayersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Player Inspector
-          </h2>
-          <p className="text-muted-foreground">
-            Search and inspect player profiles.
-          </p>
-        </div>
-        {search.isFetching && (
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        )}
-      </div>
+      <PageHeader
+        icon={User}
+        title="Player Inspector"
+        description="Search and inspect player profiles."
+        actions={
+          search.isFetching ? (
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          ) : undefined
+        }
+      />
 
       <form onSubmit={handleSearch} className="flex gap-3">
         <div className="relative flex-1">

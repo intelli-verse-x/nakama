@@ -12,6 +12,7 @@ import type {
   WalletBalance,
 } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { PageHeader, Button, Input, Tabs, type TabItem } from "@/components/ui";
 import {
   Wallet,
   RefreshCw,
@@ -992,7 +993,7 @@ function TransactionsTab({ accounts }: { accounts: ConsoleAccount[] }) {
       )}
 
       {resolvedUserId && activeQ.isError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           <AlertTriangle className="inline h-4 w-4 mr-1" />
           Failed to load transactions. The collection may not exist yet.
         </div>
@@ -1144,46 +1145,47 @@ export function EconomyPage() {
   return (
     <div className="space-y-6">
       {/* header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Economy</h2>
-          <p className="text-muted-foreground">
-            Wallet management, store config, IAP validation &amp; audit trail
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            Game ID
-            <input
-              value={gameScope}
-              onChange={(e) => setGameScope(e.target.value || GLOBAL_CONFIG_SCOPE)}
-              placeholder="global or quizverse"
-              className="w-44 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground"
-            />
-          </label>
-          <button
-            onClick={refresh}
-            className="flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm font-medium hover:bg-muted/80 transition-colors"
-          >
-            <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
-            Refresh
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={Wallet}
+        title="Economy"
+        description="Wallet management, store config, IAP validation & audit trail"
+        actions={
+          <>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              Game ID
+              <Input
+                value={gameScope}
+                onChange={(e) => setGameScope(e.target.value || GLOBAL_CONFIG_SCOPE)}
+                placeholder="global or quizverse"
+                className="h-9 w-44"
+              />
+            </label>
+            <Button
+              variant="outline"
+              onClick={refresh}
+              leftIcon={<RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />}
+            >
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       {/* tabs */}
-      <div className="flex flex-wrap gap-1">
-        <TabBtn active={tab === "overview"} label="Overview" icon={BarChart3} onClick={() => setTab("overview")} />
-        <TabBtn active={tab === "wallets"} label="Wallets" icon={Wallet} onClick={() => setTab("wallets")} />
-        <TabBtn active={tab === "store"} label="Store" icon={ShoppingCart} onClick={() => setTab("store")} />
-        <TabBtn active={tab === "transactions"} label="Transactions" icon={FileText} onClick={() => setTab("transactions")} />
-        <TabBtn
-          active={tab === "audit"}
-          label={`Audit${auditLog.length > 0 ? ` (${auditLog.length})` : ""}`}
-          icon={Shield}
-          onClick={() => setTab("audit")}
-        />
-      </div>
+      <Tabs
+        value={tab}
+        onChange={setTab}
+        layoutId="economy-tabs"
+        items={
+          [
+            { value: "overview", label: "Overview", icon: BarChart3 },
+            { value: "wallets", label: "Wallets", icon: Wallet },
+            { value: "store", label: "Store", icon: ShoppingCart },
+            { value: "transactions", label: "Transactions", icon: FileText },
+            { value: "audit", label: "Audit", icon: Shield, count: auditLog.length || undefined },
+          ] as TabItem<typeof tab>[]
+        }
+      />
 
       {/* loading */}
       {isLoading && (
@@ -1195,7 +1197,7 @@ export function EconomyPage() {
 
       {/* error */}
       {isError && !isLoading && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-900 dark:bg-red-950 dark:text-red-400">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           <AlertTriangle className="inline h-4 w-4 mr-1" />
           Failed to load economy data. Check your Nakama connection and server key.
         </div>

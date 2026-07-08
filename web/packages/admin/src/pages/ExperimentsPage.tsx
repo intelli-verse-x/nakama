@@ -28,6 +28,7 @@ import {
   type ExperimentVariant,
 } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui";
 
 type FilterMode = "all" | "enabled" | "disabled";
 const GLOBAL_CONFIG_SCOPE = "global";
@@ -677,6 +678,7 @@ export function ExperimentsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Experiment | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const filtered = useMemo(() => {
     let list = experiments.data ?? [];
@@ -706,10 +708,14 @@ export function ExperimentsPage() {
   }, [experiments.data]);
 
   const handleToggle = useCallback(
-    (exp: Experiment) => {
-      if (!window.confirm(`${exp.enabled ? "Disable" : "Enable"} experiment "${exp.id}" in production?`)) {
-        return;
-      }
+    async (exp: Experiment) => {
+      const ok = await confirm({
+        title: `${exp.enabled ? "Disable" : "Enable"} experiment?`,
+        description: `"${exp.id}" will be ${exp.enabled ? "disabled" : "enabled"} in production.`,
+        confirmText: exp.enabled ? "Disable" : "Enable",
+        tone: exp.enabled ? "destructive" : "default",
+      });
+      if (!ok) return;
       setTogglingId(exp.id);
       setup.mutate(
         {
@@ -721,14 +727,17 @@ export function ExperimentsPage() {
         { onSettled: () => setTogglingId(null) },
       );
     },
-    [setup],
+    [setup, confirm],
   );
 
   const handleFormSubmit = useCallback(
-    (params: Parameters<typeof satori.setupExperiment>[0]) => {
-      if (!window.confirm(`Save experiment "${params.id}" in production?`)) {
-        return;
-      }
+    async (params: Parameters<typeof satori.setupExperiment>[0]) => {
+      const ok = await confirm({
+        title: "Save experiment?",
+        description: `"${params.id}" will be saved to production.`,
+        confirmText: "Save",
+      });
+      if (!ok) return;
       setup.mutate(params, {
         onSuccess: () => {
           setShowForm(false);
@@ -736,7 +745,7 @@ export function ExperimentsPage() {
         },
       });
     },
-    [setup],
+    [setup, confirm],
   );
 
   return (

@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { serverKeyAuth, satori, quizverse, type LiveEvent, type CreatorEvent, type CreatorEventStats as CEvtStats, type LeaderboardEntry } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/components/ui";
 
 type EventStatus = "active" | "upcoming" | "ended" | "all";
 type TabId = "satori" | "creator";
@@ -806,6 +807,7 @@ export function EventsPage() {
   const { data: events = [], isLoading, isError, error, refetch } = useEvents(gameScope);
   const schedule = useScheduleEvent(gameScope);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   // Creator events state
   const { 
@@ -868,10 +870,13 @@ export function EventsPage() {
   }, [creatorEvents]);
 
   const handleSubmit = useCallback(
-    (ev: Parameters<typeof satori.scheduleLiveEvent>[0]) => {
-      if (!window.confirm(`Schedule or update live event "${ev.id}" in production?`)) {
-        return;
-      }
+    async (ev: Parameters<typeof satori.scheduleLiveEvent>[0]) => {
+      const ok = await confirm({
+        title: "Schedule live event?",
+        description: `"${ev.id}" will be scheduled or updated in production.`,
+        confirmText: "Schedule",
+      });
+      if (!ok) return;
       schedule.mutate(ev, {
         onSuccess: () => {
           setShowForm(false);
@@ -879,21 +884,25 @@ export function EventsPage() {
         },
       });
     },
-    [schedule],
+    [schedule, confirm],
   );
 
   const handleToggle = useCallback(
-    (ev: LiveEvent) => {
-      if (!window.confirm(`${ev.enabled ? "Disable" : "Enable"} live event "${ev.id}" in production?`)) {
-        return;
-      }
+    async (ev: LiveEvent) => {
+      const ok = await confirm({
+        title: `${ev.enabled ? "Disable" : "Enable"} live event?`,
+        description: `"${ev.id}" will be ${ev.enabled ? "disabled" : "enabled"} in production.`,
+        confirmText: ev.enabled ? "Disable" : "Enable",
+        tone: ev.enabled ? "destructive" : "default",
+      });
+      if (!ok) return;
       setTogglingId(ev.id);
       schedule.mutate(
         { id: ev.id, name: ev.name, enabled: !ev.enabled },
         { onSettled: () => setTogglingId(null) },
       );
     },
-    [schedule],
+    [schedule, confirm],
   );
 
   const handleEndCreatorEvent = useCallback(

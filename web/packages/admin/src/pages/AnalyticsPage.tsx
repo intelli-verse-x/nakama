@@ -9,6 +9,7 @@ import {
 } from "@nakama/shared";
 import type { RpcOptions, NakamaUser } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { useConfirm, PageHeader, Button, Tabs, type TabItem } from "@/components/ui";
 import {
   BarChart3,
   Activity,
@@ -199,10 +200,10 @@ function StatCard({
                 {value}
               </p>
               {trend === "up" && (
-                <ArrowUpRight className="h-4 w-4 text-green-500" />
+                <ArrowUpRight className="h-4 w-4 text-success" />
               )}
               {trend === "down" && (
-                <ArrowDownRight className="h-4 w-4 text-red-500" />
+                <ArrowDownRight className="h-4 w-4 text-destructive" />
               )}
             </div>
           )}
@@ -671,6 +672,7 @@ function PlayerEventsTab() {
 function MetricsTab() {
   const metrics = useMetrics();
   const createAlert = useCreateAlert();
+  const confirm = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("");
   const [alertForm, setAlertForm] = useState<MetricAlert>({
@@ -703,9 +705,14 @@ function MetricsTab() {
     return parsedMetrics.filter((m) => m.name.toLowerCase().includes(q));
   }, [parsedMetrics, filter]);
 
-  const handleCreateAlert = () => {
+  const handleCreateAlert = async () => {
     if (!alertForm.metric_id || !alertForm.name) return;
-    if (!window.confirm(`Create metric alert "${alertForm.name}" in production?`)) return;
+    const ok = await confirm({
+      title: "Create metric alert?",
+      description: `"${alertForm.name}" will be created in production.`,
+      confirmText: "Create alert",
+    });
+    if (!ok) return;
     createAlert.mutate(alertForm, {
       onSuccess: () => {
         setShowForm(false);
@@ -1661,40 +1668,33 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
-          <p className="text-muted-foreground">
-            Metrics, data lake, and cohort analysis``
-          </p>
-        </div>
-        <button
-          onClick={() => qc.invalidateQueries({ queryKey: ["analytics"] })}
-          className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm transition-colors hover:bg-accent"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </button>
-      </div>
+      <PageHeader
+        icon={BarChart3}
+        title="Analytics"
+        description="Metrics, data lake, and cohort analysis."
+        actions={
+          <Button
+            variant="outline"
+            onClick={() => qc.invalidateQueries({ queryKey: ["analytics"] })}
+            leftIcon={<RefreshCw className="h-4 w-4" />}
+          >
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Tab bar */}
-      <div className="flex gap-1 overflow-x-auto rounded-lg border border-border bg-muted/30 p-1">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            data-tab={t.key}
-            onClick={() => setTab(t.key)}
-            className={cn(
-              "inline-flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors",
-              tab === t.key
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <t.icon className="h-4 w-4" />
-            {t.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto">
+        <Tabs
+          value={tab}
+          onChange={setTab}
+          layoutId="analytics-tabs"
+          items={TABS.map((t) => ({
+            value: t.key,
+            label: t.label,
+            icon: t.icon,
+          })) as TabItem<TabKey>[]}
+        />
       </div>
 
       {/* Tab content */}
