@@ -35,12 +35,19 @@ spec:
           type: RuntimeDefault
       containers:
         - name: admin-dashboard
-          image: 970547373533.dkr.ecr.us-east-1.amazonaws.com/nakama-admin-dashboard:premium-ui-20260708
+          image: 970547373533.dkr.ecr.us-east-1.amazonaws.com/nakama-admin-dashboard:ix-agency-20260708
           imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
+          # LiveOps copilot chat env (LiteLLM + admin-mcp + write-gate confirm
+          # secret) comes from the shared in-cluster secret; values are never
+          # hardcoded here.
+          envFrom:
+            - secretRef:
+                name: admin-chat-secrets
+                optional: true
           env:
             - name: ADMIN_DASHBOARD_BASE_PATH
               value: /admin-dashboard
