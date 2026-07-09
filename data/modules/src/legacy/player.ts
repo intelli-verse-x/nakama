@@ -1,5 +1,14 @@
 namespace LegacyPlayer {
 
+  var QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+
+  interface QuizUserStats {
+    totalGames?: number;
+    totalWins?: number;
+    totalCorrect?: number;
+    totalQuestions?: number;
+  }
+
   interface PlayerMetadata {
     displayName?: string;
     avatarUrl?: string;
@@ -24,6 +33,84 @@ namespace LegacyPlayer {
   function savePlayerMetadata(nk: nkruntime.Nakama, userId: string, metadata: PlayerMetadata): void {
     metadata.updatedAt = new Date().toISOString();
     Storage.writeJson(nk, Constants.PLAYER_METADATA_COLLECTION, "metadata", userId, metadata, 2, 1);
+  }
+
+  function readQuizUserStats(nk: nkruntime.Nakama, userId: string, gameId: string): QuizUserStats | null {
+    return Storage.readJson<QuizUserStats>(nk, "quiz_user_stats_" + gameId, "stats_" + userId, userId);
+  }
+
+  function mergeProgressionFields(
+    metadata: PlayerMetadata,
+    data: { [key: string]: any },
+    logger?: nkruntime.Logger,
+    userId?: string
+  ): void {
+    var beforeGames = metadata.totalGamesPlayed || 0;
+
+    if (data.totalGamesPlayed !== undefined && data.totalGamesPlayed !== null) {
+      metadata.totalGamesPlayed = Math.max(metadata.totalGamesPlayed || 0, Number(data.totalGamesPlayed) || 0);
+    }
+    if (data.totalWins !== undefined && data.totalWins !== null) {
+      metadata.totalWins = Math.max(metadata.totalWins || 0, Number(data.totalWins) || 0);
+    }
+    if (data.xp !== undefined && data.xp !== null) {
+      metadata.xp = Math.max(metadata.xp || 0, Number(data.xp) || 0);
+    }
+    if (data.level !== undefined && data.level !== null) {
+      metadata.level = Math.max(metadata.level || 0, Number(data.level) || 0);
+    }
+
+    if (data.totalCorrectAnswers !== undefined || data.totalQuestionsAnswered !== undefined) {
+      if (!metadata.customData) metadata.customData = {};
+      if (data.totalCorrectAnswers !== undefined && data.totalCorrectAnswers !== null) {
+        metadata.customData.totalCorrectAnswers = Math.max(
+          metadata.customData.totalCorrectAnswers || 0,
+          Number(data.totalCorrectAnswers) || 0
+        );
+      }
+      if (data.totalQuestionsAnswered !== undefined && data.totalQuestionsAnswered !== null) {
+        metadata.customData.totalQuestionsAnswered = Math.max(
+          metadata.customData.totalQuestionsAnswered || 0,
+          Number(data.totalQuestionsAnswered) || 0
+        );
+      }
+    }
+
+    if (logger && userId && (metadata.totalGamesPlayed || 0) !== beforeGames) {
+      logger.info(
+        "[Player] progression merge userId=" + userId +
+        " totalGamesPlayed " + beforeGames + "->" + (metadata.totalGamesPlayed || 0)
+      );
+    }
+  }
+
+  function enrichMetadataFromQuizStats(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    userId: string,
+    metadata: PlayerMetadata,
+    gameId: string
+  ): PlayerMetadata {
+    var quizStats = readQuizUserStats(nk, userId, gameId);
+    if (!quizStats) return metadata;
+
+    var beforeGames = metadata.totalGamesPlayed || 0;
+    mergeProgressionFields(metadata, {
+      totalGamesPlayed: quizStats.totalGames,
+      totalWins: quizStats.totalWins,
+      totalCorrectAnswers: quizStats.totalCorrect,
+      totalQuestionsAnswered: quizStats.totalQuestions
+    });
+
+    if ((metadata.totalGamesPlayed || 0) > beforeGames) {
+      logger.info(
+        "[Player] enriched metadata from quiz stats userId=" + userId +
+        " totalGamesPlayed " + beforeGames + "->" + (metadata.totalGamesPlayed || 0)
+      );
+      savePlayerMetadata(nk, userId, metadata);
+    }
+
+    return metadata;
   }
 
   function rpcGetPlayerPortfolio(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
@@ -63,6 +150,8 @@ namespace LegacyPlayer {
         metadata.customData[k] = data.customData[k];
       }
     }
+
+    mergeProgressionFields(metadata, data, logger, userId);
 
     if (data.displayName || data.avatarUrl) {
       try {
@@ -128,7 +217,9 @@ namespace LegacyPlayer {
     var data = RpcHelpers.parseRpcPayload(payload);
     var targetUserId = data.userId || userId;
 
+    var gameId = data.gameId || QUIZVERSE_GAME_ID;
     var metadata = getPlayerMetadata(nk, targetUserId);
+    metadata = enrichMetadataFromQuizStats(nk, logger, targetUserId, metadata, gameId);
     return RpcHelpers.successResponse({ metadata: metadata });
   }
 

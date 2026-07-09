@@ -210,8 +210,11 @@ function InitModule(ctx, logger, nk, initializer) {
         // to race for the same RPC name, producing mismatched reward tables.
         // logger.info("[Legacy] Registering daily rewards RPCs...");
         // LegacyDailyRewards.register(initializer);
-        logger.info("[Legacy] Registering quiz RPCs...");
-        LegacyQuiz.register(initializer);
+        // QVBF daily-quiz-sync: LegacyQuiz de-registered — quiz_results/quiz_results.js
+        // owns quiz_submit_result, quiz_get_history, quiz_get_stats, quiz_check_daily_completion.
+        // Keeping both registrations caused legacy handlers to hijack the RPC names.
+        // logger.info("[Legacy] Registering quiz RPCs...");
+        // LegacyQuiz.register(initializer);
         logger.info("[Legacy] Registering game entry RPCs...");
         LegacyGameEntry.register(initializer);
         logger.info("[Legacy] Registering analytics RPCs...");
@@ -35649,6 +35652,7 @@ var LegacyNotifScheduler;
 })(LegacyNotifScheduler || (LegacyNotifScheduler = {}));
 var LegacyPlayer;
 (function (LegacyPlayer) {
+    var QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     function getPlayerMetadata(nk, userId) {
         var data = Storage.readJson(nk, Constants.PLAYER_METADATA_COLLECTION, "metadata", userId);
         return data || {};
@@ -35656,6 +35660,56 @@ var LegacyPlayer;
     function savePlayerMetadata(nk, userId, metadata) {
         metadata.updatedAt = new Date().toISOString();
         Storage.writeJson(nk, Constants.PLAYER_METADATA_COLLECTION, "metadata", userId, metadata, 2, 1);
+    }
+    function readQuizUserStats(nk, userId, gameId) {
+        return Storage.readJson(nk, "quiz_user_stats_" + gameId, "stats_" + userId, userId);
+    }
+    function mergeProgressionFields(metadata, data, logger, userId) {
+        var beforeGames = metadata.totalGamesPlayed || 0;
+        if (data.totalGamesPlayed !== undefined && data.totalGamesPlayed !== null) {
+            metadata.totalGamesPlayed = Math.max(metadata.totalGamesPlayed || 0, Number(data.totalGamesPlayed) || 0);
+        }
+        if (data.totalWins !== undefined && data.totalWins !== null) {
+            metadata.totalWins = Math.max(metadata.totalWins || 0, Number(data.totalWins) || 0);
+        }
+        if (data.xp !== undefined && data.xp !== null) {
+            metadata.xp = Math.max(metadata.xp || 0, Number(data.xp) || 0);
+        }
+        if (data.level !== undefined && data.level !== null) {
+            metadata.level = Math.max(metadata.level || 0, Number(data.level) || 0);
+        }
+        if (data.totalCorrectAnswers !== undefined || data.totalQuestionsAnswered !== undefined) {
+            if (!metadata.customData)
+                metadata.customData = {};
+            if (data.totalCorrectAnswers !== undefined && data.totalCorrectAnswers !== null) {
+                metadata.customData.totalCorrectAnswers = Math.max(metadata.customData.totalCorrectAnswers || 0, Number(data.totalCorrectAnswers) || 0);
+            }
+            if (data.totalQuestionsAnswered !== undefined && data.totalQuestionsAnswered !== null) {
+                metadata.customData.totalQuestionsAnswered = Math.max(metadata.customData.totalQuestionsAnswered || 0, Number(data.totalQuestionsAnswered) || 0);
+            }
+        }
+        if (logger && userId && (metadata.totalGamesPlayed || 0) !== beforeGames) {
+            logger.info("[Player] progression merge userId=" + userId +
+                " totalGamesPlayed " + beforeGames + "->" + (metadata.totalGamesPlayed || 0));
+        }
+    }
+    function enrichMetadataFromQuizStats(nk, logger, userId, metadata, gameId) {
+        var quizStats = readQuizUserStats(nk, userId, gameId);
+        if (!quizStats)
+            return metadata;
+        var beforeGames = metadata.totalGamesPlayed || 0;
+        mergeProgressionFields(metadata, {
+            totalGamesPlayed: quizStats.totalGames,
+            totalWins: quizStats.totalWins,
+            totalCorrectAnswers: quizStats.totalCorrect,
+            totalQuestionsAnswered: quizStats.totalQuestions
+        });
+        if ((metadata.totalGamesPlayed || 0) > beforeGames) {
+            logger.info("[Player] enriched metadata from quiz stats userId=" + userId +
+                " totalGamesPlayed " + beforeGames + "->" + (metadata.totalGamesPlayed || 0));
+            savePlayerMetadata(nk, userId, metadata);
+        }
+        return metadata;
     }
     function rpcGetPlayerPortfolio(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
@@ -35698,6 +35752,7 @@ var LegacyPlayer;
                 metadata.customData[k] = data.customData[k];
             }
         }
+        mergeProgressionFields(metadata, data, logger, userId);
         if (data.displayName || data.avatarUrl) {
             try {
                 // Signature: accountUpdateId(userId, username, displayName, timezone, location, langTag, avatarUrl, metadata)
@@ -35767,7 +35822,9 @@ var LegacyPlayer;
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var targetUserId = data.userId || userId;
+        var gameId = data.gameId || QUIZVERSE_GAME_ID;
         var metadata = getPlayerMetadata(nk, targetUserId);
+        metadata = enrichMetadataFromQuizStats(nk, logger, targetUserId, metadata, gameId);
         return RpcHelpers.successResponse({ metadata: metadata });
     }
     function rpcAdminDeletePlayerMetadata(ctx, logger, nk, payload) {
@@ -39390,11 +39447,17 @@ var LegacyQuiz;
         }
         return RpcHelpers.successResponse({ date: dateStr, completed: completedToday });
     }
+    // QVBF daily-quiz-sync: registration REMOVED.
+    //
+    // main.ts stopped calling LegacyQuiz.register(), but postbuild's auto-invoke
+    // (section 3b) injects `register();` at IIFE scope, so the registerRpc
+    // literals below kept winning the __rpc_* stub race with UNGUARDED assignments.
+    // Result: legacy handlers hijacked quiz_submit_result / quiz_check_daily_completion
+    // from quiz_results/quiz_results.js (wrong collection, wrapped JSON, no gameMode).
+    // Canonical handlers live in data/modules/quiz_results/quiz_results.js.
+    // Helper functions above are kept for learner-toolbelt storage reads.
     function register(initializer) {
-        initializer.registerRpc("quiz_submit_result", rpcSubmitResult);
-        initializer.registerRpc("quiz_get_history", rpcGetHistory);
-        initializer.registerRpc("quiz_get_stats", rpcGetStats);
-        initializer.registerRpc("quiz_check_daily_completion", rpcCheckDailyCompletion);
+        // Intentionally empty — see comment above.
     }
     LegacyQuiz.register = register;
 })(LegacyQuiz || (LegacyQuiz = {}));

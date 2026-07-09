@@ -867,6 +867,34 @@ function sanitizeMetadataPayload(meta, logger, requestId) {
         }
     }
 
+    if (meta.totalGamesPlayed !== undefined && meta.totalGamesPlayed !== null) {
+        var gamesVal = parseInt(meta.totalGamesPlayed, 10);
+        if (!isNaN(gamesVal) && gamesVal >= 0 && gamesVal <= 10000000) {
+            sanitized.totalGamesPlayed = gamesVal;
+        }
+    }
+
+    if (meta.totalWins !== undefined && meta.totalWins !== null) {
+        var winsVal = parseInt(meta.totalWins, 10);
+        if (!isNaN(winsVal) && winsVal >= 0 && winsVal <= 10000000) {
+            sanitized.totalWins = winsVal;
+        }
+    }
+
+    if (meta.totalCorrectAnswers !== undefined && meta.totalCorrectAnswers !== null) {
+        var correctVal = parseInt(meta.totalCorrectAnswers, 10);
+        if (!isNaN(correctVal) && correctVal >= 0 && correctVal <= 100000000) {
+            sanitized.totalCorrectAnswers = correctVal;
+        }
+    }
+
+    if (meta.totalQuestionsAnswered !== undefined && meta.totalQuestionsAnswered !== null) {
+        var questionsVal = parseInt(meta.totalQuestionsAnswered, 10);
+        if (!isNaN(questionsVal) && questionsVal >= 0 && questionsVal <= 100000000) {
+            sanitized.totalQuestionsAnswered = questionsVal;
+        }
+    }
+
     // Profile string fields sent by Unity ProfileService (camelCase keys)
     var profileStringFields = [
         'displayName', 'avatarUrl', 'bio', 'language', 'favoriteGame'
@@ -978,6 +1006,43 @@ function buildMergedMetadata(existing, sanitized, now, isNewUser, userId, ctx) {
     // Track Nakama username if available
     if (ctx.username) {
         merged.nakama_username = ctx.username;
+    }
+
+    // Max-merge progression counters — never regress on partial client sync.
+    if (sanitized.totalGamesPlayed !== undefined) {
+        merged.totalGamesPlayed = Math.max(
+            Number(existing && existing.totalGamesPlayed) || 0,
+            Number(sanitized.totalGamesPlayed) || 0
+        );
+    }
+    if (sanitized.totalWins !== undefined) {
+        merged.totalWins = Math.max(
+            Number(existing && existing.totalWins) || 0,
+            Number(sanitized.totalWins) || 0
+        );
+    }
+    if (sanitized.xp !== undefined) {
+        merged.xp = Math.max(Number(existing && existing.xp) || 0, Number(sanitized.xp) || 0);
+    }
+    if (sanitized.level !== undefined) {
+        merged.level = Math.max(Number(existing && existing.level) || 0, Number(sanitized.level) || 0);
+    }
+    if (sanitized.totalCorrectAnswers !== undefined || sanitized.totalQuestionsAnswered !== undefined) {
+        if (!merged.customData || typeof merged.customData !== "object") {
+            merged.customData = (existing && existing.customData) ? existing.customData : {};
+        }
+        if (sanitized.totalCorrectAnswers !== undefined) {
+            merged.customData.totalCorrectAnswers = Math.max(
+                Number(merged.customData.totalCorrectAnswers) || 0,
+                Number(sanitized.totalCorrectAnswers) || 0
+            );
+        }
+        if (sanitized.totalQuestionsAnswered !== undefined) {
+            merged.customData.totalQuestionsAnswered = Math.max(
+                Number(merged.customData.totalQuestionsAnswered) || 0,
+                Number(sanitized.totalQuestionsAnswered) || 0
+            );
+        }
     }
 
     return merged;
@@ -23431,11 +23496,63 @@ function rpcGetPlayerStats(ctx, logger, nk, payload) {
     try {
         var data = payload ? JSON.parse(payload) : {};
         var targetUserId = data.userId || ctx.userId;
-        var records = nk.storageRead([{ collection: 'player_stats', key: 'stats', userId: targetUserId }]);
-        var stats = (records && records.length > 0) ? JSON.parse(records[0].value) : {
+        var DEFAULT_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+        var gameId = data.gameId || DEFAULT_GAME_ID;
+
+        var stats = {
             userId: targetUserId, totalGamesPlayed: 0, totalCorrectAnswers: 0, totalQuestions: 0,
-            winRate: 0, currentStreak: 0, bestStreak: 0, averageScore: 0, favoriteCategory: '', lastPlayedAt: 0
+            totalWins: 0, winRate: 0, currentStreak: 0, bestStreak: 0, averageScore: 0,
+            favoriteCategory: '', lastPlayedAt: 0
         };
+
+        var records = nk.storageRead([{ collection: 'player_stats', key: 'stats', userId: targetUserId }]);
+        if (records && records.length > 0 && records[0].value) {
+            var legacyStats = typeof records[0].value === 'string'
+                ? JSON.parse(records[0].value)
+                : records[0].value;
+            stats.totalGamesPlayed = legacyStats.totalGamesPlayed || 0;
+            stats.totalWins = legacyStats.totalWins || 0;
+            stats.totalCorrectAnswers = legacyStats.totalCorrectAnswers || 0;
+            stats.totalQuestions = legacyStats.totalQuestions || legacyStats.totalQuestionsAnswered || 0;
+            stats.winRate = legacyStats.winRate || 0;
+            stats.currentStreak = legacyStats.currentStreak || 0;
+            stats.bestStreak = legacyStats.bestStreak || 0;
+            stats.averageScore = legacyStats.averageScore || 0;
+            stats.favoriteCategory = legacyStats.favoriteCategory || '';
+            stats.lastPlayedAt = legacyStats.lastPlayedAt || 0;
+        }
+
+        try {
+            var canonRecords = nk.storageRead([{
+                collection: 'quiz_user_stats_' + gameId,
+                key: 'stats_' + targetUserId,
+                userId: targetUserId
+            }]);
+            if (canonRecords && canonRecords.length > 0 && canonRecords[0].value) {
+                var canonicalStats = typeof canonRecords[0].value === 'string'
+                    ? JSON.parse(canonRecords[0].value)
+                    : canonRecords[0].value;
+                var canonicalGames = canonicalStats.totalGames || 0;
+                var canonicalWins = canonicalStats.totalWins || 0;
+                var canonicalCorrect = canonicalStats.totalCorrect || 0;
+                var canonicalQuestions = canonicalStats.totalQuestions || 0;
+
+                stats.totalGamesPlayed = Math.max(stats.totalGamesPlayed, canonicalGames);
+                stats.totalWins = Math.max(stats.totalWins, canonicalWins);
+                stats.totalCorrectAnswers = Math.max(stats.totalCorrectAnswers, canonicalCorrect);
+                stats.totalQuestions = Math.max(stats.totalQuestions, canonicalQuestions);
+                stats.currentStreak = Math.max(stats.currentStreak, canonicalStats.currentStreak || 0);
+                stats.bestStreak = Math.max(stats.bestStreak, canonicalStats.longestStreak || 0);
+                stats.lastPlayedAt = Math.max(stats.lastPlayedAt || 0, canonicalStats.lastPlayedAt || 0);
+                if (stats.totalGamesPlayed > 0) {
+                    stats.averageScore = Math.round((canonicalStats.totalScore || 0) / stats.totalGamesPlayed);
+                    stats.winRate = Math.round((stats.totalWins / stats.totalGamesPlayed) * 10000) / 100;
+                }
+            }
+        } catch (ce) {
+            logger.warn('[Profile] get_player_stats canonical read failed: ' + ce.message);
+        }
+
         try {
             var accts = nk.accountsGetId([targetUserId]);
             if (accts && accts.length > 0) {
