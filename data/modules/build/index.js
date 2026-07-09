@@ -22539,9 +22539,27 @@ var AdminConsole;
         var eventIdFilter = data.eventId || data.event_id || "";
         if (eventIdFilter)
             eventIdFilter = String(eventIdFilter);
+        var prizeTypeFilter = data.prizeType || data.prize_type || "";
+        if (prizeTypeFilter)
+            prizeTypeFilter = String(prizeTypeFilter);
+        var emailFilter = data.emailFilter || data.email_filter || "";
+        if (emailFilter)
+            emailFilter = String(emailFilter);
+        var rankFilter = data.rank;
+        var rankFilterNum = rankFilter === undefined || rankFilter === null || rankFilter === "" || rankFilter === "all"
+            ? 0
+            : Number(rankFilter);
+        var searchQ = typeof data.q === "string" ? String(data.q).toLowerCase().trim() : "";
         var limit = Math.min(200, Math.max(1, Number(data.limit) || 100));
         var offset = Math.max(0, Number(data.offset) || 0);
         var storageCursor = (typeof data.cursor === "string" && data.cursor) ? String(data.cursor) : "";
+        // Offset pagination: numeric cursor is the next slice offset (not Nakama storage cursor).
+        if (storageCursor && /^\d+$/.test(storageCursor)) {
+            offset = parseInt(storageCursor, 10);
+            if (isNaN(offset) || offset < 0)
+                offset = 0;
+            storageCursor = "";
+        }
         function prizeFulfillmentStorageCreateTimeSec(storageObj) {
             if (!storageObj)
                 return 0;
@@ -22572,11 +22590,39 @@ var AdminConsole;
                 error: v.error || "",
             };
         }
+        function isXutRow(v) {
+            if (v.source === "auto_winner_xut")
+                return true;
+            var prize = "";
+            if (v.giftCard && v.giftCard.prize)
+                prize = String(v.giftCard.prize).toUpperCase();
+            return prize.indexOf("XUT") >= 0;
+        }
         function rowMatchesFilters(v) {
             if (statusFilter && v.status !== statusFilter)
                 return false;
             if (eventIdFilter && String(v.eventId || "") !== eventIdFilter)
                 return false;
+            if (prizeTypeFilter === "gift_cards" && isXutRow(v))
+                return false;
+            if (prizeTypeFilter === "coins" && !isXutRow(v))
+                return false;
+            if (rankFilterNum > 0 && Number(v.rank || 0) !== rankFilterNum)
+                return false;
+            var email = v.email ? String(v.email).trim() : "";
+            if (emailFilter === "has" && !email)
+                return false;
+            if (emailFilter === "missing" && email)
+                return false;
+            if (searchQ) {
+                var title = String(v.eventTitle || "").toLowerCase();
+                var emailLc = email.toLowerCase();
+                var prizeLc = "";
+                if (v.giftCard && v.giftCard.prize)
+                    prizeLc = String(v.giftCard.prize).toLowerCase();
+                if (title.indexOf(searchQ) < 0 && emailLc.indexOf(searchQ) < 0 && prizeLc.indexOf(searchQ) < 0)
+                    return false;
+            }
             return true;
         }
         // Default admin view: scan the full queue (capped), sort newest-first.
@@ -58458,13 +58504,102 @@ var SatoriCreatorEvents;
             return 2.0;
         return 1.5; // challenge / default
     }
+    /** Fuzzy normalizer — keep in sync with SPA `_qvNormAnswer()` in quizverse-live-events.html */
     function normalizeAnswer(value) {
-        return String(value === undefined || value === null ? "" : value).toLowerCase().replace(/\s+/g, " ").trim();
+        return String(value === undefined || value === null ? "" : value)
+            .toLowerCase()
+            .replace(/^ans\s*[:\.]\s*/i, "")
+            .replace(/[\u2018\u2019\u201C\u201D]/g, "'")
+            .replace(/[^a-z0-9 ]+/g, " ")
+            .replace(/\b(the|a|an)\b/g, " ")
+            .replace(/s\b/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+    /** Numeric equality only when both sides are pure numbers (matches SPA `_qvStrictNumber`). */
+    function strictNumber(value) {
+        var raw = String(value === undefined || value === null ? "" : value).trim().replace(/,/g, "").replace(/\s+/g, "");
+        if (!/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(raw))
+            return null;
+        var n = Number(raw);
+        return isFinite(n) ? n : null;
     }
     function answersMatch(given, expected) {
-        var g = normalizeAnswer(given);
+        var u = normalizeAnswer(given);
         var e = normalizeAnswer(expected);
-        return !!g && !!e && g === e;
+        if (!u || !e)
+            return false;
+        if (u === e)
+            return true;
+        var uNum = strictNumber(given);
+        var eNum = strictNumber(expected);
+        if (uNum !== null && eNum !== null && uNum === eNum)
+            return true;
+        return false;
+    }
+    function questionAcceptedAnswers(q) {
+        var primary = questionAnswer(q);
+        var list = [];
+        if (q && Array.isArray(q.acceptedAnswers)) {
+            for (var i = 0; i < q.acceptedAnswers.length; i++) {
+                var item = String(q.acceptedAnswers[i] || "").trim();
+                if (item)
+                    list.push(item);
+            }
+        }
+        if (list.length === 0) {
+            if (primary)
+                list.push(primary);
+            return list;
+        }
+        if (primary) {
+            var hasPrimary = false;
+            for (var j = 0; j < list.length; j++) {
+                if (answersMatch(list[j], primary)) {
+                    hasPrimary = true;
+                    break;
+                }
+            }
+            if (!hasPrimary)
+                list.unshift(primary);
+        }
+        return list;
+    }
+    function eventAcceptedAnswers(def) {
+        var primary = String(def.answer || "");
+        var list = [];
+        var raw = def.acceptedAnswers;
+        if (Array.isArray(raw)) {
+            for (var i = 0; i < raw.length; i++) {
+                var item = String(raw[i] || "").trim();
+                if (item)
+                    list.push(item);
+            }
+        }
+        if (list.length === 0) {
+            if (primary)
+                list.push(primary);
+            return list;
+        }
+        if (primary) {
+            var hasPrimary = false;
+            for (var j = 0; j < list.length; j++) {
+                if (answersMatch(list[j], primary)) {
+                    hasPrimary = true;
+                    break;
+                }
+            }
+            if (!hasPrimary)
+                list.unshift(primary);
+        }
+        return list;
+    }
+    function answersMatchAny(given, acceptedList) {
+        for (var i = 0; i < acceptedList.length; i++) {
+            if (answersMatch(given, acceptedList[i]))
+                return true;
+        }
+        return false;
     }
     function questionAnswer(q) {
         if (!q)
@@ -58578,7 +58713,8 @@ var SatoriCreatorEvents;
     }
     function scoreBestGuess(def, answer, nowMs) {
         var correctAnswer = String(def.answer || "");
-        var correct = answersMatch(answer, correctAnswer);
+        var acceptedList = eventAcceptedAnswers(def);
+        var correct = answersMatchAny(answer, acceptedList);
         var startMs = Math.floor(numericValue(def.scheduledAt, 0) * 1000);
         var durationSec = Math.max(1, Math.floor(numericValue(def.duration, 30) * 60));
         var elapsedSec = startMs > 0 ? Math.max(0, Math.floor((nowMs - startMs) / 1000)) : 0;
@@ -58660,8 +58796,8 @@ var SatoriCreatorEvents;
             else {
                 given = String(provided || "").trim();
             }
-            var expected = questionAnswer(question);
-            var correct = answersMatch(given, expected);
+            var acceptedList = questionAcceptedAnswers(question);
+            var correct = answersMatchAny(given, acceptedList);
             var baseScore = correct ? Math.floor(numericValue(question.points, 100)) : 0;
             var questionMs = questionElapsedMs(provided, perQuestionSec);
             var appliedSpeedBonus = perQuestionSpeedBonus(correct, questionMs, perQuestionSec, maxSpeedBonus);
@@ -59730,6 +59866,8 @@ var SatoriCreatorEvents;
         initializer.registerRpc("creator_event_fulfillments_list", rpcFulfillmentsList);
         initializer.registerRpc("creator_event_fulfillment_get", rpcFulfillmentGet);
         initializer.registerRpc("creator_event_fulfillment_settle", rpcFulfillmentSettle);
+        initializer.registerRpc("quizverse_prize_catalog_get", rpcPrizeCatalogGet);
+        initializer.registerRpc("admin_prize_catalog_set", rpcAdminPrizeCatalogSet);
     }
     SatoriCreatorEvents.register = register;
     /**
@@ -61003,6 +61141,90 @@ var SatoriCreatorEvents;
             status: status,
             settledAt: settledAt,
         });
+    }
+    // ────────────────────────────────────────────────────────────────────
+    //  Prize Catalog — admin-managed, creator-readable
+    //
+    //  Stored in system-owned `prize_catalog / active`. Admin sets tiers
+    //  via admin_prize_catalog_set (requireAdmin). Creators fetch the live
+    //  catalog via quizverse_prize_catalog_get (public) so event creation
+    //  always reflects the current admin config instead of the hardcoded
+    //  GC constant in the SPA.
+    // ────────────────────────────────────────────────────────────────────
+    var PRIZE_CATALOG_COLLECTION = "prize_catalog";
+    var PRIZE_CATALOG_KEY = "active";
+    var DEFAULT_PRIZE_CATALOG = {
+        version: 1,
+        updatedAt: 0,
+        updatedBy: "system",
+        regions: {
+            india: {
+                region: "india",
+                label: "🇮🇳 India",
+                tiers: [
+                    { rank: "1st", prize: "Flipkart ₹100", brand: "flipkart", value: 100, currency: "INR", fulfillment: "reloadly" },
+                    { rank: "2nd", prize: "Flipkart ₹100", brand: "flipkart", value: 100, currency: "INR", fulfillment: "reloadly" },
+                    { rank: "3rd", prize: "Flipkart ₹50", brand: "flipkart", value: 50, currency: "INR", fulfillment: "reloadly" },
+                    { rank: "4th", prize: "Flipkart ₹50", brand: "flipkart", value: 50, currency: "INR", fulfillment: "reloadly" },
+                    { rank: "5th", prize: "Flipkart ₹50", brand: "flipkart", value: 50, currency: "INR", fulfillment: "reloadly" },
+                ],
+                totalValue: 400,
+                totalCurrency: "INR",
+            },
+            usa: {
+                region: "usa",
+                label: "🇺🇸 USA",
+                tiers: [
+                    { rank: "1st", prize: "Amazon US $1", brand: "amazon us", value: 1, currency: "USD", fulfillment: "reloadly" },
+                    { rank: "2nd", prize: "Amazon US $1", brand: "amazon us", value: 1, currency: "USD", fulfillment: "reloadly" },
+                    { rank: "3rd", prize: "Amazon US $1", brand: "amazon us", value: 1, currency: "USD", fulfillment: "reloadly" },
+                    { rank: "4th", prize: "Amazon US $1", brand: "amazon us", value: 1, currency: "USD", fulfillment: "reloadly" },
+                    { rank: "5th", prize: "Amazon US $1", brand: "amazon us", value: 1, currency: "USD", fulfillment: "reloadly" },
+                ],
+                totalValue: 5,
+                totalCurrency: "USD",
+            },
+            xut: {
+                region: "global",
+                label: "🪙 Coins",
+                tiers: [
+                    { rank: "1st", prize: "5,000 XUT", brand: "xut", value: 5000, currency: "XUT", fulfillment: "nakama" },
+                    { rank: "2nd", prize: "2,500 XUT", brand: "xut", value: 2500, currency: "XUT", fulfillment: "nakama" },
+                    { rank: "3rd", prize: "1,000 XUT", brand: "xut", value: 1000, currency: "XUT", fulfillment: "nakama" },
+                    { rank: "top_10", prize: "500 XUT", brand: "xut", value: 500, currency: "XUT", fulfillment: "nakama" },
+                    { rank: "all", prize: "100 XUT participation bonus", brand: "xut", value: 100, currency: "XUT", fulfillment: "nakama" },
+                ],
+                totalValue: 9100,
+                totalCurrency: "XUT",
+            },
+        },
+        coinBonusTiers: [
+            { rank: "6th", prize: "75 bonus coins", brand: "xut", value: 75, currency: "XUT", fulfillment: "nakama" },
+            { rank: "7th", prize: "50 bonus coins", brand: "xut", value: 50, currency: "XUT", fulfillment: "nakama" },
+            { rank: "8th", prize: "25 bonus coins", brand: "xut", value: 25, currency: "XUT", fulfillment: "nakama" },
+        ],
+    };
+    function rpcPrizeCatalogGet(ctx, logger, nk, _payload) {
+        var stored = Storage.readSystemJson(nk, PRIZE_CATALOG_COLLECTION, PRIZE_CATALOG_KEY);
+        return RpcHelpers.successResponse(stored || DEFAULT_PRIZE_CATALOG);
+    }
+    function rpcAdminPrizeCatalogSet(ctx, logger, nk, payload) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!data.regions || typeof data.regions !== "object") {
+            return RpcHelpers.errorResponse("regions object required");
+        }
+        var existing = Storage.readSystemJson(nk, PRIZE_CATALOG_COLLECTION, PRIZE_CATALOG_KEY) || DEFAULT_PRIZE_CATALOG;
+        var catalog = {
+            version: (existing.version || 1) + 1,
+            updatedAt: Math.floor(Date.now() / 1000),
+            updatedBy: ctx.userId || "admin",
+            regions: data.regions,
+            coinBonusTiers: data.coinBonusTiers || existing.coinBonusTiers || DEFAULT_PRIZE_CATALOG.coinBonusTiers,
+        };
+        Storage.writeSystemJson(nk, PRIZE_CATALOG_COLLECTION, PRIZE_CATALOG_KEY, catalog);
+        logger.info("[PrizeCatalog] Updated by %s, version %d", ctx.userId, catalog.version);
+        return RpcHelpers.successResponse({ ok: true, version: catalog.version, updatedAt: catalog.updatedAt });
     }
 })(SatoriCreatorEvents || (SatoriCreatorEvents = {}));
 var SatoriLiveEvents;
