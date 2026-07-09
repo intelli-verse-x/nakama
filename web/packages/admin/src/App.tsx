@@ -5,6 +5,7 @@ import { AdminLayout } from "./layouts/AdminLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 
+const CopilotPage = lazy(() => import("./pages/CopilotPage"));
 const PlayersPage = lazy(() => import("./pages/PlayersPage"));
 const HiroConfigPage = lazy(() => import("./pages/HiroConfigPage"));
 const SatoriConfigPage = lazy(() => import("./pages/SatoriConfigPage"));
@@ -47,7 +48,8 @@ function ProtectedRoutes() {
   return (
     <Routes>
       <Route element={<AdminLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<CopilotPage />} />
+        <Route path="copilot" element={<Navigate to="/" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="players" element={<PlayersPage />} />
         <Route path="hiro-config" element={<HiroConfigPage />} />
@@ -72,7 +74,7 @@ function ProtectedRoutes() {
         <Route path="config-export" element={<ConfigExportPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="dev-guide" element={<DevGuidePage />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

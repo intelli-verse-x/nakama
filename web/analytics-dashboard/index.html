@@ -10535,5 +10535,860 @@
             });
         });
     </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LiveOps Copilot dock — chat with the nakama game-ops copilot without
+         leaving the dashboard. Streams from the admin-dashboard proxy
+         (POST /admin-dashboard/api/chat, AI SDK UI-message SSE protocol)
+         using the same admin bearer token as the rest of this page.
+         Self-contained: no build step, no external deps.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <style>
+        .cop-fab {
+            position: fixed; right: 22px; bottom: 22px; z-index: 1200;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--gradient-1); color: #fff; border: none; cursor: pointer;
+            font-size: 1.5rem; box-shadow: var(--shadow-lg), 0 0 20px var(--accent-glow);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .cop-fab:hover { transform: translateY(-2px) scale(1.05); }
+        .cop-dock {
+            position: fixed; top: 0; right: 0; bottom: 0; z-index: 1201;
+            width: min(430px, 100vw);
+            background: var(--bg-secondary); border-left: 1px solid var(--border);
+            box-shadow: -12px 0 40px rgba(0,0,0,0.55);
+            display: flex; flex-direction: column;
+            transform: translateX(105%); transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+        }
+        .cop-dock.open { transform: translateX(0); }
+        .cop-head {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+        .cop-head .cop-title { font-weight: 700; font-size: 0.95rem; flex: 1; }
+        .cop-head .cop-title small { display: block; font-weight: 500; font-size: 0.68rem; color: var(--text-muted); }
+        .cop-iconbtn {
+            background: none; border: 1px solid var(--border); color: var(--text-secondary);
+            border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 0.85rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.15s ease; flex: none;
+        }
+        .cop-iconbtn:hover { color: var(--text-primary); border-color: var(--accent); }
+        .cop-iconbtn.on { color: #fff; background: var(--accent); border-color: var(--accent); }
+        .cop-skills {
+            display: flex; gap: 0.35rem; overflow-x: auto; padding: 0.55rem 1rem;
+            border-bottom: 1px solid var(--border-light); scrollbar-width: none;
+        }
+        .cop-skills::-webkit-scrollbar { display: none; }
+        .cop-skill {
+            flex: none; border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text-secondary); border-radius: 999px; padding: 0.28rem 0.7rem;
+            font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease;
+        }
+        .cop-skill.on { border-color: var(--accent); color: var(--accent-light); background: rgba(99,102,241,0.12); }
+        .cop-log { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+        .cop-msg { max-width: 92%; border-radius: 14px; padding: 0.6rem 0.85rem; font-size: 0.82rem; line-height: 1.55; word-wrap: break-word; }
+        .cop-msg.user { align-self: flex-end; background: var(--gradient-1); color: #fff; border-bottom-right-radius: 4px; }
+        .cop-msg.bot { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .cop-msg.bot .cop-md p { margin: 0.4rem 0; }
+        .cop-msg.bot .cop-md p:first-child { margin-top: 0; }
+        .cop-msg.bot .cop-md p:last-child { margin-bottom: 0; }
+        .cop-msg.bot .cop-md ul { margin: 0.4rem 0 0.4rem 1.1rem; }
+        .cop-msg.bot .cop-md li { margin: 0.15rem 0; }
+        .cop-msg.bot .cop-md code { background: rgba(99,102,241,0.15); border-radius: 4px; padding: 0.05rem 0.3rem; font-size: 0.76rem; }
+        .cop-msg.bot .cop-md pre { background: var(--bg-primary); border: 1px solid var(--border-light); border-radius: 8px; padding: 0.55rem; overflow-x: auto; margin: 0.4rem 0; font-size: 0.72rem; line-height: 1.45; }
+        .cop-msg.bot .cop-md pre code { background: none; padding: 0; }
+        .cop-msg.bot .cop-md strong { color: var(--text-primary); }
+        .cop-msg.bot .cop-md a { color: var(--accent-light); }
+        .cop-msg.bot .cop-md h4 { margin: 0.55rem 0 0.25rem; font-size: 0.82rem; }
+        .cop-tool { margin: 0.35rem 0; border: 1px solid rgba(99,102,241,0.35); background: rgba(99,102,241,0.08); border-radius: 8px; font-size: 0.72rem; }
+        .cop-tool summary { cursor: pointer; padding: 0.35rem 0.6rem; color: var(--accent-light); font-family: monospace; list-style: none; display: flex; align-items: center; gap: 0.4rem; }
+        .cop-tool summary::-webkit-details-marker { display: none; }
+        .cop-tool .cop-tool-state { margin-left: auto; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.75; font-family: 'Inter', sans-serif; }
+        .cop-tool pre { margin: 0; padding: 0.5rem 0.6rem; border-top: 1px solid rgba(99,102,241,0.25); white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow-y: auto; font-size: 0.68rem; color: var(--text-secondary); }
+        .cop-confirm { margin: 0.35rem 0; border: 1px solid var(--warning, #f59e0b); background: rgba(245,158,11,0.08); border-radius: 8px; padding: 0.5rem 0.6rem; font-size: 0.74rem; }
+        .cop-confirm-title { font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
+        .cop-confirm pre { margin: 0 0 0.4rem; padding: 0.4rem 0.5rem; background: var(--bg-primary); border: 1px solid var(--border-light); border-radius: 6px; white-space: pre-wrap; word-break: break-word; font-size: 0.68rem; color: var(--text-secondary); max-height: 140px; overflow-y: auto; }
+        .cop-confirm-row { display: flex; gap: 0.4rem; }
+        .cop-confirm-btn { border: none; border-radius: 8px; padding: 0.3rem 0.85rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }
+        .cop-confirm-btn.ok { background: var(--gradient-1); color: #fff; }
+        .cop-confirm-btn.no { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border); }
+        .cop-confirm-btn:disabled { opacity: 0.45; cursor: default; }
+        .cop-confirm-status { margin-top: 0.35rem; font-size: 0.68rem; color: var(--text-muted); }
+        .cop-links { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+        .cop-link {
+            border: 1px solid var(--border); background: var(--bg-card-hover); color: var(--text-secondary);
+            border-radius: 999px; padding: 0.22rem 0.65rem; font-size: 0.68rem; font-weight: 600; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .cop-link:hover { color: var(--accent-light); border-color: var(--accent); }
+        .cop-starters { display: flex; flex-direction: column; gap: 0.45rem; }
+        .cop-starter {
+            text-align: left; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary);
+            border-radius: 10px; padding: 0.55rem 0.75rem; font-size: 0.76rem; cursor: pointer; transition: all 0.15s ease;
+        }
+        .cop-starter:hover { border-color: var(--accent); color: var(--text-primary); transform: translateY(-1px); }
+        .cop-starter b { display: block; color: var(--accent-light); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.15rem; }
+        .cop-compose { display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: var(--bg-card); align-items: flex-end; }
+        .cop-input {
+            flex: 1; resize: none; background: var(--bg-primary); color: var(--text-primary);
+            border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.7rem;
+            font-family: inherit; font-size: 0.82rem; line-height: 1.4; min-height: 40px; max-height: 120px; outline: none;
+        }
+        .cop-input:focus { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+        .cop-input.listening { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-bg); }
+        .cop-send {
+            background: var(--gradient-1); color: #fff; border: none; border-radius: 10px;
+            width: 40px; height: 40px; cursor: pointer; font-size: 1rem; flex: none;
+            display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s ease;
+        }
+        .cop-send:hover { transform: scale(1.05); }
+        .cop-send:disabled { opacity: 0.45; cursor: default; transform: none; }
+        .cop-send.stop { background: var(--danger); }
+        .cop-note { font-size: 0.68rem; color: var(--text-muted); padding: 0 1rem 0.6rem; }
+        .cop-thinking { display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); font-size: 0.72rem; padding-left: 0.2rem; }
+        .cop-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: copPulse 1s ease-in-out infinite; }
+        @keyframes copPulse { 0%,100% { opacity: 0.25; } 50% { opacity: 1; } }
+        .cop-highlight { animation: copFlash 2.2s ease; }
+        @keyframes copFlash {
+            0% { box-shadow: 0 0 0 3px var(--accent); }
+            70% { box-shadow: 0 0 0 3px var(--accent-glow); }
+            100% { box-shadow: none; }
+        }
+        @media (max-width: 520px) { .cop-dock { width: 100vw; } }
+    </style>
+
+    <button id="copFab" class="cop-fab" title="IX Agency" aria-label="Open IX Agency">🤖</button>
+
+    <div id="copDock" class="cop-dock" role="dialog" aria-label="IX Agency">
+        <div class="cop-head">
+            <span style="font-size:1.25rem">🤖</span>
+            <div class="cop-title">IX Agency<small>nakama game-ops · writes always confirmed</small></div>
+            <button id="copMicHands" class="cop-iconbtn" title="Hands-free conversation (mic re-opens after each spoken reply)">👂</button>
+            <button id="copTts" class="cop-iconbtn" title="Speak replies aloud">🔊</button>
+            <button id="copClear" class="cop-iconbtn" title="New chat">🗑️</button>
+            <button id="copClose" class="cop-iconbtn" title="Close">✕</button>
+        </div>
+        <div id="copSkills" class="cop-skills"></div>
+        <div id="copLog" class="cop-log"></div>
+        <div id="copNote" class="cop-note" style="display:none"></div>
+        <div class="cop-compose">
+            <textarea id="copInput" class="cop-input" rows="1" placeholder="Ask about retention, revenue, players…"></textarea>
+            <button id="copMic" class="cop-iconbtn" style="width:40px;height:40px;font-size:1rem" title="Speak a command">🎤</button>
+            <button id="copSend" class="cop-send" title="Send">➤</button>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var COP_API = 'https://nakama-rest.intelli-verse-x.ai/admin-dashboard/api/chat';
+        // Keep in sync with web/packages/admin/server/copilot-skills.mjs — the
+        // server injects the actual playbook content for these ids.
+        var COP_SKILLS = [
+            { id: 'daily-pulse', label: '☀️ Daily Pulse' },
+            { id: 'funnel-health', label: '🎯 Funnel Health' },
+            { id: 'retention-rescue', label: '🔄 Retention Rescue' },
+            { id: 'economy-audit', label: '💰 Economy Audit' },
+            { id: 'player-deep-dive', label: '👤 Player Deep-Dive' },
+            { id: 'liveops-launch', label: '🚀 LiveOps Launch' },
+            { id: 'trust-safety-triage', label: '🛡️ Trust & Safety' },
+            { id: 'config-ops', label: '⚙️ Config Ops' },
+            { id: 'weekly-liveops-report', label: '📝 Weekly Report' }
+        ];
+        var COP_STARTERS = [
+            { skillId: 'daily-pulse', label: 'Daily Pulse', prompt: "Give me today's daily pulse" },
+            { skillId: 'retention-rescue', label: 'Retention Rescue', prompt: 'How bad is churn this week and who exactly is at risk?' },
+            { skillId: 'funnel-health', label: 'Funnel Health', prompt: 'Where do new players drop off, and what does it cost us in ARPU?' },
+            { skillId: 'economy-audit', label: 'Economy Audit', prompt: 'Audit the game economy — are we inflating?' },
+            { skillId: 'weekly-liveops-report', label: 'Weekly Report', prompt: 'Summarize last week vs the week before' }
+        ];
+        // Assistant reply keywords → dashboard tab deep-links.
+        var COP_TAB_LINKS = [
+            { re: /retention|churn|d1\b|d7\b|d30\b|win-?back/i, tab: 'retention', label: '🔄 Retention' },
+            { re: /revenue|arpu|arpdau|arppu|iap|purchase/i, tab: 'revenue', label: '💵 Revenue' },
+            { re: /economy|wallet|currency|coins|sink|source|inflat/i, tab: 'economy', label: '💰 Economy' },
+            { re: /monetiz|ad revenue|ads\b/i, tab: 'monet', label: '💸 Monetization' },
+            { re: /funnel|onboarding|activation/i, tab: 'funnel', label: '🎯 Funnel' },
+            { re: /drop-?off|quit point/i, tab: 'dropoff', label: '🚪 Drop-off' },
+            { re: /session length|session time|sessions\b/i, tab: 'sessions', label: '⏱️ Sessions' },
+            { re: /dau|wau|mau|daily active|overview|kpi/i, tab: 'overview', label: '📈 Overview' },
+            { re: /player|whale|top spender/i, tab: 'players', label: '👑 Players' },
+            { re: /quiz mode/i, tab: 'modes', label: '📊 Quiz Modes' },
+            { re: /quiz\b|question/i, tab: 'quiz', label: '🧩 Quiz' },
+            { re: /error|crash|bug/i, tab: 'errors', label: '🐛 Errors' },
+            { re: /event log|events\b/i, tab: 'events', label: '📋 Events' },
+            { re: /audience|country|countries|geo\b|locale/i, tab: 'audience', label: '🌍 Audience' },
+            { re: /platform|device|android|ios/i, tab: 'platforms', label: '📱 Platforms' },
+            { re: /heatmap|hour of day/i, tab: 'heatmap', label: '🔥 Heatmap' },
+            { re: /\bai\b|hint|generation/i, tab: 'ai', label: '🤖 AI' }
+        ];
+
+        var dock = document.getElementById('copDock');
+        var fab = document.getElementById('copFab');
+        var log = document.getElementById('copLog');
+        var input = document.getElementById('copInput');
+        var sendBtn = document.getElementById('copSend');
+        var micBtn = document.getElementById('copMic');
+        var ttsBtn = document.getElementById('copTts');
+        var handsBtn = document.getElementById('copMicHands');
+        var noteEl = document.getElementById('copNote');
+        var skillsEl = document.getElementById('copSkills');
+
+        var messages = [];          // [{ role, text }] — chat history sent to the server
+        var activeSkill = null;
+        var streaming = false;
+        var abortCtrl = null;
+        // Server-side write gate: tokens approved via the Confirm card ride the
+        // NEXT request's top-level `confirmations` body field — the only channel
+        // the server accepts (the model cannot set request-body fields).
+        var pendingConfirmations = [];
+        var resolvedConfirmTokens = {};  // confirmToken -> true after Confirm/Cancel
+
+        // ── Auth: same session the dashboard login stored ──────────────────
+        function copToken() {
+            try {
+                var raw = sessionStorage.getItem(CONFIG.adminTokenStorageKey);
+                if (!raw) return null;
+                var s = JSON.parse(raw);
+                if (!s.token) return null;
+                if (s.expiresAt && s.expiresAt <= Math.floor(Date.now() / 1000)) return null;
+                return s.token;
+            } catch (e) { return null; }
+        }
+
+        // ── Tiny markdown renderer (escape first, then enrich) ─────────────
+        function escapeHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function renderMarkdown(md) {
+            var codeBlocks = [];
+            md = md.replace(/```[a-z]*\n?([\s\S]*?)```/g, function (_, code) {
+                codeBlocks.push(code);
+                return '\u0000CODE' + (codeBlocks.length - 1) + '\u0000';
+            });
+            var html = escapeHtml(md);
+            html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+            html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+            var lines = html.split('\n');
+            var out = [];
+            var inList = false, inTable = false, tableBuf = [];
+            function flushTable() {
+                if (!inTable) return;
+                out.push('<pre>' + tableBuf.join('\n') + '</pre>');
+                inTable = false; tableBuf = [];
+            }
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (/^\s*\|/.test(line)) {
+                    if (inList) { out.push('</ul>'); inList = false; }
+                    inTable = true; tableBuf.push(line.trim()); continue;
+                }
+                flushTable();
+                var m = line.match(/^\s*[-*]\s+(.*)$/);
+                if (m) {
+                    if (!inList) { out.push('<ul>'); inList = true; }
+                    out.push('<li>' + m[1] + '</li>'); continue;
+                }
+                if (inList) { out.push('</ul>'); inList = false; }
+                var h = line.match(/^#{1,6}\s+(.*)$/);
+                if (h) { out.push('<h4>' + h[1] + '</h4>'); continue; }
+                if (line.trim() === '') continue;
+                out.push('<p>' + line + '</p>');
+            }
+            if (inList) out.push('</ul>');
+            flushTable();
+            var result = out.join('');
+            result = result.replace(/\u0000CODE(\d+)\u0000/g, function (_, idx) {
+                return '<pre><code>' + escapeHtml(codeBlocks[Number(idx)]) + '</code></pre>';
+            });
+            return result;
+        }
+
+        // ── DOM helpers ─────────────────────────────────────────────────────
+        function scrollLog() { log.scrollTop = log.scrollHeight; }
+
+        function addUserBubble(text) {
+            var el = document.createElement('div');
+            el.className = 'cop-msg user';
+            el.textContent = text;
+            log.appendChild(el);
+            scrollLog();
+        }
+
+        function addBotBubble() {
+            var el = document.createElement('div');
+            el.className = 'cop-msg bot';
+            var md = document.createElement('div');
+            md.className = 'cop-md';
+            el.appendChild(md);
+            log.appendChild(el);
+            scrollLog();
+            return { bubble: el, md: md, text: '', tools: {} };
+        }
+
+        function addThinking() {
+            var el = document.createElement('div');
+            el.className = 'cop-thinking';
+            el.id = 'copThinking';
+            el.innerHTML = '<span class="cop-dot"></span> thinking…';
+            log.appendChild(el);
+            scrollLog();
+        }
+        function removeThinking() {
+            var el = document.getElementById('copThinking');
+            if (el) el.remove();
+        }
+
+        function addToolChip(ctx, toolCallId, toolName) {
+            var det = document.createElement('details');
+            det.className = 'cop-tool';
+            det.innerHTML =
+                '<summary>🔧 <span>' + escapeHtml(toolName) + '</span>' +
+                '<span class="cop-tool-state">running</span></summary>' +
+                '<pre>…</pre>';
+            ctx.bubble.insertBefore(det, ctx.md);
+            ctx.tools[toolCallId] = { el: det, name: toolName };
+            scrollLog();
+        }
+        function setToolInput(ctx, toolCallId, inputObj) {
+            var t = ctx.tools[toolCallId];
+            if (!t) return;
+            t.input = inputObj;
+            t.el.querySelector('pre').textContent = 'args: ' + JSON.stringify(inputObj || {}, null, 2);
+        }
+        function setToolOutput(ctx, toolCallId, output, isError) {
+            var t = ctx.tools[toolCallId];
+            if (!t) return;
+            var state = t.el.querySelector('.cop-tool-state');
+            state.textContent = isError ? 'error' : 'done';
+            state.style.color = isError ? 'var(--danger)' : 'var(--success)';
+            var body = 'args: ' + JSON.stringify(t.input || {}, null, 2) + '\n\nresult:\n' +
+                (typeof output === 'string' ? output : JSON.stringify(output, null, 2));
+            t.el.querySelector('pre').textContent = body.length > 6000 ? body.slice(0, 6000) + '\n…(truncated)' : body;
+            if (!isError && !t.confirmShown) {
+                var req = parseConfirmationRequired(output);
+                if (req) {
+                    t.confirmShown = true;
+                    state.textContent = 'needs approval';
+                    state.style.color = 'var(--warning, #f59e0b)';
+                    addConfirmCard(ctx, req);
+                }
+            }
+            if (!isError) addVizCards(ctx, output);
+        }
+
+        // ── Write-gate confirmation cards ───────────────────────────────────
+        // A write tool's first call returns {"status":"confirmation_required",
+        // "confirmToken":...} instead of executing. Confirm sends the token in
+        // the next request's `confirmations` body field; Cancel tells the model
+        // to drop the action. Buttons are one-shot.
+        function parseConfirmationRequired(output) {
+            if (typeof output !== 'string' || output.indexOf('confirmation_required') === -1) return null;
+            try {
+                var o = JSON.parse(output);
+                if (o && o.status === 'confirmation_required' &&
+                    typeof o.tool === 'string' && typeof o.confirmToken === 'string') return o;
+            } catch (e) { /* not a confirmation payload */ }
+            return null;
+        }
+        function addConfirmCard(ctx, req) {
+            var card = document.createElement('div');
+            card.className = 'cop-confirm';
+            var title = document.createElement('div');
+            title.className = 'cop-confirm-title';
+            title.textContent = '⚠️ Write action needs your approval';
+            var summary = document.createElement('pre');
+            summary.textContent = req.humanSummary || req.tool;
+            var row = document.createElement('div');
+            row.className = 'cop-confirm-row';
+            var okBtn = document.createElement('button');
+            okBtn.className = 'cop-confirm-btn ok';
+            okBtn.textContent = 'Confirm';
+            var noBtn = document.createElement('button');
+            noBtn.className = 'cop-confirm-btn no';
+            noBtn.textContent = 'Cancel';
+            var status = document.createElement('div');
+            status.className = 'cop-confirm-status';
+            function settle(text) {
+                okBtn.disabled = true;
+                noBtn.disabled = true;
+                status.textContent = text;
+            }
+            okBtn.addEventListener('click', function () {
+                if (streaming || resolvedConfirmTokens[req.confirmToken]) return;
+                resolvedConfirmTokens[req.confirmToken] = true;
+                pendingConfirmations.push(req.confirmToken);
+                settle('Confirmed — executing…');
+                send('Confirmed — proceed with ' + req.tool + '.');
+            });
+            noBtn.addEventListener('click', function () {
+                if (streaming || resolvedConfirmTokens[req.confirmToken]) return;
+                resolvedConfirmTokens[req.confirmToken] = true;
+                settle('Cancelled — not executed.');
+                send('Cancel that action — do not execute it.');
+            });
+            row.appendChild(okBtn);
+            row.appendChild(noBtn);
+            card.appendChild(title);
+            card.appendChild(summary);
+            card.appendChild(row);
+            card.appendChild(status);
+            ctx.bubble.insertBefore(card, ctx.md);
+            scrollLog();
+        }
+
+        // ── Inline viz artifacts (viz-mcp render results) ───────────────────
+        // Keep in sync with the SPA CopilotPage: viz-mcp render tools return
+        // {"viz":true,"type":"html|image|video|dashboard","url":"https://…"}
+        // possibly nested in JSON-RPC text blobs. Render the hosted artifact
+        // inline: <img> for images, <video> for video, sandboxed iframe else.
+        var VIZ_TYPES = { html: 1, image: 1, video: 1, dashboard: 1 };
+        function collectViz(node, out, depth) {
+            if (!node || depth > 12 || out.length >= 4) return;
+            if (typeof node === 'string') {
+                var s = node.trim();
+                if (s.indexOf('viz') === -1 || s.indexOf('url') === -1) return;
+                try { collectViz(JSON.parse(s), out, depth + 1); return; } catch (e) { /* scan below */ }
+                var un = s.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                var frags = un.match(/\{[^{}]*"viz"\s*:\s*true[^{}]*\}/g) || [];
+                for (var i = 0; i < frags.length; i++) {
+                    try { collectViz(JSON.parse(frags[i]), out, depth + 1); } catch (e2) { /* skip fragment */ }
+                }
+                return;
+            }
+            if (Object.prototype.toString.call(node) === '[object Array]') {
+                for (var j = 0; j < node.length; j++) collectViz(node[j], out, depth + 1);
+                return;
+            }
+            if (typeof node === 'object') {
+                if (node.viz === true && typeof node.url === 'string' && /^https:\/\//.test(node.url) &&
+                    typeof node.type === 'string' && VIZ_TYPES[node.type]) {
+                    for (var k = 0; k < out.length; k++) { if (out[k].url === node.url) return; }
+                    out.push({ type: node.type, url: node.url, title: typeof node.title === 'string' ? node.title : '' });
+                    return;
+                }
+                for (var key in node) {
+                    if (Object.prototype.hasOwnProperty.call(node, key)) collectViz(node[key], out, depth + 1);
+                }
+            }
+        }
+        function addVizCards(ctx, output) {
+            var artifacts = [];
+            try { collectViz(output, artifacts, 0); } catch (e) { return; }
+            if (!artifacts.length) return;
+            artifacts.forEach(function (a) {
+                var card = document.createElement('div');
+                card.className = 'cop-viz';
+                card.style.cssText = 'margin:6px 0;border:1px solid rgba(148,163,184,.35);border-radius:10px;overflow:hidden;background:#0b1020;';
+                var head = document.createElement('div');
+                head.style.cssText = 'display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:11px;';
+                var label = document.createElement('span');
+                label.textContent = '📊 ' + (a.title || a.type);
+                label.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                var open = document.createElement('a');
+                open.href = a.url;
+                open.target = '_blank';
+                open.rel = 'noopener noreferrer';
+                open.textContent = 'open ↗';
+                head.appendChild(label);
+                head.appendChild(open);
+                card.appendChild(head);
+                var body;
+                if (a.type === 'image') {
+                    body = document.createElement('img');
+                    body.src = a.url;
+                    body.alt = a.title || 'chart';
+                    body.loading = 'lazy';
+                    body.style.cssText = 'display:block;width:100%;max-height:320px;object-fit:contain;background:#000;';
+                } else if (a.type === 'video') {
+                    body = document.createElement('video');
+                    body.src = a.url;
+                    body.controls = true;
+                    body.playsInline = true;
+                    body.preload = 'metadata';
+                    body.style.cssText = 'display:block;width:100%;max-height:320px;background:#000;';
+                } else {
+                    body = document.createElement('iframe');
+                    body.src = a.url;
+                    body.title = a.title || a.type;
+                    body.setAttribute('sandbox', 'allow-scripts');
+                    body.setAttribute('referrerpolicy', 'no-referrer');
+                    body.loading = 'lazy';
+                    body.style.cssText = 'display:block;width:100%;height:300px;border:0;background:#0b1020;';
+                }
+                card.appendChild(body);
+                ctx.bubble.insertBefore(card, ctx.md);
+            });
+            scrollLog();
+        }
+
+        // ── Chart deep-links ────────────────────────────────────────────────
+        function jumpToTab(tabName) {
+            var btn = document.querySelector('.tab[data-tab="' + tabName + '"]');
+            if (btn) btn.click();
+            var section = document.getElementById(tabName);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                section.classList.remove('cop-highlight');
+                void section.offsetWidth; // restart the flash animation
+                section.classList.add('cop-highlight');
+            }
+        }
+        function addDeepLinks(ctx) {
+            var found = [];
+            for (var i = 0; i < COP_TAB_LINKS.length && found.length < 4; i++) {
+                var l = COP_TAB_LINKS[i];
+                if (l.re.test(ctx.text) && !found.some(function (f) { return f.tab === l.tab; })) found.push(l);
+            }
+            if (!found.length) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'cop-links';
+            found.forEach(function (l) {
+                var b = document.createElement('button');
+                b.className = 'cop-link';
+                b.textContent = l.label + ' ↗';
+                b.title = 'Jump to the ' + l.tab + ' section';
+                b.addEventListener('click', function () { jumpToTab(l.tab); });
+                wrap.appendChild(b);
+            });
+            ctx.bubble.appendChild(wrap);
+            scrollLog();
+        }
+
+        // ── Starter prompts (empty state) ───────────────────────────────────
+        function renderStarters() {
+            var wrap = document.createElement('div');
+            wrap.id = 'copStarters';
+            wrap.className = 'cop-starters';
+            var intro = document.createElement('div');
+            intro.className = 'cop-msg bot';
+            intro.innerHTML = '<div class="cop-md"><p><strong>IX Agency</strong> — ask about retention, revenue, players or the economy. I call the nakama game-ops tools directly; anything that writes needs your confirmation first.</p></div>';
+            wrap.appendChild(intro);
+            COP_STARTERS.forEach(function (s) {
+                var b = document.createElement('button');
+                b.className = 'cop-starter';
+                b.innerHTML = '<b>' + escapeHtml(s.label) + '</b>' + escapeHtml(s.prompt);
+                b.addEventListener('click', function () {
+                    setSkill(s.skillId);
+                    send(s.prompt);
+                });
+                wrap.appendChild(b);
+            });
+            log.appendChild(wrap);
+        }
+        function clearStarters() {
+            var el = document.getElementById('copStarters');
+            if (el) el.remove();
+        }
+
+        // ── Skills chips ─────────────────────────────────────────────────────
+        function setSkill(id) {
+            activeSkill = id;
+            Array.prototype.forEach.call(skillsEl.children, function (chip) {
+                chip.classList.toggle('on', chip.dataset.skill === activeSkill);
+            });
+        }
+        COP_SKILLS.forEach(function (s) {
+            var chip = document.createElement('button');
+            chip.className = 'cop-skill';
+            chip.dataset.skill = s.id;
+            chip.textContent = s.label;
+            chip.addEventListener('click', function () {
+                activeSkill = (activeSkill === s.id) ? null : s.id;
+                Array.prototype.forEach.call(skillsEl.children, function (c) {
+                    c.classList.toggle('on', c.dataset.skill === activeSkill);
+                });
+            });
+            skillsEl.appendChild(chip);
+        });
+
+        function note(text) {
+            noteEl.style.display = text ? 'block' : 'none';
+            noteEl.textContent = text || '';
+        }
+
+        // ── UI-message SSE stream parser (ai SDK data stream protocol) ──────
+        // The response is text/event-stream; each event is `data: {json}` with
+        // chunk types text-delta / tool-input-* / tool-output-* / error, and a
+        // final `data: [DONE]`.
+        function parseSseInto(ctx, response, onDone) {
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder();
+            var buffer = '';
+
+            function handleChunk(chunk) {
+                if (chunk.type === 'text-delta' && typeof chunk.delta === 'string') {
+                    ctx.text += chunk.delta;
+                    ctx.md.innerHTML = renderMarkdown(ctx.text);
+                    scrollLog();
+                } else if (chunk.type === 'tool-input-start') {
+                    addToolChip(ctx, chunk.toolCallId, chunk.toolName || 'tool');
+                } else if (chunk.type === 'tool-input-available') {
+                    if (!ctx.tools[chunk.toolCallId]) addToolChip(ctx, chunk.toolCallId, chunk.toolName || 'tool');
+                    setToolInput(ctx, chunk.toolCallId, chunk.input);
+                } else if (chunk.type === 'tool-output-available') {
+                    setToolOutput(ctx, chunk.toolCallId, chunk.output, false);
+                } else if (chunk.type === 'tool-output-error' || chunk.type === 'tool-input-error') {
+                    setToolOutput(ctx, chunk.toolCallId, chunk.errorText || 'tool failed', true);
+                } else if (chunk.type === 'error') {
+                    ctx.text += '\n\n⚠️ ' + (chunk.errorText || 'stream error');
+                    ctx.md.innerHTML = renderMarkdown(ctx.text);
+                }
+            }
+
+            function pump() {
+                return reader.read().then(function (r) {
+                    if (r.done) { onDone(); return; }
+                    buffer += decoder.decode(r.value, { stream: true });
+                    var events = buffer.split('\n\n');
+                    buffer = events.pop();
+                    events.forEach(function (evt) {
+                        evt.split('\n').forEach(function (line) {
+                            if (line.indexOf('data: ') !== 0) return;
+                            var data = line.slice(6).trim();
+                            if (!data || data === '[DONE]') return;
+                            try { handleChunk(JSON.parse(data)); } catch (e) { /* partial/unknown frame */ }
+                        });
+                    });
+                    return pump();
+                });
+            }
+            return pump().catch(function (err) {
+                if (err && err.name !== 'AbortError') {
+                    ctx.text += '\n\n⚠️ ' + (err.message || 'connection lost');
+                    ctx.md.innerHTML = renderMarkdown(ctx.text);
+                }
+                onDone();
+            });
+        }
+
+        // ── Send / stream ────────────────────────────────────────────────────
+        function uiMessages() {
+            return messages.map(function (m, i) {
+                return { id: 'cop-' + i, role: m.role, parts: [{ type: 'text', text: m.text }] };
+            });
+        }
+
+        function setStreaming(on) {
+            streaming = on;
+            sendBtn.textContent = on ? '■' : '➤';
+            sendBtn.title = on ? 'Stop' : 'Send';
+            sendBtn.classList.toggle('stop', on);
+        }
+
+        function send(text) {
+            text = (text || '').trim();
+            if (!text || streaming) return;
+            var token = copToken();
+            if (!token) {
+                note('Sign in to the dashboard first — the copilot uses your admin session.');
+                return;
+            }
+            note('');
+            clearStarters();
+            input.value = '';
+            autoGrow();
+            messages.push({ role: 'user', text: text });
+            addUserBubble(text);
+            addThinking();
+            setStreaming(true);
+
+            var ctx = null;
+            abortCtrl = new AbortController();
+            var payload = { messages: uiMessages(), skillId: activeSkill };
+            // Approved write tokens ride exactly one request (single-use server-side).
+            if (pendingConfirmations.length) {
+                payload.confirmations = pendingConfirmations;
+                pendingConfirmations = [];
+            }
+            fetch(COP_API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payload),
+                signal: abortCtrl.signal
+            }).then(function (response) {
+                removeThinking();
+                if (!response.ok) {
+                    return response.json().catch(function () { return {}; }).then(function (body) {
+                        throw new Error(body.error || ('copilot request failed (' + response.status + ')'));
+                    });
+                }
+                ctx = addBotBubble();
+                return parseSseInto(ctx, response, function () {
+                    setStreaming(false);
+                    abortCtrl = null;
+                    if (ctx.text) {
+                        messages.push({ role: 'assistant', text: ctx.text });
+                        addDeepLinks(ctx);
+                        if (ttsOn) speak(ctx.text);
+                    }
+                });
+            }).catch(function (err) {
+                removeThinking();
+                setStreaming(false);
+                abortCtrl = null;
+                if (err && err.name === 'AbortError') return;
+                var el = document.createElement('div');
+                el.className = 'cop-msg bot';
+                el.innerHTML = '<div class="cop-md"><p>⚠️ ' + escapeHtml(err.message || 'request failed') + '</p></div>';
+                log.appendChild(el);
+                scrollLog();
+            });
+        }
+
+        function stopStream() {
+            if (abortCtrl) abortCtrl.abort();
+            setStreaming(false);
+        }
+
+        // ── Voice: mic (SpeechRecognition) + TTS + hands-free ───────────────
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+        var recognition = null;
+        var listening = false;
+        var ttsOn = false;
+        var handsFree = false;
+        try {
+            ttsOn = localStorage.getItem('cop_tts') === '1';
+            handsFree = localStorage.getItem('cop_handsfree') === '1';
+        } catch (e) { /* ignore */ }
+        if (!SR) {
+            micBtn.style.display = 'none';
+            handsBtn.style.display = 'none';
+        }
+        if (!('speechSynthesis' in window)) {
+            ttsBtn.style.display = 'none';
+            ttsOn = false;
+            handsFree = false;
+        }
+        ttsBtn.classList.toggle('on', ttsOn);
+        handsBtn.classList.toggle('on', handsFree);
+
+        function startListening() {
+            if (listening || !SR) return;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            recognition = new SR();
+            recognition.lang = navigator.language || 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+            var transcript = '';
+            recognition.onresult = function (e) {
+                transcript = '';
+                for (var i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+                input.value = transcript;
+                autoGrow();
+            };
+            recognition.onend = function () {
+                listening = false;
+                recognition = null;
+                micBtn.classList.remove('on');
+                input.classList.remove('listening');
+                var finalText = transcript.trim();
+                if (finalText) send(finalText); // voice = command: auto-send on silence
+            };
+            recognition.onerror = recognition.onend;
+            listening = true;
+            micBtn.classList.add('on');
+            input.classList.add('listening');
+            recognition.start();
+        }
+        function toggleListening() {
+            if (listening && recognition) recognition.stop();
+            else startListening();
+        }
+
+        function stripMdForSpeech(md) {
+            return md
+                .replace(/```[\s\S]*?```/g, ' code block omitted. ')
+                .replace(/`([^`]+)`/g, '$1')
+                .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+                .replace(/^\s*\|.*\|\s*$/gm, '')
+                .replace(/[*_~>#|]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        function speak(md) {
+            if (!('speechSynthesis' in window)) return;
+            var clean = stripMdForSpeech(md);
+            if (!clean) return;
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(clean.slice(0, 1500));
+            u.rate = 1.05;
+            u.onend = function () {
+                // Hands-free conversation: reply spoken -> mic re-opens.
+                if (handsFree) startListening();
+            };
+            window.speechSynthesis.speak(u);
+        }
+
+        ttsBtn.addEventListener('click', function () {
+            ttsOn = !ttsOn;
+            ttsBtn.classList.toggle('on', ttsOn);
+            if (!ttsOn) window.speechSynthesis.cancel();
+            try { localStorage.setItem('cop_tts', ttsOn ? '1' : '0'); } catch (e) { /* ignore */ }
+        });
+        handsBtn.addEventListener('click', function () {
+            handsFree = !handsFree;
+            if (handsFree) {
+                ttsOn = true;
+                ttsBtn.classList.add('on');
+                try { localStorage.setItem('cop_tts', '1'); } catch (e) { /* ignore */ }
+            }
+            handsBtn.classList.toggle('on', handsFree);
+            try { localStorage.setItem('cop_handsfree', handsFree ? '1' : '0'); } catch (e) { /* ignore */ }
+        });
+        micBtn.addEventListener('click', toggleListening);
+
+        // ── Wiring ───────────────────────────────────────────────────────────
+        function autoGrow() {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+        }
+        input.addEventListener('input', autoGrow);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send(input.value);
+            }
+        });
+        sendBtn.addEventListener('click', function () {
+            if (streaming) stopStream();
+            else send(input.value);
+        });
+        fab.addEventListener('click', function () {
+            dock.classList.add('open');
+            fab.style.display = 'none';
+            input.focus();
+        });
+        document.getElementById('copClose').addEventListener('click', function () {
+            dock.classList.remove('open');
+            fab.style.display = 'flex';
+        });
+        document.getElementById('copClear').addEventListener('click', function () {
+            if (streaming) stopStream();
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            messages = [];
+            pendingConfirmations = [];
+            resolvedConfirmTokens = {};
+            log.innerHTML = '';
+            renderStarters();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && dock.classList.contains('open')) {
+                dock.classList.remove('open');
+                fab.style.display = 'flex';
+            }
+        });
+
+        renderStarters();
+    })();
+    </script>
 </body>
 </html>

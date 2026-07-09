@@ -188,6 +188,77 @@
   }
 }
 
+@layer components {
+  /* Markdown rendered inside copilot chat bubbles. */
+  .copilot-md > *:first-child {
+    margin-top: 0;
+  }
+  .copilot-md > *:last-child {
+    margin-bottom: 0;
+  }
+  .copilot-md p,
+  .copilot-md ul,
+  .copilot-md ol,
+  .copilot-md pre,
+  .copilot-md table,
+  .copilot-md blockquote {
+    @apply my-2;
+  }
+  .copilot-md ul {
+    @apply list-disc pl-5;
+  }
+  .copilot-md ol {
+    @apply list-decimal pl-5;
+  }
+  .copilot-md li {
+    @apply my-0.5;
+  }
+  .copilot-md h1,
+  .copilot-md h2,
+  .copilot-md h3,
+  .copilot-md h4 {
+    @apply mb-1.5 mt-3 font-semibold;
+  }
+  .copilot-md h1 {
+    @apply text-base;
+  }
+  .copilot-md h2,
+  .copilot-md h3 {
+    @apply text-sm;
+  }
+  .copilot-md code {
+    @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.85em];
+  }
+  .copilot-md pre {
+    @apply overflow-x-auto rounded-lg bg-muted p-3;
+  }
+  .copilot-md pre code {
+    @apply bg-transparent p-0;
+  }
+  .copilot-md table {
+    @apply w-full border-collapse text-xs;
+  }
+  .copilot-md th,
+  .copilot-md td {
+    @apply border border-border px-2 py-1 text-left;
+  }
+  .copilot-md th {
+    @apply bg-muted font-semibold;
+  }
+  .copilot-md a {
+    @apply text-primary underline underline-offset-2;
+  }
+  .copilot-md blockquote {
+    @apply border-l-2 border-border pl-3 text-muted-foreground;
+  }
+  .copilot-md-inverted code {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .copilot-md-inverted a {
+    color: inherit;
+  }
+}
+
 @layer utilities {
   .tnum {
     font-variant-numeric: tabular-nums;

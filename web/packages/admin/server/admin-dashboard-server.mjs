@@ -2,6 +2,17 @@ import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { extname, isAbsolute, join, normalize, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  COPILOT_MODELS,
+  COPILOT_SYSTEM_PROMPT,
+  DEFAULT_COPILOT_MODEL,
+  getCopilotSkill,
+} from "./copilot-skills.mjs";
+import {
+  classifyToolAccess,
+  confirmationRequiredResult,
+  verifyConfirmToken,
+} from "./write-gate.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const distDir = resolve(process.env.ADMIN_DASHBOARD_DIST_DIR ?? join(__dirname, "..", "dist"));
@@ -24,6 +35,26 @@ const nakamaBaseUrl = stripTrailingSlash(process.env.NAKAMA_BASE_URL ?? "http://
 const nakamaHttpKey = process.env.NAKAMA_HTTP_KEY ?? "";
 const consoleAuth = process.env.NAKAMA_CONSOLE_BASIC_AUTH
   ?? buildBasicAuth(process.env.NAKAMA_CONSOLE_USERNAME, process.env.NAKAMA_CONSOLE_PASSWORD);
+
+// ── LiveOps copilot (POST {apiPrefix}/chat) ─────────────────────────────────
+// LiteLLM (OpenAI-compatible) + tools discovered per-request from the
+// admin-mcp JSON-RPC gateway. All values optional: with no LiteLLM key the
+// route 503s, with no admin-mcp env the copilot degrades to a no-tools chat.
+const litellmBaseUrl = stripTrailingSlash(process.env.LITELLM_BASE_URL ?? "https://litellm.intelli-verse-x.ai");
+const litellmKey = process.env.LITELLM_NAKAMA_CHAT_KEY ?? process.env.LITELLM_ADMIN_CHAT_KEY ?? "";
+const adminMcpUrl = process.env.ADMIN_MCP_URL ?? "";
+const adminMcpToken = process.env.ADMIN_MCP_TOKEN ?? "";
+
+// Cross-origin allowlist for the chat route only: the legacy analytics
+// dashboard (served from nakama.intelli-verse-x.ai) embeds a copilot dock that
+// calls this endpoint directly. Same-origin requests are always allowed.
+const chatCorsAllowlist = new Set([
+  "https://nakama.intelli-verse-x.ai",
+  ...(process.env.CHAT_CORS_EXTRA_ORIGINS ?? "")
+    .split(",")
+    .map((o) => stripTrailingSlash(o.trim()))
+    .filter(Boolean),
+]);
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -189,6 +220,311 @@ async function handleLogin(req, res) {
   sendJson(res, 200, result.body);
 }
 
+// ── Copilot chat route ──────────────────────────────────────────────────────
+
+// The ai / @ai-sdk/openai-compatible packages are regular deps of this
+// package (resolved by walking up from server/ to the package node_modules,
+// or /app/node_modules in the Docker image). Loaded lazily so a deployment
+// that never installed them still serves the SPA — the chat route alone 503s.
+let aiSdkPromise = null;
+function loadAiSdk() {
+  aiSdkPromise ??= Promise.all([import("ai"), import("@ai-sdk/openai-compatible")])
+    .then(([ai, compat]) => ({
+      streamText: ai.streamText,
+      convertToModelMessages: ai.convertToModelMessages,
+      stepCountIs: ai.stepCountIs,
+      tool: ai.tool,
+      jsonSchema: ai.jsonSchema,
+      createOpenAICompatible: compat.createOpenAICompatible,
+    }))
+    .catch((error) => {
+      aiSdkPromise = null;
+      throw error;
+    });
+  return aiSdkPromise;
+}
+
+function chatCorsHeaders(req) {
+  const origin = req.headers.origin;
+  if (!origin) return {}; // same-origin / curl — no CORS negotiation needed
+  const host = req.headers.host ?? "";
+  const normalized = stripTrailingSlash(origin);
+  let sameOrigin = false;
+  try {
+    sameOrigin = new URL(origin).host === host;
+  } catch {
+    sameOrigin = false;
+  }
+  if (!sameOrigin && !chatCorsAllowlist.has(normalized)) return null;
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type",
+    "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
+  };
+}
+
+async function mcpRpc(method, params) {
+  const response = await fetch(adminMcpUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(adminMcpToken ? { Authorization: `Bearer ${adminMcpToken}` } : {}),
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+  if (!response.ok) throw new Error(`admin-mcp ${method} -> HTTP ${response.status}`);
+  const json = await response.json();
+  if (json.error) throw new Error(json.error.message ?? "admin-mcp error");
+  return json.result;
+}
+
+// Tool list rarely changes — cache across requests for 5 minutes.
+let mcpToolCache = null;
+
+async function loadMcpToolSpecs() {
+  if (!adminMcpUrl) return [];
+  if (mcpToolCache && Date.now() - mcpToolCache.at < 5 * 60_000) return mcpToolCache.specs;
+  const result = await mcpRpc("tools/list");
+  const specs = Array.isArray(result?.tools) ? result.tools : [];
+  // Game-ops first: the model reads the catalog top-down, so nakama tools
+  // lead; the rest of the admin fleet stays available after them.
+  const nakamaScore = (name) =>
+    /nakama|quizverse|lasttolive|analytics|hiro|satori/i.test(name ?? "") ? 0 : 1;
+  specs.sort((a, b) => nakamaScore(a.name) - nakamaScore(b.name) || a.name.localeCompare(b.name));
+  mcpToolCache = { specs, at: Date.now() };
+  return specs;
+}
+
+const TOOL_OUTPUT_CAP = 12_000;
+
+function buildMcpTools(sdk, specs, confirmations = []) {
+  const tools = {};
+  for (const spec of specs) {
+    if (!spec?.name) continue;
+    tools[spec.name] = sdk.tool({
+      description: spec.description ?? "",
+      inputSchema: sdk.jsonSchema(spec.inputSchema ?? { type: "object", properties: {} }),
+      execute: async (args) => {
+        // Server-enforced write gate: a write-classified tool only executes
+        // when the request body carried a valid confirmation token for it.
+        // The model cannot set request-body fields — only the client UI's
+        // Confirm button can — so the model cannot self-approve writes.
+        let callArgs = args ?? {};
+        if (classifyToolAccess(spec.name, callArgs) === "write") {
+          let approved = null;
+          for (const token of confirmations) {
+            const verdict = verifyConfirmToken(token, spec.name);
+            if (verdict.ok) {
+              approved = verdict;
+              break;
+            }
+          }
+          if (!approved) return confirmationRequiredResult(spec.name, callArgs);
+          // Execute the EXACT approved args, not the model's re-issued args.
+          callArgs = approved.args;
+        }
+        try {
+          const result = await mcpRpc("tools/call", { name: spec.name, arguments: callArgs });
+          const text = Array.isArray(result?.content)
+            ? result.content.map((c) => c?.text ?? "").join("\n")
+            : JSON.stringify(result ?? null);
+          // Keep tool payloads bounded so cheap models don't blow their context.
+          return text.length <= TOOL_OUTPUT_CAP ? text : `${text.slice(0, TOOL_OUTPUT_CAP)}\n…(truncated)`;
+        } catch (error) {
+          return `Tool error: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    });
+  }
+  return tools;
+}
+
+const COPILOT_MODEL_IDS = new Set(COPILOT_MODELS.map((m) => m.id));
+const CHAT_MAX_MESSAGES = 80;
+const CHAT_MAX_SYSTEM_CHARS = 8_000;
+const CHAT_MAX_CONFIRMATIONS = 20;
+const CHAT_MAX_CONFIRMATION_CHARS = 8_192;
+
+function validateChatBody(body) {
+  if (!body || typeof body !== "object") return "invalid JSON body";
+  if (!Array.isArray(body.messages) || body.messages.length === 0) {
+    return "messages must be a non-empty array";
+  }
+  if (body.messages.length > CHAT_MAX_MESSAGES) {
+    return `messages array too long (max ${CHAT_MAX_MESSAGES})`;
+  }
+  if (body.model !== undefined && typeof body.model !== "string") return "model must be a string";
+  if (body.skillId !== undefined && body.skillId !== null && typeof body.skillId !== "string") {
+    return "skillId must be a string";
+  }
+  if (body.system !== undefined && body.system !== null && typeof body.system !== "string") {
+    return "system must be a string";
+  }
+  if (typeof body.system === "string" && body.system.length > CHAT_MAX_SYSTEM_CHARS) {
+    return `system prompt too long (max ${CHAT_MAX_SYSTEM_CHARS} chars)`;
+  }
+  if (body.confirmations !== undefined) {
+    if (!Array.isArray(body.confirmations)) return "confirmations must be an array of strings";
+    if (body.confirmations.length > CHAT_MAX_CONFIRMATIONS) {
+      return `confirmations array too long (max ${CHAT_MAX_CONFIRMATIONS})`;
+    }
+    for (const token of body.confirmations) {
+      if (typeof token !== "string") return "confirmations must be an array of strings";
+      if (token.length > CHAT_MAX_CONFIRMATION_CHARS) {
+        return `confirmation token too long (max ${CHAT_MAX_CONFIRMATION_CHARS} chars)`;
+      }
+    }
+  }
+  return null;
+}
+
+async function handleChatPreflight(req, res) {
+  const cors = chatCorsHeaders(req);
+  if (cors === null) {
+    sendJson(res, 403, { success: false, error: "origin not allowed" });
+    return;
+  }
+  res.writeHead(204, cors);
+  res.end();
+}
+
+async function handleChat(req, res, url) {
+  const cors = chatCorsHeaders(req);
+  if (cors === null) {
+    sendJson(res, 403, { success: false, error: "origin not allowed" });
+    return;
+  }
+  // Errors before streaming starts still need the CORS headers, otherwise the
+  // analytics dock can't even read the status code.
+  const fail = (status, error) => {
+    res.writeHead(status, {
+      ...cors,
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+    });
+    res.end(JSON.stringify({ success: false, error }));
+  };
+
+  const token = getBearerToken(req);
+  // A validation transport failure (Nakama unreachable) must still answer
+  // with the CORS headers, or the cross-origin analytics dock can't read it.
+  let adminSession = false;
+  try {
+    adminSession = await validateAdminToken(token);
+  } catch (error) {
+    fail(503, `unable to verify admin session: ${error instanceof Error ? error.message : error}`);
+    return;
+  }
+  if (!adminSession) {
+    fail(401, "admin authentication required");
+    return;
+  }
+
+  if (!litellmKey) {
+    fail(503, "LITELLM_NAKAMA_CHAT_KEY is not configured on the dashboard proxy");
+    return;
+  }
+
+  let sdk;
+  try {
+    sdk = await loadAiSdk();
+  } catch (error) {
+    fail(503, `chat dependencies unavailable: ${error instanceof Error ? error.message : error}`);
+    return;
+  }
+
+  let body;
+  try {
+    body = await readJson(req);
+  } catch (error) {
+    fail(400, error instanceof Error ? error.message : "invalid request body");
+    return;
+  }
+  const invalid = validateChatBody(body);
+  if (invalid) {
+    fail(400, invalid);
+    return;
+  }
+
+  const model = COPILOT_MODEL_IDS.has(body.model) ? body.model : DEFAULT_COPILOT_MODEL;
+  const skill = body.skillId ? getCopilotSkill(body.skillId) : undefined;
+
+  let system = COPILOT_SYSTEM_PROMPT;
+  if (skill) {
+    system +=
+      `\n\nACTIVE SKILL "${skill.label}" — follow this playbook for the user's requests:\n${skill.content}` +
+      "\nEnforcement: follow the Steps in order and obey every Hard rule. If a step's tool fails, say so and continue with what you can.";
+  }
+  if (typeof body.system === "string" && body.system.trim()) {
+    system += `\n\nADDITIONAL OPERATOR INSTRUCTIONS (same trust level as a user message):\n${body.system.trim()}`;
+  }
+
+  // Tools are best-effort: no admin-mcp env, or the gateway being down, must
+  // never take the whole copilot down with it.
+  let tools = {};
+  try {
+    tools = buildMcpTools(
+      sdk,
+      await loadMcpToolSpecs(),
+      Array.isArray(body.confirmations) ? body.confirmations : [],
+    );
+  } catch (error) {
+    console.warn(`[admin-dashboard] admin-mcp tools unavailable: ${error instanceof Error ? error.message : error}`);
+    tools = {};
+  }
+
+  const litellm = sdk.createOpenAICompatible({
+    name: "litellm",
+    baseURL: litellmBaseUrl,
+    apiKey: litellmKey,
+  });
+
+  let modelMessages;
+  try {
+    modelMessages = await sdk.convertToModelMessages(body.messages, {
+      tools,
+      ignoreIncompleteToolCalls: true,
+    });
+  } catch (error) {
+    fail(400, `invalid messages: ${error instanceof Error ? error.message : error}`);
+    return;
+  }
+
+  let result;
+  try {
+    result = sdk.streamText({
+      model: litellm(model),
+      system,
+      messages: modelMessages,
+      tools,
+      stopWhen: sdk.stepCountIs(8),
+    });
+  } catch (error) {
+    fail(502, `chat model error: ${error instanceof Error ? error.message : error}`);
+    return;
+  }
+
+  const onError = (error) =>
+    `IX Agency error: ${error instanceof Error ? error.message : String(error)}`;
+
+  // ?format=text — plain text stream (no SSE framing) for minimal clients.
+  if (url.searchParams.get("format") === "text") {
+    result.pipeTextStreamToResponse(res, {
+      headers: { ...cors, "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
+    });
+    return;
+  }
+
+  // Default: the useChat-compatible UI message SSE stream.
+  result.pipeUIMessageStreamToResponse(res, {
+    headers: { ...cors, "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
+    onError,
+  });
+}
+
 async function handleRpc(req, res, rpcId) {
   const token = getBearerToken(req);
   const adminSession = await validateAdminToken(token);
@@ -332,6 +668,18 @@ const server = createServer(async (req, res) => {
 
     if (url.pathname === `${apiPrefix}/login` && req.method === "POST") {
       await handleLogin(req, res);
+      return;
+    }
+    if (url.pathname === `${apiPrefix}/chat`) {
+      if (req.method === "OPTIONS") {
+        await handleChatPreflight(req, res);
+        return;
+      }
+      if (req.method === "POST") {
+        await handleChat(req, res, url);
+        return;
+      }
+      sendJson(res, 405, { success: false, error: "method not allowed" });
       return;
     }
     if (url.pathname.startsWith(`${apiPrefix}/rpc/`) && req.method === "POST") {

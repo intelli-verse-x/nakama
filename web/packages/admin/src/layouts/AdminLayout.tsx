@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  Bot,
   LayoutDashboard,
   Users,
   Puzzle,
@@ -55,7 +56,10 @@ interface NavGroup {
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
-    items: [{ label: "Dashboard", to: "/dashboard", icon: LayoutDashboard }],
+    items: [
+      { label: "IX Agency", to: "/", icon: Bot },
+      { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+    ],
   },
   {
     label: "Game Systems",
@@ -133,6 +137,7 @@ function NavItemLink({
   return (
     <NavLink
       to={item.to}
+      end={item.to === "/"}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         cn(

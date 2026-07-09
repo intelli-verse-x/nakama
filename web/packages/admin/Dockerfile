@@ -10,6 +10,11 @@ ENV ADMIN_DASHBOARD_PORT=8080
 COPY dist ./dist
 COPY server ./server
 
+# Copilot chat route deps (server/admin-dashboard-server.mjs resolves them by
+# walking up from /app/server to /app/node_modules). Kept out of the SPA
+# workspace install on purpose — the image has no pnpm workspace.
+RUN npm install --no-save --no-audit --no-fund "ai@^7" "@ai-sdk/openai-compatible@^3"
+
 EXPOSE 8080
 
 CMD ["node", "server/admin-dashboard-server.mjs"]
