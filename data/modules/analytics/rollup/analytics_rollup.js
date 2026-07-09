@@ -332,7 +332,18 @@ function arPurgeLiveDailyMoney(nk, gameId, dayStr, dryRun, auditMeta) {
 
 /**
  * Streams analytics_events under SYSTEM_USER and collects records falling on `dateStr`.
- * Returns { events: [...], scanned, truncated, nextCursor }.
+ * Returns { events: [...], scanned, truncated, nextCursor, error }.
+ *
+ * `error` is null on success; when a storageList page fails (e.g. "context
+ * canceled" on a dying request context) it carries the failure message and the
+ * scan stops early. Callers MUST treat a non-null `error` as "abort the whole
+ * run" — the partial result must not be mistaken for a complete-and-empty day,
+ * or rollup docs get overwritten from zero events.
+ *
+ * `budgetMs` (optional) caps the wall-clock scan budget. It is clamped to
+ * [2000, 15000] ms so a bogus value can neither disable the scan nor blow past
+ * the ~22s HTTP socket timeout. Callers already inside a partly-spent request
+ * context (e.g. the dashboard's self-healing auto-rollup) pass a smaller value.
  *
  * Note: we rely on the dashboard-fanout copy written by persistNormalizedEvent,
  * which is keyed as `dash_<gameId>_<YYYY-MM-DD>_...`. Scanning under SYSTEM_USER
@@ -341,9 +352,9 @@ function arPurgeLiveDailyMoney(nk, gameId, dayStr, dryRun, auditMeta) {
  * in memory; there is no per-day key index to read instead.
  *
  * `startCursor` (optional) resumes a previous truncated scan. When the page
- * cap is hit, `truncated` is true and `nextCursor` is the storageList cursor
- * to resume from — the caller checkpoints it and re-invokes later instead of
- * aborting (see rpcAnalyticsRollupRun).
+ * cap or time budget is hit, `truncated` is true and `nextCursor` is the
+ * storageList cursor to resume from — the caller checkpoints it and re-invokes
+ * later instead of aborting (see rpcAnalyticsRollupRun).
  */
 function arScanEventsForDate(nk, logger, dateStr, startCursor, budgetMs) {
     var events = [];
