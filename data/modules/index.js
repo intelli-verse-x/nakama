@@ -157876,8 +157876,13 @@ var SatoriCreatorEvents;
                 var creatorId = String(ev.creatorId || obj.userId || obj.user_id || "");
                 // The storage write MUST target the row's actual owner. Events published
                 // via the admin/system path are owned by the zero UUID while ev.creatorId
+<<<<<<< HEAD
                 // holds the human creator — writing with creatorId + this row's version
                 // fails the OCC check on every sweep (event b108b2fb…, Jul 7 2026).
+=======
+                // holds the human creator - writing with creatorId + this row's version
+                // fails the OCC check on every sweep (event b108b2fb..., Jul 7 2026).
+>>>>>>> origin/fix/spa-auto-end-row-owner
                 var rowOwner = String(obj.userId || obj.user_id || "");
                 if (!eventId || !rowOwner)
                     continue;
