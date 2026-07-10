@@ -163,6 +163,16 @@ function InitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[LiveBanner] failed to mount: " + (err && err.message ? err.message : String(err)));
     }
+    // ---- Quizverse Brain contextual prompt gate ----
+    // Server-authoritative daily/weekly frequency, cross-device OCC reservation,
+    // idempotent lifecycle commits, successful-visit tracking, and telemetry.
+    try {
+        QuizVerseBrainPrompts.register(initializer);
+        logger.info("[BrainPrompt] evaluate + commit RPCs registered");
+    }
+    catch (err) {
+        logger.error("[BrainPrompt] failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- QuizVerse product telemetry (quizverse_product_metrics → n8n WF-09) ----
     // Independent of QuizVerse Next.js /admin/metrics — both may call WF-09 in parallel.
     try {
@@ -187,6 +197,14 @@ function InitModule(ctx, logger, nk, initializer) {
     }
     catch (err) {
         logger.error("[QvEntitlements] failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
+    // ---- Link & Play server-authoritative daily note quota ----
+    try {
+        QvLapNoteQuota.register(initializer);
+        logger.info("[QvLapNoteQuota] quizverse_lap_note_quota registered");
+    }
+    catch (err) {
+        logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
     }
     // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
     try {
@@ -7479,8 +7497,15 @@ var IntelliverseFriendsList;
             }
             return err("Failed to load friends", ERR_INTERNAL);
         }
-        var rawFriends = (friendsResp && friendsResp.friends) ? friendsResp.friends : [];
-        var nextCursor = (friendsResp && friendsResp.cursor) || null;
+        // Nakama releases have exposed this binding both as FriendList and as a
+        // direct array in Goja. Normalize both shapes so a valid native graph can
+        // never become an empty Social Zone roster after a runtime upgrade.
+        var rawFriends = Array.isArray(friendsResp)
+            ? friendsResp
+            : (friendsResp && friendsResp.friends)
+                ? friendsResp.friends
+                : [];
+        var nextCursor = (!Array.isArray(friendsResp) && friendsResp && friendsResp.cursor) || null;
         // ── Bulk-load presence ──────────────────────────────────────────────
         var ids = [];
         for (var i = 0; i < rawFriends.length; i++) {
@@ -7550,7 +7575,9 @@ var IntelliverseFriendsList;
             // Block lists are tiny in practice (<100 users for >99.9% of accounts);
             // we hard-cap at 500 to prevent abuse + memory blow-ups.
             var resp = nk.friendsList(userId, BLOCKED_LIST_HARD_LIMIT, STATE_BLOCKED, undefined);
-            if (resp && resp.friends)
+            if (Array.isArray(resp))
+                rawList = resp;
+            else if (resp && resp.friends)
                 rawList = resp.friends;
         }
         catch (e) {
@@ -8669,6 +8696,421 @@ var BlogEmbed;
     }
     BlogEmbed.register = register;
 })(BlogEmbed || (BlogEmbed = {}));
+// =============================================================================
+// Quizverse Brain contextual prompt gate
+// =============================================================================
+// RPCs:
+//   quizverse_brain_prompt_evaluate — eligibility + short OCC reservation
+//   quizverse_brain_prompt_commit   — idempotent shown/accepted/opened/suppressed
+//
+// Nakama owns cross-device frequency and visit state. Unity owns session-level
+// result signals. AI topic coverage is advisory input only: it unlocks no
+// entitlement/reward and never carries a Cognito token through Nakama.
+// =============================================================================
+var QuizVerseBrainPrompts;
+(function (QuizVerseBrainPrompts) {
+    var COLLECTION = "qv_brain_prompt";
+    var KEY = "state";
+    var SCHEMA_VERSION = 1;
+    var RESERVATION_TTL_MS = 10 * 60 * 1000;
+    var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    var OCC_MAX_RETRIES = 5;
+    var IDEM_MAX_ENTRIES = 32;
+    var DEFAULT_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+    function emptyBucket() {
+        return { consumed: false, promptId: "", shownMs: 0, openedMs: 0 };
+    }
+    function utcDay(nowMs) {
+        return new Date(nowMs).toISOString().slice(0, 10);
+    }
+    function isoWeek(nowMs) {
+        var date = new Date(nowMs);
+        var day = date.getUTCDay();
+        var isoDay = day === 0 ? 7 : day;
+        date.setUTCDate(date.getUTCDate() + 4 - isoDay);
+        var yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
+        var week = Math.ceil((((date.getTime() - yearStart) / 86400000) + 1) / 7);
+        return date.getUTCFullYear() + "-W" + (week < 10 ? "0" : "") + week;
+    }
+    function createState(nowMs) {
+        return {
+            schemaVersion: SCHEMA_VERSION,
+            utcDay: utcDay(nowMs),
+            isoWeek: isoWeek(nowMs),
+            lastSuccessfulBrainVisitMs: 0,
+            daily: emptyBucket(),
+            weekly: emptyBucket(),
+            reservation: null,
+            idempotency: {}
+        };
+    }
+    function normalizeState(raw, nowMs) {
+        var state = raw && typeof raw === "object" ? raw : createState(nowMs);
+        state.schemaVersion = SCHEMA_VERSION;
+        state.lastSuccessfulBrainVisitMs = Number(state.lastSuccessfulBrainVisitMs || 0);
+        state.daily = state.daily || emptyBucket();
+        state.weekly = state.weekly || emptyBucket();
+        state.idempotency = state.idempotency || {};
+        if (state.utcDay !== utcDay(nowMs)) {
+            state.utcDay = utcDay(nowMs);
+            state.daily = emptyBucket();
+            if (state.reservation && state.reservation.bucket === "daily")
+                state.reservation = null;
+        }
+        if (state.isoWeek !== isoWeek(nowMs)) {
+            state.isoWeek = isoWeek(nowMs);
+            state.weekly = emptyBucket();
+            if (state.reservation && state.reservation.bucket === "weekly")
+                state.reservation = null;
+        }
+        if (state.reservation && state.reservation.expiresMs <= nowMs) {
+            var reservedBucket = state.reservation.bucket === "weekly" ? state.weekly : state.daily;
+            if (!reservedBucket.consumed)
+                state.reservation = null;
+        }
+        return state;
+    }
+    function readState(nk, userId, nowMs) {
+        var rows = nk.storageRead([{ collection: COLLECTION, key: KEY, userId: userId }]);
+        if (!rows || rows.length === 0) {
+            return { value: createState(nowMs), version: "*", exists: false };
+        }
+        return {
+            value: normalizeState(rows[0].value, nowMs),
+            version: rows[0].version || "",
+            exists: true
+        };
+    }
+    function writeState(nk, userId, stored) {
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: KEY,
+                userId: userId,
+                value: stored.value,
+                version: stored.exists ? stored.version : "*",
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    function mutateState(nk, userId, nowMs, mutator) {
+        var lastError = null;
+        for (var attempt = 0; attempt < OCC_MAX_RETRIES; attempt++) {
+            var stored = readState(nk, userId, nowMs);
+            var result = mutator(stored.value);
+            if (!result.write)
+                return result.response;
+            try {
+                writeState(nk, userId, stored);
+                return result.response;
+            }
+            catch (err) {
+                lastError = err;
+            }
+        }
+        throw lastError || new Error("brain_prompt_occ_exhausted");
+    }
+    function parsePayload(payload) {
+        if (!payload)
+            return {};
+        try {
+            return JSON.parse(payload);
+        }
+        catch (_) {
+            return null;
+        }
+    }
+    function safeString(value, maxLength) {
+        return String(value || "").trim().slice(0, maxLength);
+    }
+    function emit(ctx, nk, logger, userId, eventName, eventData, clientEventId) {
+        try {
+            var nowSec = Math.floor(Date.now() / 1000);
+            persistNormalizedEvent(nk, logger, {
+                userId: userId,
+                gameId: (ctx.env && ctx.env["DEFAULT_GAME_ID"]) || DEFAULT_GAME_ID,
+                eventName: eventName,
+                originalEventName: eventName,
+                canonicalized: false,
+                eventData: eventData || {},
+                platform: "unity",
+                sessionId: ctx.sessionId || null,
+                timestamp: new Date(nowSec * 1000).toISOString(),
+                unixTimestamp: nowSec,
+                schemaVersion: 1,
+                clientEventId: clientEventId || null,
+                eventTime: null,
+                quizSessionId: eventData && eventData.result_id || null,
+                screenId: eventData && eventData.screen_id || null,
+                privacyTier: 1,
+                v2Warnings: []
+            });
+        }
+        catch (err) {
+            logger.warn("[BrainPrompt] analytics failed: " + (err && err.message ? err.message : String(err)));
+        }
+    }
+    function readPremiumHint(nk, userId) {
+        try {
+            var rows = nk.storageRead([{ collection: "qv_entitlements", key: "subscriptions", userId: userId }]);
+            var subs = rows && rows.length ? rows[0].value : {};
+            var tier = safeString(subs && subs.tier, 64).toLowerCase();
+            var active = !!tier && String(subs && subs.status || "active").toLowerCase() !== "expired";
+            if (active && subs && subs.expiresAt) {
+                var exp = new Date(subs.expiresAt).getTime();
+                if (!isNaN(exp) && exp <= Date.now())
+                    active = false;
+            }
+            return { tier: tier || "free", isPremium: active };
+        }
+        catch (_) {
+            return { tier: "free", isPremium: false };
+        }
+    }
+    function selectPrompt(data) {
+        var trigger = safeString(data.trigger, 32).toLowerCase();
+        var session = data.session && typeof data.session === "object" ? data.session : {};
+        if (trigger === "app_home_open") {
+            return { promptId: "weekly_recap", bucket: "weekly" };
+        }
+        if (trigger !== "post_quiz_results")
+            return null;
+        var maxWrong = Math.max(0, Math.min(1000, Number(session.max_consecutive_wrong || 0)));
+        if (maxWrong >= 3)
+            return { promptId: "wrong_streak", bucket: "daily" };
+        var accuracy = Number(session.category_accuracy_pct);
+        var notesEligible = data.notes_eligible === true;
+        if (isFinite(accuracy) && accuracy >= 0 && accuracy < 60 && notesEligible) {
+            return { promptId: "post_quiz_weak", bucket: "daily" };
+        }
+        return null;
+    }
+    function rpcEvaluate(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = parsePayload(payload);
+        if (data === null)
+            return RpcHelpers.errorResponse("invalid JSON payload", 400);
+        var selected = selectPrompt(data);
+        var clientEventId = safeString(data.client_event_id, 128);
+        var nowMs = Date.now();
+        if (!selected) {
+            emit(ctx, nk, logger, userId, "brain_prompt_suppressed", { reason: "criteria_not_met", trigger: safeString(data.trigger, 32) }, clientEventId);
+            return RpcHelpers.successResponse({
+                status: "suppressed",
+                prompt_id: null,
+                reason: "criteria_not_met",
+                server_time_ms: nowMs
+            });
+        }
+        var response = mutateState(nk, userId, nowMs, function (state) {
+            var bucket = selected.bucket === "weekly" ? state.weekly : state.daily;
+            if (bucket.consumed) {
+                return {
+                    write: false,
+                    response: {
+                        status: "suppressed",
+                        prompt_id: null,
+                        reason: selected.bucket + "_slot_consumed",
+                        server_time_ms: nowMs
+                    }
+                };
+            }
+            if (selected.promptId === "weekly_recap") {
+                if (!state.lastSuccessfulBrainVisitMs) {
+                    return {
+                        write: false,
+                        response: {
+                            status: "suppressed",
+                            prompt_id: null,
+                            reason: "brain_never_opened",
+                            server_time_ms: nowMs
+                        }
+                    };
+                }
+                if (nowMs - state.lastSuccessfulBrainVisitMs < WEEK_MS) {
+                    return {
+                        write: false,
+                        response: {
+                            status: "suppressed",
+                            prompt_id: null,
+                            reason: "brain_visit_recent",
+                            next_eligible_ms: state.lastSuccessfulBrainVisitMs + WEEK_MS,
+                            server_time_ms: nowMs
+                        }
+                    };
+                }
+            }
+            if (state.reservation && state.reservation.expiresMs > nowMs) {
+                if (clientEventId && state.reservation.clientEventId === clientEventId &&
+                    state.reservation.promptId === selected.promptId) {
+                    return {
+                        write: false,
+                        response: {
+                            status: "eligible",
+                            prompt_id: selected.promptId,
+                            reservation_token: state.reservation.token,
+                            reservation_expires_ms: state.reservation.expiresMs,
+                            replay: true,
+                            server_time_ms: nowMs
+                        }
+                    };
+                }
+                return {
+                    write: false,
+                    response: {
+                        status: "suppressed",
+                        prompt_id: null,
+                        reason: "reservation_active",
+                        server_time_ms: nowMs
+                    }
+                };
+            }
+            var token = nk.uuidv4();
+            state.reservation = {
+                token: token,
+                promptId: selected.promptId,
+                bucket: selected.bucket,
+                clientEventId: clientEventId,
+                resultId: safeString(data.session && data.session.result_id, 128),
+                createdMs: nowMs,
+                expiresMs: nowMs + RESERVATION_TTL_MS
+            };
+            return {
+                write: true,
+                response: {
+                    status: "eligible",
+                    prompt_id: selected.promptId,
+                    reservation_token: token,
+                    reservation_expires_ms: nowMs + RESERVATION_TTL_MS,
+                    context: selected.promptId,
+                    category: safeString(data.session && data.session.category, 128),
+                    server_time_ms: nowMs
+                }
+            };
+        });
+        response.premium_hint = readPremiumHint(nk, userId);
+        emit(ctx, nk, logger, userId, response.status === "eligible" ? "brain_prompt_eligible" : "brain_prompt_suppressed", {
+            prompt_id: response.prompt_id,
+            reason: response.reason || "",
+            trigger: safeString(data.trigger, 32),
+            result_id: safeString(data.session && data.session.result_id, 128)
+        }, clientEventId);
+        return RpcHelpers.successResponse(response);
+    }
+    function pruneIdempotency(state) {
+        var keys = Object.keys(state.idempotency || {});
+        if (keys.length <= IDEM_MAX_ENTRIES)
+            return;
+        keys.sort(function (a, b) {
+            return (state.idempotency[a].atMs || 0) - (state.idempotency[b].atMs || 0);
+        });
+        while (keys.length > IDEM_MAX_ENTRIES) {
+            delete state.idempotency[keys.shift()];
+        }
+    }
+    function rpcCommit(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = parsePayload(payload);
+        if (data === null)
+            return RpcHelpers.errorResponse("invalid JSON payload", 400);
+        var action = safeString(data.action, 32).toLowerCase();
+        if (action !== "shown" && action !== "accepted" &&
+            action !== "opened" && action !== "suppressed") {
+            return RpcHelpers.errorResponse("action must be shown|accepted|opened|suppressed", 400);
+        }
+        var promptId = safeString(data.prompt_id, 64);
+        var token = safeString(data.reservation_token, 64);
+        var idemKey = safeString(data.idempotency_key, 128);
+        var clientEventId = safeString(data.client_event_id, 128);
+        var directOpen = action === "opened" &&
+            (promptId === "graph" || promptId === "profile" || promptId === "manual");
+        if (!directOpen && !token)
+            return RpcHelpers.errorResponse("reservation_token required", 400);
+        if (!idemKey)
+            return RpcHelpers.errorResponse("idempotency_key required", 400);
+        var nowMs = Date.now();
+        var response = mutateState(nk, userId, nowMs, function (state) {
+            var replay = state.idempotency[idemKey];
+            if (replay) {
+                return {
+                    write: false,
+                    response: {
+                        status: "replay",
+                        action: replay.action,
+                        prompt_id: replay.promptId,
+                        slot_consumed: replay.promptId === "weekly_recap"
+                            ? state.weekly.consumed : state.daily.consumed,
+                        last_successful_brain_visit_ms: state.lastSuccessfulBrainVisitMs,
+                        server_time_ms: nowMs
+                    }
+                };
+            }
+            var reservation = state.reservation;
+            if (!directOpen) {
+                if (!reservation || reservation.token !== token || reservation.promptId !== promptId) {
+                    return {
+                        write: false,
+                        response: { status: "rejected", reason: "reservation_mismatch", server_time_ms: nowMs }
+                    };
+                }
+                var reservedBucket = reservation.bucket === "weekly" ? state.weekly : state.daily;
+                if (reservation.expiresMs <= nowMs && !reservedBucket.consumed) {
+                    state.reservation = null;
+                    return {
+                        write: true,
+                        response: { status: "rejected", reason: "reservation_expired", server_time_ms: nowMs }
+                    };
+                }
+            }
+            var bucket = reservation && reservation.bucket === "weekly" ? state.weekly : state.daily;
+            if (action === "shown") {
+                bucket.consumed = true;
+                bucket.promptId = promptId;
+                bucket.shownMs = nowMs;
+            }
+            else if (action === "opened") {
+                state.lastSuccessfulBrainVisitMs = nowMs;
+                if (!directOpen) {
+                    bucket.consumed = true;
+                    bucket.promptId = promptId;
+                    if (!bucket.shownMs)
+                        bucket.shownMs = nowMs;
+                    bucket.openedMs = nowMs;
+                }
+            }
+            else if (action === "suppressed") {
+                state.reservation = null;
+            }
+            state.idempotency[idemKey] = { action: action, promptId: promptId, atMs: nowMs };
+            pruneIdempotency(state);
+            return {
+                write: true,
+                response: {
+                    status: action,
+                    prompt_id: promptId,
+                    slot_consumed: directOpen ? false : bucket.consumed,
+                    last_successful_brain_visit_ms: state.lastSuccessfulBrainVisitMs,
+                    server_time_ms: nowMs
+                }
+            };
+        });
+        var eventName = action === "shown" ? "brain_prompt_shown" :
+            action === "accepted" ? "brain_prompt_accepted" :
+                action === "opened" ? "brain_prompt_opened" : "brain_prompt_suppressed";
+        emit(ctx, nk, logger, userId, eventName, {
+            prompt_id: promptId,
+            status: response.status,
+            reason: safeString(data.suppress_reason || response.reason, 128),
+            result_id: safeString(data.result_id, 128),
+            screen_id: safeString(data.screen_id, 64)
+        }, clientEventId);
+        return RpcHelpers.successResponse(response);
+    }
+    function register(initializer) {
+        initializer.registerRpc("quizverse_brain_prompt_evaluate", rpcEvaluate);
+        initializer.registerRpc("quizverse_brain_prompt_commit", rpcCommit);
+    }
+    QuizVerseBrainPrompts.register = register;
+})(QuizVerseBrainPrompts || (QuizVerseBrainPrompts = {}));
 // cache_refresh_cron.ts — Scheduled topic-cache refresh for QuizVerse question delivery.
 //
 // Populates qv_cache_{topic} via QvQuestionCache.refreshCache / refreshAllTopics.
@@ -9441,8 +9883,10 @@ var QvGetQuestions;
         return map[topic] || topic;
     }
     /**
-     * On cache miss: queue a background refresh and return immediately.
-     * Player RPCs never wait on an external question provider.
+     * On cache miss: perform one gated emergency refresh before returning an
+     * error. Normal traffic is still served stale-while-revalidate, but a cold
+     * deploy can no longer leave a topic permanently empty while waiting for an
+     * external scheduler to drain the refresh request.
      */
     function handleEmptyTopicCache(nk, logger, env, topic, traceId, coldStartApplied, userId) {
         logger.warn(formatQvLog("[QvGetQ][GATE:cache_miss]", {
@@ -9454,14 +9898,31 @@ var QvGetQuestions;
             rpc: "quizverse_get_questions"
         }));
         var t0 = nowMs();
-        QvQuestionCache.requestRefresh(nk, logger, topic, "cache_empty");
+        var emergencyRefresh = QvQuestionCache.refreshCache(nk, logger, env, topic);
         var cacheResult = QvQuestionCache.readCache(nk, logger, topic);
         var elapsedMs = nowMs() - t0;
+        if (cacheResult.questions.length > 0) {
+            logger.info(formatQvLog("[QvGetQ][GATE:cache_recovered]", {
+                event: "cache_emergency_refresh_ok",
+                traceId: traceId,
+                topic: topic,
+                pool_size: cacheResult.questions.length,
+                elapsed_ms: elapsedMs
+            }));
+            return {
+                pool: cacheResult.questions,
+                cacheResult: cacheResult,
+                earlyReturn: null
+            };
+        }
+        QvQuestionCache.requestRefresh(nk, logger, topic, "cache_empty");
         logger.warn(formatQvLog("[QvGetQ][GATE:cache_empty]", {
             event: "cache_empty",
             traceId: traceId,
             topic: topic,
             refresh_queued: true,
+            refresh_error: emergencyRefresh.error || "none",
+            elapsed_ms: elapsedMs,
             retry_after_seconds: CACHE_REFRESH_RETRY_SEC
         }));
         if (coldStartApplied) {
@@ -9642,6 +10103,25 @@ var QvGetQuestions;
         }
         return out;
     }
+    function filterToTopicContract(pool, topic, requireMedia, mediaType) {
+        if (topic !== "flags" && topic !== "countries" &&
+            !(topic === "anime" && requireMedia && (!mediaType || mediaType === "image"))) {
+            return pool;
+        }
+        var out = [];
+        for (var ci = 0; ci < pool.length; ci++) {
+            var q = pool[ci];
+            if (!q)
+                continue;
+            if ((topic === "flags" || topic === "countries") && q.topic !== topic)
+                continue;
+            if (topic === "anime" &&
+                q.question_text !== "Which anime is shown in this image?")
+                continue;
+            out.push(q);
+        }
+        return out;
+    }
     function filterAndPick(pool, seenIds, inflightIds, count) {
         // Build exclusion set
         var excluded = {};
@@ -9809,22 +10289,53 @@ var QvGetQuestions;
         return deleted;
     }
     /**
-     * Retry picking until requestedCount is met or attempts are exhausted.
-     * Merges inflight eviction + forced cache refresh into one bounded loop.
+     * Make one bounded synchronous repair attempt when the selected pool cannot
+     * satisfy the requested count. This is the cold-cache safety net; normal
+     * requests remain storage-only and use the ready queue.
      */
     function fulfillRequestedCount(nk, logger, env, userId, topic, lang, requireMedia, reqMediaType, excludeMedia, requestedCount, seenIds, inflightPacks, pool, langPool, langActual, cacheResult, picked, traceId) {
         var cacheRefreshAttempted = false;
         var inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
         var fulfillAttempts = 0;
-        while (fulfillAttempts < MAX_FULFILL_ATTEMPTS && picked.length < requestedCount) {
+        if (picked.length < requestedCount) {
             fulfillAttempts++;
             var poolBefore = pool.length;
-            var pickedBefore = picked.length;
-            var refreshQueued = false;
-            if (picked.length < requestedCount) {
-                refreshQueued = true;
-                cacheRefreshAttempted = true;
-                QvQuestionCache.requestRefresh(nk, logger, topic, "insufficient_pool");
+            cacheRefreshAttempted = true;
+            var refreshResult = QvQuestionCache.refreshCache(nk, logger, env, topic);
+            var refreshedCache = QvQuestionCache.readCache(nk, logger, topic);
+            if (refreshedCache.questions.length > 0) {
+                cacheResult = refreshedCache;
+                pool = refreshedCache.questions;
+                var rebuiltLangPool = [];
+                langActual = lang;
+                if (lang !== "en") {
+                    for (var rli = 0; rli < pool.length; rli++) {
+                        if (pool[rli].lang === lang)
+                            rebuiltLangPool.push(pool[rli]);
+                    }
+                }
+                if (rebuiltLangPool.length === 0) {
+                    if (lang !== "en")
+                        langActual = "en";
+                    for (var rei = 0; rei < pool.length; rei++) {
+                        if (!pool[rei].lang || pool[rei].lang === "en")
+                            rebuiltLangPool.push(pool[rei]);
+                    }
+                }
+                if (rebuiltLangPool.length === 0)
+                    rebuiltLangPool = pool;
+                if (requireMedia) {
+                    rebuiltLangPool = filterToMediaPool(rebuiltLangPool, reqMediaType);
+                }
+                else if (excludeMedia) {
+                    var refreshedTextPool = filterToTextPool(rebuiltLangPool);
+                    if (refreshedTextPool.length > 0)
+                        rebuiltLangPool = refreshedTextPool;
+                }
+                langPool = rebuiltLangPool;
+                inflightPacks = listInflight(nk, userId);
+                inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
+                picked = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
             }
             logger.info(formatQvLog("[QvGetQ][FULFILL:attempt]", {
                 event: "fulfill_attempt",
@@ -9835,13 +10346,27 @@ var QvGetQuestions;
                 picked: picked.length,
                 pool_before: poolBefore,
                 pool_after: pool.length,
-                inflight_evicted: 0,
-                refresh_queued: refreshQueued
+                refresh_ok: refreshResult.ok,
+                refresh_error: refreshResult.error || "none"
             }));
-            if (picked.length >= requestedCount)
-                break;
-            if (pool.length <= poolBefore && picked.length <= pickedBefore)
-                break;
+        }
+        // Last-resort availability tier: a stale unsubmitted pack must not force a
+        // short quiz. Reuse those IDs only after fresh and oldest-seen candidates
+        // have been exhausted. Packs remain unique internally; this only permits
+        // overlap with another abandoned/inflight session owned by the same user.
+        if (picked.length < requestedCount && langPool.length >= requestedCount && inflightIds.length > 0) {
+            var withoutInflightExclusion = filterAndPick(langPool, seenIds, [], requestedCount);
+            if (withoutInflightExclusion.length > picked.length) {
+                picked = withoutInflightExclusion;
+                logger.warn(formatQvLog("[QvGetQ][FULFILL:inflight_reuse]", {
+                    event: "fulfill_inflight_reuse",
+                    traceId: traceId,
+                    topic: topic,
+                    requested: requestedCount,
+                    delivered: picked.length,
+                    inflight_count: inflightIds.length
+                }));
+            }
         }
         logger.info(formatQvLog("[QvGetQ][FULFILL:done]", {
             event: "fulfill_done",
@@ -10420,10 +10945,11 @@ var QvGetQuestions;
         // Last resort: language field absent on all cached questions
         if (langPool.length === 0)
             langPool = pool;
+        langPool = filterToTopicContract(langPool, topic, requireMedia, reqMediaType);
         // ── 4a. Media filter (ImageGuess / audio quiz modes) ────────────────────
         if (requireMedia) {
             var mediaPool = filterToMediaPool(langPool, reqMediaType);
-            if (mediaPool.length === 0 && langPool.length > 0) {
+            if (mediaPool.length === 0) {
                 logger.warn(formatQvLog("[QvGetQ][GATE:stale_cache_media]", {
                     event: "stale_cache_media_heal",
                     traceId: traceId,
@@ -10431,7 +10957,40 @@ var QvGetQuestions;
                     langPool: langPool.length,
                     media_type: reqMediaType || "any"
                 }));
-                QvQuestionCache.requestRefresh(nk, logger, topic, "media_pool_empty");
+                // Repair stale schemas synchronously once. This covers old anime
+                // genre/year rows, mixed flags/countries caches, and pre-Deezer music
+                // caches without making the player retry after deployment.
+                QvQuestionCache.refreshCache(nk, logger, ctx.env || {}, topic, true);
+                var repairedCache = QvQuestionCache.readCache(nk, logger, topic);
+                if (repairedCache.questions.length > 0) {
+                    pool = repairedCache.questions;
+                    cacheResult = repairedCache;
+                    var repairedLangPool = [];
+                    for (var rmi = 0; rmi < pool.length; rmi++) {
+                        var repairedQ = pool[rmi];
+                        if (lang === "en") {
+                            if (!repairedQ.lang || repairedQ.lang === "en")
+                                repairedLangPool.push(repairedQ);
+                        }
+                        else if (repairedQ.lang === lang) {
+                            repairedLangPool.push(repairedQ);
+                        }
+                    }
+                    if (repairedLangPool.length === 0 && lang !== "en") {
+                        langActual = "en";
+                        for (var rme = 0; rme < pool.length; rme++) {
+                            if (!pool[rme].lang || pool[rme].lang === "en")
+                                repairedLangPool.push(pool[rme]);
+                        }
+                    }
+                    if (repairedLangPool.length === 0)
+                        repairedLangPool = pool;
+                    repairedLangPool = filterToTopicContract(repairedLangPool, topic, requireMedia, reqMediaType);
+                    mediaPool = filterToMediaPool(repairedLangPool, reqMediaType);
+                }
+                if (mediaPool.length === 0) {
+                    QvQuestionCache.requestRefresh(nk, logger, topic, "media_pool_empty");
+                }
                 logger.info(formatQvLog("[QvGetQ][GATE:stale_cache_media_done]", {
                     event: "stale_cache_media_refresh_queued",
                     traceId: traceId,
@@ -14730,6 +15289,13 @@ var QvPrewarmCron;
     var MAX_USERS_PER_RUN = 200;
     var TOP_TOPICS_N = 3; // pre-warm top-3 affinity topics
     var MAX_SEEN_IDS = 500; // seen IDs to load per user
+    var WARMABLE_TOPICS = {
+        anime: true, pokemon: true, movies: true, dog: true, dish: true,
+        flags: true, countries: true, space: true, music: true,
+        video_quiz: true, sports: true, ghibli: true, disney: true,
+        starwars: true, news: true, speed_quiz: true, true_false: true,
+        opentdb: true, general: true
+    };
     function nowMs() { return Date.now(); }
     function slugify(s) {
         return s.trim().toLowerCase()
@@ -14812,15 +15378,18 @@ var QvPrewarmCron;
         }
     }
     // ── Pre-warm one user → one topic ──────────────────────────────────────────
-    function prewarmTopic(nk, logger, userId, topic) {
+    function prewarmTopic(nk, logger, userId, topic, desiredCount) {
         var topicSlug = slugify(topic);
+        var targetCount = typeof desiredCount === "number"
+            ? Math.max(4, Math.min(READYQUEUE_SIZE, Math.floor(desiredCount)))
+            : READYQUEUE_SIZE;
         // Skip if readyqueue is still fresh
         try {
             var existing = nk.storageRead([{ collection: COL_READYQUEUE, key: topicSlug, userId: userId }]);
             if (existing && existing.length > 0 && existing[0].value) {
                 var rq = existing[0].value;
                 if (rq.created_at_ms && (nowMs() - rq.created_at_ms) < READYQUEUE_TTL_MS &&
-                    Array.isArray(rq.questions) && rq.questions.length >= READYQUEUE_SIZE / 2) {
+                    Array.isArray(rq.questions) && rq.questions.length >= targetCount) {
                     return 0; // still fresh — skip
                 }
             }
@@ -14848,7 +15417,25 @@ var QvPrewarmCron;
             fresh[fi] = fresh[ri];
             fresh[ri] = tmp;
         }
-        var toStore = fresh.slice(0, READYQUEUE_SIZE);
+        var toStore = fresh.slice(0, targetCount);
+        // Availability tier: once unseen questions are exhausted, append the
+        // oldest previously-seen questions. This preserves variety first while
+        // ensuring survival/replay sessions always have a complete ready queue.
+        if (toStore.length < targetCount) {
+            var storedIds = {};
+            for (var tsi = 0; tsi < toStore.length; tsi++)
+                storedIds[toStore[tsi].id] = true;
+            var poolById = {};
+            for (var pbi = 0; pbi < pool.length; pbi++)
+                poolById[pool[pbi].id] = pool[pbi];
+            for (var bfi = 0; bfi < seenIds.length && toStore.length < targetCount; bfi++) {
+                var seenQuestion = poolById[seenIds[bfi]];
+                if (!seenQuestion || storedIds[seenQuestion.id])
+                    continue;
+                toStore.push(seenQuestion);
+                storedIds[seenQuestion.id] = true;
+            }
+        }
         if (toStore.length === 0)
             return 0;
         try {
@@ -14911,6 +15498,124 @@ var QvPrewarmCron;
             logger.warn("[QvPrewarm] prewarmUser error userId=" + userId + ": " + (e && e.message));
         }
         return stats;
+    }
+    function readReadyQueue(nk, userId, topic) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: COL_READYQUEUE, key: slugify(topic), userId: userId
+                }]);
+            if (rows && rows.length > 0 && rows[0].value &&
+                Array.isArray(rows[0].value.questions)) {
+                return rows[0].value.questions;
+            }
+        }
+        catch (_e) { }
+        return [];
+    }
+    function topicCacheNeedsRepair(topic, questions, minCount) {
+        if (!Array.isArray(questions) || questions.length < minCount)
+            return true;
+        if (topic === "anime") {
+            for (var ai = 0; ai < questions.length; ai++) {
+                var aq = questions[ai];
+                if (aq && aq.has_media && aq.media && aq.media.type === "image" &&
+                    aq.question_text !== "Which anime is shown in this image?") {
+                    return true;
+                }
+            }
+        }
+        if (topic === "flags" || topic === "countries") {
+            var correctTopicCount = 0;
+            for (var fi = 0; fi < questions.length; fi++) {
+                if (questions[fi] && questions[fi].topic === topic)
+                    correctTopicCount++;
+            }
+            if (correctTopicCount < Math.max(minCount, 60))
+                return true;
+        }
+        if (topic === "music") {
+            var audioCount = 0;
+            for (var mi = 0; mi < questions.length; mi++) {
+                var mm = questions[mi] && questions[mi].media;
+                if (mm && mm.type === "audio" && mm.url)
+                    audioCount++;
+            }
+            if (audioCount < minCount)
+                return true;
+        }
+        if (topic === "video_quiz") {
+            var cdnVideoCount = 0;
+            for (var vi = 0; vi < questions.length; vi++) {
+                var vm = questions[vi] && questions[vi].media;
+                if (vm && vm.type === "video" && typeof vm.url === "string" &&
+                    vm.url.indexOf("cloudfront.net/") !== -1) {
+                    cdnVideoCount++;
+                }
+            }
+            if (cdnVideoCount < minCount)
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Authenticated app-start/post-quiz warmup. It never reserves a question pack:
+     * it repairs a missing/thin shared topic cache and fills the caller's private
+     * ready queue, so the real get_questions call remains authoritative and fast.
+     */
+    function rpcWarmTopic(ctx, logger, nk, payload) {
+        var userId = ctx.userId || "";
+        if (!userId) {
+            throw new Error(JSON.stringify({ code: 16, message: "authentication required" }));
+        }
+        var req = {};
+        try {
+            req = JSON.parse(payload || "{}");
+        }
+        catch (_pe) {
+            throw new Error(JSON.stringify({ code: 3, message: "invalid JSON payload" }));
+        }
+        var topic = slugify(typeof req.topic === "string" ? req.topic : "");
+        if (!topic || !WARMABLE_TOPICS[topic]) {
+            throw new Error(JSON.stringify({ code: 3, message: "unsupported warmup topic" }));
+        }
+        var minCount = typeof req.min_count === "number"
+            ? Math.max(4, Math.min(READYQUEUE_SIZE, Math.floor(req.min_count)))
+            : READYQUEUE_SIZE;
+        var before = QvQuestionCache.readCache(nk, logger, topic);
+        var refreshed = false;
+        var refreshError = "";
+        var needsSchemaRepair = topicCacheNeedsRepair(topic, before.questions, minCount);
+        if (before.expired || needsSchemaRepair) {
+            var refreshResult = QvQuestionCache.refreshCache(nk, logger, ctx.env || {}, topic, needsSchemaRepair);
+            refreshed = refreshResult.ok && refreshResult.count > 0;
+            refreshError = refreshResult.error || "";
+        }
+        var after = QvQuestionCache.readCache(nk, logger, topic);
+        var queueWritten = prewarmTopic(nk, logger, userId, topic, minCount);
+        var readyQuestions = readReadyQueue(nk, userId, topic);
+        var mediaUrls = [];
+        var mediaSeen = {};
+        for (var mi = 0; mi < readyQuestions.length && mediaUrls.length < 4; mi++) {
+            var media = readyQuestions[mi] && readyQuestions[mi].media;
+            var mediaUrl = media && typeof media.url === "string" ? media.url : "";
+            if (!mediaUrl || mediaSeen[mediaUrl])
+                continue;
+            mediaSeen[mediaUrl] = true;
+            mediaUrls.push(mediaUrl);
+        }
+        logger.info("[QvPrewarm] user warm topic=" + topic +
+            " cache=" + after.questions.length + " queue=" + readyQuestions.length +
+            " refreshed=" + refreshed + " media=" + mediaUrls.length);
+        return JSON.stringify({
+            ok: after.questions.length > 0 && readyQuestions.length > 0,
+            topic: topic,
+            cache_count: after.questions.length,
+            ready_count: readyQuestions.length,
+            queue_written: queueWritten,
+            refreshed: refreshed,
+            refresh_error: refreshError || undefined,
+            media_urls: mediaUrls
+        });
     }
     // ── Opportunistic rate gate ─────────────────────────────────────────────────
     //
@@ -15008,6 +15713,7 @@ var QvPrewarmCron;
     // ── Registration ─────────────────────────────────────────────────────────────
     function register(initializer) {
         initializer.registerRpc("quizverse_prewarm_tick", rpcPrewarmTick);
+        initializer.registerRpc("quizverse_warm_topic", rpcWarmTopic);
     }
     QvPrewarmCron.register = register;
     var _NOOP = { registerRpc: function () { } };
@@ -15676,6 +16382,7 @@ var QvQuestionCache;
     //   NASA        → https://api.nasa.gov  (already defaults to DEMO_KEY)
     var FALLBACK_KEYS = {
         TMDB_API_KEY: "93ca6d6373e2584a56bfe144bee48280",
+        REST_COUNTRIES_API_KEY: "rc_live_97dedc18b8484adbbef2908738179d54",
         LASTFM_API_KEY: "", // ← paste your Last.fm key here
         GNEWS_API_KEY: "996c2e560c01a91df9d4a9ddbef0e38e",
         CURRENTS_API_KEY: "vJ7f8IPcf_vrhpwk2_-wqzVOpFCxHV26zMhKv4NPV_KiXb-r",
@@ -16225,68 +16932,44 @@ var QvQuestionCache;
         }
         if (media.length === 0)
             return results; // best-effort — Jikan already covers this topic
-        var genreSetAL = {};
+        // Image Guess must ask players to identify the pictured anime. The previous
+        // genre/year templates displayed a cover while asking unrelated metadata,
+        // which made the mode feel internally inconsistent.
+        var allTitlesAL = [];
         for (var ag2 = 0; ag2 < media.length; ag2++) {
-            var gens2 = media[ag2].genres || [];
-            for (var gi4 = 0; gi4 < gens2.length; gi4++)
-                genreSetAL[gens2[gi4]] = true;
+            var mediaTitle = media[ag2] && media[ag2].title
+                ? (media[ag2].title.english || media[ag2].title.romaji)
+                : "";
+            if (mediaTitle)
+                allTitlesAL.push(String(mediaTitle));
         }
-        var allGenresAL = Object.keys(genreSetAL).length >= 6 ? Object.keys(genreSetAL) : ANIME_GENRES;
         for (var mi = 0; mi < media.length; mi++) {
             var m = media[mi];
             try {
                 var titleAL = (m.title && (m.title.english || m.title.romaji)) || "Unknown";
-                var yearAL = (m.startDate && m.startDate.year) || null;
-                var genresAL = m.genres || [];
                 var coverAL = (m.coverImage && m.coverImage.large) || null;
                 var mediaAL = coverAL ? { type: "image", url: coverAL, thumbnail_url: null, duration_seconds: null, mime_type: "image/jpeg" } : null;
-                if (genresAL.length === 0 && !yearAL)
+                if (!coverAL)
                     continue;
-                var useGenreTpl = genresAL.length > 0 && (Math.random() < 0.6 || !yearAL);
-                var q2 = null;
-                if (useGenreTpl) {
-                    var correctGenreAL = genresAL[0];
-                    var exSetAL = {};
-                    for (var gx2 = 0; gx2 < genresAL.length; gx2++)
-                        exSetAL[genresAL[gx2]] = true;
-                    var wgAL = pickExcluding(allGenresAL, exSetAL, 3);
-                    if (wgAL.length === 3) {
-                        var gOptsAL = [{ text: correctGenreAL, is_correct: true }];
-                        for (var wgi2 = 0; wgi2 < wgAL.length; wgi2++)
-                            gOptsAL.push({ text: wgAL[wgi2], is_correct: false });
-                        q2 = {
-                            provider_key: "anilist_genre_" + djb2(titleAL),
-                            topic: "anime", lang: "en",
-                            question_text: "What genre best describes the anime \"" + titleAL + "\"?",
-                            question_type: "single_select",
-                            raw_options: gOptsAL, has_media: !!coverAL, media: mediaAL,
-                            explanation: "\"" + titleAL + "\" belongs to the " + genresAL.join(", ") + " genre(s).",
-                            difficulty: "medium", provider: "anilist",
-                            meta: { title: titleAL, year: yearAL, genres: genresAL }
-                        };
-                    }
+                var excludeTitleAL = {};
+                excludeTitleAL[titleAL] = true;
+                var wrongTitlesAL = pickExcluding(allTitlesAL, excludeTitleAL, 3);
+                if (wrongTitlesAL.length < 3)
+                    continue;
+                var titleOptsAL = [{ text: titleAL, is_correct: true }];
+                for (var wti2 = 0; wti2 < wrongTitlesAL.length; wti2++) {
+                    titleOptsAL.push({ text: wrongTitlesAL[wti2], is_correct: false });
                 }
-                if (!q2 && yearAL) {
-                    var yrAL = Number(yearAL);
-                    var yOptsAL = [
-                        { text: String(yrAL), is_correct: true },
-                        { text: String(yrAL - 2), is_correct: false },
-                        { text: String(yrAL + 1), is_correct: false },
-                        { text: String(yrAL - 5), is_correct: false }
-                    ];
-                    q2 = {
-                        provider_key: "anilist_year_" + djb2(titleAL),
-                        topic: "anime", lang: "en",
-                        question_text: "What year did \"" + titleAL + "\" originally air?",
-                        question_type: "single_select",
-                        raw_options: yOptsAL, has_media: !!coverAL, media: mediaAL,
-                        explanation: "\"" + titleAL + "\" first aired in " + yrAL + ".",
-                        difficulty: "hard", provider: "anilist",
-                        meta: { title: titleAL, year: yearAL }
-                    };
-                }
-                if (q2)
-                    results.push(q2);
+                results.push({
+                    provider_key: "anilist_identity_" + djb2(titleAL),
+                    topic: "anime", lang: "en",
+                    question_text: "Which anime is shown in this image?",
+                    question_type: "single_select",
+                    raw_options: titleOptsAL, has_media: true, media: mediaAL,
+                    explanation: "The image shows \"" + titleAL + "\".",
+                    difficulty: "medium", provider: "anilist",
+                    meta: { title: titleAL }
+                });
             }
             catch (e) {
                 logger.debug("[QvQCache/anilist] skip: " + (e && e.message));
@@ -16318,103 +17001,45 @@ var QvQuestionCache;
         }
         if (animeList.length === 0)
             throw new Error("Jikan: no data array");
-        // Collect all genres from results for wrong-answer pool
-        var genreSet = {};
+        // Use titles as distractors so every media-backed anime row is a true
+        // visual-identification question rather than a genre/year trivia question.
+        var allAnimeTitles = [];
         for (var ag = 0; ag < animeList.length; ag++) {
-            var gens = animeList[ag].genres || [];
-            for (var gi2 = 0; gi2 < gens.length; gi2++)
-                genreSet[gens[gi2].name] = true;
+            var animeTitle = animeList[ag]
+                ? (animeList[ag].title_english || animeList[ag].title)
+                : "";
+            if (animeTitle)
+                allAnimeTitles.push(String(animeTitle));
         }
-        var allGenres = Object.keys(genreSet).length >= 6 ? Object.keys(genreSet) : ANIME_GENRES;
         for (var ai = 0; ai < animeList.length; ai++) {
             var a = animeList[ai];
             try {
                 var title = a.title_english || a.title || "Unknown";
-                var year = a.year
-                    || (a.aired && a.aired.prop && a.aired.prop.from && a.aired.prop.from.year)
-                    || null;
-                var episodes = a.episodes || null;
-                var genres = [];
-                var agenres = a.genres || [];
-                for (var gi3 = 0; gi3 < agenres.length; gi3++)
-                    genres.push(agenres[gi3].name);
                 var imageUrl = (a.images && a.images.jpg && a.images.jpg.image_url)
                     ? a.images.jpg.image_url : null;
-                var media = imageUrl ? { type: "image", url: imageUrl, thumbnail_url: null, duration_seconds: null, mime_type: "image/jpeg" } : null;
-                var tpl = Math.floor(Math.random() * 3);
-                var q = null;
-                if (tpl === 0 && genres.length > 0) {
-                    // Genre template
-                    var correctGenre = genres[0];
-                    var exSet = {};
-                    for (var gx = 0; gx < genres.length; gx++)
-                        exSet[genres[gx]] = true;
-                    var wg = pickExcluding(allGenres, exSet, 3);
-                    if (wg.length < 3)
-                        tpl = 2; // fall through to year
-                    else {
-                        var gOpts = [{ text: correctGenre, is_correct: true }];
-                        for (var wgi = 0; wgi < wg.length; wgi++)
-                            gOpts.push({ text: wg[wgi], is_correct: false });
-                        q = {
-                            provider_key: "jikan_genre_" + (a.mal_id || ai),
-                            topic: "anime", lang: "en",
-                            question_text: "What genre best describes the anime \"" + title + "\"?",
-                            question_type: "single_select",
-                            raw_options: gOpts, has_media: !!imageUrl, media: media,
-                            explanation: "\"" + title + "\" belongs to the " + genres.join(", ") + " genre(s).",
-                            difficulty: "medium", provider: "jikan",
-                            meta: { title: title, year: year, genres: genres }
-                        };
-                    }
+                if (!imageUrl)
+                    continue;
+                var excludeTitle = {};
+                excludeTitle[title] = true;
+                var wrongTitles = pickExcluding(allAnimeTitles, excludeTitle, 3);
+                if (wrongTitles.length < 3)
+                    continue;
+                var titleOpts = [{ text: title, is_correct: true }];
+                for (var wti = 0; wti < wrongTitles.length; wti++) {
+                    titleOpts.push({ text: wrongTitles[wti], is_correct: false });
                 }
-                if (tpl === 1 && episodes) {
-                    // Episode count template
-                    var ep = episodes;
-                    var eOpts = [
-                        { text: String(ep), is_correct: true },
-                        { text: String(Math.max(1, ep - Math.floor(Math.random() * 8) - 3)), is_correct: false },
-                        { text: String(ep + Math.floor(Math.random() * 10) + 2), is_correct: false },
-                        { text: String(ep + Math.floor(Math.random() * 20) + 14), is_correct: false }
-                    ];
-                    q = {
-                        provider_key: "jikan_ep_" + (a.mal_id || ai),
-                        topic: "anime", lang: "en",
-                        question_text: "How many episodes does \"" + title + "\" have?",
-                        question_type: "single_select",
-                        raw_options: eOpts, has_media: !!imageUrl, media: media,
-                        explanation: "\"" + title + "\" has " + ep + " episodes.",
-                        difficulty: "hard", provider: "jikan",
-                        meta: { title: title, year: year }
-                    };
-                }
-                if ((tpl === 2 || !q) && year) {
-                    // Release year template
-                    var yr = Number(year);
-                    if (isNaN(yr)) {
-                        q = null;
-                    }
-                    else {
-                        var yOpts = [
-                            { text: String(yr), is_correct: true },
-                            { text: String(yr - 2), is_correct: false },
-                            { text: String(yr + 1), is_correct: false },
-                            { text: String(yr - 5), is_correct: false }
-                        ];
-                        q = {
-                            provider_key: "jikan_year_" + (a.mal_id || ai),
-                            topic: "anime", lang: "en",
-                            question_text: "In what year did \"" + title + "\" first air?",
-                            question_type: "single_select",
-                            raw_options: yOpts, has_media: !!imageUrl, media: media,
-                            explanation: "\"" + title + "\" first aired in " + yr + ".",
-                            difficulty: "medium", provider: "jikan",
-                            meta: { title: title, year: year }
-                        };
-                    }
-                }
-                if (q)
-                    results.push(q);
+                results.push({
+                    provider_key: "jikan_identity_" + (a.mal_id || ai),
+                    topic: "anime", lang: "en",
+                    question_text: "Which anime is shown in this image?",
+                    question_type: "single_select",
+                    raw_options: titleOpts,
+                    has_media: true,
+                    media: { type: "image", url: imageUrl, thumbnail_url: null, duration_seconds: null, mime_type: "image/jpeg" },
+                    explanation: "The image shows \"" + title + "\".",
+                    difficulty: "medium", provider: "jikan",
+                    meta: { title: title }
+                });
             }
             catch (e) {
                 logger.debug("[QvQCache/jikan] skip[" + ai + "]: " + (e && e.message));
@@ -16888,53 +17513,66 @@ var QvQuestionCache;
         var objects = [];
         var pagesFetched = 0;
         if (apiKey) {
-            var authHeaders = { "Authorization": "Bearer " + apiKey };
-            var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
-            var offset = 0;
-            while (true) {
-                var pageUrl = baseUrl + "&offset=" + offset;
-                var parsed;
-                try {
-                    parsed = httpGet(nk, pageUrl, authHeaders);
+            try {
+                var authHeaders = { "Authorization": "Bearer " + apiKey };
+                var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
+                var offset = 0;
+                while (true) {
+                    var pageUrl = baseUrl + "&offset=" + offset;
+                    var parsed;
+                    try {
+                        parsed = httpGet(nk, pageUrl, authHeaders);
+                    }
+                    catch (he) {
+                        var hmsg = he && he.message ? he.message : String(he);
+                        if (hmsg.indexOf("HTTP 401") !== -1)
+                            throw new Error("http_401");
+                        if (hmsg.indexOf("HTTP 403") !== -1)
+                            throw new Error("http_403");
+                        throw he;
+                    }
+                    if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
+                        throw new Error("unexpected_response_shape");
+                    }
+                    var pageObjects = parsed.data.objects;
+                    var meta = parsed.data.meta || {};
+                    pagesFetched++;
+                    for (var pi = 0; pi < pageObjects.length; pi++)
+                        objects.push(pageObjects[pi]);
+                    if (!meta.more)
+                        break;
+                    offset += 100;
+                    if (offset > 1000)
+                        break;
                 }
-                catch (he) {
-                    var hmsg = he && he.message ? he.message : String(he);
-                    if (hmsg.indexOf("HTTP 401") !== -1)
-                        throw new Error("http_401");
-                    if (hmsg.indexOf("HTTP 403") !== -1)
-                        throw new Error("http_403");
-                    throw he;
-                }
-                if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
-                    throw new Error("unexpected_response_shape");
-                }
-                var pageObjects = parsed.data.objects;
-                var meta = parsed.data.meta || {};
-                pagesFetched++;
-                for (var pi = 0; pi < pageObjects.length; pi++)
-                    objects.push(pageObjects[pi]);
-                if (!meta.more)
-                    break;
-                offset += 100;
-                if (offset > 1000)
-                    break;
+            }
+            catch (paidErr) {
+                // A missing/expired paid-provider key must never disable Flag Quiz.
+                logger.warn("[QvQCache/restcountries] authenticated provider failed; using keyless fallback error=" +
+                    (paidErr && paidErr.message ? paidErr.message : String(paidErr)));
+                objects = [];
+                pagesFetched = 0;
             }
         }
-        else {
-            // Keyless fallback keeps Guess the Flag/Countries playable on cold deploys.
-            // Normalize the public v3.1 response into the v5 shape consumed below.
-            var publicRows = httpGet(nk, "https://restcountries.com/v3.1/all?fields=name,capital,region,population,cca2,flags");
+        if (objects.length === 0) {
+            // Keyless fallback keeps Guess the Flag/Countries playable on cold
+            // deploys. Rest Countries v3 was retired in 2026, so use the pinned
+            // world-countries dataset and deterministic FlagCDN PNG URLs.
+            var publicRows = httpGet(nk, "https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json");
             if (!Array.isArray(publicRows))
-                throw new Error("restcountries_public_unexpected_shape");
+                throw new Error("world_countries_unexpected_shape");
             for (var pri = 0; pri < publicRows.length; pri++) {
                 var publicCountry = publicRows[pri];
+                var publicCode = publicCountry && publicCountry.cca2
+                    ? String(publicCountry.cca2).toLowerCase()
+                    : "";
                 objects.push({
                     names: { common: publicCountry && publicCountry.name ? publicCountry.name.common : "" },
                     capitals: publicCountry ? publicCountry.capital : [],
                     region: publicCountry ? publicCountry.region : "",
                     population: publicCountry ? publicCountry.population : 0,
                     codes: { alpha_2: publicCountry ? publicCountry.cca2 : "" },
-                    flag: { url_png: publicCountry && publicCountry.flags ? publicCountry.flags.png : "" }
+                    flag: { url_png: publicCode ? "https://flagcdn.com/w320/" + publicCode + ".png" : "" }
                 });
             }
             pagesFetched = 1;
@@ -16960,7 +17598,9 @@ var QvQuestionCache;
         }
         var flagRawCount = 0;
         var capRawCount = 0;
-        var sample2 = pick(withCap, 40);
+        // Keep the full country set in the server cache. Sampling only 40 countries
+        // permanently starved Guess the Flag and made seen-ledger exhaustion common.
+        var sample2 = pick(withCap, Math.min(withCap.length, 200));
         for (var ci3 = 0; ci3 < sample2.length; ci3++) {
             var country = sample2[ci3];
             try {
@@ -17024,7 +17664,15 @@ var QvQuestionCache;
             " countries_sampled=" + sample2.length +
             " raw_flags=" + flagRawCount +
             " raw_countries=" + capRawCount);
-        return results;
+        // Keep topic caches semantically pure. Previously qv_cache_flags also
+        // contained capital-city rows (and qv_cache_countries contained flag rows),
+        // so a visual Flag Quiz could receive the wrong question contract.
+        var topicResults = [];
+        for (var tri = 0; tri < results.length; tri++) {
+            if (results[tri].topic === topic)
+                topicResults.push(results[tri]);
+        }
+        return topicResults;
     }
     // ── 11. NASA APOD (Space) — key-gated; falls back to DEMO_KEY ─────────────
     function fetchNasa(nk, env, logger) {
@@ -17214,7 +17862,77 @@ var QvQuestionCache;
         }
         return out;
     }
-    // ── 14a. Deezer (Music/Audio) — free, keyless, REAL 30s audio previews ────
+    // ── 14a. iTunes Search (Music/Audio) — keyless 30s AAC previews ───────────
+    function fetchItunesMusic(nk, logger) {
+        var terms = ["top%20hits", "global%20hits", "popular%20music"];
+        var tracks = [];
+        for (var ipg = 0; ipg < terms.length; ipg++) {
+            try {
+                var page = httpGet(nk, "https://itunes.apple.com/search?term=" + terms[ipg] +
+                    "&country=US&media=music&entity=song&limit=50");
+                if (page && Array.isArray(page.results))
+                    tracks = tracks.concat(page.results);
+            }
+            catch (itunesErr) {
+                logger.debug("[QvQCache/itunes] fetch failed term=" + terms[ipg] + ": " +
+                    (itunesErr && itunesErr.message));
+            }
+        }
+        if (tracks.length === 0)
+            throw new Error("iTunes Search: no tracks");
+        var artistSet = {};
+        for (var ia = 0; ia < tracks.length; ia++) {
+            if (tracks[ia] && tracks[ia].artistName)
+                artistSet[String(tracks[ia].artistName)] = true;
+        }
+        var artists = Object.keys(artistSet);
+        var results = [];
+        for (var it = 0; it < tracks.length; it++) {
+            var track = tracks[it];
+            try {
+                if (!track || !track.previewUrl || !track.artistName || !track.trackName)
+                    continue;
+                if (track.trackExplicitness === "explicit")
+                    continue;
+                var artist = String(track.artistName);
+                var excludeArtist = {};
+                excludeArtist[artist] = true;
+                var wrongArtists = pickExcluding(artists, excludeArtist, 3);
+                if (wrongArtists.length < 3)
+                    continue;
+                var opts = [{ text: artist, is_correct: true }];
+                for (var iwo = 0; iwo < wrongArtists.length; iwo++) {
+                    opts.push({ text: wrongArtists[iwo], is_correct: false });
+                }
+                results.push({
+                    provider_key: "itunes_" + String(track.trackId || djb2(track.trackName + artist)),
+                    topic: "music", lang: "en",
+                    question_text: "Listen to the clip — who is the artist performing this song?",
+                    question_type: "single_select",
+                    raw_options: opts,
+                    has_media: true,
+                    media: {
+                        type: "audio",
+                        url: String(track.previewUrl),
+                        thumbnail_url: track.artworkUrl100 ? String(track.artworkUrl100) : null,
+                        duration_seconds: 30,
+                        mime_type: "audio/mp4"
+                    },
+                    explanation: "\"" + String(track.trackName) + "\" is performed by " + artist + ".",
+                    difficulty: "medium", provider: "itunes",
+                    meta: { track_title: String(track.trackName) }
+                });
+            }
+            catch (itunesRowErr) {
+                logger.debug("[QvQCache/itunes] row skipped: " +
+                    (itunesRowErr && itunesRowErr.message));
+            }
+        }
+        if (results.length === 0)
+            throw new Error("iTunes Search: zero playable previews");
+        return results;
+    }
+    // ── 14b. Deezer (Music/Audio) — keyless 30s MP3 previews ─────────────────
     // #QVVBS-CACHE (2026-07): "Audio Quiz (AI) — Not Working" — grepping this whole
     // file for media.type==="audio" turned up zero matches anywhere; the "music"
     // topic (the only music-adjacent topic that existed) was 100% text trivia via
@@ -17303,12 +18021,27 @@ var QvQuestionCache;
         }
         return results;
     }
-    // Combines the always-available Deezer audio pool with Last.fm's text-only
-    // artist trivia (only when LASTFM_API_KEY is configured) so the "music" topic
-    // carries both real audio-quiz media and bonus text variety. Deezer succeeding
-    // is sufficient on its own — Last.fm failing/missing must never fail the topic.
+    // Prefer Deezer MP3 previews, but its chart endpoint can legally return
+    // {data:[],total:0}. iTunes Search is the independent keyless fallback and
+    // currently provides stable 30-second AAC previews.
     function fetchMusicQuiz(nk, env, logger) {
-        var out = fetchDeezer(nk, logger); // throws if Deezer itself is down — that's the real failure signal now
+        var out = [];
+        try {
+            out = fetchDeezer(nk, logger);
+        }
+        catch (deezerErr) {
+            logger.warn("[QvQCache/music] Deezer unavailable; switching to iTunes Search: " +
+                (deezerErr && deezerErr.message ? deezerErr.message : String(deezerErr)));
+        }
+        if (out.length < 30) {
+            try {
+                out = out.concat(fetchItunesMusic(nk, logger));
+            }
+            catch (itunesErr) {
+                logger.warn("[QvQCache/music] iTunes fallback failed: " +
+                    (itunesErr && itunesErr.message ? itunesErr.message : String(itunesErr)));
+            }
+        }
         try {
             var fmKeyCheck = envKey(env, "LASTFM_API_KEY");
             if (fmKeyCheck)
@@ -17317,9 +18050,11 @@ var QvQuestionCache;
         catch (e) {
             logger.debug("[QvQCache/music] Last.fm bonus fetch skipped: " + (e && e.message));
         }
+        if (out.length === 0)
+            throw new Error("music: all audio providers returned zero questions");
         return out;
     }
-    // ── 14. Last.fm (Music) — requires LASTFM_API_KEY ─────────────────────────
+    // ── 14c. Last.fm (Music) — requires LASTFM_API_KEY ────────────────────────
     function fetchLastfm(nk, env, logger) {
         var results = [];
         var fmKey = envKey(env, "LASTFM_API_KEY");
@@ -18175,10 +18910,16 @@ var QvQuestionCache;
                 " event=circuit_open provider=" + provider + " topic=" + topic);
             return { ok: false, topic: topic, count: 0, error: cbMsg };
         }
-        if (!tryAcquireRefreshGate(nk, topic)) {
+        if (!force && !tryAcquireRefreshGate(nk, topic)) {
             logger.info("[QvQCache/" + topic + "] refresh gated — recent refresh in progress or completed" +
                 " event=provider_refresh_gated topic=" + topic);
             return { ok: true, topic: topic, count: 0 };
+        }
+        if (force) {
+            // Best effort: update the normal lease timestamp for observability and to
+            // gate subsequent non-forced refreshes. Schema-repair callers may bypass
+            // an old lease because stale data must not survive until the next TTL.
+            tryAcquireRefreshGate(nk, topic);
         }
         try {
             // ── Fetch ─────────────────────────────────────────────────────────────
@@ -18252,6 +18993,14 @@ var QvQuestionCache;
                         var oldQ = existingPool.questions[ei2];
                         if (mergedIds[oldQ.id])
                             continue;
+                        // Schema migration: remove media-backed anime metadata templates.
+                        // Image Guess now exclusively asks users to identify the pictured
+                        // title; carrying old genre/year rows would preserve the bug forever.
+                        if (topic === "anime" && oldQ.has_media && oldQ.media &&
+                            oldQ.media.type === "image" &&
+                            oldQ.question_text !== "Which anime is shown in this image?") {
+                            continue;
+                        }
                         merged.push(oldQ);
                         mergedIds[oldQ.id] = true;
                         carried++;
@@ -27297,6 +28046,173 @@ var QvExplainerVideos;
     }
     QvExplainerVideos.register = register;
 })(QvExplainerVideos || (QvExplainerVideos = {}));
+// ---------------------------------------------------------------------------
+// lap-note-quota.ts — server-authoritative Link & Play note creation quota.
+//
+// Free: 5/day. QuizVerse Pro/Plus or LinkPlay Pro: 20/day.
+// QuizVerse Pro+ or LinkPlay Pro+: unlimited.
+// Reset boundary: 00:00 UTC.
+//
+// The reserve/release contract lets the web proxy reserve before dispatching
+// the AI job and refund the slot if the upstream request fails.
+// ---------------------------------------------------------------------------
+var QvLapNoteQuota;
+(function (QvLapNoteQuota) {
+    var COLLECTION = "qv_lap_note_quota";
+    var KEY_PREFIX = "notes_";
+    var OCC_MAX_RETRIES = 4;
+    function utcDate(now) {
+        return now.toISOString().slice(0, 10);
+    }
+    function nextUtcReset(now) {
+        return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0)).toISOString();
+    }
+    function quotaKey(date) {
+        return KEY_PREFIX + date;
+    }
+    function subscriptionTier(nk, userId, nowMs) {
+        var rows = nk.storageRead([{
+                collection: "qv_entitlements",
+                key: "subscriptions",
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0 || !rows[0].value)
+            return "free";
+        var subs = rows[0].value;
+        var tier = String(subs.tier || "").toLowerCase();
+        var status = String(subs.status || "active").toLowerCase();
+        if (!tier || status === "expired" || status === "revoked" || status === "inactive") {
+            return "free";
+        }
+        if (subs.expiresAt) {
+            var expiryMs = new Date(subs.expiresAt).getTime();
+            if (!isNaN(expiryMs) && expiryMs <= nowMs)
+                return "free";
+        }
+        return tier;
+    }
+    function limitForTier(tier) {
+        if (tier === "pro_plus" || tier === "linkplay_proplus")
+            return -1;
+        if (tier === "pro" || tier === "plus" || tier === "linkplay_pro")
+            return 20;
+        return 5;
+    }
+    function readQuota(nk, userId, date) {
+        var rows = nk.storageRead([{
+                collection: COLLECTION,
+                key: quotaKey(date),
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0) {
+            return {
+                value: { date: date, used: 0, reservations: {}, updatedAt: new Date().toISOString() },
+                version: "*",
+                exists: false
+            };
+        }
+        var value = rows[0].value || {};
+        return {
+            value: {
+                date: date,
+                used: Math.max(0, Number(value.used) || 0),
+                reservations: value.reservations || {},
+                updatedAt: String(value.updatedAt || "")
+            },
+            version: rows[0].version || "",
+            exists: true
+        };
+    }
+    function writeQuota(nk, userId, stored) {
+        stored.value.updatedAt = new Date().toISOString();
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: quotaKey(stored.value.date),
+                userId: userId,
+                value: stored.value,
+                version: stored.exists ? stored.version : "*",
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    function response(state, tier, limit, resetAt, allowed, reservationId) {
+        return RpcHelpers.successResponse({
+            allowed: allowed !== false,
+            tier: tier,
+            limit: limit < 0 ? null : limit,
+            unlimited: limit < 0,
+            used: state.used,
+            remaining: limit < 0 ? null : Math.max(0, limit - state.used),
+            date: state.date,
+            resetAt: resetAt,
+            reservationId: reservationId || ""
+        });
+    }
+    function rpcLapNoteQuota(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload) || {};
+        var action = String(data.action || "status").toLowerCase();
+        var now = new Date();
+        var date = action === "release" && data.date ? String(data.date) : utcDate(now);
+        var tier = subscriptionTier(nk, userId, now.getTime());
+        var limit = limitForTier(tier);
+        var resetAt = nextUtcReset(now);
+        if (limit < 0) {
+            var unlimitedState = readQuota(nk, userId, date).value;
+            return response(unlimitedState, tier, limit, resetAt, true, "");
+        }
+        if (action === "status") {
+            return response(readQuota(nk, userId, date).value, tier, limit, resetAt);
+        }
+        if (action !== "reserve" && action !== "release") {
+            return RpcHelpers.errorResponse("action must be status, reserve, or release");
+        }
+        var reservationId = action === "release" ? String(data.reservationId || "") : "";
+        if (action === "release" && !reservationId) {
+            return RpcHelpers.errorResponse("reservationId required for release");
+        }
+        if (action === "release") {
+            var expectedSecret = String(ctx.env["NAKAMA_WEBHOOK_SECRET"] || "");
+            var suppliedSecret = String(data.refundSecret || "");
+            if (!expectedSecret || suppliedSecret !== expectedSecret) {
+                return RpcHelpers.errorResponse("release is server-only");
+            }
+        }
+        var lastError = null;
+        for (var attempt = 0; attempt < OCC_MAX_RETRIES; attempt++) {
+            var stored = readQuota(nk, userId, date);
+            var state = stored.value;
+            if (action === "reserve") {
+                if (state.used >= limit) {
+                    return response(state, tier, limit, resetAt, false, "");
+                }
+                reservationId = nk.uuidv4();
+                state.used += 1;
+                state.reservations[reservationId] = true;
+            }
+            else {
+                if (!state.reservations[reservationId]) {
+                    return response(state, tier, limit, resetAt, true, "");
+                }
+                delete state.reservations[reservationId];
+                state.used = Math.max(0, state.used - 1);
+            }
+            try {
+                writeQuota(nk, userId, stored);
+                return response(state, tier, limit, resetAt, true, action === "reserve" ? reservationId : "");
+            }
+            catch (err) {
+                lastError = err;
+            }
+        }
+        logger.error("[QvLapNoteQuota] OCC exhausted user=" + userId + " action=" + action);
+        throw lastError || new Error("lap_note_quota_contention");
+    }
+    function register(initializer) {
+        initializer.registerRpc("quizverse_lap_note_quota", rpcLapNoteQuota);
+    }
+    QvLapNoteQuota.register = register;
+})(QvLapNoteQuota || (QvLapNoteQuota = {}));
 // =============================================================================
 // RPC: admin_revenuecat_dashboard
 //
@@ -34168,19 +35084,18 @@ var LegacyChat;
     // before-hook — the client gets the error back, the send never lands.
     var MAX_MESSAGE_CHARS = 4000;
     var CHAT_RATE_MAX = 10; // messages
-    var CHAT_RATE_WINDOW_MS = 10000; // per this many ms, per user
-    var chatSendLog = {};
-    function enforceChatHygiene(ctx, content) {
+    var CHAT_RATE_WINDOW_SEC = 10; // per this many seconds, per user
+    function enforceChatHygiene(ctx, nk, content) {
         if (content.length > MAX_MESSAGE_CHARS) {
             throw new Error("Message too long (max " + MAX_MESSAGE_CHARS + " characters).");
         }
-        var now = Date.now();
-        var log = (chatSendLog[ctx.userId] || []).filter(function (t) { return now - t < CHAT_RATE_WINDOW_MS; });
-        if (log.length >= CHAT_RATE_MAX) {
+        // Nakama executes handlers across a Goja VM pool (and multiple pods in
+        // production), so module-local counters are not authoritative. Use the
+        // shared storage-backed limiter to enforce one contract everywhere.
+        var decision = SharedRateLimit.checkUserWindow(ctx, nk, "channel_message_send", CHAT_RATE_WINDOW_SEC, CHAT_RATE_MAX);
+        if (!decision.allowed) {
             throw new Error("You're sending messages too fast — slow down.");
         }
-        log.push(now);
-        chatSendLog[ctx.userId] = log;
     }
     // Before-hook for realtime ChannelMessageSend. Forces persist=true so every
     // chat message is written to channel history. Without persistence the message
@@ -34191,7 +35106,7 @@ var LegacyChat;
     function beforeChannelMessageSend(ctx, logger, nk, envelope) {
         var msg = envelope ? envelope.channelMessageSend : null;
         if (msg) {
-            enforceChatHygiene(ctx, String(msg.content || ""));
+            enforceChatHygiene(ctx, nk, String(msg.content || ""));
             try {
                 msg.persist = true;
             }
@@ -34200,6 +35115,10 @@ var LegacyChat;
             }
         }
         return envelope;
+    }
+    function registerRealtimeHooks(initializer) {
+        initializer.registerRtBefore("ChannelMessageSend", beforeChannelMessageSend);
+        initializer.registerRtAfter("ChannelMessageSend", afterChannelMessageSend);
     }
     function register(initializer) {
         initializer.registerRpc("send_group_chat_message", rpcSendGroupChatMessage);
@@ -34218,10 +35137,11 @@ var LegacyChat;
         initializer.registerRpc("mark_group_messages_read", RpcHelpers.withCleanAuthError(rpcMarkGroupMessagesRead));
         initializer.registerRpc("get_unread_counts", RpcHelpers.withCleanAuthError(rpcGetUnreadCounts));
         // Force durable persistence for realtime chat (offline delivery + history +
-        // unread counts), then push-notify after the message lands.
-        initializer.registerRtBefore("ChannelMessageSend", beforeChannelMessageSend);
-        // Push notifications for messages sent directly over the realtime socket.
-        initializer.registerRtAfter("ChannelMessageSend", afterChannelMessageSend);
+        // unread counts), then push-notify after the message lands. postbuild also
+        // invokes register() without an initializer on every pooled Goja VM to bind
+        // RPC stubs; only the real InitModule call may install realtime hooks.
+        if (initializer)
+            registerRealtimeHooks(initializer);
     }
     LegacyChat.register = register;
 })(LegacyChat || (LegacyChat = {}));
@@ -34564,6 +35484,8 @@ var LegacyFriends;
             var usernames = data.usernames ? (Array.isArray(data.usernames) ? data.usernames : [data.usernames]) : [];
             if (data.userId)
                 ids.push(data.userId);
+            if (data.targetUserId)
+                ids.push(data.targetUserId);
             if (data.username)
                 usernames.push(data.username);
             if (ids.length === 0 && usernames.length === 0) {
@@ -34590,6 +35512,8 @@ var LegacyFriends;
             var usernames = data.usernames ? (Array.isArray(data.usernames) ? data.usernames : [data.usernames]) : [];
             if (data.userId)
                 ids.push(data.userId);
+            if (data.targetUserId)
+                ids.push(data.targetUserId);
             if (data.username)
                 usernames.push(data.username);
             if (ids.length === 0 && usernames.length === 0) {
@@ -66653,6 +67577,18 @@ var SharedRateLimit;
         return { allowed: true };
     }
     SharedRateLimit.check = check;
+    /**
+     * Check an arbitrary per-user sliding window using the same distributed
+     * storage buckets as the standard second/minute limits. Realtime hooks use
+     * this when their product contract is not a one-second or one-minute window.
+     */
+    function checkUserWindow(ctx, nk, operationName, windowSec, limit) {
+        var userId = ctx.userId || "";
+        if (!userId || windowSec < 1 || limit < 1)
+            return { allowed: true };
+        return countAndIncrement(nk, userId, KEY_PREFIX_USER + operationName + "_w" + windowSec, windowSec, limit);
+    }
+    SharedRateLimit.checkUserWindow = checkUserWindow;
     // Convenience wrapper: short-circuits a handler with a 429 response if the
     // caller is over limit. Usage:
     //   function rpcEnter(ctx, logger, nk, payload) {

@@ -671,6 +671,10 @@ declare namespace QvAnalyticsCron {
 declare namespace BlogEmbed {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare function persistNormalizedEvent(nk: nkruntime.Nakama, logger: nkruntime.Logger, ev: any): void;
+declare namespace QuizVerseBrainPrompts {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QvCacheRefreshCron {
     function register(initializer: nkruntime.Initializer): void;
     /**
@@ -1231,6 +1235,9 @@ declare namespace QvEntitlements {
 declare namespace QvExplainerVideos {
     /** Called from entitlements rc_sync / grantConsumable. */
     function grantExplainerCredits(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, quantity: number): number;
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace QvLapNoteQuota {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace QuizVerseRevenueCatAdmin {
@@ -4211,6 +4218,12 @@ declare namespace SharedRateLimit {
         retryAfterSec?: number;
     }
     function check(ctx: nkruntime.Context, nk: nkruntime.Nakama, rpcName: string, opts: RateLimitOpts): RateLimitDecision;
+    /**
+     * Check an arbitrary per-user sliding window using the same distributed
+     * storage buckets as the standard second/minute limits. Realtime hooks use
+     * this when their product contract is not a one-second or one-minute window.
+     */
+    function checkUserWindow(ctx: nkruntime.Context, nk: nkruntime.Nakama, operationName: string, windowSec: number, limit: number): RateLimitDecision;
     function enforce(ctx: nkruntime.Context, nk: nkruntime.Nakama, rpcName: string, opts: RateLimitOpts): string | null;
 }
 declare namespace RewardEngine {

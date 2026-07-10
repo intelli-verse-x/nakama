@@ -171,6 +171,16 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[LiveBanner] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- Quizverse Brain contextual prompt gate ----
+  // Server-authoritative daily/weekly frequency, cross-device OCC reservation,
+  // idempotent lifecycle commits, successful-visit tracking, and telemetry.
+  try {
+    QuizVerseBrainPrompts.register(initializer);
+    logger.info("[BrainPrompt] evaluate + commit RPCs registered");
+  } catch (err: any) {
+    logger.error("[BrainPrompt] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- QuizVerse product telemetry (quizverse_product_metrics → n8n WF-09) ----
   // Independent of QuizVerse Next.js /admin/metrics — both may call WF-09 in parallel.
   try {
@@ -194,6 +204,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[QvEntitlements] quizverse_get_entitlements + quizverse_rc_sync registered");
   } catch (err: any) {
     logger.error("[QvEntitlements] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- Link & Play server-authoritative daily note quota ----
+  try {
+    QvLapNoteQuota.register(initializer);
+    logger.info("[QvLapNoteQuota] quizverse_lap_note_quota registered");
+  } catch (err: any) {
+    logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
   // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
