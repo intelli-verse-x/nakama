@@ -73,7 +73,11 @@ namespace QvGetQuestions {
     geography: true, speed_quiz: true, true_false: true, anime: true, pokemon: true,
     cocktail: true, food: true, dog: true, ghibli: true, disney: true, starwars: true,
     countries: true, flags: true, space: true, movies: true, sports: true, music: true,
-    news: true, daily: true, weekly: true, video_quiz: true, ai: true
+    news: true, daily: true, weekly: true, video_quiz: true, ai: true,
+    // New topics (2026-07): infinite-content providers, all free/no-key
+    math: true,    // OpenTDB Mathematics (cat 19) + Computers (cat 18)
+    art: true,     // Art Institute of Chicago API — CC0 artwork images
+    history: true  // OpenTDB History (cat 23) + jService Jeopardy archive
   };
 
   // Media-pool topics the AI-driven image/media quiz modes (Who's That, Brain Sprint,
@@ -108,6 +112,10 @@ namespace QvGetQuestions {
     // media.type==="audio" questions (Deezer, see question_cache.ts fetchDeezer).
     if (topic.indexOf("music") !== -1 || topic.indexOf("song") !== -1 || topic.indexOf("audio") !== -1) return "music";
     if (topic.indexOf("news") !== -1) return "news";
+    // New topic aliases (2026-07)
+    if (topic.indexOf("math") !== -1 || topic.indexOf("maths") !== -1 || topic.indexOf("comput") !== -1) return "math";
+    if (topic.indexOf("art") !== -1 || topic.indexOf("paint") !== -1 || topic.indexOf("museum") !== -1) return "art";
+    if (topic.indexOf("histor") !== -1 || topic.indexOf("jeopardy") !== -1) return "history";
 
     // No recognizable topic keyword — likely a bare "<mode> — random mix" label.
     // Deterministically pick a media topic from a hash of the caller-supplied label
@@ -197,13 +205,14 @@ namespace QvGetQuestions {
 
   function topicProviderForLog(topic: string): string {
     var map: { [t: string]: string } = {
-      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
+      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan+anilist+opentdb", pokemon: "pokeapi",
       cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
       ghibli: "ghibli", disney: "disney", starwars: "swapi",
       countries: "restcountries", flags: "restcountries",
-      space: "nasa", movies: "tmdb", sports: "sportsdb",
-      music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
-      video_quiz: "catalog", ai: "claude"
+      space: "nasa", movies: "tmdb", sports: "sportsdb+opentdb",
+      music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
+      video_quiz: "catalog", ai: "claude",
+      math: "opentdb", art: "artic", history: "opentdb+jservice"
     };
     return map[topic] || topic;
   }

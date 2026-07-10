@@ -66,11 +66,14 @@ namespace QvQuestionCache {
     sports:    2  * 3600000,
     news:      6  * 3600000,
     space:     6  * 3600000,
+    math:      6  * 3600000,
+    history:   12 * 3600000,
     food:      12 * 3600000,
     cocktail:  12 * 3600000,
     anime:     24 * 3600000,
     dog:       24 * 3600000,
     disney:    24 * 3600000,
+    art:       7  * 24 * 3600000,
     pokemon:   72 * 3600000,
     ghibli:    72 * 3600000,
     starwars:  72 * 3600000,
@@ -258,13 +261,14 @@ namespace QvQuestionCache {
 
   function topicProvider(topic: string): string {
     var map: { [t: string]: string } = {
-      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
+      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan+anilist+opentdb", pokemon: "pokeapi",
       cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
       ghibli: "ghibli", disney: "disney", starwars: "swapi",
       countries: "restcountries", flags: "restcountries",
-      space: "nasa", movies: "tmdb", sports: "sportsdb",
+      space: "nasa", movies: "tmdb", sports: "sportsdb+opentdb",
       music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
-      video_quiz: "catalog", ai: "claude"
+      video_quiz: "catalog", ai: "claude",
+      math: "opentdb", art: "artic", history: "opentdb+jservice"
     };
     return map[topic] || topic;
   }
@@ -904,10 +908,20 @@ namespace QvQuestionCache {
   // fetchAniList's comment for why it barely overlaps Jikan's pool.
   function fetchAnimeQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
     var out = fetchJikan(nk, logger);
+    // AniList: different popularity signal than Jikan/MAL → genuinely different questions
     try {
       out = out.concat(fetchAniList(nk, logger));
     } catch (e: any) {
       logger.debug("[QvQCache/anime] AniList bonus fetch skipped: " + (e && e.message));
+    }
+    // OpenTDB anime (cat 31) — curated text MCQ from the game-show trivia DB,
+    // covers different angles (voice actors, episode counts, studio facts) that
+    // Jikan/AniList image-matching questions don't. Best-effort only.
+    try {
+      var otdbAnime = fetchOpenTdbCategory(nk, logger, 31, 30, "anime", "anime_manga");
+      out = out.concat(otdbAnime);
+    } catch (e: any) {
+      logger.debug("[QvQCache/anime] OpenTDB cat=31 bonus fetch skipped: " + (e && e.message));
     }
     return out;
   }
@@ -1597,6 +1611,20 @@ namespace QvQuestionCache {
     return results;
   }
 
+  // Combines TheSportsDB visual team questions with OpenTDB Sports (cat 21)
+  // text MCQs. OpenTDB sports covers trivia that image-only team questions
+  // can't (records, rules, championships) — genuinely different content.
+  function fetchSportsQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var out = fetchSportsdb(nk, logger);
+    try {
+      var otdbSports = fetchOpenTdbCategory(nk, logger, 21, 30, "sports", "general_sports");
+      out = out.concat(otdbSports);
+    } catch (e: any) {
+      logger.debug("[QvQCache/sports] OpenTDB cat=21 bonus fetch skipped: " + (e && e.message));
+    }
+    return out;
+  }
+
   // ── 14a. Deezer (Music/Audio) — free, keyless, REAL 30s audio previews ────
   // #QVVBS-CACHE (2026-07): "Audio Quiz (AI) — Not Working" — grepping this whole
   // file for media.type==="audio" turned up zero matches anywhere; the "music"
@@ -1625,11 +1653,20 @@ namespace QvQuestionCache {
       }
     }
     if (tracks.length === 0) throw new Error("Deezer: no tracks in chart");
-    var artistNames: string[] = [];
+    // Deduplicate artist names before building the wrong-answer pool.
+    // A top-150 chart routinely contains 3-5 songs per popular artist (Taylor Swift,
+    // Bad Bunny, etc.). Pushing every track's artist into a plain array and then
+    // calling pickExcluding on it yields duplicates like [Swift, Swift, Bad Bunny]
+    // because pickExcluding only excludes the *correct* artist, not repeated names
+    // already selected as wrong answers — the bug flagged in PR review.
+    // Using an object set and Object.keys() mirrors the genreSet pattern used by
+    // fetchJikan, fetchAniList, and every other multi-pick helper in this file.
+    var artistNamesSet: { [name: string]: boolean } = {};
     for (var di = 0; di < tracks.length; di++) {
       var artOf: any = tracks[di].artist;
-      if (artOf && artOf.name) artistNames.push(artOf.name);
+      if (artOf && artOf.name) artistNamesSet[artOf.name] = true;
     }
+    var artistNames: string[] = Object.keys(artistNamesSet);
     for (var dj = 0; dj < tracks.length; dj++) {
       var trk: any = tracks[dj];
       try {
@@ -2138,6 +2175,201 @@ namespace QvQuestionCache {
     return results;
   }
 
+  // ── 20. Math (OpenTDB Mathematics + Computers) — free, no key ───────────────
+  // OpenTDB category 19 = Science: Mathematics (~400 verified MCQs)
+  // OpenTDB category 18 = Science: Computers (bonus variety)
+  // Two batches so the pool stays large after the quality gate filters weak entries.
+  function fetchMathQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var batches: Array<{ id: number; amt: number; label: string }> = [
+      { id: 19, amt: 50, label: "mathematics" },
+      { id: 18, amt: 30, label: "science_computers" }
+    ];
+    for (var bi = 0; bi < batches.length; bi++) {
+      var b = batches[bi];
+      try {
+        var batch = fetchOpenTdbCategory(nk, logger, b.id, b.amt, "math", b.label);
+        for (var qi = 0; qi < batch.length; qi++) results.push(batch[qi]);
+      } catch (e: any) {
+        logger.debug("[QvQCache/math] OpenTDB cat=" + b.id + " failed (non-fatal): " + (e && e.message));
+      }
+    }
+    if (results.length === 0) throw new Error("math: all OpenTDB fetches returned 0 questions");
+    logger.info("[QvQCache/math] event=math_fetch count=" + results.length);
+    return results;
+  }
+
+  // ── 21. Art Institute of Chicago (Art) — free, no key, CC0 images ─────────
+  // https://api.artic.edu/api/v1/artworks — thousands of artworks with CC0
+  // images hosted via IIIF. No API key required. Question format: show artwork
+  // image and ask who painted/created it. Wrong answers are other artist names
+  // from the same batch (same pattern as fetchJikan genreSet deduplication).
+  function fetchArtInstitute(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var allArtists: { [name: string]: boolean } = {};
+    var rawWorks: Array<{ title: string; artist: string; imageId: string; date: string }> = [];
+
+    var pages = [1, 2, 3];
+    for (var pi = 0; pi < pages.length; pi++) {
+      try {
+        var url = "https://api.artic.edu/api/v1/artworks?fields=id,title,artist_display,date_display,artwork_type_title,image_id&limit=50&page=" + pages[pi];
+        var resp: any = httpGet(nk, url);
+        if (!resp || !Array.isArray(resp.data)) continue;
+        for (var wi = 0; wi < resp.data.length; wi++) {
+          var w: any = resp.data[wi];
+          if (!w.image_id || !w.title || !w.artist_display) continue;
+          // artist_display is "Georges Seurat\nFrench, 1859–1891" — take only the name part
+          var artistRaw: string = w.artist_display || "";
+          var artistName: string = artistRaw.indexOf("\n") >= 0 ? artistRaw.substring(0, artistRaw.indexOf("\n")).trim() : artistRaw.trim();
+          // Skip "Unknown" / "After X" / "Attributed to X" style entries — poor quiz quality
+          if (!artistName || artistName.length < 3) continue;
+          if (artistName.indexOf("Unknown") === 0 || artistName.indexOf("After ") === 0) continue;
+          allArtists[artistName] = true;
+          rawWorks.push({
+            title: (w.title || "").trim(),
+            artist: artistName,
+            imageId: w.image_id,
+            date: w.date_display || ""
+          });
+        }
+      } catch (e: any) {
+        logger.debug("[QvQCache/artic] page " + pages[pi] + " failed (non-fatal): " + (e && e.message));
+      }
+    }
+
+    var artistPool: string[] = Object.keys(allArtists);
+    if (rawWorks.length === 0 || artistPool.length < 4) {
+      throw new Error("artic: insufficient works or artists (works=" + rawWorks.length + " artists=" + artistPool.length + ")");
+    }
+
+    for (var ai = 0; ai < rawWorks.length; ai++) {
+      var work = rawWorks[ai];
+      try {
+        var exArt: { [k: string]: boolean } = {};
+        exArt[work.artist] = true;
+        var wrongArtists = pickExcluding(artistPool, exArt, 3);
+        if (wrongArtists.length < 3) continue;
+
+        var imageUrl = "https://www.artic.edu/iiif/2/" + work.imageId + "/full/843,/0/default.jpg";
+        var artOpts: RawOpt[] = [{ text: work.artist, is_correct: true }];
+        for (var wai = 0; wai < wrongArtists.length; wai++) {
+          artOpts.push({ text: wrongArtists[wai] as string, is_correct: false });
+        }
+
+        results.push({
+          provider_key: "artic_" + djb2(work.title + work.artist),
+          topic: "art", lang: "en",
+          question_text: "Who created this artwork?",
+          question_type: "single_select",
+          raw_options: artOpts,
+          has_media: true,
+          media: { type: "image", url: imageUrl, thumbnail_url: imageUrl, duration_seconds: null, mime_type: "image/jpeg" },
+          explanation: "\"" + work.title + "\"" + (work.date ? " (" + work.date + ")" : "") + " by " + work.artist + ".",
+          difficulty: "medium", provider: "artic",
+          meta: { title: work.title, artist: work.artist }
+        });
+      } catch (e: any) { logger.debug("[QvQCache/artic] skip work: " + (e && e.message)); }
+    }
+    logger.info("[QvQCache/artic] event=art_fetch works=" + rawWorks.length + " artists=" + artistPool.length + " emitted=" + results.length);
+    return results;
+  }
+
+  // ── 22. History (OpenTDB History + jService Jeopardy) — free, no key ───────
+  // OpenTDB category 23 = History (primary, well-structured MCQ with 3 distractors)
+  // jService = archive of real Jeopardy clues (bonus variety, best-effort only)
+  // jService clues are in Jeopardy format: "question" is the statement, "answer"
+  // is the keyword response. We collect all answers from the batch to use as a
+  // shared wrong-answer pool — same deduplication-set pattern used throughout.
+  function fetchJservice(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var clues: any[] = [];
+    // Fetch 2 batches of 100 for a wider pool
+    var endpoints = [
+      "https://jservice.io/api/random?count=100",
+      "https://jservice.io/api/random?count=100"
+    ];
+    for (var ei = 0; ei < endpoints.length; ei++) {
+      try {
+        var raw: any = httpGet(nk, endpoints[ei]);
+        if (Array.isArray(raw)) {
+          for (var ci = 0; ci < raw.length; ci++) clues.push(raw[ci]);
+        }
+      } catch (e: any) {
+        logger.debug("[QvQCache/jservice] fetch failed (non-fatal): " + (e && e.message));
+      }
+    }
+    if (clues.length === 0) return results;
+
+    // Collect deduplicated answer pool for wrong-answer picking
+    var answerSet: { [a: string]: boolean } = {};
+    for (var ai2 = 0; ai2 < clues.length; ai2++) {
+      var ans: string = (clues[ai2].answer || "").replace(/<[^>]+>/g, "").trim();
+      if (ans && ans.length > 0 && ans.length < 60) answerSet[ans] = true;
+    }
+    var answerPool: string[] = Object.keys(answerSet);
+    if (answerPool.length < 4) return results;
+
+    for (var ji = 0; ji < clues.length; ji++) {
+      var clue: any = clues[ji];
+      try {
+        // Strip HTML tags that jService sometimes embeds in question/answer
+        var qText: string = (clue.question || "").replace(/<[^>]+>/g, "").trim();
+        var answer: string = (clue.answer || "").replace(/<[^>]+>/g, "").trim();
+        if (!qText || !answer || qText.length < 10 || answer.length > 60) continue;
+        // Skip question-less clues or answers that are just numbers
+        if (/^\d+$/.test(answer)) continue;
+
+        var exJ: { [k: string]: boolean } = {};
+        exJ[answer] = true;
+        var wrongJ = pickExcluding(answerPool, exJ, 3);
+        if (wrongJ.length < 3) continue;
+
+        var catTitle: string = (clue.category && clue.category.title) ? clue.category.title : "";
+        var jOpts: RawOpt[] = [{ text: answer, is_correct: true }];
+        for (var wji = 0; wji < wrongJ.length; wji++) {
+          jOpts.push({ text: wrongJ[wji] as string, is_correct: false });
+        }
+
+        results.push({
+          provider_key: "jservice_" + (clue.id || djb2(qText)),
+          topic: "history", lang: "en",
+          question_text: qText,
+          question_type: "single_select",
+          raw_options: jOpts,
+          has_media: false,
+          media: null,
+          explanation: catTitle ? "Category: " + catTitle : "",
+          difficulty: "hard",
+          provider: "jservice",
+          meta: { category: catTitle }
+        });
+      } catch (e: any) { logger.debug("[QvQCache/jservice] skip clue: " + (e && e.message)); }
+    }
+    logger.info("[QvQCache/jservice] event=jservice_fetch clues=" + clues.length + " emitted=" + results.length);
+    return results;
+  }
+
+  function fetchHistoryQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    // Primary: OpenTDB History (category 23) — structured MCQ with 3 distractors
+    try {
+      var opentdbBatch = fetchOpenTdbCategory(nk, logger, 23, 50, "history", "history");
+      for (var oi = 0; oi < opentdbBatch.length; oi++) results.push(opentdbBatch[oi]);
+    } catch (e: any) {
+      logger.warn("[QvQCache/history] OpenTDB cat=23 failed: " + (e && e.message));
+    }
+    // Bonus: jService Jeopardy archive — real questions from the TV show
+    try {
+      var jsBatch = fetchJservice(nk, logger);
+      for (var ji2 = 0; ji2 < jsBatch.length; ji2++) results.push(jsBatch[ji2]);
+    } catch (e: any) {
+      logger.debug("[QvQCache/history] jService bonus failed (non-fatal): " + (e && e.message));
+    }
+    if (results.length === 0) throw new Error("history: all fetches returned 0 questions");
+    logger.info("[QvQCache/history] event=history_fetch count=" + results.length);
+    return results;
+  }
+
   // ── Provider router ────────────────────────────────────────────────────────
 
   function fetchForTopic(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger, topic: string): RawQuestion[] {
@@ -2163,9 +2395,12 @@ namespace QvQuestionCache {
       }
       case "space":    return fetchNasa(nk, env, logger);
       case "movies":   return fetchTmdb(nk, env, logger);
-      case "sports":   return fetchSportsdb(nk, logger);
+      case "sports":   return fetchSportsQuiz(nk, logger);
       case "music":    return fetchMusicQuiz(nk, env, logger);
       case "news":     return fetchNews(nk, env, logger);
+      case "math":     return fetchMathQuiz(nk, logger);
+      case "art":      return fetchArtInstitute(nk, logger);
+      case "history":  return fetchHistoryQuiz(nk, logger);
       case "daily":
       case "weekly":   return fetchS3(nk, env, logger, topic);
       case "video_quiz": return fetchVideoQuiz(nk, env, logger);
