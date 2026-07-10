@@ -160,6 +160,7 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
 function buildDailyProgressState(nk, logger, userId, gameId) {
     var streakData = getStreakData(nk, logger, userId, gameId);
     streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+    streakData = touchDailyStreak(nk, logger, userId, gameId, streakData);
 
     var claimCheck = canClaimToday(streakData);
     var nextReward = getRewardForDay(gameId, streakData.currentStreak + 1);

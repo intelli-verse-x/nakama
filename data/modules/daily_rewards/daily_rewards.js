@@ -171,6 +171,7 @@ function getStreakData(nk, logger, userId, gameId) {
             currentStreak: 0,
             bestStreak: 0,
             lastClaimTimestamp: 0,
+            lastActivityTimestamp: 0,
             totalClaims: 0,
             claimHistory: [],
             createdAt: utils.getCurrentTimestamp()
@@ -302,7 +303,106 @@ function canClaimToday(streakData) {
 }
 
 /**
+ * Resolve lastActivityTimestamp for break checks, seeding from claim data when
+ * the field is absent on legacy records (migration runs fully in touchDailyStreak).
+ */
+function resolveLastActivityTimestamp(streakData) {
+    var lastActivity = streakData.lastActivityTimestamp || 0;
+    if (lastActivity > 0) {
+        return lastActivity;
+    }
+    if (streakData.lastClaimTimestamp > 0) {
+        return streakData.lastClaimTimestamp;
+    }
+    if (streakData.claimHistory && streakData.claimHistory.length > 0) {
+        return getUtcDayStartUnixFromDateString(
+            streakData.claimHistory[streakData.claimHistory.length - 1]
+        );
+    }
+    return 0;
+}
+
+/**
+ * Record app-open activity for the UTC day and advance the login streak.
+ * Idempotent within the same UTC day. Persists when state changes.
+ */
+function touchDailyStreak(nk, logger, userId, gameId, streakData) {
+    var today = getTodayUtcDateString();
+    var now = utils.getUnixTimestamp();
+    var streakBefore = streakData.currentStreak || 0;
+
+    if (!streakData.lastActivityTimestamp || streakData.lastActivityTimestamp === 0) {
+        var seedTs = 0;
+        var seedSource = "";
+        if (streakData.lastClaimTimestamp > 0) {
+            seedTs = streakData.lastClaimTimestamp;
+            seedSource = "lastClaimTimestamp";
+        } else if (streakData.claimHistory && streakData.claimHistory.length > 0) {
+            seedTs = getUtcDayStartUnixFromDateString(
+                streakData.claimHistory[streakData.claimHistory.length - 1]
+            );
+            seedSource = "claimHistory";
+        }
+        if (seedTs > 0) {
+            streakData.lastActivityTimestamp = seedTs;
+            utils.logInfo(logger, "[DailyRewards] touchDailyStreak migrated lastActivityTimestamp from " +
+                seedSource + " for userId=" + userId);
+        }
+    }
+
+    if (streakData.lastActivityTimestamp > 0) {
+        var lastActivityDate = getUtcDateStringFromUnix(streakData.lastActivityTimestamp);
+        if (lastActivityDate === today) {
+            utils.logInfo(logger, "[DailyRewards] touchDailyStreak skip userId=" + userId + " date=" + today);
+            return streakData;
+        }
+    }
+
+    var dayDiff = 0;
+    if (streakData.lastActivityTimestamp > 0) {
+        var lastDate = getUtcDateStringFromUnix(streakData.lastActivityTimestamp);
+        var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
+        var todayDayStart = getUtcDayStartUnixFromDateString(today);
+        dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
+
+        if (dayDiff === 1) {
+            streakData.currentStreak = streakBefore + 1;
+        } else if (dayDiff > 1 || !utils.isWithinHours(streakData.lastActivityTimestamp, now, 48)) {
+            streakData.currentStreak = 1;
+        }
+    } else {
+        streakData.currentStreak = 1;
+        dayDiff = -1;
+    }
+
+    streakData.lastActivityTimestamp = now;
+    streakData.updatedAt = utils.getCurrentTimestamp();
+
+    if (streakData.currentStreak > (streakData.bestStreak || 0)) {
+        streakData.bestStreak = streakData.currentStreak;
+    }
+
+    if (!streakData.claimHistory) {
+        streakData.claimHistory = [];
+    }
+    if (streakData.claimHistory[streakData.claimHistory.length - 1] !== today) {
+        streakData.claimHistory.push(today);
+        while (streakData.claimHistory.length > 90) {
+            streakData.claimHistory.shift();
+        }
+    }
+
+    utils.logInfo(logger, "[DailyRewards] touchDailyStreak userId=" + userId +
+        " dayDiff=" + dayDiff + " streakBefore=" + streakBefore +
+        " streakAfter=" + streakData.currentStreak);
+
+    saveStreakData(nk, logger, userId, gameId, streakData);
+    return streakData;
+}
+
+/**
  * Update streak status based on time elapsed; persist when streak breaks.
+ * Uses lastActivityTimestamp (app-open model), not lastClaimTimestamp.
  * @param {object} nk - Nakama runtime
  * @param {object} logger - Logger instance
  * @param {string} userId - User ID
@@ -312,21 +412,25 @@ function canClaimToday(streakData) {
  */
 function updateStreakStatus(nk, logger, userId, gameId, streakData) {
     var now = utils.getUnixTimestamp();
-    var lastClaim = streakData.lastClaimTimestamp;
-    
-    // First claim
-    if (lastClaim === 0) {
+    var lastActivity = resolveLastActivityTimestamp(streakData);
+
+    if (lastActivity === 0) {
         return streakData;
     }
-    
-    // Check if more than 48 hours passed (streak broken)
-    if (!utils.isWithinHours(lastClaim, now, 48)) {
+
+    var lastDate = getUtcDateStringFromUnix(lastActivity);
+    var today = getTodayUtcDateString();
+    var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
+    var todayDayStart = getUtcDayStartUnixFromDateString(today);
+    var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
+
+    if (dayDiff > 1 || !utils.isWithinHours(lastActivity, now, 48)) {
         if (streakData.currentStreak !== 0) {
             streakData.currentStreak = 0;
             saveStreakData(nk, logger, userId, gameId, streakData);
         }
     }
-    
+
     return streakData;
 }
 
@@ -438,6 +542,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
     // the versioned read below sees a settled record).
     var streakData = getStreakData(nk, logger, userId, gameId);
     streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+    streakData = touchDailyStreak(nk, logger, userId, gameId, streakData);
 
     // Fast pre-check (cheap rejection before the OCC loop).
     var claimCheck = canClaimToday(streakData);
@@ -468,37 +573,14 @@ function performDailyClaim(nk, logger, userId, gameId) {
             return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
         }
 
-        // Reset streak when gap spans more than one UTC day or exceeds 48h grace
-        // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
-        var lastClaimTs = claimState.lastClaimTimestamp || 0;
-        if (lastClaimTs > 0) {
-            var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-            var today = getTodayUtcDateString();
-            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-            var todayDayStart = getUtcDayStartUnixFromDateString(today);
-            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-                claimState.currentStreak = 0;
-            }
-        }
-
-        // Update streak
-        claimState.currentStreak = (claimState.currentStreak || 0) + 1;
+        // Claim records reward eligibility only — streak advances via touchDailyStreak.
         claimState.lastClaimTimestamp = utils.getUnixTimestamp();
         claimState.totalClaims = (claimState.totalClaims || 0) + 1;
         claimState.updatedAt = utils.getCurrentTimestamp();
 
-        // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
-        if (claimState.currentStreak > (claimState.bestStreak || 0)) {
-            claimState.bestStreak = claimState.currentStreak;
-        }
-
         // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
         // Capped at 90 entries (~3 months) to keep the storage record small.
-        var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
-        var claimDateStr = claimDate.getUTCFullYear() + "-" +
-            (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
-            (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
+        var claimDateStr = getTodayUtcDateString();
         if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {
             claimState.claimHistory.push(claimDateStr);
             while (claimState.claimHistory.length > 90) {
@@ -506,7 +588,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
             }
         }
 
-        reward = getRewardForDay(gameId, claimState.currentStreak);
+        reward = getRewardForDay(gameId, claimState.currentStreak || 1);
 
         if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
             committed = true;
