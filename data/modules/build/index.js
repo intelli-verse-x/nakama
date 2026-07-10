@@ -21221,14 +21221,26 @@ var AdminConsole;
                 source: "satori_platform"
             });
         }
+        // Dedup is intentionally keyed on the event ID alone: event IDs are UUIDs
+        // minted once at creation, and the SAME logical event can legitimately exist
+        // in two storage paths — mirrored under SYSTEM by creator_live_event_publish
+        // AND under the creator's own user id (SPA publish path). The SYSTEM scan
+        // runs first, so the canonical SYSTEM copy wins and the creator-owned mirror
+        // is skipped. A composite key (id + owner) would surface the same event twice
+        // in the admin dashboard, which is exactly what this dedup prevents.
         var seenCreatorIds = {};
         var creatorEventsCollection = "live_events";
+        var maxListPages = 20; // 20 pages x 100 = 2000 events per scan, same for both scans
         function pushCreatorLiveEventRow(obj) {
             if (!obj.value)
                 return;
             var ev = obj.value;
             var evId = String(ev.id || obj.key || "");
-            if (!evId || seenCreatorIds[evId])
+            if (!evId) {
+                logger.warn("[rpcAdminLiveEventsList] Skipping live_events object with no id/key (owner=%s)", obj.userId || "unknown");
+                return;
+            }
+            if (seenCreatorIds[evId])
                 return;
             if (gameId && ev.gameId && ev.gameId !== gameId)
                 return;
@@ -21294,7 +21306,7 @@ var AdminConsole;
         // Creator events stored under SYSTEM (creator_live_event_publish path).
         try {
             var cursor = "";
-            for (var page = 0; page < 10; page++) {
+            for (var page = 0; page < maxListPages; page++) {
                 var result = nk.storageList(Constants.SYSTEM_USER_ID, creatorEventsCollection, 100, cursor);
                 var objects = result.objects || [];
                 for (var i = 0; i < objects.length; i++) {
@@ -21311,9 +21323,20 @@ var AdminConsole;
         // SPA / creator-portal events live under the CREATOR's user id (not SYSTEM).
         // live.quizverse.world lists via storageList(null, …); match that here so
         // WhatsApp, WF-47 KB, and admin live-ops see the same events.
+        //
+        // Permission model for storageList(null, ...): this is a server-runtime call
+        // that enumerates the "live_events" collection across ALL owners, bypassing
+        // per-object read permissions. That is safe and intended here because:
+        //  1. This RPC is admin-gated (RpcHelpers.requireAdmin above) — output is
+        //     only visible to authenticated admins, who must see private events too.
+        //  2. The scan is scoped to the single "live_events" collection; no other
+        //     user data is reachable.
+        //  3. Each row carries its `visibility` field, and public-facing consumers
+        //     (WhatsApp conversation hub via live-ops.ts isPublicJoinable) filter
+        //     out non-public events before anything reaches end users.
         try {
             var spaCursor = "";
-            for (var spaPage = 0; spaPage < 20; spaPage++) {
+            for (var spaPage = 0; spaPage < maxListPages; spaPage++) {
                 var spaResult = nk.storageList(null, creatorEventsCollection, 100, spaCursor);
                 var spaObjects = spaResult.objects || [];
                 for (var j = 0; j < spaObjects.length; j++) {
