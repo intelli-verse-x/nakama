@@ -196,6 +196,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QvEntitlements] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
+  try {
+    QuizVerseRevenueCatAdmin.register(initializer);
+    logger.info("[RevenueCatAdmin] admin_revenuecat_dashboard registered");
+  } catch (err: any) {
+    logger.error("[RevenueCatAdmin] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- Explainer video consumables (qv_entitlements / consumables) ----
   try {
     QvExplainerVideos.register(initializer);
@@ -505,6 +513,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[BattlePassEngine] Registering battlepass_get / record_event / unlock_premium RPCs...");
     BattlePassEngine.register(initializer);
     logger.info("[BattlePassEngine] 3 RPCs registered successfully");
+
+    // Register Reward Delivery — server-driven fulfilment catalog. Quest
+    // completions notify the player (Nakama notifications) and deliver
+    // digital assets (Notifuse email) purely from dashboard config, so new
+    // reward types never require a client build.
+    logger.info("[RewardDelivery] Registering reward_catalog_* / reward_delivery_* RPCs...");
+    RewardDelivery.register(initializer);
+    logger.info("[RewardDelivery] 5 RPCs registered successfully");
   } catch (err: any) {
     logger.error("[QuestEngine] Failed to register: " + (err && err.message ? err.message : String(err)));
   }

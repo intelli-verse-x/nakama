@@ -1104,8 +1104,6 @@ declare namespace HiroBase {
         transactionId?: string;
         storeType: IAPStoreType;
         error?: string;
-        /** false when recordPurchase skipped a duplicate transactionId */
-        newPurchase?: boolean;
     }
     export function validateReceipt(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, request: IAPValidationRequest): IAPValidationResult;
     export function generateDefaultUsername(nk: nkruntime.Nakama): string;
@@ -1218,15 +1216,7 @@ declare namespace HiroUnlockables {
     function getConfig(nk: nkruntime.Nakama): Hiro.UnlockablesConfig;
     function register(initializer: nkruntime.Initializer): void;
 }
-declare namespace CoinPackCatalog {
-    /** True when the productId is any coin pack (mirrors client ShopProductConfig.IsCoinPack). */
-    function isCoinPack(productId: string): boolean;
-    /**
-     * Resolve the total coins to grant for a coin pack product, including bonus.
-     * Returns null when the productId is not a known coin pack.
-     */
-    function resolveCoinGrant(productId: string): number | null;
-}
+declare function persistNormalizedEvent(nk: nkruntime.Nakama, logger: nkruntime.Logger, ev: any): void;
 declare namespace QvEntitlements {
     function grantSubscription(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, store: string, expiresAt: string | null): void;
     function grantConsumable(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, quantity: number): void;
@@ -1236,6 +1226,9 @@ declare namespace QvEntitlements {
 declare namespace QvExplainerVideos {
     /** Called from entitlements rc_sync / grantConsumable. */
     function grantExplainerCredits(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, quantity: number): number;
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace QuizVerseRevenueCatAdmin {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace AccountMerge {
@@ -3672,6 +3665,30 @@ declare namespace QuestEngine {
     export function processEvent(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, userId: string, gameId: string, eventType: string, value: number, metadata: {
         [k: string]: string;
     }): ProcessEventResult;
+    export function register(initializer: nkruntime.Initializer): void;
+    export {};
+}
+declare namespace RewardDelivery {
+    export interface CatalogEntry {
+        id: string;
+        title: string;
+        message?: string;
+        assetUrl?: string;
+        ctaLabel?: string;
+        deliver?: {
+            channel: "email" | "none";
+            notificationId?: string;
+        };
+        icon?: string;
+    }
+    interface Catalog {
+        rewards: {
+            [rewardId: string]: CatalogEntry;
+        };
+    }
+    export function loadCatalog(nk: nkruntime.Nakama, gameId: string): Catalog;
+    export function deliveryEmail(nk: nkruntime.Nakama, userId: string): string;
+    export function onQuestReward(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, userId: string, gameId: string, questId: string, questName: string, resolved: any): void;
     export function register(initializer: nkruntime.Initializer): void;
     export {};
 }
