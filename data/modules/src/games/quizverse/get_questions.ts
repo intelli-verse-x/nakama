@@ -218,8 +218,8 @@ namespace QvGetQuestions {
   }
 
   /**
-   * On cache miss: invoke refreshCache, always re-read, emit Grafana event= logs.
-   * Returns earlyReturn JSON when pool is still empty after refresh attempt.
+   * On cache miss: queue a background refresh and return immediately.
+   * Player RPCs never wait on an external question provider.
    */
   function handleEmptyTopicCache(
     nk:              nkruntime.Nakama,
@@ -243,44 +243,15 @@ namespace QvGetQuestions {
       rpc:       "quizverse_get_questions"
     }));
 
-    var t0            = nowMs();
-    var refreshResult = QvQuestionCache.refreshCache(nk, logger, env, topic);
-    var gated         = refreshResult.ok && refreshResult.count === 0 && !refreshResult.error;
-    var cacheResult   = QvQuestionCache.readCache(nk, logger, topic);
-    var pool          = cacheResult.questions;
-    var elapsedMs     = nowMs() - t0;
-    var provider      = topicProviderForLog(topic);
-
-    logger.info(formatQvLog("[QvGetQ][DEBUG:cache_refresh]", {
-      event:      "cache_refresh",
-      traceId:    traceId,
-      topic:      topic,
-      ok:         refreshResult.ok,
-      count:      refreshResult.count,
-      gated:      gated,
-      error:      refreshResult.error || "none",
-      elapsed_ms: elapsedMs,
-      provider:   provider
-    }));
-
-    if (pool.length > 0) {
-      logger.info(formatQvLog("[QvGetQ][GATE:cache_recovered]", {
-        event:      "cache_recovered",
-        traceId:    traceId,
-        topic:      topic,
-        poolSize:   pool.length,
-        elapsed_ms: elapsedMs
-      }));
-      return { pool: pool, cacheResult: cacheResult, earlyReturn: null };
-    }
-
-    var refreshErr = refreshResult.error || "none";
+    var t0 = nowMs();
+    QvQuestionCache.requestRefresh(nk, logger, topic, "cache_empty");
+    var cacheResult = QvQuestionCache.readCache(nk, logger, topic);
+    var elapsedMs = nowMs() - t0;
     logger.warn(formatQvLog("[QvGetQ][GATE:cache_empty]", {
       event:               "cache_empty",
       traceId:             traceId,
       topic:               topic,
-      refresh_attempted:   true,
-      refresh_error:       refreshErr,
+      refresh_queued:      true,
       retry_after_seconds: CACHE_REFRESH_RETRY_SEC
     }));
 
@@ -289,7 +260,7 @@ namespace QvGetQuestions {
         event:   "cold_start_blocked",
         traceId: traceId,
         topic:   topic,
-        error:   refreshErr,
+        error:   "cache_empty",
         userId:  userId
       }));
     }
@@ -301,9 +272,8 @@ namespace QvGetQuestions {
         ok:                  false,
         error:               "cache_empty",
         topic:               topic,
-        message:             "No questions cached for this topic yet. Refresh was attempted — retry shortly.",
-        refresh_attempted:   true,
-        refresh_error:       refreshResult.error || null,
+        message:             "Questions are warming in the background. Please retry shortly.",
+        refresh_queued:      true,
         retry_after_seconds: CACHE_REFRESH_RETRY_SEC
       })
     };
@@ -526,12 +496,14 @@ namespace QvGetQuestions {
     needed = count - fresh.length - tier2.length;
     if (needed <= 0) return fresh.concat(tier2).slice(0, count);
 
-    // Tier 3: any remaining pool question (covers inflight-reserved IDs)
+    // Tier 3: any remaining non-reserved pool question. Inflight IDs are never
+    // reused, even when that means returning a partial pack.
     var tier3: any[] = [];
     for (var ti = 0; ti < pool.length && tier3.length < needed; ti++) {
       var pq = pool[ti];
       if (!pq || !pq.id) continue;
       if (pickedIds[pq.id]) continue;
+      if (excluded[pq.id]) continue;
       tier3.push(pq);
       pickedIds[pq.id] = true;
     }
@@ -694,26 +666,12 @@ namespace QvGetQuestions {
       fulfillAttempts++;
       var poolBefore     = pool.length;
       var pickedBefore   = picked.length;
-      var inflightEvicted = 0;
-      var refreshForced  = false;
-
-      if (picked.length < requestedCount && inflightIds.length > 0) {
-        inflightEvicted = evictUnsubmittedInflightForTopic(nk, logger, userId, topic);
-        inflightPacks   = listInflight(nk, userId);
-        inflightIds     = collectInflightIdsForTopic(inflightPacks, topic);
-        picked          = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
-      }
+      var refreshQueued = false;
 
       if (picked.length < requestedCount) {
-        refreshForced         = true;
+        refreshQueued         = true;
         cacheRefreshAttempted = true;
-        QvQuestionCache.refreshCache(nk, logger, env, topic, true);
-        cacheResult = QvQuestionCache.readCache(nk, logger, topic);
-        pool        = cacheResult.questions;
-        var rebuilt = rebuildLangPool(pool, lang, requireMedia, reqMediaType, excludeMedia);
-        langPool    = rebuilt.langPool;
-        langActual  = rebuilt.langActual;
-        picked      = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
+        QvQuestionCache.requestRefresh(nk, logger, topic, "insufficient_pool");
       }
 
       logger.info(formatQvLog("[QvGetQ][FULFILL:attempt]", {
@@ -725,8 +683,8 @@ namespace QvGetQuestions {
         picked:           picked.length,
         pool_before:      poolBefore,
         pool_after:       pool.length,
-        inflight_evicted: inflightEvicted,
-        refresh_forced:   refreshForced
+        inflight_evicted: 0,
+        refresh_queued:   refreshQueued
       }));
 
       if (picked.length >= requestedCount) break;
@@ -890,8 +848,8 @@ namespace QvGetQuestions {
   // qv_readyqueue/{topicSlug} (user-owned) is populated by prewarm_cron.ts
   // every hour and self-refreshed here after each cache-path delivery.
   //
-  // serveFromReadyQueue(): returns pre-filtered questions from the queue,
-  //   removes consumed entries, and returns the list (empty = cache miss).
+  // serveFromReadyQueue(): revalidates seen/inflight/lang/media, then reserves
+  //   the queue slice and pack atomically (null = cache-path fallback).
   // writeReadyQueue():     writes remaining fresh questions for next call.
 
   function serveFromReadyQueue(
@@ -899,8 +857,15 @@ namespace QvGetQuestions {
     logger:   nkruntime.Logger,
     userId:   string,
     topic:    string,
-    count:    number
-  ): any[] | null {
+    count:    number,
+    lang:     string,
+    gameId:   string,
+    requireMedia: boolean,
+    mediaType: string,
+    excludeMedia: boolean,
+    seenIds: string[],
+    inflightIds: string[]
+  ): { questions: any[]; langActual: string; packId: string } | null {
     try {
       var topicSlug = topic.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_")
         .replace(/^_|_$/g, "").substring(0, 64);
@@ -908,25 +873,88 @@ namespace QvGetQuestions {
       if (!rows || rows.length === 0 || !rows[0].value) return null;
       var rq: any = rows[0].value;
       if (!rq.created_at_ms || (nowMs() - rq.created_at_ms) > READYQUEUE_TTL_MS) return null;
-      if (!Array.isArray(rq.questions) || rq.questions.length < count) return null;
+      if (!Array.isArray(rq.questions)) return null;
 
-      var served    = rq.questions.slice(0, count);
-      var remaining = rq.questions.slice(count);
+      // Ready queues are only an optimization. Re-apply every correctness
+      // filter because seen/inflight state may have changed after prewarming.
+      var excluded: { [id: string]: boolean } = {};
+      for (var si = 0; si < seenIds.length; si++) excluded[seenIds[si]] = true;
+      for (var ii = 0; ii < inflightIds.length; ii++) excluded[inflightIds[ii]] = true;
 
-      // Write back remaining (or delete if empty)
-      if (remaining.length > 0) {
-        nk.storageWrite([{
+      var fresh: any[] = [];
+      for (var qi = 0; qi < rq.questions.length; qi++) {
+        var candidate = rq.questions[qi];
+        if (candidate && candidate.id && !excluded[candidate.id]) fresh.push(candidate);
+      }
+
+      var langActual = lang;
+      var eligible: any[] = [];
+      if (lang !== "en") {
+        for (var li = 0; li < fresh.length; li++) {
+          if (fresh[li].lang === lang) eligible.push(fresh[li]);
+        }
+      }
+      if (eligible.length < count) {
+        eligible = [];
+        if (lang !== "en") langActual = "en";
+        for (var ei = 0; ei < fresh.length; ei++) {
+          if (!fresh[ei].lang || fresh[ei].lang === "en") eligible.push(fresh[ei]);
+        }
+      }
+      if (eligible.length === 0 && lang === "en") eligible = fresh;
+
+      if (requireMedia) {
+        eligible = filterToMediaPool(eligible, mediaType);
+      } else if (excludeMedia) {
+        eligible = filterToTextPool(eligible);
+      }
+      if (eligible.length < count) return null;
+
+      var served = eligible.slice(0, count);
+      var servedIds: { [id: string]: boolean } = {};
+      for (var sqi = 0; sqi < served.length; sqi++) servedIds[served[sqi].id] = true;
+      var remaining: any[] = [];
+      for (var rqi = 0; rqi < fresh.length; rqi++) {
+        if (!servedIds[fresh[rqi].id]) remaining.push(fresh[rqi]);
+      }
+
+      // Reserve the queue slice and create its pack in one CAS transaction.
+      // A concurrent request can never consume the same ready-queue version.
+      var packId = makePackId(nk, gameId, topic);
+      var now = nowMs();
+      var expiry = now + INFLIGHT_TTL_MS;
+      var questionIds: string[] = [];
+      for (var qii = 0; qii < served.length; qii++) questionIds.push(served[qii].id);
+      nk.storageWrite([
+        {
           collection: COL_READYQUEUE, key: topicSlug, userId: userId,
           value: { topic: rq.topic, questions: remaining, created_at_ms: rq.created_at_ms },
+          version: rows[0].version,
           permissionRead: 0, permissionWrite: 0
-        }]);
-      } else {
-        nk.storageDelete([{ collection: COL_READYQUEUE, key: topicSlug, userId: userId }]);
-      }
+        },
+        {
+          collection: COL_INFLT, key: packId, userId: userId,
+          value: {
+            pack_id: packId, topic: topic, question_ids: questionIds,
+            created_at_ms: now, expires_at_ms: expiry
+          },
+          permissionRead: 0, permissionWrite: 0
+        },
+        {
+          collection: COL_PACKS, key: packId, userId: userId,
+          value: {
+            pack_id: packId, topic: topic, lang: lang, lang_actual: langActual,
+            game_id: gameId, question_ids: questionIds,
+            question_count: served.length, questions: served,
+            created_at_ms: now, expires_at_ms: expiry
+          },
+          permissionRead: 1, permissionWrite: 0
+        }
+      ]);
 
       logger.info("[QvGetQ] readyqueue HIT user=" + userId + " topic=" + topicSlug +
         " served=" + served.length + " remaining=" + remaining.length);
-      return served;
+      return { questions: served, langActual: langActual, packId: packId };
     } catch (e: any) {
       logger.warn("[QvGetQ] readyqueue read failed (non-fatal): " + (e && e.message));
       return null;
@@ -1212,26 +1240,22 @@ namespace QvGetQuestions {
 
     // Collect question IDs reserved by active packs for this topic only
     var inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
+    var seenIds = readSeenIds(nk, userId, topic);
 
     // ── 3. Ready-queue fast path (prewarm hit) ─────────────────────────────
     //
-    // Checks qv_readyqueue first — pre-filtered, per-user question pool
-    // written by prewarm_cron or by this RPC after a previous cache-path call.
-    // Skips seen-filtering, cache reading, and lang-filtering when available.
+    // Checks qv_readyqueue first. The queue is revalidated against current
+    // seen/inflight/language/media state before its CAS reservation is served.
 
     if (mode !== "personalized") { // personalized mode always uses live cache+SRQ
-      var rqServed = serveFromReadyQueue(nk, logger, userId, topic, count);
-      if (rqServed !== null && requireMedia) {
-        var rqMedia = filterToMediaPool(rqServed, reqMediaType);
-        if (rqMedia.length < count) {
-          rqServed = null;
-        } else {
-          rqServed = rqMedia.slice(0, count);
-        }
-      }
-      if (rqServed !== null) {
-        var rqPackId = makePackId(nk, gameId, topic);
-        writePackStorage(nk, userId, rqPackId, topic, lang, lang, gameId, rqServed);
+      var rqResult = serveFromReadyQueue(
+        nk, logger, userId, topic, count, lang, gameId, requireMedia, reqMediaType,
+        excludeMedia, seenIds, inflightIds
+      );
+      if (rqResult !== null) {
+        var rqServed = rqResult.questions;
+        var rqLangActual = rqResult.langActual;
+        var rqPackId = rqResult.packId;
         logger.info("[QvGetQ] ⚡ readyqueue fast-path pack=" + rqPackId +
           " topic=" + topic + " n=" + rqServed.length);
         var rqClientQs: any[] = [];
@@ -1264,8 +1288,14 @@ namespace QvGetQuestions {
           cache_expired:   false,
           served_from:     "readyqueue"
         };
+        if (rqLangActual !== lang) rqResp.lang_actual = rqLangActual;
         return JSON.stringify(rqResp);
       }
+
+      // A queue CAS may have lost to another request. Re-read reservations
+      // before selecting from the shared cache.
+      inflightPacks = listInflight(nk, userId);
+      inflightIds = collectInflightIdsForTopic(inflightPacks, topic);
     }
 
     // ── 3. Read cache (normal path) ────────────────────────────────────────
@@ -1280,6 +1310,9 @@ namespace QvGetQuestions {
     }
     logger.info("[QvGetQ][GATE:cache_ok] traceId=" + traceId + " topic=" + topic +
       " poolSize=" + pool.length + " cacheExpired=" + cacheResult.expired);
+    if (cacheResult.expired) {
+      QvQuestionCache.requestRefresh(nk, logger, topic, "cache_expired");
+    }
 
     // ── 4. Lang validation + fallback (Task 1b.1 / 1b.4) ──────────────────
     var langActual = lang;
@@ -1316,15 +1349,9 @@ namespace QvGetQuestions {
           langPool:   langPool.length,
           media_type: reqMediaType || "any"
         }));
-        QvQuestionCache.refreshCache(nk, logger, ctx.env || {}, topic, true);
-        cacheResult = QvQuestionCache.readCache(nk, logger, topic);
-        pool = cacheResult.questions;
-        var rebuilt = rebuildLangPool(pool, lang, requireMedia, reqMediaType, excludeMedia);
-        langPool = rebuilt.langPool;
-        langActual = rebuilt.langActual;
-        mediaPool = filterToMediaPool(langPool, reqMediaType);
+        QvQuestionCache.requestRefresh(nk, logger, topic, "media_pool_empty");
         logger.info(formatQvLog("[QvGetQ][GATE:stale_cache_media_done]", {
-          event:       "stale_cache_media_heal_done",
+          event:       "stale_cache_media_refresh_queued",
           traceId:     traceId,
           topic:       topic,
           pool_after:  pool.length,
@@ -1388,7 +1415,6 @@ namespace QvGetQuestions {
 
     // ── 5. Read seen IDs + filter pool (Task 1b.2) ─────────────────────────
     var poolSizeBeforePick = pool.length;
-    var seenIds = readSeenIds(nk, userId, topic);
     var picked  = filterAndPick(langPool, seenIds, inflightIds, requestedCount);
 
     var fulfillResult = fulfillRequestedCount(

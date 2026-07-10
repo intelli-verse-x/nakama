@@ -54,6 +54,7 @@ namespace QvQuestionCache {
   var COL_CACHE        = "qv_cache_";        // full key: qv_cache_{topic}
   var COL_CIRCUIT      = "qv_circuit_breakers";
   var COL_REFRESH_GATE = "qv_cache_refresh_gate";
+  var COL_REFRESH_REQ  = "qv_cache_refresh_requests";
   var REFRESH_GATE_MS  = 30 * 1000;          // dedupe concurrent / back-to-back refreshes
 
   // Per-topic cache TTL (ms)
@@ -2436,6 +2437,8 @@ namespace QvQuestionCache {
   ): void {
     var now = nowMs();
     var pages = Math.ceil(questions.length / MAX_PER_DOC);
+    var generation = topic + "_" + now + "_" + Math.floor(Math.random() * 1000000);
+    var writes: nkruntime.StorageWriteRequest[] = [];
     for (var p = 0; p < pages; p++) {
       var slice = questions.slice(p * MAX_PER_DOC, (p + 1) * MAX_PER_DOC);
       var langs: { [l: string]: number } = {};
@@ -2443,12 +2446,13 @@ namespace QvQuestionCache {
         var l = slice[qi].lang || "en";
         langs[l] = (langs[l] || 0) + 1;
       }
-      nk.storageWrite([{
+      writes.push({
         collection:      COL_CACHE + topic,
         key:             "pool_" + p,
         userId:          Constants.SYSTEM_USER_ID,
         value: {
           topic:          topic,
+          generation:     generation,
           page:           p,
           page_count:     pages,
           cached_at_ms:   now,
@@ -2463,9 +2467,14 @@ namespace QvQuestionCache {
         },
         permissionRead:  1,
         permissionWrite: 0
-      }]);
-      logger.info("[QvQCache/" + topic + "] wrote pool_" + p + " (" + slice.length + " questions)");
+      });
     }
+    // Nakama commits a storageWrite batch transactionally. Readers therefore
+    // see either the previous generation or this complete generation, never a
+    // page-by-page mixture.
+    nk.storageWrite(writes);
+    logger.info("[QvQCache/" + topic + "] wrote generation=" + generation +
+      " pages=" + pages + " questions=" + questions.length);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2541,13 +2550,18 @@ namespace QvQuestionCache {
         ? rows[0].value.last_refresh_ms : 0;
       if (nowMs() - lastMs < REFRESH_GATE_MS) return false;
 
+      var expectedVersion = rows && rows.length > 0 ? rows[0].version : "*";
       nk.storageWrite([{
         collection: COL_REFRESH_GATE, key: topic, userId: Constants.SYSTEM_USER_ID,
         value: { last_refresh_ms: nowMs() },
+        version: expectedVersion,
         permissionRead: 0, permissionWrite: 0
       }]);
       return true;
-    } catch (_e) { return true; }
+    } catch (_e) {
+      // A version conflict means another node acquired the lease first.
+      return false;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2579,7 +2593,7 @@ namespace QvQuestionCache {
       return { ok: false, topic: topic, count: 0, error: cbMsg };
     }
 
-    if (!force && !tryAcquireRefreshGate(nk, topic)) {
+    if (!tryAcquireRefreshGate(nk, topic)) {
       logger.info("[QvQCache/" + topic + "] refresh gated — recent refresh in progress or completed" +
         " event=provider_refresh_gated topic=" + topic);
       return { ok: true, topic: topic, count: 0 };
@@ -2719,6 +2733,7 @@ namespace QvQuestionCache {
       var pageCount: number = page0.page_count || 1;
       var expiresMs: number = page0.expires_at_ms || 0;
       var cachedMs: number  = page0.cached_at_ms  || 0;
+      var generation: string = page0.generation || "";
       var expired = expiresMs > 0 ? expiresMs < nowMs() : true;
 
       if (Array.isArray(page0.questions)) questions = questions.concat(page0.questions);
@@ -2729,8 +2744,12 @@ namespace QvQuestionCache {
         var extra = nk.storageRead(reqs);
         if (extra) {
           for (var ei = 0; ei < extra.length; ei++) {
-            if (extra[ei] && extra[ei].value && Array.isArray(extra[ei].value.questions)) {
+            if (extra[ei] && extra[ei].value &&
+                (!generation || extra[ei].value.generation === generation) &&
+                Array.isArray(extra[ei].value.questions)) {
               questions = questions.concat(extra[ei].value.questions);
+            } else if (generation) {
+              logger.warn("[QvQCache/" + topic + "] skipped mismatched cache page generation");
             }
           }
         }
@@ -2754,6 +2773,37 @@ namespace QvQuestionCache {
       var doc: any = rows[0].value;
       return doc.expires_at_ms ? doc.expires_at_ms > nowMs() : false;
     } catch (_e) { return false; }
+  }
+
+  /**
+   * Queue a provider refresh without blocking a player RPC on external I/O.
+   * The cache refresh scheduler drains this collection on its next tick.
+   */
+  export function requestRefresh(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    topic: string,
+    reason: string
+  ): void {
+    try {
+      nk.storageWrite([{
+        collection: COL_REFRESH_REQ,
+        key: topic,
+        userId: Constants.SYSTEM_USER_ID,
+        value: {
+          topic: topic,
+          reason: reason,
+          requested_at_ms: nowMs()
+        },
+        permissionRead: 0,
+        permissionWrite: 0
+      }]);
+      logger.info("[QvQCache/" + topic + "] queued background refresh reason=" + reason +
+        " event=provider_refresh_queued");
+    } catch (err: any) {
+      logger.warn("[QvQCache/" + topic + "] failed to queue refresh: " +
+        (err && err.message ? err.message : String(err)));
+    }
   }
 
   /**
