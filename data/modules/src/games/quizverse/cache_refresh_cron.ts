@@ -9,14 +9,14 @@
 // Payload: { "mode": "cold_start" | "all" | "topic", "topic": "anime" }
 //
 // Modes:
-//   cold_start — refresh anime, pokemon, movies, dog, flags, countries, video_quiz with 2 s stagger (post-deploy bootstrap)
+//   cold_start — refresh high-traffic media topics with 2 s stagger (post-deploy bootstrap)
 //   all        — refreshAllTopics, gated to once per 6 h (qv_cache_refresh_state/last_full_run)
 //   topic      — single-topic refreshCache (no global gate)
 
 namespace QvCacheRefreshCron {
 
   var LOG_PREFIX           = "[QvCacheRefresh]";
-  var COLD_START_TOPICS    = ["anime", "pokemon", "movies", "dog", "flags", "countries", "video_quiz"];
+  var COLD_START_TOPICS    = ["anime", "pokemon", "movies", "dog", "flags", "countries", "space", "music", "video_quiz"];
   var FULL_REFRESH_GATE_MS = 6 * 3600000;
   var COLD_STAGGER_MS      = 2000;
   var GATE_COL             = "qv_cache_refresh_state";

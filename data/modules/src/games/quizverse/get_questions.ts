@@ -1097,6 +1097,12 @@ namespace QvGetQuestions {
     var reqMediaType = (typeof req.media_type === "string" && req.media_type)
       ? req.media_type.toLowerCase().trim() : "";
     if (!requireMedia && reqMediaType) requireMedia = true;
+    // A media request without an explicit type must never mix audio and image
+    // rows. Unity's visual modes expect images; the music topic is the one
+    // intentional audio-first exception.
+    if (requireMedia && !reqMediaType) {
+      reqMediaType = topic === "music" ? "audio" : "image";
+    }
     if (requireMedia) excludeMedia = false;
 
     // ── game_id: validate against allowlist (org2) ─────────────────────────

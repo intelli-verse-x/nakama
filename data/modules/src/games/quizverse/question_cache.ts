@@ -1060,7 +1060,7 @@ namespace QvQuestionCache {
     }
     var breedSample = 40;
     if (env && env["QV_DOGCEO_BREED_SAMPLE"]) {
-      var parsed = parseInt(env["QV_DOGCEO_BREED_SAMPLE"], 40);
+      var parsed = parseInt(env["QV_DOGCEO_BREED_SAMPLE"], 10);
       if (!isNaN(parsed) && parsed > 0) breedSample = parsed;
     }
     var selected = pick(allBreeds, breedSample);
@@ -1103,6 +1103,7 @@ namespace QvQuestionCache {
           breedName.replace(/\s+/g, "_") + " reason=" + skipReason);
       }
     }
+    if (results.length === 0) throw new Error("dogceo: 0 questions after breed sampling");
     return results;
   }
 
@@ -1319,54 +1320,64 @@ namespace QvQuestionCache {
     var apiKey = envKey(env, "REST_COUNTRIES_API_KEY");
     var keyPresent = !!apiKey;
 
-    logger.info("[QvQCache/restcountries] event=provider_v5_fetch_start topic=" + topic +
+    logger.info("[QvQCache/restcountries] event=provider_fetch_start topic=" + topic +
       " key_present=" + (keyPresent ? "true" : "false") +
-      " host=api.restcountries.com limit=100 paginated=true");
+      " host=" + (keyPresent ? "api.restcountries.com" : "restcountries.com"));
 
-    if (!apiKey) throw new Error("missing_api_key");
-
-    var authHeaders: { [k: string]: string } = { "Authorization": "Bearer " + apiKey };
-    var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
     var objects: any[] = [];
-    var offset = 0;
     var pagesFetched = 0;
 
-    while (true) {
-      var pageUrl = baseUrl + "&offset=" + offset;
-      var parsed: any;
-      try {
-        parsed = httpGet(nk, pageUrl, authHeaders);
-      } catch (he: any) {
-        var hmsg = he && he.message ? he.message : String(he);
-        if (hmsg.indexOf("HTTP 401") !== -1) throw new Error("http_401");
-        if (hmsg.indexOf("HTTP 403") !== -1) throw new Error("http_403");
-        throw he;
+    if (apiKey) {
+      var authHeaders: { [k: string]: string } = { "Authorization": "Bearer " + apiKey };
+      var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
+      var offset = 0;
+      while (true) {
+        var pageUrl = baseUrl + "&offset=" + offset;
+        var parsed: any;
+        try {
+          parsed = httpGet(nk, pageUrl, authHeaders);
+        } catch (he: any) {
+          var hmsg = he && he.message ? he.message : String(he);
+          if (hmsg.indexOf("HTTP 401") !== -1) throw new Error("http_401");
+          if (hmsg.indexOf("HTTP 403") !== -1) throw new Error("http_403");
+          throw he;
+        }
+
+        if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
+          throw new Error("unexpected_response_shape");
+        }
+
+        var pageObjects: any[] = parsed.data.objects;
+        var meta: any = parsed.data.meta || {};
+        pagesFetched++;
+        for (var pi = 0; pi < pageObjects.length; pi++) objects.push(pageObjects[pi]);
+        if (!meta.more) break;
+        offset += 100;
+        if (offset > 1000) break;
       }
-
-      if (parsed && parsed.success === false && parsed.errors) {
-        throw new Error("restcountries_v3_deprecated");
+    } else {
+      // Keyless fallback keeps Guess the Flag/Countries playable on cold deploys.
+      // Normalize the public v3.1 response into the v5 shape consumed below.
+      var publicRows: any = httpGet(
+        nk,
+        "https://restcountries.com/v3.1/all?fields=name,capital,region,population,cca2,flags"
+      );
+      if (!Array.isArray(publicRows)) throw new Error("restcountries_public_unexpected_shape");
+      for (var pri = 0; pri < publicRows.length; pri++) {
+        var publicCountry: any = publicRows[pri];
+        objects.push({
+          names: { common: publicCountry && publicCountry.name ? publicCountry.name.common : "" },
+          capitals: publicCountry ? publicCountry.capital : [],
+          region: publicCountry ? publicCountry.region : "",
+          population: publicCountry ? publicCountry.population : 0,
+          codes: { alpha_2: publicCountry ? publicCountry.cca2 : "" },
+          flag: { url_png: publicCountry && publicCountry.flags ? publicCountry.flags.png : "" }
+        });
       }
-      if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
-        throw new Error("unexpected_response_shape");
-      }
-
-      var pageObjects: any[] = parsed.data.objects;
-      var meta: any = parsed.data.meta || {};
-      pagesFetched++;
-      logger.info("[QvQCache/restcountries] event=provider_v5_page_done topic=" + topic +
-        " offset=" + offset +
-        " page_count=" + pageObjects.length +
-        " meta_total=" + (meta.total ? meta.total : 0) +
-        " meta_more=" + (meta.more ? "true" : "false"));
-
-      for (var pi = 0; pi < pageObjects.length; pi++) objects.push(pageObjects[pi]);
-
-      if (!meta.more) break;
-      offset += 100;
-      if (offset > 1000) break;
+      pagesFetched = 1;
     }
 
-    logger.info("[QvQCache/restcountries] event=provider_v5_fetch_done topic=" + topic +
+    logger.info("[QvQCache/restcountries] event=provider_fetch_done topic=" + topic +
       " object_count=" + objects.length +
       " pages_fetched=" + pagesFetched);
 
@@ -1732,9 +1743,12 @@ namespace QvQuestionCache {
     var tracks: any  = httpGet(nk, "https://ws.audioscrobbler.com/2.0/?method=chart.getTopTracks&api_key=" + fmKey + "&format=json&limit=30");
     if (!artists || !artists.artists || !artists.artists.artist) throw new Error("Last.fm: no artists");
     if (!tracks  || !tracks.tracks  || !tracks.tracks.track)   throw new Error("Last.fm: no tracks");
-    var artistNames: string[] = [];
+    var artistNameSet: { [name: string]: boolean } = {};
     var aa: any[] = artists.artists.artist;
-    for (var ai2 = 0; ai2 < aa.length; ai2++) { if (aa[ai2].name) artistNames.push(aa[ai2].name); }
+    for (var ai2 = 0; ai2 < aa.length; ai2++) {
+      if (aa[ai2].name) artistNameSet[aa[ai2].name] = true;
+    }
+    var artistNames: string[] = Object.keys(artistNameSet);
     var trackList: any[] = tracks.tracks.track;
     for (var ti3 = 0; ti3 < trackList.length; ti3++) {
       var track: any = trackList[ti3];
