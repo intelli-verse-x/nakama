@@ -112,6 +112,7 @@ namespace WorldTrivia {
     choices: string[];
     correctIndex: number; // server-side only; never sent pre-answer
     category?: string;
+    explanation?: string; // revealed post-grade only (never in questionView)
   }
 
   export interface TriviaPack {
@@ -139,7 +140,6 @@ namespace WorldTrivia {
 
   export interface StoryQuestion extends TriviaQuestion {
     checkpointIndex?: number;  // themed binding to a narration beat
-    explanation?: string;      // revealed post-grade only
   }
 
   /** Full story — server-only storage, never client-readable. */
@@ -654,6 +654,10 @@ namespace WorldTrivia {
         }
         var question: TriviaQuestion = { id: q.id, text: q.text, choices: q.choices, correctIndex: correctIndex };
         if (q.category) question.category = q.category;
+        // Learning layer parity with stories: packs may carry the post-grade
+        // explanation line. It is storage-only until world_answer_submit
+        // grades — questionView never includes it.
+        if (q.explanation) question.explanation = String(q.explanation);
         questions.push(question);
       }
 
