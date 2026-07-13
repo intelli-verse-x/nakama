@@ -1,11 +1,18 @@
 # LAP note progress RPCs
 
-**Review this folder (`lap-progress.js`), not the bulk of `data/modules/index.js`.**
+**Review this folder (`lap-progress.js`), not a regenerated `index.js`.**
 
-`index.js` is regenerable via `cd data/modules && npm run build`. Full builds re-embed
-`__QV_VIDEO_QUIZ_CATALOG__` (large JSON), which produces noisy diffs even when catalog
-content is unchanged aside from a regenerated timestamp. The +2 RPC count is the real
-delta: `quizverse_lap_submit_progress` and `quizverse_lap_get_progress`.
+This PR’s `index.js` change is a **surgical patch** on `master` (+~230 lines):
+stubs, module body, and `registerRpc` for the two RPCs. The video-quiz catalog
+line is **unchanged** from `master` (no postbuild catalog regen).
+
+`npm run build` still regenerates the catalog timestamp and creates huge diffs — prefer:
+
+```bash
+node data/modules/scripts/inject-lap-progress.js
+```
+
+after checking out `master`’s `index.js`, when updating this feature.
 
 ## RPCs
 
