@@ -359,7 +359,7 @@ function cbxCheckInboundProfanity(message) {
 // ============================================================================
 
 var CBX_INTENT_SCHEMA_PROMPT =
-    "You are the QuizVerse Companion — warm, concise, encouraging. " +
+    "You are the QuizVerse Companion — a real AI helper: warm, concise, encouraging, and USEFUL. " +
     "ALWAYS reply with STRICT JSON ONLY (no markdown, no fences, no prose outside the JSON). " +
     "Schema: {\n" +
     "  \"reply\": <the player-facing response — can be long for CONTENT_GENERATION, otherwise 1-3 sentences>,\n" +
@@ -369,6 +369,9 @@ var CBX_INTENT_SCHEMA_PROMPT =
     "  \"suggestions\": array of 3 short chip labels (max 24 chars each)\n" +
     "}\n" +
     "Rules:\n" +
+    "- ANSWER first. For questions (name, math, facts, 'what is…', 'why…', 'how…'), set intent=SMALLTALK and put a direct useful answer in \"reply\". Do NOT dodge with 'I didn't catch that' or push Daily Quiz.\n" +
+    "- Player name questions: use SERVER-TRUSTED CONTEXT \"Player name\" and answer clearly (e.g. 'Your name is Alex.').\n" +
+    "- Math / general knowledge: compute or explain briefly, then optionally offer a quiz chip in suggestions ONLY — never force a quiz widget.\n" +
     "- If the player wants to play X, set intent=OPEN_QUIZ_MODE and quizMode to the closest VALID_MODES entry (e.g. 'i want to play guess anime' -> quizMode=GuessAnime).\n" +
     "- If you are unsure of the mode, set quizMode=null and ask one clarifying question in reply.\n" +
     "- NEVER invent quizMode names not in VALID_MODES.\n" +
@@ -485,17 +488,124 @@ function cbxParseLlmJson(raw) {
     if (!raw || typeof raw !== "string") return null;
     var text = raw.trim();
     // Strip common wrappers some models still produce despite instructions.
-    if (text.indexOf("```") === 0) {
+    if (text.indexOf("```") >= 0) {
         text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+        // Also strip mid-body fences: ```json ... ```
+        var fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+        if (fenceMatch && fenceMatch[1]) text = fenceMatch[1].trim();
     }
     // Some models prepend a leading word; locate the first '{' to be safe.
     var braceIdx = text.indexOf("{");
     if (braceIdx > 0) text = text.substring(braceIdx);
+    // Truncate trailing junk after the last closing brace.
+    var lastBrace = text.lastIndexOf("}");
+    if (lastBrace > 0) text = text.substring(0, lastBrace + 1);
     try {
         return JSON.parse(text);
     } catch (e) {
+        // QVBF_406: recover a usable reply even when the model returns almost-JSON.
+        try {
+            var replyMatch = text.match(/"reply"\s*:\s*"((?:\\.|[^"\\])*)"/);
+            if (replyMatch && replyMatch[1]) {
+                var recovered = replyMatch[1]
+                    .replace(/\\n/g, "\n")
+                    .replace(/\\"/g, "\"")
+                    .replace(/\\\\/g, "\\");
+                if (recovered.length > 0) {
+                    return {
+                        reply: recovered,
+                        intent: "SMALLTALK",
+                        quizMode: null,
+                        topic: null,
+                        suggestions: CBX_DEFAULT_SUGGESTIONS.slice()
+                    };
+                }
+            }
+        } catch (e2) { /* ignore */ }
         return null;
     }
+}
+
+// ============================================================================
+// QVBF_406 — SMART CONVERSATIONAL FALLBACK
+// ----------------------------------------------------------------------------
+// When the LLM is down / returns non-JSON, NEVER fake-success with a Daily Quiz
+// card. Answer what we can locally (name, simple math) so the companion feels
+// like a real AI, not a hardcoded quiz funnel.
+// ============================================================================
+
+function cbxPlayerDisplayName(playerCtx) {
+    if (!playerCtx) return "Player";
+    var n = playerCtx.displayName || playerCtx.username || "Player";
+    n = String(n).trim();
+    return n.length > 0 ? n.substring(0, 64) : "Player";
+}
+
+function cbxTryAnswerNameQuestion(message, playerCtx) {
+    var m = String(message || "").toLowerCase();
+    if (!/(what('?s| is)?\s+my\s+name|who\s+am\s+i|my\s+name\s+is\s*\?|tell\s+me\s+my\s+name|do\s+you\s+know\s+my\s+name)/i.test(m)
+        && !/(what\s+is\s+my\s+name|whats\s+my\s+name)/i.test(m)) {
+        return null;
+    }
+    var name = cbxPlayerDisplayName(playerCtx);
+    if (!name || name === "Player") {
+        return "I don't have a custom display name on file yet — open Profile to set one, and I'll remember it.";
+    }
+    return "Your name here is **" + name + "**.";
+}
+
+function cbxTryAnswerSimpleMath(message) {
+    var m = String(message || "").trim();
+    // "what is 2+2", "2+2", "calculate 10 / 2", "what's 7*8"
+    var match = m.match(/(?:what(?:'s| is)?\s+|calculate\s+|compute\s+)?(-?\d+(?:\.\d+)?)\s*([+\-*/x×÷])\s*(-?\d+(?:\.\d+)?)\s*\??$/i);
+    if (!match) return null;
+    var a = parseFloat(match[1]);
+    var op = match[2];
+    var b = parseFloat(match[3]);
+    if (!isFinite(a) || !isFinite(b)) return null;
+    var result;
+    if (op === "+" ) result = a + b;
+    else if (op === "-") result = a - b;
+    else if (op === "*" || op === "x" || op === "×") result = a * b;
+    else if (op === "/" || op === "÷") {
+        if (b === 0) return "Division by zero isn't defined — try another number.";
+        result = a / b;
+    } else return null;
+    // Keep integers clean when possible.
+    if (Math.abs(result - Math.round(result)) < 1e-9) result = Math.round(result);
+    else result = Math.round(result * 1000) / 1000;
+    return a + " " + op + " " + b + " = **" + result + "**.";
+}
+
+function cbxBuildSmartFallback(message, playerCtx, llm) {
+    var nameAns = cbxTryAnswerNameQuestion(message, playerCtx);
+    if (nameAns) {
+        return {
+            reply: nameAns,
+            intent: "SMALLTALK",
+            suggestions: ["Change my name", "Daily quiz", "Help"]
+        };
+    }
+    var mathAns = cbxTryAnswerSimpleMath(message);
+    if (mathAns) {
+        return {
+            reply: mathAns,
+            intent: "SMALLTALK",
+            suggestions: ["Another question", "Daily quiz", "Help"]
+        };
+    }
+
+    var llmErr = (llm && llm.error) ? String(llm.error) : "";
+    var isProviderDown = /no llm provider|llm_unavailable|api error|call failed/i.test(llmErr);
+    var reply = isProviderDown
+        ? "I'm having trouble reaching my AI brain right now. Ask me again in a moment — or try a short question like your name or a quick math problem."
+        : "I couldn't parse that answer just now. Try asking again in a short sentence — e.g. \"what is 2+2\" or \"what's my name\".";
+
+    return {
+        reply: reply,
+        intent: "SMALLTALK",
+        suggestions: ["Try again", "Daily quiz", "Help"]
+    };
 }
 
 function cbxIsValidQuizMode(mode) {
@@ -959,26 +1069,22 @@ function rpcQuizverseChatboxMessage(ctx, logger, nk, payload) {
         var llm = cbxCallLLM(nk, logger, ctx, systemPrompt, userMsg, maxTokens);
         var parsed = llm.success ? cbxParseLlmJson(llm.text) : null;
 
+        // QVBF_406: LLM miss must NOT fake-success a Daily Quiz card on every turn.
+        // Prefer a smart local answer (name / math) or a helpful retry — no quiz funnel.
         if (!parsed) {
+            logger.warn("[ChatBox] LLM miss — using smart fallback. success=" +
+                !!(llm && llm.success) + " err=" + ((llm && llm.error) ? llm.error : "parse_failed"));
+            var smart = cbxBuildSmartFallback(message, playerCtx, llm);
             return JSON.stringify({
                 success: true,
-                reply: "I didn't catch that — want to try a quick daily quiz?",
-                tone: "fallback",
-                widgetType: "DailyQuiz",
-                widgetPayload: {
-                    widgetType: "DailyQuiz",
-                    prefabKey: "DailyQuiz",
-                    title: "Daily Quiz",
-                    body: "5 questions, 30 seconds.",
-                    ctaLabel: "Play daily",
-                    ctaRoute: "quiz/DailyQuiz",
-                    mode: "DailyQuiz",
-                    priority: 1
-                },
+                reply: smart.reply,
+                tone: "smalltalk",
+                widgetType: null,
+                widgetPayload: null,
                 citations: [],
                 facts: kbCtx && kbCtx.facts ? kbCtx.facts : [],
                 repeatPolicy: kbCtx && kbCtx.repeatPolicy ? kbCtx.repeatPolicy : null,
-                suggestions: CBX_DEFAULT_SUGGESTIONS,
+                suggestions: smart.suggestions || CBX_DEFAULT_SUGGESTIONS,
                 rate_remaining: Math.max(rate.limit - rate.used, 0),
                 coins_spent: economy.coins_spent || 0,
                 quota_remaining: economy.quota_remaining || 0,

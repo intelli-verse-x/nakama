@@ -1243,6 +1243,11 @@ declare namespace QvLapNoteQuota {
 declare namespace QuizVerseRevenueCatAdmin {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QvVipOverride {
+    function isVipUserId(userId: string): boolean;
+    /** Synthetic Pro+ subscription snapshot for VIP accounts. */
+    function vipSubscriptionSnapshot(): any;
+}
 declare namespace AccountMerge {
     function register(initializer: nkruntime.Initializer): void;
 }

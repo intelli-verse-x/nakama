@@ -212,7 +212,7 @@ namespace QvGetQuestions {
       cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
       ghibli: "ghibli", disney: "disney", starwars: "swapi",
       countries: "restcountries", flags: "restcountries",
-      space: "nasa", movies: "tmdb", sports: "sportsdb+opentdb",
+      space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
       music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
       video_quiz: "catalog", ai: "claude",
       math: "opentdb", art: "artic", history: "opentdb+jservice"

@@ -69,10 +69,11 @@ namespace QvCacheRefreshCron {
     nk:     nkruntime.Nakama,
     logger: nkruntime.Logger,
     env:    { [k: string]: string },
-    topic:  string
+    topic:  string,
+    force?: boolean
   ): { topic: string; ok: boolean; count: number; error?: string; elapsed_ms: number } {
     var t0 = nowMs();
-    var r  = QvQuestionCache.refreshCache(nk, logger, env, topic);
+    var r  = QvQuestionCache.refreshCache(nk, logger, env, topic, !!force);
     var elapsed = nowMs() - t0;
     logger.info(formatLog("[topic_result]", {
       event:      "cache_refresh_topic",
@@ -80,7 +81,8 @@ namespace QvCacheRefreshCron {
       ok:         r.ok,
       count:      r.count,
       error:      r.error || "none",
-      elapsed_ms: elapsed
+      elapsed_ms: elapsed,
+      force:      !!force
     }));
     return {
       topic:      topic,
@@ -139,9 +141,10 @@ namespace QvCacheRefreshCron {
     nk:     nkruntime.Nakama,
     logger: nkruntime.Logger,
     env:    { [k: string]: string },
-    topic:  string
+    topic:  string,
+    force?: boolean
   ): Array<{ topic: string; ok: boolean; count: number; error?: string; elapsed_ms: number }> {
-    return [refreshOneTopic(nk, logger, env, topic)];
+    return [refreshOneTopic(nk, logger, env, topic, force)];
   }
 
   function runModeAll(
@@ -195,6 +198,7 @@ namespace QvCacheRefreshCron {
     if (mode === "topic" && !topic) {
       throw new Error(JSON.stringify({ code: 3, message: "topic is required when mode=topic" }));
     }
+    var force = !!req.force;
 
     var env     = ctx.env || {};
     var started = nowMs();
@@ -204,7 +208,8 @@ namespace QvCacheRefreshCron {
       event:       "cache_refresh_tick_start",
       mode:        mode,
       topic_count: topicCount,
-      topic:       topic || "none"
+      topic:       topic || "none",
+      force:       force
     }));
 
     var results: Array<{ topic: string; ok: boolean; count: number; error?: string; elapsed_ms?: number }> =
@@ -214,7 +219,7 @@ namespace QvCacheRefreshCron {
     if (mode === "cold_start") {
       results = results.concat(runModeColdStart(nk, logger, env));
     } else if (mode === "topic") {
-      results = results.concat(runModeTopic(nk, logger, env, topic));
+      results = results.concat(runModeTopic(nk, logger, env, topic, force));
     } else {
       var allRun = runModeAll(nk, logger, env);
       gated   = allRun.gated;

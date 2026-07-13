@@ -47,6 +47,9 @@ namespace QvLapNoteQuota {
   }
 
   function subscriptionTier(nk: nkruntime.Nakama, userId: string, nowMs: number): string {
+    // VIP Layer 0 — unlimited notes for hard-coded QA allow-list.
+    if (QvVipOverride.isVipUserId(userId)) return "pro_plus";
+
     var rows = nk.storageRead([{
       collection: "qv_entitlements",
       key: "subscriptions",

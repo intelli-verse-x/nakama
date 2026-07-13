@@ -39,6 +39,7 @@ namespace QvEntitlements {
   // Without this guard, a retried webhook (e.g. after a slow/aborted response)
   // would double-count the same purchase in analytics_live_daily.revenue_usd.
   var RC_REVENUE_LEDGER_COLLECTION = "qv_rc_revenue_ledger";
+  var RC_LIFECYCLE_LEDGER_COLLECTION = "qv_rc_lifecycle_ledger";
 
   // NAKAMA_WEBHOOK_SECRET is set in docker-compose.yml environment + RUNTIME_ENV_KEYS.
   // RevenueCat webhook Authorization header must match this value.
@@ -106,6 +107,19 @@ namespace QvEntitlements {
     var userId = RpcHelpers.requireUserId(ctx);
 
     try {
+      // VIP Layer 0 — permanent Pro+ for hard-coded QA allow-list.
+      if (QvVipOverride.isVipUserId(userId)) {
+        logger.info("[QvEntitlements] VIP override active for user=" + userId);
+        var vipCons = Storage.readJson<any>(nk, COLLECTION, KEY_CONS, userId) || {};
+        var vipOne  = Storage.readJson<any>(nk, COLLECTION, KEY_ONE, userId) || {};
+        return RpcHelpers.successResponse({
+          subscriptions: QvVipOverride.vipSubscriptionSnapshot(),
+          consumables:   vipCons,
+          one_time:      vipOne,
+          vip:           true
+        });
+      }
+
       var subs    = Storage.readJson<any>(nk, COLLECTION, KEY_SUBS, userId) || {};
       var cons    = Storage.readJson<any>(nk, COLLECTION, KEY_CONS, userId) || {};
       var oneTime = Storage.readJson<any>(nk, COLLECTION, KEY_ONE, userId) || {};
@@ -244,6 +258,84 @@ namespace QvEntitlements {
     }
   }
 
+  function recordRcLifecycleEvent(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    targetUserId: string,
+    event: any,
+    eventType: string,
+    productId: string,
+    store: string
+  ): void {
+    try {
+      var isTrial = !!(event && (event.period_type === "trial" || event.period_type === "TRIAL" ||
+                                 event.trial === true || event.is_trial === true));
+      var eventName: string | null = null;
+      if (eventType === "CANCELLATION") eventName = isTrial ? "trial_cancelled" : "subscription_cancelled";
+      else if (eventType === "RENEWAL") eventName = "subscription_renewed";
+      else if (eventType === "UNCANCELLATION") eventName = "subscription_uncancelled";
+      else if (eventType === "EXPIRATION") eventName = isTrial ? "trial_expired" : "subscription_expired";
+      else if (eventType === "INITIAL_PURCHASE" && isTrial) eventName = "trial_start";
+      if (!eventName || !targetUserId) return;
+
+      var eventId = (event && event.id) ? String(event.id) : null;
+      if (eventId) {
+        try {
+          nk.storageWrite([{
+            collection: RC_LIFECYCLE_LEDGER_COLLECTION,
+            key: eventId,
+            userId: Constants.SYSTEM_USER_ID,
+            value: { eventId: eventId, eventName: eventName, userId: targetUserId, recordedAt: new Date().toISOString() },
+            permissionRead: 0,
+            permissionWrite: 0,
+            version: "*"
+          }]);
+        } catch (dupErr: any) {
+          logger.info("[QvEntitlements] rc_sync: duplicate lifecycle event id=" + eventId + " skipped");
+          return;
+        }
+      }
+
+      var gameId = (ctx.env && ctx.env["DEFAULT_GAME_ID"]) || "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+      var nowSec = Math.floor(Date.now() / 1000);
+      persistNormalizedEvent(nk, logger, {
+        userId: targetUserId,
+        gameId: gameId,
+        eventName: eventName,
+        originalEventName: eventName,
+        canonicalized: false,
+        eventData: {
+          product_id: productId,
+          store: store || "unknown",
+          source: "revenuecat_webhook",
+          rc_event_type: eventType,
+          rc_event_id: eventId,
+          is_trial: isTrial,
+          expiration_at_ms: event && event.expiration_at_ms ? Number(event.expiration_at_ms) : null,
+          cancel_reason: event && event.cancel_reason ? String(event.cancel_reason) : null,
+          expiration_reason: event && event.expiration_reason ? String(event.expiration_reason) : null,
+          environment: event && event.environment ? String(event.environment) : null,
+          entitlement_ids: event && event.entitlement_ids ? event.entitlement_ids : []
+        },
+        platform: null,
+        sessionId: null,
+        timestamp: new Date(nowSec * 1000).toISOString(),
+        unixTimestamp: nowSec,
+        schemaVersion: 1,
+        clientEventId: eventId,
+        eventTime: null,
+        quizSessionId: null,
+        screenId: null,
+        privacyTier: 1,
+        v2Warnings: []
+      });
+    } catch (e: any) {
+      logger.warn("[QvEntitlements] rc_sync: lifecycle analytics failed (non-fatal): " +
+                  (e && e.message ? e.message : String(e)));
+    }
+  }
+
   // ── quizverse_rc_sync ───────────────────────────────────────────────────
   //
   //  Called by the RevenueCat S2S webhook (POST) or manually from the
@@ -338,6 +430,7 @@ namespace QvEntitlements {
     // dropped for products this RPC doesn't grant a tier for. Never throws
     // and never blocks entitlement granting (see try/catch inside).
     recordRcRevenueLive(ctx, logger, nk, targetUserId, event, eventType, productId, store);
+    recordRcLifecycleEvent(ctx, logger, nk, targetUserId, event, eventType, productId, store);
 
     // ── Consumable path (AI Voice session credits) ───────────────────────
     // Triggered by web Stripe webhook (store = "web_stripe") or RC consumable
