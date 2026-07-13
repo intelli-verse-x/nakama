@@ -79310,6 +79310,11 @@ var WorldTrivia;
                 var question = { id: q.id, text: q.text, choices: q.choices, correctIndex: correctIndex };
                 if (q.category)
                     question.category = q.category;
+                // Learning layer parity with stories: packs may carry the post-grade
+                // explanation line. It is storage-only until world_answer_submit
+                // grades — questionView never includes it.
+                if (q.explanation)
+                    question.explanation = String(q.explanation);
                 questions.push(question);
             }
             var pack = {
@@ -79350,6 +79355,7 @@ var WorldTrivia;
             title: story.title,
             language: story.language,
             schemaVersion: story.schemaVersion,
+            sourceArtifactHash: story.artifactHash,
             narration: {
                 intro: story.narration.intro,
                 beats: beats,
@@ -79439,8 +79445,23 @@ var WorldTrivia;
                 narration: { intro: narration.intro, beats: beats, ambient: narration.ambient || [], finale: narration.finale },
                 questions: questions,
                 schemaVersion: typeof data.schemaVersion === "number" ? data.schemaVersion : 1,
+                artifactHash: data.artifactHash ? String(data.artifactHash) : undefined,
                 updatedAt: new Date().toISOString()
             };
+            if (story.artifactHash && !/^[a-f0-9]{64}$/.test(story.artifactHash)) {
+                throw new Error("artifactHash must be a lowercase SHA-256 hex digest");
+            }
+            if (data.semanticValidation &&
+                data.semanticValidation.artifactHash !== story.artifactHash) {
+                throw new Error("semanticValidation.artifactHash must match artifactHash");
+            }
+            if (data.answerOnlyValidation &&
+                (data.answerOnlyValidation.version !== "v8" ||
+                    data.answerOnlyValidation.artifactHash !== story.artifactHash ||
+                    data.answerOnlyValidation.threshold !== 7 ||
+                    data.answerOnlyValidation.consensusCueCount !== 0)) {
+                throw new Error("answerOnlyValidation must be a passing v8 stamp for artifactHash");
+            }
             var key = storyKey(data.appId, data.templateId, data.conceptId);
             writeSystemObject(nk, WorldTrivia.STORIES_COLLECTION, key, story);
             writePublicNarration(nk, key, narrationView(story));
@@ -79450,7 +79471,8 @@ var WorldTrivia;
                 conceptId: story.conceptId,
                 title: story.title,
                 beatCount: beats.length,
-                questionCount: questions.length
+                questionCount: questions.length,
+                artifactHash: story.artifactHash
             });
         }
         catch (e) {

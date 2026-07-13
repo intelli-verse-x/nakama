@@ -5759,6 +5759,7 @@ declare namespace WorldTrivia {
         choices: string[];
         correctIndex: number;
         category?: string;
+        explanation?: string;
     }
     interface TriviaPack {
         appId: string;
@@ -5780,7 +5781,6 @@ declare namespace WorldTrivia {
     }
     interface StoryQuestion extends TriviaQuestion {
         checkpointIndex?: number;
-        explanation?: string;
     }
     /** Full story — server-only storage, never client-readable. */
     interface StoryValue {
@@ -5792,6 +5792,7 @@ declare namespace WorldTrivia {
         narration: StoryNarration;
         questions: StoryQuestion[];
         schemaVersion: number;
+        artifactHash?: string;
         updatedAt: string;
     }
     interface ScavengerObject {
@@ -5869,6 +5870,7 @@ declare namespace WorldTrivia {
         title: string;
         language: string;
         schemaVersion: number;
+        sourceArtifactHash: string;
         narration: {
             intro: string;
             beats: any[];
