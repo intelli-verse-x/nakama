@@ -850,10 +850,45 @@ namespace SatoriCreatorEvents {
     });
   }
 
+  function looksLikeNakamaUuid(s: string): boolean {
+    if (!s) return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s).trim());
+  }
+
+  /** Reject orphan device sessions that submit with another user's UUID as deviceId metadata. */
+  function validateSubmitDeviceIdentity(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    sessionUserId: string,
+    data: any,
+  ): string {
+    var rawDevice = String(data.deviceId || data.device_id || "").trim();
+    if (!rawDevice || !looksLikeNakamaUuid(rawDevice)) return "";
+    if (rawDevice === sessionUserId) return "";
+    try {
+      var accounts = nk.accountsGetId([rawDevice]);
+      if (!accounts || accounts.length === 0) return "";
+      var acct = accounts[0];
+      var hasIdentity = !!(acct && (
+        (acct.email && String(acct.email).trim()) ||
+        (acct.customId && String(acct.customId).trim())
+      ));
+      if (!hasIdentity) return "";
+      logger.warn("[CreatorEvent] Submit identity mismatch: session=%s deviceMeta=%s",
+        sessionUserId, rawDevice);
+      return "Session mismatch: reopen Live Events from the QuizVerse app so rewards credit to your account.";
+    } catch (e: any) {
+      return "";
+    }
+  }
+
   function rpcSubmit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
     if (!data.eventId) return RpcHelpers.errorResponse("eventId required");
+
+    var identityError = validateSubmitDeviceIdentity(nk, logger, userId, data);
+    if (identityError) return RpcHelpers.errorResponse(identityError);
 
     var eventId = String(data.eventId);
     if (readCompletedAnswer(nk, eventId, userId)) {
