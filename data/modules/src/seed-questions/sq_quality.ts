@@ -55,6 +55,9 @@ namespace SeedQQuality {
   // TinEye how widely an image is matched (heavily-matched commercial art is
   // risky); without the key we fall back to the public-domain domain whitelist.
   export function checkProvenance(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string): SeedQ.Provenance {
+    if (!url || !SeedQ.isPublicHttpsUrl(url)) {
+      return { source_domain: "", license: "unknown", checked: true, method: "ssrf_blocked" };
+    }
     var domainMatch = /^https?:\/\/([^\/\?#]+)/i.exec(url || "");
     var domain = domainMatch ? domainMatch[1].toLowerCase() : "";
     var whitelisted = mediaDomainSafe(url);

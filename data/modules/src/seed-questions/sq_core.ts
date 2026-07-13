@@ -277,7 +277,33 @@ namespace SeedQ {
     return { target_difficulty: target, basis: basis, sample_size: total, accuracy_pct: acc };
   }
 
-  // ── Media optimization (squoosh-equivalent, source #7) ─────────────────────
+  // ── Security helpers ────────────────────────────────────────────────────────
+  var MAX_HTTP_BODY_BYTES = 1048576; // 1 MiB — reject oversized cache rows
+  var PRIVATE_HOST_RE = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|::1|metadata\.google\.internal)$/i;
+
+  /** Admin/cron RPCs: http_key only (ctx.userId empty). Optional service_token when env is set. */
+  export function isHttpKeyAdmin(ctx: nkruntime.Context, data: any): boolean {
+    if (ctx.userId) return false;
+    var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
+    if (!expected) return true;
+    var token = data && data.service_token;
+    return token === expected;
+  }
+
+  /** Block SSRF targets (RFC1918, link-local, metadata) for outbound fetches. */
+  export function isPublicHttpsUrl(url: string): boolean {
+    if (!url || url.indexOf("https://") !== 0) return false;
+    var m = /^https:\/\/([^\/\?#:]+)(?::(\d+))?/i.exec(url);
+    if (!m) return false;
+    var host = m[1].toLowerCase();
+    if (PRIVATE_HOST_RE.test(host)) return false;
+    if (host.indexOf("169.254.") === 0) return false;
+    if (/^10\./.test(host) || /^192\.168\./.test(host)) return false;
+    if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)) return false;
+    if (host === "[::1]" || host.indexOf("fe80:") === 0) return false;
+    return true;
+  }
+
   // Rewrites media URLs through the wsrv.nl image proxy (already used by the
   // Unity client's MediaProxyUtility) so every staged image ships resized +
   // webp-compressed — smaller loads, faster D1 quiz starts, no WASM needed
@@ -305,7 +331,10 @@ namespace SeedQ {
     try {
       var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 15000);
       if (resp.code >= 200 && resp.code < 300 && resp.body) {
-        // Cap what we cache — Goja strings are fine but storage rows shouldn't balloon.
+        if (resp.body.length > MAX_HTTP_BODY_BYTES) {
+          logger.warn("[SeedQ] http GET body too large " + logUrl + " bytes=" + resp.body.length);
+          return (cached && cached.body) ? cached.body : null;
+        }
         if (resp.body.length < 400000) {
           writeSystem(nk, COLL_SOURCE_CACHE, cacheKey, { fetched_ms: nowMs(), ttl_ms: ttlMs, url: url, body: resp.body });
         }

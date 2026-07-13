@@ -531,10 +531,12 @@ namespace AahaaCatalog {
   // catches a missing fact instead of a hallucinated one being invented.
   export function renderCopy(template: string, vars: { [k: string]: any }): string {
     var out = template;
-    var keys = Object.keys(vars || {});
+    var keys = Object.keys(vars || {}).sort(function (a, b) { return b.length - a.length; });
     for (var i = 0; i < keys.length; i++) {
+      var raw = vars[keys[i]];
+      var val = ("" + raw).replace(/\{/g, "(").replace(/\}/g, ")");
       var token = "{" + keys[i] + "}";
-      while (out.indexOf(token) >= 0) out = out.replace(token, "" + vars[keys[i]]);
+      while (out.indexOf(token) >= 0) out = out.replace(token, val);
     }
     return out;
   }

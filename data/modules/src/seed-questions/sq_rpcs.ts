@@ -41,11 +41,7 @@ namespace SeedQuestions {
   }
 
   function isAdminOrService(ctx: nkruntime.Context, data: any): boolean {
-    if (!ctx.userId) return true; // server-to-server via http_key
-    var token = data && data.service_token;
-    if (!token) return false;
-    var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
-    return expected.length > 0 && token === expected;
+    return SeedQ.isHttpKeyAdmin(ctx, data);
   }
 
   // ── quizverse_seedq_get_staged ──────────────────────────────────────────────

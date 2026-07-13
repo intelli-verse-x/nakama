@@ -290,9 +290,13 @@ namespace SeedQEngine {
     // left (we're recycling or couldn't build at all).
     var exhausted = pool.questions.length > 0 && poolAvailable === 0 && (recycled || ready.length === 0);
     var generationQueued = false;
-    if (poolAvailable < LOW_WATERMARK) {
+    var QUEUE_COOLDOWN_MS = 5 * 60 * 1000;
+    var lastQueueMs = doc.last_replenish_queue_ms || 0;
+    if (poolAvailable < LOW_WATERMARK && (now - lastQueueMs) >= QUEUE_COOLDOWN_MS) {
       queuePriorityCombo(nk, logger, mode, topic);
+      doc.last_replenish_queue_ms = now;
       generationQueued = true;
+      SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
     }
     if (exhausted) {
       // "You beat the game" — queue the wow.e.pool_exhausted Aahaa moment and
@@ -370,6 +374,8 @@ namespace SeedQEngine {
   }
 
   export function ingestTick(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, batchCombos: number, perComboCount: number): any {
+    var tickStarted = SeedQ.nowMs();
+    var TICK_BUDGET_MS = 25000;
     var state = SeedQ.readSystem(nk, SeedQ.COLL_INGEST_STATE, "state") || { cursor: 0, runs: 0, last_run_ms: 0, combos: null };
     var combos = (state.combos && state.combos.length > 0) ? state.combos : defaultCombos();
 
@@ -396,6 +402,10 @@ namespace SeedQEngine {
     }
 
     for (var b = 0; b < rotationSlots; b++) {
+      if (SeedQ.nowMs() - tickStarted > TICK_BUDGET_MS) {
+        logger.warn("[SeedQ] ingestTick time budget reached after " + results.length + " combos");
+        break;
+      }
       var combo = combos[(state.cursor + b) % combos.length];
       try {
         var fetched = SeedQSources.fetchQuestions(ctx, nk, logger, combo.source, combo.mode, combo.topic, perComboCount, combo.params || {});

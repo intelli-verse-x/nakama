@@ -39,11 +39,7 @@ namespace Aahaa {
   }
 
   function isAdminOrService(ctx: nkruntime.Context, data: any): boolean {
-    if (!ctx.userId) return true; // server-to-server via http_key
-    var token = data && data.service_token;
-    if (!token) return false;
-    var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
-    return expected.length > 0 && token === expected;
+    return SeedQ.isHttpKeyAdmin(ctx, data);
   }
 
   // ── quizverse_aahaa_get ─────────────────────────────────────────────────────
@@ -111,7 +107,7 @@ namespace Aahaa {
     var data = parse(payload);
     var userId = ctx.userId || "";
     if (!userId) {
-      if (!isAdminOrService(ctx, data)) return errPayload(16, "session or service_token required");
+      if (!isAdminOrService(ctx, data)) return errPayload(16, "session or http_key+user_id required");
       userId = "" + (data.user_id || "");
       if (!userId) return errPayload(3, "user_id required for service caller");
     }

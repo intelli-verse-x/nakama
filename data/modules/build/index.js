@@ -1532,11 +1532,13 @@ var AahaaCatalog;
     // catches a missing fact instead of a hallucinated one being invented.
     function renderCopy(template, vars) {
         var out = template;
-        var keys = Object.keys(vars || {});
+        var keys = Object.keys(vars || {}).sort(function (a, b) { return b.length - a.length; });
         for (var i = 0; i < keys.length; i++) {
+            var raw = vars[keys[i]];
+            var val = ("" + raw).replace(/\{/g, "(").replace(/\}/g, ")");
             var token = "{" + keys[i] + "}";
             while (out.indexOf(token) >= 0)
-                out = out.replace(token, "" + vars[keys[i]]);
+                out = out.replace(token, val);
         }
         return out;
     }
@@ -1644,7 +1646,15 @@ var AahaaEngine;
         return ((w.clicked | 0) / w.shown) < AahaaEngine.CTR_FLOOR;
     }
     function generateForUser(ctx, nk, logger, userId) {
-        var facts = AahaaFacts.buildFactPack(ctx, nk, logger, userId);
+        var facts;
+        try {
+            facts = AahaaFacts.buildFactPack(ctx, nk, logger, userId);
+        }
+        catch (e) {
+            logger.warn("[Aahaa] buildFactPack failed for " + userId + ": " + (e && e.message ? e.message : String(e)));
+            return { feed: [], facts: null, suppressed: ["fact_pack_error"], rating_prompt_suppressed: true };
+        }
+        var factsForEval = JSON.parse(JSON.stringify(facts));
         var profile = readProfile(nk, userId);
         var stats = readStats(nk);
         var now = Date.now();
@@ -1669,7 +1679,7 @@ var AahaaEngine;
             var entry = entries[i];
             var cand = null;
             try {
-                cand = entry.eval(facts, profile);
+                cand = entry.eval(factsForEval, profile);
             }
             catch (e) {
                 logger.warn("[Aahaa] eval failed for " + entry.wow_id + ": " + (e && e.message ? e.message : String(e)));
@@ -1813,6 +1823,8 @@ var AahaaEngine;
     // sorts ahead of seed-questions/ in the bundle).
     var BATCH_SOURCE_COLLECTIONS = ["quiz-verse_quiz_history", "sq_staged", "quiz_user_stats_126bf539-dae2-4bcf-964d-316c0fa1f92b", "quiz_results"];
     function generateAll(ctx, nk, logger, maxUsers, resetCursor) {
+        var startedMs = Date.now();
+        var MAX_RUN_MS = 30000;
         var state = SeedQ.readSystem(nk, AahaaEngine.COLL_BATCH, "state") || { coll_index: 0, cursor: "", runs: 0, users_done_total: 0 };
         if (resetCursor) {
             state.coll_index = 0;
@@ -1826,6 +1838,10 @@ var AahaaEngine;
         var collIndex = state.coll_index;
         var cursor = state.cursor || "";
         while (processed < maxUsers && collIndex < BATCH_SOURCE_COLLECTIONS.length) {
+            if (Date.now() - startedMs > MAX_RUN_MS) {
+                logger.warn("[Aahaa] generateAll time limit reached processed=" + processed);
+                break;
+            }
             var page = null;
             try {
                 // null userId lists the collection across ALL owners (empty string is
@@ -2349,13 +2365,7 @@ var Aahaa;
         }
     }
     function isAdminOrService(ctx, data) {
-        if (!ctx.userId)
-            return true; // server-to-server via http_key
-        var token = data && data.service_token;
-        if (!token)
-            return false;
-        var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
-        return expected.length > 0 && token === expected;
+        return SeedQ.isHttpKeyAdmin(ctx, data);
     }
     // ── quizverse_aahaa_get ─────────────────────────────────────────────────────
     // Request:  { generate?: boolean }
@@ -2425,7 +2435,7 @@ var Aahaa;
         var userId = ctx.userId || "";
         if (!userId) {
             if (!isAdminOrService(ctx, data))
-                return errPayload(16, "session or service_token required");
+                return errPayload(16, "session or http_key+user_id required");
             userId = "" + (data.user_id || "");
             if (!userId)
                 return errPayload(3, "user_id required for service caller");
@@ -69346,7 +69356,41 @@ var SeedQ;
         return { target_difficulty: target, basis: basis, sample_size: total, accuracy_pct: acc };
     }
     SeedQ.computeAdaptiveProfile = computeAdaptiveProfile;
-    // ── Media optimization (squoosh-equivalent, source #7) ─────────────────────
+    // ── Security helpers ────────────────────────────────────────────────────────
+    var MAX_HTTP_BODY_BYTES = 1048576; // 1 MiB — reject oversized cache rows
+    var PRIVATE_HOST_RE = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|::1|metadata\.google\.internal)$/i;
+    /** Admin/cron RPCs: http_key only (ctx.userId empty). Optional service_token when env is set. */
+    function isHttpKeyAdmin(ctx, data) {
+        if (ctx.userId)
+            return false;
+        var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
+        if (!expected)
+            return true;
+        var token = data && data.service_token;
+        return token === expected;
+    }
+    SeedQ.isHttpKeyAdmin = isHttpKeyAdmin;
+    /** Block SSRF targets (RFC1918, link-local, metadata) for outbound fetches. */
+    function isPublicHttpsUrl(url) {
+        if (!url || url.indexOf("https://") !== 0)
+            return false;
+        var m = /^https:\/\/([^\/\?#:]+)(?::(\d+))?/i.exec(url);
+        if (!m)
+            return false;
+        var host = m[1].toLowerCase();
+        if (PRIVATE_HOST_RE.test(host))
+            return false;
+        if (host.indexOf("169.254.") === 0)
+            return false;
+        if (/^10\./.test(host) || /^192\.168\./.test(host))
+            return false;
+        if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host))
+            return false;
+        if (host === "[::1]" || host.indexOf("fe80:") === 0)
+            return false;
+        return true;
+    }
+    SeedQ.isPublicHttpsUrl = isPublicHttpsUrl;
     // Rewrites media URLs through the wsrv.nl image proxy (already used by the
     // Unity client's MediaProxyUtility) so every staged image ships resized +
     // webp-compressed — smaller loads, faster D1 quiz starts, no WASM needed
@@ -69377,7 +69421,10 @@ var SeedQ;
         try {
             var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 15000);
             if (resp.code >= 200 && resp.code < 300 && resp.body) {
-                // Cap what we cache — Goja strings are fine but storage rows shouldn't balloon.
+                if (resp.body.length > MAX_HTTP_BODY_BYTES) {
+                    logger.warn("[SeedQ] http GET body too large " + logUrl + " bytes=" + resp.body.length);
+                    return (cached && cached.body) ? cached.body : null;
+                }
                 if (resp.body.length < 400000) {
                     writeSystem(nk, SeedQ.COLL_SOURCE_CACHE, cacheKey, { fetched_ms: nowMs(), ttl_ms: ttlMs, url: url, body: resp.body });
                 }
@@ -69683,9 +69730,13 @@ var SeedQEngine;
         // left (we're recycling or couldn't build at all).
         var exhausted = pool.questions.length > 0 && poolAvailable === 0 && (recycled || ready.length === 0);
         var generationQueued = false;
-        if (poolAvailable < LOW_WATERMARK) {
+        var QUEUE_COOLDOWN_MS = 5 * 60 * 1000;
+        var lastQueueMs = doc.last_replenish_queue_ms || 0;
+        if (poolAvailable < LOW_WATERMARK && (now - lastQueueMs) >= QUEUE_COOLDOWN_MS) {
             queuePriorityCombo(nk, logger, mode, topic);
+            doc.last_replenish_queue_ms = now;
             generationQueued = true;
+            SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
         }
         if (exhausted) {
             // "You beat the game" — queue the wow.e.pool_exhausted Aahaa moment and
@@ -69756,6 +69807,8 @@ var SeedQEngine;
     }
     SeedQEngine.defaultCombos = defaultCombos;
     function ingestTick(ctx, nk, logger, batchCombos, perComboCount) {
+        var tickStarted = SeedQ.nowMs();
+        var TICK_BUDGET_MS = 25000;
         var state = SeedQ.readSystem(nk, SeedQ.COLL_INGEST_STATE, "state") || { cursor: 0, runs: 0, last_run_ms: 0, combos: null };
         var combos = (state.combos && state.combos.length > 0) ? state.combos : defaultCombos();
         var results = [];
@@ -69783,6 +69836,10 @@ var SeedQEngine;
             state.priority = stillQueued;
         }
         for (var b = 0; b < rotationSlots; b++) {
+            if (SeedQ.nowMs() - tickStarted > TICK_BUDGET_MS) {
+                logger.warn("[SeedQ] ingestTick time budget reached after " + results.length + " combos");
+                break;
+            }
             var combo = combos[(state.cursor + b) % combos.length];
             try {
                 var fetched = SeedQSources.fetchQuestions(ctx, nk, logger, combo.source, combo.mode, combo.topic, perComboCount, combo.params || {});
@@ -69856,6 +69913,9 @@ var SeedQQuality;
     // TinEye how widely an image is matched (heavily-matched commercial art is
     // risky); without the key we fall back to the public-domain domain whitelist.
     function checkProvenance(ctx, nk, logger, url) {
+        if (!url || !SeedQ.isPublicHttpsUrl(url)) {
+            return { source_domain: "", license: "unknown", checked: true, method: "ssrf_blocked" };
+        }
         var domainMatch = /^https?:\/\/([^\/\?#]+)/i.exec(url || "");
         var domain = domainMatch ? domainMatch[1].toLowerCase() : "";
         var whitelisted = mediaDomainSafe(url);
@@ -70077,13 +70137,7 @@ var SeedQuestions;
         }
     }
     function isAdminOrService(ctx, data) {
-        if (!ctx.userId)
-            return true; // server-to-server via http_key
-        var token = data && data.service_token;
-        if (!token)
-            return false;
-        var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
-        return expected.length > 0 && token === expected;
+        return SeedQ.isHttpKeyAdmin(ctx, data);
     }
     // ── quizverse_seedq_get_staged ──────────────────────────────────────────────
     // Request:  { mode, topic, set_size?, want_sets? }

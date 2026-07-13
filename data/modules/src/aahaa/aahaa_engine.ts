@@ -113,7 +113,14 @@ namespace AahaaEngine {
     logger: nkruntime.Logger,
     userId: string
   ): { feed: GeneratedWow[]; facts: AahaaFacts.FactPack; suppressed: string[]; rating_prompt_suppressed: boolean } {
-    var facts = AahaaFacts.buildFactPack(ctx, nk, logger, userId);
+    var facts: AahaaFacts.FactPack;
+    try {
+      facts = AahaaFacts.buildFactPack(ctx, nk, logger, userId);
+    } catch (e: any) {
+      logger.warn("[Aahaa] buildFactPack failed for " + userId + ": " + (e && e.message ? e.message : String(e)));
+      return { feed: [], facts: null as any, suppressed: ["fact_pack_error"], rating_prompt_suppressed: true };
+    }
+    var factsForEval = JSON.parse(JSON.stringify(facts));
     var profile = readProfile(nk, userId);
     var stats = readStats(nk);
     var now = Date.now();
@@ -140,7 +147,7 @@ namespace AahaaEngine {
     for (var i = 0; i < entries.length; i++) {
       var entry = entries[i];
       var cand: AahaaCatalog.WowCandidate | null = null;
-      try { cand = entry.eval(facts, profile); } catch (e: any) {
+      try { cand = entry.eval(factsForEval, profile); } catch (e: any) {
         logger.warn("[Aahaa] eval failed for " + entry.wow_id + ": " + (e && e.message ? e.message : String(e)));
       }
       if (!cand) continue;
@@ -271,6 +278,8 @@ namespace AahaaEngine {
     maxUsers: number,
     resetCursor: boolean
   ): any {
+    var startedMs = Date.now();
+    var MAX_RUN_MS = 30000;
     var state = SeedQ.readSystem(nk, COLL_BATCH, "state") || { coll_index: 0, cursor: "", runs: 0, users_done_total: 0 };
     if (resetCursor) { state.coll_index = 0; state.cursor = ""; }
     if (!state.coll_index) state.coll_index = 0;
@@ -282,6 +291,10 @@ namespace AahaaEngine {
     var cursor: string = state.cursor || "";
 
     while (processed < maxUsers && collIndex < BATCH_SOURCE_COLLECTIONS.length) {
+      if (Date.now() - startedMs > MAX_RUN_MS) {
+        logger.warn("[Aahaa] generateAll time limit reached processed=" + processed);
+        break;
+      }
       var page: any = null;
       try {
         // null userId lists the collection across ALL owners (empty string is

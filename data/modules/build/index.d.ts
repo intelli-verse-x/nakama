@@ -4261,6 +4261,10 @@ declare namespace SeedQ {
         accuracy_pct: number;
     }
     function computeAdaptiveProfile(nk: nkruntime.Nakama, userId: string, topic: string): AdaptiveProfile;
+    /** Admin/cron RPCs: http_key only (ctx.userId empty). Optional service_token when env is set. */
+    function isHttpKeyAdmin(ctx: nkruntime.Context, data: any): boolean;
+    /** Block SSRF targets (RFC1918, link-local, metadata) for outbound fetches. */
+    function isPublicHttpsUrl(url: string): boolean;
     function optimizeMediaUrl(url: string): string;
     function cachedHttpGet(nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string, ttlMs: number, headers?: any): string | null;
 }
