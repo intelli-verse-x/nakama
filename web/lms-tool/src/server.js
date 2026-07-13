@@ -284,6 +284,10 @@ function setupRoutes() {
     // tool-side push to avoid double-posting.
     let gradeSync = { status: 'skipped', detail: 'no AGS line item in launch (ungraded preview)' };
     try {
+      // Use the CLAIMED lineitem URL verbatim (AGS §3.2 / charter LTI-12):
+      // Moodle only accepts score POSTs on the exact id URL it advertises
+      // (path + type_id query param). Only fall back to the lineitems
+      // collection when the launch carried no per-link lineitem claim.
       let lineItemUrl = claims.endpoint.lineitem;
       if (!lineItemUrl && (claims.endpoint.scope || []).length) {
         const li = await lti.Grade.getLineItems(token, { resourceLinkId: true });
@@ -292,7 +296,7 @@ function setupRoutes() {
       }
       if (lineItemUrl && claims.sub) {
         await lti.Grade.submitScore(token, lineItemUrl, {
-          userId: token.user,
+          userId: claims.sub,
           scoreGiven: graded.score_given,
           scoreMaximum: graded.score_maximum,
           activityProgress: 'Completed',
@@ -302,8 +306,15 @@ function setupRoutes() {
         gradeSync = { status: 'synced', via: 'tool_ags' };
       }
     } catch (err) {
-      console.error('[lms-tool] tool-side AGS push failed:', err.message);
-      gradeSync = { status: 'failed', detail: err.message };
+      // Surface the platform's response body when available — a bare
+      // "Response code 404" hides whether the failure was the token grant or
+      // the scores endpoint (the Moodle E2E 404 was actually the token step:
+      // token.php could not fetch our JWKS through Moodle's curl blocklist).
+      const platformBody = err.response && err.response.body
+        ? String(err.response.body).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)
+        : '';
+      console.error('[lms-tool] tool-side AGS push failed:', err.message, platformBody ? `| platform said: ${platformBody}` : '');
+      gradeSync = { status: 'failed', detail: err.message + (platformBody ? ` | ${platformBody}` : '') };
       // Backup: ask Nakama's worker to drive its own queue (only lands if the
       // canonical key is registered with the platform — production path).
       try {
@@ -314,12 +325,33 @@ function setupRoutes() {
       }
     }
 
+    // Record the sync outcome in Nakama so lms_link_status reflects reality
+    // (and a tool-side success retires the pending grade-queue row instead of
+    // letting the Nakama worker double-post).
+    if (claims.sub && gradingSource === 'nakama') {
+      try {
+        await nakama.linkStatus({
+          platform_id: platformId,
+          deployment_id: claims.deployment_id,
+          resource_link_id: claims.resource_link.id,
+          sub: claims.sub,
+          grade_sync: gradeSync.status === 'synced' ? 'synced' : 'failed',
+          status_patch: { via: gradeSync.via || null, detail: gradeSync.detail || null },
+        });
+      } catch (err) {
+        console.warn('[lms-tool] recording sync outcome to lms_link_status failed:', err.message);
+      }
+    }
+
     res.json({
       score_given: graded.score_given,
       score_maximum: graded.score_maximum,
       breakdown,
       grade_sync: gradeSync,
       grading_source: gradingSource,
+      // Echo the launch identifiers so callers (E2E, teacher view) can query
+      // lms_link_status for this exact attempt.
+      lti: { sub: claims.sub || null, resource_link_id: claims.resource_link.id || null, deployment_id: claims.deployment_id },
     });
   });
 
@@ -411,11 +443,13 @@ function setupRoutes() {
 
   app.get('/', (req, res) => res.send(renderIndex({ config, nakamaStatus: nakama.getIntegrationStatus() })));
 
-  app.get('/health', (req, res) => res.json({
+  app.get('/health', async (req, res) => res.json({
     ok: true,
     service: 'quizverse-lms-tool',
     key_source: config.keys.source,
-    nakama: nakama.getIntegrationStatus(),
+    // probeHealth() exercises RPCs still marked 'unknown' (benign payloads)
+    // so lms_link_status / lms_deeplink_bind report 'live', not 'unknown'.
+    nakama: await nakama.probeHealth(),
   }));
 
   // Canonical-key JWKS (for Nakama's production lms_grade_push path).

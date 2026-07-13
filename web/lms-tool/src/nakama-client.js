@@ -73,8 +73,10 @@ async function callRpc(id, payload) {
 
   // lms-bridge envelope: {success, data} | {success:false, error, code}
   if (parsed && typeof parsed === 'object' && 'success' in parsed) {
-    if (!parsed.success) throw new NakamaRpcError(id, parsed.error || 'unknown error', parsed.code || res.status);
+    // A well-formed error envelope still proves the RPC is registered and
+    // answering — mark it live before surfacing the business error.
     rpcStatus[id] = 'live';
+    if (!parsed.success) throw new NakamaRpcError(id, parsed.error || 'unknown error', parsed.code || res.status);
     return parsed.data || {};
   }
   if (!res.ok) throw new NakamaRpcError(id, (parsed && parsed.message) || text, res.status);
@@ -117,10 +119,28 @@ function getIntegrationStatus() {
   return { baseUrl: NAKAMA.baseUrl, serviceTokenConfigured: Boolean(NAKAMA.serviceToken), rpcs: { ...rpcStatus } };
 }
 
+/**
+ * Actively exercise RPCs still marked 'unknown' so /health reflects reality.
+ * The probes use benign payloads; a structured error envelope (e.g. 404
+ * "resource link not found") is proof-of-life and flips the status to 'live'.
+ */
+async function probeHealth() {
+  const probes = {
+    lms_link_status: { platform_id: '__health_probe__', deployment_id: '0', resource_link_id: '__health_probe__' },
+    lms_deeplink_bind: { platform_id: '__health_probe__', deployment_id: '0', resource_link_id: '__health_probe__', pack_id: '__health_probe__' },
+    lms_platform_list: {},
+  };
+  await Promise.all(Object.entries(probes)
+    .filter(([id]) => rpcStatus[id] === 'unknown')
+    .map(([id, payload]) => callRpc(id, payload).catch(() => {})));
+  return getIntegrationStatus();
+}
+
 module.exports = {
   callRpc,
   NakamaRpcError,
   getIntegrationStatus,
+  probeHealth,
   resolvePlatformId,
   invalidatePlatformCache,
   launchSession: (p) => callRpc('lms_launch_session', p),
