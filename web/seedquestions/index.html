@@ -130,7 +130,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
 
 <header><div class="wrap"><nav>
   <div class="logo">Seed<em>Questions</em> × <em>Aahaa</em> · Live Showcase</div>
-  <div class="nav-links"><a href="verify.html">Verifier loop</a></div>
+  <div class="nav-links"><a href="unity.html" style="color:var(--cyan);border-color:rgba(34,211,238,.45)">Unity integration guide</a><a href="verify.html">Verifier loop</a></div>
   <span id="conn-pill"><span class="dot"></span><span id="conn-txt">not connected</span></span>
 </nav></div></header>
 
@@ -139,6 +139,11 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
   <h1>Adaptive, <span class="grad">zero-repeat</span> question staging.<br>Wow moments <span class="grad">deduced from real data</span>.</h1>
   <p class="sub">This page talks directly to a Nakama backend: the <strong>Seed Questions</strong> staging engine (13-connector ingest, adaptive difficulty, no-repeat ledger) and the <strong>Aahaa</strong> engine (deducible-insight wow cards with on-surface data lineage).</p>
 </div></section>
+
+<section style="padding-bottom:0"><div class="wrap"><a href="unity.html" style="display:block;text-decoration:none"><div class="card" style="border-color:rgba(34,211,238,.45);background:linear-gradient(110deg,rgba(99,102,241,.13),rgba(34,211,238,.07))">
+  <div class="sec-head" style="margin-bottom:0"><span class="sec-num">🎮</span><h2 style="color:var(--ink)">Building the Unity client? Open the integration guide →</h2>
+    <span class="sec-sub">Copyable RPC payloads, C# DTOs, persistent encrypted-cache rules, offline fallback order, Aahaa surface routing, and acceptance tests.</span></div>
+</div></a></div></section>
 
 <!-- 1 · CONNECT -->
 <section><div class="wrap"><div class="card" id="sec1">
@@ -234,7 +239,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
 
 <footer><div class="wrap">
   © 2026 IntelliVerseX · QuizVerse — Seed Questions &amp; Aahaa engines · served by Nakama ·
-  <a href="verify.html">verifier loop</a> · <a href="https://quizverse.world">quizverse.world</a>
+  <a href="unity.html">Unity integration guide</a> · <a href="verify.html">verifier loop</a> · <a href="https://quizverse.world">quizverse.world</a>
 </div></footer>
 
 <script>
@@ -244,8 +249,11 @@ var session = { token:null, userId:null, username:null };
 var lastStage = null;
 var demoTopic = "norepeat_demo_" + Math.random().toString(36).slice(2,10);
 
-// ?host= override
+// ?host= override (non-local hosts default to same-origin — the ingress
+// routes /v2/* on this host to Nakama, so no CORS / mixed-content issues)
 (function(){
+  var h = location.hostname;
+  if (h && h !== "localhost" && h !== "127.0.0.1") $("host").value = location.origin;
   var p = new URLSearchParams(location.search);
   if (p.get("host")) $("host").value = p.get("host");
   if (p.get("key"))  $("ckey").value = p.get("key");

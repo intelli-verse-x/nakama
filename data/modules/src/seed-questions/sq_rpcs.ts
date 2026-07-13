@@ -49,7 +49,7 @@ namespace SeedQuestions {
   }
 
   // ── quizverse_seedq_get_staged ──────────────────────────────────────────────
-  // Request:  { mode, topic, set_size?, want_sets? }
+  // Request:  { mode, topic, set_size?, want_sets?, country?, locale? }
   // Response: { ok, sets: StagedSet[], adaptive, pool: {...}, module_version }
   function rpcGetStaged(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     var data = parse(payload);
@@ -57,11 +57,23 @@ namespace SeedQuestions {
     var mode = "" + (data.mode || "");
     var topic = "" + (data.topic || "general");
     if (!mode) return errPayload(3, "mode required");
+    var modeDef = SeedQ.resolveMode(mode);
+    if (!modeDef) return errPayload(3, "unsupported mode; call quizverse_seedq_sources for canonical mode coverage");
+    var geo = SeedQ.resolveGeo(ctx, nk, ctx.userId, data);
 
     var setSize = SeedQ.clampInt(data.set_size, 4, SeedQ.MAX_SET_SIZE, SeedQ.DEFAULT_SET_SIZE);
-    var wantSets = SeedQ.clampInt(data.want_sets, 1, SeedQ.TARGET_READY_SETS, SeedQ.TARGET_READY_SETS);
+    // A client may ask for fewer sets for display, but must not lower the
+    // server-side safety depth below two. The default and refill target is 3.
+    var wantSets = SeedQ.clampInt(data.want_sets, SeedQ.MIN_READY_SETS, SeedQ.TARGET_READY_SETS, SeedQ.TARGET_READY_SETS);
 
-    var result = SeedQEngine.ensureStaged(ctx, nk, logger, ctx.userId, mode, topic, wantSets, setSize);
+    var result = SeedQEngine.ensureStaged(ctx, nk, logger, ctx.userId, modeDef.mode, topic, wantSets, setSize, geo);
+    var generatedMs = SeedQ.nowMs();
+    var expiresMs = generatedMs + SeedQ.READY_SET_TTL_MS;
+    for (var si = 0; si < result.ready.length; si++) {
+      if (result.ready[si].expires_ms && result.ready[si].expires_ms < expiresMs) {
+        expiresMs = result.ready[si].expires_ms;
+      }
+    }
 
     // Repetition-fatigue metadata (D1 §6.2): the client renders honest copy
     // ("8 new + 2 Smart Review repeats") and — when pool_exhausted — fires the
@@ -79,13 +91,37 @@ namespace SeedQuestions {
     return JSON.stringify({
       ok: true,
       mode: mode,
+      canonical_mode: modeDef.mode,
       topic: topic,
       sets: result.ready,
+      ready_depth: result.ready.length,
+      target_ready_depth: wantSets,
       sets_built_now: result.built,
       recycled: result.recycled,
       adaptive: result.adaptive,
+      personalization: { geo: result.geo, behavior: result.behavior },
       pool: { size: result.pool_size, available_unseen: result.pool_available },
       repeat_policy: repeatPolicy,
+      cache: {
+        schema_version: SeedQ.CACHE_SCHEMA_VERSION,
+        cache_key: ctx.userId + "/" + SeedQ.slugify(modeDef.mode) + "/" + SeedQ.slugify(topic) + "/" + (geo.country || "global").toLowerCase(),
+        generated_ms: generatedMs,
+        generated_at: SeedQ.isoTime(generatedMs),
+        expires_ms: expiresMs,
+        expires_at: SeedQ.isoTime(expiresMs),
+        self_contained: true,
+        contains_answer_keys: true,
+        ready_depth: result.ready.length,
+        target_ready_depth: wantSets
+      },
+      availability: {
+        online_ready: result.ready.length >= SeedQ.MIN_READY_SETS,
+        degraded: result.ready.length < wantSets,
+        reason: result.pool_size === 0 ? "pool_empty" :
+          (result.ready.length < wantSets ? "insufficient_approved_pool_content" :
+          (result.recycled ? "smart_review_recycle" : "ready"))
+      },
+      source_route: result.source_route,
       suppress_rating_prompt: suppressRating,
       module_version: SeedQ.MODULE_VERSION
     });
@@ -101,21 +137,32 @@ namespace SeedQuestions {
     var topic = "" + (data.topic || "general");
     var setId = "" + (data.set_id || "");
     if (!mode || !setId) return errPayload(3, "mode and set_id required");
+    var modeDef = SeedQ.resolveMode(mode);
+    if (!modeDef) return errPayload(3, "unsupported mode");
+    var geo = SeedQ.resolveGeo(ctx, nk, ctx.userId, data);
 
-    var res = SeedQEngine.consumeSet(ctx, nk, logger, ctx.userId, mode, topic, setId);
+    var res = SeedQEngine.consumeSet(ctx, nk, logger, ctx.userId, modeDef.mode, topic, setId, geo.country);
     if (!res.found) return errPayload(5, "set not found: " + setId);
 
-    var restaged: any = null;
-    var poolExhausted = false;
-    if (data.restage !== false) {
-      var r = SeedQEngine.ensureStaged(ctx, nk, logger, ctx.userId, mode, topic, SeedQ.TARGET_READY_SETS, SeedQ.DEFAULT_SET_SIZE);
-      poolExhausted = r.pool_exhausted;
-      restaged = {
-        ready_sets: r.ready.length, built_now: r.built, pool_available: r.pool_available,
-        pool_exhausted: r.pool_exhausted, content_generation_queued: r.content_generation_queued
-      };
-    }
-    return JSON.stringify({ ok: true, merged_seen: res.merged, restaged: restaged, suppress_rating_prompt: poolExhausted });
+    // Refill is mandatory: an acknowledgement must never silently reduce the
+    // server-side ready queue. `restage:false` is retained as an accepted but
+    // deprecated input for backward compatibility and is intentionally ignored.
+    var replacementSize = SeedQ.clampInt(res.set_size, 4, SeedQ.MAX_SET_SIZE, SeedQ.DEFAULT_SET_SIZE);
+    var r = SeedQEngine.ensureStaged(ctx, nk, logger, ctx.userId, modeDef.mode, topic, SeedQ.TARGET_READY_SETS, replacementSize, geo);
+    var restaged = {
+      ready_sets: r.ready.length, target_ready_sets: SeedQ.TARGET_READY_SETS,
+      built_now: r.built, pool_available: r.pool_available,
+      pool_exhausted: r.pool_exhausted, recycled: r.recycled,
+      content_generation_queued: r.content_generation_queued
+    };
+    return JSON.stringify({
+      ok: true,
+      merged_seen: res.merged,
+      ready_depth: r.ready.length,
+      target_ready_depth: SeedQ.TARGET_READY_SETS,
+      restaged: restaged,
+      suppress_rating_prompt: r.pool_exhausted
+    });
   }
 
   // ── quizverse_seedq_review ──────────────────────────────────────────────────
@@ -131,7 +178,9 @@ namespace SeedQuestions {
     if (!mode || !qid) return errPayload(3, "mode and question_id required");
     if (vote !== "up" && vote !== "down" && vote !== "flag") return errPayload(3, "vote must be up|down|flag");
 
-    var res = SeedQQuality.applyReview(nk, logger, ctx.userId, mode, topic, qid, vote, "" + (data.reason || "other"));
+    var reviewMode = SeedQ.resolveMode(mode);
+    if (!reviewMode) return errPayload(3, "unsupported mode");
+    var res = SeedQQuality.applyReview(nk, logger, ctx.userId, reviewMode.mode, topic, qid, vote, "" + (data.reason || "other"));
     return JSON.stringify({
       ok: true,
       quarantined: res.quarantined,
@@ -158,7 +207,7 @@ namespace SeedQuestions {
       }
       (regs[i] as any).env_keys_present = present;
     }
-    return JSON.stringify({ ok: true, sources: regs, module_version: SeedQ.MODULE_VERSION });
+    return JSON.stringify({ ok: true, sources: regs, modes: SeedQ.modeRegistry(), module_version: SeedQ.MODULE_VERSION });
   }
 
   // ── quizverse_seedq_ingest (admin/service) ──────────────────────────────────
@@ -170,6 +219,9 @@ namespace SeedQuestions {
     var mode = "" + (data.mode || "");
     var topic = "" + (data.topic || "general");
     if (!mode) return errPayload(3, "mode required");
+    var modeDef = SeedQ.resolveMode(mode);
+    if (!modeDef) return errPayload(3, "unsupported mode");
+    mode = modeDef.mode;
 
     var candidates: SeedQ.SeedQuestion[] = [];
     var source = "" + (data.source || "");
@@ -185,8 +237,20 @@ namespace SeedQuestions {
           question_type: "" + (raw.question_type || "Text"),
           media_url: "" + (raw.media_url || ""), media_provenance: null,
           source: source || "manual", citation: "" + (raw.citation || ""), lang: "" + (raw.lang || "en"),
-          created_ms: SeedQ.nowMs(), quality: { score: 0, status: "pending", checks: [] }
+          created_ms: SeedQ.nowMs(), quality: { score: 0, status: "pending", checks: [] },
+          country_codes: [], locale: "" + (raw.locale || data.locale || ""),
+          geo_relevance: SeedQ.clampInt(raw.geo_relevance, 0, 100, 100),
+          geo_reason: "" + (raw.geo_reason || "")
         };
+        q.media_alt = "" + (raw.media_alt || "");
+        q.media_mime = "" + (raw.media_mime || "");
+        q.behavior_tags = raw.behavior_tags && raw.behavior_tags.length ? raw.behavior_tags : [SeedQ.slugify(topic)];
+        var rawCountries: any = raw.country_codes || (raw.country_code ? [raw.country_code] : (data.country ? [data.country] : []));
+        if (typeof rawCountries === "string") rawCountries = [rawCountries];
+        for (var cc = 0; cc < rawCountries.length; cc++) {
+          var validCc = SeedQ.validCountry(rawCountries[cc]);
+          if (validCc && (q.country_codes as string[]).indexOf(validCc) < 0) (q.country_codes as string[]).push(validCc);
+        }
         q.id = SeedQ.questionId(nk, q.source, q.question, q.options);
         candidates.push(q);
       }
@@ -197,6 +261,14 @@ namespace SeedQuestions {
       }
       var count = SeedQ.clampInt(data.count, 1, 100, 20);
       candidates = SeedQSources.fetchQuestions(ctx, nk, logger, source, mode, topic, count, data.params || {});
+      var sourceCountry = SeedQ.validCountry(data.country || data.country_code || (data.params && data.params.country));
+      if (sourceCountry) {
+        for (var sc = 0; sc < candidates.length; sc++) {
+          candidates[sc].country_codes = [sourceCountry];
+          candidates[sc].geo_relevance = 100;
+          candidates[sc].geo_reason = "country-targeted source ingest";
+        }
+      }
     }
 
     var res = SeedQEngine.ingestIntoPool(ctx, nk, logger, mode, topic, candidates);
@@ -235,21 +307,61 @@ namespace SeedQuestions {
       }
       var bySource: { [s: string]: number } = {};
       var byDifficulty: { [d: string]: number } = {};
+      var byCountry: { [c: string]: number } = {};
+      var approved = 0, reviewed = 0, uxApproved = 0, mediaHealthy = 0, behaviorTagged = 0;
       for (var qi = 0; qi < pool.questions.length; qi++) {
         var q = pool.questions[qi];
         bySource[q.source] = (bySource[q.source] || 0) + 1;
         byDifficulty["d" + (q.difficulty || 3)] = (byDifficulty["d" + (q.difficulty || 3)] || 0) + 1;
+        if (q.quality && q.quality.status === "approved") approved++;
+        if (q.review && q.review.reviewed === true) reviewed++;
+        if (q.review && q.review.experience_checks && q.review.experience_checks.length > 0) uxApproved++;
+        if (!q.media_url || (q.media_provenance && q.media_provenance.checked && q.media_alt)) mediaHealthy++;
+        if (q.behavior_tags && q.behavior_tags.length > 0) behaviorTagged++;
+        if (!q.country_codes || q.country_codes.length === 0) byCountry["global"] = (byCountry["global"] || 0) + 1;
+        else for (var ci = 0; ci < q.country_codes.length; ci++) byCountry[q.country_codes[ci]] = (byCountry[q.country_codes[ci]] || 0) + 1;
       }
       pools.push({
         key: keys[i], mode: meta.mode, topic: meta.topic,
         size: pool.questions.length, quarantined: quarantined,
-        by_source: bySource, by_difficulty: byDifficulty,
+        approved: approved, reviewed: reviewed, semantic_approved: approved,
+        ux_approved: uxApproved, media_healthy: mediaHealthy, behavior_tagged: behaviorTagged,
+        production_minimum: SeedQ.MODE_PRODUCTION_MIN,
+        ready_for_staging: approved - quarantined >= SeedQ.MODE_PRODUCTION_MIN,
+        by_source: bySource, by_difficulty: byDifficulty, by_country: byCountry,
         updated_ms: pool.updated_ms || 0
       });
     }
 
     var state = SeedQ.readSystem(nk, SeedQ.COLL_INGEST_STATE, "state") || {};
-    return JSON.stringify({ ok: true, pools: pools, ingest_state: { cursor: state.cursor || 0, runs: state.runs || 0, last_run_ms: state.last_run_ms || 0 }, module_version: SeedQ.MODULE_VERSION });
+    var modes = SeedQ.modeRegistry();
+    var coverage: any[] = [];
+    for (var mi = 0; mi < modes.length; mi++) {
+      var directKey = SeedQ.poolKey(modes[mi].mode, modes[mi].default_topic);
+      var directSize = 0, directApproved = 0, directUx = 0, directMedia = 0, directBehavior = 0, directCountries: any = {};
+      for (var pi = 0; pi < pools.length; pi++) {
+        if (pools[pi].key === directKey) {
+          directSize = pools[pi].size; directApproved = pools[pi].approved;
+          directUx = pools[pi].ux_approved; directMedia = pools[pi].media_healthy;
+          directBehavior = pools[pi].behavior_tagged; directCountries = pools[pi].by_country;
+          break;
+        }
+      }
+      var usable = Math.min(directApproved, directUx, directMedia);
+      var deficit = Math.max(0, SeedQ.MODE_PRODUCTION_MIN - usable);
+      coverage.push({
+        mode: modes[mi].mode, aliases: modes[mi].aliases, support: modes[mi].support, source: modes[mi].source,
+        default_topic: modes[mi].default_topic, direct_size: directSize,
+        semantic_approved: directApproved, ux_approved: directUx, media_healthy: directMedia,
+        behavior_tagged: directBehavior, geo_counts: directCountries,
+        production_minimum: SeedQ.MODE_PRODUCTION_MIN,
+        fresh_sets_possible: Math.floor(usable / SeedQ.DEFAULT_SET_SIZE),
+        ready_for_staging: deficit === 0, deficit: deficit,
+        status: deficit === 0 ? "PASS" : (modes[mi].support === "fallback" ? "WARN" : "BLOCKED"),
+        fallback_mode: modes[mi].fallback_mode, reason: modes[mi].reason
+      });
+    }
+    return JSON.stringify({ ok: true, pools: pools, mode_coverage: coverage, ingest_state: { cursor: state.cursor || 0, runs: state.runs || 0, last_run_ms: state.last_run_ms || 0 }, module_version: SeedQ.MODULE_VERSION });
   }
 
   // ── quizverse_seedq_asset_job (admin/service) ───────────────────────────────
@@ -288,4 +400,10 @@ namespace SeedQuestions {
     initializer.registerRpc("quizverse_seedq_asset_job", rpcAssetJob);
     initializer.registerRpc("quizverse_seedq_provenance", rpcProvenance);
   }
+
+  // Explicit per-VM stub population. postbuild rewrites the registerRpc calls
+  // above into __rpc_* assignments before this bundle is loaded, so the
+  // argument is never dereferenced. This avoids pooled Goja VMs inheriting
+  // undefined handlers if autoInvokeRegister misses this large namespace.
+  register(null as any);
 }

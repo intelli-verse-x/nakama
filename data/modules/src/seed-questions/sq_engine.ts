@@ -55,9 +55,7 @@ namespace SeedQEngine {
         q.media_provenance = SeedQQuality.checkProvenance(ctx, nk, logger, q.media_url);
       }
 
-      var qa = SeedQQuality.autoQa(q);
-      q.quality = qa;
-      if (qa.status !== "approved") { rejected++; continue; }
+      if (!SeedQQuality.ensureReviewed(q)) { rejected++; continue; }
 
       existing[q.id] = true;
       pool.questions.push(q);
@@ -107,6 +105,65 @@ namespace SeedQEngine {
     return SeedQ.shuffle(out);
   }
 
+  function isGlobalQuestion(q: SeedQ.SeedQuestion): boolean {
+    return !q.country_codes || q.country_codes.length === 0;
+  }
+
+  function questionMatchesCountry(q: SeedQ.SeedQuestion, country: string): boolean {
+    if (!country || !q.country_codes) return false;
+    for (var i = 0; i < q.country_codes.length; i++) {
+      if (SeedQ.validCountry(q.country_codes[i]) === country) return true;
+    }
+    return false;
+  }
+
+  // Blend country-relevant content with global curriculum before applying the
+  // existing adaptive difficulty selector. Other-country-only content is not
+  // used as a fallback; global content is always safe.
+  function behaviorMatch(q: SeedQ.SeedQuestion, behavior: SeedQ.BehaviorProfile): boolean {
+    if (!behavior || behavior.basis !== "quiz_history") return false;
+    var tags = (q.behavior_tags || []).slice(0);
+    tags.push(SeedQ.slugify(q.topic || q.category || ""));
+    for (var i = 0; i < tags.length; i++) {
+      var tag = SeedQ.slugify(tags[i]);
+      if (behavior.weakest_topics.indexOf(tag) >= 0 || behavior.recent_miss_topics.indexOf(tag) >= 0) return true;
+    }
+    return false;
+  }
+
+  function selectBehaviorAdaptive(candidates: SeedQ.SeedQuestion[], target: number, n: number, behavior: SeedQ.BehaviorProfile): SeedQ.SeedQuestion[] {
+    var matched: SeedQ.SeedQuestion[] = [], rest: SeedQ.SeedQuestion[] = [];
+    for (var i = 0; i < candidates.length; i++) {
+      (behaviorMatch(candidates[i], behavior) ? matched : rest).push(candidates[i]);
+    }
+    var out = selectAdaptive(matched, target, Math.ceil(n * 0.3));
+    out = out.concat(selectAdaptive(rest, target, n - out.length));
+    if (out.length < n) out = out.concat(selectAdaptive(matched.slice(out.length), target, n - out.length));
+    return out.slice(0, n);
+  }
+
+  function selectGeoAdaptive(candidates: SeedQ.SeedQuestion[], target: number, n: number, country: string, behavior: SeedQ.BehaviorProfile): SeedQ.SeedQuestion[] {
+    if (!country) return selectBehaviorAdaptive(candidates, target, n, behavior);
+    var relevant: SeedQ.SeedQuestion[] = [];
+    var global: SeedQ.SeedQuestion[] = [];
+    for (var i = 0; i < candidates.length; i++) {
+      if (questionMatchesCountry(candidates[i], country)) relevant.push(candidates[i]);
+      else if (isGlobalQuestion(candidates[i])) global.push(candidates[i]);
+    }
+    var wantRelevant = Math.round(n * SeedQ.GEO_RELEVANT_PERCENT / 100);
+    var out = selectBehaviorAdaptive(relevant, target, wantRelevant, behavior);
+    out = out.concat(selectBehaviorAdaptive(global, target, n - out.length, behavior));
+    if (out.length < n) {
+      var selected: { [id: string]: boolean } = {};
+      for (var s = 0; s < out.length; s++) selected[out[s].id] = true;
+      var remaining: SeedQ.SeedQuestion[] = [];
+      var allowed = relevant.concat(global);
+      for (var a = 0; a < allowed.length; a++) if (!selected[allowed[a].id]) remaining.push(allowed[a]);
+      out = out.concat(selectBehaviorAdaptive(remaining, target, n - out.length, behavior));
+    }
+    return SeedQ.shuffle(out.slice(0, n));
+  }
+
   // ── Staging ─────────────────────────────────────────────────────────────────
   // Low-watermark for Dynamic Replenishment (Deliverable 1 §3.1): when a user's
   // unseen pool drops below this, we queue a priority ingest combo so the next
@@ -127,6 +184,46 @@ namespace SeedQEngine {
     fresh_count: number;
     review_count: number;
     adaptive: SeedQ.AdaptiveProfile;
+    geo: any;
+    source_route: any;
+    behavior: SeedQ.BehaviorProfile;
+  }
+
+  function readRoutedPool(nk: nkruntime.Nakama, mode: string, topic: string): any {
+    var def = SeedQ.resolveMode(mode);
+    var canonical = def ? def.mode : mode;
+    var candidates = [
+      { mode: canonical, topic: topic, route: "direct" },
+      { mode: canonical, topic: def ? def.default_topic : topic, route: "mode_default" }
+    ];
+    if (def && def.fallback_mode) {
+      var fallbackDef = SeedQ.resolveMode(def.fallback_mode);
+      candidates.push({
+        mode: def.fallback_mode,
+        topic: fallbackDef ? fallbackDef.default_topic : topic,
+        route: "mode_fallback"
+      });
+    }
+    candidates.push({ mode: "CustomTopic", topic: "math", route: "global_fallback" });
+    var seenKeys: { [k: string]: boolean } = {};
+    var partial: any = null;
+    for (var i = 0; i < candidates.length; i++) {
+      var key = SeedQ.poolKey(candidates[i].mode, candidates[i].topic);
+      if (seenKeys[key]) continue;
+      seenKeys[key] = true;
+      var pool = readPool(nk, candidates[i].mode, candidates[i].topic);
+      if (pool.questions && pool.questions.length >= SeedQ.MIN_READY_SETS * 4) {
+        return { pool: pool, route: candidates[i], requested_mode: mode, canonical_mode: canonical };
+      }
+      if (!partial && pool.questions && pool.questions.length > 0) partial = { pool: pool, route: candidates[i] };
+    }
+    if (partial) return { pool: partial.pool, route: partial.route, requested_mode: mode, canonical_mode: canonical };
+    return {
+      pool: { questions: [], updated_ms: 0 },
+      route: { mode: canonical, topic: topic, route: "empty" },
+      requested_mode: mode,
+      canonical_mode: canonical
+    };
   }
 
   // Queues a (mode, topic) combo at the FRONT of the ingest rotation. The next
@@ -165,18 +262,30 @@ namespace SeedQEngine {
     mode: string,
     topic: string,
     wantSets: number,
-    setSize: number
+    setSize: number,
+    geo: SeedQ.GeoProfile
   ): StageResult {
-    var key = SeedQ.poolKey(mode, topic);
+    var key = SeedQ.stagedKey(mode, topic, geo.country);
+    var routed = readRoutedPool(nk, mode, topic);
+    var quarantined = SeedQQuality.getQuarantineSet(nk, routed.route.mode, routed.route.topic);
     var doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId) || { sets: [], updated_ms: 0 };
     if (!doc.sets) doc.sets = [];
 
-    // Drop consumed sets past their TTL so the doc never balloons.
+    // Drop expired ready sets and consumed sets past their TTL so stale cache
+    // payloads are replaced on the next sync and the storage doc never balloons.
     var now = SeedQ.nowMs();
+    var originalSetCount = doc.sets.length;
+    var metadataDirty = false;
     var kept: SeedQ.StagedSet[] = [];
     for (var i = 0; i < doc.sets.length; i++) {
       var s = doc.sets[i];
       if (s.status === "consumed" && (now - (s.consumed_ms || 0)) > SeedQ.CONSUMED_SET_TTL_MS) continue;
+      // Backfill cache metadata for sets created by v1.0.0.
+      if (!s.schema_version) { s.schema_version = SeedQ.CACHE_SCHEMA_VERSION; metadataDirty = true; }
+      if (!s.expires_ms) { s.expires_ms = (s.created_ms || now) + SeedQ.READY_SET_TTL_MS; metadataDirty = true; }
+      if (!s.generated_at) { s.generated_at = SeedQ.isoTime(s.created_ms || now); metadataDirty = true; }
+      if (!s.expires_at) { s.expires_at = SeedQ.isoTime(s.expires_ms); metadataDirty = true; }
+      if (s.status === "ready" && s.expires_ms <= now) continue;
       kept.push(s);
     }
     doc.sets = kept;
@@ -190,17 +299,32 @@ namespace SeedQEngine {
     for (var r = 0; r < doc.sets.length; r++) {
       var st = doc.sets[r];
       if (st.status !== "ready") continue;
+      var setApproved = true;
+      for (var gq = 0; gq < st.questions.length; gq++) {
+        var existingQ = st.questions[gq];
+        if (quarantined[existingQ.id] || !SeedQQuality.ensureReviewed(existingQ, mode) ||
+            (!isGlobalQuestion(existingQ) && !questionMatchesCountry(existingQ, geo.country))) {
+          setApproved = false;
+          break;
+        }
+      }
+      if (!setApproved || st.questions.length !== st.question_ids.length) {
+        st.status = "invalidated";
+        metadataDirty = true;
+        continue;
+      }
       for (var qi = 0; qi < st.question_ids.length; qi++) stagedIds[st.question_ids[qi]] = true;
       ready.push(st);
     }
 
     var adaptive = SeedQ.computeAdaptiveProfile(nk, userId, topic);
-    var pool = readPool(nk, mode, topic);
+    var behavior = SeedQ.computeBehaviorProfile(nk, userId);
+    var pool = routed.pool;
     var built = 0;
     var recycled = false;
     var poolAvailable = 0;
     var seenIds = SeedQ.getSeenIdSet(nk, userId, mode, topic);
-    var quarantined = SeedQQuality.getQuarantineSet(nk, mode, topic);
+    var reviewBackfilled = false;
 
     // Always compute the per-user unseen supply — repeat_policy metadata (D1
     // §6.2) needs it even when no new sets are built this call.
@@ -209,23 +333,34 @@ namespace SeedQEngine {
     for (var p = 0; p < pool.questions.length; p++) {
       var q = pool.questions[p];
       if (!q || quarantined[q.id] || stagedIds[q.id]) continue;
-      if (q.quality && q.quality.status !== "approved") continue;
+      var hadReview = !!(q.review && q.review.reviewed);
+      if (!SeedQQuality.ensureReviewed(q, mode)) continue;
+      if (!hadReview) reviewBackfilled = true;
+      // Country-specific questions for another country are never served.
+      if (!isGlobalQuestion(q) && !questionMatchesCountry(q, geo.country)) continue;
       if (seenIds[q.id]) seenPool.push(q);
       else unseen.push(q);
     }
     poolAvailable = unseen.length;
+    // qv_seen stores first/last-seen timestamps; oldest items are the least
+    // surprising Smart Review fallback when fresh supply is exhausted.
+    seenPool.sort(function (a: SeedQ.SeedQuestion, b: SeedQ.SeedQuestion): number {
+      return Number(seenIds[a.id] || 0) - Number(seenIds[b.id] || 0);
+    });
 
     if (ready.length < wantSets && pool.questions.length > 0) {
       while (ready.length < wantSets) {
         var candidates = unseen;
-        if (candidates.length < setSize && seenPool.length > 0) {
-          // Pool exhausted for this user → recycle oldest-seen rather than starve.
+        if (candidates.length < Math.min(setSize, 4) && seenPool.length > 0) {
+          // Fewer than the minimum playable fresh questions remain: include
+          // disclosed Smart Review items rather than starve. If 4+ fresh
+          // questions remain, serve a short all-fresh set before any repeat.
           candidates = unseen.concat(seenPool);
           recycled = true;
         }
         if (candidates.length < Math.min(setSize, 4)) break; // not enough content, even recycled
 
-        var chosen = selectAdaptive(candidates, adaptive.target_difficulty, setSize);
+        var chosen = selectGeoAdaptive(candidates, adaptive.target_difficulty, setSize, geo.country, behavior);
         if (chosen.length === 0) break;
 
         // Remove chosen from future candidate lists.
@@ -239,6 +374,11 @@ namespace SeedQEngine {
           // Serve a copy with the media URL optimized (squoosh-equivalent).
           var copy = JSON.parse(JSON.stringify(chosen[ci]));
           copy.media_url = SeedQ.optimizeMediaUrl(copy.media_url);
+          if (!copy.review || copy.review.reviewed !== true || copy.quality.status !== "approved") continue;
+          copy.selection_reasons = ["quality_approved", "ux_approved", "no_repeat",
+            seenIds[copy.id] ? "smart_review" : "fresh",
+            questionMatchesCountry(copy, geo.country) ? "geo_relevant" : "global_curriculum",
+            behaviorMatch(copy, behavior) ? "behavior_weakness_or_recent_miss" : "adaptive_difficulty"];
           // Honest-repeat disclosure (D1 §6.2): mark recycled questions so the
           // client renders "N new + M Smart Review repeats", never a silent repeat.
           if (seenIds[copy.id]) { copy.recycled = true; setReview++; }
@@ -253,6 +393,7 @@ namespace SeedQEngine {
         seenPool = nextSeenPool;
 
         var newSet: SeedQ.StagedSet = {
+          schema_version: SeedQ.CACHE_SCHEMA_VERSION,
           set_id: "set_" + now.toString(36) + "_" + SeedQ.randSuffix(),
           mode: mode,
           topic: topic,
@@ -263,16 +404,32 @@ namespace SeedQEngine {
           fresh_count: setFresh,
           review_count: setReview,
           created_ms: now,
+          expires_ms: now + SeedQ.READY_SET_TTL_MS,
+          generated_at: SeedQ.isoTime(now),
+          expires_at: SeedQ.isoTime(now + SeedQ.READY_SET_TTL_MS),
           consumed_ms: 0
+          ,country_code: geo.country || ""
         };
+        // A serve-time gate may remove a malformed copy. Keep IDs exactly in
+        // sync with the self-contained payload and never stage an empty set.
+        ids = [];
+        for (var ri = 0; ri < served.length; ri++) ids.push(served[ri].id);
+        newSet.question_ids = ids;
+        if (served.length < Math.min(setSize, 4)) break;
         doc.sets.push(newSet);
         ready.push(newSet);
         for (var ni = 0; ni < ids.length; ni++) stagedIds[ids[ni]] = true;
         built++;
       }
     }
+    if (reviewBackfilled) {
+      pool.updated_ms = SeedQ.nowMs();
+      SeedQ.writeSystem(nk, SeedQ.COLL_POOL, SeedQ.poolKey(routed.route.mode, routed.route.topic), pool);
+    }
+    // Report unseen supply remaining after this call's newly staged sets.
+    poolAvailable = unseen.length;
 
-    if (built > 0 || kept.length !== doc.sets.length) {
+    if (built > 0 || originalSetCount !== doc.sets.length || metadataDirty) {
       doc.updated_ms = now;
       SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
     }
@@ -312,8 +469,31 @@ namespace SeedQEngine {
       next_refresh_eta_sec: generationQueued ? NEXT_REFRESH_ETA_SEC : 0,
       fresh_count: freshTotal,
       review_count: reviewTotal,
-      adaptive: adaptive
+      adaptive: adaptive,
+      geo: {
+        country: geo.country || "GLOBAL",
+        basis: geo.basis,
+        locale: geo.locale || "",
+        relevance_target_pct: SeedQ.GEO_RELEVANT_PERCENT,
+        relevant_count: countGeoQuestions(ready, geo.country, true),
+        global_count: countGeoQuestions(ready, geo.country, false),
+        fallback_reason: geo.country ?
+          (countGeoQuestions(ready, geo.country, true) > 0 ? "" : "no_geo_tagged_content_global_used") :
+          "no_valid_country_global_used"
+      },
+      source_route: routed.route,
+      behavior: behavior
     };
+  }
+
+  function countGeoQuestions(sets: SeedQ.StagedSet[], country: string, relevant: boolean): number {
+    var count = 0;
+    for (var i = 0; i < sets.length; i++) {
+      for (var q = 0; q < sets[i].questions.length; q++) {
+        if (relevant ? questionMatchesCountry(sets[i].questions[q], country) : isGlobalQuestion(sets[i].questions[q])) count++;
+      }
+    }
+    return count;
   }
 
   // Marks a set consumed and merges its ids into the qv_seen ledger — this is
@@ -326,16 +506,22 @@ namespace SeedQEngine {
     userId: string,
     mode: string,
     topic: string,
-    setId: string
-  ): { found: boolean; merged: number } {
-    var key = SeedQ.poolKey(mode, topic);
+    setId: string,
+    country: string
+  ): { found: boolean; merged: number; set_size: number } {
+    var key = SeedQ.stagedKey(mode, topic, country);
     var doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId);
-    if (!doc || !doc.sets) return { found: false, merged: 0 };
+    // Backward compatibility for v1 cache documents.
+    if (!doc) {
+      key = SeedQ.poolKey(mode, topic);
+      doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId);
+    }
+    if (!doc || !doc.sets) return { found: false, merged: 0, set_size: 0 };
 
     for (var i = 0; i < doc.sets.length; i++) {
       var s = doc.sets[i];
       if (s.set_id !== setId) continue;
-      if (s.status === "consumed") return { found: true, merged: 0 };
+      if (s.status === "consumed") return { found: true, merged: 0, set_size: s.question_ids.length };
       s.status = "consumed";
       s.consumed_ms = SeedQ.nowMs();
       // Consumed sets keep ids (dedup) but drop full question bodies (size).
@@ -343,30 +529,25 @@ namespace SeedQEngine {
       doc.updated_ms = SeedQ.nowMs();
       SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
       SeedQ.mergeSeenIds(nk, userId, mode, topic, s.question_ids);
-      return { found: true, merged: s.question_ids.length };
+      return { found: true, merged: s.question_ids.length, set_size: s.question_ids.length };
     }
-    return { found: false, merged: 0 };
+    return { found: false, merged: 0, set_size: 0 };
   }
 
   // ── Cron ingest rotation ────────────────────────────────────────────────────
   // Default matrix of (source, mode, topic) combos the tick rotates through.
   // Live-ops can extend it by writing sq_ingest_state.combos.
   export function defaultCombos(): any[] {
-    return [
-      { source: "archive_org", mode: "ImageGuess", topic: "history" },
-      { source: "archive_org", mode: "WhosThat", topic: "portraits" },
-      { source: "archive_org", mode: "GeoExplore", topic: "maps" },
-      { source: "archive_org", mode: "MediaQuiz", topic: "film" },
-      { source: "wolfram", mode: "CustomTopic", topic: "math" },
-      { source: "wolfram", mode: "BrainSprint", topic: "arithmetic" },
-      { source: "gutenberg", mode: "CustomTopic", topic: "literature" },
-      { source: "gutenberg", mode: "PickATopic", topic: "history" },
-      { source: "music_tv", mode: "MediaQuiz", topic: "music" },
-      { source: "music_tv", mode: "AudioQuiz", topic: "music" },
-      { source: "scholar", mode: "CustomTopic", topic: "science" },
-      { source: "scholar", mode: "SubjectiveQuiz", topic: "psychology" },
-      { source: "justwatch", mode: "ViralIQ", topic: "trending" }
-    ];
+    var defs = SeedQ.modeRegistry();
+    var out: any[] = [];
+    for (var i = 0; i < defs.length; i++) {
+      out.push({ source: defs[i].source, mode: defs[i].mode, topic: defs[i].default_topic });
+    }
+    // CustomTopic has multiple direct subject sources.
+    out.push({ source: "gutenberg", mode: "CustomTopic", topic: "literature" });
+    out.push({ source: "scholar", mode: "CustomTopic", topic: "science" });
+    out.push({ source: "music_tv", mode: "MediaQuiz", topic: "music" });
+    return out;
   }
 
   export function ingestTick(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, batchCombos: number, perComboCount: number): any {

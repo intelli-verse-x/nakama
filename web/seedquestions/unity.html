@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed Questions × Aahaa — Unity Integration Guide</title>
+<meta name="description" content="Production-ready Unity integration guide for QuizVerse Seed Questions staging, persistent caching, quiz results, and Aahaa wow moments.">
+<link rel="canonical" href="https://seedquestions.quizverse.world/unity.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%F0%9F%8E%AE%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0b1020;--bg2:#0f172a;--panel:#111a30;--panel2:#16223f;--line:#233252;--ink:#e6ecff;--muted:#9fb0d6;--dim:#64748b;--brand:#6366f1;--purple:#a855f7;--cyan:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1120px;margin:auto;padding:0 22px}
+header{position:sticky;top:0;z-index:20;background:rgba(11,16,32,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}nav{min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.logo{font-weight:800}.logo em,.grad{font-style:normal;background:linear-gradient(90deg,#818cf8,#c084fc,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a,.button{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:999px;padding:7px 13px;color:var(--muted);font-size:.8rem;font-weight:700}.nav a.primary,.button.primary{background:linear-gradient(90deg,var(--brand),var(--purple));border:0;color:white}.nav a:hover,.button:hover{text-decoration:none;border-color:var(--cyan);color:white}
+.hero{text-align:center;padding:62px 0 35px;background:radial-gradient(700px 320px at 15% -10%,rgba(99,102,241,.2),transparent 60%),radial-gradient(700px 320px at 85% -10%,rgba(168,85,247,.15),transparent 60%)}.eyebrow,.chip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:.75rem;font-weight:750}.eyebrow{color:#a5b4fc;background:rgba(99,102,241,.14);margin-bottom:15px}h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:0 auto;max-width:900px;letter-spacing:-.04em}.lead{max-width:790px;margin:17px auto 0;color:var(--muted);font-size:1.03rem}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+section{padding:25px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:23px}.card h2{margin:0 0 6px;font-size:1.3rem}.sub{color:var(--dim);margin:0 0 16px}.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}.subcard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px}.subcard h3{font-size:.95rem;margin:0 0 8px}.subcard p{margin:5px 0;color:var(--muted)}.mono{font-family:var(--mono)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.step{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px;min-height:92px}.step b{display:block;color:#a5b4fc;font-family:var(--mono);font-size:.78rem;margin-bottom:4px}.step span{color:var(--muted);font-size:.8rem}.step:not(:last-child):after{content:"→";position:absolute;right:-9px;top:35%;z-index:2;color:var(--cyan);font-weight:900}
+.code{position:relative;margin:12px 0;background:#070b16;border:1px solid var(--line);border-radius:11px;overflow:hidden}.codebar{display:flex;justify-content:space-between;align-items:center;padding:7px 9px 7px 13px;border-bottom:1px solid var(--line);color:var(--dim);font:700 .7rem var(--mono)}pre{margin:0;padding:15px;overflow:auto;color:#cbd5e1;font:12px/1.55 var(--mono);tab-size:2}.copy{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:7px;padding:5px 9px;cursor:pointer;font:700 .7rem var(--mono)}.copy:hover{color:white;border-color:var(--cyan)}
+.chip{margin:2px}.live{color:var(--ok);border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.1)}.pending{color:var(--warn);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.1)}.warnbox{border-left:3px solid var(--warn);background:rgba(251,191,36,.07);padding:12px 15px;border-radius:8px;color:#fde68a}.okbox{border-left:3px solid var(--ok);background:rgba(52,211,153,.07);padding:12px 15px;border-radius:8px;color:#a7f3d0}.checklist{list-style:none;padding:0;margin:0}.checklist li{position:relative;padding:7px 0 7px 29px;border-bottom:1px dashed var(--line);color:var(--muted)}.checklist li:before{content:"□";position:absolute;left:2px;color:var(--cyan);font-size:1.1rem}.field{font-family:var(--mono);color:#c4b5fd;font-size:.8rem}footer{border-top:1px solid var(--line);margin-top:28px;padding:26px 0;color:var(--dim);font-size:.8rem}
+@media(max-width:800px){.flow{grid-template-columns:1fr 1fr}.step:nth-child(2):after{display:none}}@media(max-width:520px){.flow{grid-template-columns:1fr}.step:after{display:none}nav{padding:9px 0}.card{padding:17px}.g2,.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-guide-marker="UNITY_INTEGRATION_GUIDE_V1">
+<header><div class="wrap"><nav>
+  <div class="logo">Seed<em>Questions</em> × <em>Aahaa</em> · Unity Guide</div>
+  <div class="nav"><a href="/">← Live showcase</a><a href="/verify.html" class="primary">Open live verifier</a></div>
+</nav></div></header>
+
+<main>
+<div class="hero"><div class="wrap">
+  <span class="eyebrow">🎮 Unity · iOS · Android · Desktop</span>
+  <h1>Ship instant quizzes with <span class="grad">persistent staged caching</span>.</h1>
+  <p class="lead">The practical client contract for device auth, adaptive question sets, honest Smart Review repeats, result submission, and the Aahaa reaction loop. No server or admin credentials belong in the app.</p>
+  <div class="actions"><a class="button primary" href="#quickstart">Start integration</a><a class="button" href="/verify.html">Open live verifier</a><a class="button" href="https://github.com/intelli-verse-x/nakama/pull/304">PR #304</a></div>
+</div></div>
+
+<section><div class="wrap"><div class="card">
+  <h2>End-to-end sequence</h2><p class="sub">Keep rendering independent from network latency: hydrate disk first, then refresh in the background.</p>
+  <div class="flow">
+    <div class="step"><b>1 · AuthenticateDevice</b><span>Create/restore <span class="mono">ISession</span>; bind all cache data to <span class="mono">session.UserId</span>.</span></div>
+    <div class="step"><b>2 · get_staged</b><span>Fetch 3 adaptive READY sets and atomically persist the self-contained payload.</span></div>
+    <div class="step"><b>3 · hydrate + render</b><span>Read memory, then encrypted disk. Render set 1 and prefetch media for set 2.</span></div>
+    <div class="step"><b>4 · consume_set</b><span>After play, mark set consumed server-side and trigger refill.</span></div>
+    <div class="step"><b>5 · quiz_submit_result</b><span>Send score, answer history, timing, and seen IDs after the completed quiz.</span></div>
+    <div class="step"><b>6 · aahaa_get</b><span>Call with <span class="mono">generate:true</span> so post-quiz insights include this result.</span></div>
+    <div class="step"><b>7 · route surface</b><span>Render by <span class="mono">surface</span>; obey fullscreen and rating gates.</span></div>
+    <div class="step"><b>8 · aahaa_react</b><span>Report shown, clicked, dismissed, converted, or muted.</span></div>
+  </div>
+</div></div></section>
+
+<section id="quickstart"><div class="wrap"><div class="card">
+  <h2>RPC quickstart</h2><p class="sub">All calls use <span class="mono">IClient.RpcAsync(ISession, rpcId, JSON)</span>.</p>
+  <div class="grid g2">
+    <div class="subcard"><h3>Fetch staged sets · <span class="chip live">LIVE</span></h3>
+      <div class="code"><div class="codebar">quizverse_seedq_get_staged <button class="copy">Copy</button></div><pre>{"mode":"CustomTopic","topic":"math","country":"IN","locale":"en-IN","set_size":6,"want_sets":3}</pre></div>
+    </div>
+    <div class="subcard"><h3>Consume played set · <span class="chip live">LIVE</span></h3>
+      <div class="code"><div class="codebar">quizverse_seedq_consume_set <button class="copy">Copy</button></div><pre>{"mode":"CustomTopic","topic":"math","set_id":"set_..."}</pre></div>
+    </div>
+    <div class="subcard"><h3>Submit quiz result · <span class="chip live">LIVE</span></h3>
+      <div class="code"><div class="codebar">quiz_submit_result <button class="copy">Copy</button></div><pre>{
+  "score":83,"totalQuestions":6,"correctAnswers":5,
+  "category":"math",
+  "seenQuestionIds":["sq_1","sq_2","sq_3","sq_4","sq_5","sq_6"],
+  "questionHistory":[
+    {"question_id":"sq_1","category":"math","correct":true,"time_ms":4200}
+  ]
+}</pre></div>
+    </div>
+    <div class="subcard"><h3>Generate post-quiz feed · <span class="chip live">LIVE</span></h3>
+      <div class="code"><div class="codebar">quizverse_aahaa_get <button class="copy">Copy</button></div><pre>{"generate":true}</pre></div>
+    </div>
+    <div class="subcard"><h3>Close the reaction loop · <span class="chip live">LIVE</span></h3>
+      <div class="code"><div class="codebar">quizverse_aahaa_react <button class="copy">Copy</button></div><pre>{"wow_id":"wow.a.lock_it_in","action":"shown","fullscreen":false}</pre></div>
+      <p>Allowed actions: <span class="field">shown</span>, <span class="field">clicked</span>, <span class="field">dismissed</span>, <span class="field">converted</span>, <span class="field">muted</span>.</p>
+    </div>
+    <div class="subcard"><h3>Fallback question path · <span class="chip live">LIVE</span></h3>
+      <div class="code"><div class="codebar">quizverse_request_questions <button class="copy">Copy</button></div><pre>{
+  "kind":"deduped_s3","mode":"CustomTopic","scope":"global",
+  "topic":"math","count":6,"id_prefix":"unity"
+}</pre></div>
+      <p>Use only after staged memory/disk and staged RPC fail. The server-side <span class="field">qv_seen</span> chokepoint still dedupes.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<section><div class="wrap"><div class="card">
+  <h2>Response contract</h2><p class="sub">Status checked against production on 2026-07-12. Do feature detection; never assume pending fields exist.</p>
+  <div class="grid g2">
+    <div class="subcard"><h3>Current production · <span class="chip live">LIVE</span></h3>
+      <p><span class="field">sets[]</span>: <span class="field">set_id</span>, mode, topic, difficulty_target, question_ids, questions, fresh_count, review_count, status.</p>
+      <p><span class="field">questions[]</span>: id, question, options, correct_index, explanation, difficulty, category/topic/mode, media_url, media_provenance, media_alt, citation, quality, review (semantic + experience checks), source, country_codes, behavior_tags, selection_reasons.</p>
+      <p><span class="field">adaptive</span>: basis, accuracy_pct, sample_size, target_difficulty.</p>
+      <p><span class="field">personalization.geo</span>: ISO country or GLOBAL, basis, 60% desired blend, actual relevant/global counts, fallback reason. <span class="field">personalization.behavior</span>: persisted-history basis, signals, samples, weaknesses/misses/latency, and unsupported future signals.</p>
+      <p><span class="field">repeat_policy</span>: fresh_count, review_count, pool_exhausted, content_generation_queued, next_refresh_eta_seconds.</p>
+      <p><span class="field">suppress_rating_prompt</span>: blocks native store review prompts when true.</p>
+      <p>Three sets are currently returned for <span class="mono">want_sets:3</span>; treat two as the minimum usable online depth.</p>
+    </div>
+    <div class="subcard"><h3>Strengthened cache contract · <span class="chip pending">PENDING PR / BACKEND UPDATE</span></h3>
+      <p>Local source adds top-level <span class="field">ready_depth</span>, <span class="field">target_ready_depth</span>, and <span class="field">availability</span>.</p>
+      <p><span class="field">cache</span> adds: schema_version, cache_key (<span class="mono">userId/canonicalMode/topic/country-or-global</span>), generated_ms/generated_at, expires_ms/expires_at, self_contained, contains_answer_keys, ready_depth, target_ready_depth.</p>
+      <p>Each staged set also gains schema_version, generated_at, expires_ms, and expires_at.</p>
+      <div class="warnbox">These cache metadata fields are not live on production yet. Until deployed, assign a client envelope version and conservative local TTL; validate the cached user/mode/topic yourself.</div>
+    </div>
+  </div>
+  <div class="code"><div class="codebar">Current live model shape (abridged) <button class="copy">Copy</button></div><pre>{
+  "ok":true,
+  "sets":[{"set_id":"set_...","mode":"CustomTopic","topic":"math",
+    "fresh_count":6,"review_count":0,"question_ids":["sq_..."],
+    "questions":[{"id":"sq_...","question":"...","options":["..."],
+      "correct_index":0,"media_url":"","quality":{"status":"approved"}}]}],
+  "adaptive":{"basis":"default","accuracy_pct":0,"sample_size":0,"target_difficulty":2},
+  "repeat_policy":{"fresh_count":18,"review_count":0,"pool_exhausted":false,
+    "content_generation_queued":false,"next_refresh_eta_seconds":0},
+  "suppress_rating_prompt":false
+}</pre></div>
+</div></div></section>
+
+<section><div class="wrap"><div class="card">
+  <h2>C# DTOs and service skeleton</h2><p class="sub">Newtonsoft.Json field names intentionally mirror the wire contract.</p>
+  <div class="code"><div class="codebar">SeedQuestionModels.cs <button class="copy">Copy</button></div><pre>using System;
+
+[Serializable] public class SeedQResponse {
+  public bool ok, suppress_rating_prompt;
+  public string mode, topic;
+  public SeedQSet[] sets;
+  public Adaptive adaptive;
+  public RepeatPolicy repeat_policy;
+  public CacheMeta cache;       // null until strengthened contract is deployed
+  public int ready_depth, target_ready_depth;
+}
+[Serializable] public class SeedQSet {
+  public string set_id, mode, topic, status;
+  public int difficulty_target, fresh_count, review_count;
+  public string[] question_ids;
+  public SeedQuestion[] questions;
+}
+[Serializable] public class SeedQuestion {
+  public string id, question, explanation, category, topic, mode, media_url, citation;
+  public string[] options;
+  public int correct_index, difficulty;
+  public bool recycled;
+  public Quality quality;
+}
+[Serializable] public class Quality { public string status; }
+[Serializable] public class Adaptive {
+  public string basis; public int accuracy_pct, sample_size, target_difficulty;
+}
+[Serializable] public class RepeatPolicy {
+  public int fresh_count, review_count, next_refresh_eta_seconds;
+  public bool pool_exhausted, content_generation_queued;
+}
+[Serializable] public class CacheMeta {
+  public int schema_version, ready_depth, target_ready_depth;
+  public string cache_key, generated_at, expires_at;
+  public long generated_ms, expires_ms;
+  public bool self_contained, contains_answer_keys;
+}
+[Serializable] public class AahaaFeed {
+  public bool ok, rating_prompt_suppressed; public long generated_ms; public AahaaWow[] feed;
+}
+[Serializable] public class AahaaWow {
+  public string wow_id, tier, surface, copy, cta_action_id, loop_event, signal;
+  public bool fullscreen, celebratory;
+}</pre></div>
+  <div class="code"><div class="codebar">QuizContentService.cs (concise pseudocode) <button class="copy">Copy</button></div><pre>using Nakama;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
+
+public sealed class QuizContentService {
+  readonly IClient client; ISession session; readonly IEncryptedCache disk;
+  SeedQResponse memory;
+
+  public async Task&lt;SeedQResponse&gt; Start(IClient c, ISession s, string mode, string topic) {
+    client = c; session = s;
+    memory = disk.ReadValid&lt;SeedQResponse&gt;(Key(s.UserId, mode, topic));
+    _ = Refresh(mode, topic);                 // background; hydrated data can render now
+    return memory;
+  }
+
+  async Task Refresh(string mode, string topic) {
+    var payload = JsonConvert.SerializeObject(new {
+      mode, topic, set_size = 6, want_sets = 3
+    });
+    var rpc = await client.RpcAsync(session, "quizverse_seedq_get_staged", payload);
+    var next = JsonConvert.DeserializeObject&lt;SeedQResponse&gt;(rpc.Payload);
+    Validate(next, session.UserId, mode, topic); // IDs, answers, owner, schema, expiry
+    disk.AtomicWriteEncrypted(Key(session.UserId, mode, topic), next);
+    memory = next;
+    PrefetchMedia(next.sets.Length &gt; 1 ? next.sets[1] : next.sets[0]);
+  }
+
+  public async Task Complete(SeedQSet set, object result) {
+    await client.RpcAsync(session, "quizverse_seedq_consume_set",
+      JsonConvert.SerializeObject(new { mode=set.mode, topic=set.topic, set_id=set.set_id }));
+    await client.RpcAsync(session, "quiz_submit_result", JsonConvert.SerializeObject(result));
+    var feedRpc = await client.RpcAsync(session, "quizverse_aahaa_get", "{\"generate\":true}");
+    Route(JsonConvert.DeserializeObject&lt;AahaaFeed&gt;(feedRpc.Payload));
+    _ = Refresh(set.mode, set.topic);          // refill at low watermark (&lt; 2 ready)
+  }
+
+  public Task React(string id, string action, bool fullscreen=false) =&gt;
+    client.RpcAsync(session, "quizverse_aahaa_react",
+      JsonConvert.SerializeObject(new { wow_id=id, action, fullscreen }));
+
+  public void Logout() { disk.DeleteAllForUser(session.UserId); memory=null; session=null; }
+}</pre></div>
+</div></div></section>
+
+<section><div class="wrap"><div class="card">
+  <h2>Persistent cache requirements</h2>
+  <div class="grid g3">
+    <div class="subcard"><h3>Identity and isolation</h3><p>Key every record by <span class="field">userID/canonicalMode/topic/country-or-global</span>. Never share cached sets between accounts, countries, guest conversions, or environments. Delete the previous user's namespace at logout.</p></div>
+    <div class="subcard"><h3>Safe persistence</h3><p>Encrypt at rest because answer keys are included. Write a temp file, flush, then atomic rename. Include client schema/version and reject unknown/newer schemas.</p></div>
+    <div class="subcard"><h3>Expiry and hydration</h3><p>On startup, hydrate valid disk data into memory before network refresh. When live metadata arrives, enforce <span class="field">expires_ms</span>; before then use a conservative client TTL.</p></div>
+    <div class="subcard"><h3>Depth and refill</h3><p>Target 3 ready sets. Continue with 2; refill in background whenever unconsumed depth drops below 2. Never mark consumed locally as playable again.</p></div>
+    <div class="subcard"><h3>Media</h3><p>Prefetch the next set's <span class="field">media_url</span>, cache by URL/hash, cap storage, and time out quickly. If media fails, use a neutral placeholder or a text-safe question layout—do not block the quiz.</p></div>
+    <div class="subcard"><h3>Validation</h3><p>Require unique IDs, ≥2 options, in-range correct_index, <span class="field">quality.status=approved</span>, <span class="field">review.reviewed=true</span>, non-empty semantic and experience checks, matching mode/topic/country, and no consumed IDs. Reject the whole envelope on ownership/schema corruption.</p></div>
+  </div>
+</div></div></section>
+
+<section><div class="wrap"><div class="card">
+  <h2>Product behavior that must stay honest</h2>
+  <div class="grid g2">
+    <div class="subcard"><h3>Smart Review and exhaustion</h3>
+      <p>Render “<strong>N new + M Smart Review</strong>” directly from <span class="field">repeat_policy</span>. Mark each <span class="field">questions[].recycled == true</span> item as review. Never imply it is new.</p>
+      <p>If <span class="field">pool_exhausted</span>, show a refill/recommended-topic message; use <span class="field">content_generation_queued</span> and ETA only as status, not a guarantee.</p>
+    </div>
+    <div class="subcard"><h3>Rating prompt gate</h3>
+      <p>Only invoke iOS/Play native review when both are false:</p>
+      <div class="code"><div class="codebar">Gate <button class="copy">Copy</button></div><pre>allowRating =
+  !seedq.suppress_rating_prompt &&
+  !aahaa.rating_prompt_suppressed;</pre></div>
+    </div>
+    <div class="subcard"><h3>Aahaa surface routing</h3>
+      <p><span class="field">PersonalizedHomeUI</span> → home hero; <span class="field">EndOfQuizReviewScreen</span> → post-quiz card; <span class="field">MilestoneCelebrationScreen</span> → fullscreen; <span class="field">MidQuizToast</span> → native toast; <span class="field">AIFortuneTeller</span> → fortune screen only.</p>
+      <p>Always display <span class="field">signal</span> as “Why this appeared.” Send <span class="field">shown</span> once actually visible, then the user's terminal action.</p>
+    </div>
+    <div class="subcard"><h3>Fallback and rollout order</h3>
+      <ol>
+        <li>Unconsumed, valid in-memory staged set.</li><li>Encrypted, valid disk staged set.</li><li><span class="field">quizverse_seedq_get_staged</span>.</li><li>Legacy S3 path via <span class="field">quizverse_request_questions</span> / <span class="field">deduped_s3</span>.</li><li>Bundled emergency pack with explicit offline copy.</li>
+      </ol>
+      <p>Remote-config: <span class="field">seedq_staged_enabled</span>, percentage cohort, kill switch, minimum app version, cache TTL override. Ramp internal → 5% → 25% → 100%, watching RPC errors, fallback rate, empty depth, media failures, and repeat disclosures.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<section><div class="wrap"><div class="card">
+  <h2>Integration acceptance checklist</h2><p class="sub">Run once per platform and for guest, returning, and account-switch personas.</p>
+  <div class="grid g2">
+    <ul class="checklist">
+      <li>Device auth creates/restores an <span class="field">ISession</span>; cache namespace equals <span class="field">session.UserId</span>.</li>
+      <li>Fresh online launch returns 3 distinct sets; set 1 renders while sets 2–3 remain ready.</li>
+      <li>Airplane-mode relaunch hydrates a valid encrypted set without cross-account leakage.</li>
+      <li>Atomic-write interruption leaves either the previous valid file or the new valid file—never partial JSON.</li>
+      <li>Expired, wrong-user, wrong-schema, malformed-answer, and duplicate-ID caches are rejected.</li>
+      <li>Consume set, fetch/refill, and assert zero overlap with consumed IDs while fresh pool remains.</li>
+      <li>Depth below 2 starts one background refill (no request stampede).</li>
+    </ul>
+    <ul class="checklist">
+      <li>Review items show “Smart Review”; fresh/review totals equal questions served.</li>
+      <li>Pool exhaustion shows honest copy and suppresses native rating prompts.</li>
+      <li>Media prefetch succeeds; timeout/404 uses fallback without blocking interaction.</li>
+      <li><span class="field">quiz_submit_result</span> sends score, history, timing, and seen IDs exactly once/retry-idempotently.</li>
+      <li>Post-quiz <span class="field">aahaa_get(generate:true)</span> routes each surface and displays signal lineage.</li>
+      <li>Every rendered wow sends shown; CTA/dismiss/mute sends the matching reaction.</li>
+      <li>Remote kill switch immediately returns the app to legacy fallback without deleting valid staged cache.</li>
+      <li>Logout deletes memory and disk cache; next account cannot see previous questions or answers.</li>
+    </ul>
+  </div>
+  <div class="okbox" style="margin-top:16px"><strong>Fast verification:</strong> use the <a href="/verify.html">live verifier</a> for backend evidence, then run the device-level cases above in the Unity Test Framework and on physical iOS/Android devices.</div>
+</div></div></section>
+
+<section><div class="wrap"><div class="card">
+  <h2>References</h2>
+  <div class="grid g3">
+    <a class="subcard" href="/"><h3>Live showcase ↗</h3><p>Interactive staged questions and Aahaa feed.</p></a>
+    <a class="subcard" href="/verify.html"><h3>Live verifier ↗</h3><p>Repeatable contract and deliverable checks.</p></a>
+    <a class="subcard" href="https://github.com/intelli-verse-x/nakama/pull/304"><h3>PR #304 ↗</h3><p>SeedQ/Aahaa production rollout context.</p></a>
+    <a class="subcard" href="https://github.com/intelli-verse-x/nakama/blob/master/docs/SEED_QUESTIONS_PLAN.md"><h3>Seed Questions plan ↗</h3><p>Adaptive staging and Unity cache evidence.</p></a>
+    <a class="subcard" href="https://github.com/intelli-verse-x/nakama/blob/master/docs/AAHAA_WOW_ENGINE.md#4--unity-wiring-ios--android--desktop"><h3>Aahaa Unity wiring ↗</h3><p>Surface routing and client examples.</p></a>
+    <a class="subcard" href="https://github.com/intelli-verse-x/nakama/blob/master/docs/GO_LIVE_SEEDQUESTIONS_AAHAA.md#6--unity-team--manual-client-wiring"><h3>Go-live §6 ↗</h3><p>Unity handoff and rollout checklist.</p></a>
+  </div>
+</div></div></section>
+</main>
+
+<footer><div class="wrap">© 2026 IntelliVerseX · QuizVerse · <a href="/">live showcase</a> · <a href="/verify.html">verifier</a> · contract status checked 2026-07-12</div></footer>
+<script>
+"use strict";
+(function(){
+  function copyText(text, button){
+    function done(){ var old=button.textContent; button.textContent="Copied ✓"; setTimeout(function(){button.textContent=old;},1400); }
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text,done); });
+    }else fallback(text,done);
+  }
+  function fallback(text, done){
+    var area=document.createElement("textarea"); area.value=text; area.setAttribute("readonly",""); area.style.position="fixed"; area.style.opacity="0";
+    document.body.appendChild(area); area.select();
+    try{ document.execCommand("copy"); done(); }catch(_){}
+    document.body.removeChild(area);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".copy"),function(button){
+    button.addEventListener("click",function(){ var pre=button.closest(".code").querySelector("pre"); copyText(pre.textContent,button); });
+  });
+})();
+</script>
+</body>
+</html>

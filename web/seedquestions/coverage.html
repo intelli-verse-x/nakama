@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuizVerse SeedQ Mode Coverage</title>
+<style>
+body{font:14px system-ui;background:#0b1020;color:#e6ecff;margin:0;padding:24px}main{max-width:1180px;margin:auto}
+h1{margin-bottom:6px}.muted{color:#9fb0d6}.cards{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.card,table{background:#111a30;border:1px solid #233252;border-radius:12px}
+.card{padding:14px 20px}table{width:100%;border-collapse:collapse;overflow:hidden}th,td{padding:10px;text-align:left;border-bottom:1px solid #233252}
+.PASS{color:#34d399}.WARN{color:#fbbf24}.BLOCKED{color:#f87171}code{color:#c4b5fd}a{color:#22d3ee}
+</style>
+</head>
+<body><main>
+<h1>QuizVerse all-mode SeedQ coverage</h1>
+<p class="muted">Local evidence · 2026-07-12 · production deployment/seeding pending. Minimum: 50 usable questions (five default sets).</p>
+<div class="cards"><div class="card PASS"><b>27 PASS</b></div><div class="card WARN"><b>5 WARN</b></div><div class="card BLOCKED"><b>4 BLOCKED</b></div><div class="card"><b>14/14 verifier checks</b></div></div>
+<table><thead><tr><th>Mode</th><th>Status</th><th>Local pool</th><th>Source / blocker</th></tr></thead><tbody id="rows"></tbody></table>
+<p class="muted">Live authoritative data is admin-only at <code>quizverse_seedq_pool_stats</code>; this static page intentionally contains no credentials or user data. See <a href="/unity.html">Unity contract</a>.</p>
+</main><script>
+const data=[
+["SoloChallenge","PASS",106,"wolfram"],["SurvivalQuiz","PASS",111,"wolfram"],["SpeedQuiz","PASS",112,"wolfram"],["BrainSprint","PASS",137,"wolfram"],
+["DailyQuiz","PASS",50,"gutenberg"],["WeeklyQuiz","PASS",50,"gutenberg"],["ViralIQ","BLOCKED",40,"finite JustWatch inventory"],["TrueFalseQuiz","PASS",50,"gutenberg"],
+["MultipleChoiceQuiz","PASS",50,"gutenberg"],["ImageQuiz","PASS",51,"archive.org"],["AudioQuiz","PASS",92,"music_tv"],["VideoQuiz","WARN",0,"LLM/video basis env-gated"],
+["GuessAnime","PASS",59,"archive.org"],["GuessDog","PASS",85,"archive.org"],["GuessDish","PASS",102,"archive.org"],["GuessPokemon","PASS",78,"archive.org fallback"],
+["SportsQuiz","PASS",78,"archive.org"],["SpaceTrivia","PASS",50,"archive.org"],["EmojiQuiz","PASS",50,"gutenberg"],["HealthQuiz","BLOCKED",0,"Semantic Scholar quota"],
+["FortuneQuiz","PASS",50,"gutenberg"],["PredictionQuiz","WARN",40,"finite factual trending inventory"],["GeoExplore","PASS",84,"archive.org"],["WhosThat","PASS",88,"archive.org"],
+["AIHost","PASS",50,"gutenberg"],["AITutor","WARN",0,"Semantic Scholar quota; safe fallback"],["AIFortuneTeller","PASS",50,"gutenberg"],["LocalBattle","PASS",50,"gutenberg"],
+["LiveArena","PASS",50,"gutenberg"],["Tournament","PASS",50,"gutenberg"],["CustomTopic","PASS",86,"wolfram"],["PickATopic","PASS",67,"gutenberg"],
+["MediaQuiz","BLOCKED",32,"image UX gate rejects text-only items"],["SubjectiveQuiz","BLOCKED",0,"Semantic Scholar quota"],["NewsQuiz","WARN",40,"finite factual trending inventory"],["FocusMode","WARN",0,"study source quota; audio RPC separate"]
+];
+document.getElementById("rows").innerHTML=data.map(x=>`<tr><td>${x[0]}</td><td class="${x[1]}">${x[1]}</td><td>${x[2]}/50</td><td>${x[3]}</td></tr>`).join("");
+</script></body></html>

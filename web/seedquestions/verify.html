@@ -144,8 +144,11 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
 var $ = function(id){ return document.getElementById(id); };
 var LOOP_MS = 60000;
 
-// ?host= / ?key= / ?httpkey= overrides
+// ?host= / ?key= / ?httpkey= overrides (non-local hosts default to
+// same-origin — the ingress routes /v2/* on this host to Nakama)
 (function(){
+  var h = location.hostname;
+  if (h && h !== "localhost" && h !== "127.0.0.1") $("host").value = location.origin;
   var p = new URLSearchParams(location.search);
   if (p.get("host"))    $("host").value = p.get("host");
   if (p.get("key"))     $("ckey").value = p.get("key");
@@ -192,6 +195,26 @@ async function adminRpc(id, body){
 // ── suite helpers (mirrors scripts/verify_deliverables.mjs) ──────────────────
 function setIds(st){ return st.question_ids || (st.questions||[]).map(function(q){return q.id;}); }
 function allStagedIds(res){ var out=[]; (res.sets||[]).forEach(function(s){ out = out.concat(setIds(s)); }); return out; }
+function assertCacheable(res, userId){
+  var cache=res.cache||{}, qs=[];
+  assert(Number.isInteger(cache.schema_version) && cache.schema_version>=1, "cache schema_version missing");
+  assert(cache.self_contained===true && cache.contains_answer_keys===true, "payload is not self-contained");
+  assert(typeof cache.cache_key==="string" && cache.cache_key.indexOf(userId+"/")===0, "cache is not user-scoped");
+  assert(cache.expires_ms>cache.generated_ms && Date.parse(cache.expires_at)===cache.expires_ms, "cache expiry metadata invalid");
+  assert(res.ready_depth===(res.sets||[]).length && res.ready_depth>=2, "ready depth below contract");
+  (res.sets||[]).forEach(function(s){ qs=qs.concat(s.questions||[]); });
+  qs.forEach(function(q){
+    assert(q.id && q.question && Array.isArray(q.options) && q.options.length>=2, "question is not self-contained");
+    assert(Number.isInteger(q.correct_index) && q.correct_index>=0 && q.correct_index<q.options.length, "invalid answer for "+q.id);
+    assert(Object.prototype.hasOwnProperty.call(q,"media_url"), "media_url omitted for "+q.id);
+  });
+  var hydrated=JSON.parse(JSON.stringify(res)), hq=[];
+  (hydrated.sets||[]).forEach(function(s){ hq=hq.concat(s.questions||[]); });
+  assert(JSON.stringify(allStagedIds(hydrated))===JSON.stringify(allStagedIds(res)), "IDs changed after cache round-trip");
+  assert(hq.every(function(q,i){ return q.id===qs[i].id && q.correct_index===qs[i].correct_index && q.media_url===qs[i].media_url; }),
+    "IDs, media, or answers changed after cache round-trip");
+  return JSON.stringify(res).length;
+}
 function mkHistory(total, correct){
   var out=[]; for (var i=0;i<total;i++) out.push({ category:"math", correct:i<correct, time_ms:4000+Math.floor(Math.random()*3000) });
   return out;
@@ -229,7 +252,8 @@ var CHECKS = [
       assert((r.sets||[]).length === 3, "expected 3 ready sets, got "+(r.sets||[]).length);
       r.sets.forEach(function(s,i){ assert((s.questions||[]).length === 6, "set "+(i+1)+" has "+(s.questions||[]).length+" questions, expected 6"); });
       assert(r.adaptive && r.adaptive.basis === "default", 'fresh user basis expected "default", got "'+(r.adaptive&&r.adaptive.basis)+'"');
-      return "persona "+ctx.a.username+": 3 sets × 6 questions, adaptive basis \"default\" (target d"+r.adaptive.target_difficulty+")";
+      var bytes=assertCacheable(r,ctx.a.userId);
+      return "persona "+ctx.a.username+": 3 sets × 6; cache v"+r.cache.schema_version+" round-trip retained IDs/media/answers ("+bytes+" bytes)";
     } },
   { id:3, name:"Adaptive difficulty hi>lo", deliverable:"SeedQ Adaptive",
     run: async function(ctx){
@@ -265,10 +289,12 @@ var CHECKS = [
       var consumed = {}; setIds(set1).forEach(function(id){ consumed[id]=true; });
       var res = await rpc(ctx.a, "quizverse_seedq_consume_set", { mode:"CustomTopic", topic:"math", set_id:set1.set_id });
       assert(res.ok === true, "consume_set not ok: "+JSON.stringify(res).slice(0,200));
+      assert(res.ready_depth===3 && res.restaged && res.restaged.ready_sets===3, "consume did not immediately refill to depth 3");
       ctx.stage1 = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode:"CustomTopic", topic:"math", set_size:6, want_sets:3 });
       var overlap = allStagedIds(ctx.stage1).filter(function(id){ return consumed[id]; });
       assert(overlap.length === 0, overlap.length+" consumed ids reappeared after restage: "+overlap.slice(0,5).join(", "));
-      return "consumed "+set1.set_id+" ("+setIds(set1).length+" ids) → restaged "+ctx.stage1.sets.length+" sets, 0 overlap with consumed ids";
+      assert(ctx.stage1.pool.available_unseen>0 && ctx.stage1.repeat_policy.review_count===0, "fresh pool remained but Smart Review repeats were served");
+      return "consumed "+set1.set_id+" → immediate depth "+res.ready_depth+", fetched depth "+ctx.stage1.sets.length+", 0 overlap while fresh pool remained";
     } },
   { id:7, name:"No-repeat chokepoint ×2", deliverable:"D1 No-repeat",
     run: async function(ctx){

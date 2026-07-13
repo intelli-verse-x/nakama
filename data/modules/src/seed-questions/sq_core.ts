@@ -42,7 +42,8 @@ declare var __qvsSeen: any; // provided by data/modules/quizverse_seen/quizverse
 
 namespace SeedQ {
 
-  export var MODULE_VERSION = "seed-questions/1.0.0";
+  export var MODULE_VERSION = "seed-questions/1.2.0";
+  export var CACHE_SCHEMA_VERSION = 2;
 
   // ── Collections ────────────────────────────────────────────────────────────
   export var COLL_POOL = "sq_pool";
@@ -59,9 +60,13 @@ namespace SeedQ {
   export var DEFAULT_SET_SIZE = 10;
   export var MAX_SET_SIZE = 25;
   export var POOL_MAX_QUESTIONS = 400; // per (mode, topic) pool doc
+  export var MODE_PRODUCTION_MIN = DEFAULT_SET_SIZE * 5; // 3 live sets + 2-set no-repeat reserve
   export var CONSUMED_SET_TTL_MS = 7 * 86400 * 1000;
+  export var READY_SET_TTL_MS = 24 * 3600 * 1000;
   export var SEEN_SCOPE = "seedq";     // qv_seen scope for this engine
   export var HISTORY_READ_CAP = 200;   // newest history entries for adaptive calc
+  export var GEO_RELEVANT_PERCENT = 60;
+  export var REVIEW_VERSION = "auto_qa/1";
 
   // ── Types ───────────────────────────────────────────────────────────────────
   export interface Provenance {
@@ -75,6 +80,15 @@ namespace SeedQ {
     score: number;              // 0..100
     status: string;             // "approved" | "quarantined" | "rejected"
     checks: string[];           // passed check names (e.g. "wolfram_verified")
+  }
+
+  export interface ReviewInfo {
+    reviewed: boolean;
+    reviewer: string;           // "auto_qa" | "agent"; never claim human review
+    reviewed_at: string;
+    checks: string[];
+    version: string;
+    experience_checks?: string[];
   }
 
   export interface SeedQuestion {
@@ -95,9 +109,19 @@ namespace SeedQ {
     lang: string;
     created_ms: number;
     quality: QualityInfo;
+    review?: ReviewInfo;
+    country_codes?: string[];   // ISO-3166 alpha-2; absent/empty means global
+    locale?: string;
+    geo_relevance?: number;     // 0..100 source/editor relevance signal
+    geo_reason?: string;
+    media_alt?: string;
+    media_mime?: string;
+    behavior_tags?: string[];
+    selection_reasons?: string[];
   }
 
   export interface StagedSet {
+    schema_version: number;
     set_id: string;
     mode: string;
     topic: string;
@@ -108,12 +132,135 @@ namespace SeedQ {
     fresh_count?: number;        // never-seen questions in this set (D1 §6.2)
     review_count?: number;       // disclosed "Smart Review" repeats in this set
     created_ms: number;
+    expires_ms: number;
+    generated_at: string;
+    expires_at: string;
     consumed_ms: number;
+    country_code?: string;
+  }
+
+  export interface ModeDefinition {
+    mode: string;
+    aliases: string[];
+    source: string;
+    default_topic: string;
+    media: string;
+    support: string;            // "direct" | "fallback"
+    fallback_mode: string;
+    reason: string;
+  }
+
+  // Canonical union of the QuizModeType names exposed by the backend's
+  // chat-launch contract plus backend-only content modes and legacy aliases.
+  // Adding a client mode requires adding it here before SeedQ will accept it.
+  export function modeRegistry(): ModeDefinition[] {
+    return [
+      { mode:"SoloChallenge",aliases:["Classic","Solo"],source:"wolfram",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"generic approved pool" },
+      { mode:"SurvivalQuiz",aliases:["Survival"],source:"wolfram",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"generic approved pool" },
+      { mode:"SpeedQuiz",aliases:["Speed"],source:"wolfram",default_topic:"arithmetic",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"template-computed STEM" },
+      { mode:"BrainSprint",aliases:["Brain Sprint"],source:"wolfram",default_topic:"arithmetic",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"template-computed STEM" },
+      { mode:"DailyQuiz",aliases:["Daily","DailyChallenge"],source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"CustomTopic",reason:"daily authored pool preferred; safe global fallback" },
+      { mode:"WeeklyQuiz",aliases:["Weekly"],source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"CustomTopic",reason:"weekly authored pool preferred; safe global fallback" },
+      { mode:"ViralIQ",aliases:["Viral IQ"],source:"justwatch",default_topic:"trending",media:"optional",support:"direct",fallback_mode:"MediaQuiz",reason:"trending titles" },
+      { mode:"TrueFalseQuiz",aliases:["TrueFalse","True False"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"MCQ payload remains compatible" },
+      { mode:"MultipleChoiceQuiz",aliases:["MultipleChoice","MCQ"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"generic approved MCQ pool" },
+      { mode:"ImageQuiz",aliases:["ImageGuess","Image Quiz"],source:"archive_org",default_topic:"history",media:"image",support:"direct",fallback_mode:"MediaQuiz",reason:"public-domain images" },
+      { mode:"AudioQuiz",aliases:["MusicQuiz","Music Quiz"],source:"music_tv",default_topic:"music",media:"optional",support:"direct",fallback_mode:"MediaQuiz",reason:"music metadata and cover art" },
+      { mode:"VideoQuiz",aliases:["Video Quiz","YouTubeQuiz"],source:"youtube_quiz",default_topic:"video",media:"video",support:"fallback",fallback_mode:"CustomTopic",reason:"LLM connector is env-gated; generic pool fallback" },
+      { mode:"GuessAnime",aliases:["AnimeQuiz"],source:"archive_org",default_topic:"anime",media:"image",support:"fallback",fallback_mode:"ImageQuiz",reason:"licensed authored pack preferred; public-domain image fallback" },
+      { mode:"GuessDog",aliases:["DogQuiz"],source:"archive_org",default_topic:"dogs",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain images" },
+      { mode:"GuessDish",aliases:["DishQuiz","FoodQuiz"],source:"archive_org",default_topic:"food",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain images" },
+      { mode:"GuessPokemon",aliases:["PokemonQuiz"],source:"archive_org",default_topic:"creatures",media:"image",support:"fallback",fallback_mode:"ImageQuiz",reason:"trademarked authored pack required; generic image fallback" },
+      { mode:"SportsQuiz",aliases:["Sports"],source:"archive_org",default_topic:"sports",media:"optional",support:"direct",fallback_mode:"CustomTopic",reason:"public-domain sports archive" },
+      { mode:"SpaceTrivia",aliases:["SpaceQuiz"],source:"archive_org",default_topic:"space",media:"image",support:"direct",fallback_mode:"CustomTopic",reason:"public-domain space archive" },
+      { mode:"EmojiQuiz",aliases:["Emoji"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"authored emoji pack preferred; generic fallback" },
+      { mode:"HealthQuiz",aliases:["Health"],source:"scholar",default_topic:"health",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"cited research metadata" },
+      { mode:"FortuneQuiz",aliases:["Fortune"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"entertainment-only generic fallback" },
+      { mode:"PredictionQuiz",aliases:["Prediction"],source:"justwatch",default_topic:"trending",media:"optional",support:"fallback",fallback_mode:"ViralIQ",reason:"trending factual questions; no fabricated predictions" },
+      { mode:"GeoExplore",aliases:["GeoQuiz","GeographyQuiz"],source:"archive_org",default_topic:"maps",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain maps" },
+      { mode:"WhosThat",aliases:["Who's That","WhoIsThat"],source:"archive_org",default_topic:"portraits",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain portraits" },
+      { mode:"AIHost",aliases:["AI Host"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"host presentation mode uses approved generic questions" },
+      { mode:"AITutor",aliases:["AI Tutor"],source:"scholar",default_topic:"science",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"tutor presentation mode uses cited/global fallback" },
+      { mode:"AIFortuneTeller",aliases:["AI Fortune Teller"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"FortuneQuiz",reason:"entertainment-only approved fallback" },
+      { mode:"LocalBattle",aliases:["Local Battle"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",reason:"delivery shell; approved generic questions" },
+      { mode:"LiveArena",aliases:["Live Arena"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",reason:"multiplayer shell; approved generic questions" },
+      { mode:"Tournament",aliases:["TournamentQuiz"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",reason:"competition shell; approved generic questions" },
+      { mode:"CustomTopic",aliases:["Custom Topic"],source:"wolfram",default_topic:"math",media:"optional",support:"direct",fallback_mode:"MultipleChoiceQuiz",reason:"topic-specific connector matrix" },
+      { mode:"PickATopic",aliases:["Pick A Topic","TopicPicker"],source:"gutenberg",default_topic:"history",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"public-domain topic packs" },
+      { mode:"MediaQuiz",aliases:["MoviesQuiz","MovieQuiz","Movie Quiz"],source:"justwatch",default_topic:"film",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"film/show metadata and archive media" },
+      { mode:"SubjectiveQuiz",aliases:["Subjective","LearnMode"],source:"scholar",default_topic:"science",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"cited study questions" },
+      { mode:"NewsQuiz",aliases:["News","CurrentAffairs"],source:"justwatch",default_topic:"news",media:"optional",support:"fallback",fallback_mode:"ViralIQ",reason:"dedicated news RPC remains primary; factual trending fallback" },
+      { mode:"FocusMode",aliases:["Focus","StudyMode"],source:"scholar",default_topic:"study",media:"none",support:"fallback",fallback_mode:"SubjectiveQuiz",reason:"focus audio is separate; approved study-question fallback" }
+    ];
+  }
+
+  export function resolveMode(input: string): ModeDefinition | null {
+    var wanted = slugify(input);
+    var defs = modeRegistry();
+    for (var i = 0; i < defs.length; i++) {
+      if (slugify(defs[i].mode) === wanted) return defs[i];
+      for (var a = 0; a < defs[i].aliases.length; a++) {
+        if (slugify(defs[i].aliases[a]) === wanted) return defs[i];
+      }
+    }
+    return null;
+  }
+
+  // ISO-3166 alpha-2 allowlist. This rejects syntactically valid but invented
+  // codes; "XX" is reserved internally for global and is never accepted.
+  var ISO_COUNTRIES = ("AD,AE,AF,AG,AI,AL,AM,AO,AQ,AR,AS,AT,AU,AW,AX,AZ,BA,BB,BD,BE,BF,BG,BH,BI,BJ,BL,BM,BN,BO,BQ,BR,BS,BT,BV,BW,BY,BZ,CA,CC,CD,CF,CG,CH,CI,CK,CL,CM,CN,CO,CR,CU,CV,CW,CX,CY,CZ,DE,DJ,DK,DM,DO,DZ,EC,EE,EG,EH,ER,ES,ET,FI,FJ,FK,FM,FO,FR,GA,GB,GD,GE,GF,GG,GH,GI,GL,GM,GN,GP,GQ,GR,GS,GT,GU,GW,GY,HK,HM,HN,HR,HT,HU,ID,IE,IL,IM,IN,IO,IQ,IR,IS,IT,JE,JM,JO,JP,KE,KG,KH,KI,KM,KN,KP,KR,KW,KY,KZ,LA,LB,LC,LI,LK,LR,LS,LT,LU,LV,LY,MA,MC,MD,ME,MF,MG,MH,MK,ML,MM,MN,MO,MP,MQ,MR,MS,MT,MU,MV,MW,MX,MY,MZ,NA,NC,NE,NF,NG,NI,NL,NO,NP,NR,NU,NZ,OM,PA,PE,PF,PG,PH,PK,PL,PM,PN,PR,PS,PT,PW,PY,QA,RE,RO,RS,RU,RW,SA,SB,SC,SD,SE,SG,SH,SI,SJ,SK,SL,SM,SN,SO,SR,SS,ST,SV,SX,SY,SZ,TC,TD,TF,TG,TH,TJ,TK,TL,TM,TN,TO,TR,TT,TV,TW,TZ,UA,UG,UM,US,UY,UZ,VA,VC,VE,VG,VI,VN,VU,WF,WS,YE,YT,ZA,ZM,ZW").split(",");
+
+  export function validCountry(value: any): string {
+    var cc = ("" + (value || "")).trim().toUpperCase();
+    return cc.length === 2 && ISO_COUNTRIES.indexOf(cc) >= 0 ? cc : "";
+  }
+
+  export interface GeoProfile {
+    country: string;
+    basis: string;
+    locale: string;
+  }
+
+  export function resolveGeo(ctx: nkruntime.Context, nk: nkruntime.Nakama, userId: string, data: any): GeoProfile {
+    data = data || {};
+    var explicitCountry = validCountry(data.country || data.country_code);
+    var explicitLocale = ("" + (data.locale || data.language || "")).substring(0, 20);
+    if (explicitCountry) return { country: explicitCountry, basis: "payload_country", locale: explicitLocale };
+    var localeMatch = /[-_]([A-Za-z]{2})$/.exec(explicitLocale);
+    if (localeMatch) {
+      var localeCountry = validCountry(localeMatch[1]);
+      if (localeCountry) return { country: localeCountry, basis: "payload_locale", locale: explicitLocale };
+    }
+    try {
+      var account: any = nk.accountGetId(userId);
+      var user: any = account && account.user ? account.user : {};
+      var md: any = user.metadata || {};
+      if (typeof md === "string") { try { md = JSON.parse(md); } catch (e) { md = {}; } }
+      var profileCountry = validCountry(md.country_code || md.country || user.location);
+      if (profileCountry) return { country: profileCountry, basis: "profile_country", locale: "" + (user.langTag || "") };
+      var accountLocale = "" + (user.langTag || md.locale || md.language || "");
+      var accountMatch = /[-_]([A-Za-z]{2})$/.exec(accountLocale);
+      if (accountMatch) {
+        var accountCountry = validCountry(accountMatch[1]);
+        if (accountCountry) return { country: accountCountry, basis: "profile_locale", locale: accountLocale };
+      }
+    } catch (e2) { /* privacy-safe global fallback */ }
+    var contextLocale = "" + (((ctx as any).lang || (ctx as any).langTag || ""));
+    var contextMatch = /[-_]([A-Za-z]{2})$/.exec(contextLocale);
+    if (contextMatch) {
+      var contextCountry = validCountry(contextMatch[1]);
+      if (contextCountry) return { country: contextCountry, basis: "context_locale", locale: contextLocale };
+    }
+    return { country: "", basis: "global", locale: explicitLocale || contextLocale };
   }
 
   // ── Small helpers ───────────────────────────────────────────────────────────
   export function nowMs(): number {
     return Date.now();
+  }
+
+  export function isoTime(ms: number): string {
+    return new Date(ms).toISOString();
   }
 
   export function slugify(s: string): string {
@@ -126,6 +273,10 @@ namespace SeedQ {
 
   export function poolKey(mode: string, topic: string): string {
     return slugify(mode) + "_" + slugify(topic);
+  }
+
+  export function stagedKey(mode: string, topic: string, country: string): string {
+    return poolKey(mode, topic) + "_geo_" + (validCountry(country) || "global").toLowerCase();
   }
 
   // Stable content-hash id — mirrors quizverse_quiz_generate.js convention so
@@ -237,6 +388,65 @@ namespace SeedQ {
     basis: string;                // "topic" | "overall" | "default"
     sample_size: number;
     accuracy_pct: number;
+  }
+
+  export interface BehaviorProfile {
+    basis: string;
+    signals_used: string[];
+    samples: number;
+    minimum_samples: number;
+    weakest_topics: string[];
+    recent_miss_topics: string[];
+    avg_response_ms: number;
+    generated_at: string;
+    unsupported_signals: string[];
+  }
+
+  // Uses the persisted per-user quiz history written by quiz_submit_result.
+  // It intentionally does not invent preferred-mode, abandon, or media-affinity
+  // signals: those events exist in analytics_events but are not currently
+  // materialized into a cheap user-owned read model.
+  export function computeBehaviorProfile(nk: nkruntime.Nakama, userId: string): BehaviorProfile {
+    var history: any = readUser(nk, "quiz-verse_quiz_history", "history", userId);
+    var entries: any[] = (history && history.entries) ? history.entries : [];
+    if (entries.length > HISTORY_READ_CAP) entries = entries.slice(entries.length - HISTORY_READ_CAP);
+    var stats: { [topic: string]: any } = {};
+    var recentMisses: string[] = [];
+    var totalMs = 0, timed = 0;
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i] || {};
+      var topic = slugify(e.category || e.categoryName || e.categoryId || "general");
+      if (!stats[topic]) stats[topic] = { total: 0, correct: 0 };
+      stats[topic].total++;
+      var correct = e.correct !== undefined ? !!e.correct : !!e.was_correct;
+      if (correct) stats[topic].correct++;
+      else if (i >= entries.length - 20 && recentMisses.indexOf(topic) < 0) recentMisses.push(topic);
+      var ms = parseInt(e.time_ms || e.timeMs || 0, 10);
+      if (ms > 0 && ms < 120000) { totalMs += ms; timed++; }
+    }
+    var topics = Object.keys(stats);
+    topics.sort(function (a: string, b: string): number {
+      var aa = stats[a].correct / stats[a].total;
+      var ba = stats[b].correct / stats[b].total;
+      if (aa !== ba) return aa - ba;
+      if (stats[a].total !== stats[b].total) return stats[b].total - stats[a].total;
+      return a < b ? -1 : 1;
+    });
+    var signals: string[] = [];
+    if (entries.length >= 5) signals.push("topic_accuracy");
+    if (recentMisses.length > 0) signals.push("recent_misses");
+    if (timed >= 5) signals.push("response_latency");
+    return {
+      basis: entries.length >= 5 ? "quiz_history" : "sparse_history_fallback",
+      signals_used: signals,
+      samples: entries.length,
+      minimum_samples: 5,
+      weakest_topics: entries.length >= 5 ? topics.slice(0, 3) : [],
+      recent_miss_topics: recentMisses.slice(0, 5),
+      avg_response_ms: timed > 0 ? Math.round(totalMs / timed) : 0,
+      generated_at: isoTime(nowMs()),
+      unsupported_signals: ["preferred_modes", "skip_abandon_frustration", "media_affinity"]
+    };
   }
 
   export function computeAdaptiveProfile(nk: nkruntime.Nakama, userId: string, topic: string): AdaptiveProfile {

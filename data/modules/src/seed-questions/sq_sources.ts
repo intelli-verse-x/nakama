@@ -100,7 +100,8 @@ namespace SeedQSources {
       question_type: "Text", media_url: "", media_provenance: null,
       source: source, citation: "", lang: "en",
       created_ms: SeedQ.nowMs(),
-      quality: { score: 0, status: "pending", checks: [] }
+      quality: { score: 0, status: "pending", checks: [] },
+      behavior_tags: [SeedQ.slugify(topic)]
     };
   }
 
