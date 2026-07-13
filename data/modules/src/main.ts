@@ -688,6 +688,24 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
       logger.error("[LearnerToolbelt] failed to register: " + (err && err.message ? err.message : String(err)));
     }
 
+  // ---- LMS Bridge (LTI 1.3 — Canvas / Moodle integration) ----
+  // Nakama side of the LMS integration (docs/LMS_INTEGRATION_RESEARCH_AND_PLAN.md
+  // §5/§8): platform registry, LTI sub → Nakama user mapping (custom auth),
+  // resource-link/pack bindings, server-side grading vs quizverse_packs, the
+  // AGS grade queue + RS256 client-credentials score push worker, and the
+  // pre-parsed content import pipeline with fidelity reports. The web tier
+  // (quizverse.world) owns OIDC/JWKS/deep-link UI and calls these RPCs with
+  // LMS_BRIDGE_SERVICE_TOKEN. Single-arg register() so postbuild's
+  // autoInvokeRegister re-runs it on every pooled Goja VM.
+  // See data/modules/src/lms-bridge/lms_bridge.ts.
+  try {
+    logger.info("[LmsBridge] Registering lms_* RPCs (platforms, launch, deeplink bind, attempt grading, AGS grade push, pack import, link status)...");
+    LmsBridge.register(initializer);
+    logger.info("[LmsBridge] lms_platform_upsert/_list/_delete, lms_launch_session, lms_deeplink_bind, lms_attempt_complete, lms_grade_push, lms_import_pack, lms_link_status registered");
+  } catch (err: any) {
+    logger.error("[LmsBridge] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
     logger.info("[KbEnrichment] Registering KB enrichment cron RPCs (continuous derived-attribute refresh)...");
     try {
       KbEnrichment.register(initializer);
@@ -952,6 +970,39 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[Research] quizverse_research_consent/_assignment_get/_diagnostic_submit/_survey_submit/_waitlist_join/_export registered");
   } catch (err: any) {
     logger.error("[Research] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- Seed Questions ("Staged Questions") engine ----
+  // Keeps 2–3 quality-gated, never-seen, difficulty-adapted question sets
+  // staged per (user, mode, topic), fed by 13 external content-source
+  // connectors (archive.org, WolframAlpha, Gutenberg, everynoise/Deezer,
+  // Semantic Scholar, JustWatch, YouTube→LLM, TinEye provenance, ...).
+  // Public surface: seedquestions.quizverse.world (deploy/seedquestions/).
+  // Single-arg register() so postbuild's autoInvokeRegister re-runs it on
+  // every pooled Goja VM. See data/modules/src/seed-questions/.
+  try {
+    logger.info("[SeedQ] Registering quizverse_seedq_* RPCs (staged sets, review, ingest, sources, focus tracks)...");
+    SeedQuestions.register(initializer);
+    logger.info("[SeedQ] quizverse_seedq_get_staged/_consume_set/_review/_focus_tracks/_sources/_ingest/_ingest_tick/_pool_stats/_asset_job/_provenance registered");
+  } catch (err: any) {
+    logger.error("[SeedQ] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- Aahaa (Wow Moments) engine ----
+  // Per-userID "the app gets me" moments: deterministic Fact Pack (KB-1) →
+  // deducible catalog (tiers S–E) → respect-ladder ranking with server-side
+  // caps/cooldowns/mutes/CTR kill switch → per-user feed. Includes the
+  // Repetition-Fatigue intercept (wow.e.pool_exhausted + rating suppression,
+  // fed by the seedq engine), the No-Hallucination validator for AI Host /
+  // Fortune Teller / Tutor narration, and the generate-all cron batch that
+  // builds an Aahaa feed for EVERY userID with quiz history.
+  // See data/modules/src/aahaa/ + docs/AAHAA_WOW_ENGINE.md.
+  try {
+    logger.info("[Aahaa] Registering quizverse_aahaa_* RPCs (feed, react, fact pack, profile, generate-all, validator, catalog)...");
+    Aahaa.register(initializer);
+    logger.info("[Aahaa] quizverse_aahaa_get/_react/_fact_pack/_profile_set/_generate_all/_validate/_catalog registered");
+  } catch (err: any) {
+    logger.error("[Aahaa] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
 
   // ---- Fantasy Cricket RPCs ----
