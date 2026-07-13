@@ -781,5 +781,8 @@ CLAUDE.md
 CLAUDE.local.md
 GEMINI.md
 
+# Local secrets — never commit
+.env
+
 # LMS integration local dev environment (keys, LMS stacks, fixtures)
 .lms-dev/
