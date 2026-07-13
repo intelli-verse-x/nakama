@@ -47,6 +47,7 @@ import (
 	"github.com/heroiclabs/nakama-common/api"
 	"github.com/heroiclabs/nakama-common/rtapi"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/heroiclabs/nakama/v3/console"
 	"github.com/heroiclabs/nakama/v3/internal/cronexpr"
 	"github.com/heroiclabs/nakama/v3/social"
 	"go.uber.org/zap"
@@ -186,6 +187,7 @@ func (n *RuntimeJavascriptNakamaModule) mappings(r *goja.Runtime) map[string]fun
 		"accountUpdateId":                      n.accountUpdateId(r),
 		"accountDeleteId":                      n.accountDeleteId(r),
 		"accountExportId":                      n.accountExportId(r),
+		"accountImportId":                      n.accountImportId(r),
 		"usersGetId":                           n.usersGetId(r),
 		"usersGetUsername":                     n.usersGetUsername(r),
 		"usersGetFriendStatus":                 n.usersGetFriendStatus(r),
@@ -243,6 +245,7 @@ func (n *RuntimeJavascriptNakamaModule) mappings(r *goja.Runtime) map[string]fun
 		"storageList":                          n.storageList(r),
 		"storageRead":                          n.storageRead(r),
 		"storageWrite":                         n.storageWrite(r),
+		"storageWriteRetry":                    n.storageWriteRetry(r),
 		"storageDelete":                        n.storageDelete(r),
 		"multiUpdate":                          n.multiUpdate(r),
 		"leaderboardCreate":                    n.leaderboardCreate(r),
@@ -259,6 +262,7 @@ func (n *RuntimeJavascriptNakamaModule) mappings(r *goja.Runtime) map[string]fun
 		"purchaseValidateGoogle":               n.purchaseValidateGoogle(r),
 		"purchaseValidateHuawei":               n.purchaseValidateHuawei(r),
 		"purchaseValidateFacebookInstant":      n.purchaseValidateFacebookInstant(r),
+		"purchaseValidateSamsung":              n.purchaseValidateSamsung(r),
 		"purchaseGetByTransactionId":           n.purchaseGetByTransactionId(r),
 		"purchasesList":                        n.purchasesList(r),
 		"subscriptionValidateApple":            n.subscriptionValidateApple(r),
@@ -2018,27 +2022,37 @@ func (n *RuntimeJavascriptNakamaModule) accountGetId(r *goja.Runtime) func(goja.
 
 // @group accounts
 // @summary Fetch information for multiple accounts by user IDs.
-// @param userIDs(type=[]string) Array of user IDs to fetch information for. Must be valid UUID.
+// @param userIDs(type=[]string, optional=true) Array of user IDs to fetch information for. Must be valid UUID when supplied.
+// @param deviceIDs(type=[]string, optional=true) Array of device IDs to fetch information for.
 // @return account(nkruntime.Account[]) Array of accounts.
 // @return error(error) An optional error value if an error occurred.
 func (n *RuntimeJavascriptNakamaModule) accountsGetId(r *goja.Runtime) func(goja.FunctionCall) goja.Value {
 	return func(f goja.FunctionCall) goja.Value {
 		userIDs := f.Argument(0)
-		if userIDs == goja.Undefined() || userIDs == goja.Null() {
-			panic(r.NewTypeError("expects an array of user ids"))
-		}
-
-		uids, err := exportToSlice[[]string](userIDs)
-		if err != nil {
-			panic(r.NewTypeError("expects an array of strings"))
-		}
-		for _, uid := range uids {
-			if _, err := uuid.FromString(uid); err != nil {
-				panic(r.NewTypeError(fmt.Sprintf("invalid user id: %s", uid)))
+		var uids []string
+		var err error
+		if userIDs != goja.Undefined() && userIDs != goja.Null() {
+			uids, err = exportToSlice[[]string](userIDs)
+			if err != nil {
+				panic(r.NewTypeError("expects an array of strings"))
+			}
+			for _, uid := range uids {
+				if _, err := uuid.FromString(uid); err != nil {
+					panic(r.NewTypeError(fmt.Sprintf("invalid user id: %s", uid)))
+				}
 			}
 		}
 
-		accounts, err := GetAccounts(n.ctx, n.logger, n.db, n.statusRegistry, uids)
+		deviceIDs := f.Argument(1)
+		var dids []string
+		if deviceIDs != goja.Undefined() && deviceIDs != goja.Null() {
+			dids, err = exportToSlice[[]string](deviceIDs)
+			if err != nil {
+				panic(r.NewTypeError("expects an array of strings"))
+			}
+		}
+
+		accounts, err := GetAccounts(n.ctx, n.logger, n.db, n.statusRegistry, uids, dids)
 		if err != nil {
 			panic(r.NewGoError(fmt.Errorf("failed to get accounts: %s", err.Error())))
 		}
@@ -2182,6 +2196,58 @@ func (n *RuntimeJavascriptNakamaModule) accountExportId(r *goja.Runtime) func(go
 		}
 
 		return r.ToValue(string(exportString))
+	}
+}
+
+// @group accounts
+// @summary Import user account data, optionally overwriting a given user
+// @param data(type=string) An account export string to import.
+// @param userID(type=string, optional=true) Optional user ID to import into. Must be valid UUID.
+// @return account(nkruntime.Account) All account information including wallet, device IDs and more.
+// @return error(error) An optional error value if an error occurred.
+func (n *RuntimeJavascriptNakamaModule) accountImportId(r *goja.Runtime) func(goja.FunctionCall) goja.Value {
+	return func(f goja.FunctionCall) goja.Value {
+		data := getJsString(r, f.Argument(0))
+		if data == "" {
+			panic(r.NewTypeError("expects data to be present"))
+		}
+		d := &console.AccountExport{}
+		if err := json.Unmarshal([]byte(data), d); err != nil {
+			panic(r.NewTypeError("expects data to be a valid account export format"))
+		}
+
+		userID := f.Argument(1)
+		uid := uuid.Nil
+		if userID != goja.Undefined() && userID != goja.Null() {
+			u, ok := userID.Export().(string)
+			if !ok {
+				panic(r.NewTypeError("expects user id to be a string"))
+			}
+			if u == "" {
+				panic(r.NewTypeError("expects user id"))
+			}
+			var err error
+			uid, err = uuid.FromString(u)
+			if err != nil {
+				panic(r.NewTypeError("invalid user id"))
+			}
+		}
+
+		account, err := ImportAccount(n.ctx, n.logger, n.db, n.statusRegistry, uid, d)
+		if err != nil {
+			panic(r.NewGoError(fmt.Errorf("error importing account: %v", err.Error())))
+		}
+
+		if account == nil {
+			panic(r.NewGoError(errors.New("account import returned no data")))
+		}
+
+		accountData, err := accountToJsObject(account.Account)
+		if err != nil {
+			panic(r.NewGoError(err))
+		}
+
+		return r.ToValue(accountData)
 	}
 }
 
@@ -4805,7 +4871,7 @@ func (n *RuntimeJavascriptNakamaModule) storageRead(r *goja.Runtime) func(goja.F
 	return func(f goja.FunctionCall) goja.Value {
 		objectIDs := f.Argument(0)
 		if objectIDs == goja.Undefined() || objectIDs == goja.Null() {
-			panic(r.NewTypeError("expects an array ok keys"))
+			panic(r.NewTypeError("expects an array of keys"))
 		}
 
 		keysSlice, err := exportToSlice[[]map[string]any](objectIDs)
@@ -4939,6 +5005,257 @@ func (n *RuntimeJavascriptNakamaModule) storageWrite(r *goja.Runtime) func(goja.
 	}
 }
 
+// @group storage
+// @summary Write a set of storage object changes with retries.
+// @param objectIDs(type=[]*nkruntime.StorageRead) An array of object identifiers to be fetched.
+// @param updateFn(type=function) A function that applies changes to the read storage objects.
+// @param maxRetries(type=int) Maximum number of retries to attempt if a version conflict is detected. Must be a value between 0 and 10.
+// @return acks(nkruntime.StorageWriteAck[]) A list of acks with the version of the written objects.
+// @return error(error) An optional error value if an error occurred.
+func (n *RuntimeJavascriptNakamaModule) storageWriteRetry(r *goja.Runtime) func(goja.FunctionCall) goja.Value {
+	return func(f goja.FunctionCall) goja.Value {
+		objectIDs := f.Argument(0)
+		if objectIDs == goja.Undefined() || objectIDs == goja.Null() {
+			panic(r.NewTypeError("expects an array of keys"))
+		}
+
+		keysSlice, err := exportToSlice[[]map[string]any](objectIDs)
+		if err != nil {
+			panic(r.NewTypeError("expects an array of keys"))
+		}
+
+		if len(keysSlice) == 0 {
+			return r.ToValue([]any{})
+		}
+
+		objectIDsMap := make([]*api.ReadStorageObjectId, 0, len(keysSlice))
+		for _, objMap := range keysSlice {
+			objectID := &api.ReadStorageObjectId{}
+
+			if collectionIn, ok := objMap["collection"]; ok {
+				collection, ok := collectionIn.(string)
+				if !ok {
+					panic(r.NewTypeError("expects 'collection' value to be a string"))
+				}
+				if collectionIn == "" {
+					panic(r.NewTypeError("expects 'collection' value to be a non empty string"))
+				}
+				objectID.Collection = collection
+			}
+
+			if keyIn, ok := objMap["key"]; ok {
+				key, ok := keyIn.(string)
+				if !ok {
+					panic(r.NewTypeError("expects 'key' value to be a string"))
+				}
+				objectID.Key = key
+			}
+
+			if userID, ok := objMap["userId"]; ok {
+				userIDStr, ok := userID.(string)
+				if !ok {
+					panic(r.NewTypeError("expects 'userId' value to be a string"))
+				}
+				_, err := uuid.FromString(userIDStr)
+				if err != nil {
+					panic(r.NewTypeError("expects 'userId' value to be a valid id"))
+				}
+				objectID.UserId = userIDStr
+			}
+
+			if objectID.UserId == "" {
+				// Default to server-owned data if no owner is supplied.
+				objectID.UserId = uuid.Nil.String()
+			}
+
+			objectIDsMap = append(objectIDsMap, objectID)
+		}
+
+		updateFnJs := f.Argument(1)
+		fn, ok := goja.AssertFunction(updateFnJs)
+		if !ok {
+			panic(r.NewTypeError("expects a valid update function"))
+		}
+
+		updateFn := func(objects []*api.StorageObject) ([]*runtime.StorageWrite, error) {
+			results := make([]interface{}, 0, len(objects))
+			for _, o := range objects {
+				oMap := make(map[string]interface{})
+
+				oMap["key"] = o.Key
+				oMap["collection"] = o.Collection
+				if o.UserId != "" {
+					oMap["userId"] = o.UserId
+				} else {
+					oMap["userId"] = nil
+				}
+				oMap["version"] = o.Version
+				oMap["permissionRead"] = o.PermissionRead
+				oMap["permissionWrite"] = o.PermissionWrite
+				oMap["createTime"] = o.CreateTime.Seconds
+				oMap["updateTime"] = o.UpdateTime.Seconds
+
+				valueMap := make(map[string]interface{})
+				err = json.Unmarshal([]byte(o.Value), &valueMap)
+				if err != nil {
+					panic(r.NewGoError(fmt.Errorf("failed to convert value to json: %s", err.Error())))
+				}
+				pointerizeSlices(valueMap)
+				oMap["value"] = valueMap
+
+				results = append(results, oMap)
+			}
+
+			retVal, err := fn(goja.Undefined(), r.ToValue(results))
+			if err != nil {
+				if exErr, ok := errors.AsType[*goja.Exception](err); ok {
+					err = exErr
+				}
+				panic(r.NewGoError(fmt.Errorf("failed to update storage objects: %s", err.Error())))
+			}
+
+			objectIDs := retVal
+			if objectIDs == goja.Undefined() || objectIDs == goja.Null() {
+				panic(r.NewTypeError("expects a valid array of data"))
+			}
+
+			dataSlice, err := exportToSlice[[]map[string]any](objectIDs)
+			if err != nil {
+				panic(r.NewTypeError("expects an array of storage write objects"))
+			}
+
+			ops, err := jsArrayToStorageWrites(dataSlice)
+			if err != nil {
+				panic(r.NewTypeError(err.Error()))
+			}
+
+			if len(ops) == 0 {
+				return []*runtime.StorageWrite{}, nil
+			}
+
+			return ops, nil
+		}
+
+		maxRetries := int(getJsInt(r, f.Argument(2)))
+		if maxRetries < 0 || maxRetries > 10 {
+			panic(r.NewTypeError("max retries must be a value between 0 and 10"))
+		}
+
+		acks, err := StorageWriteWithRetries(n.ctx, n.logger, n.db, n.metrics, n.storageIndex, objectIDsMap, updateFn, maxRetries)
+		if err != nil {
+			panic(r.NewGoError(fmt.Errorf("failed to write storage objects with retry: %s", err.Error())))
+		}
+
+		results := make([]interface{}, 0, len(acks.Acks))
+		for _, ack := range acks.Acks {
+			result := make(map[string]interface{}, 4)
+			result["key"] = ack.Key
+			result["collection"] = ack.Collection
+			result["userId"] = ack.UserId
+			result["version"] = ack.Version
+
+			results = append(results, result)
+		}
+
+		return r.ToValue(results)
+	}
+}
+
+func jsArrayToStorageWrites(dataSlice []map[string]any) ([]*runtime.StorageWrite, error) {
+	writes := make([]*runtime.StorageWrite, 0, len(dataSlice))
+	for _, dataMap := range dataSlice {
+		writeOp := &runtime.StorageWrite{}
+		if collectionIn, ok := dataMap["collection"]; ok {
+			collection, ok := collectionIn.(string)
+			if !ok {
+				return nil, errors.New("expects 'collection' value to be a string")
+			}
+			if collection == "" {
+				return nil, errors.New("expects 'collection' value to be non-empty")
+			}
+			writeOp.Collection = collection
+		}
+
+		keyIn := dataMap["key"]
+		key, ok := keyIn.(string)
+		if !ok {
+			return nil, errors.New("expects 'key' value to be a string")
+		}
+		if key == "" {
+			return nil, errors.New("expects 'key' value to be non-empty")
+		}
+		writeOp.Key = key
+
+		userIDIn := dataMap["userId"]
+		if userIDIn != nil {
+			userIDStr, ok := userIDIn.(string)
+			if !ok {
+				return nil, errors.New("expects 'userId' value to be a string")
+			}
+			var err error
+			userID, err := uuid.FromString(userIDStr)
+			if err != nil {
+				return nil, errors.New("expects 'userId' value to be a valid id")
+			}
+			writeOp.UserID = userID.String()
+		}
+
+		valueIn := dataMap["value"]
+		valueMap, ok := valueIn.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("expects 'value' value to be an object")
+		}
+		valueBytes, err := json.Marshal(valueMap)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert value: %s", err.Error())
+		}
+		writeOp.Value = string(valueBytes)
+
+		if versionIn := dataMap["version"]; versionIn != nil {
+			version, ok := versionIn.(string)
+			if !ok {
+				return nil, errors.New("expects 'version' value to be a string")
+			}
+			if version == "" {
+				return nil, errors.New("expects 'version' value to be a non-empty string")
+			}
+			writeOp.Version = version
+		}
+
+		if permissionReadIn, ok := dataMap["permissionRead"]; ok {
+			permissionRead, ok := permissionReadIn.(int64)
+			if !ok {
+				return nil, errors.New("expects 'permissionRead' value to be a number")
+			}
+			writeOp.PermissionRead = int(permissionRead)
+		} else {
+			writeOp.PermissionRead = 1
+		}
+
+		if permissionWriteIn, ok := dataMap["permissionWrite"]; ok {
+			permissionWrite, ok := permissionWriteIn.(int64)
+			if !ok {
+				return nil, errors.New("expects 'permissionWrite' value to be a number")
+			}
+			writeOp.PermissionWrite = int(permissionWrite)
+		} else {
+			writeOp.PermissionWrite = 1
+		}
+
+		if writeOp.Collection == "" {
+			return nil, errors.New("expects collection to be supplied")
+		} else if writeOp.Key == "" {
+			return nil, errors.New("expects key to be supplied")
+		} else if writeOp.Value == "" {
+			return nil, errors.New("expects value to be supplied")
+		}
+
+		writes = append(writes, writeOp)
+	}
+
+	return writes, nil
+}
+
 func jsArrayToStorageOpWrites(dataSlice []map[string]any) (StorageOpWrites, error) {
 	ops := make(StorageOpWrites, 0, len(dataSlice))
 	for _, dataMap := range dataSlice {
@@ -5048,7 +5365,7 @@ func (n *RuntimeJavascriptNakamaModule) storageDelete(r *goja.Runtime) func(goja
 	return func(f goja.FunctionCall) goja.Value {
 		objectIDs := f.Argument(0)
 		if objectIDs == goja.Undefined() {
-			panic(r.NewTypeError("expects an array ok keys"))
+			panic(r.NewTypeError("expects an array of keys"))
 		}
 		keysSlice, err := exportToSlice[[]map[string]any](objectIDs)
 		if err != nil {
@@ -6204,6 +6521,45 @@ func (n *RuntimeJavascriptNakamaModule) purchaseValidateFacebookInstant(r *goja.
 		validation, err := ValidatePurchaseFacebookInstant(n.ctx, n.logger, n.db, uid, n.config.GetIAP().FacebookInstant, signedRequest, persist)
 		if err != nil {
 			panic(r.NewGoError(fmt.Errorf("error validating Facebook Instant receipt: %s", err.Error())))
+		}
+
+		validationResult := purchaseResponseToJsObject(validation)
+
+		return r.ToValue(validationResult)
+	}
+}
+
+// @group purchases
+// @summary Validates and stores a purchase receipt from the Samsung Galaxy Store.
+// @param userID(type=string) The user ID of the owner of the receipt.
+// @param purchaseId(type=string) The purchase ID returned by the Samsung IAP SDK PurchaseVo.
+// @param persist(type=bool, optional=true, default=true) Persist the purchase so that seenBefore can be computed to protect against replay attacks.
+// @return validation(nkruntime.ValidatePurchaseResponse) The resulting successfully validated purchases. Any previously validated purchases are returned with a seenBefore flag.
+// @return error(error) An optional error value if an error occurred.
+func (n *RuntimeJavascriptNakamaModule) purchaseValidateSamsung(r *goja.Runtime) func(goja.FunctionCall) goja.Value {
+	return func(f goja.FunctionCall) goja.Value {
+		userID := getJsString(r, f.Argument(0))
+		if userID == "" {
+			panic(r.NewTypeError("expects a user ID string"))
+		}
+		uid, err := uuid.FromString(userID)
+		if err != nil {
+			panic(r.NewTypeError("expects user ID to be a valid identifier"))
+		}
+
+		purchaseId := getJsString(r, f.Argument(1))
+		if purchaseId == "" {
+			panic(r.NewTypeError("expects purchaseId"))
+		}
+
+		persist := true
+		if f.Argument(2) != goja.Undefined() && f.Argument(2) != goja.Null() {
+			persist = getJsBool(r, f.Argument(2))
+		}
+
+		validation, err := ValidatePurchaseSamsung(n.ctx, n.logger, n.db, uid, n.config.GetIAP().Samsung, purchaseId, persist)
+		if err != nil {
+			panic(r.NewGoError(fmt.Errorf("error validating Samsung receipt: %s", err.Error())))
 		}
 
 		validationResult := purchaseResponseToJsObject(validation)

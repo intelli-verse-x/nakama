@@ -726,6 +726,7 @@ type MetricsConfig struct {
 	PrometheusPort   int    `yaml:"prometheus_port" json:"prometheus_port" usage:"Port to expose Prometheus. If '0' Prometheus exports are disabled."`
 	Prefix           string `yaml:"prefix" json:"prefix" usage:"Prefix for metric names. Default is 'nakama', empty string '' disables the prefix."`
 	CustomPrefix     string `yaml:"custom_prefix" json:"custom_prefix" usage:"Prefix for custom runtime metric names. Default is 'custom', empty string '' disables the prefix."`
+	CustomScopeLimit int    `yaml:"custom_scope_limit" json:"custom_scope_limit" usage:"Maximum number of custom metric scopes. Default is 10,000, 0 disables the limit."`
 }
 
 func (cfg *MetricsConfig) Clone() *MetricsConfig {
@@ -744,6 +745,7 @@ func NewMetricsConfig() *MetricsConfig {
 		PrometheusPort:   0,
 		Prefix:           "nakama",
 		CustomPrefix:     "custom",
+		CustomScopeLimit: 10_000,
 	}
 }
 
@@ -838,6 +840,7 @@ type SocketConfig struct {
 	SSLCertificate       string            `yaml:"ssl_certificate" json:"ssl_certificate" usage:"Path to certificate file if you want the server to use SSL directly. Must also supply ssl_private_key. NOT recommended for production use."`
 	SSLPrivateKey        string            `yaml:"ssl_private_key" json:"ssl_private_key" usage:"Path to private key file if you want the server to use SSL directly. Must also supply ssl_certificate. NOT recommended for production use."`
 	ResponseHeaders      []string          `yaml:"response_headers" json:"response_headers" usage:"Additional headers to send to clients with every response. Values here are only used if the response would not otherwise contain a value for the specified headers."`
+	ProxyCount           int               `yaml:"proxy_count" json:"proxy_count" usage:"Number of proxies (such as load balancers) configured in front of the server. Default 1."`
 	Headers              map[string]string `yaml:"-" json:"-"` // Created by parsing ResponseHeaders above, not set from input args directly.
 	CertPEMBlock         []byte            `yaml:"-" json:"-"` // Created by fully reading the file contents of SSLCertificate, not set from input args directly.
 	KeyPEMBlock          []byte            `yaml:"-" json:"-"` // Created by fully reading the file contents of SSLPrivateKey, not set from input args directly.
@@ -917,6 +920,7 @@ func NewSocketConfig() *SocketConfig {
 		OutgoingQueueSize:    64,
 		SSLCertificate:       "",
 		SSLPrivateKey:        "",
+		ProxyCount:           1,
 	}
 }
 
@@ -1356,6 +1360,7 @@ type IAPConfig struct {
 	Google          *IAPGoogleConfig          `yaml:"google" json:"google" usage:"Google Play Store purchase validation configuration."`
 	Huawei          *IAPHuaweiConfig          `yaml:"huawei" json:"huawei" usage:"Huawei purchase validation configuration."`
 	FacebookInstant *IAPFacebookInstantConfig `yaml:"facebook_instant" json:"facebook_instant" usage:"Facebook Instant purchase validation configuration."`
+	Samsung         *IAPSamsungConfig         `yaml:"samsung" json:"samsung" usage:"Samsung Galaxy Store purchase validation configuration."`
 }
 
 func (cfg *IAPConfig) GetApple() runtime.IAPAppleConfig {
@@ -1372,6 +1377,13 @@ func (cfg *IAPConfig) GetHuawei() runtime.IAPHuaweiConfig {
 
 func (cfg *IAPConfig) GetFacebookInstant() runtime.IAPFacebookInstantConfig {
 	return cfg.FacebookInstant
+}
+
+func (cfg *IAPConfig) GetSamsung() runtime.IAPSamsungConfig {
+	if cfg.Samsung == nil {
+		return &IAPSamsungConfig{}
+	}
+	return cfg.Samsung
 }
 
 func (cfg *IAPConfig) Clone() *IAPConfig {
@@ -1397,6 +1409,10 @@ func (cfg *IAPConfig) Clone() *IAPConfig {
 		c := *(cfg.Huawei)
 		cfgCopy.Huawei = &c
 	}
+	if cfg.Samsung != nil {
+		c := *(cfg.Samsung)
+		cfgCopy.Samsung = &c
+	}
 
 	return &cfgCopy
 }
@@ -1407,6 +1423,7 @@ func NewIAPConfig() *IAPConfig {
 		Google:          &IAPGoogleConfig{},
 		Huawei:          &IAPHuaweiConfig{},
 		FacebookInstant: &IAPFacebookInstantConfig{},
+		Samsung:         &IAPSamsungConfig{},
 	}
 }
 
@@ -1461,6 +1478,7 @@ type SatoriConfig struct {
 	CacheTTLSec   int    `yaml:"cache_ttl_sec" json:"cache_ttl_sec" usage:"Cache TTL in seconds. Only used if caching is enabled and cache mode is 'time'. Default is 300 (5 minutes)."`
 	HttpTimeoutMs int    `yaml:"http_timeout_ms" json:"http_timeout_ms" usage:"Timeout for HTTP requests to Satori in milliseconds. Default 10000 (10 seconds)."`
 	ServerKey     string `yaml:"server_key" json:"server_key" usage:"Satori server key."`
+	RetryCount    int    `yaml:"retry_count" json:"retry_count" usage:"Maximum number of retries after a request fails. Defaults to 0 (no retries)."`
 }
 
 func (sc *SatoriConfig) GetUrl() string {
@@ -1525,6 +1543,9 @@ func (sc *SatoriConfig) Validate(logger *zap.Logger) {
 	if sc.CacheTTLSec < 1 {
 		logger.Fatal("Satori configuration invalid: cache_ttl_sec must be greater than 0")
 	}
+	if sc.RetryCount < 0 || sc.RetryCount > 3 {
+		logger.Fatal("Satori configuration invalid: retry_count must be a value between 0 and 3")
+	}
 }
 
 var _ runtime.IAPHuaweiConfig = (*IAPHuaweiConfig)(nil)
@@ -1556,6 +1577,14 @@ type IAPFacebookInstantConfig struct {
 func (i IAPFacebookInstantConfig) GetAppSecret() string {
 	return i.AppSecret
 }
+
+type IAPSamsungConfig struct {
+	PackageName string `yaml:"package_name" json:"package_name" usage:"Optional. When set, receipt packageName must match."`
+}
+
+func (i *IAPSamsungConfig) GetPackageName() string { return i.PackageName }
+
+var _ runtime.IAPSamsungConfig = (*IAPSamsungConfig)(nil)
 
 var _ runtime.GoogleAuthConfig = (*GoogleAuthConfig)(nil)
 

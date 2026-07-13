@@ -163,8 +163,9 @@ const (
 )
 
 var (
-	ErrStorageRejectedVersion    = errors.New("Storage write rejected - version check failed.")
-	ErrStorageRejectedPermission = errors.New("Storage write rejected - permission denied.")
+	ErrStorageRejectedVersion       = errors.New("Storage write rejected - version check failed.")
+	ErrStorageRejectedPermission    = errors.New("Storage write rejected - permission denied.")
+	ErrStorageWriteExhaustedRetries = errors.New("Storage write retries exhausted.")
 
 	ErrChannelIDInvalid     = errors.New("invalid channel id")
 	ErrChannelCursorInvalid = errors.New("invalid channel cursor")
@@ -793,6 +794,12 @@ type Initializer interface {
 	// RegisterAfterValidatePurchaseFacebookInstant can be used to perform additional logic after validating an Facebook Instant IAP receipt.
 	RegisterAfterValidatePurchaseFacebookInstant(fn func(ctx context.Context, logger Logger, db *sql.DB, nk NakamaModule, out *api.ValidatePurchaseResponse, in *api.ValidatePurchaseFacebookInstantRequest) error) error
 
+	// RegisterBeforeValidatePurchaseSamsung can be used to perform additional logic before validating a Samsung Galaxy Store IAP receipt.
+	RegisterBeforeValidatePurchaseSamsung(fn func(ctx context.Context, logger Logger, db *sql.DB, nk NakamaModule, in *api.ValidatePurchaseSamsungRequest) (*api.ValidatePurchaseSamsungRequest, error)) error
+
+	// RegisterAfterValidatePurchaseSamsung can be used to perform additional logic after validating a Samsung Galaxy Store IAP receipt.
+	RegisterAfterValidatePurchaseSamsung(fn func(ctx context.Context, logger Logger, db *sql.DB, nk NakamaModule, out *api.ValidatePurchaseResponse, in *api.ValidatePurchaseSamsungRequest) error) error
+
 	// RegisterBeforeListSubscriptions can be used to perform additional logic before listing subscriptions.
 	RegisterBeforeListSubscriptions(fn func(ctx context.Context, logger Logger, db *sql.DB, nk NakamaModule, in *api.ListSubscriptionsRequest) (*api.ListSubscriptionsRequest, error)) error
 
@@ -1078,11 +1085,12 @@ type NakamaModule interface {
 	AuthenticateTokenGenerate(userID, username string, exp int64, vars map[string]string) (string, int64, error)
 
 	AccountGetId(ctx context.Context, userID string) (*api.Account, error)
-	AccountsGetId(ctx context.Context, userIDs []string) ([]*api.Account, error)
+	AccountsGetId(ctx context.Context, userIDs, deviceIDs []string) ([]*api.Account, error)
 	AccountUpdateId(ctx context.Context, userID, username string, metadata map[string]interface{}, displayName, timezone, location, langTag, avatarUrl string) error
 
 	AccountDeleteId(ctx context.Context, userID string, recorded bool) error
 	AccountExportId(ctx context.Context, userID string) (string, error)
+	AccountImportId(ctx context.Context, data, userID string) (*api.Account, error)
 
 	UsersGetId(ctx context.Context, userIDs []string, facebookIDs []string) ([]*api.User, error)
 	UsersGetUsername(ctx context.Context, usernames []string) ([]*api.User, error)
@@ -1151,6 +1159,7 @@ type NakamaModule interface {
 	StorageList(ctx context.Context, callerID, userID, collection string, limit int, cursor string) ([]*api.StorageObject, string, error)
 	StorageRead(ctx context.Context, reads []*StorageRead) ([]*api.StorageObject, error)
 	StorageWrite(ctx context.Context, writes []*StorageWrite) ([]*api.StorageObjectAck, error)
+	StorageWriteRetry(ctx context.Context, reads []*StorageRead, updateFn func(objects []*api.StorageObject) ([]*StorageWrite, error), maxRetries int) ([]*api.StorageObjectAck, error)
 	StorageDelete(ctx context.Context, deletes []*StorageDelete) error
 	StorageIndexList(ctx context.Context, callerID, indexName, query string, limit int, order []string, cursor string) (*api.StorageObjects, string, error)
 
@@ -1174,6 +1183,7 @@ type NakamaModule interface {
 	}) (*api.ValidatePurchaseResponse, error)
 	PurchaseValidateHuawei(ctx context.Context, userID, signature, inAppPurchaseData string, persist bool) (*api.ValidatePurchaseResponse, error)
 	PurchaseValidateFacebookInstant(ctx context.Context, userID, signedRequest string, persist bool) (*api.ValidatePurchaseResponse, error)
+	PurchaseValidateSamsung(ctx context.Context, userID, purchaseId string, persist bool) (*api.ValidatePurchaseResponse, error)
 	PurchasesList(ctx context.Context, userID string, limit int, cursor string) (*api.PurchaseList, error)
 	PurchaseGetByTransactionId(ctx context.Context, transactionID string) (*api.ValidatedPurchase, error)
 
@@ -1331,7 +1341,7 @@ type FleetManager interface {
 	// If a list of userIds is optionally provided, the new instance (on successful creation) will reserve slots
 	// for the respective clients to connect, and the callback will contain the required []*SessionInfo.
 	// Latencies is optional and its support depends on the Fleet Manager provider.
-	Create(ctx context.Context, maxPlayers int, userIds []string, latencies []FleetUserLatencies, metadata map[string]any, callback FmCreateCallbackFn) (err error)
+	Create(ctx context.Context, maxPlayers int, userIds []string, latencies []FleetUserLatencies, metadata map[string]any, callback FmCreateCallbackFn) (map[string]string, error)
 
 	// Join reserves a number of player slots in the target instance. These slots are reserved for a minute, after which,
 	// if clients do not connect to the instance to claim them, the returned SessionInfo will become invalid and the
@@ -1465,9 +1475,10 @@ type ExperimentList struct {
 }
 
 type Experiment struct {
-	Name   string   `json:"name,omitempty"`
-	Value  string   `json:"value,omitempty"`
-	Labels []string `json:"labels,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Value     string   `json:"value,omitempty"`
+	Labels    []string `json:"labels,omitempty"`
+	FlagNames []string `json:"flag_names,omitempty"`
 }
 
 func (e *Experiment) GetLabels() []string {
@@ -1581,6 +1592,7 @@ type LiveEvent struct {
 	DurationSec        int64           `json:"duration_sec,string,omitempty"`
 	ResetCronExpr      string          `json:"reset_cron,omitempty"`
 	Status             LiveEventStatus `json:"status,omitempty"`
+	FlagNames          []string        `json:"flag_names,omitempty"`
 }
 
 type LiveEventList struct {

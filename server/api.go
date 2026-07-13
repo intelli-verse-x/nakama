@@ -24,6 +24,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"net"
 	"net/http"
@@ -271,7 +272,7 @@ func StartApiServer(logger *zap.Logger, startupLogger *zap.Logger, db *sql.DB, p
 	// Enable compression on responses sent by the gateway.
 	// Enable decompression on requests received by the gateway.
 	handlerWithDecompressRequest := decompressHandler(logger, grpcGatewayMux)
-	handlerWithCompressResponse := handlers.CompressHandler(handlerWithDecompressRequest)
+	handlerWithCompressResponse := compressHandler(handlerWithDecompressRequest)
 	maxMessageSizeBytes := config.GetSocket().MaxRequestSizeBytes
 	handlerWithMaxBody := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check max body size before decompressing incoming request body.
@@ -543,6 +544,106 @@ func parseToken(hmacSecretByte []byte, tokenString string) (userID uuid.UUID, us
 	return userID, claims.Username, claims.Vars, claims.ExpiresAt, claims.TokenId, claims.IssuedAt, true
 }
 
+func compressHandler(h http.Handler) http.Handler {
+	const (
+		gzipEncoding  = "gzip"
+		flateEncoding = "deflate"
+	)
+
+	gzipPool := &sync.Pool{
+		New: func() any {
+			w, _ := gzip.NewWriterLevel(io.Discard, gzip.DefaultCompression)
+			return w
+		},
+	}
+	flatePool := &sync.Pool{
+		New: func() any {
+			w, _ := flate.NewWriter(io.Discard, flate.DefaultCompression)
+			return w
+		},
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Accept-Encoding")
+
+		var encoding string
+		for _, enc := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+			enc = strings.TrimSpace(enc)
+			if enc == gzipEncoding || enc == flateEncoding {
+				encoding = enc
+				break
+			}
+		}
+		if encoding == "" || r.Header.Get("Upgrade") != "" {
+			h.ServeHTTP(w, r)
+			return
+		}
+
+		var encWriter compressEncoder
+		if encoding == gzipEncoding {
+			gz := gzipPool.Get().(*gzip.Writer)
+			gz.Reset(w)
+			defer func() {
+				gz.Close()
+				gz.Reset(io.Discard)
+				gzipPool.Put(gz)
+			}()
+			encWriter = gz
+		} else {
+			fl := flatePool.Get().(*flate.Writer)
+			fl.Reset(w)
+			defer func() {
+				fl.Close()
+				fl.Reset(io.Discard)
+				flatePool.Put(fl)
+			}()
+			encWriter = fl
+		}
+
+		w.Header().Set("Content-Encoding", encoding)
+		r.Header.Del("Accept-Encoding")
+
+		h.ServeHTTP(&compressResponseWriter{w: w, enc: encWriter}, r)
+	})
+}
+
+type compressEncoder interface {
+	io.Writer
+	Flush() error
+}
+
+type compressResponseWriter struct {
+	w   http.ResponseWriter
+	enc compressEncoder
+}
+
+func (c *compressResponseWriter) Header() http.Header { return c.w.Header() }
+
+func (c *compressResponseWriter) WriteHeader(code int) {
+	c.w.Header().Del("Content-Length")
+	c.w.WriteHeader(code)
+}
+
+func (c *compressResponseWriter) Write(b []byte) (int, error) {
+	h := c.w.Header()
+	if h.Get("Content-Type") == "" {
+		h.Set("Content-Type", http.DetectContentType(b))
+	}
+	h.Del("Content-Length")
+	return c.enc.Write(b)
+}
+
+func (c *compressResponseWriter) ReadFrom(r io.Reader) (int64, error) {
+	return io.Copy(c.enc, r)
+}
+
+func (c *compressResponseWriter) Flush() {
+	_ = c.enc.Flush()
+	if f, ok := c.w.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
 func decompressHandler(logger *zap.Logger, h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Header.Get("Content-Encoding") {
@@ -562,55 +663,122 @@ func decompressHandler(logger *zap.Logger, h http.Handler) http.HandlerFunc {
 	}
 }
 
-func extractClientAddressFromContext(logger *zap.Logger, ctx context.Context) (string, string) {
-	var clientAddr string
+func extractClientAddressFromContext(logger *zap.Logger, config Config, ctx context.Context) (string, string) {
+	var candidateAddresses []string
 	md, _ := metadata.FromIncomingContext(ctx)
 	if ips := md.Get("x-forwarded-for"); len(ips) > 0 {
 		// Look for gRPC-Gateway / LB header.
-		clientAddr = strings.Split(ips[0], ",")[0]
+		candidateAddresses = strings.Split(ips[0], ",")
+		// Handle grpc-gateway loopback peer
+		if len(candidateAddresses) > 1 {
+			if peerInfo, ok := peer.FromContext(ctx); ok {
+				if host, _, err := net.SplitHostPort(peerInfo.Addr.String()); err == nil {
+					if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+						candidateAddresses = candidateAddresses[:len(candidateAddresses)-1]
+					}
+				}
+			}
+		}
 	} else if peerInfo, ok := peer.FromContext(ctx); ok {
 		// If missing, try to look up gRPC peer info.
-		clientAddr = peerInfo.Addr.String()
+		candidateAddresses = []string{peerInfo.Addr.String()}
 	}
 
-	return extractClientAddress(logger, clientAddr, ctx, "context")
+	return extractClientAddress(logger, config, candidateAddresses, ctx, "context")
 }
 
-func extractClientAddressFromRequest(logger *zap.Logger, r *http.Request) (string, string) {
-	var clientAddr string
+func extractClientAddressFromRequest(logger *zap.Logger, config Config, r *http.Request) (string, string) {
+	var candidateAddresses []string
 	if ips := r.Header.Get("x-forwarded-for"); len(ips) > 0 {
-		clientAddr = strings.Split(ips, ",")[0]
+		// Look for a LB header.
+		candidateAddresses = strings.Split(ips, ",")
 	} else {
-		clientAddr = r.RemoteAddr
+		// If missing, fall back to the remote address.
+		candidateAddresses = []string{r.RemoteAddr}
 	}
 
-	return extractClientAddress(logger, clientAddr, r, "request")
+	return extractClientAddress(logger, config, candidateAddresses, r, "request")
 }
 
-func extractClientAddress(logger *zap.Logger, clientAddr string, source interface{}, sourceType string) (string, string) {
+func extractClientAddress(logger *zap.Logger, config Config, candidateAddresses []string, source interface{}, sourceType string) (string, string) {
 	var clientIP, clientPort string
+	var proxyCount int
 
-	if clientAddr != "" {
-		// It's possible the request metadata had no client address string.
+	for i := len(candidateAddresses) - 1; i >= 0; i-- {
+		if clientIP != "" || clientPort != "" {
+			proxyCount++
+		}
 
-		clientAddr = strings.TrimSpace(clientAddr)
-		if host, port, err := net.SplitHostPort(clientAddr); err == nil {
-			clientIP = host
-			clientPort = port
-		} else {
+		candidateAddress := strings.TrimSpace(candidateAddresses[i])
+		if candidateAddress == "" {
+			// Skip empty candidate addresses, such as from trailing commas in headers.
+			continue
+		}
+
+		// Check if candidate is an address with no port.
+		if parsedCandidate := net.ParseIP(candidateAddress); parsedCandidate != nil {
+			if i > 0 && parsedCandidate.IsLoopback() {
+				// Skip any loopback addresses to ensure we don't record any local proxies like grpc-gateway as the client.
+				// If this is the last possible address, use it even if it's a loopback. This handles local testing cases.
+				continue
+			}
+
+			clientIP = candidateAddress
+			clientPort = ""
+			if proxyCount >= config.GetSocket().ProxyCount {
+				// If we've already seen the expected number of valid proxy addresses, assume the next one is the client.
+				break
+			} else {
+				// This is the first valid address we've found, so it's likely the proxy/LB. Check for one more.
+				continue
+			}
+		}
+
+		// Check if candidate address may be a host:port combination.
+		candidateHost, candidatePort, err := net.SplitHostPort(candidateAddress)
+		if err != nil {
+			var usable bool
 			var addrErr *net.AddrError
 			if errors.As(err, &addrErr) {
+				// If it's a *net.AddrError the value may still be usable depending on the error itself.
 				switch addrErr.Err {
 				case "missing port in address":
 					fallthrough
 				case "too many colons in address":
-					clientIP = clientAddr
+					candidateHost = candidateAddress
+					usable = true
 				default:
 					// Unknown address error, ignore the address.
 				}
+				if !usable {
+					continue
+				}
+			} else {
+				// At this point err may still be a non-nil value that's not a *net.AddrError, ignore the address.
+				continue
 			}
 		}
-		// At this point err may still be a non-nil value that's not a *net.AddrError, ignore the address.
+
+		parsedCandidate := net.ParseIP(candidateHost)
+		if parsedCandidate == nil {
+			// Host is not a valid address, and must be skipped.
+			continue
+		}
+		if i > 0 && parsedCandidate.IsLoopback() {
+			// Skip any loopback addresses to ensure we don't record any local proxies like grpc-gateway as the client.
+			// If this is the last possible address, use it even if it's a loopback. This handles local testing cases.
+			continue
+		}
+
+		clientIP = candidateHost
+		clientPort = candidatePort
+		if proxyCount >= config.GetSocket().ProxyCount {
+			// If we've already seen the expected number of valid proxy addresses, assume the next one is the client.
+			break
+		} else {
+			// This is the first valid address we've found, so it's likely the proxy/LB. Check for one more.
+			continue
+		}
 	}
 
 	if clientIP == "" {
@@ -623,8 +791,8 @@ func extractClientAddress(logger *zap.Logger, clientAddr string, source interfac
 	return clientIP, clientPort
 }
 
-func traceApiBefore(ctx context.Context, logger *zap.Logger, metrics Metrics, fullMethodName string, fn func(clientIP, clientPort string) error) error {
-	clientIP, clientPort := extractClientAddressFromContext(logger, ctx)
+func traceApiBefore(ctx context.Context, logger *zap.Logger, config Config, metrics Metrics, fullMethodName string, fn func(clientIP, clientPort string) error) error {
+	clientIP, clientPort := extractClientAddressFromContext(logger, config, ctx)
 	start := time.Now()
 
 	// Execute the before hook itself.
@@ -635,8 +803,8 @@ func traceApiBefore(ctx context.Context, logger *zap.Logger, metrics Metrics, fu
 	return err
 }
 
-func traceApiAfter(ctx context.Context, logger *zap.Logger, metrics Metrics, fullMethodName string, fn func(clientIP, clientPort string) error) {
-	clientIP, clientPort := extractClientAddressFromContext(logger, ctx)
+func traceApiAfter(ctx context.Context, logger *zap.Logger, config Config, metrics Metrics, fullMethodName string, fn func(clientIP, clientPort string) error) {
+	clientIP, clientPort := extractClientAddressFromContext(logger, config, ctx)
 	start := time.Now()
 
 	// Execute the after hook itself.

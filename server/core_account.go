@@ -142,14 +142,29 @@ WHERE u.id = $1`
 	}, nil
 }
 
-func GetAccounts(ctx context.Context, logger *zap.Logger, db *sql.DB, statusRegistry StatusRegistry, userIDs []string) ([]*api.Account, error) {
+func GetAccounts(ctx context.Context, logger *zap.Logger, db *sql.DB, statusRegistry StatusRegistry, userIDs, deviceIDs []string) ([]*api.Account, error) {
+	if len(userIDs) == 0 && len(deviceIDs) == 0 {
+		return []*api.Account{}, nil
+	}
+
 	query := `
 SELECT u.id, u.username, u.display_name, u.avatar_url, u.lang_tag, u.location, u.timezone, u.metadata, u.wallet,
 	u.email, u.apple_id, u.facebook_id, u.facebook_instant_game_id, u.google_id, u.gamecenter_id, u.steam_id, u.custom_id, u.edge_count,
 	u.create_time, u.update_time, u.verify_time, u.disable_time, array(select ud.id from user_device ud where u.id = ud.user_id)
-FROM users u
-WHERE u.id = ANY($1)`
-	rows, err := db.QueryContext(ctx, query, userIDs)
+FROM users u`
+	params := make([]interface{}, 0, 2)
+	switch {
+	case len(userIDs) > 0 && len(deviceIDs) > 0:
+		query += " WHERE u.id = ANY($1) OR u.id IN (SELECT ud.user_id FROM user_device ud WHERE ud.id = ANY($2))"
+		params = append(params, userIDs, deviceIDs)
+	case len(userIDs) > 0:
+		query += " WHERE u.id = ANY($1)"
+		params = append(params, userIDs)
+	case len(deviceIDs) > 0:
+		query += " WHERE u.id IN (SELECT ud.user_id FROM user_device ud WHERE ud.id = ANY($1))"
+		params = append(params, deviceIDs)
+	}
+	rows, err := db.QueryContext(ctx, query, params...)
 	if err != nil {
 		logger.Error("Error retrieving user accounts.", zap.Error(err))
 		return nil, err
@@ -378,42 +393,85 @@ func ExportAccount(ctx context.Context, logger *zap.Logger, db *sql.DB, userID u
 		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
 	}
 
-	// Friends.
-	friends, err := GetFriendIDs(ctx, logger, db, userID)
-	if err != nil {
-		logger.Error("Could not fetch friend IDs", zap.Error(err), zap.String("user_id", userID.String()))
-		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-	}
+	var (
+		friends            *api.FriendList
+		messages           []*api.ChannelMessage
+		leaderboardRecords []*api.LeaderboardRecord
+		groups             []*api.Group
+		notifications      *api.NotificationList
+		walletLedgers      []*console.WalletLedger
+	)
 
-	// Messages.
-	messages, err := GetChannelMessages(ctx, logger, db, userID)
-	if err != nil {
-		logger.Error("Could not fetch messages", zap.Error(err), zap.String("user_id", userID.String()))
-		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-	}
+	if userID != uuid.Nil {
+		// Friends.
+		friends, err = GetFriendIDs(ctx, logger, db, userID)
+		if err != nil {
+			logger.Error("Could not fetch friend IDs", zap.Error(err), zap.String("user_id", userID.String()))
+			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		}
 
-	// Leaderboard records.
-	leaderboardRecords, err := LeaderboardRecordReadAll(ctx, logger, db, userID)
-	if err != nil {
-		logger.Error("Could not fetch leaderboard records", zap.Error(err), zap.String("user_id", userID.String()))
-		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-	}
+		// Messages.
+		messages, err = GetChannelMessages(ctx, logger, db, userID)
+		if err != nil {
+			logger.Error("Could not fetch messages", zap.Error(err), zap.String("user_id", userID.String()))
+			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		}
 
-	groups := make([]*api.Group, 0, 1)
-	groupUsers, err := ListUserGroups(ctx, logger, db, userID, 0, nil, "")
-	if err != nil {
-		logger.Error("Could not fetch groups that belong to the user", zap.Error(err), zap.String("user_id", userID.String()))
-		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-	}
-	for _, g := range groupUsers.UserGroups {
-		groups = append(groups, g.Group)
-	}
+		// Leaderboard records.
+		leaderboardRecords, err = LeaderboardRecordReadAll(ctx, logger, db, userID)
+		if err != nil {
+			logger.Error("Could not fetch leaderboard records", zap.Error(err), zap.String("user_id", userID.String()))
+			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		}
 
-	// Notifications.
-	notifications, err := NotificationList(ctx, logger, db, userID, 0, "", true)
-	if err != nil {
-		logger.Error("Could not fetch notifications", zap.Error(err), zap.String("user_id", userID.String()))
-		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		groupUsers, err := ListUserGroups(ctx, logger, db, userID, 0, nil, "")
+		if err != nil {
+			logger.Error("Could not fetch groups that belong to the user", zap.Error(err), zap.String("user_id", userID.String()))
+			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		}
+		if len(groupUsers.UserGroups) > 0 {
+			groups = make([]*api.Group, 0, len(groupUsers.UserGroups))
+		}
+		for _, g := range groupUsers.UserGroups {
+			groups = append(groups, g.Group)
+		}
+
+		// Notifications.
+		notifications, err = NotificationList(ctx, logger, db, userID, 0, "", true)
+		if err != nil {
+			logger.Error("Could not fetch notifications", zap.Error(err), zap.String("user_id", userID.String()))
+			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		}
+
+		// History of user's wallet.
+		wl, _, _, err := ListWalletLedger(ctx, logger, db, userID, nil, "", time.Time{}, time.Time{})
+		if err != nil {
+			logger.Error("Could not fetch wallet ledger items", zap.Error(err), zap.String("user_id", userID.String()))
+			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+		}
+		if len(wl) > 0 {
+			walletLedgers = make([]*console.WalletLedger, len(wl))
+		}
+		for i, w := range wl {
+			changeset, err := json.Marshal(w.Changeset)
+			if err != nil {
+				logger.Error("Could not fetch wallet ledger items, error encoding changeset", zap.Error(err), zap.String("user_id", userID.String()))
+				return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+			}
+			metadata, err := json.Marshal(w.Metadata)
+			if err != nil {
+				logger.Error("Could not fetch wallet ledger items, error encoding metadata", zap.Error(err), zap.String("user_id", userID.String()))
+				return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
+			}
+			walletLedgers[i] = &console.WalletLedger{
+				Id:         w.ID,
+				UserId:     w.UserID,
+				Changeset:  string(changeset),
+				Metadata:   string(metadata),
+				CreateTime: &timestamppb.Timestamp{Seconds: w.CreateTime},
+				UpdateTime: &timestamppb.Timestamp{Seconds: w.UpdateTime},
+			}
+		}
 	}
 
 	// Storage objects where user is the owner.
@@ -421,34 +479,6 @@ func ExportAccount(ctx context.Context, logger *zap.Logger, db *sql.DB, userID u
 	if err != nil {
 		logger.Error("Could not fetch notifications", zap.Error(err), zap.String("user_id", userID.String()))
 		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-	}
-
-	// History of user's wallet.
-	walletLedgers, _, _, err := ListWalletLedger(ctx, logger, db, userID, nil, "", time.Time{}, time.Time{})
-	if err != nil {
-		logger.Error("Could not fetch wallet ledger items", zap.Error(err), zap.String("user_id", userID.String()))
-		return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-	}
-	wl := make([]*console.WalletLedger, len(walletLedgers))
-	for i, w := range walletLedgers {
-		changeset, err := json.Marshal(w.Changeset)
-		if err != nil {
-			logger.Error("Could not fetch wallet ledger items, error encoding changeset", zap.Error(err), zap.String("user_id", userID.String()))
-			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-		}
-		metadata, err := json.Marshal(w.Metadata)
-		if err != nil {
-			logger.Error("Could not fetch wallet ledger items, error encoding metadata", zap.Error(err), zap.String("user_id", userID.String()))
-			return nil, status.Error(codes.Internal, "An error occurred while trying to export user data.")
-		}
-		wl[i] = &console.WalletLedger{
-			Id:         w.ID,
-			UserId:     w.UserID,
-			Changeset:  string(changeset),
-			Metadata:   string(metadata),
-			CreateTime: &timestamppb.Timestamp{Seconds: w.CreateTime},
-			UpdateTime: &timestamppb.Timestamp{Seconds: w.UpdateTime},
-		}
 	}
 
 	export := &console.AccountExport{
@@ -459,7 +489,7 @@ func ExportAccount(ctx context.Context, logger *zap.Logger, db *sql.DB, userID u
 		Groups:             groups,
 		LeaderboardRecords: leaderboardRecords,
 		Notifications:      notifications.GetNotifications(),
-		WalletLedgers:      wl,
+		WalletLedgers:      walletLedgers,
 	}
 
 	return export, nil
@@ -471,20 +501,65 @@ func ImportAccount(ctx context.Context, logger *zap.Logger, db *sql.DB, statusRe
 		account = nil
 
 		// Check if importing a completely new account, and create it if needed.
-		if userID == uuid.Nil {
+		if userID == uuid.Nil && data.Account.User.Id != uuid.Nil.String() {
 			query := `
-INSERT INTO users (id, username, display_name, avatar_url, lang_tag, location, timezone, metadata, wallet, email, password, facebook_id, google_id, gamecenter_id, steam_id, custom_id, create_time, update_time, verify_time, disable_time)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`
+INSERT INTO users (
+	id,
+	username,
+	display_name,
+	avatar_url,
+	lang_tag,
+	location,
+	timezone,
+	metadata,
+	wallet,
+	email,
+	password,
+	facebook_id,
+	google_id,
+	gamecenter_id,
+	steam_id,
+	custom_id,
+	create_time,
+	update_time,
+	verify_time,
+	disable_time,
+	facebook_instant_game_id,
+	apple_id
+)
+VALUES (
+	$1,
+	$2,
+	nullif(trim($3), ''),
+	nullif(trim($4), ''),
+	$5,
+	nullif(trim($6), ''),
+	nullif(trim($7), ''),
+	coalesce(nullif(trim($8), '')::jsonb, '{}'::jsonb),
+	coalesce(nullif(trim($9), '')::jsonb, '{}'::jsonb),
+	nullif(trim($10), ''),
+	nullif(trim($11), '')::bytea,
+	nullif(trim($12), ''),
+	nullif(trim($13), ''),
+	nullif(trim($14), ''),
+	nullif(trim($15), ''),
+	nullif(trim($16), ''),
+	$17,
+	$18,
+	$19,
+	$20,
+	nullif(trim($21), ''),
+	nullif(trim($22), '')
+)`
 			_, err := tx.ExecContext(ctx, query, data.Account.User.Id, data.Account.User.Username, data.Account.User.DisplayName, data.Account.User.AvatarUrl, data.Account.User.LangTag,
 				data.Account.User.Location, data.Account.User.Timezone, data.Account.User.Metadata, data.Account.Wallet, data.Account.Email, "", data.Account.User.FacebookId,
 				data.Account.User.GoogleId, data.Account.User.GamecenterId, data.Account.User.SteamId, data.Account.CustomId, data.Account.User.CreateTime.AsTime(),
-				data.Account.User.UpdateTime.AsTime(), data.Account.VerifyTime.AsTime(), data.Account.DisableTime.AsTime())
+				data.Account.User.UpdateTime.AsTime(), data.Account.VerifyTime.AsTime(), data.Account.DisableTime.AsTime(), data.Account.User.FacebookInstantGameId, data.Account.User.AppleId)
 			if err != nil {
 				if errors.Is(err, context.Canceled) {
 					return err
 				}
-				var pgErr *pgconn.PgError
-				if errors.As(err, &pgErr) {
+				if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 					if pgErr.Code == dbErrorUniqueViolation && strings.Contains(pgErr.Message, "users_pkey") {
 						return errors.New("User identifier already exists.")
 					}
@@ -534,7 +609,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
 		}
 
 		// Ensure all storage objects for the user match what is in the data import.
-		if userID != uuid.Nil {
+		if userID != uuid.Nil || data.Account.User.Id == uuid.Nil.String() {
 			// First wipe out any existing storage.
 			query := "DELETE FROM storage WHERE user_id = $1"
 			_, err := tx.ExecContext(ctx, query, userID.String())

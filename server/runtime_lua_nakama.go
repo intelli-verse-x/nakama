@@ -47,6 +47,7 @@ import (
 	"github.com/heroiclabs/nakama-common/api"
 	"github.com/heroiclabs/nakama-common/rtapi"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/heroiclabs/nakama/v3/console"
 	"github.com/heroiclabs/nakama/v3/internal/cronexpr"
 	lua "github.com/heroiclabs/nakama/v3/internal/gopher-lua"
 	"github.com/heroiclabs/nakama/v3/social"
@@ -202,6 +203,7 @@ func (n *RuntimeLuaNakamaModule) Loader(l *lua.LState) int {
 		"account_update_id":                  n.accountUpdateId,
 		"account_delete_id":                  n.accountDeleteId,
 		"account_export_id":                  n.accountExportId,
+		"account_import_id":                  n.accountImportId,
 		"users_get_id":                       n.usersGetId,
 		"users_get_username":                 n.usersGetUsername,
 		"users_get_friend_status":            n.usersGetFriendStatus,
@@ -259,6 +261,7 @@ func (n *RuntimeLuaNakamaModule) Loader(l *lua.LState) int {
 		"storage_list":                       n.storageList,
 		"storage_read":                       n.storageRead,
 		"storage_write":                      n.storageWrite,
+		"storage_write_retry":                n.storageWriteRetry,
 		"storage_delete":                     n.storageDelete,
 		"multi_update":                       n.multiUpdate,
 		"leaderboard_create":                 n.leaderboardCreate,
@@ -275,6 +278,7 @@ func (n *RuntimeLuaNakamaModule) Loader(l *lua.LState) int {
 		"purchase_validate_google":                  n.purchaseValidateGoogle,
 		"purchase_validate_huawei":                  n.purchaseValidateHuawei,
 		"purchase_validate_facebook_instant":        n.purchaseValidateFacebookInstant,
+		"purchase_validate_samsung":                 n.purchaseValidateSamsung,
 		"purchase_get_by_transaction_id":            n.purchaseGetByTransactionId,
 		"purchases_list":                            n.purchasesList,
 		"subscription_validate_apple":               n.subscriptionValidateApple,
@@ -2562,45 +2566,61 @@ func (n *RuntimeLuaNakamaModule) accountGetId(l *lua.LState) int {
 
 // @group accounts
 // @summary Fetch information for multiple accounts by user IDs.
-// @param userIDs(type=table) Table of user IDs to fetch information for. Must be valid UUID.
+// @param userIDs(type=table, optional=true) Table of user IDs to fetch information for. Must be valid UUID when supplied.
+// @param deviceIDs(type=table, optional=true) Table of device IDs to fetch information for.
 // @return account(Table) Table of accounts.
 // @return error(error) An optional error value if an error occurred.
 func (n *RuntimeLuaNakamaModule) accountsGetId(l *lua.LState) int {
 	// Input table validation.
 	userIDs := l.OptTable(1, nil)
-	if userIDs == nil {
-		l.ArgError(1, "invalid user id list")
-		return 0
-	}
-	if userIDs.Len() == 0 {
-		l.Push(l.CreateTable(0, 0))
-		return 1
-	}
-
-	uids := make([]string, 0, userIDs.Len())
-	var conversionError bool
-	userIDs.ForEach(func(k lua.LValue, v lua.LValue) {
+	var uids []string
+	if userIDs != nil && userIDs.Len() > 0 {
+		uids = make([]string, 0, userIDs.Len())
+		var conversionError bool
+		userIDs.ForEach(func(k lua.LValue, v lua.LValue) {
+			if conversionError {
+				return
+			}
+			if v.Type() != lua.LTString {
+				l.ArgError(1, "user id must be a string")
+				conversionError = true
+				return
+			}
+			vs := v.String()
+			if _, err := uuid.FromString(vs); err != nil {
+				l.ArgError(1, "user id must be a valid identifier string")
+				conversionError = true
+				return
+			}
+			uids = append(uids, vs)
+		})
 		if conversionError {
-			return
+			return 0
 		}
-		if v.Type() != lua.LTString {
-			l.ArgError(1, "user id must be a string")
-			conversionError = true
-			return
-		}
-		vs := v.String()
-		if _, err := uuid.FromString(vs); err != nil {
-			l.ArgError(1, "user id must be a valid identifier string")
-			conversionError = true
-			return
-		}
-		uids = append(uids, vs)
-	})
-	if conversionError {
-		return 0
 	}
 
-	accounts, err := GetAccounts(l.Context(), n.logger, n.db, n.statusRegistry, uids)
+	deviceIDs := l.OptTable(2, nil)
+	var dids []string
+	if deviceIDs != nil && deviceIDs.Len() > 0 {
+		dids = make([]string, 0, deviceIDs.Len())
+		var conversionError bool
+		deviceIDs.ForEach(func(k lua.LValue, v lua.LValue) {
+			if conversionError {
+				return
+			}
+			if v.Type() != lua.LTString {
+				l.ArgError(2, "device id must be a string")
+				conversionError = true
+				return
+			}
+			dids = append(dids, v.String())
+		})
+		if conversionError {
+			return 0
+		}
+	}
+
+	accounts, err := GetAccounts(l.Context(), n.logger, n.db, n.statusRegistry, uids, dids)
 	if err != nil {
 		l.RaiseError("failed to get accounts: %s", err.Error())
 		return 0
@@ -6334,7 +6354,7 @@ func (n *RuntimeLuaNakamaModule) storageWrite(l *lua.LState) int {
 		return 1
 	}
 
-	ops, err := tableToStorageWrites(l, keys)
+	ops, err := tableToStorageOpWrites(l, keys)
 	if err != nil {
 		return 0
 	}
@@ -6359,7 +6379,340 @@ func (n *RuntimeLuaNakamaModule) storageWrite(l *lua.LState) int {
 	return 1
 }
 
-func tableToStorageWrites(l *lua.LState, dataTable *lua.LTable) (StorageOpWrites, error) {
+// @group storage
+// @summary Write a set of storage object changes with retries.
+// @param objectIDs(type=table) An array of object identifiers to be fetched.
+// @param updateFn(type=function) A function that applies changes to the read storage objects. It receives a table of storage reads and returns a table of storage writes.
+// @param maxRetries(type=number) Maximum number of retries to attempt if a version conflict is detected. Must be a value between 0 and 10.
+// @return acks(table) A list of acks with the version of the written objects.
+// @return error(error) An optional error value if an error occurred.
+func (n *RuntimeLuaNakamaModule) storageWriteRetry(l *lua.LState) int {
+	keys := l.CheckTable(1)
+	if keys == nil {
+		l.ArgError(1, "expects a valid set of keys")
+		return 0
+	}
+
+	updateFnLua := l.CheckFunction(2)
+	if updateFnLua == nil {
+		l.ArgError(2, "expects a valid update function")
+		return 0
+	}
+
+	maxRetries := l.CheckInt(3)
+	if maxRetries < 0 || maxRetries > 10 {
+		l.ArgError(3, "max retries must be a value between 0 and 10")
+		return 0
+	}
+
+	size := keys.Len()
+	if size == 0 {
+		// Empty input, empty response.
+		l.Push(l.CreateTable(0, 0))
+		return 1
+	}
+
+	objectIDs := make([]*api.ReadStorageObjectId, 0, size)
+	conversionError := false
+	keys.ForEach(func(k, v lua.LValue) {
+		if conversionError {
+			return
+		}
+
+		keyTable, ok := v.(*lua.LTable)
+		if !ok {
+			conversionError = true
+			l.ArgError(1, "expects a valid set of keys")
+			return
+		}
+
+		objectID := &api.ReadStorageObjectId{}
+		keyTable.ForEach(func(k, v lua.LValue) {
+			if conversionError {
+				return
+			}
+
+			switch k.String() {
+			case "collection":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects collection to be string")
+					return
+				}
+				objectID.Collection = v.String()
+				if objectID.Collection == "" {
+					conversionError = true
+					l.ArgError(1, "expects collection to be a non-empty string")
+					return
+				}
+			case "key":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects key to be string")
+					return
+				}
+				objectID.Key = v.String()
+				if objectID.Key == "" {
+					conversionError = true
+					l.ArgError(1, "expects key to be a non-empty string")
+					return
+				}
+			case "user_id":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects user_id to be string")
+					return
+				}
+				objectID.UserId = v.String()
+				if _, err := uuid.FromString(objectID.UserId); err != nil {
+					conversionError = true
+					l.ArgError(1, "expects user_id to be a valid ID")
+					return
+				}
+			}
+		})
+
+		if conversionError {
+			return
+		}
+
+		if objectID.UserId == "" {
+			// Default to server-owned data if no owner is supplied.
+			objectID.UserId = uuid.Nil.String()
+		}
+
+		if objectID.Collection == "" {
+			conversionError = true
+			l.ArgError(1, "expects collection to be supplied")
+			return
+		} else if objectID.Key == "" {
+			conversionError = true
+			l.ArgError(1, "expects key to be supplied")
+			return
+		}
+
+		objectIDs = append(objectIDs, objectID)
+	})
+	if conversionError {
+		return 0
+	}
+
+	updateFn := func(objects []*api.StorageObject) ([]*runtime.StorageWrite, error) {
+		objectsTable := l.CreateTable(len(objects), 0)
+		for i, v := range objects {
+			vt := l.CreateTable(0, 9)
+			vt.RawSetString("key", lua.LString(v.Key))
+			vt.RawSetString("collection", lua.LString(v.Collection))
+			if v.UserId != "" {
+				vt.RawSetString("user_id", lua.LString(v.UserId))
+			} else {
+				vt.RawSetString("user_id", lua.LNil)
+			}
+			vt.RawSetString("version", lua.LString(v.Version))
+			vt.RawSetString("permission_read", lua.LNumber(v.PermissionRead))
+			vt.RawSetString("permission_write", lua.LNumber(v.PermissionWrite))
+			vt.RawSetString("create_time", lua.LNumber(v.CreateTime.Seconds))
+			vt.RawSetString("update_time", lua.LNumber(v.UpdateTime.Seconds))
+
+			valueMap := make(map[string]interface{})
+			err := json.Unmarshal([]byte(v.Value), &valueMap)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode object value: %w", err)
+			}
+			valueTable := RuntimeLuaConvertMap(l, valueMap)
+			vt.RawSetString("value", valueTable)
+
+			objectsTable.RawSetInt(i+1, vt)
+		}
+
+		l.Push(updateFnLua)
+		l.Push(objectsTable)
+
+		err := l.PCall(1, 1, nil)
+		if err != nil {
+			return nil, fmt.Errorf("update function error: %w", err)
+		}
+
+		retValue := l.Get(-1)
+		l.Pop(1)
+		if retValue.Type() != lua.LTTable {
+			return nil, fmt.Errorf("update function error: expects to return a valid table")
+		}
+
+		retTable := retValue.(*lua.LTable)
+
+		ops, err := tableToStorageWrites(l, retTable)
+		if err != nil {
+			return nil, fmt.Errorf("unexpected update function return value: %w", err)
+		}
+
+		if len(ops) == 0 {
+			return []*runtime.StorageWrite{}, nil
+		}
+
+		return ops, nil
+	}
+
+	acks, err := StorageWriteWithRetries(l.Context(), n.logger, n.db, n.metrics, n.storageIndex, objectIDs, updateFn, maxRetries)
+	if err != nil {
+		l.RaiseError("failed to write storage objects with retry: %s", err.Error())
+		return 0
+	}
+
+	lv := l.CreateTable(len(acks.Acks), 0)
+	for i, k := range acks.Acks {
+		kt := l.CreateTable(0, 4)
+		kt.RawSetString("key", lua.LString(k.Key))
+		kt.RawSetString("collection", lua.LString(k.Collection))
+		kt.RawSetString("user_id", lua.LString(k.UserId))
+		kt.RawSetString("version", lua.LString(k.Version))
+
+		lv.RawSetInt(i+1, kt)
+	}
+	l.Push(lv)
+	return 1
+}
+
+func tableToStorageWrites(l *lua.LState, dataTable *lua.LTable) ([]*runtime.StorageWrite, error) {
+	size := dataTable.Len()
+	ops := make([]*runtime.StorageWrite, 0, size)
+	conversionError := false
+	dataTable.ForEach(func(k, v lua.LValue) {
+		if conversionError {
+			return
+		}
+
+		dataTable, ok := v.(*lua.LTable)
+		if !ok {
+			conversionError = true
+			l.ArgError(1, "expects a valid set of data")
+			return
+		}
+
+		w := &runtime.StorageWrite{}
+		var readSet, writeSet bool
+		dataTable.ForEach(func(k, v lua.LValue) {
+			if conversionError {
+				return
+			}
+
+			switch k.String() {
+			case "collection":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects collection to be string")
+					return
+				}
+				w.Collection = v.String()
+				if w.Collection == "" {
+					conversionError = true
+					l.ArgError(1, "expects collection to be a non-empty string")
+					return
+				}
+			case "key":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects key to be string")
+					return
+				}
+				w.Key = v.String()
+				if w.Key == "" {
+					conversionError = true
+					l.ArgError(1, "expects key to be a non-empty string")
+					return
+				}
+			case "user_id":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects user_id to be string")
+					return
+				}
+				userID, err := uuid.FromString(v.String())
+				if err != nil {
+					conversionError = true
+					l.ArgError(1, "expects user_id to be a valid ID")
+					return
+				}
+				w.UserID = userID.String()
+			case "value":
+				if v.Type() != lua.LTTable {
+					conversionError = true
+					l.ArgError(1, "expects value to be table")
+					return
+				}
+				valueMap := RuntimeLuaConvertLuaTable(v.(*lua.LTable))
+				valueBytes, err := json.Marshal(valueMap)
+				if err != nil {
+					conversionError = true
+					l.ArgError(1, fmt.Sprintf("failed to convert value: %s", err.Error()))
+					return
+				}
+				w.Value = string(valueBytes)
+			case "version":
+				if v.Type() != lua.LTString {
+					conversionError = true
+					l.ArgError(1, "expects version to be string")
+					return
+				}
+				w.Version = v.String()
+				if w.Version == "" {
+					conversionError = true
+					l.ArgError(1, "expects version to be a non-empty string")
+					return
+				}
+			case "permission_read":
+				if v.Type() != lua.LTNumber {
+					conversionError = true
+					l.ArgError(1, "expects permission_read to be number")
+					return
+				}
+				readSet = true
+				w.PermissionRead = int(v.(lua.LNumber))
+			case "permission_write":
+				if v.Type() != lua.LTNumber {
+					conversionError = true
+					l.ArgError(1, "expects permission_write to be number")
+					return
+				}
+				writeSet = true
+				w.PermissionWrite = int(v.(lua.LNumber))
+			}
+		})
+
+		if conversionError {
+			return
+		}
+
+		if w.Collection == "" {
+			conversionError = true
+			l.ArgError(1, "expects collection to be supplied")
+			return
+		} else if w.Key == "" {
+			conversionError = true
+			l.ArgError(1, "expects key to be supplied")
+			return
+		} else if w.Value == "" {
+			conversionError = true
+			l.ArgError(1, "expects value to be supplied")
+			return
+		}
+
+		if !readSet {
+			// Default to owner read if no permission_read is supplied.
+			w.PermissionRead = 1
+		}
+		if !writeSet {
+			// Default to owner write if no permission_write is supplied.
+			w.PermissionWrite = 1
+		}
+
+		ops = append(ops, w)
+	})
+
+	return ops, nil
+}
+
+func tableToStorageOpWrites(l *lua.LState, dataTable *lua.LTable) (StorageOpWrites, error) {
 	size := dataTable.Len()
 	ops := make(StorageOpWrites, 0, size)
 	conversionError := false
@@ -6496,37 +6849,6 @@ func tableToStorageWrites(l *lua.LState, dataTable *lua.LTable) (StorageOpWrites
 	})
 
 	return ops, nil
-}
-
-//nolint:unused
-func storageOpWritesToTable(l *lua.LState, ops StorageOpWrites) (*lua.LTable, error) {
-	lv := l.CreateTable(len(ops), 0)
-	for i, v := range ops {
-		vt := l.CreateTable(0, 7)
-		vt.RawSetString("key", lua.LString(v.Object.Key))
-		vt.RawSetString("collection", lua.LString(v.Object.Collection))
-		if v.OwnerID != "" {
-			vt.RawSetString("user_id", lua.LString(v.OwnerID))
-		} else {
-			vt.RawSetString("user_id", lua.LNil)
-		}
-		vt.RawSetString("version", lua.LString(v.Object.Version))
-		vt.RawSetString("permission_read", lua.LNumber(v.Object.PermissionRead.GetValue()))
-		vt.RawSetString("permission_write", lua.LNumber(v.Object.PermissionWrite.GetValue()))
-
-		valueMap := make(map[string]interface{})
-		err := json.Unmarshal([]byte(v.Object.Value), &valueMap)
-		if err != nil {
-			l.RaiseError("failed to convert value to json: %s", err.Error())
-			return nil, err
-		}
-		valueTable := RuntimeLuaConvertMap(l, valueMap)
-		vt.RawSetString("value", valueTable)
-
-		lv.RawSetInt(i+1, vt)
-	}
-
-	return lv, nil
 }
 
 // @group storage
@@ -7893,6 +8215,43 @@ func (n *RuntimeLuaNakamaModule) purchaseValidateFacebookInstant(l *lua.LState) 
 	validation, err := ValidatePurchaseFacebookInstant(l.Context(), n.logger, n.db, uid, n.config.GetIAP().FacebookInstant, signedRequest, persist)
 	if err != nil {
 		l.RaiseError("error validating Facebook Instant receipt: %v", err.Error())
+		return 0
+	}
+
+	l.Push(purchaseValidationToLuaTable(l, validation))
+	return 1
+}
+
+// @group purchases
+// @summary Validates and stores a purchase receipt from the Samsung Galaxy Store.
+// @param userID(type=string) The user ID of the owner of the receipt.
+// @param purchaseId(type=string) The purchase ID returned by the Samsung IAP SDK PurchaseVo.
+// @param persist(type=bool, optional=true, default=true) Persist the purchase so that seenBefore can be computed to protect against replay attacks.
+// @return validation(table) The resulting successfully validated purchases. Any previously validated purchases are returned with a seenBefore flag.
+// @return error(error) An optional error value if an error occurred.
+func (n *RuntimeLuaNakamaModule) purchaseValidateSamsung(l *lua.LState) int {
+	userID := l.CheckString(1)
+	if userID == "" {
+		l.ArgError(1, "expects user id")
+		return 0
+	}
+	uid, err := uuid.FromString(userID)
+	if err != nil {
+		l.ArgError(1, "invalid user id")
+		return 0
+	}
+
+	purchaseId := l.CheckString(2)
+	if purchaseId == "" {
+		l.ArgError(2, "expects purchaseId")
+		return 0
+	}
+
+	persist := l.OptBool(3, true)
+
+	validation, err := ValidatePurchaseSamsung(l.Context(), n.logger, n.db, uid, n.config.GetIAP().Samsung, purchaseId, persist)
+	if err != nil {
+		l.RaiseError("error validating Samsung receipt: %v", err.Error())
 		return 0
 	}
 
@@ -9926,6 +10285,128 @@ func (n *RuntimeLuaNakamaModule) accountExportId(l *lua.LState) int {
 	return 1
 }
 
+// @group accounts
+// @summary Import user account data, optionally overwriting a given user ID.
+// @param data(type=string) An account export string to import.
+// @param userID(type=string, optional=true) Optional user ID to import into. Must be valid UUID.
+// @return account(table) All account information including wallet, device IDs and more.
+// @return error(error) An optional error value if an error occurred.
+func (n *RuntimeLuaNakamaModule) accountImportId(l *lua.LState) int {
+	data := l.CheckString(1)
+	if data == "" {
+		l.ArgError(1, "expects data to be present")
+		return 0
+	}
+	d := &console.AccountExport{}
+	if err := json.Unmarshal([]byte(data), d); err != nil {
+		l.ArgError(1, "expects data to be a valid account export format")
+		return 0
+	}
+
+	userID := l.OptString(2, "")
+	uid := uuid.Nil
+	if userID != "" {
+		var err error
+		uid, err = uuid.FromString(userID)
+		if err != nil {
+			l.ArgError(2, "expects user ID to be a valid identifier")
+			return 0
+		}
+	}
+
+	account, err := ImportAccount(l.Context(), n.logger, n.db, n.statusRegistry, uid, d)
+	if err != nil {
+		l.RaiseError("error importing account: %v", err.Error())
+		return 0
+	}
+
+	if account == nil {
+		l.RaiseError("account import returned no data")
+		return 0
+	}
+
+	accountTable := l.CreateTable(0, 25)
+	accountTable.RawSetString("user_id", lua.LString(account.Account.User.Id))
+	accountTable.RawSetString("username", lua.LString(account.Account.User.Username))
+	accountTable.RawSetString("display_name", lua.LString(account.Account.User.DisplayName))
+	accountTable.RawSetString("avatar_url", lua.LString(account.Account.User.AvatarUrl))
+	accountTable.RawSetString("lang_tag", lua.LString(account.Account.User.LangTag))
+	accountTable.RawSetString("location", lua.LString(account.Account.User.Location))
+	accountTable.RawSetString("timezone", lua.LString(account.Account.User.Timezone))
+	if account.Account.User.AppleId != "" {
+		accountTable.RawSetString("apple_id", lua.LString(account.Account.User.AppleId))
+	}
+	if account.Account.User.FacebookId != "" {
+		accountTable.RawSetString("facebook_id", lua.LString(account.Account.User.FacebookId))
+	}
+	if account.Account.User.FacebookInstantGameId != "" {
+		accountTable.RawSetString("facebook_instant_game_id", lua.LString(account.Account.User.FacebookInstantGameId))
+	}
+	if account.Account.User.GoogleId != "" {
+		accountTable.RawSetString("google_id", lua.LString(account.Account.User.GoogleId))
+	}
+	if account.Account.User.GamecenterId != "" {
+		accountTable.RawSetString("gamecenter_id", lua.LString(account.Account.User.GamecenterId))
+	}
+	if account.Account.User.SteamId != "" {
+		accountTable.RawSetString("steam_id", lua.LString(account.Account.User.SteamId))
+	}
+	accountTable.RawSetString("online", lua.LBool(account.Account.User.Online))
+	accountTable.RawSetString("edge_count", lua.LNumber(account.Account.User.EdgeCount))
+	accountTable.RawSetString("create_time", lua.LNumber(account.Account.User.CreateTime.Seconds))
+	accountTable.RawSetString("update_time", lua.LNumber(account.Account.User.UpdateTime.Seconds))
+
+	metadataMap := make(map[string]interface{})
+	err = json.Unmarshal([]byte(account.Account.User.Metadata), &metadataMap)
+	if err != nil {
+		l.RaiseError("failed to convert metadata to json: %s", err.Error())
+		return 0
+	}
+	metadataTable := RuntimeLuaConvertMap(l, metadataMap)
+	accountTable.RawSetString("metadata", metadataTable)
+
+	userTable, err := userToLuaTable(l, account.Account.User)
+	if err != nil {
+		l.RaiseError("failed to convert user data to lua table: %s", err.Error())
+		return 0
+	}
+	accountTable.RawSetString("user", userTable)
+
+	walletMap := make(map[string]int64)
+	err = json.Unmarshal([]byte(account.Account.Wallet), &walletMap)
+	if err != nil {
+		l.RaiseError("failed to convert wallet to json: %s", err.Error())
+		return 0
+	}
+	walletTable := RuntimeLuaConvertMapInt64(l, walletMap)
+	accountTable.RawSetString("wallet", walletTable)
+
+	if account.Account.Email != "" {
+		accountTable.RawSetString("email", lua.LString(account.Account.Email))
+	}
+	if len(account.Account.Devices) != 0 {
+		devicesTable := l.CreateTable(len(account.Account.Devices), 0)
+		for i, device := range account.Account.Devices {
+			deviceTable := l.CreateTable(0, 1)
+			deviceTable.RawSetString("id", lua.LString(device.Id))
+			devicesTable.RawSetInt(i+1, deviceTable)
+		}
+		accountTable.RawSetString("devices", devicesTable)
+	}
+	if account.Account.CustomId != "" {
+		accountTable.RawSetString("custom_id", lua.LString(account.Account.CustomId))
+	}
+	if account.Account.VerifyTime != nil {
+		accountTable.RawSetString("verify_time", lua.LNumber(account.Account.VerifyTime.Seconds))
+	}
+	if account.Account.DisableTime != nil {
+		accountTable.RawSetString("disable_time", lua.LNumber(account.Account.DisableTime.Seconds))
+	}
+
+	l.Push(accountTable)
+	return 1
+}
+
 // @group friends
 // @summary List all friends, invites, invited, and blocked which belong to a user.
 // @param userID(type=string) The ID of the user whose friends, invites, invited, and blocked you want to list.
@@ -11017,11 +11498,16 @@ func (n *RuntimeLuaNakamaModule) getConfig(l *lua.LState) int {
 
 	iapFacebookInstantCfg := l.CreateTable(0, 1)
 	iapFacebookInstantCfg.RawSetString("app_secret", lua.LString(rnc.GetIAP().GetFacebookInstant().GetAppSecret()))
-	iapCfg := l.CreateTable(0, 4)
+
+	iapSamsungCfg := l.CreateTable(0, 1)
+	iapSamsungCfg.RawSetString("package_name", lua.LString(rnc.GetIAP().GetSamsung().GetPackageName()))
+
+	iapCfg := l.CreateTable(0, 5)
 	iapCfg.RawSetString("apple", iapAppleCfg)
 	iapCfg.RawSetString("google", iapGoogleCfg)
 	iapCfg.RawSetString("huawei", iapHuaweiCfg)
 	iapCfg.RawSetString("facebook_instant", iapFacebookInstantCfg)
+	iapCfg.RawSetString("samsung", iapSamsungCfg)
 	cfgObj.RawSetString("iap", iapCfg)
 
 	googleAuthCfg := l.CreateTable(0, 1)

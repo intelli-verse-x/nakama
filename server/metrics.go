@@ -73,7 +73,7 @@ type Metrics interface {
 	CustomTimer(name string, tags map[string]string, value time.Duration)
 }
 
-var _ Metrics = &LocalMetrics{}
+var _ Metrics = (*LocalMetrics)(nil)
 
 type LocalMetrics struct {
 	logger *zap.Logger
@@ -92,10 +92,11 @@ type LocalMetrics struct {
 	currentRecvBytes *atomic.Int64
 	currentSentBytes *atomic.Int64
 
-	PrometheusScope       tally.Scope
-	prometheusCustomScope tally.Scope
-	prometheusCloser      io.Closer
-	prometheusHTTPServer  *http.Server
+	PrometheusScope        tally.Scope
+	prometheusCustomScope  tally.Scope
+	metricsCollectionScope tally.Scope
+	prometheusCloser       io.Closer
+	prometheusHTTPServer   *http.Server
 }
 
 func NewLocalMetrics(logger, startupLogger *zap.Logger, db *sql.DB, config Config) *LocalMetrics {
@@ -162,6 +163,11 @@ func NewLocalMetrics(logger, startupLogger *zap.Logger, db *sql.DB, config Confi
 		SanitizeOptions: &prometheus.DefaultSanitizerOpts,
 	}, time.Duration(config.GetMetrics().ReportingFreqSec)*time.Second)
 	m.prometheusCustomScope = m.PrometheusScope.SubScope(config.GetMetrics().CustomPrefix)
+	m.metricsCollectionScope = m.PrometheusScope
+	if config.GetMetrics().CustomScopeLimit > 0 {
+		m.prometheusCustomScope = newMetricsLimitedScope(m.prometheusCustomScope, int64(config.GetMetrics().CustomScopeLimit))
+		m.metricsCollectionScope = newMetricsLimitedScope(m.metricsCollectionScope, int64(config.GetMetrics().CustomScopeLimit))
+	}
 
 	// Check if exposing Prometheus metrics directly is enabled.
 	if config.GetMetrics().PrometheusPort > 0 {
@@ -520,6 +526,11 @@ func (m *LocalMetrics) StorageWriteRejectCount(tags map[string]string, delta int
 
 // CustomCounter adds the given delta to a counter with the specified name and tags.
 func (m *LocalMetrics) CustomCounter(name string, tags map[string]string, delta int64) {
+	if delta < 0 {
+		m.metricsCollectionScope.Tagged(map[string]string{"name": name, "err": "negative_increment"}).Counter("metrics_collection_errors_count").Inc(1)
+		return
+	}
+
 	scope := m.prometheusCustomScope
 	if len(tags) != 0 {
 		scope = scope.Tagged(tags)

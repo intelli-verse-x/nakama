@@ -75,7 +75,7 @@ func ValidatePurchasesApple(ctx context.Context, logger *zap.Logger, db *sql.DB,
 		env = api.StoreEnvironment_SANDBOX
 	}
 
-	purchase := &storagePurchase{
+	dbPurchase := &storagePurchase{
 		userID:        userID,
 		store:         api.StoreProvider_APPLE_APP_STORE,
 		productId:     transactionInfo.ProductId,
@@ -85,30 +85,45 @@ func ValidatePurchasesApple(ctx context.Context, logger *zap.Logger, db *sql.DB,
 		environment:   env,
 	}
 
-	dbPurchases, err := upsertPurchases(ctx, db, []*storagePurchase{purchase})
+	validatedPurchase := &api.ValidatedPurchase{
+		UserId:        dbPurchase.userID.String(),
+		ProductId:     transactionInfo.ProductId,
+		TransactionId: transactionInfo.TransactionId,
+		Store:         api.StoreProvider_APPLE_APP_STORE,
+		PurchaseTime:  timestamppb.New(dbPurchase.purchaseTime),
+		RefundTime:    timestamppb.New(dbPurchase.refundTime),
+		Environment:   env,
+	}
+
+	if !persist {
+		return &api.ValidatePurchaseResponse{ValidatedPurchases: []*api.ValidatedPurchase{validatedPurchase}}, nil
+	}
+
+	receiptJson, err := json.Marshal(map[string]string{"jws": receipt})
 	if err != nil {
+		logger.Error("Failed to marshal Apple receipt JSON", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Error validating Apple JWS receipt")
+	}
+	dbPurchase.rawResponse = string(receiptJson)
+
+	dbPurchases, err := upsertPurchases(ctx, db, []*storagePurchase{dbPurchase})
+	if err != nil || len(dbPurchases) == 0  {
 		logger.Error("Failed to store App Store notification purchase data", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to store app store purchase data")
 	}
 
-	dbPurchase := dbPurchases[0]
+	dbPurchase = dbPurchases[0]
 	suid := dbPurchase.userID.String()
 	if dbPurchase.userID.IsNil() {
 		suid = ""
 	}
-	validatedPurchase := &api.ValidatedPurchase{
-		UserId:           suid,
-		ProductId:        transactionInfo.ProductId,
-		TransactionId:    transactionInfo.TransactionId,
-		Store:            api.StoreProvider_APPLE_APP_STORE,
-		CreateTime:       timestamppb.New(dbPurchase.createTime),
-		UpdateTime:       timestamppb.New(dbPurchase.updateTime),
-		PurchaseTime:     timestamppb.New(dbPurchase.purchaseTime),
-		RefundTime:       timestamppb.New(dbPurchase.refundTime),
-		ProviderResponse: receipt,
-		Environment:      env,
-		SeenBefore:       dbPurchase.seenBefore,
-	}
+
+	validatedPurchase.UserId = suid
+	validatedPurchase.SeenBefore = dbPurchase.seenBefore
+	validatedPurchase.CreateTime = timestamppb.New(dbPurchase.createTime)
+	validatedPurchase.UpdateTime = timestamppb.New(dbPurchase.updateTime)
+	validatedPurchase.RefundTime = timestamppb.New(dbPurchase.refundTime)
+	validatedPurchase.ProviderResponse = "" // Do not set for jws validation; no point in returning the incoming receipt.
 
 	return &api.ValidatePurchaseResponse{ValidatedPurchases: []*api.ValidatedPurchase{validatedPurchase}}, nil
 }
@@ -121,8 +136,7 @@ func validateLegacyPurchaseReceiptApple(ctx context.Context, logger *zap.Logger,
 	validation, raw, err := iap.ValidateLegacyReceiptApple(ctx, httpc, password, receipt)
 	if err != nil {
 		if !errors.Is(err, context.Canceled) {
-			var vErr *iap.ValidationError
-			if errors.As(err, &vErr) {
+			if vErr, ok := errors.AsType[*iap.ValidationError](err); ok {
 				logger.Debug("Error validating Apple receipt", zap.Error(vErr.Err), zap.Int("status_code", vErr.StatusCode), zap.String("payload", vErr.Payload))
 				return nil, vErr
 			}
@@ -252,9 +266,8 @@ func validateLegacyPurchaseReceiptApple(ctx context.Context, logger *zap.Logger,
 func ValidatePurchaseGoogle(ctx context.Context, logger *zap.Logger, db *sql.DB, userID uuid.UUID, config *IAPGoogleConfig, receipt string, persist bool) (*api.ValidatePurchaseResponse, error) {
 	gResponse, gReceipt, raw, err := iap.ValidateReceiptGoogle(ctx, httpc, config.ClientEmail, config.PrivateKey, receipt)
 	if err != nil {
-		if err != context.Canceled {
-			var vErr *iap.ValidationError
-			if errors.As(err, &vErr) {
+		if !errors.Is(err, context.Canceled) {
+			if vErr, ok := errors.AsType[*iap.ValidationError](err); ok {
 				logger.Debug("Error validating Google receipt", zap.Error(vErr.Err), zap.Int("status_code", vErr.StatusCode), zap.String("payload", vErr.Payload))
 				return nil, vErr
 			} else {
@@ -302,7 +315,7 @@ func ValidatePurchaseGoogle(ctx context.Context, logger *zap.Logger, db *sql.DB,
 
 	purchases, err := upsertPurchases(ctx, db, []*storagePurchase{sPurchase})
 	if err != nil {
-		if err != context.Canceled {
+		if !errors.Is(err, context.Canceled) {
 			logger.Error("Error storing Google receipt", zap.Error(err))
 		}
 		return nil, err
@@ -336,9 +349,8 @@ func ValidatePurchaseGoogle(ctx context.Context, logger *zap.Logger, db *sql.DB,
 func ValidatePurchaseHuawei(ctx context.Context, logger *zap.Logger, db *sql.DB, userID uuid.UUID, config *IAPHuaweiConfig, inAppPurchaseData, signature string, persist bool) (*api.ValidatePurchaseResponse, error) {
 	validation, data, raw, err := iap.ValidateReceiptHuawei(ctx, httpc, config.PublicKey, config.ClientID, config.ClientSecret, inAppPurchaseData, signature)
 	if err != nil {
-		if err != context.Canceled {
-			var vErr *iap.ValidationError
-			if errors.As(err, &vErr) {
+		if !errors.Is(err, context.Canceled) {
+			if vErr, ok := errors.AsType[*iap.ValidationError](err); ok {
 				logger.Debug("Error validating Huawei receipt", zap.Error(vErr.Err), zap.Int("status_code", vErr.StatusCode), zap.String("payload", vErr.Payload))
 				return nil, vErr
 			} else {
@@ -418,7 +430,7 @@ func ValidatePurchaseHuawei(ctx context.Context, logger *zap.Logger, db *sql.DB,
 func ValidatePurchaseFacebookInstant(ctx context.Context, logger *zap.Logger, db *sql.DB, userID uuid.UUID, config *IAPFacebookInstantConfig, signedRequest string, persist bool) (*api.ValidatePurchaseResponse, error) {
 	payment, rawResponse, err := iap.ValidateReceiptFacebookInstant(config.AppSecret, signedRequest)
 	if err != nil {
-		if err != context.Canceled {
+		if !errors.Is(err, context.Canceled) {
 			logger.Error("Error validating Facebook Instant receipt", zap.Error(err))
 		}
 		return nil, err
@@ -483,6 +495,89 @@ func ValidatePurchaseFacebookInstant(ctx context.Context, logger *zap.Logger, db
 	}, nil
 }
 
+func ValidatePurchaseSamsung(ctx context.Context, logger *zap.Logger, db *sql.DB, userID uuid.UUID, config *IAPSamsungConfig, purchaseId string, persist bool) (*api.ValidatePurchaseResponse, error) {
+	packageName := ""
+	if config != nil {
+		packageName = config.GetPackageName()
+	}
+
+	orderResp, raw, err := iap.ValidateReceiptSamsung(ctx, httpc, packageName, purchaseId)
+	if err != nil {
+		if err != context.Canceled {
+			var vErr *iap.ValidationError
+			if errors.As(err, &vErr) {
+				logger.Debug("Error validating Samsung receipt", zap.Error(vErr.Err), zap.Int("status_code", vErr.StatusCode), zap.String("payload", vErr.Payload))
+				return nil, vErr
+			} else {
+				logger.Error("Error validating Samsung receipt", zap.Error(err))
+			}
+		}
+		return nil, err
+	}
+
+	env := api.StoreEnvironment_PRODUCTION
+	if orderResp.IsSandbox() {
+		env = api.StoreEnvironment_SANDBOX
+	}
+
+	sPurchase := &storagePurchase{
+		userID:        userID,
+		store:         api.StoreProvider_SAMSUNG_GALAXY_STORE,
+		productId:     orderResp.ItemId,
+		transactionId: purchaseId,
+		rawResponse:   string(raw),
+		purchaseTime:  iap.ParseSamsungPurchaseDate(orderResp.PurchaseDate),
+		environment:   env,
+	}
+
+	if !persist {
+		return &api.ValidatePurchaseResponse{
+			ValidatedPurchases: []*api.ValidatedPurchase{
+				{
+					ProductId:        sPurchase.productId,
+					TransactionId:    sPurchase.transactionId,
+					Store:            sPurchase.store,
+					PurchaseTime:     timestamppb.New(sPurchase.purchaseTime),
+					ProviderResponse: string(raw),
+					Environment:      sPurchase.environment,
+				},
+			},
+		}, nil
+	}
+
+	purchases, err := upsertPurchases(ctx, db, []*storagePurchase{sPurchase})
+	if err != nil {
+		if err != context.Canceled {
+			logger.Error("Error storing Samsung receipt", zap.Error(err))
+		}
+		return nil, err
+	}
+
+	validatedPurchases := make([]*api.ValidatedPurchase, 0, len(purchases))
+	for _, p := range purchases {
+		suid := p.userID.String()
+		if p.userID.IsNil() {
+			suid = ""
+		}
+		validatedPurchases = append(validatedPurchases, &api.ValidatedPurchase{
+			UserId:           suid,
+			ProductId:        p.productId,
+			TransactionId:    p.transactionId,
+			Store:            p.store,
+			PurchaseTime:     timestamppb.New(p.purchaseTime),
+			CreateTime:       timestamppb.New(p.createTime),
+			UpdateTime:       timestamppb.New(p.updateTime),
+			ProviderResponse: string(raw),
+			SeenBefore:       p.seenBefore,
+			Environment:      p.environment,
+		})
+	}
+
+	return &api.ValidatePurchaseResponse{
+		ValidatedPurchases: validatedPurchases,
+	}, nil
+}
+
 func GetPurchaseByTransactionId(ctx context.Context, logger *zap.Logger, db *sql.DB, transactionID string) (*api.ValidatedPurchase, error) {
 	var (
 		dbTransactionId string
@@ -513,7 +608,7 @@ func GetPurchaseByTransactionId(ctx context.Context, logger *zap.Logger, db *sql
 		WHERE transaction_id = $1
 `, transactionID).Scan(&dbUserId, &dbStore, &dbTransactionId, &dbCreateTime, &dbUpdateTime, &dbPurchaseTime, &dbRefundTime, &dbProductId, &dbEnvironment, &dbRawResponse)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			// Not found
 			return nil, nil
 		}
