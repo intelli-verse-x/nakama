@@ -787,6 +787,17 @@ namespace WorldTrivia {
       ) {
         throw new Error("semanticValidation.artifactHash must match artifactHash");
       }
+      if (
+        data.answerOnlyValidation &&
+        (
+          data.answerOnlyValidation.version !== "v8" ||
+          data.answerOnlyValidation.artifactHash !== story.artifactHash ||
+          data.answerOnlyValidation.threshold !== 7 ||
+          data.answerOnlyValidation.consensusCueCount !== 0
+        )
+      ) {
+        throw new Error("answerOnlyValidation must be a passing v8 stamp for artifactHash");
+      }
 
       var key = storyKey(data.appId, data.templateId, data.conceptId);
       writeSystemObject(nk, STORIES_COLLECTION, key, story);
