@@ -112,6 +112,7 @@ namespace WorldTrivia {
     choices: string[];
     correctIndex: number; // server-side only; never sent pre-answer
     category?: string;
+    explanation?: string; // revealed post-grade only (never in questionView)
   }
 
   export interface TriviaPack {
@@ -139,7 +140,6 @@ namespace WorldTrivia {
 
   export interface StoryQuestion extends TriviaQuestion {
     checkpointIndex?: number;  // themed binding to a narration beat
-    explanation?: string;      // revealed post-grade only
   }
 
   /** Full story — server-only storage, never client-readable. */
@@ -152,6 +152,7 @@ namespace WorldTrivia {
     narration: StoryNarration;
     questions: StoryQuestion[];
     schemaVersion: number;
+    artifactHash?: string;
     updatedAt: string;
   }
 
@@ -654,6 +655,10 @@ namespace WorldTrivia {
         }
         var question: TriviaQuestion = { id: q.id, text: q.text, choices: q.choices, correctIndex: correctIndex };
         if (q.category) question.category = q.category;
+        // Learning layer parity with stories: packs may carry the post-grade
+        // explanation line. It is storage-only until world_answer_submit
+        // grades — questionView never includes it.
+        if (q.explanation) question.explanation = String(q.explanation);
         questions.push(question);
       }
 
@@ -693,6 +698,7 @@ namespace WorldTrivia {
       title: story.title,
       language: story.language,
       schemaVersion: story.schemaVersion,
+      sourceArtifactHash: story.artifactHash,
       narration: {
         intro: story.narration.intro,
         beats: beats,
@@ -769,8 +775,18 @@ namespace WorldTrivia {
         narration: { intro: narration.intro, beats: beats, ambient: narration.ambient || [], finale: narration.finale },
         questions: questions,
         schemaVersion: typeof data.schemaVersion === "number" ? data.schemaVersion : 1,
+        artifactHash: data.artifactHash ? String(data.artifactHash) : undefined,
         updatedAt: new Date().toISOString()
       };
+      if (story.artifactHash && !/^[a-f0-9]{64}$/.test(story.artifactHash)) {
+        throw new Error("artifactHash must be a lowercase SHA-256 hex digest");
+      }
+      if (
+        data.semanticValidation &&
+        data.semanticValidation.artifactHash !== story.artifactHash
+      ) {
+        throw new Error("semanticValidation.artifactHash must match artifactHash");
+      }
 
       var key = storyKey(data.appId, data.templateId, data.conceptId);
       writeSystemObject(nk, STORIES_COLLECTION, key, story);
@@ -781,7 +797,8 @@ namespace WorldTrivia {
         conceptId: story.conceptId,
         title: story.title,
         beatCount: beats.length,
-        questionCount: questions.length
+        questionCount: questions.length,
+        artifactHash: story.artifactHash
       });
     } catch (e: any) {
       return err(e.message || "world_story_upsert failed");
