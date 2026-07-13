@@ -37,22 +37,35 @@ async function adminRpc(id, body) {
 const registry = await adminRpc("quizverse_seedq_sources", {});
 const modes = registry.modes || [];
 if (!modes.length) throw new Error("server returned no canonical modes; deploy SeedQ v1.2+ first");
+const seedModes = modes.filter((mode) =>
+  mode.seedq_required &&
+  mode.kind === "question" &&
+  (!mode.inventory_mode || mode.inventory_mode === mode.mode)
+);
 
 const reports = [];
-for (const mode of modes) {
-  let accepted = 0, rejected = 0, duplicates = 0, poolSize = 0, rounds = 0;
+for (const mode of seedModes) {
+  let accepted = 0, rejected = 0, duplicates = 0, poolSize = 0, rounds = 0, lastError = "";
   for (; rounds < MAX_ROUNDS && poolSize < TARGET; rounds++) {
-    const res = await adminRpc("quizverse_seedq_ingest", {
-      source: mode.source, mode: mode.mode, topic: mode.default_topic, count: 60,
-    });
+    let res;
+    try {
+      res = await adminRpc("quizverse_seedq_ingest", {
+        source: mode.source, mode: mode.mode, topic: mode.default_topic, count: 60,
+      });
+    } catch (error) {
+      lastError = String(error && error.message ? error.message : error).slice(0, 300);
+      break;
+    }
     const x = res.result || {};
     accepted += x.accepted || 0; rejected += x.rejected || 0;
     duplicates += x.duplicates || 0; poolSize = x.pool_size || poolSize;
+    lastError = x.last_error || "";
     if ((x.accepted || 0) === 0 && (x.duplicates || 0) > 0) break;
   }
   reports.push({
     mode: mode.mode, source: mode.source, topic: mode.default_topic,
     rounds, accepted, rejected, duplicates, pool_size: poolSize,
+    last_error: lastError,
     target: TARGET, status: poolSize >= TARGET ? "PASS" :
       (mode.support === "fallback" ? "WARN" : "BLOCKED"),
   });
@@ -60,12 +73,14 @@ for (const mode of modes) {
 }
 
 const coverage = await adminRpc("quizverse_seedq_pool_stats", {});
+const denominator = (coverage.mode_coverage || []).filter((row) => row.denominator);
 const summary = {
-  host: HOST, target: TARGET, modes: reports.length,
-  pass: reports.filter((r) => r.status === "PASS").length,
-  warn: reports.filter((r) => r.status === "WARN").length,
-  blocked: reports.filter((r) => r.status === "BLOCKED").length,
+  host: HOST, target: TARGET, seeded_inventory_modes: reports.length,
+  denominator_modes: denominator.length,
+  pass: denominator.filter((r) => r.status === "PASS").length,
+  warn: denominator.filter((r) => r.status === "WARN").length,
+  blocked: denominator.filter((r) => r.status === "BLOCKED").length,
   reports, coverage: coverage.mode_coverage || [],
 };
 console.log(JSON.stringify(summary, null, 2));
-process.exit(summary.blocked === 0 ? 0 : 1);
+process.exit(summary.blocked === 0 && summary.warn === 0 ? 0 : 1);

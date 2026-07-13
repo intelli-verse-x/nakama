@@ -313,7 +313,7 @@ async function runSuite() {
 
   // 9 · Media mode: wsrv.nl-optimized URLs with provenance.
   await check(9, "Media wsrv.nl + provenance", "SeedQ Media", async () => {
-    const res = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode: "ImageGuess", topic: "space", set_size: 4, want_sets: 1 });
+    const res = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode: "ImageGuess", topic: "space", set_size: 4, want_sets: 2 });
     assert(res.ok === true, "media get_staged not ok: " + JSON.stringify(res).slice(0, 200));
     const qs = (res.sets && res.sets[0] && res.sets[0].questions) || [];
     assert(qs.length > 0, "no ImageGuess/space questions staged (pool empty?)");
@@ -362,16 +362,16 @@ async function runSuite() {
     return `fabricated → pass:false (${fab.validation.violations.length} violations: ${fab.validation.violations[0]}); faithful "${faithfulText}" → pass:true`;
   });
 
-  // 12 · Sources registry (13 connectors) + pool observability.
-  await check(12, "Sources ×13 + pool stats", "Sources", async () => {
+  // 12 · Sources registry + pool observability.
+  await check(12, "Sources ×16 + pool stats", "Sources", async () => {
     const src = await adminRpc("quizverse_seedq_sources", {});
     assert(src.ok === true, "sources not ok: " + JSON.stringify(src).slice(0, 200));
     const n = (src.sources || []).length;
-    assert(n === 13, `expected 13 connectors, got ${n}`);
+    assert(n === 16, `expected 16 connectors, got ${n}`);
     const stats = await adminRpc("quizverse_seedq_pool_stats", {});
     assert(stats.ok === true, "pool_stats not ok: " + JSON.stringify(stats).slice(0, 200));
     assert(Array.isArray(stats.pools) && stats.pools.length >= 1, "pool_stats returned no pools");
-    return `13 connectors registered; ${stats.pools.length} pools (e.g. ${stats.pools.slice(0, 3).map((p) => `${p.key}:${p.size}`).join(", ")})`;
+    return `16 connectors registered; ${stats.pools.length} pools (e.g. ${stats.pools.slice(0, 3).map((p) => `${p.key}:${p.size}`).join(", ")})`;
   });
 
   // 13 · Every canonical mode resolves to a source or explicit safe fallback.
@@ -379,12 +379,15 @@ async function runSuite() {
     const src = await adminRpc("quizverse_seedq_sources", {});
     const modes = src.modes || [];
     assert(modes.length >= 34, `expected backend/client mode union, got ${modes.length}`);
-    const malformed = modes.filter((m) => !m.mode || !m.source ||
-      !["direct", "fallback"].includes(m.support) || !m.fallback_mode);
-    assert(malformed.length === 0, `modes missing source/fallback: ${malformed.map((m) => m.mode).join(", ")}`);
+    const malformed = modes.filter((m) => !m.mode || !m.kind || !m.delivery_contract ||
+      typeof m.seedq_required !== "boolean" ||
+      (m.seedq_required && (!m.inventory_mode || !["direct", "fallback"].includes(m.support))) ||
+      (m.support === "fallback" && m.seedq_required && !m.fallback_mode));
+    assert(malformed.length === 0, `modes missing taxonomy/lineage: ${malformed.map((m) => m.mode).join(", ")}`);
+    const denominatorModes = modes.filter((m) => m.seedq_required && m.kind !== "non_question");
     const persona = await deviceAuth("allmodes");
     const staged = [], blocked = [];
-    for (const m of modes) {
+    for (const m of denominatorModes) {
       const r = await rpc(persona, "quizverse_seedq_get_staged", {
         mode: m.mode, topic: m.default_topic, set_size: 4, want_sets: 2,
       });
@@ -396,7 +399,10 @@ async function runSuite() {
     const stats = await adminRpc("quizverse_seedq_pool_stats", {});
     assert((stats.mode_coverage || []).length === modes.length,
       `pool_stats mode_coverage mismatch`);
-    return `${modes.length} canonical modes resolved; ${staged.length} staged ≥2 sets with local pools; ${blocked.length} data-blocked (${blocked.slice(0, 5).join(", ") || "none"})`;
+    const releaseGaps = (stats.mode_coverage || []).filter((m) => m.denominator && m.status !== "PASS");
+    assert(releaseGaps.length === 0,
+      `release-gating coverage gaps: ${releaseGaps.map((m) => `${m.mode}:${m.status}:${m.deficit}`).join(", ")}`);
+    return `${modes.length} canonical modes resolved; ${staged.length}/${denominatorModes.length} question-consuming routes staged ≥2 sets; 0 WARN/BLOCKED`;
   });
 
   // 14 · Country isolation, 60/40 ranking, invalid input, and global fallback.

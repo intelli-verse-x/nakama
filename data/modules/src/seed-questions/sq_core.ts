@@ -52,6 +52,7 @@ namespace SeedQ {
   export var COLL_STAGED = "sq_staged";
   export var COLL_SOURCE_CACHE = "sq_source_cache";
   export var COLL_INGEST_STATE = "sq_ingest_state";
+  export var COLL_SOURCE_STATUS = "sq_source_status";
   export var COLL_FOCUS_TRACKS = "sq_focus_tracks";
 
   // ── Tunables ────────────────────────────────────────────────────────────────
@@ -142,11 +143,15 @@ namespace SeedQ {
   export interface ModeDefinition {
     mode: string;
     aliases: string[];
+    kind: string;               // "question" | "experience" | "non_question"
     source: string;
     default_topic: string;
     media: string;
     support: string;            // "direct" | "fallback"
     fallback_mode: string;
+    inventory_mode: string;     // canonical SeedQ pool inherited by wrappers
+    delivery_contract: string;  // client/backend evidence for the route
+    seedq_required: boolean;    // false for non-MCQ/external feature contracts
     reason: string;
   }
 
@@ -155,42 +160,42 @@ namespace SeedQ {
   // Adding a client mode requires adding it here before SeedQ will accept it.
   export function modeRegistry(): ModeDefinition[] {
     return [
-      { mode:"SoloChallenge",aliases:["Classic","Solo"],source:"wolfram",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"generic approved pool" },
-      { mode:"SurvivalQuiz",aliases:["Survival"],source:"wolfram",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"generic approved pool" },
-      { mode:"SpeedQuiz",aliases:["Speed"],source:"wolfram",default_topic:"arithmetic",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"template-computed STEM" },
-      { mode:"BrainSprint",aliases:["Brain Sprint"],source:"wolfram",default_topic:"arithmetic",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"template-computed STEM" },
-      { mode:"DailyQuiz",aliases:["Daily","DailyChallenge"],source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"CustomTopic",reason:"daily authored pool preferred; safe global fallback" },
-      { mode:"WeeklyQuiz",aliases:["Weekly"],source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"CustomTopic",reason:"weekly authored pool preferred; safe global fallback" },
-      { mode:"ViralIQ",aliases:["Viral IQ"],source:"justwatch",default_topic:"trending",media:"optional",support:"direct",fallback_mode:"MediaQuiz",reason:"trending titles" },
-      { mode:"TrueFalseQuiz",aliases:["TrueFalse","True False"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"MCQ payload remains compatible" },
-      { mode:"MultipleChoiceQuiz",aliases:["MultipleChoice","MCQ"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"generic approved MCQ pool" },
-      { mode:"ImageQuiz",aliases:["ImageGuess","Image Quiz"],source:"archive_org",default_topic:"history",media:"image",support:"direct",fallback_mode:"MediaQuiz",reason:"public-domain images" },
-      { mode:"AudioQuiz",aliases:["MusicQuiz","Music Quiz"],source:"music_tv",default_topic:"music",media:"optional",support:"direct",fallback_mode:"MediaQuiz",reason:"music metadata and cover art" },
-      { mode:"VideoQuiz",aliases:["Video Quiz","YouTubeQuiz"],source:"youtube_quiz",default_topic:"video",media:"video",support:"fallback",fallback_mode:"CustomTopic",reason:"LLM connector is env-gated; generic pool fallback" },
-      { mode:"GuessAnime",aliases:["AnimeQuiz"],source:"archive_org",default_topic:"anime",media:"image",support:"fallback",fallback_mode:"ImageQuiz",reason:"licensed authored pack preferred; public-domain image fallback" },
-      { mode:"GuessDog",aliases:["DogQuiz"],source:"archive_org",default_topic:"dogs",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain images" },
-      { mode:"GuessDish",aliases:["DishQuiz","FoodQuiz"],source:"archive_org",default_topic:"food",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain images" },
-      { mode:"GuessPokemon",aliases:["PokemonQuiz"],source:"archive_org",default_topic:"creatures",media:"image",support:"fallback",fallback_mode:"ImageQuiz",reason:"trademarked authored pack required; generic image fallback" },
-      { mode:"SportsQuiz",aliases:["Sports"],source:"archive_org",default_topic:"sports",media:"optional",support:"direct",fallback_mode:"CustomTopic",reason:"public-domain sports archive" },
-      { mode:"SpaceTrivia",aliases:["SpaceQuiz"],source:"archive_org",default_topic:"space",media:"image",support:"direct",fallback_mode:"CustomTopic",reason:"public-domain space archive" },
-      { mode:"EmojiQuiz",aliases:["Emoji"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"authored emoji pack preferred; generic fallback" },
-      { mode:"HealthQuiz",aliases:["Health"],source:"scholar",default_topic:"health",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"cited research metadata" },
-      { mode:"FortuneQuiz",aliases:["Fortune"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"entertainment-only generic fallback" },
-      { mode:"PredictionQuiz",aliases:["Prediction"],source:"justwatch",default_topic:"trending",media:"optional",support:"fallback",fallback_mode:"ViralIQ",reason:"trending factual questions; no fabricated predictions" },
-      { mode:"GeoExplore",aliases:["GeoQuiz","GeographyQuiz"],source:"archive_org",default_topic:"maps",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain maps" },
-      { mode:"WhosThat",aliases:["Who's That","WhoIsThat"],source:"archive_org",default_topic:"portraits",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"public-domain portraits" },
-      { mode:"AIHost",aliases:["AI Host"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"host presentation mode uses approved generic questions" },
-      { mode:"AITutor",aliases:["AI Tutor"],source:"scholar",default_topic:"science",media:"none",support:"fallback",fallback_mode:"CustomTopic",reason:"tutor presentation mode uses cited/global fallback" },
-      { mode:"AIFortuneTeller",aliases:["AI Fortune Teller"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"FortuneQuiz",reason:"entertainment-only approved fallback" },
-      { mode:"LocalBattle",aliases:["Local Battle"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",reason:"delivery shell; approved generic questions" },
-      { mode:"LiveArena",aliases:["Live Arena"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",reason:"multiplayer shell; approved generic questions" },
-      { mode:"Tournament",aliases:["TournamentQuiz"],source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",reason:"competition shell; approved generic questions" },
-      { mode:"CustomTopic",aliases:["Custom Topic"],source:"wolfram",default_topic:"math",media:"optional",support:"direct",fallback_mode:"MultipleChoiceQuiz",reason:"topic-specific connector matrix" },
-      { mode:"PickATopic",aliases:["Pick A Topic","TopicPicker"],source:"gutenberg",default_topic:"history",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"public-domain topic packs" },
-      { mode:"MediaQuiz",aliases:["MoviesQuiz","MovieQuiz","Movie Quiz"],source:"justwatch",default_topic:"film",media:"image",support:"direct",fallback_mode:"ImageQuiz",reason:"film/show metadata and archive media" },
-      { mode:"SubjectiveQuiz",aliases:["Subjective","LearnMode"],source:"scholar",default_topic:"science",media:"none",support:"direct",fallback_mode:"CustomTopic",reason:"cited study questions" },
-      { mode:"NewsQuiz",aliases:["News","CurrentAffairs"],source:"justwatch",default_topic:"news",media:"optional",support:"fallback",fallback_mode:"ViralIQ",reason:"dedicated news RPC remains primary; factual trending fallback" },
-      { mode:"FocusMode",aliases:["Focus","StudyMode"],source:"scholar",default_topic:"study",media:"none",support:"fallback",fallback_mode:"SubjectiveQuiz",reason:"focus audio is separate; approved study-question fallback" }
+      { mode:"SoloChallenge",aliases:["Classic","Solo"],kind:"question",source:"wolfram",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"SoloChallenge",delivery_contract:"QuizModeType.SoloChallenge",seedq_required:true,reason:"generic approved pool" },
+      { mode:"SurvivalQuiz",aliases:["Survival"],kind:"question",source:"wolfram",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"SurvivalQuiz",delivery_contract:"QuizModeType.SurvivalQuiz; unified survival MCQ",seedq_required:true,reason:"generic approved pool" },
+      { mode:"SpeedQuiz",aliases:["Speed"],kind:"question",source:"wolfram",default_topic:"arithmetic",media:"none",support:"direct",fallback_mode:"CustomTopic",inventory_mode:"SpeedQuiz",delivery_contract:"QuizModeType.SpeedQuiz",seedq_required:true,reason:"template-computed STEM" },
+      { mode:"BrainSprint",aliases:["Brain Sprint"],kind:"question",source:"wolfram",default_topic:"arithmetic",media:"none",support:"direct",fallback_mode:"CustomTopic",inventory_mode:"BrainSprint",delivery_contract:"QuizModeType.BrainSprint",seedq_required:true,reason:"template-computed STEM" },
+      { mode:"DailyQuiz",aliases:["Daily","DailyChallenge"],kind:"question",source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"DailyQuiz",delivery_contract:"QuizModeType.DailyQuiz",seedq_required:true,reason:"daily authored pool preferred; safe global fallback" },
+      { mode:"WeeklyQuiz",aliases:["Weekly"],kind:"question",source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"WeeklyQuiz",delivery_contract:"QuizModeType.WeeklyQuiz",seedq_required:true,reason:"weekly authored pool preferred; safe global fallback" },
+      { mode:"ViralIQ",aliases:["Viral IQ"],kind:"experience",source:"gutenberg",default_topic:"general",media:"optional",support:"fallback",fallback_mode:"DailyQuiz",inventory_mode:"DailyQuiz",delivery_contract:"ViralIQMode replays last 45 days of Daily/Premium quizzes",seedq_required:true,reason:"replay wrapper inherits the approved Daily quiz pool; never use unrelated trending-film questions" },
+      { mode:"TrueFalseQuiz",aliases:["TrueFalse","True False"],kind:"question",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"TrueFalseQuiz",delivery_contract:"QuizModeType.TrueFalseQuiz",seedq_required:true,reason:"MCQ payload remains compatible" },
+      { mode:"MultipleChoiceQuiz",aliases:["MultipleChoice","MCQ"],kind:"question",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"MultipleChoiceQuiz",delivery_contract:"QuizModeType.MultipleChoiceQuiz",seedq_required:true,reason:"generic approved MCQ pool" },
+      { mode:"ImageQuiz",aliases:["ImageGuess","Image Quiz"],kind:"question",source:"archive_org",default_topic:"history",media:"image",support:"direct",fallback_mode:"",inventory_mode:"ImageQuiz",delivery_contract:"MediaQuizMode.Image",seedq_required:true,reason:"public-domain images" },
+      { mode:"AudioQuiz",aliases:["MusicQuiz","Music Quiz"],kind:"question",source:"music_tv",default_topic:"music",media:"audio",support:"direct",fallback_mode:"",inventory_mode:"AudioQuiz",delivery_contract:"MediaQuizMode.Audio",seedq_required:true,reason:"Deezer 30-second preview questions with audio MIME/provenance; text or cover-art-only rows fail the mode gate" },
+      { mode:"VideoQuiz",aliases:["Video Quiz","YouTubeQuiz"],kind:"question",source:"video_catalog",default_topic:"video",media:"video",support:"direct",fallback_mode:"",inventory_mode:"VideoQuiz",delivery_contract:"MediaQuizMode.Video + FallbackQuestions CSV media keys",seedq_required:true,reason:"60 reviewed build-embedded video MCQs; generic text fallback is forbidden" },
+      { mode:"GuessAnime",aliases:["AnimeQuiz"],kind:"question",source:"archive_org",default_topic:"anime",media:"image",support:"fallback",fallback_mode:"ImageQuiz",inventory_mode:"GuessAnime",delivery_contract:"ImageGuess_Unified.Anime",seedq_required:true,reason:"licensed authored pack preferred; public-domain image fallback" },
+      { mode:"GuessDog",aliases:["DogQuiz"],kind:"question",source:"archive_org",default_topic:"dogs",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"GuessDog",delivery_contract:"ImageGuess_Unified.Dog",seedq_required:true,reason:"public-domain images" },
+      { mode:"GuessDish",aliases:["DishQuiz","FoodQuiz"],kind:"question",source:"archive_org",default_topic:"food",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"GuessDish",delivery_contract:"ImageGuess_Unified.Dish",seedq_required:true,reason:"public-domain images" },
+      { mode:"GuessPokemon",aliases:["PokemonQuiz"],kind:"question",source:"archive_org",default_topic:"creatures",media:"image",support:"fallback",fallback_mode:"ImageQuiz",inventory_mode:"GuessPokemon",delivery_contract:"ImageGuess_Unified.Pokemon",seedq_required:true,reason:"trademarked authored pack required; generic image fallback" },
+      { mode:"SportsQuiz",aliases:["Sports"],kind:"question",source:"archive_org",default_topic:"sports",media:"optional",support:"direct",fallback_mode:"CustomTopic",inventory_mode:"SportsQuiz",delivery_contract:"ImageGuess_Unified.Sports",seedq_required:true,reason:"public-domain sports archive" },
+      { mode:"SpaceTrivia",aliases:["SpaceQuiz"],kind:"question",source:"archive_org",default_topic:"space",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"SpaceTrivia",delivery_contract:"ImageGuess_Unified.Space",seedq_required:true,reason:"public-domain space archive" },
+      { mode:"EmojiQuiz",aliases:["Emoji"],kind:"question",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"WeeklyQuiz",inventory_mode:"EmojiQuiz",delivery_contract:"WeeklyQuiz_Unified.Emoji",seedq_required:true,reason:"authored emoji pack preferred; generic weekly fallback" },
+      { mode:"HealthQuiz",aliases:["Health"],kind:"question",source:"health_catalog",default_topic:"health",media:"none",support:"direct",fallback_mode:"",inventory_mode:"HealthQuiz",delivery_contract:"WeeklyQuiz_Unified.Health score-based MCQ",seedq_required:true,reason:"50 cited OpenStax anatomy/health-science MCQs provide deterministic reviewed fallback inventory" },
+      { mode:"FortuneQuiz",aliases:["Fortune"],kind:"question",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"WeeklyQuiz",inventory_mode:"FortuneQuiz",delivery_contract:"WeeklyQuiz_Unified.Fortune",seedq_required:true,reason:"entertainment quiz variant inherits approved weekly inventory when needed" },
+      { mode:"PredictionQuiz",aliases:["Prediction"],kind:"non_question",source:"justwatch",default_topic:"trending",media:"optional",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"WeeklyQuiz_Unified.Prediction stores selections and reveals outcomes later",seedq_required:false,reason:"future-outcome prediction has no truthful correct answer at staging time; exclude from MCQ inventory denominator" },
+      { mode:"GeoExplore",aliases:["GeoQuiz","GeographyQuiz"],kind:"question",source:"archive_org",default_topic:"maps",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"GeoExplore",delivery_contract:"QuizModeType.GeoExplore",seedq_required:true,reason:"public-domain maps" },
+      { mode:"WhosThat",aliases:["Who's That","WhoIsThat"],kind:"question",source:"archive_org",default_topic:"portraits",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"WhosThat",delivery_contract:"QuizModeType.WhosThat",seedq_required:true,reason:"public-domain portraits" },
+      { mode:"AIHost",aliases:["AI Host"],kind:"experience",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"CustomTopic",delivery_contract:"AIHostQuizIntegration presents canonical MCQs with voice/host UX",seedq_required:true,reason:"host presentation wrapper inherits approved generic questions" },
+      { mode:"AITutor",aliases:["AI Tutor"],kind:"non_question",source:"scholar",default_topic:"science",media:"none",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"TutorXLauncher.OpenAITutor opens tutorx.quizverse.world/tutor",seedq_required:false,reason:"authenticated TutorX web experience, not a native staged MCQ route" },
+      { mode:"AIFortuneTeller",aliases:["AI Fortune Teller"],kind:"non_question",source:"gutenberg",default_topic:"general",media:"none",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"AIFortuneTeller UIScreen conversational reading",seedq_required:false,reason:"suggested prompts drive an entertainment conversation, not scored MCQs" },
+      { mode:"LocalBattle",aliases:["Local Battle"],kind:"experience",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",inventory_mode:"SoloChallenge",delivery_contract:"play-type wrapper over selected quiz inventory",seedq_required:true,reason:"delivery shell inherits approved Solo inventory" },
+      { mode:"LiveArena",aliases:["Live Arena"],kind:"experience",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",inventory_mode:"SoloChallenge",delivery_contract:"sync multiplayer play-type wrapper",seedq_required:true,reason:"multiplayer shell inherits approved Solo inventory" },
+      { mode:"Tournament",aliases:["TournamentQuiz"],kind:"experience",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"SoloChallenge",inventory_mode:"SoloChallenge",delivery_contract:"competition wrapper over selected quiz inventory",seedq_required:true,reason:"competition shell inherits approved Solo inventory" },
+      { mode:"CustomTopic",aliases:["Custom Topic"],kind:"question",source:"wolfram",default_topic:"math",media:"optional",support:"direct",fallback_mode:"MultipleChoiceQuiz",inventory_mode:"CustomTopic",delivery_contract:"QuizModeType.CustomTopic",seedq_required:true,reason:"topic-specific connector matrix" },
+      { mode:"PickATopic",aliases:["Pick A Topic","TopicPicker"],kind:"experience",source:"gutenberg",default_topic:"history",media:"none",support:"fallback",fallback_mode:"CustomTopic",inventory_mode:"CustomTopic",delivery_contract:"QuizModeType.PickATopic topic-selection wrapper launches the selected CustomTopic pool",seedq_required:true,reason:"the selector has no independent question schema; it inherits the chosen CustomTopic inventory" },
+      { mode:"MediaQuiz",aliases:["MoviesQuiz","MovieQuiz","Movie Quiz"],kind:"experience",source:"archive_org",default_topic:"history",media:"image",support:"fallback",fallback_mode:"ImageQuiz",inventory_mode:"ImageQuiz",delivery_contract:"backend abstraction for MediaQuizMode; not a QuizModeType enum value",seedq_required:true,reason:"abstract media wrapper inherits the approved image pool and image UX gate" },
+      { mode:"SubjectiveQuiz",aliases:["Subjective","LearnMode"],kind:"non_question",source:"scholar",default_topic:"science",media:"none",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"SubjectiveQuestion schema + quizverse_ai_grade_subjective",seedq_required:false,reason:"free-text rubric/grading workflow is incompatible with MCQ answer-index staging" },
+      { mode:"NewsQuiz",aliases:["News","CurrentAffairs"],kind:"question",source:"news_rss",default_topic:"news",media:"image",support:"direct",fallback_mode:"",inventory_mode:"NewsQuiz",delivery_contract:"ImageGuess_Unified.News + current publisher RSS image/headline pairs",seedq_required:true,reason:"bounded current-news RSS keeps answer and image in one publisher item; unrelated generic or film fallback is forbidden" },
+      { mode:"FocusMode",aliases:["Focus","StudyMode"],kind:"non_question",source:"focus_audio",default_topic:"study",media:"audio",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"ASMRManager.SetFocusMode + quizverse_seedq_focus_tracks",seedq_required:false,reason:"ambient focus soundscape feature is absent from QuizModeType and does not consume MCQs" }
     ];
   }
 
@@ -347,6 +352,34 @@ namespace SeedQ {
     }]);
   }
 
+  export function readUserVersioned(nk: nkruntime.Nakama, collection: string, key: string, userId: string): any {
+    var rows = nk.storageRead([{ collection: collection, key: key, userId: userId }]);
+    if (!rows || rows.length === 0) return { value: null, version: "" };
+    return { value: rows[0].value, version: rows[0].version || "" };
+  }
+
+  // Exact-version writes provide optimistic concurrency. "*" is Nakama's
+  // create-only sentinel for a document that did not exist at read time.
+  export function writeUserVersioned(
+    nk: nkruntime.Nakama,
+    collection: string,
+    key: string,
+    userId: string,
+    value: any,
+    version: string
+  ): string {
+    var rows = nk.storageWrite([{
+      collection: collection,
+      key: key,
+      userId: userId,
+      value: value,
+      version: version || "*",
+      permissionRead: 1,
+      permissionWrite: 0
+    }]);
+    return rows && rows.length > 0 ? (rows[0].version || "") : "";
+  }
+
   // ── Seen-ledger bridge (uniqueness guarantee) ───────────────────────────────
   // Uses the battle-tested OCC implementation from quizverse_seen.js when
   // present (always true in the merged bundle); falls back to a local ledger
@@ -412,9 +445,11 @@ namespace SeedQ {
     if (entries.length > HISTORY_READ_CAP) entries = entries.slice(entries.length - HISTORY_READ_CAP);
     var stats: { [topic: string]: any } = {};
     var recentMisses: string[] = [];
-    var totalMs = 0, timed = 0;
+    var totalMs = 0, timed = 0, validEntries = 0;
     for (var i = 0; i < entries.length; i++) {
       var e = entries[i] || {};
+      if (typeof e !== "object") continue;
+      validEntries++;
       var topic = slugify(e.category || e.categoryName || e.categoryId || "general");
       if (!stats[topic]) stats[topic] = { total: 0, correct: 0 };
       stats[topic].total++;
@@ -433,17 +468,17 @@ namespace SeedQ {
       return a < b ? -1 : 1;
     });
     var signals: string[] = [];
-    if (entries.length >= 5) signals.push("topic_accuracy");
-    if (recentMisses.length > 0) signals.push("recent_misses");
+    if (validEntries >= 5) signals.push("topic_accuracy");
+    if (validEntries >= 5 && recentMisses.length > 0) signals.push("recent_misses");
     if (timed >= 5) signals.push("response_latency");
     return {
-      basis: entries.length >= 5 ? "quiz_history" : "sparse_history_fallback",
+      basis: validEntries >= 5 ? "quiz_history" : "sparse_history_fallback",
       signals_used: signals,
-      samples: entries.length,
+      samples: validEntries,
       minimum_samples: 5,
-      weakest_topics: entries.length >= 5 ? topics.slice(0, 3) : [],
-      recent_miss_topics: recentMisses.slice(0, 5),
-      avg_response_ms: timed > 0 ? Math.round(totalMs / timed) : 0,
+      weakest_topics: validEntries >= 5 ? topics.slice(0, 3) : [],
+      recent_miss_topics: validEntries >= 5 ? recentMisses.slice(0, 5) : [],
+      avg_response_ms: timed >= 5 ? Math.round(totalMs / timed) : 0,
       generated_at: isoTime(nowMs()),
       unsupported_signals: ["preferred_modes", "skip_abandon_frustration", "media_affinity"]
     };

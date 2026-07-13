@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "suite": "seedq-edge-matrix",
+  "run_id": "mrinumcx_tzajsm",
+  "host": "http://127.0.0.1:17350",
+  "generated_at": "2026-07-13T03:26:28.330Z",
+  "taxonomy": {
+    "question": 24,
+    "experience": 7,
+    "non_question": 5,
+    "denominator": 31
+  },
+  "total": 22,
+  "pass": 22,
+  "fail": 0,
+  "release_gate": "PASS",
+  "cases": [
+    {
+      "id": "ID-01",
+      "category": "identity",
+      "name": "Country normalization and global fallback",
+      "status": "PASS",
+      "duration_ms": 92,
+      "evidence": {
+        "lower": {
+          "country": "IN",
+          "basis": "payload_country",
+          "locale": "",
+          "relevance_target_pct": 60,
+          "relevant_count": 0,
+          "global_count": 30,
+          "fallback_reason": "no_geo_tagged_content_global_used"
+        },
+        "locale": {
+          "country": "US",
+          "basis": "payload_locale",
+          "locale": "en-US",
+          "relevance_target_pct": 60,
+          "relevant_count": 0,
+          "global_count": 30,
+          "fallback_reason": "no_geo_tagged_content_global_used"
+        },
+        "invalid": {
+          "country": "GLOBAL",
+          "basis": "global",
+          "locale": "",
+          "relevance_target_pct": 60,
+          "relevant_count": 0,
+          "global_count": 30,
+          "fallback_reason": "no_valid_country_global_used"
+        }
+      }
+    },
+    {
+      "id": "ID-02",
+      "category": "identity",
+      "name": "Fresh and sparse users are not profiled",
+      "status": "PASS",
+      "duration_ms": 40,
+      "evidence": {
+        "basis": "sparse_history_fallback",
+        "signals_used": [],
+        "samples": 0,
+        "minimum_samples": 5,
+        "weakest_topics": [],
+        "recent_miss_topics": [],
+        "avg_response_ms": 0,
+        "generated_at": "2026-07-13T03:26:24.753Z",
+        "unsupported_signals": [
+          "preferred_modes",
+          "skip_abandon_frustration",
+          "media_affinity"
+        ]
+      }
+    },
+    {
+      "id": "ID-03",
+      "category": "identity",
+      "name": "User and country cache isolation",
+      "status": "PASS",
+      "duration_ms": 67,
+      "evidence": {
+        "isolated_keys": 3
+      }
+    },
+    {
+      "id": "API-01",
+      "category": "api_security",
+      "name": "Structured malformed JSON and validation errors",
+      "status": "PASS",
+      "duration_ms": 15,
+      "evidence": {
+        "malformed": "MALFORMED_JSON",
+        "missing": "INVALID_ARGUMENT",
+        "unknown": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "id": "API-02",
+      "category": "api_security",
+      "name": "Numeric bounds reject coercion and extremes",
+      "status": "PASS",
+      "duration_ms": 30,
+      "evidence": {
+        "rejected": 9
+      }
+    },
+    {
+      "id": "API-03",
+      "category": "api_security",
+      "name": "Aliases normalize; non-question routes fail explicitly",
+      "status": "PASS",
+      "duration_ms": 39,
+      "evidence": {
+        "alias": "SoloChallenge",
+        "non_question": "non_question"
+      }
+    },
+    {
+      "id": "STG-01",
+      "category": "staging",
+      "name": "All denominator modes stage exact ready depth",
+      "status": "PASS",
+      "duration_ms": 830,
+      "evidence": {
+        "routes": 31,
+        "ready_sets_each": 3
+      }
+    },
+    {
+      "id": "STG-02",
+      "category": "staging",
+      "name": "Concurrent staging converges without duplicate IDs",
+      "status": "PASS",
+      "duration_ms": 90,
+      "evidence": {
+        "simultaneous_calls": 8,
+        "final_unique_ids": 18
+      }
+    },
+    {
+      "id": "STG-03",
+      "category": "staging",
+      "name": "Consume replay is idempotent and unknown IDs fail",
+      "status": "PASS",
+      "duration_ms": 88,
+      "evidence": {
+        "first_merged": 10,
+        "duplicate_merged": 0
+      }
+    },
+    {
+      "id": "STG-04",
+      "category": "staging",
+      "name": "Concurrent duplicate consume has one effective merge",
+      "status": "PASS",
+      "duration_ms": 200,
+      "evidence": {
+        "calls": 6,
+        "effective_merges": 1
+      }
+    },
+    {
+      "id": "STG-05",
+      "category": "staging",
+      "name": "Cache contract is self-contained and time bounded",
+      "status": "PASS",
+      "duration_ms": 34,
+      "evidence": {
+        "schema": 2,
+        "ttl_ms": 86399986
+      }
+    },
+    {
+      "id": "QLT-01",
+      "category": "quality",
+      "name": "Malformed authored questions fail closed",
+      "status": "PASS",
+      "duration_ms": 16,
+      "evidence": {
+        "rejected": 8
+      }
+    },
+    {
+      "id": "QLT-02",
+      "category": "quality",
+      "name": "Every served item has review and valid answer shape",
+      "status": "PASS",
+      "duration_ms": 188,
+      "evidence": {
+        "representative_modes": 6
+      }
+    },
+    {
+      "id": "QLT-03",
+      "category": "quality",
+      "name": "Visual/audio/video mode-specific media gates",
+      "status": "PASS",
+      "duration_ms": 144,
+      "evidence": {
+        "ImageQuiz": "image",
+        "AudioQuiz": "audio",
+        "VideoQuiz": "video",
+        "NewsQuiz": "image"
+      }
+    },
+    {
+      "id": "SRC-01",
+      "category": "sources",
+      "name": "Duplicate static ingest is bounded and idempotent",
+      "status": "PASS",
+      "duration_ms": 37,
+      "evidence": {
+        "fetched_cap": 50,
+        "duplicates": 50
+      }
+    },
+    {
+      "id": "SRC-02",
+      "category": "sources",
+      "name": "Coverage exposes deficits, errors, and semantic lineage",
+      "status": "PASS",
+      "duration_ms": 501,
+      "evidence": {
+        "pass": 31,
+        "warn": 0,
+        "blocked": 0
+      }
+    },
+    {
+      "id": "SRC-03",
+      "category": "sources",
+      "name": "Cron batch and source registry are bounded",
+      "status": "PASS",
+      "duration_ms": 75,
+      "evidence": {
+        "connectors": 16,
+        "tick_results": 1
+      }
+    },
+    {
+      "id": "SEC-01",
+      "category": "api_security",
+      "name": "Admin RPC rejects user session without service token",
+      "status": "PASS",
+      "duration_ms": 40,
+      "evidence": {
+        "error_code": "FORBIDDEN"
+      }
+    },
+    {
+      "id": "SEC-02",
+      "category": "api_security",
+      "name": "Responses contain no secret-shaped fields",
+      "status": "PASS",
+      "duration_ms": 1066,
+      "evidence": {
+        "inspected_bytes": 107405
+      }
+    },
+    {
+      "id": "RUN-01",
+      "category": "runtime",
+      "name": "Generated bundle is ES5-compatible and RPCs are direct",
+      "status": "PASS",
+      "duration_ms": 20,
+      "evidence": {
+        "direct_rpc_registration": true,
+        "serve_time_network": false
+      }
+    },
+    {
+      "id": "CLI-01",
+      "category": "client_contract",
+      "name": "Offline/account-switch metadata and honest repeats",
+      "status": "PASS",
+      "duration_ms": 42,
+      "evidence": {
+        "cache_schema": 2,
+        "availability": "ready"
+      }
+    },
+    {
+      "id": "CLI-02",
+      "category": "client_contract",
+      "name": "Aahaa fresh-user and unknown-action handling",
+      "status": "PASS",
+      "duration_ms": 31,
+      "evidence": {
+        "fresh_feed_items": 0,
+        "unknown_action_rejected": true
+      }
+    }
+  ]
+}

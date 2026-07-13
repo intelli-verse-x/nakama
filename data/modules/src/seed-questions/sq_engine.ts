@@ -192,10 +192,19 @@ namespace SeedQEngine {
   function readRoutedPool(nk: nkruntime.Nakama, mode: string, topic: string): any {
     var def = SeedQ.resolveMode(mode);
     var canonical = def ? def.mode : mode;
-    var candidates = [
-      { mode: canonical, topic: topic, route: "direct" },
-      { mode: canonical, topic: def ? def.default_topic : topic, route: "mode_default" }
-    ];
+    var inventoryMode = def && def.inventory_mode ? def.inventory_mode : canonical;
+    var inventoryDef = SeedQ.resolveMode(inventoryMode);
+    var candidates: any[] = [];
+    if (inventoryMode !== canonical) {
+      candidates.push({
+        mode: inventoryMode,
+        topic: inventoryDef ? inventoryDef.default_topic : topic,
+        route: "inherited_inventory"
+      });
+    } else {
+      candidates.push({ mode: canonical, topic: topic, route: "direct" });
+      candidates.push({ mode: canonical, topic: def ? def.default_topic : topic, route: "mode_default" });
+    }
     if (def && def.fallback_mode) {
       var fallbackDef = SeedQ.resolveMode(def.fallback_mode);
       candidates.push({
@@ -213,16 +222,17 @@ namespace SeedQEngine {
       seenKeys[key] = true;
       var pool = readPool(nk, candidates[i].mode, candidates[i].topic);
       if (pool.questions && pool.questions.length >= SeedQ.MIN_READY_SETS * 4) {
-        return { pool: pool, route: candidates[i], requested_mode: mode, canonical_mode: canonical };
+        return { pool: pool, route: candidates[i], requested_mode: mode, canonical_mode: canonical, inventory_mode: inventoryMode };
       }
       if (!partial && pool.questions && pool.questions.length > 0) partial = { pool: pool, route: candidates[i] };
     }
-    if (partial) return { pool: partial.pool, route: partial.route, requested_mode: mode, canonical_mode: canonical };
+    if (partial) return { pool: partial.pool, route: partial.route, requested_mode: mode, canonical_mode: canonical, inventory_mode: inventoryMode };
     return {
       pool: { questions: [], updated_ms: 0 },
       route: { mode: canonical, topic: topic, route: "empty" },
       requested_mode: mode,
-      canonical_mode: canonical
+      canonical_mode: canonical,
+      inventory_mode: inventoryMode
     };
   }
 
@@ -263,12 +273,14 @@ namespace SeedQEngine {
     topic: string,
     wantSets: number,
     setSize: number,
-    geo: SeedQ.GeoProfile
+    geo: SeedQ.GeoProfile,
+    retryAttempt?: number
   ): StageResult {
     var key = SeedQ.stagedKey(mode, topic, geo.country);
     var routed = readRoutedPool(nk, mode, topic);
     var quarantined = SeedQQuality.getQuarantineSet(nk, routed.route.mode, routed.route.topic);
-    var doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId) || { sets: [], updated_ms: 0 };
+    var stored = SeedQ.readUserVersioned(nk, SeedQ.COLL_STAGED, key, userId);
+    var doc = stored.value || { sets: [], updated_ms: 0 };
     if (!doc.sets) doc.sets = [];
 
     // Drop expired ready sets and consumed sets past their TTL so stale cache
@@ -431,7 +443,16 @@ namespace SeedQEngine {
 
     if (built > 0 || originalSetCount !== doc.sets.length || metadataDirty) {
       doc.updated_ms = now;
-      SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
+      try {
+        SeedQ.writeUserVersioned(nk, SeedQ.COLL_STAGED, key, userId, doc, stored.version || "*");
+      } catch (writeError) {
+        var attempt = retryAttempt || 0;
+        if (attempt < 8) {
+          logger.warn("[SeedQ] staging version conflict; retrying");
+          return ensureStaged(ctx, nk, logger, userId, mode, topic, wantSets, setSize, geo, attempt + 1);
+        }
+        throw new Error("staging concurrency retry exhausted");
+      }
     }
 
     // Aggregate honest-repeat counts over the ready sets (repeat_policy §6.2).
@@ -507,14 +528,17 @@ namespace SeedQEngine {
     mode: string,
     topic: string,
     setId: string,
-    country: string
+    country: string,
+    retryAttempt?: number
   ): { found: boolean; merged: number; set_size: number } {
     var key = SeedQ.stagedKey(mode, topic, country);
-    var doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId);
+    var stored = SeedQ.readUserVersioned(nk, SeedQ.COLL_STAGED, key, userId);
+    var doc = stored.value;
     // Backward compatibility for v1 cache documents.
     if (!doc) {
       key = SeedQ.poolKey(mode, topic);
-      doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId);
+      stored = SeedQ.readUserVersioned(nk, SeedQ.COLL_STAGED, key, userId);
+      doc = stored.value;
     }
     if (!doc || !doc.sets) return { found: false, merged: 0, set_size: 0 };
 
@@ -527,8 +551,19 @@ namespace SeedQEngine {
       // Consumed sets keep ids (dedup) but drop full question bodies (size).
       s.questions = [];
       doc.updated_ms = SeedQ.nowMs();
-      SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
+      // Merge first: if the CAS below conflicts, marking these IDs seen is the
+      // fail-closed outcome and prevents a silent repeat.
       SeedQ.mergeSeenIds(nk, userId, mode, topic, s.question_ids);
+      try {
+        SeedQ.writeUserVersioned(nk, SeedQ.COLL_STAGED, key, userId, doc, stored.version || "*");
+      } catch (writeError) {
+        var attempt = retryAttempt || 0;
+        if (attempt < 8) {
+          logger.warn("[SeedQ] consume version conflict; retrying");
+          return consumeSet(ctx, nk, logger, userId, mode, topic, setId, country, attempt + 1);
+        }
+        throw new Error("consume concurrency retry exhausted");
+      }
       return { found: true, merged: s.question_ids.length, set_size: s.question_ids.length };
     }
     return { found: false, merged: 0, set_size: 0 };
@@ -541,6 +576,7 @@ namespace SeedQEngine {
     var defs = SeedQ.modeRegistry();
     var out: any[] = [];
     for (var i = 0; i < defs.length; i++) {
+      if (!defs[i].seedq_required || defs[i].kind !== "question") continue;
       out.push({ source: defs[i].source, mode: defs[i].mode, topic: defs[i].default_topic });
     }
     // CustomTopic has multiple direct subject sources.

@@ -53,7 +53,7 @@ Admin/service = server-to-server `http_key` **or** `service_token == ctx.env["SE
 | 1 | archive.org | `archive_org` | **live, tested** | ImageGuess/WhosThat/MediaQuiz/GeoExplore — PD images + title/creator/year Qs |
 | 2 | wolframalpha.com | `wolfram` | **live, tested** | STEM Qs, locally computed; `WOLFRAM_APP_ID` unlocks auto-verification |
 | 3 | gutenberg.org | `gutenberg` | **live, tested** (Gutendex) | author/work attribution, birth-year Qs — 100% PD |
-| 4 | everynoise + tunefind | `music_tv` | **live, tested** | Deezer-chart artist/track Qs w/ album art + everynoise genre taxonomy Qs; tunefind gated on `TUNEFIND_API_KEY` (partnership) |
+| 4 | everynoise + tunefind | `music_tv` | **live, tested** | AudioQuiz uses Deezer 30-second audio previews; other modes may use album art + everynoise genre taxonomy; tunefind gated on `TUNEFIND_API_KEY` |
 | 5 | remove.bg | `asset_job kind=removebg` | **live (delegated)** | sticker/cosmetic/badge cutout job descriptors → content-factory/n8n executes (binary-safe); needs `REMOVE_BG_API_KEY` |
 | 6 | summarize.tech | `youtube_quiz` | **live** | YouTube oEmbed + caller summary/transcript → LLM question gen (Anthropic→OpenAI fallback); optional `SUMMARIZE_TECH_URL` self-hosted proxy (no public API exists) |
 | 7 | squoosh.app | `SeedQ.optimizeMediaUrl` | **live, tested** | every staged image auto-rewritten via wsrv.nl (resize 720px + webp) — same proxy the Unity `MediaProxyUtility` already trusts |
@@ -63,6 +63,9 @@ Admin/service = server-to-server `http_key` **or** `service_token == ctx.env["SE
 | 11 | mynoise / coffitivity / musicforprogramming | `focus_audio` | **live, tested** | CC ambient mixes from musicforprogramming RSS; mynoise/coffitivity kept as UX-pattern refs only (licensing) |
 | 12 | justwatch.com | `justwatch` | **live** (GraphQL) | trending-title Qs + `sq_trending` freshness doc for ViralIQ packs |
 | 13 | tineye.com | `provenance` / auto at ingest | **live, tested** | media provenance guardrail: TinEye API when `TINEYE_API_KEY` set, PD domain whitelist otherwise; unsafe media → QA rejection |
+| 14 | reviewed QuizVerse CSV + owned CDN | `video_catalog` | **live, tested** | build-embedded 60-row English catalog (12 locales in source), validated answer keys + MP4 manifests |
+| 15 | OpenStax A&P 2e | `health_catalog` | **live, tested** | 50 deterministic cited anatomy/health-science MCQs; no diagnosis/treatment generation |
+| 16 | BBC News RSS | `news_rss` | **live, tested** | bounded current publisher headline/image pairs; answer and image share one RSS item |
 
 ---
 
@@ -330,25 +333,35 @@ meet 50. `quizverse_seedq_pool_stats.mode_coverage[]` reports aliases, source,
 fallback, counts, country breakdown, behavior tags, fresh sets possible,
 status, and deficit.
 
-Local bounded seed run (2026-07-12):
+The audited denominator is taxonomy-driven, not “all enum labels need 50 MCQs”:
 
-- PASS 27: SoloChallenge, SurvivalQuiz, SpeedQuiz, BrainSprint, DailyQuiz,
-  WeeklyQuiz, TrueFalseQuiz, MultipleChoiceQuiz, ImageQuiz, AudioQuiz,
-  GuessAnime, GuessDog, GuessDish, GuessPokemon, SportsQuiz, SpaceTrivia,
-  EmojiQuiz, FortuneQuiz, GeoExplore, WhosThat, AIHost, AIFortuneTeller,
-  LocalBattle, LiveArena, Tournament, CustomTopic, PickATopic.
-- WARN 5 (safe fallback exists, direct pool below 50): VideoQuiz (LLM/video
-  basis required), PredictionQuiz (40 factual trending items), AITutor
-  (Semantic Scholar quota), NewsQuiz (40 factual trending items), FocusMode
-  (Semantic Scholar quota; focus-audio RPC remains separate).
-- BLOCKED 4 direct pools: ViralIQ (40 finite JustWatch items), HealthQuiz
-  (Semantic Scholar quota), MediaQuiz (32 legacy archive media items; current
-  JustWatch text items correctly fail image-mode UX QA), SubjectiveQuiz
-  (Semantic Scholar quota).
+- **QUESTION_MODE 24:** SoloChallenge, SurvivalQuiz, SpeedQuiz, BrainSprint,
+  DailyQuiz, WeeklyQuiz, TrueFalseQuiz, MultipleChoiceQuiz, ImageQuiz,
+  AudioQuiz, VideoQuiz, GuessAnime, GuessDog, GuessDish, GuessPokemon,
+  SportsQuiz, SpaceTrivia, EmojiQuiz, HealthQuiz, FortuneQuiz, GeoExplore,
+  WhosThat, CustomTopic, NewsQuiz.
+- **EXPERIENCE_MODE 7:** ViralIQ → DailyQuiz; AIHost → CustomTopic;
+  LocalBattle/LiveArena/Tournament → SoloChallenge; PickATopic → CustomTopic;
+  MediaQuiz → ImageQuiz. These wrappers remain in the denominator and must
+  inherit both capacity and the destination mode's experience/media gate.
+- **NON_QUESTION_FEATURE 5:** PredictionQuiz (future selection/outcome),
+  AITutor (TutorX web app), AIFortuneTeller (conversation), SubjectiveQuiz
+  (free-text rubric/grading), FocusMode (ambient soundscape). Their explicit
+  delivery contracts remain in the registry, but fabricating MCQ inventory
+  for them is forbidden.
 
-This is not a 100% production sign-off. It is 27 PASS / 5 WARN / 4 BLOCKED
-locally, and production remains undeployed/unseeded until PR #304 is updated
-from a clean scoped worktree and reviewed.
+Local bounded verification (2026-07-13): **31/31 denominator PASS,
+0 WARN, 0 BLOCKED**, with 15/15 baseline checks and 22/22 machine-readable
+edge checks. VideoQuiz uses the reviewed build-embedded 60-row CSV catalog;
+HealthQuiz uses 50 cited OpenStax anatomy/health-science rows; NewsQuiz uses
+current BBC publisher RSS image/headline pairs; AudioQuiz counts only real
+Deezer audio previews (legacy cover-art/text rows are excluded by the current
+media gate).
+
+This is local readiness evidence, not production sign-off. Production remains
+pending until the scoped branch is deployed, bounded production seeding
+finishes, and the baseline, edge matrix, and independent fresh-persona
+verification all pass against the production runtime.
 
 ### Geo decision and cache isolation
 
@@ -395,6 +408,9 @@ If no country-tagged content exists, only approved global content is used and
 Behavior is derived only from the user-owned
 `quiz-verse_quiz_history/history` written by `quiz_submit_result`: topic
 accuracy, recent misses, and valid response latency, with minimum five samples.
+Malformed rows and impossible latency values are ignored; ties are broken
+deterministically by sample count then topic name. Below five valid rows, no
+weakness/recent-miss profile is claimed or used.
 Although canonical analytics events include `quiz_start`, `quiz_complete`,
 `quiz_abandoned`, `question_answered`, and `question_skipped`, preferred-mode,
 abandon/frustration, and media-affinity signals are not yet in a cheap
@@ -422,9 +438,36 @@ Every served item must have `quality.status="approved"` and:
 Experience QA rejects unreadable stems, oversized/invalid options, HTML/control
 characters, unsafe content, answer leakage, missing citations/authored source,
 and required media without HTTPS provenance, alt text, and supported media
-metadata. Image-required modes fail closed. The gate reruns at serve time,
+metadata. Image-, audio-, and video-required modes fail closed on missing or
+mismatched media type/MIME. The gate reruns at serve time and in coverage,
 invalidates already-staged bad sets, and excludes quarantined questions without
 network calls.
+
+### Edge-case release gate and failure policy
+
+`scripts/verify_seedq_edges.mjs` writes
+`web/seedquestions/edge-latest.json`. Every case is a release gate; WARN and
+BLOCKED coverage rows also fail release. The policy is:
+
+- Payload/auth/answer-shape/review/media failures **fail closed** with a
+  structured `error_code` and `retryable` flag. No malformed or quarantined row
+  is served.
+- External source timeout, 429, 5xx, malformed response, missing key, or empty
+  batch **fails closed at ingest** and records `last_error`,
+  `last_ingest_ms`, and `source_retryable`. It never triggers serve-time
+  network I/O and never substitutes a semantically unrelated generic pool.
+- Serving **fails available only from already reviewed storage**. If no valid
+  pool/cache exists, `availability.reason` says why and the client must render
+  unavailable; it must not invent or silently shorten a set.
+- Invalid/missing country **fails privacy-safe to GLOBAL**. Sparse/malformed
+  behavior history fails to deterministic default selection and makes no user
+  profiling claim.
+- Staging and consume use exact storage versions with eight bounded retries.
+  Seen IDs are merged before consume CAS (fail closed against repeats). Retry
+  exhaustion returns a sanitized, retryable internal envelope.
+- Offline cache is user/mode/topic/country scoped, self-contained, versioned,
+  and TTL-bounded. Account switch/logout must invalidate the active user's
+  cache namespace; first offline launch without cache is truthfully unavailable.
 
 Unity must persist the v2 response, require both semantic and experience review,
 include country in fetch/consume payloads, and submit `questionHistory` with

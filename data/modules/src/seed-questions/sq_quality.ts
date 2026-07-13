@@ -175,6 +175,8 @@ namespace SeedQQuality {
     if (mobileSafe) checks.push("options_mobile_safe"); else ok = false;
     if (q.citation || q.source === "manual" || q.source === "verifier") checks.push("citation_or_authored_source");
     else ok = false;
+    var requiredMedia = def && (def.media === "image" || def.media === "audio" || def.media === "video") ?
+      def.media : "";
     if (q.media_url) {
       if (/^https:\/\//i.test(q.media_url) && q.media_provenance && q.media_provenance.checked) checks.push("media_https_provenance");
       else ok = false;
@@ -183,7 +185,15 @@ namespace SeedQQuality {
       if (!q.media_mime) q.media_mime = q.question_type === "Audio" ? "audio/*" :
         (q.question_type === "Video" ? "video/*" : "image/*");
       if (/^(image|audio|video)\//.test(q.media_mime)) checks.push("media_metadata_supported"); else ok = false;
-    } else if (def && def.media === "image") {
+      if (requiredMedia) {
+        var actualType = ("" + (q.question_type || "")).toLowerCase();
+        if (actualType === requiredMedia && q.media_mime.toLowerCase().indexOf(requiredMedia + "/") === 0) {
+          checks.push("mode_media_gate:" + requiredMedia);
+        } else {
+          ok = false;
+        }
+      }
+    } else if (requiredMedia) {
       ok = false;
     } else {
       checks.push("media_not_required");
