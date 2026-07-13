@@ -152,6 +152,7 @@ namespace WorldTrivia {
     narration: StoryNarration;
     questions: StoryQuestion[];
     schemaVersion: number;
+    artifactHash?: string;
     updatedAt: string;
   }
 
@@ -697,6 +698,7 @@ namespace WorldTrivia {
       title: story.title,
       language: story.language,
       schemaVersion: story.schemaVersion,
+      sourceArtifactHash: story.artifactHash,
       narration: {
         intro: story.narration.intro,
         beats: beats,
@@ -773,8 +775,18 @@ namespace WorldTrivia {
         narration: { intro: narration.intro, beats: beats, ambient: narration.ambient || [], finale: narration.finale },
         questions: questions,
         schemaVersion: typeof data.schemaVersion === "number" ? data.schemaVersion : 1,
+        artifactHash: data.artifactHash ? String(data.artifactHash) : undefined,
         updatedAt: new Date().toISOString()
       };
+      if (story.artifactHash && !/^[a-f0-9]{64}$/.test(story.artifactHash)) {
+        throw new Error("artifactHash must be a lowercase SHA-256 hex digest");
+      }
+      if (
+        data.semanticValidation &&
+        data.semanticValidation.artifactHash !== story.artifactHash
+      ) {
+        throw new Error("semanticValidation.artifactHash must match artifactHash");
+      }
 
       var key = storyKey(data.appId, data.templateId, data.conceptId);
       writeSystemObject(nk, STORIES_COLLECTION, key, story);
@@ -785,7 +797,8 @@ namespace WorldTrivia {
         conceptId: story.conceptId,
         title: story.title,
         beatCount: beats.length,
-        questionCount: questions.length
+        questionCount: questions.length,
+        artifactHash: story.artifactHash
       });
     } catch (e: any) {
       return err(e.message || "world_story_upsert failed");
