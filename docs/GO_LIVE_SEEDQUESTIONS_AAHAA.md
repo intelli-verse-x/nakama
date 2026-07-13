@@ -22,8 +22,9 @@ table at the bottom is the sign-off sheet.
 | Aahaa engine | `data/modules/src/aahaa/aahaa_catalog.ts`, `aahaa_engine.ts`, `aahaa_facts.ts`, `aahaa_rpcs.ts`, `aahaa_validator.ts` | deducible Fact Pack, wow catalog + ranking, CTR kill switch, No-Hallucination validator |
 | No-repeat backstop | `data/modules/src/legacy/quiz.ts` | `quiz_submit_result` merges seen ids into the `qv_seen` ledger at submit time |
 | No-repeat chokepoint | `data/modules/src/games/quizverse/migration.ts` | `quizverse_request_questions` dedupes every served pack against `qv_seen` and stamps `repeat_policy` |
-| Showcase page | `web/seedquestions/index.html` | self-contained live demo (see §3) |
-| Manifests | `deploy/seedquestions/ingress.yaml`, `deploy/seedquestions/showcase.yaml`, `deploy/seedquestions/cronjob.yaml`, `deploy/aahaa/cronjob.yaml` | host routing, static showcase, cron ticks |
+| Showcase pages | `web/seedquestions/index.html`, `web/seedquestions/verify.html` | self-contained live demo + 12-check browser scoreboard (see §3) |
+| Verifier | `scripts/verify_deliverables.mjs` (+ `scripts/verify_deliverables.sh` wrapper) | 12-check deliverable suite — see [`docs/VERIFIER_LOOP.md`](VERIFIER_LOOP.md) |
+| Manifests | `deploy/seedquestions/ingress.yaml`, `deploy/seedquestions/showcase.yaml`, `deploy/seedquestions/cronjob.yaml`, `deploy/seedquestions/verify-cronjob.yaml`, `deploy/aahaa/cronjob.yaml` | host routing, static showcase, cron ticks, verifier loop |
 
 ### 1.2 Build
 
@@ -134,12 +135,17 @@ Primary host: **`seedquestions.quizverse.world`** (as pinned in
 ingress for continuity with older links.
 
 1. **DNS — ✅ DONE (2026-07-12, via Route53 API)**. Both records exist as
-   ALIAS A → `dualstack.intelliverse-apis-alb-142832205.us-east-1.elb.amazonaws.com`
-   (the shared `intelliverse-apis` ALB every quizverse.world host rides):
+   ALIAS A → the **dedicated `seedquestions` ALB** (the ingress originally
+   joined the shared `intelliverse-apis` ALB, but that ALB is at the hard AWS
+   limit of 100 target groups, so the ingress got its own
+   `alb.ingress.kubernetes.io/group.name: seedquestions` group and the
+   records were re-pointed the same day):
    - `seedquestions.quizverse.world` in zone `Z07562523B3TD6EXI0N6A`
    - `seedquestions.intelli-verse-x.ai` in zone `Z0145313YX71CJ73SY5B`
 
-   Verify anytime: `dig +short seedquestions.quizverse.world` → the ALB IPs.
+   Verify anytime: `dig +short seedquestions.quizverse.world` → the dedicated
+   ALB IPs (both seedquestions hosts match each other; they differ from
+   `nakama-rest.intelli-verse-x.ai`, which stays on the shared ALB).
 2. **TLS — ✅ COVERED, no action**. The ingress references the same two ACM
    certs as `avatar-page-ingress`; cert `c2b20042-…` covers
    `quizverse.world` + `*.quizverse.world` (verified via SNI probe), and the
@@ -148,14 +154,15 @@ ingress for continuity with older links.
 3. **Ingress class note**: the cluster's only IngressClass is `alb`
    (aws-load-balancer-controller) — there is no nginx ingress controller.
    `deploy/seedquestions/ingress.yaml` uses the ALB annotation pattern
-   (`group.name: intelliverse-apis`). The old nginx `limit-rps` annotations
-   were removed; if rate limiting is required, attach an AWS WAF rate-based
-   rule to the shared ALB.
+   (`group.name: seedquestions` — dedicated ALB, see DNS note above). The old
+   nginx `limit-rps` annotations were removed; if rate limiting is required,
+   attach an AWS WAF rate-based rule to the seedquestions ALB.
 4. **Showcase ConfigMap** (the static page is served by nginx-in-a-pod from a
    ConfigMap generated from the repo file — re-run on every page change):
    ```bash
    kubectl -n aicart create configmap seedq-showcase-html \
      --from-file=index.html=web/seedquestions/index.html \
+     --from-file=verify.html=web/seedquestions/verify.html \
      --dry-run=client -o yaml | kubectl apply -f -
    ```
 5. **Apply the manifests** (showcase first — the ingress references its
@@ -176,6 +183,13 @@ ingress for continuity with older links.
 ```bash
 kubectl apply -f deploy/seedquestions/cronjob.yaml   # seedq-ingest-tick, */30 min
 kubectl apply -f deploy/aahaa/cronjob.yaml           # aahaa-generate-all, */15 min
+
+# Verifier loop (ships the 12-check suite as a ConfigMap first — see
+# docs/VERIFIER_LOOP.md "Production CronJob"):
+kubectl -n aicart create configmap seedq-verify-script \
+  --from-file=verify_deliverables.mjs=scripts/verify_deliverables.mjs \
+  --dry-run=client -o yaml | kubectl apply -f -
+kubectl apply -f deploy/seedquestions/verify-cronjob.yaml  # seedq-verify-loop, */30 min
 ```
 
 Trigger one of each manually and check logs:
@@ -362,3 +376,38 @@ all storage (pools, ledgers, feeds) intact for the next attempt.
 | 11 | Unity client wiring (§6) | Unity team | **yes** | ☐ |
 | 12 | Web embed + Growth Dashboard + validator middleware (§7) | Web team | **yes** | ☐ |
 | 13 | Monitoring queries bookmarked / alerting wired (§8) | DevOps | **yes** | ☐ |
+
+---
+
+## PROD DEPLOY 2026-07-12
+
+Executed end-to-end against `ai-cart-auto-cluster` / namespace `aicart`. All
+phases green; **12/12 verifier checks PASS against prod** (both the internal
+REST host and the public showcase host).
+
+### What was applied
+
+| # | Item | Detail |
+|---|------|--------|
+| 1 | Code | PR [intelli-verse-x/nakama#304](https://github.com/intelli-verse-x/nakama/pull/304), branch `deploy/seedq-aahaa-golive` (from `origin/master` b2b4278f, commit c19d6b0e). Scoped port of: `src/seed-questions/*`, `src/aahaa/*`, `main.ts` wiring, `legacy/quiz.ts` submit-time qv_seen backstop + knowledge ledger, `migration.ts` inline-questions no-repeat chokepoint (kept `rpc_retired` for all non-inline kinds — master had retired the RPC after the local branch diverged). |
+| 2 | Image | `970547373533.dkr.ecr.us-east-1.amazonaws.com/intelliverse-nakama@sha256:5508a37457f9eec6bd1e4ceba566d872e92fa6d897bde0d2e412ca72e153b163` — built by GHA "Build & Deploy to EKS" run 29214650130 (workflow_dispatch on the branch; master push was blocked by required code-owner review from `intelli-verse-x-health-tech` — PR #304 still needs that review + merge so master matches prod). Rollout clean, 3/3 pods Ready, 0 goja errors, `[SeedQ]`/`[Aahaa]` registration lines present. |
+| 3 | Secrets | `seedq-secrets` created (`service_token` = openssl rand -hex 32). `SEEDQ_SERVICE_TOKEN` added to `nakama-secret` → `config.yaml` → `runtime.env` (patched only the `config.yaml` key; backup in /tmp on the deploy workstation). |
+| 4 | Showcase | ConfigMap `seedq-showcase-html` (index.html, verify.html, top5-real-users.json, verify-latest.json) + `showcase.yaml` applied; nginx pod serves all four files. |
+| 5 | Ingress | `ingress.yaml` applied — **had to move off the shared `intelliverse-apis` ALB group**: that ALB is at the hard AWS limit of 100 target groups (`TooManyUniqueTargetGroupsPerLoadBalancer`). Now group `seedquestions` → dedicated ALB `k8s-seedquestions-7ceb491817-1176609951.us-east-1.elb.amazonaws.com`. Also converted all path rules to ALB wildcard form (`/v2/rpc/quizverse_seedq_*` + `pathType: ImplementationSpecific`; catch-all `/*`) — `Prefix` on a non-slash boundary does NOT match on ALB. Route53 ALIAS records for both hosts repointed to the dedicated ALB (zones Z07562523B3TD6EXI0N6A / Z0145313YX71CJ73SY5B). TLS: same two ACM certs; `*.quizverse.world` cert verified serving. |
+| 6 | Crons | `seedq-ingest-tick` (*/30), `aahaa-generate-all` (*/15), `seedq-verify-loop` (*/30) + ConfigMap `seedq-verify-script` applied. Manual triggers: seedq tick → `{"ok":true,...accepted:19/20/20}`; aahaa gen → `{"ok":true,"batch":{"processed":200,"errors":0}}`; verify job → **12/12 PASS in-cluster**. |
+| 7 | Pools | Ingest matrix driven through all 13 combos + targeted ingests: `imageguess_space:24`, `customtopic_math:150`, 14 pools total. Empty pools remaining: gutenberg/scholar connectors returned 0 (external APIs fail-soft) — refilled by the 30-min cron as those sources respond. |
+
+### Verification evidence
+
+- `node scripts/verify_deliverables.mjs --host https://nakama-rest.intelli-verse-x.ai --http-key <prod>` → **ALL 12/12 CHECKS PASS** (2026-07-13T00:18Z)
+- Same suite vs `https://seedquestions.quizverse.world` (public host, same-origin /v2 routing) → **ALL 12/12 CHECKS PASS** (2026-07-13T00:23Z); evidence baked into the served `verify-latest.json`
+- In-cluster CronJob `seedq-verify-loop` manual run → **12/12 PASS**
+- `https://seedquestions.quizverse.world/` → 200 (showcase HTML), `/verify.html` → 200, secondary host `seedquestions.intelli-verse-x.ai` → 200
+- Smoke: `quizverse_seedq_pool_stats` / `quizverse_aahaa_catalog` return `ok:true` via http_key on both hosts
+
+### Outstanding / follow-ups
+
+1. **Merge PR #304** — prod runs the branch image; master must catch up (required reviewer: `intelli-verse-x-health-tech`).
+2. `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` for the `youtube_quiz` LLM connector not verified in the JS runtime env — connector fails soft; wire per §2.2 when a real key is available.
+3. Optional unlock keys (`WOLFRAM_APP_ID`, `TINEYE_API_KEY`, `REMOVE_BG_API_KEY`, `SEMANTIC_SCHOLAR_API_KEY`) not set — template/whitelist paths active.
+4. gutenberg/scholar pools at 0 on first pass — watch `seedq-ingest-tick` job logs; connectors are rate-limit-sensitive.

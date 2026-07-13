@@ -40,11 +40,13 @@
 #     limit-rps annotations were no-ops here). If throttling is needed, attach
 #     an AWS WAF rate-based rule to the intelliverse-apis ALB.
 #
-# DNS (DONE 2026-07-12 — Route53 zone Z07562523B3TD6EXI0N6A):
-#   seedquestions.quizverse.world → ALIAS A →
-#   dualstack.intelliverse-apis-alb-142832205.us-east-1.elb.amazonaws.com
-#   (Secondary host seedquestions.intelli-verse-x.ai still needs its record in
-#   zone Z0145313YX71CJ73SY5B if that host should also resolve.)
+# DNS (DONE 2026-07-12):
+#   seedquestions.quizverse.world       (zone Z07562523B3TD6EXI0N6A) and
+#   seedquestions.intelli-verse-x.ai    (zone Z0145313YX71CJ73SY5B)
+#   both ALIAS to the DEDICATED `seedquestions` ALB (see group note above —
+#   they were re-pointed off the shared intelliverse-apis ALB on 2026-07-12).
+#   Verified: both hosts resolve to the same ALB IP set, distinct from
+#   nakama-rest.intelli-verse-x.ai (which stays on the shared ALB).
 #
 # Apply:
 #   kubectl apply -f deploy/seedquestions/showcase.yaml   # first
@@ -75,39 +77,39 @@ spec:
         paths:
           # Only the RPC surface is exposed on this host — console, healthcheck
           # and the rest of the Nakama API stay on the primary hosts.
-          - path: /v2/rpc/quizverse_seedq_
-            pathType: Prefix
+          - path: /v2/rpc/quizverse_seedq_*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
           # Aahaa engine RPCs — the showcase page demos them same-origin.
-          - path: /v2/rpc/quizverse_aahaa_
-            pathType: Prefix
+          - path: /v2/rpc/quizverse_aahaa_*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
           # No-repeat proof + history seeding used by the showcase page.
-          - path: /v2/rpc/quizverse_request_questions
-            pathType: Prefix
+          - path: /v2/rpc/quizverse_request_questions*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
-          - path: /v2/rpc/quiz_submit_result
-            pathType: Prefix
+          - path: /v2/rpc/quiz_submit_result*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
           # Session auth endpoints the mobile client needs on the same origin.
-          - path: /v2/account/authenticate
-            pathType: Prefix
+          - path: /v2/account/authenticate*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
@@ -115,8 +117,8 @@ spec:
                   number: 7350
           # Static showcase page (see showcase.yaml) — ALB picks the most
           # specific path match, so /v2/* above always wins over this.
-          - path: /
-            pathType: Prefix
+          - path: /*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: seedq-showcase
@@ -126,43 +128,43 @@ spec:
     - host: seedquestions.intelli-verse-x.ai
       http:
         paths:
-          - path: /v2/rpc/quizverse_seedq_
-            pathType: Prefix
+          - path: /v2/rpc/quizverse_seedq_*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
-          - path: /v2/rpc/quizverse_aahaa_
-            pathType: Prefix
+          - path: /v2/rpc/quizverse_aahaa_*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
-          - path: /v2/rpc/quizverse_request_questions
-            pathType: Prefix
+          - path: /v2/rpc/quizverse_request_questions*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
-          - path: /v2/rpc/quiz_submit_result
-            pathType: Prefix
+          - path: /v2/rpc/quiz_submit_result*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
-          - path: /v2/account/authenticate
-            pathType: Prefix
+          - path: /v2/account/authenticate*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: intelliverse-nakama
                 port:
                   number: 7350
-          - path: /
-            pathType: Prefix
+          - path: /*
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: seedq-showcase
