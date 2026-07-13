@@ -49,9 +49,11 @@ lti.setup(
       description: 'QuizVerse quiz player with LTI 1.3 launch, deep linking and AGS grade-back',
       redirectUris: [config.TOOL_URL + config.ROUTES.launch],
       customParameters: {},
-      autoActivate: true, // dev convenience; flip to false for production onboarding review
+      autoActivate: config.AUTO_ACTIVATE,
     },
-    cookies: { secure: false, sameSite: '' },
+    cookies: config.DEV_MODE
+      ? { secure: false, sameSite: '' }
+      : { secure: true, sameSite: 'None' },
   }
 );
 

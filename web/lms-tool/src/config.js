@@ -78,7 +78,9 @@ module.exports = {
   },
   // ltijs stores platform registrations + its own keys encrypted with this
   LTI_ENCRYPTION_KEY: process.env.LMS_TOOL_LTI_KEY || 'qv-lms-tool-dev-encryption-key',
-  DEV_MODE: (process.env.LMS_TOOL_DEV_MODE || 'true') === 'true',
+  // Production default: false (HTTPS + secure cookies). Set LMS_TOOL_DEV_MODE=true for local plain-http iframes.
+  DEV_MODE: (process.env.LMS_TOOL_DEV_MODE || 'false') === 'true',
+  AUTO_ACTIVATE: (process.env.LMS_TOOL_AUTO_ACTIVATE || 'false') === 'true',
   DB_PATH: process.env.LMS_TOOL_DB || path.join(TOOL_ROOT, 'data', 'ltijs.sqlite'),
   PACK_STORE_PATH: process.env.LMS_TOOL_PACKS || path.join(TOOL_ROOT, 'data', 'packs.json'),
   MEDIA_STORE_PATH: process.env.LMS_TOOL_MEDIA || path.join(TOOL_ROOT, 'data', 'media'),

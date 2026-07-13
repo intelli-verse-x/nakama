@@ -35,7 +35,8 @@ Requires Node 20+. State lives in `web/lms-tool/data/` (ltijs sqlite DB + local 
 | `NAKAMA_BASE_URL` | `http://localhost:7350` | Nakama HTTP API |
 | `NAKAMA_HTTP_KEY` | `defaulthttpkey` | Nakama runtime http key (repo compose passes no override → server default) |
 | `LMS_BRIDGE_SERVICE_TOKEN` | read from repo `.env` | Service token required by every lms-bridge RPC |
-| `LMS_TOOL_DEV_MODE` | `true` | ltijs devMode (ltik-only auth; required for plain-http iframes). Set `false` behind HTTPS |
+| `LMS_TOOL_DEV_MODE` | `false` | ltijs devMode. Set `true` for local plain-http iframe dev only |
+| `LMS_TOOL_AUTO_ACTIVATE` | `false` | Dynamic registration auto-activates platforms. Set `true` for local Moodle convenience |
 | `MOODLE_URL` | `http://localhost:8081` | Workstream A's local Moodle (used for admin-page hints only) |
 | `LMS_TOOL_MEDIA` | `data/media` | Controlled extracted-media directory |
 | `CANVAS_BASE_URL` | unset | Institution Canvas origin; HTTPS required except localhost |
@@ -78,7 +79,7 @@ The repo root `.env` is loaded first, then `web/lms-tool/.env` overrides.
    `LMS_TOOL_URL=http://host.docker.internal:8090 npm start` so all advertised URLs match.
 2. Moodle admin → *Site administration → Plugins → Activity modules → External tool → Manage tools*.
 3. Paste `http://localhost:8090/lti/register` (or the `host.docker.internal` variant) into **Tool URL** → **Add LTI Advantage**.
-4. Click **Activate** on the new tool card (the tool auto-activates on our side; `autoActivate: true` in `src/server.js` — flip off for production).
+4. Click **Activate** on the new tool card (production requires manual activation; for local dev set `LMS_TOOL_AUTO_ACTIVATE=true`).
 5. After registration, mirror the deployment into Nakama's allowlist: the tool syncs the platform
    automatically, but **deployment IDs only become known at first launch/registration** — if
    `lms_launch_session` returns `deployment not registered`, add the deployment id via
