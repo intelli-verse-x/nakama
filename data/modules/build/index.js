@@ -860,6 +860,39 @@ function InitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[Research] Failed to register: " + (err && err.message ? err.message : String(err)));
     }
+    // ---- Seed Questions ("Staged Questions") engine ----
+    // Keeps 2–3 quality-gated, never-seen, difficulty-adapted question sets
+    // staged per (user, mode, topic), fed by 13 external content-source
+    // connectors (archive.org, WolframAlpha, Gutenberg, everynoise/Deezer,
+    // Semantic Scholar, JustWatch, YouTube→LLM, TinEye provenance, ...).
+    // Public surface: seedquestions.quizverse.world (deploy/seedquestions/).
+    // Single-arg register() so postbuild's autoInvokeRegister re-runs it on
+    // every pooled Goja VM. See data/modules/src/seed-questions/.
+    try {
+        logger.info("[SeedQ] Registering quizverse_seedq_* RPCs (staged sets, review, ingest, sources, focus tracks)...");
+        SeedQuestions.register(initializer);
+        logger.info("[SeedQ] quizverse_seedq_get_staged/_consume_set/_review/_focus_tracks/_sources/_ingest/_ingest_tick/_pool_stats/_asset_job/_provenance registered");
+    }
+    catch (err) {
+        logger.error("[SeedQ] Failed to register: " + (err && err.message ? err.message : String(err)));
+    }
+    // ---- Aahaa (Wow Moments) engine ----
+    // Per-userID "the app gets me" moments: deterministic Fact Pack (KB-1) →
+    // deducible catalog (tiers S–E) → respect-ladder ranking with server-side
+    // caps/cooldowns/mutes/CTR kill switch → per-user feed. Includes the
+    // Repetition-Fatigue intercept (wow.e.pool_exhausted + rating suppression,
+    // fed by the seedq engine), the No-Hallucination validator for AI Host /
+    // Fortune Teller / Tutor narration, and the generate-all cron batch that
+    // builds an Aahaa feed for EVERY userID with quiz history.
+    // See data/modules/src/aahaa/ + docs/AAHAA_WOW_ENGINE.md.
+    try {
+        logger.info("[Aahaa] Registering quizverse_aahaa_* RPCs (feed, react, fact pack, profile, generate-all, validator, catalog)...");
+        Aahaa.register(initializer);
+        logger.info("[Aahaa] quizverse_aahaa_get/_react/_fact_pack/_profile_set/_generate_all/_validate/_catalog registered");
+    }
+    catch (err) {
+        logger.error("[Aahaa] Failed to register: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- Fantasy Cricket RPCs ----
     try {
         logger.info("[Fantasy] Registering Team RPCs...");
@@ -984,6 +1017,1714 @@ function InitModule(ctx, logger, nk, initializer) {
     logger.info("IntelliVerse-X Runtime initialized!");
     logger.info("========================================");
 }
+// aahaa_catalog.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Aahaa engine — the deducible Wow-Moment catalog (CATALOG-WOW_MOMENTS.md).
+//
+// Every entry ships the six non-negotiable fields (wow_id, trigger, surface,
+// copy, loop_event, mechanic) PLUS:
+//   data_sources[]   — fact-pack fields the trigger + copy read (lineage lint)
+//   priority_class   — trust > engagement > monetisation (the respect ladder)
+//   celebratory      — blocked within the frustration window (tail_wrong_run≥3)
+//   fullscreen       — counts against the 1-fullscreen-per-day cap
+//   cooldown_days    — per-wow cooldown (server-enforced)
+//
+// The eval() of each entry is a pure function FactPack → vars|null. If it
+// returns null the wow does not fire. No entry may cite a value that is not
+// in the fact pack — that is the structural no-hallucination guarantee.
+var AahaaCatalog;
+(function (AahaaCatalog) {
+    function mk(entry) { return entry; }
+    function firstName(facts) {
+        return facts.identity.username || "player";
+    }
+    // Milestone helper: returns the highest threshold crossed that has not been
+    // fired yet (profile.milestones[msKey] stores the last fired threshold).
+    function pendingMilestone(value, thresholds, profile, msKey) {
+        var fired = (profile && profile.milestones && profile.milestones[msKey]) || 0;
+        var hit = 0;
+        for (var i = 0; i < thresholds.length; i++) {
+            if (value >= thresholds[i] && thresholds[i] > fired)
+                hit = thresholds[i];
+        }
+        return hit;
+    }
+    function catalog() {
+        return [
+            // ── TIER S — life-changing ───────────────────────────────────────────
+            mk({
+                wow_id: "wow.s.thousand_questions", tier: "S",
+                surface: "web:/me/celebration/[milestone_id] (Unity: WebSurfaceLauncher modal)",
+                copy_template: "Your {milestone}th question, {first_name}. Top topic: {topic}. The {milestone}-question badge is yours forever.",
+                cta_action_id: "open_milestone_share", loop_event: "milestone_share_tapped",
+                mechanic: "MA+NI", priority_class: "trust", celebratory: true, fullscreen: true,
+                cooldown_days: 1, base_score: 96,
+                data_sources: ["lifetime.questions_answered", "topics.top3", "identity.username"],
+                eval: function (facts, profile) {
+                    var hit = pendingMilestone(facts.lifetime.questions_answered, [100, 500, 1000, 5000, 10000], profile, "questions");
+                    if (hit === 0)
+                        return null;
+                    return {
+                        wow_id: "wow.s.thousand_questions", tier: "S",
+                        vars: { milestone: hit, first_name: firstName(facts), topic: facts.topics.top3[0] || "general knowledge" },
+                        score: 0,
+                        signal: "lifetime questions_answered crossed " + hit + " (currently " + facts.lifetime.questions_answered + ")"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.s.year_in_quizverse", tier: "S",
+                surface: "web:/me/celebration/[milestone_id] (Unity: WebSurfaceLauncher modal)",
+                copy_template: "{days} days in QuizVerse. {question_count} questions answered, {fact_count} facts locked in. {topic_top_3} were your obsessions. Your archetype: {archetype}.",
+                cta_action_id: "open_anniversary_card", loop_event: "anniversary_share_tapped",
+                mechanic: "NI", priority_class: "trust", celebratory: true, fullscreen: true,
+                cooldown_days: 1, base_score: 95,
+                data_sources: ["identity.days_since_install", "lifetime.questions_answered", "lifetime.questions_correct", "topics.top3", "derived.personality_archetype"],
+                eval: function (facts, profile) {
+                    var hit = pendingMilestone(facts.identity.days_since_install, [30, 100, 365], profile, "anniversary");
+                    if (hit === 0 || facts.lifetime.questions_answered < 10)
+                        return null;
+                    return {
+                        wow_id: "wow.s.year_in_quizverse", tier: "S",
+                        vars: {
+                            days: hit, question_count: facts.lifetime.questions_answered,
+                            fact_count: facts.lifetime.questions_correct,
+                            topic_top_3: facts.topics.top3.join(", ") || "everything",
+                            archetype: facts.derived.personality_archetype
+                        },
+                        score: 0,
+                        signal: "days_since_install crossed " + hit
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.s.you_did_it_exam_passed", tier: "S",
+                surface: "web:/me/celebration/[milestone_id] + AIHost voiceover (Unity native captions)",
+                copy_template: "Today was {exam}. You answered {question_count} questions preparing for it. However it went, you showed up. We're proud of you.",
+                cta_action_id: "open_post_exam_followup", loop_event: "post_exam_followup_started",
+                mechanic: "NI+LA", priority_class: "trust", celebratory: false, fullscreen: true,
+                cooldown_days: 30, base_score: 99,
+                data_sources: ["onboarding.target_exam_id", "onboarding.days_to_exam", "lifetime.questions_answered"],
+                eval: function (facts, profile) {
+                    if (!facts.onboarding.target_exam_id)
+                        return null;
+                    var d = facts.onboarding.days_to_exam;
+                    if (d > 0 || d < -3 || d === -1 && !facts.onboarding.exam_date_iso)
+                        return null;
+                    if (!facts.onboarding.exam_date_iso)
+                        return null;
+                    return {
+                        wow_id: "wow.s.you_did_it_exam_passed", tier: "S",
+                        vars: { exam: facts.onboarding.target_exam_id.toUpperCase(), question_count: facts.lifetime.questions_answered },
+                        score: 0,
+                        signal: "user-set exam date " + facts.onboarding.exam_date_iso + " reached (days_to_exam=" + d + ")"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.s.birthday_quiz", tier: "S",
+                surface: "web:/me/celebration/birthday (first app_open of the day)",
+                copy_template: "Happy birthday, {first_name}. We made you a quiz from {topic_top_3} — no energy cost, custom from your year of learning.",
+                cta_action_id: "start_birthday_quiz", loop_event: "birthday_quiz_started",
+                mechanic: "NI+BL", priority_class: "trust", celebratory: true, fullscreen: true,
+                cooldown_days: 300, base_score: 97,
+                data_sources: ["onboarding.birthday", "topics.top3", "identity.username"],
+                eval: function (facts, profile) {
+                    var bday = "" + (facts.onboarding.birthday || "");
+                    if (bday.length < 5)
+                        return null;
+                    // Anti-fake guard: birthday must have been set ≥30 days ago.
+                    var setMs = (profile && profile.onboarding && profile.onboarding.birthday_set_ms) || 0;
+                    if (setMs === 0 || (Date.now() - setMs) < 30 * 86400000)
+                        return null;
+                    var today = new Date().toISOString().slice(5, 10); // "MM-DD"
+                    if (bday.slice(5, 10) !== today && bday.slice(0, 5) !== today)
+                        return null;
+                    return {
+                        wow_id: "wow.s.birthday_quiz", tier: "S",
+                        vars: { first_name: firstName(facts), topic_top_3: facts.topics.top3.join(", ") || "your favourites" },
+                        score: 0,
+                        signal: "user-set birthday matches today; set " + Math.floor((Date.now() - setMs) / 86400000) + "d ago"
+                    };
+                }
+            }),
+            // ── TIER A — daily dopamine ──────────────────────────────────────────
+            mk({
+                wow_id: "wow.a.lock_it_in", tier: "A",
+                surface: "web:/me/wow/[wow_id] (post-quiz; Unity: WebSurfaceLauncher after quiz_completed)",
+                copy_template: "You nailed {topic} — {run} in a row. Lock it in with a 3-day Smart Review?",
+                cta_action_id: "enroll_smart_review", loop_event: "smart_review_accepted",
+                mechanic: "MA+LA", priority_class: "engagement", celebratory: true, fullscreen: false,
+                cooldown_days: 1, base_score: 78,
+                data_sources: ["recent.lock_topic", "recent.lock_run"],
+                eval: function (facts, profile) {
+                    if (facts.recent.lock_run < 5 || !facts.recent.lock_topic)
+                        return null;
+                    return {
+                        wow_id: "wow.a.lock_it_in", tier: "A",
+                        vars: { topic: facts.recent.lock_topic, run: facts.recent.lock_run },
+                        score: facts.recent.lock_run,
+                        signal: facts.recent.lock_run + " consecutive correct on '" + facts.recent.lock_topic + "' at the end of the ledger"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.a.weakness_targeted", tier: "A",
+                surface: "web:/me/wow/[wow_id] OR AIHost intro (Unity native captions)",
+                copy_template: "I noticed you're stuck on {topic} — {wrong} misses in your recent questions. Want a 5-min explainer + 3 fresh questions?",
+                cta_action_id: "start_weakness_quiz", loop_event: "weakness_targeted_quiz_started",
+                mechanic: "SU+MA", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 2, base_score: 85,
+                data_sources: ["recent.struggling_topic", "recent.struggling_wrong"],
+                eval: function (facts, profile) {
+                    if (!facts.recent.struggling_topic)
+                        return null;
+                    return {
+                        wow_id: "wow.a.weakness_targeted", tier: "A",
+                        vars: { topic: facts.recent.struggling_topic, wrong: facts.recent.struggling_wrong },
+                        score: facts.recent.struggling_wrong * 2,
+                        signal: facts.recent.struggling_wrong + " wrong on '" + facts.recent.struggling_topic + "' inside the newest " + facts.recent.window + " answers"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.a.warming_up", tier: "A",
+                surface: "Unity mid-quiz toast (latency-critical, stays native)",
+                copy_template: "{run} in a row. You're flying.",
+                cta_action_id: "none", loop_event: "wow_moment_clicked",
+                mechanic: "FP+MA", priority_class: "engagement", celebratory: true, fullscreen: false,
+                cooldown_days: 1, base_score: 60,
+                data_sources: ["recent.tail_correct_run"],
+                eval: function (facts, profile) {
+                    if (facts.recent.tail_correct_run < 5)
+                        return null;
+                    return {
+                        wow_id: "wow.a.warming_up", tier: "A",
+                        vars: { run: facts.recent.tail_correct_run },
+                        score: facts.recent.tail_correct_run,
+                        signal: "current correct run of " + facts.recent.tail_correct_run + " at the tail of the answer ledger"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.a.goal_progress", tier: "A",
+                surface: "web:/me (home hero card)",
+                copy_template: "{first_name}, {days_to_exam} days to {exam}. You've answered {answered} questions — your recent accuracy is {recent_acc}%.",
+                cta_action_id: "start_next_8_quizzes", loop_event: "goal_card_clicked",
+                mechanic: "CB+MA", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 1, base_score: 80,
+                data_sources: ["onboarding.days_to_exam", "onboarding.target_exam_id", "lifetime.questions_answered", "recent.accuracy_pct"],
+                eval: function (facts, profile) {
+                    if (!facts.onboarding.target_exam_id || facts.onboarding.days_to_exam <= 0)
+                        return null;
+                    return {
+                        wow_id: "wow.a.goal_progress", tier: "A",
+                        vars: {
+                            first_name: firstName(facts), days_to_exam: facts.onboarding.days_to_exam,
+                            exam: facts.onboarding.target_exam_id.toUpperCase(),
+                            answered: facts.lifetime.questions_answered, recent_acc: facts.recent.accuracy_pct
+                        },
+                        score: facts.onboarding.days_to_exam <= 30 ? 20 : 5,
+                        signal: "user-set exam goal with " + facts.onboarding.days_to_exam + " days remaining"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.a.improvement_surge", tier: "A",
+                surface: "web:/me/wow/[wow_id] (post-quiz)",
+                copy_template: "Your accuracy is up {pts} points across your newest questions vs the batch before. Quietly getting sharper.",
+                cta_action_id: "open_growth_dashboard", loop_event: "growth_dashboard_opened",
+                mechanic: "MA+NI", priority_class: "trust", celebratory: true, fullscreen: false,
+                cooldown_days: 7, base_score: 72,
+                data_sources: ["recent.improvement_pts"],
+                eval: function (facts, profile) {
+                    if (facts.recent.improvement_pts < 10)
+                        return null;
+                    return {
+                        wow_id: "wow.a.improvement_surge", tier: "A",
+                        vars: { pts: facts.recent.improvement_pts },
+                        score: facts.recent.improvement_pts,
+                        signal: "newest-half vs prior-half accuracy delta = +" + facts.recent.improvement_pts + " pts"
+                    };
+                }
+            }),
+            // ── TIER B — habit-shaping ───────────────────────────────────────────
+            mk({
+                wow_id: "wow.b.weekly_recap", tier: "B",
+                surface: "web:/me (home hero) + push deep-link /me/wow/[id]",
+                copy_template: "Your week: {answered} questions · {acc}% accuracy · top topics {topics}. Tap for the full recap.",
+                cta_action_id: "open_weekly_recap", loop_event: "weekly_recap_opened",
+                mechanic: "NI+CB", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 6, base_score: 65,
+                data_sources: ["recent.answered", "recent.accuracy_pct", "topics.top3"],
+                eval: function (facts, profile) {
+                    if (facts.recent.answered < 20)
+                        return null;
+                    return {
+                        wow_id: "wow.b.weekly_recap", tier: "B",
+                        vars: { answered: facts.recent.answered, acc: facts.recent.accuracy_pct, topics: facts.topics.top3.join(", ") },
+                        score: 0,
+                        signal: facts.recent.answered + " answers in the recent window (≥20 threshold)"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.b.return_after_long_gap", tier: "B",
+                surface: "web:/me (home hero)",
+                copy_template: "Welcome back, {first_name} — {days} days away. We saved your top topic: {topic}. Pick up where you left off?",
+                cta_action_id: "resume_from_last_topic", loop_event: "resume_from_last_topic",
+                mechanic: "LA+RC", priority_class: "trust", celebratory: false, fullscreen: false,
+                cooldown_days: 7, base_score: 88,
+                data_sources: ["lifetime.days_since_last_played", "topics.top3", "identity.username"],
+                eval: function (facts, profile) {
+                    var d = facts.lifetime.days_since_last_played;
+                    if (d < 7)
+                        return null;
+                    return {
+                        wow_id: "wow.b.return_after_long_gap", tier: "B",
+                        vars: { first_name: firstName(facts), days: d, topic: facts.topics.top3[0] || "your last quiz" },
+                        score: 15,
+                        signal: "last stats write was " + d + " days ago"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.b.month_summary", tier: "B",
+                surface: "web:/me/celebration/month (small variant, not fullscreen)",
+                copy_template: "Your month: {games} quizzes, {acc}% lifetime accuracy, {topics} on the podium. Set a goal for next month?",
+                cta_action_id: "set_monthly_goal", loop_event: "monthly_goal_set",
+                mechanic: "CB+NI", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 25, base_score: 62,
+                data_sources: ["lifetime.total_games", "lifetime.accuracy_pct", "topics.top3"],
+                eval: function (facts, profile) {
+                    if (facts.lifetime.total_games < 3)
+                        return null;
+                    var monthKey = new Date().toISOString().slice(0, 7);
+                    if (profile && profile.milestones && profile.milestones.month_summary === monthKey)
+                        return null;
+                    return {
+                        wow_id: "wow.b.month_summary", tier: "B",
+                        vars: { games: facts.lifetime.total_games, acc: facts.lifetime.accuracy_pct, topics: facts.topics.top3.join(", ") },
+                        score: 0,
+                        signal: "first feed generation in calendar month " + monthKey
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.b.comeback_kid", tier: "B",
+                surface: "web:/me/reveal (settings reveal card)",
+                copy_template: "You bounced back after 3 straight misses {n} times recently. Your resilience is a pattern, not luck.",
+                cta_action_id: "open_reveal_screen", loop_event: "reveal_screen_opened",
+                mechanic: "NI+MA", priority_class: "trust", celebratory: false, fullscreen: false,
+                cooldown_days: 7, base_score: 70,
+                data_sources: ["recent.comebacks_after_3_wrong"],
+                eval: function (facts, profile) {
+                    if (facts.recent.comebacks_after_3_wrong < 2)
+                        return null;
+                    return {
+                        wow_id: "wow.b.comeback_kid", tier: "B",
+                        vars: { n: facts.recent.comebacks_after_3_wrong },
+                        score: facts.recent.comebacks_after_3_wrong,
+                        signal: facts.recent.comebacks_after_3_wrong + " comeback sequences (3+ wrong then correct) in the recent window"
+                    };
+                }
+            }),
+            // ── TIER C — per-mode signature ──────────────────────────────────────
+            mk({
+                wow_id: "wow.c.speed_pr", tier: "C",
+                surface: "web:/me/wow/[wow_id] (post-quiz)",
+                copy_template: "New pace: {recent_s}s per question in your recent answers — faster than your lifetime {lifetime_s}s average.",
+                cta_action_id: "share_speed_pr", loop_event: "speed_pr_shared",
+                mechanic: "MA", priority_class: "engagement", celebratory: true, fullscreen: false,
+                cooldown_days: 14, base_score: 66,
+                data_sources: ["recent.avg_time_ms", "lifetime.avg_time_ms", "recent.answered"],
+                eval: function (facts, profile) {
+                    if (facts.recent.answered < 20 || facts.recent.avg_time_ms <= 0 || facts.lifetime.avg_time_ms <= 0)
+                        return null;
+                    if (facts.recent.avg_time_ms > facts.lifetime.avg_time_ms * 0.8)
+                        return null;
+                    return {
+                        wow_id: "wow.c.speed_pr", tier: "C",
+                        vars: {
+                            recent_s: Math.round(facts.recent.avg_time_ms / 100) / 10,
+                            lifetime_s: Math.round(facts.lifetime.avg_time_ms / 100) / 10
+                        },
+                        score: 5,
+                        signal: "recent avg_time_ms " + facts.recent.avg_time_ms + " ≤ 80% of lifetime " + facts.lifetime.avg_time_ms
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.c.mode_specialist", tier: "C",
+                surface: "web:/me/reveal (archetype card)",
+                copy_template: "{pct}% of your {games} games are {mode}. You're a Specialist — want the deep-dive {mode} pack?",
+                cta_action_id: "open_mode_pack", loop_event: "mode_pack_opened",
+                mechanic: "NI+DI", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 14, base_score: 64,
+                data_sources: ["modes.top_mode", "modes.top_mode_share_pct", "lifetime.total_games"],
+                eval: function (facts, profile) {
+                    if (facts.modes.top_mode_share_pct < 60 || facts.modes.top_mode_games < 10)
+                        return null;
+                    return {
+                        wow_id: "wow.c.mode_specialist", tier: "C",
+                        vars: { pct: facts.modes.top_mode_share_pct, games: facts.lifetime.total_games, mode: facts.modes.top_mode },
+                        score: 0,
+                        signal: "top mode '" + facts.modes.top_mode + "' holds " + facts.modes.top_mode_share_pct + "% of " + facts.lifetime.total_games + " games"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.c.renaissance_learner", tier: "C",
+                surface: "web:/me/reveal (archetype card)",
+                copy_template: "You've played {n} distinct modes. Renaissance brain — most players stick to 2.",
+                cta_action_id: "open_mode_catalog", loop_event: "mode_catalog_opened",
+                mechanic: "NI+DI", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 30, base_score: 58,
+                data_sources: ["modes.distinct"],
+                eval: function (facts, profile) {
+                    if (facts.modes.distinct < 6)
+                        return null;
+                    return {
+                        wow_id: "wow.c.renaissance_learner", tier: "C",
+                        vars: { n: facts.modes.distinct },
+                        score: 0,
+                        signal: facts.modes.distinct + " distinct modes in quiz_user_stats.modeStats"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.c.aifortuneteller_lucky_mode", tier: "C",
+                surface: "AIFortuneTeller (Unity native; ONLY when user opened Fortune Teller)",
+                copy_template: "Your lucky arena this week is {mode} — not magic exactly, just a pattern the cards noticed: {pct}% wins there. For fun, based on your recent QuizVerse patterns.",
+                cta_action_id: "start_lucky_mode_quiz", loop_event: "lucky_mode_quiz_started",
+                mechanic: "NI+SU", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 7, base_score: 50,
+                data_sources: ["modes.lucky_mode", "modes.lucky_mode_win_rate_pct"],
+                eval: function (facts, profile) {
+                    if (!facts.modes.lucky_mode || facts.modes.lucky_mode_win_rate_pct < 70)
+                        return null;
+                    return {
+                        wow_id: "wow.c.aifortuneteller_lucky_mode", tier: "C",
+                        vars: { mode: facts.modes.lucky_mode, pct: facts.modes.lucky_mode_win_rate_pct },
+                        score: 0,
+                        signal: "win rate " + facts.modes.lucky_mode_win_rate_pct + "% over ≥5 games in '" + facts.modes.lucky_mode + "' (soft-signal, entertainment-framed)"
+                    };
+                }
+            }),
+            // ── TIER D — per-social-action ───────────────────────────────────────
+            mk({
+                wow_id: "wow.d.first_friend_added", tier: "D",
+                surface: "web:/me/friends (friend card highlight; Unity in-match stays native)",
+                copy_template: "Your first friend! Compatibility Quiz unlocks at 7 days of friendship.",
+                cta_action_id: "open_friend_card", loop_event: "friend_card_opened",
+                mechanic: "DI+BL", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 3650, base_score: 68,
+                data_sources: ["social.friends_count"],
+                eval: function (facts, profile) {
+                    if (facts.social.friends_count < 1)
+                        return null;
+                    var fired = (profile && profile.milestones && profile.milestones.first_friend) || 0;
+                    if (fired)
+                        return null;
+                    return {
+                        wow_id: "wow.d.first_friend_added", tier: "D",
+                        vars: {},
+                        score: 0,
+                        signal: "friends_count moved 0 → " + facts.social.friends_count
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.d.network_growing", tier: "D",
+                surface: "web:/me/friends (banner)",
+                copy_template: "{n} friends in your network now. Active networks win more weekly challenges — start one?",
+                cta_action_id: "start_friend_challenge", loop_event: "friend_challenge_started",
+                mechanic: "BL+CB", priority_class: "engagement", celebratory: false, fullscreen: false,
+                cooldown_days: 14, base_score: 55,
+                data_sources: ["social.friends_count"],
+                eval: function (facts, profile) {
+                    var hit = pendingMilestone(facts.social.friends_count, [5, 10, 25], profile, "friends");
+                    if (hit === 0)
+                        return null;
+                    return {
+                        wow_id: "wow.d.network_growing", tier: "D",
+                        vars: { n: facts.social.friends_count },
+                        score: 0,
+                        signal: "friends_count crossed " + hit
+                    };
+                }
+            }),
+            // ── TIER E — ambient / intercepts ────────────────────────────────────
+            mk({
+                wow_id: "wow.e.pool_exhausted", tier: "E",
+                surface: "web:/me/wow/[wow_id] (EndOfQuizReviewScreen intercept)",
+                copy_template: "You just answered every {topic} question we have, {first_name}. You literally beat the game. We're generating more right now — want to try {recommended_topic} while you wait?",
+                cta_action_id: "start_recommended_topic", loop_event: "recommended_topic_started",
+                mechanic: "MA+DI", priority_class: "trust", celebratory: false, fullscreen: false,
+                cooldown_days: 1, base_score: 92,
+                data_sources: ["seedq.exhausted_pools_7d", "topics.top3", "identity.username"],
+                eval: function (facts, profile) {
+                    if (!facts.seedq.exhausted_pools_7d || facts.seedq.exhausted_pools_7d.length === 0)
+                        return null;
+                    var last = facts.seedq.exhausted_pools_7d[facts.seedq.exhausted_pools_7d.length - 1];
+                    var topic = last.split("/")[1] || last;
+                    var rec = "";
+                    for (var i = 0; i < facts.topics.top3.length; i++) {
+                        if (SeedQ.slugify(facts.topics.top3[i]) !== SeedQ.slugify(topic)) {
+                            rec = facts.topics.top3[i];
+                            break;
+                        }
+                    }
+                    return {
+                        wow_id: "wow.e.pool_exhausted", tier: "E",
+                        vars: { topic: topic, recommended_topic: rec || "a new topic", first_name: firstName(facts) },
+                        score: 30,
+                        signal: "seedq staged engine reported pool_exhausted for " + last + " within 7d (App Store rating prompt suppressed)"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.e.frustration_softpause", tier: "E",
+                surface: "Unity mid-quiz toast (latency-critical, stays native)",
+                copy_template: "Want a hint, or skip this one? {topic} will still be here after a 2-min break.",
+                cta_action_id: "offer_hint_or_skip", loop_event: "softpause_accepted",
+                mechanic: "FP+RC", priority_class: "trust", celebratory: false, fullscreen: false,
+                cooldown_days: 1, base_score: 90,
+                data_sources: ["recent.tail_wrong_run", "recent.struggling_topic"],
+                eval: function (facts, profile) {
+                    if (facts.recent.tail_wrong_run < 3)
+                        return null;
+                    return {
+                        wow_id: "wow.e.frustration_softpause", tier: "E",
+                        vars: { topic: facts.recent.struggling_topic || "this topic" },
+                        score: facts.recent.tail_wrong_run * 3,
+                        signal: facts.recent.tail_wrong_run + " wrong in a row at the tail of the ledger (celebratory wows blocked this session)"
+                    };
+                }
+            }),
+            mk({
+                wow_id: "wow.e.morning_greeting", tier: "E",
+                surface: "web:/me (welcome line replaces generic greeting)",
+                copy_template: "Good {bucket}, {first_name}. {stat}.",
+                cta_action_id: "none", loop_event: "wow_moment_clicked",
+                mechanic: "HF+NI", priority_class: "trust", celebratory: false, fullscreen: false,
+                cooldown_days: 1, base_score: 40,
+                data_sources: ["onboarding.preferred_play_time", "lifetime.accuracy_pct", "streaks.win"],
+                eval: function (facts, profile) {
+                    if (!facts.onboarding.preferred_play_time || facts.lifetime.questions_answered < 10)
+                        return null;
+                    var stat = facts.streaks.win >= 2
+                        ? ("You're on a " + facts.streaks.win + "-quiz win streak")
+                        : ("Lifetime accuracy: " + facts.lifetime.accuracy_pct + "%");
+                    return {
+                        wow_id: "wow.e.morning_greeting", tier: "E",
+                        vars: { bucket: facts.onboarding.preferred_play_time, first_name: firstName(facts), stat: stat },
+                        score: 0,
+                        signal: "user-set preferred_play_time + stored counters (ambient)"
+                    };
+                }
+            })
+        ];
+    }
+    AahaaCatalog.catalog = catalog;
+    // Deterministic template rendering — server fills every {var} from the
+    // candidate's vars map. Anything unfilled stays visibly "{name}" so QA
+    // catches a missing fact instead of a hallucinated one being invented.
+    function renderCopy(template, vars) {
+        var out = template;
+        var keys = Object.keys(vars || {});
+        for (var i = 0; i < keys.length; i++) {
+            var token = "{" + keys[i] + "}";
+            while (out.indexOf(token) >= 0)
+                out = out.replace(token, "" + vars[keys[i]]);
+        }
+        return out;
+    }
+    AahaaCatalog.renderCopy = renderCopy;
+})(AahaaCatalog || (AahaaCatalog = {}));
+// aahaa_engine.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Aahaa engine — per-userID generation, ranking, and operational rules.
+//
+// generateForUser(userId):
+//   FactPack → eval every catalog entry → rank with the "respect ladder"
+//   (trust > engagement > monetisation) → enforce server-side rules:
+//     · max AAHAA_PER_FEED distinct wows per feed (session cap 3)
+//     · max 1 fullscreen per day
+//     · max 5 distinct wows per rolling week
+//     · per-wow cooldowns, 90-day personal mutes
+//     · frustration block: no celebratory wow while tail_wrong_run ≥ 3
+//     · CTR kill switch: any wow with ≥20 shows and <5% CTR over 14d pauses
+//   → persist the ranked feed at aahaa_feed/<userId>/feed with fully rendered
+//     copy + the "why this appeared" signal chip (data lineage on-surface).
+//
+// generateAll(): pages through quiz-history owners so EVERY userID that has
+// ever answered a question gets a feed — this is the "aahaa for each userID"
+// batch, runnable from cron.
+//
+// notePoolExhausted(): called by the seedq engine (Deliverable 1) when a user
+// beats a pool. Queues the wow.e.pool_exhausted intercept AND arms App Store
+// review-prompt suppression for RATING_SUPPRESS_DAYS.
+var AahaaEngine;
+(function (AahaaEngine) {
+    AahaaEngine.MODULE_VERSION = "aahaa/1.0.0";
+    AahaaEngine.COLL_PROFILE = "aahaa_profile"; // per-user: milestones, mutes, caps, pending events
+    AahaaEngine.COLL_FEED = "aahaa_feed"; // per-user: current ranked feed
+    AahaaEngine.COLL_STATS = "aahaa_stats"; // system: per-wow shows/clicks (CTR kill switch)
+    AahaaEngine.COLL_BATCH = "aahaa_batch"; // system: generate-all cursor
+    AahaaEngine.KEY_PROFILE = "profile";
+    AahaaEngine.KEY_FEED = "feed";
+    AahaaEngine.AAHAA_PER_FEED = 3; // per-session cap
+    AahaaEngine.WEEKLY_CAP = 5; // distinct wows per rolling 7d
+    AahaaEngine.MUTE_DAYS = 90;
+    AahaaEngine.RATING_SUPPRESS_DAYS = 7; // review-prompt suppression after pool exhaustion
+    AahaaEngine.CTR_MIN_SHOWS = 20; // kill switch needs a sample
+    AahaaEngine.CTR_FLOOR = 0.05;
+    var PRIORITY_BONUS = { trust: 200, engagement: 100, monetisation: 0 };
+    // ── Profile ────────────────────────────────────────────────────────────────
+    function readProfile(nk, userId) {
+        var p = SeedQ.readUser(nk, AahaaEngine.COLL_PROFILE, AahaaEngine.KEY_PROFILE, userId);
+        if (!p)
+            p = {};
+        if (!p.milestones)
+            p.milestones = {};
+        if (!p.mutes)
+            p.mutes = {};
+        if (!p.last_fired)
+            p.last_fired = {};
+        if (!p.fired_log)
+            p.fired_log = []; // [{wow_id, ms}] rolling 7d
+        if (!p.pending_events)
+            p.pending_events = []; // [{type, mode, topic, ms}]
+        if (!p.onboarding)
+            p.onboarding = {};
+        if (!p.rating_suppressed_until_ms)
+            p.rating_suppressed_until_ms = 0;
+        return p;
+    }
+    AahaaEngine.readProfile = readProfile;
+    function writeProfile(nk, userId, profile) {
+        SeedQ.writeUser(nk, AahaaEngine.COLL_PROFILE, AahaaEngine.KEY_PROFILE, userId, profile);
+    }
+    AahaaEngine.writeProfile = writeProfile;
+    // ── CTR kill switch bookkeeping ────────────────────────────────────────────
+    function readStats(nk) {
+        var s = SeedQ.readSystem(nk, AahaaEngine.COLL_STATS, "stats");
+        if (!s)
+            s = { wows: {} };
+        if (!s.wows)
+            s.wows = {};
+        return s;
+    }
+    function recordReaction(nk, wowId, action) {
+        var s = readStats(nk);
+        if (!s.wows[wowId])
+            s.wows[wowId] = { shown: 0, clicked: 0, dismissed: 0, window_start_ms: Date.now() };
+        var w = s.wows[wowId];
+        // Roll the 14-day CTR window.
+        if (Date.now() - (w.window_start_ms || 0) > 14 * 86400000) {
+            w.shown = 0;
+            w.clicked = 0;
+            w.dismissed = 0;
+            w.window_start_ms = Date.now();
+        }
+        if (action === "shown")
+            w.shown = (w.shown | 0) + 1;
+        else if (action === "clicked" || action === "converted")
+            w.clicked = (w.clicked | 0) + 1;
+        else if (action === "dismissed")
+            w.dismissed = (w.dismissed | 0) + 1;
+        SeedQ.writeSystem(nk, AahaaEngine.COLL_STATS, "stats", s);
+    }
+    AahaaEngine.recordReaction = recordReaction;
+    function isKilledByCtr(stats, wowId) {
+        var w = stats.wows[wowId];
+        if (!w || (w.shown | 0) < AahaaEngine.CTR_MIN_SHOWS)
+            return false;
+        return ((w.clicked | 0) / w.shown) < AahaaEngine.CTR_FLOOR;
+    }
+    function generateForUser(ctx, nk, logger, userId) {
+        var facts = AahaaFacts.buildFactPack(ctx, nk, logger, userId);
+        var profile = readProfile(nk, userId);
+        var stats = readStats(nk);
+        var now = Date.now();
+        // Rolling-week fired log cleanup.
+        var freshLog = [];
+        for (var f = 0; f < profile.fired_log.length; f++) {
+            if (now - (profile.fired_log[f].ms || 0) < 7 * 86400000)
+                freshLog.push(profile.fired_log[f]);
+        }
+        profile.fired_log = freshLog;
+        var weekCount = freshLog.length;
+        var fullscreenToday = false;
+        for (var fd = 0; fd < freshLog.length; fd++) {
+            if (freshLog[fd].fullscreen && (now - freshLog[fd].ms) < 86400000)
+                fullscreenToday = true;
+        }
+        var frustrated = facts.recent.tail_wrong_run >= 3;
+        var entries = AahaaCatalog.catalog();
+        var candidates = [];
+        var suppressed = [];
+        for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i];
+            var cand = null;
+            try {
+                cand = entry.eval(facts, profile);
+            }
+            catch (e) {
+                logger.warn("[Aahaa] eval failed for " + entry.wow_id + ": " + (e && e.message ? e.message : String(e)));
+            }
+            if (!cand)
+                continue;
+            // Personal mute (90 days).
+            var muteUntil = profile.mutes[entry.wow_id] || 0;
+            if (muteUntil > now) {
+                suppressed.push(entry.wow_id + ":muted");
+                continue;
+            }
+            // Per-wow cooldown.
+            var lastMs = profile.last_fired[entry.wow_id] || 0;
+            if (lastMs > 0 && (now - lastMs) < entry.cooldown_days * 86400000) {
+                suppressed.push(entry.wow_id + ":cooldown");
+                continue;
+            }
+            // Frustration block for celebratory wows.
+            if (frustrated && entry.celebratory) {
+                suppressed.push(entry.wow_id + ":frustration_block");
+                continue;
+            }
+            // CTR kill switch.
+            if (isKilledByCtr(stats, entry.wow_id)) {
+                suppressed.push(entry.wow_id + ":ctr_paused");
+                continue;
+            }
+            var rank = entry.base_score + cand.score + (PRIORITY_BONUS[entry.priority_class] || 0);
+            candidates.push({ entry: entry, cand: cand, rank: rank });
+        }
+        candidates.sort(function (a, b) { return b.rank - a.rank; });
+        var feed = [];
+        for (var c = 0; c < candidates.length && feed.length < AahaaEngine.AAHAA_PER_FEED; c++) {
+            var pick = candidates[c];
+            if (weekCount + feed.length >= AahaaEngine.WEEKLY_CAP && pick.entry.priority_class !== "trust")
+                continue;
+            if (pick.entry.fullscreen && fullscreenToday) {
+                suppressed.push(pick.entry.wow_id + ":fullscreen_cap");
+                continue;
+            }
+            if (pick.entry.fullscreen)
+                fullscreenToday = true;
+            feed.push({
+                wow_id: pick.entry.wow_id,
+                tier: pick.entry.tier,
+                surface: pick.entry.surface,
+                copy: AahaaCatalog.renderCopy(pick.entry.copy_template, pick.cand.vars),
+                copy_template: pick.entry.copy_template,
+                vars: pick.cand.vars,
+                cta_action_id: pick.entry.cta_action_id,
+                loop_event: pick.entry.loop_event,
+                mechanic: pick.entry.mechanic,
+                priority_class: pick.entry.priority_class,
+                fullscreen: pick.entry.fullscreen,
+                signal: pick.cand.signal,
+                data_sources: pick.entry.data_sources,
+                score: pick.rank,
+                trace_id: "aahaa_" + now.toString(36) + "_" + SeedQ.randSuffix()
+            });
+        }
+        // Milestone bookkeeping so one-shot wows never re-fire.
+        for (var m = 0; m < feed.length; m++) {
+            var w = feed[m];
+            if (w.wow_id === "wow.s.thousand_questions")
+                profile.milestones.questions = w.vars.milestone;
+            if (w.wow_id === "wow.s.year_in_quizverse")
+                profile.milestones.anniversary = w.vars.days;
+            if (w.wow_id === "wow.b.month_summary")
+                profile.milestones.month_summary = new Date().toISOString().slice(0, 7);
+            if (w.wow_id === "wow.d.first_friend_added")
+                profile.milestones.first_friend = 1;
+            if (w.wow_id === "wow.d.network_growing")
+                profile.milestones.friends = facts.social.friends_count;
+        }
+        var ratingSuppressed = profile.rating_suppressed_until_ms > now || frustrated ||
+            (facts.seedq.exhausted_pools_7d && facts.seedq.exhausted_pools_7d.length > 0);
+        var feedDoc = {
+            generated_ms: now,
+            feed: feed,
+            rating_prompt_suppressed: ratingSuppressed,
+            fact_pack_version: facts.version,
+            module_version: AahaaEngine.MODULE_VERSION
+        };
+        SeedQ.writeUser(nk, AahaaEngine.COLL_FEED, AahaaEngine.KEY_FEED, userId, feedDoc);
+        writeProfile(nk, userId, profile);
+        return { feed: feed, facts: facts, suppressed: suppressed, rating_prompt_suppressed: ratingSuppressed };
+    }
+    AahaaEngine.generateForUser = generateForUser;
+    // Marks a wow as fired (called on "shown" reactions) — moves the cooldown +
+    // weekly-cap bookkeeping to the moment the surface actually rendered it.
+    function markFired(nk, userId, wowId, fullscreen) {
+        var profile = readProfile(nk, userId);
+        var now = Date.now();
+        profile.last_fired[wowId] = now;
+        profile.fired_log.push({ wow_id: wowId, ms: now, fullscreen: !!fullscreen });
+        if (profile.fired_log.length > 50)
+            profile.fired_log = profile.fired_log.slice(profile.fired_log.length - 50);
+        writeProfile(nk, userId, profile);
+    }
+    AahaaEngine.markFired = markFired;
+    function muteWow(nk, userId, wowId) {
+        var profile = readProfile(nk, userId);
+        profile.mutes[wowId] = Date.now() + AahaaEngine.MUTE_DAYS * 86400000;
+        writeProfile(nk, userId, profile);
+    }
+    AahaaEngine.muteWow = muteWow;
+    // ── Deliverable 1 hook: pool exhaustion intercept ─────────────────────────
+    // Called from the seedq engine when a user runs a (mode, topic) pool dry.
+    // Queues the wow.e.pool_exhausted signal AND suppresses the App Store
+    // rating prompt — we never ask for a rating when a pool is exhausted.
+    function notePoolExhausted(nk, logger, userId, mode, topic) {
+        try {
+            var profile = readProfile(nk, userId);
+            var now = Date.now();
+            // Dedupe: one pending event per (mode, topic) per 24h.
+            for (var i = 0; i < profile.pending_events.length; i++) {
+                var ev = profile.pending_events[i];
+                if (ev.type === "pool_exhausted" && ev.mode === mode && ev.topic === topic && (now - ev.ms) < 86400000)
+                    return;
+            }
+            profile.pending_events.push({ type: "pool_exhausted", mode: mode, topic: topic, ms: now });
+            if (profile.pending_events.length > 20)
+                profile.pending_events = profile.pending_events.slice(profile.pending_events.length - 20);
+            profile.rating_suppressed_until_ms = now + AahaaEngine.RATING_SUPPRESS_DAYS * 86400000;
+            writeProfile(nk, userId, profile);
+            logger.info("[Aahaa] pool_exhausted intercept armed for user=" + userId + " " + mode + "/" + topic);
+        }
+        catch (e) {
+            logger.warn("[Aahaa] notePoolExhausted failed: " + (e && e.message ? e.message : String(e)));
+        }
+    }
+    AahaaEngine.notePoolExhausted = notePoolExhausted;
+    // ── "Aahaa for each userID" batch ──────────────────────────────────────────
+    // Pages across ALL owners of the source collections below — i.e. every
+    // userID that ever answered a question OR engaged the staged-questions
+    // engine — and generates a feed for each. Cursor (collection index + page
+    // cursor) is persisted so cron ticks resume where the last one stopped.
+    // NOTE: string literals (not SeedQ.COLL_*) — this array initialises at
+    // namespace-eval time, before the SeedQ namespace object exists (aahaa/
+    // sorts ahead of seed-questions/ in the bundle).
+    var BATCH_SOURCE_COLLECTIONS = ["quiz-verse_quiz_history", "sq_staged", "quiz_user_stats_126bf539-dae2-4bcf-964d-316c0fa1f92b", "quiz_results"];
+    function generateAll(ctx, nk, logger, maxUsers, resetCursor) {
+        var state = SeedQ.readSystem(nk, AahaaEngine.COLL_BATCH, "state") || { coll_index: 0, cursor: "", runs: 0, users_done_total: 0 };
+        if (resetCursor) {
+            state.coll_index = 0;
+            state.cursor = "";
+        }
+        if (!state.coll_index)
+            state.coll_index = 0;
+        var processed = 0, errors = 0;
+        var userIds = [];
+        var seenThisRun = {};
+        var collIndex = state.coll_index;
+        var cursor = state.cursor || "";
+        while (processed < maxUsers && collIndex < BATCH_SOURCE_COLLECTIONS.length) {
+            var page = null;
+            try {
+                // null userId lists the collection across ALL owners (empty string is
+                // rejected by the Goja binding with "expects empty or valid user id").
+                page = nk.storageList(null, BATCH_SOURCE_COLLECTIONS[collIndex], Math.min(50, maxUsers - processed), cursor || undefined);
+            }
+            catch (e) {
+                logger.error("[Aahaa] generateAll storageList(" + BATCH_SOURCE_COLLECTIONS[collIndex] + ") failed: " + (e && e.message ? e.message : String(e)));
+                collIndex++;
+                cursor = "";
+                continue;
+            }
+            var objs = (page && page.objects) ? page.objects : [];
+            for (var i = 0; i < objs.length && processed < maxUsers; i++) {
+                var uid = objs[i].userId;
+                if (!uid || uid === Constants.SYSTEM_USER_ID || seenThisRun[uid])
+                    continue;
+                seenThisRun[uid] = true;
+                try {
+                    var res = generateForUser(ctx, nk, logger, uid);
+                    userIds.push(uid + ":" + res.feed.length);
+                    processed++;
+                }
+                catch (e2) {
+                    errors++;
+                    logger.warn("[Aahaa] generateForUser failed for " + uid + ": " + (e2 && e2.message ? e2.message : String(e2)));
+                }
+            }
+            cursor = (page && page.cursor) ? page.cursor : "";
+            if (!cursor || objs.length === 0) {
+                collIndex++;
+                cursor = "";
+            }
+        }
+        var exhausted = collIndex >= BATCH_SOURCE_COLLECTIONS.length;
+        state.coll_index = exhausted ? 0 : collIndex;
+        state.cursor = exhausted ? "" : cursor;
+        state.runs = (state.runs || 0) + 1;
+        state.users_done_total = (state.users_done_total || 0) + processed;
+        state.last_run_ms = Date.now();
+        SeedQ.writeSystem(nk, AahaaEngine.COLL_BATCH, "state", state);
+        return {
+            processed: processed,
+            errors: errors,
+            users: userIds,
+            cursor_exhausted: exhausted,
+            runs: state.runs,
+            users_done_total: state.users_done_total
+        };
+    }
+    AahaaEngine.generateAll = generateAll;
+})(AahaaEngine || (AahaaEngine = {}));
+// aahaa_facts.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Aahaa engine — deterministic per-user Fact Pack (KB-1 slice).
+//
+// This is the "Deducible Insights" contract from CATALOG-DEDUCIBLE_INSIGHTS.md:
+// every claim an Aahaa moment makes about a user must trace to a row produced
+// here, and every row here is a plain aggregation over data Nakama actually
+// stores. No LLM is involved in producing facts — LLMs may only REPHRASE them
+// (enforced by AahaaValidator).
+//
+// Sources read (all existing storage, no new writes):
+//   quiz-verse_quiz_history / "history"   per-question ledger {category, correct, time_ms}
+//   quiz_user_stats_<gameId> / stats_<uid> lifetime totals + streaks + per-mode stats
+//   user_model / "derived"                weak/strong topics, archetype (if synced)
+//   user_streaks / "current"              daily streak count (if present)
+//   sq_staged (list)                      staged-questions engagement per (mode, topic)
+//   aahaa_profile / "profile"             onboarding-set facts (user typed them)
+//   nk.friendsList                        friend count
+//   nk.accountGetId                       username + account create time
+//
+// Every fact group carries a lineage entry {source, derivation, sample_size}
+// so the Growth Dashboard can render tap-to-trace provenance on every number.
+var AahaaFacts;
+(function (AahaaFacts) {
+    AahaaFacts.FACT_PACK_VERSION = "aahaa-facts/1.0.0";
+    var QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+    var HISTORY_COLLECTION = "quiz-verse_quiz_history";
+    var RECENT_WINDOW = 50; // "recent" = newest 50 per-question entries
+    var MIN_TOPIC_SAMPLE = 3; // don't call a topic strong/weak on fewer answers
+    function safeRead(nk, collection, key, userId) {
+        try {
+            var rows = nk.storageRead([{ collection: collection, key: key, userId: userId }]);
+            if (rows && rows.length > 0 && rows[0].value)
+                return rows[0].value;
+        }
+        catch (e) { /* absent is fine */ }
+        return null;
+    }
+    function pct(correct, total) {
+        return total > 0 ? Math.round((correct / total) * 100) : 0;
+    }
+    // Rule-based, deterministic archetype. NOT an LLM guess — a fixed decision
+    // table over hard numbers, so the label itself is deducible and stable.
+    function computeArchetype(lifetimeGames, accuracy, avgMs, modeCount, topModeShare) {
+        if (lifetimeGames < 5)
+            return "Newcomer";
+        if (topModeShare >= 0.6)
+            return "Specialist";
+        if (modeCount >= 6)
+            return "Renaissance";
+        if (avgMs > 0 && avgMs <= 6000 && accuracy >= 60)
+            return "Speedrunner";
+        if (accuracy >= 80)
+            return "Champion";
+        if (lifetimeGames >= 50)
+            return "Daily-dripper";
+        return "Explorer";
+    }
+    function buildFactPack(ctx, nk, logger, userId) {
+        var now = Date.now();
+        var lineage = {};
+        // ── Identity ────────────────────────────────────────────────────────────
+        var username = "";
+        var createMs = 0;
+        try {
+            var account = nk.accountGetId(userId);
+            if (account && account.user) {
+                username = account.user.username || "";
+                var ct = account.user.createTime || account.user.createTimeSec || 0;
+                // createTime may arrive as seconds; normalise to ms.
+                createMs = ct > 0 ? (ct < 100000000000 ? ct * 1000 : ct) : 0;
+            }
+        }
+        catch (e) { /* account lookup best-effort */ }
+        var daysSinceInstall = createMs > 0 ? Math.floor((now - createMs) / 86400000) : 0;
+        lineage["identity"] = { source: "nk.accountGetId", derivation: "account create time → days_since_install", sample_size: 1 };
+        // ── Per-question history ────────────────────────────────────────────────
+        var history = safeRead(nk, HISTORY_COLLECTION, "history", userId);
+        var entries = (history && history.entries && history.entries.length) ? history.entries : [];
+        var recentEntries = entries.length > RECENT_WINDOW ? entries.slice(entries.length - RECENT_WINDOW) : entries;
+        var lifetimeAnswered = 0, lifetimeCorrect = 0, timeSumMs = 0, timedCount = 0;
+        var topicMap = {};
+        for (var i = 0; i < entries.length; i++) {
+            var e = entries[i];
+            if (!e || typeof e !== "object")
+                continue;
+            var correct = e.correct !== undefined ? !!e.correct : !!e.was_correct;
+            lifetimeAnswered++;
+            if (correct)
+                lifetimeCorrect++;
+            var tms = parseInt(e.time_ms || 0, 10) || 0;
+            if (tms > 0) {
+                timeSumMs += tms;
+                timedCount++;
+            }
+            var cat = "" + (e.category || "general");
+            var slug = SeedQ.slugify(cat) || "general";
+            if (!topicMap[slug])
+                topicMap[slug] = { topic: cat, answered: 0, correct: 0, accuracy_pct: 0, avg_time_ms: 0 };
+            var ts = topicMap[slug];
+            ts.answered++;
+            if (correct)
+                ts.correct++;
+            ts.avg_time_ms += tms;
+        }
+        var topicList = [];
+        var slugs = Object.keys(topicMap);
+        for (var s = 0; s < slugs.length; s++) {
+            var t = topicMap[slugs[s]];
+            t.avg_time_ms = t.answered > 0 ? Math.round(t.avg_time_ms / t.answered) : 0;
+            t.accuracy_pct = pct(t.correct, t.answered);
+            topicList.push(t);
+        }
+        topicList.sort(function (a, b) { return b.answered - a.answered; });
+        var top3 = [];
+        for (var t3 = 0; t3 < topicList.length && t3 < 3; t3++)
+            top3.push(topicList[t3].topic);
+        var strongest = null;
+        var weakest = null;
+        for (var st = 0; st < topicList.length; st++) {
+            var tt = topicList[st];
+            if (tt.answered < MIN_TOPIC_SAMPLE)
+                continue;
+            if (!strongest || tt.accuracy_pct > strongest.accuracy_pct)
+                strongest = tt;
+            if (!weakest || tt.accuracy_pct < weakest.accuracy_pct)
+                weakest = tt;
+        }
+        lineage["topics"] = {
+            source: HISTORY_COLLECTION + "/history",
+            derivation: "per-topic sum(correct)/sum(answered); strong/weak require ≥" + MIN_TOPIC_SAMPLE + " answers",
+            sample_size: lifetimeAnswered
+        };
+        // ── Recent window facts ─────────────────────────────────────────────────
+        var recAnswered = 0, recCorrect = 0, recTimeSum = 0, recTimed = 0;
+        var lastN = [];
+        var wrongByTopicRecent = {};
+        for (var r = 0; r < recentEntries.length; r++) {
+            var re = recentEntries[r];
+            if (!re || typeof re !== "object")
+                continue;
+            var rc = re.correct !== undefined ? !!re.correct : !!re.was_correct;
+            recAnswered++;
+            if (rc)
+                recCorrect++;
+            var rt = parseInt(re.time_ms || 0, 10) || 0;
+            if (rt > 0) {
+                recTimeSum += rt;
+                recTimed++;
+            }
+            lastN.push({ topic: "" + (re.category || "general"), correct: rc, time_ms: rt });
+            if (!rc) {
+                var rslug = SeedQ.slugify("" + (re.category || "general")) || "general";
+                if (!wrongByTopicRecent[rslug])
+                    wrongByTopicRecent[rslug] = { topic: "" + (re.category || "general"), wrong: 0 };
+                wrongByTopicRecent[rslug].wrong++;
+            }
+        }
+        // Struggling topic: ≥3 wrong in the recent window on one topic.
+        var strugglingTopic = "";
+        var strugglingWrong = 0;
+        var wslugs = Object.keys(wrongByTopicRecent);
+        for (var w = 0; w < wslugs.length; w++) {
+            if (wrongByTopicRecent[wslugs[w]].wrong >= 3 && wrongByTopicRecent[wslugs[w]].wrong > strugglingWrong) {
+                strugglingTopic = wrongByTopicRecent[wslugs[w]].topic;
+                strugglingWrong = wrongByTopicRecent[wslugs[w]].wrong;
+            }
+        }
+        // Tail signals: streak of correct answers at the very end of the ledger
+        // (flow) or wrong answers (frustration).
+        var tailCorrectRun = 0, tailWrongRun = 0;
+        for (var b = lastN.length - 1; b >= 0; b--) {
+            if (lastN[b].correct) {
+                if (tailWrongRun > 0)
+                    break;
+                tailCorrectRun++;
+            }
+            else {
+                if (tailCorrectRun > 0)
+                    break;
+                tailWrongRun++;
+            }
+        }
+        // Last-quiz single-topic correct run (for lock_it_in): the newest entries
+        // that share one topic, all correct.
+        var lockTopic = "";
+        var lockRun = 0;
+        if (lastN.length > 0 && lastN[lastN.length - 1].correct) {
+            lockTopic = lastN[lastN.length - 1].topic;
+            for (var lb = lastN.length - 1; lb >= 0; lb--) {
+                if (lastN[lb].correct && lastN[lb].topic === lockTopic)
+                    lockRun++;
+                else
+                    break;
+            }
+        }
+        // Comeback count: wrong,wrong,wrong followed by a correct — anti-fragility.
+        var comebacks = 0;
+        var wrongRun = 0;
+        for (var cb = 0; cb < lastN.length; cb++) {
+            if (!lastN[cb].correct)
+                wrongRun++;
+            else {
+                if (wrongRun >= 3)
+                    comebacks++;
+                wrongRun = 0;
+            }
+        }
+        // Improvement velocity: accuracy of newest half vs the half before it.
+        var improvementPts = 0;
+        if (entries.length >= 40) {
+            var half = Math.floor(RECENT_WINDOW / 2);
+            var newest = entries.slice(entries.length - half);
+            var previous = entries.slice(Math.max(0, entries.length - half * 2), entries.length - half);
+            var nc = 0, na = 0, pc = 0, pa = 0;
+            for (var nn = 0; nn < newest.length; nn++) {
+                na++;
+                if (newest[nn] && (newest[nn].correct || newest[nn].was_correct))
+                    nc++;
+            }
+            for (var pp = 0; pp < previous.length; pp++) {
+                pa++;
+                if (previous[pp] && (previous[pp].correct || previous[pp].was_correct))
+                    pc++;
+            }
+            improvementPts = pct(nc, na) - pct(pc, pa);
+        }
+        lineage["recent"] = {
+            source: HISTORY_COLLECTION + "/history (newest " + RECENT_WINDOW + ")",
+            derivation: "tail runs, ≥3-wrong topic detection, comeback sequences, newest-half vs prior-half accuracy delta",
+            sample_size: recAnswered
+        };
+        // ── Lifetime stats docs ─────────────────────────────────────────────────
+        // Two writers exist: quiz_results.js (rich doc at quiz_user_stats_<gameId>)
+        // and the LegacyQuiz TS handler that owns the live `quiz_submit_result`
+        // RPC (lean doc at quiz_results/stats_<uid>). Merge whichever is present.
+        var stats = safeRead(nk, "quiz_user_stats_" + QUIZVERSE_GAME_ID, "stats_" + userId, userId)
+            || safeRead(nk, "quiz_user_stats_quiz-verse", "stats_" + userId, userId);
+        var legacyStats = safeRead(nk, "quiz_results", "stats_" + userId, userId);
+        var totalGames = Math.max(stats ? (stats.totalGames || 0) : 0, legacyStats ? (legacyStats.totalGames || 0) : 0);
+        var totalWins = stats ? (stats.totalWins || 0) : 0;
+        var winStreak = stats ? (stats.currentStreak || 0) : 0;
+        var longestWinStreak = stats ? (stats.longestStreak || 0) : 0;
+        var lastPlayedAt = stats ? (stats.lastPlayedAt || null) : null;
+        var lastPlayedMs = 0;
+        if (lastPlayedAt) {
+            try {
+                lastPlayedMs = new Date(lastPlayedAt).getTime() || 0;
+            }
+            catch (e2) {
+                lastPlayedMs = 0;
+            }
+        }
+        if (legacyStats && legacyStats.lastPlayedAt) {
+            // LegacyQuiz stores unix seconds.
+            var legacyMs = (legacyStats.lastPlayedAt < 100000000000) ? legacyStats.lastPlayedAt * 1000 : legacyStats.lastPlayedAt;
+            if (legacyMs > lastPlayedMs)
+                lastPlayedMs = legacyMs;
+        }
+        var daysSinceLastPlayed = lastPlayedMs > 0 ? Math.floor((now - lastPlayedMs) / 86400000) : -1;
+        // If the per-question ledger is missing (older clients used only the
+        // stats counters), fall back to the counters so lifetime facts still hold.
+        if (lifetimeAnswered === 0 && legacyStats && (legacyStats.totalQuestions || 0) > 0) {
+            lifetimeAnswered = legacyStats.totalQuestions || 0;
+            lifetimeCorrect = legacyStats.totalCorrect || 0;
+        }
+        var modeStats = (stats && stats.modeStats) ? stats.modeStats : {};
+        var modeNames = Object.keys(modeStats);
+        var topMode = "", topModeGames = 0, luckyMode = "", luckyWinRate = 0;
+        for (var m = 0; m < modeNames.length; m++) {
+            var ms = modeStats[modeNames[m]];
+            if (!ms)
+                continue;
+            if ((ms.games || 0) > topModeGames) {
+                topModeGames = ms.games || 0;
+                topMode = modeNames[m];
+            }
+            if ((ms.games || 0) >= 5) {
+                var wr = pct(ms.wins || 0, ms.games || 0);
+                if (wr > luckyWinRate) {
+                    luckyWinRate = wr;
+                    luckyMode = modeNames[m];
+                }
+            }
+        }
+        var topModeShare = totalGames > 0 ? topModeGames / totalGames : 0;
+        lineage["lifetime"] = {
+            source: "quiz_user_stats_<gameId>/stats_<userId>",
+            derivation: "quiz_results.js aggregate counters (games, wins, streaks, per-mode)",
+            sample_size: totalGames
+        };
+        // ── Daily streak (separate from win streak) ─────────────────────────────
+        var streakDoc = safeRead(nk, "user_streaks", "current", userId);
+        var dailyStreak = streakDoc ? (streakDoc.count || 0) : 0;
+        lineage["streaks"] = { source: "user_streaks/current + quiz_user_stats", derivation: "stored counters, no inference", sample_size: 1 };
+        // ── user_model derived (if the analytics sync populated it) ─────────────
+        var derivedModel = safeRead(nk, "user_model", "derived", userId) || {};
+        lineage["user_model"] = { source: "user_model/derived", derivation: "analytics-knowledge-sync output (pass-through)", sample_size: 1 };
+        // ── Social ──────────────────────────────────────────────────────────────
+        var friendsCount = 0;
+        try {
+            var fl = nk.friendsList(userId, 100, 0);
+            friendsCount = (fl && fl.friends) ? fl.friends.length : 0;
+        }
+        catch (e3) { /* social optional */ }
+        lineage["social"] = { source: "nk.friendsList(state=0)", derivation: "count of mutual friends", sample_size: friendsCount };
+        // ── Staged-questions engagement (seedq engine) ──────────────────────────
+        var seedqPools = 0, seedqConsumedSets = 0, seedqReadySets = 0;
+        var exhaustedPools = [];
+        try {
+            var page = nk.storageList(userId, SeedQ.COLL_STAGED, 50);
+            var objs = (page && page.objects) ? page.objects : [];
+            for (var so = 0; so < objs.length; so++) {
+                var doc = objs[so].value;
+                if (!doc || !doc.sets)
+                    continue;
+                seedqPools++;
+                for (var ds = 0; ds < doc.sets.length; ds++) {
+                    if (doc.sets[ds].status === "consumed")
+                        seedqConsumedSets++;
+                    else if (doc.sets[ds].status === "ready")
+                        seedqReadySets++;
+                }
+            }
+        }
+        catch (e4) { /* seedq optional */ }
+        lineage["seedq"] = { source: "sq_staged (per-user list)", derivation: "count staged docs + consumed/ready sets", sample_size: seedqPools };
+        // ── Onboarding-set facts + engine profile ───────────────────────────────
+        var profile = safeRead(nk, AahaaEngine.COLL_PROFILE, AahaaEngine.KEY_PROFILE, userId) || {};
+        var onboarding = profile.onboarding || {};
+        var pendingEvents = profile.pending_events || [];
+        for (var pe = 0; pe < pendingEvents.length; pe++) {
+            if (pendingEvents[pe] && pendingEvents[pe].type === "pool_exhausted" &&
+                (now - (pendingEvents[pe].ms || 0)) < 7 * 86400000) {
+                exhaustedPools.push((pendingEvents[pe].mode || "") + "/" + (pendingEvents[pe].topic || ""));
+            }
+        }
+        lineage["onboarding"] = { source: "aahaa_profile/profile.onboarding", derivation: "user-typed values, stored verbatim", sample_size: 1 };
+        var avgMs = timedCount > 0 ? Math.round(timeSumMs / timedCount) : 0;
+        var accuracyOverall = pct(lifetimeCorrect, lifetimeAnswered);
+        var archetype = derivedModel.personality_archetype ||
+            computeArchetype(totalGames, accuracyOverall, avgMs, modeNames.length, topModeShare);
+        lineage["derived"] = {
+            source: "decision table over lifetime counters (or user_model/derived when synced)",
+            derivation: "fixed thresholds: top-mode share ≥60%→Specialist; ≥6 modes→Renaissance; ≤6s/q & ≥60%→Speedrunner; ≥80%→Champion",
+            sample_size: totalGames
+        };
+        // Exam goal countdown (only if the user set it — never inferred).
+        var daysToExam = -1;
+        if (onboarding.exam_date_iso) {
+            try {
+                var examMs = new Date("" + onboarding.exam_date_iso).getTime();
+                if (examMs > 0)
+                    daysToExam = Math.ceil((examMs - now) / 86400000);
+            }
+            catch (e5) {
+                daysToExam = -1;
+            }
+        }
+        return {
+            version: AahaaFacts.FACT_PACK_VERSION,
+            computed_ms: now,
+            user_id: userId,
+            identity: {
+                username: username,
+                days_since_install: daysSinceInstall,
+                created_ms: createMs
+            },
+            lifetime: {
+                questions_answered: lifetimeAnswered,
+                questions_correct: lifetimeCorrect,
+                accuracy_pct: accuracyOverall,
+                avg_time_ms: avgMs,
+                total_games: totalGames,
+                total_wins: totalWins,
+                win_streak: winStreak,
+                longest_win_streak: longestWinStreak,
+                days_since_last_played: daysSinceLastPlayed
+            },
+            recent: {
+                window: RECENT_WINDOW,
+                answered: recAnswered,
+                correct: recCorrect,
+                accuracy_pct: pct(recCorrect, recAnswered),
+                avg_time_ms: recTimed > 0 ? Math.round(recTimeSum / recTimed) : 0,
+                tail_correct_run: tailCorrectRun,
+                tail_wrong_run: tailWrongRun,
+                lock_topic: lockTopic,
+                lock_run: lockRun,
+                struggling_topic: strugglingTopic,
+                struggling_wrong: strugglingWrong,
+                comebacks_after_3_wrong: comebacks,
+                improvement_pts: improvementPts
+            },
+            topics: { list: topicList.slice(0, 20), strongest: strongest, weakest: weakest, top3: top3 },
+            modes: {
+                distinct: modeNames.length,
+                top_mode: topMode,
+                top_mode_games: topModeGames,
+                top_mode_share_pct: Math.round(topModeShare * 100),
+                lucky_mode: luckyMode,
+                lucky_mode_win_rate_pct: luckyWinRate
+            },
+            streaks: { daily: dailyStreak, win: winStreak, longest_win: longestWinStreak },
+            social: { friends_count: friendsCount },
+            seedq: {
+                pools_engaged: seedqPools,
+                sets_consumed: seedqConsumedSets,
+                sets_ready: seedqReadySets,
+                exhausted_pools_7d: exhaustedPools
+            },
+            onboarding: {
+                target_exam_id: onboarding.target_exam_id || "",
+                exam_date_iso: onboarding.exam_date_iso || "",
+                days_to_exam: daysToExam,
+                preferred_play_time: onboarding.preferred_play_time || "",
+                interests: onboarding.interests || [],
+                birthday: onboarding.birthday || ""
+            },
+            derived: {
+                personality_archetype: archetype,
+                weak_topics: derivedModel.weak_topics || (weakest ? [weakest.topic] : []),
+                strong_topics: derivedModel.strong_topics || (strongest ? [strongest.topic] : [])
+            },
+            lineage: lineage
+        };
+    }
+    AahaaFacts.buildFactPack = buildFactPack;
+})(AahaaFacts || (AahaaFacts = {}));
+// aahaa_rpcs.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Aahaa engine — RPC surface. Platform-agnostic by construction: every RPC is
+// plain JSON over Nakama's HTTP/gRPC/WebSocket RPC transport, so the SAME
+// endpoints serve Unity iOS/Android/Desktop (IClient.RpcAsync), the web
+// frontend (fetch → POST /v2/rpc/<id>), and any server-side orchestrator
+// (http_key or service_token).
+//
+// USER RPCs (session auth):
+//   quizverse_aahaa_get         → the user's current ranked Aahaa feed
+//                                 (?generate=true to recompute on the spot)
+//   quizverse_aahaa_react       → shown|clicked|dismissed|converted|muted loop
+//   quizverse_aahaa_fact_pack   → the deducible Fact Pack + lineage
+//                                 (Growth Dashboard tap-to-trace source)
+//   quizverse_aahaa_profile_set → onboarding-set facts (exam goal, birthday,
+//                                 preferred play time, interests)
+//
+// ADMIN / SERVICE RPCs (http_key OR service_token == SEEDQ_SERVICE_TOKEN):
+//   quizverse_aahaa_generate_all → generate a feed for EVERY userID (cron batch)
+//   quizverse_aahaa_validate     → No-Hallucination validator for LLM output
+//   quizverse_aahaa_catalog      → catalog dump + live CTR stats per wow_id
+//
+// Cron wiring (same pattern as quizverse_seedq_ingest_tick):
+//   curl -sS -X POST "http://nakama:7350/v2/rpc/quizverse_aahaa_generate_all?http_key=<key>&unwrap" \
+//        -H 'Content-Type: application/json' \
+//        -d '{"service_token":"<SEEDQ_SERVICE_TOKEN>","max_users":100}'
+var Aahaa;
+(function (Aahaa) {
+    function errPayload(code, message) {
+        return JSON.stringify({ ok: false, code: code, error: message });
+    }
+    function parse(payload) {
+        if (!payload || payload === "")
+            return {};
+        try {
+            return JSON.parse(payload);
+        }
+        catch (e) {
+            throw new Error(JSON.stringify({ code: 3, message: "payload must be valid JSON" }));
+        }
+    }
+    function isAdminOrService(ctx, data) {
+        if (!ctx.userId)
+            return true; // server-to-server via http_key
+        var token = data && data.service_token;
+        if (!token)
+            return false;
+        var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
+        return expected.length > 0 && token === expected;
+    }
+    // ── quizverse_aahaa_get ─────────────────────────────────────────────────────
+    // Request:  { generate?: boolean }
+    // Response: { ok, feed: GeneratedWow[], rating_prompt_suppressed, generated_ms }
+    //
+    // The feed is pre-generated by the cron batch; `generate:true` forces a
+    // fresh compute (use after quiz completion so post-quiz wows reflect the
+    // quiz that just ended).
+    function rpcGet(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!ctx.userId)
+            return errPayload(16, "session required");
+        var feedDoc = SeedQ.readUser(nk, AahaaEngine.COLL_FEED, AahaaEngine.KEY_FEED, ctx.userId);
+        var stale = !feedDoc || (Date.now() - (feedDoc.generated_ms || 0)) > 6 * 3600 * 1000;
+        if (data.generate === true || stale) {
+            var res = AahaaEngine.generateForUser(ctx, nk, logger, ctx.userId);
+            return JSON.stringify({
+                ok: true,
+                generated_now: true,
+                feed: res.feed,
+                rating_prompt_suppressed: res.rating_prompt_suppressed,
+                generated_ms: Date.now(),
+                module_version: AahaaEngine.MODULE_VERSION
+            });
+        }
+        return JSON.stringify({
+            ok: true,
+            generated_now: false,
+            feed: feedDoc.feed || [],
+            rating_prompt_suppressed: !!feedDoc.rating_prompt_suppressed,
+            generated_ms: feedDoc.generated_ms || 0,
+            module_version: AahaaEngine.MODULE_VERSION
+        });
+    }
+    // ── quizverse_aahaa_react ───────────────────────────────────────────────────
+    // Request:  { wow_id, action: "shown"|"clicked"|"dismissed"|"converted"|"muted", fullscreen? }
+    // Response: { ok }
+    function rpcReact(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!ctx.userId)
+            return errPayload(16, "session required");
+        var wowId = ("" + (data.wow_id || "")).slice(0, 64);
+        var action = ("" + (data.action || "")).toLowerCase();
+        if (!wowId)
+            return errPayload(3, "wow_id required");
+        var allowed = ["shown", "clicked", "dismissed", "converted", "muted"];
+        if (allowed.indexOf(action) < 0)
+            return errPayload(3, "action must be one of " + allowed.join("|"));
+        if (action === "muted") {
+            AahaaEngine.muteWow(nk, ctx.userId, wowId);
+        }
+        else {
+            AahaaEngine.recordReaction(nk, wowId, action);
+            if (action === "shown")
+                AahaaEngine.markFired(nk, ctx.userId, wowId, data.fullscreen === true);
+        }
+        return JSON.stringify({ ok: true, wow_id: wowId, action: action });
+    }
+    // ── quizverse_aahaa_fact_pack ───────────────────────────────────────────────
+    // Request:  {} (session)  OR  { service_token, user_id } (LLM narration
+    //           surfaces fetch the fact pack server-side before prompting).
+    // Response: { ok, facts, constraints } — `constraints` mirrors §7.1 of
+    //           CATALOG-DEDUCIBLE_INSIGHTS.md and should be forwarded verbatim
+    //           into the LLM prompt.
+    function rpcFactPack(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        var userId = ctx.userId || "";
+        if (!userId) {
+            if (!isAdminOrService(ctx, data))
+                return errPayload(16, "session or service_token required");
+            userId = "" + (data.user_id || "");
+            if (!userId)
+                return errPayload(3, "user_id required for service caller");
+        }
+        var facts = AahaaFacts.buildFactPack(ctx, nk, logger, userId);
+        return JSON.stringify({
+            ok: true,
+            facts: facts,
+            constraints: {
+                max_words: 60,
+                must_use_at_least_one_fact: true,
+                must_not_invent_numbers: true,
+                must_not_claim_emotion: true,
+                must_cite_each_numeric_claim: true
+            }
+        });
+    }
+    // ── quizverse_aahaa_profile_set ─────────────────────────────────────────────
+    // Onboarding-set facts — the user typed them, we store them verbatim.
+    // Request: { target_exam_id?, exam_date_iso?, preferred_play_time?,
+    //            interests?: string[], birthday? ("YYYY-MM-DD") }
+    function rpcProfileSet(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!ctx.userId)
+            return errPayload(16, "session required");
+        var profile = AahaaEngine.readProfile(nk, ctx.userId);
+        var ob = profile.onboarding;
+        var changed = [];
+        if (data.target_exam_id !== undefined) {
+            ob.target_exam_id = ("" + data.target_exam_id).slice(0, 40);
+            changed.push("target_exam_id");
+        }
+        if (data.exam_date_iso !== undefined) {
+            ob.exam_date_iso = ("" + data.exam_date_iso).slice(0, 24);
+            changed.push("exam_date_iso");
+        }
+        if (data.preferred_play_time !== undefined) {
+            ob.preferred_play_time = ("" + data.preferred_play_time).slice(0, 24);
+            changed.push("preferred_play_time");
+        }
+        if (data.interests !== undefined && data.interests && data.interests.length !== undefined) {
+            var ints = [];
+            for (var i = 0; i < data.interests.length && i < 20; i++)
+                ints.push(("" + data.interests[i]).slice(0, 40));
+            ob.interests = ints;
+            changed.push("interests");
+        }
+        if (data.birthday !== undefined) {
+            ob.birthday = ("" + data.birthday).slice(0, 10);
+            ob.birthday_set_ms = Date.now(); // anti-fake guard for wow.s.birthday_quiz
+            changed.push("birthday");
+        }
+        AahaaEngine.writeProfile(nk, ctx.userId, profile);
+        return JSON.stringify({ ok: true, changed: changed, onboarding: ob });
+    }
+    // ── quizverse_aahaa_generate_all (admin/service, cron) ──────────────────────
+    // Request: { service_token?, max_users?, reset_cursor? }
+    function rpcGenerateAll(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var maxUsers = SeedQ.clampInt(data.max_users, 1, 500, 100);
+        var res = AahaaEngine.generateAll(ctx, nk, logger, maxUsers, data.reset_cursor === true);
+        logger.info("[Aahaa] generate_all processed=" + res.processed + " errors=" + res.errors + " exhausted=" + res.cursor_exhausted);
+        return JSON.stringify({ ok: true, batch: res, module_version: AahaaEngine.MODULE_VERSION });
+    }
+    // ── quizverse_aahaa_validate (admin/service) ────────────────────────────────
+    // The No-Hallucination gate for LLM narration. Callers: AI Host / Fortune
+    // Teller / Tutor services, web prod-canary middleware, CI fixtures.
+    // Request: { service_token?, text, surface?, max_words?,
+    //            user_id? (build fact pack) | facts? (inline fact pack) }
+    function rpcValidate(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var text = "" + (data.text || "");
+        if (!text)
+            return errPayload(3, "text required");
+        var facts = data.facts || null;
+        if (!facts && data.user_id) {
+            facts = AahaaFacts.buildFactPack(ctx, nk, logger, "" + data.user_id);
+        }
+        if (!facts)
+            return errPayload(3, "facts or user_id required");
+        var res = AahaaValidator.validate(text, facts, { surface: data.surface, max_words: data.max_words });
+        return JSON.stringify({ ok: true, validation: res });
+    }
+    // ── quizverse_aahaa_catalog (admin/service) ─────────────────────────────────
+    // Live-ops observability: the full catalog + rolling CTR stats per wow_id.
+    function rpcCatalog(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var stats = SeedQ.readSystem(nk, AahaaEngine.COLL_STATS, "stats") || { wows: {} };
+        var entries = AahaaCatalog.catalog();
+        var out = [];
+        for (var i = 0; i < entries.length; i++) {
+            var e = entries[i];
+            var w = (stats.wows && stats.wows[e.wow_id]) || { shown: 0, clicked: 0, dismissed: 0 };
+            out.push({
+                wow_id: e.wow_id, tier: e.tier, surface: e.surface,
+                copy_template: e.copy_template, cta_action_id: e.cta_action_id,
+                loop_event: e.loop_event, mechanic: e.mechanic,
+                priority_class: e.priority_class, celebratory: e.celebratory,
+                fullscreen: e.fullscreen, cooldown_days: e.cooldown_days,
+                data_sources: e.data_sources,
+                stats: { shown: w.shown | 0, clicked: w.clicked | 0, dismissed: w.dismissed | 0,
+                    ctr: (w.shown | 0) > 0 ? Math.round(((w.clicked | 0) / w.shown) * 1000) / 1000 : null }
+            });
+        }
+        var batch = SeedQ.readSystem(nk, AahaaEngine.COLL_BATCH, "state") || {};
+        return JSON.stringify({
+            ok: true, catalog: out, catalog_size: out.length,
+            batch_state: { runs: batch.runs || 0, users_done_total: batch.users_done_total || 0, last_run_ms: batch.last_run_ms || 0 },
+            module_version: AahaaEngine.MODULE_VERSION
+        });
+    }
+    // ── Registration ────────────────────────────────────────────────────────────
+    function register(initializer) {
+        initializer.registerRpc("quizverse_aahaa_get", rpcGet);
+        initializer.registerRpc("quizverse_aahaa_react", rpcReact);
+        initializer.registerRpc("quizverse_aahaa_fact_pack", rpcFactPack);
+        initializer.registerRpc("quizverse_aahaa_profile_set", rpcProfileSet);
+        initializer.registerRpc("quizverse_aahaa_generate_all", rpcGenerateAll);
+        initializer.registerRpc("quizverse_aahaa_validate", rpcValidate);
+        initializer.registerRpc("quizverse_aahaa_catalog", rpcCatalog);
+    }
+    Aahaa.register = register;
+})(Aahaa || (Aahaa = {}));
+// aahaa_validator.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Aahaa engine — the No-Hallucination Contract, server-side.
+//
+// This is the runtime twin of `lint-llm-output.ts` from
+// CATALOG-DEDUCIBLE_INSIGHTS.md §7.4 + §12.2. Any surface that lets an LLM
+// narrate over a Fact Pack (AI Host, AI Fortune Teller, AI Tutor) can POST its
+// candidate text here BEFORE showing it to the user:
+//
+//   1. Every numeric claim in the text must appear in the fact pack (or be a
+//      simple derivation: rounding, percent complement, ms→s conversion).
+//   2. Emotion attribution ("you felt/laughed/are frustrated…") is rejected.
+//   3. Word-count cap enforced (default 60).
+//   4. Fortune Teller mode additionally:
+//      · requires a non-deterministic phrase from the allowlist
+//        ("suggests", "points to", "might", "could", "try", "for fun")
+//      · rejects sensitive-inference terms (health/mood-disorder/money/...)
+//      · rejects high-stakes advice verbs ("quit", "invest", "break up", ...)
+//   5. On failure the caller gets `fallback_template` — a safe, fact-only
+//      rendering it can show instead (never show the rejected text).
+var AahaaValidator;
+(function (AahaaValidator) {
+    var EMOTION_TOKENS = [
+        "you felt", "you feel", "you're feeling", "you seemed", "you seem",
+        "you laughed", "you cried", "you're proud", "you were proud",
+        "you're frustrated", "you were frustrated", "you're sad", "you were sad",
+        "you're angry", "you were angry", "you're excited", "you were excited",
+        "you're happy", "you were happy", "you enjoyed", "you loved"
+    ];
+    var DETERMINISTIC_FUTURE = [
+        "you will definitely", "this will happen", "you are destined", "it is certain",
+        "you'll definitely", "guaranteed to"
+    ];
+    var FORTUNE_ALLOWLIST = ["suggest", "points to", "might", "could", "try", "for fun", "pattern"];
+    var SENSITIVE_TERMS = [
+        "depression", "anxiety", "diagnos", "therapy", "medicat", "illness", "disorder",
+        "pregnan", "religion", "politic", "sexuality", "salary", "income", "debt",
+        "divorce", "breakup", "break up", "medical"
+    ];
+    var ADVICE_VERBS = [
+        "you should quit", "you should invest", "you should move", "take medicine",
+        "stop taking", "you should leave", "you must buy", "you need to buy"
+    ];
+    // Flattens every number reachable in the facts object (plus cheap derived
+    // forms) into a lookup set of canonical strings.
+    function collectNumbers(obj, out, depth) {
+        if (depth > 6 || obj === null || obj === undefined)
+            return;
+        var t = typeof obj;
+        if (t === "number") {
+            if (!isFinite(obj))
+                return;
+            addNumberForms(obj, out);
+            return;
+        }
+        if (t === "string") {
+            // Numbers embedded in stored strings (e.g. dates) count as citable.
+            var m = obj.match(/\d+(\.\d+)?/g);
+            if (m)
+                for (var s = 0; s < m.length; s++)
+                    out[m[s]] = true;
+            return;
+        }
+        if (t === "object") {
+            if (Object.prototype.toString.call(obj) === "[object Array]") {
+                for (var i = 0; i < obj.length; i++)
+                    collectNumbers(obj[i], out, depth + 1);
+                // Array length is a countable fact ("3 topics").
+                addNumberForms(obj.length, out);
+            }
+            else {
+                var keys = Object.keys(obj);
+                for (var k = 0; k < keys.length; k++)
+                    collectNumbers(obj[keys[k]], out, depth + 1);
+            }
+        }
+    }
+    function addNumberForms(n, out) {
+        out["" + n] = true;
+        out["" + Math.round(n)] = true;
+        out["" + Math.floor(n)] = true;
+        out["" + Math.ceil(n)] = true;
+        if (n >= 0 && n <= 100)
+            out["" + (100 - Math.round(n))] = true; // percent complement
+        if (n >= 1000) {
+            out["" + Math.round(n / 1000)] = true; // ms→s, k-rounding
+            out["" + (Math.round(n / 100) / 10)] = true; // ms→s with 1 decimal
+        }
+        if (n > 0 && n < 1)
+            out["" + Math.round(n * 100)] = true; // ratio→pct
+    }
+    function validate(text, facts, opts) {
+        var violations = [];
+        var surface = "" + ((opts && opts.surface) || "generic");
+        var maxWords = (opts && opts.max_words) ? opts.max_words : 60;
+        var lower = (" " + text + " ").toLowerCase();
+        // 1 · Numeric claims must trace to the fact pack.
+        var known = {};
+        collectNumbers(facts, known, 0);
+        // Small counting numbers in prose ("one of", "3-day") are allowed 0–10.
+        for (var lo = 0; lo <= 10; lo++)
+            known["" + lo] = true;
+        var claims = text.match(/\d+(\.\d+)?/g) || [];
+        var unmatched = [];
+        for (var c = 0; c < claims.length; c++) {
+            if (!known[claims[c]])
+                unmatched.push(claims[c]);
+        }
+        if (unmatched.length > 0) {
+            violations.push("numeric claims not present in fact pack: " + unmatched.join(", "));
+        }
+        // 2 · No emotion attribution.
+        for (var e = 0; e < EMOTION_TOKENS.length; e++) {
+            if (lower.indexOf(EMOTION_TOKENS[e]) >= 0) {
+                violations.push("emotion attribution: \"" + EMOTION_TOKENS[e] + "\"");
+            }
+        }
+        // 3 · No deterministic future claims.
+        for (var d = 0; d < DETERMINISTIC_FUTURE.length; d++) {
+            if (lower.indexOf(DETERMINISTIC_FUTURE[d]) >= 0) {
+                violations.push("deterministic future claim: \"" + DETERMINISTIC_FUTURE[d] + "\"");
+            }
+        }
+        // 4 · Word count.
+        var words = text.split(/\s+/);
+        var wordCount = 0;
+        for (var w = 0; w < words.length; w++)
+            if (words[w].length > 0)
+                wordCount++;
+        if (wordCount > maxWords)
+            violations.push("word count " + wordCount + " exceeds max " + maxWords);
+        // 5 · Fortune Teller mode (soft-signal guardrails, §12.2).
+        if (surface === "AIFortuneTeller" || surface === "aifortuneteller") {
+            var hasAllow = false;
+            for (var a = 0; a < FORTUNE_ALLOWLIST.length; a++) {
+                if (lower.indexOf(FORTUNE_ALLOWLIST[a]) >= 0) {
+                    hasAllow = true;
+                    break;
+                }
+            }
+            if (!hasAllow)
+                violations.push("fortune output missing non-deterministic phrase (suggests/points to/might/could/try/for fun)");
+            for (var st = 0; st < SENSITIVE_TERMS.length; st++) {
+                if (lower.indexOf(SENSITIVE_TERMS[st]) >= 0)
+                    violations.push("sensitive inference term: \"" + SENSITIVE_TERMS[st] + "\"");
+            }
+            for (var av = 0; av < ADVICE_VERBS.length; av++) {
+                if (lower.indexOf(ADVICE_VERBS[av]) >= 0)
+                    violations.push("high-stakes advice: \"" + ADVICE_VERBS[av] + "\"");
+            }
+            var signalCount = (facts && facts.recent && facts.recent.answered) ? 1 : 0;
+            if (signalCount === 0)
+                violations.push("fortune personalisation requires ≥1 behavioural signal in the fact pack");
+        }
+        // Safe deterministic fallback the caller can render verbatim on failure.
+        var fallback = "You've answered {questions_answered} questions with {accuracy_pct}% accuracy. Keep going.";
+        if (surface === "AIFortuneTeller" || surface === "aifortuneteller") {
+            fallback = "The cards are quiet today — try a quiz and check back. For fun, based on your recent QuizVerse patterns.";
+        }
+        return {
+            pass: violations.length === 0,
+            violations: violations,
+            numeric_claims: claims,
+            unmatched_numbers: unmatched,
+            word_count: wordCount,
+            fallback_template: fallback
+        };
+    }
+    AahaaValidator.validate = validate;
+})(AahaaValidator || (AahaaValidator = {}));
 // ai_pipelines.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // Nakama-side proxy RPCs for the AI service's content-factory endpoints.
@@ -13059,16 +14800,152 @@ var QuizVerseMigration;
             // Non-fatal; v2 scoring will fall back to client-supplied answers.
         }
     }
+    // ─────────────────────────────────────────────────────────────────────
+    // No-Repeat guarantee (per userID) — serve-time seen ledger chokepoint.
+    // ─────────────────────────────────────────────────────────────────────
+    // Used by the inline-questions delivery path below (SeedQ/Aahaa go-live
+    // proof: showcase page + verify_deliverables.mjs check #7):
+    //   1. every served question gets a stable content-hash id
+    //      (sha256(stem|sorted options) → 12 hex, "prefix_topicslug_hash"),
+    //   2. already-seen questions are excluded from the served picks while
+    //      unseen remain; when the pool is exhausted, seen ones return
+    //      flagged `recycled: true` (honest-repeat disclosure, D1 §6.2),
+    //   3. served ids are merged into qv_seen immediately (via the
+    //      globalThis.__qvsSeen bridge), so the NEXT fetch cannot repeat them.
+    // Fail-open by design: if the seen bridge is missing or anything throws,
+    // questions are served untouched.
+    function migSlugify(str) {
+        if (!str)
+            return "unknown";
+        return str.trim().toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_|_$/g, "")
+            .substring(0, 64);
+    }
+    function migQuestionId(nk, prefix, topic, q) {
+        var existing = q && (q.question_id || q.id);
+        if (existing)
+            return String(existing);
+        var stem = String((q && (q.question || q.question_text || q.text)) || "").trim().toLowerCase();
+        var opts = [];
+        var rawOpts = (q && (q.options || q.choices || q.answers)) || [];
+        for (var i = 0; i < rawOpts.length; i++) {
+            var o = rawOpts[i];
+            opts.push(String(typeof o === "object" && o !== null ? (o.text || o.value || "") : o).trim().toLowerCase());
+        }
+        opts.sort();
+        var raw = stem;
+        for (var j = 0; j < opts.length; j++)
+            raw += "|" + opts[j];
+        return prefix + "_" + migSlugify(topic) + "_" + nk.sha256Hash(raw).substring(0, 12);
+    }
+    // Picks `count` questions from the inline pool: unseen first, honest
+    // `recycled: true` repeats only when unseen alone cannot fill the request.
+    // Marks ONLY the served ids into qv_seen (serve-time chokepoint).
+    function serveInlineNoRepeat(nk, logger, userId, scope, topic, idPrefix, pool, count) {
+        var seenIdSet = {};
+        var seenBridge = globalThis.__qvsSeen;
+        try {
+            if (seenBridge && seenBridge.getIdSet) {
+                seenIdSet = seenBridge.getIdSet(nk, userId, scope, topic) || {};
+            }
+        }
+        catch (e) {
+            logger.warn("[Migration/NoRepeat] seen read failed (fail-open): " + (e && e.message ? e.message : String(e)));
+        }
+        var unseen = [];
+        var repeats = [];
+        for (var i = 0; i < pool.length; i++) {
+            var q = pool[i];
+            var qid = migQuestionId(nk, idPrefix, topic, q);
+            if (!q.question_id && !q.id)
+                q.id = qid; // additive — only when absent
+            if (seenIdSet[qid]) {
+                q.recycled = true;
+                repeats.push(q);
+            }
+            else
+                unseen.push(q);
+        }
+        var served = unseen.slice(0, count);
+        var freshCount = served.length;
+        if (served.length < count) {
+            served = served.concat(repeats.slice(0, count - served.length));
+        }
+        // Serve-time marking: the next fetch for this userID cannot repeat these.
+        try {
+            if (seenBridge && seenBridge.merge && served.length > 0) {
+                var servedIds = [];
+                for (var s = 0; s < served.length; s++) {
+                    servedIds.push(String(served[s].question_id || served[s].id));
+                }
+                seenBridge.merge(nk, userId, scope, topic, servedIds);
+            }
+        }
+        catch (mergeErr) {
+            logger.warn("[Migration/NoRepeat] seen merge failed (non-critical): " +
+                (mergeErr && mergeErr.message ? mergeErr.message : String(mergeErr)));
+        }
+        return {
+            questions: served,
+            repeat_policy: {
+                fresh_count: freshCount,
+                review_count: served.length - freshCount,
+                pool_exhausted: unseen.length === 0
+            }
+        };
+    }
     function rpcRequestQuestions(ctx, logger, nk, payload) {
         var userId = requireAuth(ctx);
         var req = parseJson(payload);
         var kind = req.kind || "deduped_s3";
         var sourceTrace = { kind: kind, mode: req.mode || "unknown", attempted: [] };
-        // P1 is fully superseded by quizverse_get_questions (get_questions.ts).
-        // All Unity quiz modes now call quizverse_get_questions directly.
-        // quizverse_request_questions is kept registered for backward compatibility
-        // with very old client builds, but it always tells the client to fall back
-        // to the new pipeline.
+        // Inline-questions path — the caller supplies its own question pool and
+        // this RPC applies the No-Repeat chokepoint (qv_seen filter + serve-time
+        // marking + honest repeat_policy). This is the production proof surface
+        // for the SeedQ/Aahaa go-live (showcase page §"No-repeat" + verifier
+        // check #7) and the S3-fallback path noted in the go-live runbook §6.
+        var inline = (req.inline_questions && req.inline_questions.length !== undefined) ? req.inline_questions : [];
+        if (kind === "deduped_s3" && inline.length > 0) {
+            var scope = String(req.scope || "global");
+            var topic = String(req.topic || "general");
+            var idPrefix = String(req.id_prefix || "s3");
+            var count = parseInt(req.count, 10) || 10;
+            if (count < 1)
+                count = 1;
+            if (count > inline.length)
+                count = inline.length;
+            sourceTrace.attempted.push("inline_no_repeat");
+            sourceTrace.served_by = "inline_no_repeat";
+            var served = serveInlineNoRepeat(nk, logger, userId, scope, topic, idPrefix, inline, count);
+            var packId = newPackId(userId);
+            persistQuestionPack(nk, userId, packId, served.questions, sourceTrace);
+            var contextPackVersion = "v1";
+            try {
+                var pack = readPlayerContext(nk, userId);
+                contextPackVersion = (pack && pack.version) || "v1";
+            }
+            catch (_e) { }
+            var servedIdList = [];
+            for (var si = 0; si < served.questions.length; si++) {
+                servedIdList.push(String(served.questions[si].question_id || served.questions[si].id));
+            }
+            return JSON.stringify({
+                ok: true,
+                questions: served.questions,
+                question_pack_id: packId,
+                seen_snapshot: servedIdList,
+                context_pack_version: contextPackVersion,
+                source_trace: sourceTrace,
+                repeat_policy: served.repeat_policy,
+                meta: {}
+            });
+        }
+        // Every other kind: P1 is fully superseded by quizverse_get_questions
+        // (get_questions.ts). All Unity quiz modes now call quizverse_get_questions
+        // directly. quizverse_request_questions is kept registered for backward
+        // compatibility with very old client builds, but it always tells the
+        // client to fall back to the new pipeline.
         logger.warn("[Migration] quizverse_request_questions called with kind=" + kind +
             " — this RPC is retired. Client should call quizverse_get_questions instead.");
         return JSON.stringify({
@@ -41747,6 +43624,90 @@ var LegacyQuiz;
     function saveStats(nk, userId, stats) {
         Storage.writeJson(nk, Constants.QUIZ_RESULTS_COLLECTION, "stats_" + userId, userId, stats);
     }
+    // Rolling per-question knowledge ledger — same document contract as
+    // quiz_results.js appendKnowledgeMapHistory ({entries:[{category, correct,
+    // time_ms}]} at <slug>_quiz_history/history), consumed by quizverse_depth,
+    // the seedq adaptive profile, and the Aahaa fact pack.
+    var KM_MAX_ENTRIES = 2000;
+    function appendKnowledgeHistory(nk, logger, userId, data, category, totalQuestions, correctAnswers) {
+        var collection = "quiz-verse_quiz_history";
+        var existing = Storage.readJson(nk, collection, "history", userId);
+        var entries = (existing && existing.entries && existing.entries.length !== undefined) ? existing.entries : [];
+        var newEntries = [];
+        var qh = (data.questionHistory && data.questionHistory.length !== undefined) ? data.questionHistory : [];
+        for (var i = 0; i < qh.length; i++) {
+            var q = qh[i];
+            if (!q || typeof q !== "object")
+                continue;
+            newEntries.push({
+                category: q.category || q.categoryName || q.categoryId || category || "general",
+                correct: (q.correct !== undefined) ? !!q.correct : !!q.was_correct,
+                time_ms: parseInt(q.time_ms || q.timeMs || 0, 10) || 0
+            });
+        }
+        if (newEntries.length === 0 && data.questionDetails && data.questionDetails.length) {
+            for (var d = 0; d < data.questionDetails.length; d++) {
+                var qd = data.questionDetails[d];
+                if (!qd || typeof qd !== "object")
+                    continue;
+                newEntries.push({
+                    category: qd.category || qd.concept || category || "general",
+                    correct: !!qd.isCorrect,
+                    time_ms: Math.round((parseFloat(qd.timeTakenSeconds) || 0) * 1000)
+                });
+            }
+        }
+        if (newEntries.length === 0) {
+            // Synthesized aggregate entry — one row per quiz for older clients.
+            var acc = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+            newEntries.push({ category: category || "general", correct: acc >= 60, time_ms: 0 });
+        }
+        var combined = entries.concat(newEntries);
+        if (combined.length > KM_MAX_ENTRIES)
+            combined = combined.slice(combined.length - KM_MAX_ENTRIES);
+        Storage.writeJson(nk, collection, "history", userId, { entries: combined });
+        logger.info("[LegacyQuiz] knowledge history +" + newEntries.length + " entries (total=" + combined.length + ")");
+    }
+    // Submit-time qv_seen backstop. This handler SHADOWS quiz_results.js's
+    // rpcQuizSubmitResult (postbuild assigns __rpc_quiz_submit_result
+    // unconditionally here), which silently dropped its seen-ledger merge —
+    // clients that only mark seen at submit were repeating questions. Mirrors
+    // the exact quiz_results.js contract (seenQuestionIds/seenScope/seenTopic,
+    // top-level or under metadata) and additionally harvests answers[].question_id
+    // (the quiz_submit_result_v2 forward). Non-critical: never blocks the submit.
+    function mergeSeenQuestions(nk, logger, userId, data, category) {
+        var bridge = globalThis.__qvsSeen;
+        if (!bridge)
+            return;
+        var seenIds = null;
+        var seenScopeRaw = null;
+        var seenTopicRaw = null;
+        if (data.seenQuestionIds && data.seenQuestionIds.length > 0) {
+            seenIds = data.seenQuestionIds;
+            seenScopeRaw = data.seenScope;
+            seenTopicRaw = data.seenTopic;
+        }
+        else if (data.metadata && data.metadata.seenQuestionIds && data.metadata.seenQuestionIds.length > 0) {
+            seenIds = data.metadata.seenQuestionIds;
+            seenScopeRaw = data.metadata.seenScope;
+            seenTopicRaw = data.metadata.seenTopic;
+        }
+        else if (data.answers && data.answers.length > 0) {
+            seenIds = [];
+            for (var a = 0; a < data.answers.length; a++) {
+                var qid = data.answers[a] && (data.answers[a].question_id || data.answers[a].id);
+                if (qid)
+                    seenIds.push(String(qid));
+            }
+        }
+        if (!seenIds || seenIds.length === 0)
+            return;
+        var scope = seenScopeRaw || "global";
+        var topic = seenTopicRaw || data.categoryName || category || "general";
+        bridge.merge(nk, userId, scope, topic, seenIds);
+        logger.info("[LegacyQuiz] merged " + seenIds.length + " seen IDs into qv_seen/" +
+            bridge.buildKey(scope, topic));
+    }
     function rpcSubmitResult(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -41780,6 +43741,31 @@ var LegacyQuiz;
             : score;
         stats.lastPlayedAt = ts;
         saveStats(nk, userId, stats);
+        // Repetition-Fatigue "after hook" (Deliverable 1): append per-question
+        // entries to the knowledge-map ledger (quiz-verse_quiz_history). This
+        // ledger feeds the seedq adaptive profile AND the Aahaa fact pack
+        // (lock_it_in / weakness / frustration signals) — without it, backend
+        // personalisation is blind for clients that submit through this v1 RPC.
+        // Implemented inline (not via the globalThis.__kmAppendHistory bridge —
+        // that bridge lives in a postbuild-renamed InitModule that never runs).
+        // Non-critical: never blocks the main submit.
+        try {
+            appendKnowledgeHistory(nk, logger, userId, data, category, totalQuestions, correctAnswers);
+        }
+        catch (kmErr) {
+            logger.warn("[LegacyQuiz] knowledge-history append failed (non-critical): " +
+                (kmErr && kmErr.message ? kmErr.message : String(kmErr)));
+        }
+        // No-Repeat backstop: merge played question IDs into the qv_seen ledger
+        // so quizverse_quiz_generate / quizverse_request_questions can never
+        // serve them to this userID again inside the repeat window.
+        try {
+            mergeSeenQuestions(nk, logger, userId, data, category);
+        }
+        catch (seenErr) {
+            logger.warn("[LegacyQuiz] seen-ledger merge failed (non-critical): " +
+                (seenErr && seenErr.message ? seenErr.message : String(seenErr)));
+        }
         EventBus.emit(nk, logger, ctx, EventBus.Events.QUIZ_COMPLETED, {
             userId: userId,
             score: score,
@@ -67120,6 +69106,2037 @@ var SatoriWebhooks;
     }
     SatoriWebhooks.registerEventHandlers = registerEventHandlers;
 })(SatoriWebhooks || (SatoriWebhooks = {}));
+// sq_core.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// QuizVerse Seed Questions ("Staged Questions") — core types + shared helpers.
+//
+// Hosted surface: seedquestions.intelli-verse-x.ai (see deploy/seedquestions/)
+// which routes to Nakama's /v2/rpc/quizverse_seedq_* endpoints.
+//
+// The Staged Questions engine keeps 2–3 ready-to-play question SETS staged
+// per (user, mode, topic) so the iOS/Android client always has fresh,
+// never-seen-before, difficulty-adapted content available instantly —
+// even offline-first (client caches the staged payload).
+//
+// Guarantees (the four checklist items):
+//   1. Question Quality  — every question passes structural auto-QA at ingest
+//                          (sq_quality.ts) and stays subject to user review /
+//                          quarantine after ship.
+//   2. Unique per userID — staged sets exclude every id in the user's qv_seen
+//                          ledger (shared with the rest of QuizVerse via
+//                          globalThis.__qvsSeen) AND every id already staged.
+//                          Consuming a set merges its ids back into qv_seen.
+//   3. Adaptive per userID+topic — target difficulty derived from the user's
+//                          per-topic accuracy in quiz-verse_quiz_history,
+//                          served as a 60/20/20 difficulty mix.
+//   4. Fresh seeding     — 13 content-source connectors (sq_sources.ts) feed
+//                          the pool; quizverse_seedq_ingest_tick rotates
+//                          through them on a cron cadence.
+//
+// Storage layout
+// ──────────────
+//   sq_pool         SYSTEM   key {mode}_{topic}   { questions[], updated_ms }
+//   sq_pool_index   SYSTEM   key "index"          { keys: { poolKey: true } }
+//   sq_review       SYSTEM   key {mode}_{topic}   { [qid]: {up,down,flags,reasons,status} }
+//   sq_staged       PER-USER key {mode}_{topic}   { sets: StagedSet[], updated_ms }
+//   sq_source_cache SYSTEM   key {provider}:{sig} { fetched_ms, ttl_ms, data }
+//   sq_ingest_state SYSTEM   key "state"          { cursor, runs, last_run_ms }
+//   sq_focus_tracks SYSTEM   key "tracks"         { fetched_ms, tracks[] }
+//
+// ES5 / Goja rules honored: no Node built-ins, no module-level mutable state,
+// string-literal registerRpc ids, single-arg register() (sq_rpcs.ts).
+var SeedQ;
+(function (SeedQ) {
+    SeedQ.MODULE_VERSION = "seed-questions/1.0.0";
+    // ── Collections ────────────────────────────────────────────────────────────
+    SeedQ.COLL_POOL = "sq_pool";
+    SeedQ.COLL_POOL_INDEX = "sq_pool_index";
+    SeedQ.COLL_REVIEW = "sq_review";
+    SeedQ.COLL_STAGED = "sq_staged";
+    SeedQ.COLL_SOURCE_CACHE = "sq_source_cache";
+    SeedQ.COLL_INGEST_STATE = "sq_ingest_state";
+    SeedQ.COLL_FOCUS_TRACKS = "sq_focus_tracks";
+    // ── Tunables ────────────────────────────────────────────────────────────────
+    SeedQ.TARGET_READY_SETS = 3; // keep 2–3 sets staged; top up to 3
+    SeedQ.MIN_READY_SETS = 2;
+    SeedQ.DEFAULT_SET_SIZE = 10;
+    SeedQ.MAX_SET_SIZE = 25;
+    SeedQ.POOL_MAX_QUESTIONS = 400; // per (mode, topic) pool doc
+    SeedQ.CONSUMED_SET_TTL_MS = 7 * 86400 * 1000;
+    SeedQ.SEEN_SCOPE = "seedq"; // qv_seen scope for this engine
+    SeedQ.HISTORY_READ_CAP = 200; // newest history entries for adaptive calc
+    // ── Small helpers ───────────────────────────────────────────────────────────
+    function nowMs() {
+        return Date.now();
+    }
+    SeedQ.nowMs = nowMs;
+    function slugify(s) {
+        return ("" + (s || ""))
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .substring(0, 64) || "general";
+    }
+    SeedQ.slugify = slugify;
+    function poolKey(mode, topic) {
+        return slugify(mode) + "_" + slugify(topic);
+    }
+    SeedQ.poolKey = poolKey;
+    // Stable content-hash id — mirrors quizverse_quiz_generate.js convention so
+    // the same question sourced twice always dedupes.
+    function questionId(nk, source, question, options) {
+        var sorted = (options || []).slice(0).sort();
+        var raw = slugify(question).substring(0, 48) + "|" + sorted.join("|").toLowerCase();
+        var hex = nk.sha256Hash(raw);
+        return "sq_" + slugify(source).substring(0, 12) + "_" + hex.substring(0, 12);
+    }
+    SeedQ.questionId = questionId;
+    function shuffle(arr) {
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = tmp;
+        }
+        return arr;
+    }
+    SeedQ.shuffle = shuffle;
+    function randSuffix() {
+        return Math.random().toString(36).slice(2, 8);
+    }
+    SeedQ.randSuffix = randSuffix;
+    function clampInt(v, lo, hi, dflt) {
+        var n = parseInt(v, 10);
+        if (isNaN(n))
+            return dflt;
+        if (n < lo)
+            return lo;
+        if (n > hi)
+            return hi;
+        return n;
+    }
+    SeedQ.clampInt = clampInt;
+    // ── Storage helpers ─────────────────────────────────────────────────────────
+    function readSystem(nk, collection, key) {
+        try {
+            var rows = nk.storageRead([{ collection: collection, key: key, userId: "00000000-0000-0000-0000-000000000000" }]);
+            if (rows && rows.length > 0 && rows[0].value)
+                return rows[0].value;
+        }
+        catch (e) { /* not found is fine */ }
+        return null;
+    }
+    SeedQ.readSystem = readSystem;
+    function writeSystem(nk, collection, key, value) {
+        nk.storageWrite([{
+                collection: collection,
+                key: key,
+                userId: "00000000-0000-0000-0000-000000000000",
+                value: value,
+                permissionRead: 2,
+                permissionWrite: 0
+            }]);
+    }
+    SeedQ.writeSystem = writeSystem;
+    function readUser(nk, collection, key, userId) {
+        try {
+            var rows = nk.storageRead([{ collection: collection, key: key, userId: userId }]);
+            if (rows && rows.length > 0 && rows[0].value)
+                return rows[0].value;
+        }
+        catch (e) { /* not found is fine */ }
+        return null;
+    }
+    SeedQ.readUser = readUser;
+    function writeUser(nk, collection, key, userId, value) {
+        nk.storageWrite([{
+                collection: collection,
+                key: key,
+                userId: userId,
+                value: value,
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    SeedQ.writeUser = writeUser;
+    // ── Seen-ledger bridge (uniqueness guarantee) ───────────────────────────────
+    // Uses the battle-tested OCC implementation from quizverse_seen.js when
+    // present (always true in the merged bundle); falls back to a local ledger
+    // in the sq_staged collection so unit contexts don't explode.
+    function seenTopic(mode, topic) {
+        return slugify(mode) + "_" + slugify(topic);
+    }
+    SeedQ.seenTopic = seenTopic;
+    function getSeenIdSet(nk, userId, mode, topic) {
+        try {
+            if (typeof __qvsSeen !== "undefined" && __qvsSeen && __qvsSeen.getIdSet) {
+                return __qvsSeen.getIdSet(nk, userId, SeedQ.SEEN_SCOPE, seenTopic(mode, topic)) || {};
+            }
+        }
+        catch (e) { /* fall through */ }
+        var doc = readUser(nk, SeedQ.COLL_STAGED, "seen_fallback_" + seenTopic(mode, topic), userId);
+        return (doc && doc.ids) ? doc.ids : {};
+    }
+    SeedQ.getSeenIdSet = getSeenIdSet;
+    function mergeSeenIds(nk, userId, mode, topic, ids) {
+        if (!ids || ids.length === 0)
+            return;
+        try {
+            if (typeof __qvsSeen !== "undefined" && __qvsSeen && __qvsSeen.merge) {
+                __qvsSeen.merge(nk, userId, SeedQ.SEEN_SCOPE, seenTopic(mode, topic), ids);
+                return;
+            }
+        }
+        catch (e) { /* fall through */ }
+        var key = "seen_fallback_" + seenTopic(mode, topic);
+        var doc = readUser(nk, SeedQ.COLL_STAGED, key, userId) || { ids: {} };
+        for (var i = 0; i < ids.length; i++)
+            doc.ids[ids[i]] = nowMs();
+        writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
+    }
+    SeedQ.mergeSeenIds = mergeSeenIds;
+    function computeAdaptiveProfile(nk, userId, topic) {
+        var history = readUser(nk, "quiz-verse_quiz_history", "history", userId);
+        var entries = (history && history.entries && history.entries.length) ? history.entries : [];
+        if (entries.length > SeedQ.HISTORY_READ_CAP)
+            entries = entries.slice(entries.length - SeedQ.HISTORY_READ_CAP);
+        var topicSlug = slugify(topic);
+        var tTotal = 0, tCorrect = 0, oTotal = 0, oCorrect = 0;
+        for (var i = 0; i < entries.length; i++) {
+            var e = entries[i];
+            if (!e || typeof e !== "object")
+                continue;
+            var correct = e.correct !== undefined ? !!e.correct : !!e.was_correct;
+            oTotal++;
+            if (correct)
+                oCorrect++;
+            var cat = slugify(e.category || e.categoryName || e.categoryId || "");
+            if (cat && (cat === topicSlug || cat.indexOf(topicSlug) >= 0 || topicSlug.indexOf(cat) >= 0)) {
+                tTotal++;
+                if (correct)
+                    tCorrect++;
+            }
+        }
+        var basis = "default";
+        var total = 0, correctN = 0;
+        if (tTotal >= 5) {
+            basis = "topic";
+            total = tTotal;
+            correctN = tCorrect;
+        }
+        else if (oTotal >= 5) {
+            basis = "overall";
+            total = oTotal;
+            correctN = oCorrect;
+        }
+        var acc = total > 0 ? Math.round((correctN / total) * 100) : 0;
+        var target = 2; // sensible default for a fresh user
+        if (basis !== "default") {
+            if (acc >= 90)
+                target = 5;
+            else if (acc >= 75)
+                target = 4;
+            else if (acc >= 55)
+                target = 3;
+            else if (acc >= 35)
+                target = 2;
+            else
+                target = 1;
+        }
+        return { target_difficulty: target, basis: basis, sample_size: total, accuracy_pct: acc };
+    }
+    SeedQ.computeAdaptiveProfile = computeAdaptiveProfile;
+    // ── Media optimization (squoosh-equivalent, source #7) ─────────────────────
+    // Rewrites media URLs through the wsrv.nl image proxy (already used by the
+    // Unity client's MediaProxyUtility) so every staged image ships resized +
+    // webp-compressed — smaller loads, faster D1 quiz starts, no WASM needed
+    // server-side.
+    function optimizeMediaUrl(url) {
+        if (!url || url.indexOf("http") !== 0)
+            return url || "";
+        if (url.indexOf("wsrv.nl") >= 0)
+            return url;
+        // Only images benefit; leave audio/video untouched.
+        var lower = url.toLowerCase();
+        var isAudioVideo = /\.(mp3|m4a|ogg|wav|mp4|webm|mov)(\?|$)/.test(lower);
+        if (isAudioVideo)
+            return url;
+        return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=720&q=72&output=webp";
+    }
+    SeedQ.optimizeMediaUrl = optimizeMediaUrl;
+    // ── HTTP helper with system-storage cache ───────────────────────────────────
+    function cachedHttpGet(nk, logger, url, ttlMs, headers) {
+        var cacheKey = "get:" + nk.sha256Hash(url).substring(0, 24);
+        var cached = readSystem(nk, SeedQ.COLL_SOURCE_CACHE, cacheKey);
+        if (cached && cached.body && (nowMs() - (cached.fetched_ms || 0)) < (cached.ttl_ms || ttlMs)) {
+            return cached.body;
+        }
+        // NOTE: log the URL without its query string — Nakama's Go logger treats
+        // the message as a printf format string, so percent-escapes get mangled.
+        var logUrl = url.split("?")[0];
+        try {
+            var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 15000);
+            if (resp.code >= 200 && resp.code < 300 && resp.body) {
+                // Cap what we cache — Goja strings are fine but storage rows shouldn't balloon.
+                if (resp.body.length < 400000) {
+                    writeSystem(nk, SeedQ.COLL_SOURCE_CACHE, cacheKey, { fetched_ms: nowMs(), ttl_ms: ttlMs, url: url, body: resp.body });
+                }
+                return resp.body;
+            }
+            logger.warn("[SeedQ] http GET " + logUrl + " -> " + resp.code);
+        }
+        catch (err) {
+            logger.warn("[SeedQ] http GET failed " + logUrl + ": " + (err && err.message ? err.message : String(err)));
+        }
+        // Serve stale cache on failure rather than nothing.
+        return (cached && cached.body) ? cached.body : null;
+    }
+    SeedQ.cachedHttpGet = cachedHttpGet;
+})(SeedQ || (SeedQ = {}));
+// sq_engine.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Seed Questions — pool management + per-user staging engine.
+//
+// Pool:    ingestIntoPool() QA-gates connector output and merges it (by stable
+//          content-hash id) into the system pool for (mode, topic).
+//
+// Staging: ensureStaged() guarantees a user always has TARGET_READY_SETS
+//          (2–3) ready sets for (mode, topic):
+//            unseen-only  → excludes qv_seen ledger ids + already-staged ids
+//            quality-only → excludes quarantined ids (user-review ledger)
+//            adaptive     → 60% at the user's target difficulty, 20% one
+//                           easier, 20% one harder (from quiz history)
+//            recycle      → when the unseen pool runs dry, oldest-seen
+//                           questions are recycled (flagged) instead of
+//                           starving the client — mirrors quizverse_quiz_generate.
+var SeedQEngine;
+(function (SeedQEngine) {
+    // ── Pool ────────────────────────────────────────────────────────────────────
+    function readPool(nk, mode, topic) {
+        return SeedQ.readSystem(nk, SeedQ.COLL_POOL, SeedQ.poolKey(mode, topic)) || { questions: [], updated_ms: 0 };
+    }
+    SeedQEngine.readPool = readPool;
+    function indexPoolKey(nk, mode, topic) {
+        var idx = SeedQ.readSystem(nk, SeedQ.COLL_POOL_INDEX, "index") || { keys: {} };
+        if (!idx.keys)
+            idx.keys = {};
+        var key = SeedQ.poolKey(mode, topic);
+        if (!idx.keys[key]) {
+            idx.keys[key] = { mode: mode, topic: topic, added_ms: SeedQ.nowMs() };
+            SeedQ.writeSystem(nk, SeedQ.COLL_POOL_INDEX, "index", idx);
+        }
+    }
+    function ingestIntoPool(ctx, nk, logger, mode, topic, candidates) {
+        var pool = readPool(nk, mode, topic);
+        var existing = {};
+        for (var i = 0; i < pool.questions.length; i++)
+            existing[pool.questions[i].id] = true;
+        var accepted = 0, rejected = 0, duplicates = 0;
+        for (var c = 0; c < candidates.length; c++) {
+            var q = candidates[c];
+            if (!q || !q.id) {
+                rejected++;
+                continue;
+            }
+            if (existing[q.id]) {
+                duplicates++;
+                continue;
+            }
+            // Provenance for media questions that arrived unchecked.
+            if (q.media_url && (!q.media_provenance || !q.media_provenance.checked)) {
+                q.media_provenance = SeedQQuality.checkProvenance(ctx, nk, logger, q.media_url);
+            }
+            var qa = SeedQQuality.autoQa(q);
+            q.quality = qa;
+            if (qa.status !== "approved") {
+                rejected++;
+                continue;
+            }
+            existing[q.id] = true;
+            pool.questions.push(q);
+            accepted++;
+        }
+        // Rolling cap: keep the newest POOL_MAX_QUESTIONS.
+        if (pool.questions.length > SeedQ.POOL_MAX_QUESTIONS) {
+            pool.questions = pool.questions.slice(pool.questions.length - SeedQ.POOL_MAX_QUESTIONS);
+        }
+        pool.updated_ms = SeedQ.nowMs();
+        SeedQ.writeSystem(nk, SeedQ.COLL_POOL, SeedQ.poolKey(mode, topic), pool);
+        indexPoolKey(nk, mode, topic);
+        return { accepted: accepted, rejected: rejected, duplicates: duplicates, pool_size: pool.questions.length };
+    }
+    SeedQEngine.ingestIntoPool = ingestIntoPool;
+    // ── Adaptive selection ──────────────────────────────────────────────────────
+    // Buckets candidates by |difficulty - target| and drains them in the
+    // 60/20/20 mix so the set is challenging-but-winnable for THIS user.
+    function selectAdaptive(candidates, target, n) {
+        var atTarget = [];
+        var easier = [];
+        var harder = [];
+        var rest = [];
+        for (var i = 0; i < candidates.length; i++) {
+            var d = candidates[i].difficulty || 3;
+            if (d === target)
+                atTarget.push(candidates[i]);
+            else if (d === target - 1)
+                easier.push(candidates[i]);
+            else if (d === target + 1)
+                harder.push(candidates[i]);
+            else
+                rest.push(candidates[i]);
+        }
+        SeedQ.shuffle(atTarget);
+        SeedQ.shuffle(easier);
+        SeedQ.shuffle(harder);
+        SeedQ.shuffle(rest);
+        var wantTarget = Math.ceil(n * 0.6);
+        var wantEasier = Math.ceil(n * 0.2);
+        var out = [];
+        out = out.concat(atTarget.slice(0, wantTarget));
+        out = out.concat(easier.slice(0, wantEasier));
+        out = out.concat(harder.slice(0, n - out.length));
+        // Backfill from whatever remains, nearest first.
+        if (out.length < n)
+            out = out.concat(atTarget.slice(wantTarget));
+        if (out.length < n)
+            out = out.concat(easier.slice(wantEasier));
+        if (out.length < n)
+            out = out.concat(rest);
+        out = out.slice(0, n);
+        return SeedQ.shuffle(out);
+    }
+    // ── Staging ─────────────────────────────────────────────────────────────────
+    // Low-watermark for Dynamic Replenishment (Deliverable 1 §3.1): when a user's
+    // unseen pool drops below this, we queue a priority ingest combo so the next
+    // cron tick replenishes THIS (mode, topic) first.
+    var LOW_WATERMARK = 20;
+    var NEXT_REFRESH_ETA_SEC = 900; // seedq ingest cron cadence (15 min)
+    // Queues a (mode, topic) combo at the FRONT of the ingest rotation. The next
+    // ingestTick drains priority entries before resuming the round-robin cursor —
+    // this is the Nakama-side equivalent of the `topic_exhaustion_warning` →
+    // ContentX flow from the Repetition Fatigue plan.
+    function queuePriorityCombo(nk, logger, mode, topic) {
+        try {
+            var state = SeedQ.readSystem(nk, SeedQ.COLL_INGEST_STATE, "state") || { cursor: 0, runs: 0, last_run_ms: 0, combos: null };
+            if (!state.priority)
+                state.priority = [];
+            for (var i = 0; i < state.priority.length; i++) {
+                if (state.priority[i].mode === mode && state.priority[i].topic === topic)
+                    return; // already queued
+            }
+            // Pick the best-matching source from the combo matrix (same mode wins,
+            // then same topic); archive_org is the broadest fallback connector.
+            var combos = (state.combos && state.combos.length > 0) ? state.combos : defaultCombos();
+            var source = "archive_org";
+            for (var c = 0; c < combos.length; c++) {
+                if (combos[c].mode === mode) {
+                    source = combos[c].source;
+                    break;
+                }
+                if (SeedQ.slugify(combos[c].topic) === SeedQ.slugify(topic))
+                    source = combos[c].source;
+            }
+            state.priority.push({ source: source, mode: mode, topic: topic, queued_ms: SeedQ.nowMs() });
+            if (state.priority.length > 20)
+                state.priority = state.priority.slice(state.priority.length - 20);
+            SeedQ.writeSystem(nk, SeedQ.COLL_INGEST_STATE, "state", state);
+            logger.info("[SeedQ] priority replenishment queued: " + source + " → " + mode + "/" + topic);
+        }
+        catch (e) {
+            logger.warn("[SeedQ] queuePriorityCombo failed: " + (e && e.message ? e.message : String(e)));
+        }
+    }
+    SeedQEngine.queuePriorityCombo = queuePriorityCombo;
+    function ensureStaged(ctx, nk, logger, userId, mode, topic, wantSets, setSize) {
+        var key = SeedQ.poolKey(mode, topic);
+        var doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId) || { sets: [], updated_ms: 0 };
+        if (!doc.sets)
+            doc.sets = [];
+        // Drop consumed sets past their TTL so the doc never balloons.
+        var now = SeedQ.nowMs();
+        var kept = [];
+        for (var i = 0; i < doc.sets.length; i++) {
+            var s = doc.sets[i];
+            if (s.status === "consumed" && (now - (s.consumed_ms || 0)) > SeedQ.CONSUMED_SET_TTL_MS)
+                continue;
+            kept.push(s);
+        }
+        doc.sets = kept;
+        // Exclude only questions sitting in READY sets. Consumed questions live in
+        // the qv_seen ledger already — they must stay eligible for the recycle path
+        // (D1: "recycle oldest-seen rather than starve"), otherwise an exhausted
+        // user gets zero sets until the consumed-set TTL expires.
+        var ready = [];
+        var stagedIds = {};
+        for (var r = 0; r < doc.sets.length; r++) {
+            var st = doc.sets[r];
+            if (st.status !== "ready")
+                continue;
+            for (var qi = 0; qi < st.question_ids.length; qi++)
+                stagedIds[st.question_ids[qi]] = true;
+            ready.push(st);
+        }
+        var adaptive = SeedQ.computeAdaptiveProfile(nk, userId, topic);
+        var pool = readPool(nk, mode, topic);
+        var built = 0;
+        var recycled = false;
+        var poolAvailable = 0;
+        var seenIds = SeedQ.getSeenIdSet(nk, userId, mode, topic);
+        var quarantined = SeedQQuality.getQuarantineSet(nk, mode, topic);
+        // Always compute the per-user unseen supply — repeat_policy metadata (D1
+        // §6.2) needs it even when no new sets are built this call.
+        var unseen = [];
+        var seenPool = [];
+        for (var p = 0; p < pool.questions.length; p++) {
+            var q = pool.questions[p];
+            if (!q || quarantined[q.id] || stagedIds[q.id])
+                continue;
+            if (q.quality && q.quality.status !== "approved")
+                continue;
+            if (seenIds[q.id])
+                seenPool.push(q);
+            else
+                unseen.push(q);
+        }
+        poolAvailable = unseen.length;
+        if (ready.length < wantSets && pool.questions.length > 0) {
+            while (ready.length < wantSets) {
+                var candidates = unseen;
+                if (candidates.length < setSize && seenPool.length > 0) {
+                    // Pool exhausted for this user → recycle oldest-seen rather than starve.
+                    candidates = unseen.concat(seenPool);
+                    recycled = true;
+                }
+                if (candidates.length < Math.min(setSize, 4))
+                    break; // not enough content, even recycled
+                var chosen = selectAdaptive(candidates, adaptive.target_difficulty, setSize);
+                if (chosen.length === 0)
+                    break;
+                // Remove chosen from future candidate lists.
+                var chosenIds = {};
+                var ids = [];
+                var served = [];
+                var setFresh = 0, setReview = 0;
+                for (var ci = 0; ci < chosen.length; ci++) {
+                    chosenIds[chosen[ci].id] = true;
+                    ids.push(chosen[ci].id);
+                    // Serve a copy with the media URL optimized (squoosh-equivalent).
+                    var copy = JSON.parse(JSON.stringify(chosen[ci]));
+                    copy.media_url = SeedQ.optimizeMediaUrl(copy.media_url);
+                    // Honest-repeat disclosure (D1 §6.2): mark recycled questions so the
+                    // client renders "N new + M Smart Review repeats", never a silent repeat.
+                    if (seenIds[copy.id]) {
+                        copy.recycled = true;
+                        setReview++;
+                    }
+                    else
+                        setFresh++;
+                    served.push(copy);
+                }
+                var nextUnseen = [];
+                for (var ui = 0; ui < unseen.length; ui++)
+                    if (!chosenIds[unseen[ui].id])
+                        nextUnseen.push(unseen[ui]);
+                unseen = nextUnseen;
+                var nextSeenPool = [];
+                for (var si = 0; si < seenPool.length; si++)
+                    if (!chosenIds[seenPool[si].id])
+                        nextSeenPool.push(seenPool[si]);
+                seenPool = nextSeenPool;
+                var newSet = {
+                    set_id: "set_" + now.toString(36) + "_" + SeedQ.randSuffix(),
+                    mode: mode,
+                    topic: topic,
+                    status: "ready",
+                    difficulty_target: adaptive.target_difficulty,
+                    question_ids: ids,
+                    questions: served,
+                    fresh_count: setFresh,
+                    review_count: setReview,
+                    created_ms: now,
+                    consumed_ms: 0
+                };
+                doc.sets.push(newSet);
+                ready.push(newSet);
+                for (var ni = 0; ni < ids.length; ni++)
+                    stagedIds[ids[ni]] = true;
+                built++;
+            }
+        }
+        if (built > 0 || kept.length !== doc.sets.length) {
+            doc.updated_ms = now;
+            SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
+        }
+        // Aggregate honest-repeat counts over the ready sets (repeat_policy §6.2).
+        var freshTotal = 0, reviewTotal = 0;
+        for (var rc2 = 0; rc2 < ready.length; rc2++) {
+            var rs = ready[rc2];
+            if (rs.fresh_count !== undefined) {
+                freshTotal += rs.fresh_count;
+                reviewTotal += rs.review_count || 0;
+            }
+            else
+                freshTotal += rs.question_ids.length; // pre-metadata sets: assume fresh
+        }
+        // Deliverable 1 — Dynamic Replenishment + the "Wow" Intercept.
+        // Exhausted for this user = the pool has content but nothing unseen is
+        // left (we're recycling or couldn't build at all).
+        var exhausted = pool.questions.length > 0 && poolAvailable === 0 && (recycled || ready.length === 0);
+        var generationQueued = false;
+        if (poolAvailable < LOW_WATERMARK) {
+            queuePriorityCombo(nk, logger, mode, topic);
+            generationQueued = true;
+        }
+        if (exhausted) {
+            // "You beat the game" — queue the wow.e.pool_exhausted Aahaa moment and
+            // suppress the App Store rating prompt (never ask while exhausted).
+            AahaaEngine.notePoolExhausted(nk, logger, userId, mode, topic);
+        }
+        return {
+            doc: doc,
+            ready: ready,
+            built: built,
+            pool_size: pool.questions.length,
+            pool_available: poolAvailable,
+            recycled: recycled,
+            pool_exhausted: exhausted,
+            content_generation_queued: generationQueued,
+            next_refresh_eta_sec: generationQueued ? NEXT_REFRESH_ETA_SEC : 0,
+            fresh_count: freshTotal,
+            review_count: reviewTotal,
+            adaptive: adaptive
+        };
+    }
+    SeedQEngine.ensureStaged = ensureStaged;
+    // Marks a set consumed and merges its ids into the qv_seen ledger — this is
+    // what enforces "never the same question for the same user-id" across ALL
+    // QuizVerse delivery paths that share the seedq scope.
+    function consumeSet(ctx, nk, logger, userId, mode, topic, setId) {
+        var key = SeedQ.poolKey(mode, topic);
+        var doc = SeedQ.readUser(nk, SeedQ.COLL_STAGED, key, userId);
+        if (!doc || !doc.sets)
+            return { found: false, merged: 0 };
+        for (var i = 0; i < doc.sets.length; i++) {
+            var s = doc.sets[i];
+            if (s.set_id !== setId)
+                continue;
+            if (s.status === "consumed")
+                return { found: true, merged: 0 };
+            s.status = "consumed";
+            s.consumed_ms = SeedQ.nowMs();
+            // Consumed sets keep ids (dedup) but drop full question bodies (size).
+            s.questions = [];
+            doc.updated_ms = SeedQ.nowMs();
+            SeedQ.writeUser(nk, SeedQ.COLL_STAGED, key, userId, doc);
+            SeedQ.mergeSeenIds(nk, userId, mode, topic, s.question_ids);
+            return { found: true, merged: s.question_ids.length };
+        }
+        return { found: false, merged: 0 };
+    }
+    SeedQEngine.consumeSet = consumeSet;
+    // ── Cron ingest rotation ────────────────────────────────────────────────────
+    // Default matrix of (source, mode, topic) combos the tick rotates through.
+    // Live-ops can extend it by writing sq_ingest_state.combos.
+    function defaultCombos() {
+        return [
+            { source: "archive_org", mode: "ImageGuess", topic: "history" },
+            { source: "archive_org", mode: "WhosThat", topic: "portraits" },
+            { source: "archive_org", mode: "GeoExplore", topic: "maps" },
+            { source: "archive_org", mode: "MediaQuiz", topic: "film" },
+            { source: "wolfram", mode: "CustomTopic", topic: "math" },
+            { source: "wolfram", mode: "BrainSprint", topic: "arithmetic" },
+            { source: "gutenberg", mode: "CustomTopic", topic: "literature" },
+            { source: "gutenberg", mode: "PickATopic", topic: "history" },
+            { source: "music_tv", mode: "MediaQuiz", topic: "music" },
+            { source: "music_tv", mode: "AudioQuiz", topic: "music" },
+            { source: "scholar", mode: "CustomTopic", topic: "science" },
+            { source: "scholar", mode: "SubjectiveQuiz", topic: "psychology" },
+            { source: "justwatch", mode: "ViralIQ", topic: "trending" }
+        ];
+    }
+    SeedQEngine.defaultCombos = defaultCombos;
+    function ingestTick(ctx, nk, logger, batchCombos, perComboCount) {
+        var state = SeedQ.readSystem(nk, SeedQ.COLL_INGEST_STATE, "state") || { cursor: 0, runs: 0, last_run_ms: 0, combos: null };
+        var combos = (state.combos && state.combos.length > 0) ? state.combos : defaultCombos();
+        var results = [];
+        var rotationSlots = batchCombos;
+        // Drain user-triggered priority replenishment (low-watermark / exhaustion)
+        // BEFORE the round-robin rotation — exhausted pools refill first.
+        if (state.priority && state.priority.length > 0) {
+            var stillQueued = [];
+            for (var pq = 0; pq < state.priority.length; pq++) {
+                var pcombo = state.priority[pq];
+                if (rotationSlots <= 0) {
+                    stillQueued.push(pcombo);
+                    continue;
+                }
+                rotationSlots--;
+                try {
+                    var pFetched = SeedQSources.fetchQuestions(ctx, nk, logger, pcombo.source, pcombo.mode, pcombo.topic, perComboCount, pcombo.params || {});
+                    var pRes = ingestIntoPool(ctx, nk, logger, pcombo.mode, pcombo.topic, pFetched);
+                    results.push({ combo: pcombo, priority: true, fetched: pFetched.length, accepted: pRes.accepted, rejected: pRes.rejected, duplicates: pRes.duplicates, pool_size: pRes.pool_size });
+                }
+                catch (perr) {
+                    results.push({ combo: pcombo, priority: true, error: (perr && perr.message) ? perr.message : String(perr) });
+                }
+            }
+            state.priority = stillQueued;
+        }
+        for (var b = 0; b < rotationSlots; b++) {
+            var combo = combos[(state.cursor + b) % combos.length];
+            try {
+                var fetched = SeedQSources.fetchQuestions(ctx, nk, logger, combo.source, combo.mode, combo.topic, perComboCount, combo.params || {});
+                var res = ingestIntoPool(ctx, nk, logger, combo.mode, combo.topic, fetched);
+                results.push({ combo: combo, fetched: fetched.length, accepted: res.accepted, rejected: res.rejected, duplicates: res.duplicates, pool_size: res.pool_size });
+            }
+            catch (err) {
+                results.push({ combo: combo, error: (err && err.message) ? err.message : String(err) });
+            }
+        }
+        state.cursor = (state.cursor + rotationSlots) % combos.length;
+        state.runs = (state.runs || 0) + 1;
+        state.last_run_ms = SeedQ.nowMs();
+        SeedQ.writeSystem(nk, SeedQ.COLL_INGEST_STATE, "state", state);
+        return { cursor: state.cursor, runs: state.runs, combo_count: combos.length, results: results };
+    }
+    SeedQEngine.ingestTick = ingestTick;
+})(SeedQEngine || (SeedQEngine = {}));
+// sq_quality.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Seed Questions — quality gate.
+//
+// Two layers:
+//   1. autoQa()   — structural checks at ingest time. Wrong answers are the
+//                   fastest trust-killer, so anything ambiguous is rejected
+//                   BEFORE it reaches a user pool. Math questions additionally
+//                   carry the "wolfram_verified" check from sq_sources.ts.
+//   2. Reviews    — users rate questions visually/by nature in-app
+//                   (quizverse_seedq_review: up / down / flag+reason).
+//                   Aggregated per (mode, topic); thresholds quarantine bad
+//                   questions from ALL future staging without a redeploy.
+//
+// Quarantine rules:
+//   • 2+ "wrong_answer" flags               → immediate quarantine
+//   • (down + flags) >= 3 AND > up votes    → quarantine
+//   • 3+ "broken_media" flags               → quarantine (dead image/audio)
+var SeedQQuality;
+(function (SeedQQuality) {
+    var MIN_QUESTION_LEN = 8;
+    var MAX_QUESTION_LEN = 320;
+    var MAX_OPTION_LEN = 120;
+    var PASS_SCORE = 70;
+    // Domains whose media is safe to commercialize without a TinEye check
+    // (public domain / API-ToS-covered). Anything else needs provenance.
+    SeedQQuality.SAFE_MEDIA_DOMAINS = [
+        "archive.org", "wikimedia.org", "wikipedia.org", "gutenberg.org",
+        "nasa.gov", "metmuseum.org", "deezer.com", "dzcdn.net",
+        "ytimg.com", "youtube.com", "justwatch.com", "wsrv.nl",
+        "musicforprogramming.net", "openlibrary.org", "githubusercontent.com"
+    ];
+    var BANNED_FRAGMENTS = [
+        "as an ai", "i cannot", "lorem ipsum", "undefined", "[object object]", "null null"
+    ];
+    function mediaDomainSafe(url) {
+        if (!url)
+            return true;
+        var m = /^https?:\/\/([^\/\?#]+)/i.exec(url);
+        if (!m)
+            return false;
+        var host = m[1].toLowerCase();
+        for (var i = 0; i < SeedQQuality.SAFE_MEDIA_DOMAINS.length; i++) {
+            var d = SeedQQuality.SAFE_MEDIA_DOMAINS[i];
+            if (host === d || host.length > d.length && host.indexOf("." + d) === host.length - d.length - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+    SeedQQuality.mediaDomainSafe = mediaDomainSafe;
+    // TinEye provenance guardrail (source #13). With TINEYE_API_KEY set we ask
+    // TinEye how widely an image is matched (heavily-matched commercial art is
+    // risky); without the key we fall back to the public-domain domain whitelist.
+    function checkProvenance(ctx, nk, logger, url) {
+        var domainMatch = /^https?:\/\/([^\/\?#]+)/i.exec(url || "");
+        var domain = domainMatch ? domainMatch[1].toLowerCase() : "";
+        var whitelisted = mediaDomainSafe(url);
+        var apiKey = "" + ((ctx.env && ctx.env["TINEYE_API_KEY"]) || "");
+        if (apiKey && url) {
+            try {
+                var resp = nk.httpRequest("https://api.tineye.com/rest/search/?image_url=" + encodeURIComponent(url) + "&limit=1", "post", { "x-api-key": apiKey }, "", 8000);
+                if (resp.code >= 200 && resp.code < 300) {
+                    var body = JSON.parse(resp.body || "{}");
+                    var matches = (body && body.results && body.results.total_results) || 0;
+                    return {
+                        source_domain: domain,
+                        license: whitelisted ? "public_domain" : (matches > 50 ? "unknown" : "api_tos"),
+                        checked: true,
+                        method: "tineye"
+                    };
+                }
+            }
+            catch (err) {
+                logger.warn("[SeedQ] tineye check failed: " + (err && err.message ? err.message : String(err)));
+            }
+        }
+        return {
+            source_domain: domain,
+            license: whitelisted ? "public_domain" : "unknown",
+            checked: whitelisted,
+            method: whitelisted ? "domain_whitelist" : "none"
+        };
+    }
+    SeedQQuality.checkProvenance = checkProvenance;
+    // Structural auto-QA. Returns quality info; status "approved" only when the
+    // question is unambiguous, well-formed and (for media) provenance-safe.
+    function autoQa(q) {
+        var checks = (q.quality && q.quality.checks) ? q.quality.checks.slice(0) : [];
+        var score = 100;
+        var fatal = false;
+        var text = ("" + (q.question || "")).replace(/\s+/g, " ");
+        if (text.length < MIN_QUESTION_LEN || text.length > MAX_QUESTION_LEN) {
+            score -= 40;
+            fatal = true;
+        }
+        else
+            checks.push("length_ok");
+        var opts = q.options || [];
+        if (opts.length !== 2 && opts.length !== 4) {
+            score -= 40;
+            fatal = true;
+        }
+        else
+            checks.push("option_count_ok");
+        // Options must be distinct (case-folded) and non-empty.
+        var seen = {};
+        for (var i = 0; i < opts.length; i++) {
+            var o = ("" + (opts[i] || "")).replace(/\s+/g, " ").toLowerCase();
+            if (!o || o.length > MAX_OPTION_LEN || seen[o]) {
+                score -= 40;
+                fatal = true;
+                break;
+            }
+            seen[o] = true;
+        }
+        if (!fatal)
+            checks.push("options_distinct");
+        if (typeof q.correct_index !== "number" || q.correct_index < 0 || q.correct_index >= opts.length) {
+            score -= 50;
+            fatal = true;
+        }
+        else {
+            checks.push("answer_index_ok");
+            // Answer-leak: the correct option's text appearing verbatim in the
+            // question makes it trivially guessable.
+            var correctText = ("" + opts[q.correct_index]).toLowerCase();
+            if (correctText.length >= 4 && text.toLowerCase().indexOf(correctText) >= 0) {
+                score -= 35;
+            }
+            else {
+                checks.push("no_answer_leak");
+            }
+        }
+        var lowerAll = (text + " " + opts.join(" ")).toLowerCase();
+        for (var b = 0; b < BANNED_FRAGMENTS.length; b++) {
+            if (lowerAll.indexOf(BANNED_FRAGMENTS[b]) >= 0) {
+                score -= 50;
+                fatal = true;
+                break;
+            }
+        }
+        if (!fatal)
+            checks.push("no_banned_fragments");
+        // Media questions must resolve provenance to something safe.
+        if (q.media_url) {
+            var prov = q.media_provenance;
+            if (prov && prov.checked && prov.license !== "unknown")
+                checks.push("provenance_ok");
+            else if (mediaDomainSafe(q.media_url))
+                checks.push("provenance_ok");
+            else
+                score -= 30;
+        }
+        if (score < 0)
+            score = 0;
+        return {
+            score: score,
+            status: (!fatal && score >= PASS_SCORE) ? "approved" : "rejected",
+            checks: checks
+        };
+    }
+    SeedQQuality.autoQa = autoQa;
+    // ── User review aggregation ────────────────────────────────────────────────
+    SeedQQuality.FLAG_REASONS = {
+        wrong_answer: true,
+        broken_media: true,
+        offensive: true,
+        unclear: true,
+        duplicate: true,
+        other: true
+    };
+    function reviewDocKey(mode, topic) {
+        return SeedQ.poolKey(mode, topic);
+    }
+    function applyReview(nk, logger, userId, mode, topic, qid, vote, // "up" | "down" | "flag"
+    reason) {
+        var key = reviewDocKey(mode, topic);
+        var doc = SeedQ.readSystem(nk, SeedQ.COLL_REVIEW, key) || { entries: {}, updated_ms: 0 };
+        if (!doc.entries)
+            doc.entries = {};
+        var entry = doc.entries[qid] || { up: 0, down: 0, flags: 0, reasons: {}, status: "", voters: {} };
+        var userHash = nk.sha256Hash(userId + "|" + qid).substring(0, 12);
+        if (entry.voters && entry.voters[userHash]) {
+            return { entry: entry, quarantined: entry.status === "quarantined", duplicate: true };
+        }
+        if (!entry.voters)
+            entry.voters = {};
+        entry.voters[userHash] = true;
+        // Cap voter map growth — counts are what matter after 200 voters.
+        if (Object.keys(entry.voters).length > 200)
+            entry.voters = {};
+        if (vote === "up")
+            entry.up++;
+        else if (vote === "down")
+            entry.down++;
+        else if (vote === "flag") {
+            entry.flags++;
+            var r = SeedQQuality.FLAG_REASONS[reason] ? reason : "other";
+            entry.reasons[r] = (entry.reasons[r] || 0) + 1;
+        }
+        var wrongAnswerFlags = entry.reasons["wrong_answer"] || 0;
+        var brokenMediaFlags = entry.reasons["broken_media"] || 0;
+        var negative = entry.down + entry.flags;
+        var shouldQuarantine = wrongAnswerFlags >= 2 ||
+            brokenMediaFlags >= 3 ||
+            (negative >= 3 && negative > entry.up);
+        if (shouldQuarantine && entry.status !== "quarantined") {
+            entry.status = "quarantined";
+            logger.warn("[SeedQ] quarantined question " + qid + " in " + key +
+                " (up=" + entry.up + " down=" + entry.down + " flags=" + entry.flags + ")");
+        }
+        doc.entries[qid] = entry;
+        doc.updated_ms = SeedQ.nowMs();
+        SeedQ.writeSystem(nk, SeedQ.COLL_REVIEW, key, doc);
+        return { entry: entry, quarantined: entry.status === "quarantined", duplicate: false };
+    }
+    SeedQQuality.applyReview = applyReview;
+    function getQuarantineSet(nk, mode, topic) {
+        var doc = SeedQ.readSystem(nk, SeedQ.COLL_REVIEW, reviewDocKey(mode, topic));
+        var out = {};
+        if (!doc || !doc.entries)
+            return out;
+        var keys = Object.keys(doc.entries);
+        for (var i = 0; i < keys.length; i++) {
+            if (doc.entries[keys[i]] && doc.entries[keys[i]].status === "quarantined")
+                out[keys[i]] = true;
+        }
+        return out;
+    }
+    SeedQQuality.getQuarantineSet = getQuarantineSet;
+})(SeedQQuality || (SeedQQuality = {}));
+// sq_rpcs.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Seed Questions ("Staged Questions") — RPC surface.
+//
+// Public host: https://seedquestions.intelli-verse-x.ai/v2/rpc/<rpc_id>
+// (deploy/seedquestions/ ingress → intelliverse-nakama:7350). Same RPCs are
+// reachable on the primary nakama-rest host — the subdomain is a dedicated,
+// rate-limitable surface for the client + live-ops tooling.
+//
+// USER RPCs (session auth):
+//   quizverse_seedq_get_staged    → 2–3 ready sets for (mode, topic); auto top-up
+//   quizverse_seedq_consume_set   → mark set played; merge ids into qv_seen; restage
+//   quizverse_seedq_review        → up/down/flag(reason) a question (quality loop)
+//   quizverse_seedq_focus_tracks  → Focus/Study Mode ambient tracks (source #11)
+//   quizverse_seedq_sources       → 13-connector registry + status (also public info)
+//
+// ADMIN / SERVICE RPCs (http_key server-to-server OR service_token ==
+// ctx.env["SEEDQ_SERVICE_TOKEN"]):
+//   quizverse_seedq_ingest        → run one connector into a (mode, topic) pool
+//   quizverse_seedq_ingest_tick   → cron rotation across the combo matrix
+//   quizverse_seedq_pool_stats    → pool/review/staging observability
+//   quizverse_seedq_asset_job     → remove.bg / ASO-mockup / art-cleanup job descriptors
+//   quizverse_seedq_provenance    → TinEye/whitelist provenance check for an image URL
+//
+// Cron wiring (same pattern as kb_enrichment_tick / tournament_cron_tick):
+//   curl -sS -X POST "http://nakama:7350/v2/rpc/quizverse_seedq_ingest_tick?http_key=<key>&unwrap" \
+//        -H 'Content-Type: application/json' \
+//        -d '{"service_token":"<SEEDQ_SERVICE_TOKEN>","batch":3,"count":20}'
+var SeedQuestions;
+(function (SeedQuestions) {
+    function errPayload(code, message) {
+        return JSON.stringify({ ok: false, code: code, error: message });
+    }
+    function parse(payload) {
+        if (!payload || payload === "")
+            return {};
+        try {
+            return JSON.parse(payload);
+        }
+        catch (e) {
+            throw new Error(JSON.stringify({ code: 3, message: "payload must be valid JSON" }));
+        }
+    }
+    function isAdminOrService(ctx, data) {
+        if (!ctx.userId)
+            return true; // server-to-server via http_key
+        var token = data && data.service_token;
+        if (!token)
+            return false;
+        var expected = "" + ((ctx.env && ctx.env["SEEDQ_SERVICE_TOKEN"]) || "");
+        return expected.length > 0 && token === expected;
+    }
+    // ── quizverse_seedq_get_staged ──────────────────────────────────────────────
+    // Request:  { mode, topic, set_size?, want_sets? }
+    // Response: { ok, sets: StagedSet[], adaptive, pool: {...}, module_version }
+    function rpcGetStaged(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!ctx.userId)
+            return errPayload(16, "session required");
+        var mode = "" + (data.mode || "");
+        var topic = "" + (data.topic || "general");
+        if (!mode)
+            return errPayload(3, "mode required");
+        var setSize = SeedQ.clampInt(data.set_size, 4, SeedQ.MAX_SET_SIZE, SeedQ.DEFAULT_SET_SIZE);
+        var wantSets = SeedQ.clampInt(data.want_sets, 1, SeedQ.TARGET_READY_SETS, SeedQ.TARGET_READY_SETS);
+        var result = SeedQEngine.ensureStaged(ctx, nk, logger, ctx.userId, mode, topic, wantSets, setSize);
+        // Repetition-fatigue metadata (D1 §6.2): the client renders honest copy
+        // ("8 new + 2 Smart Review repeats") and — when pool_exhausted — fires the
+        // wow.e.pool_exhausted intercept INSTEAD of the App Store rating prompt.
+        var repeatPolicy = {
+            fresh_count: result.fresh_count,
+            review_count: result.review_count,
+            pool_exhausted: result.pool_exhausted,
+            content_generation_queued: result.content_generation_queued,
+            next_refresh_eta_seconds: result.next_refresh_eta_sec
+        };
+        var suppressRating = result.pool_exhausted || result.recycled ||
+            (result.fresh_count < result.review_count);
+        return JSON.stringify({
+            ok: true,
+            mode: mode,
+            topic: topic,
+            sets: result.ready,
+            sets_built_now: result.built,
+            recycled: result.recycled,
+            adaptive: result.adaptive,
+            pool: { size: result.pool_size, available_unseen: result.pool_available },
+            repeat_policy: repeatPolicy,
+            suppress_rating_prompt: suppressRating,
+            module_version: SeedQ.MODULE_VERSION
+        });
+    }
+    // ── quizverse_seedq_consume_set ─────────────────────────────────────────────
+    // Request:  { mode, topic, set_id, restage? }
+    // Response: { ok, merged_seen, restaged: {...} }
+    function rpcConsumeSet(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!ctx.userId)
+            return errPayload(16, "session required");
+        var mode = "" + (data.mode || "");
+        var topic = "" + (data.topic || "general");
+        var setId = "" + (data.set_id || "");
+        if (!mode || !setId)
+            return errPayload(3, "mode and set_id required");
+        var res = SeedQEngine.consumeSet(ctx, nk, logger, ctx.userId, mode, topic, setId);
+        if (!res.found)
+            return errPayload(5, "set not found: " + setId);
+        var restaged = null;
+        var poolExhausted = false;
+        if (data.restage !== false) {
+            var r = SeedQEngine.ensureStaged(ctx, nk, logger, ctx.userId, mode, topic, SeedQ.TARGET_READY_SETS, SeedQ.DEFAULT_SET_SIZE);
+            poolExhausted = r.pool_exhausted;
+            restaged = {
+                ready_sets: r.ready.length, built_now: r.built, pool_available: r.pool_available,
+                pool_exhausted: r.pool_exhausted, content_generation_queued: r.content_generation_queued
+            };
+        }
+        return JSON.stringify({ ok: true, merged_seen: res.merged, restaged: restaged, suppress_rating_prompt: poolExhausted });
+    }
+    // ── quizverse_seedq_review ──────────────────────────────────────────────────
+    // Request:  { mode, topic, question_id, vote: "up"|"down"|"flag", reason? }
+    // Response: { ok, quarantined, duplicate_vote, counts }
+    function rpcReview(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!ctx.userId)
+            return errPayload(16, "session required");
+        var mode = "" + (data.mode || "");
+        var topic = "" + (data.topic || "general");
+        var qid = "" + (data.question_id || "");
+        var vote = "" + (data.vote || "");
+        if (!mode || !qid)
+            return errPayload(3, "mode and question_id required");
+        if (vote !== "up" && vote !== "down" && vote !== "flag")
+            return errPayload(3, "vote must be up|down|flag");
+        var res = SeedQQuality.applyReview(nk, logger, ctx.userId, mode, topic, qid, vote, "" + (data.reason || "other"));
+        return JSON.stringify({
+            ok: true,
+            quarantined: res.quarantined,
+            duplicate_vote: res.duplicate,
+            counts: { up: res.entry.up, down: res.entry.down, flags: res.entry.flags }
+        });
+    }
+    // ── quizverse_seedq_focus_tracks ────────────────────────────────────────────
+    function rpcFocusTracks(ctx, logger, nk, payload) {
+        var doc = SeedQSources.getFocusTracks(nk, logger);
+        return JSON.stringify({ ok: true, tracks: doc.tracks || [], pattern_references: doc.pattern_references || [], fetched_ms: doc.fetched_ms || 0 });
+    }
+    // ── quizverse_seedq_sources ─────────────────────────────────────────────────
+    function rpcSources(ctx, logger, nk, payload) {
+        var regs = SeedQSources.registry();
+        // Annotate env-key presence so live-ops can see what's unlocked.
+        for (var i = 0; i < regs.length; i++) {
+            var present = [];
+            for (var k = 0; k < regs[i].env_keys.length; k++) {
+                var key = regs[i].env_keys[k];
+                if (ctx.env && ctx.env[key])
+                    present.push(key);
+            }
+            regs[i].env_keys_present = present;
+        }
+        return JSON.stringify({ ok: true, sources: regs, module_version: SeedQ.MODULE_VERSION });
+    }
+    // ── quizverse_seedq_ingest (admin/service) ──────────────────────────────────
+    // Request: { service_token?, source, mode, topic, count?, params?, questions? }
+    // `questions` allows direct authored/CMS ingest through the same QA gate.
+    function rpcIngest(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var mode = "" + (data.mode || "");
+        var topic = "" + (data.topic || "general");
+        if (!mode)
+            return errPayload(3, "mode required");
+        var candidates = [];
+        var source = "" + (data.source || "");
+        if (data.questions && data.questions.length > 0) {
+            for (var i = 0; i < data.questions.length; i++) {
+                var raw = data.questions[i];
+                if (!raw || !raw.question || !raw.options)
+                    continue;
+                var q = {
+                    id: "", question: "" + raw.question, options: raw.options,
+                    correct_index: SeedQ.clampInt(raw.correct_index, 0, 7, 0),
+                    explanation: "" + (raw.explanation || ""), category: "" + (raw.category || topic),
+                    topic: topic, mode: mode, difficulty: SeedQ.clampInt(raw.difficulty, 1, 5, 3),
+                    question_type: "" + (raw.question_type || "Text"),
+                    media_url: "" + (raw.media_url || ""), media_provenance: null,
+                    source: source || "manual", citation: "" + (raw.citation || ""), lang: "" + (raw.lang || "en"),
+                    created_ms: SeedQ.nowMs(), quality: { score: 0, status: "pending", checks: [] }
+                };
+                q.id = SeedQ.questionId(nk, q.source, q.question, q.options);
+                candidates.push(q);
+            }
+        }
+        else {
+            if (!source)
+                return errPayload(3, "source required (or inline questions[])");
+            if (SeedQSources.QUESTION_SOURCES.indexOf(source) < 0) {
+                return errPayload(3, "unknown question source '" + source + "'. Available: " + SeedQSources.QUESTION_SOURCES.join(", "));
+            }
+            var count = SeedQ.clampInt(data.count, 1, 100, 20);
+            candidates = SeedQSources.fetchQuestions(ctx, nk, logger, source, mode, topic, count, data.params || {});
+        }
+        var res = SeedQEngine.ingestIntoPool(ctx, nk, logger, mode, topic, candidates);
+        logger.info("[SeedQ] ingest source=" + source + " mode=" + mode + " topic=" + topic +
+            " fetched=" + candidates.length + " accepted=" + res.accepted + " rejected=" + res.rejected);
+        return JSON.stringify({ ok: true, source: source, mode: mode, topic: topic, fetched: candidates.length, result: res });
+    }
+    // ── quizverse_seedq_ingest_tick (cron) ──────────────────────────────────────
+    // Request: { service_token?, batch?, count? }
+    function rpcIngestTick(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var batch = SeedQ.clampInt(data.batch, 1, 8, 3);
+        var count = SeedQ.clampInt(data.count, 5, 60, 20);
+        var res = SeedQEngine.ingestTick(ctx, nk, logger, batch, count);
+        return JSON.stringify({ ok: true, tick: res });
+    }
+    // ── quizverse_seedq_pool_stats (admin/service) ──────────────────────────────
+    function rpcPoolStats(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var idx = SeedQ.readSystem(nk, SeedQ.COLL_POOL_INDEX, "index") || { keys: {} };
+        var keys = Object.keys(idx.keys || {});
+        var pools = [];
+        for (var i = 0; i < keys.length; i++) {
+            var meta = idx.keys[keys[i]];
+            var pool = SeedQ.readSystem(nk, SeedQ.COLL_POOL, keys[i]) || { questions: [] };
+            var review = SeedQ.readSystem(nk, SeedQ.COLL_REVIEW, keys[i]);
+            var quarantined = 0;
+            if (review && review.entries) {
+                var rk = Object.keys(review.entries);
+                for (var r = 0; r < rk.length; r++)
+                    if (review.entries[rk[r]].status === "quarantined")
+                        quarantined++;
+            }
+            var bySource = {};
+            var byDifficulty = {};
+            for (var qi = 0; qi < pool.questions.length; qi++) {
+                var q = pool.questions[qi];
+                bySource[q.source] = (bySource[q.source] || 0) + 1;
+                byDifficulty["d" + (q.difficulty || 3)] = (byDifficulty["d" + (q.difficulty || 3)] || 0) + 1;
+            }
+            pools.push({
+                key: keys[i], mode: meta.mode, topic: meta.topic,
+                size: pool.questions.length, quarantined: quarantined,
+                by_source: bySource, by_difficulty: byDifficulty,
+                updated_ms: pool.updated_ms || 0
+            });
+        }
+        var state = SeedQ.readSystem(nk, SeedQ.COLL_INGEST_STATE, "state") || {};
+        return JSON.stringify({ ok: true, pools: pools, ingest_state: { cursor: state.cursor || 0, runs: state.runs || 0, last_run_ms: state.last_run_ms || 0 }, module_version: SeedQ.MODULE_VERSION });
+    }
+    // ── quizverse_seedq_asset_job (admin/service) ───────────────────────────────
+    // Request: { service_token?, kind: "removebg"|"aso_mockups"|"art_cleanup", params? }
+    function rpcAssetJob(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var res = SeedQSources.buildAssetJob(ctx, "" + (data.kind || ""), data.params || {});
+        return JSON.stringify(res);
+    }
+    // ── quizverse_seedq_provenance (admin/service) ──────────────────────────────
+    // Request: { service_token?, image_url }
+    function rpcProvenance(ctx, logger, nk, payload) {
+        var data = parse(payload);
+        if (!isAdminOrService(ctx, data))
+            return errPayload(7, "admin or service_token required");
+        var url = "" + (data.image_url || "");
+        if (!url)
+            return errPayload(3, "image_url required");
+        var prov = SeedQQuality.checkProvenance(ctx, nk, logger, url);
+        return JSON.stringify({ ok: true, provenance: prov, safe: prov.license !== "unknown" });
+    }
+    // ── Registration ────────────────────────────────────────────────────────────
+    // Single-arg register() with string-literal rpc ids: postbuild.js rewrites
+    // each call to a __rpc_ stub assignment and auto-invokes register() on every
+    // pooled Goja VM (see nakama-rpc skill / postbuild.js autoInvokeRegister).
+    function register(initializer) {
+        initializer.registerRpc("quizverse_seedq_get_staged", rpcGetStaged);
+        initializer.registerRpc("quizverse_seedq_consume_set", rpcConsumeSet);
+        initializer.registerRpc("quizverse_seedq_review", rpcReview);
+        initializer.registerRpc("quizverse_seedq_focus_tracks", rpcFocusTracks);
+        initializer.registerRpc("quizverse_seedq_sources", rpcSources);
+        initializer.registerRpc("quizverse_seedq_ingest", rpcIngest);
+        initializer.registerRpc("quizverse_seedq_ingest_tick", rpcIngestTick);
+        initializer.registerRpc("quizverse_seedq_pool_stats", rpcPoolStats);
+        initializer.registerRpc("quizverse_seedq_asset_job", rpcAssetJob);
+        initializer.registerRpc("quizverse_seedq_provenance", rpcProvenance);
+    }
+    SeedQuestions.register = register;
+})(SeedQuestions || (SeedQuestions = {}));
+// sq_sources.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Seed Questions — the 13 content-source connectors.
+//
+//  #  id             site(s)                              kind        feeds
+//  1  archive_org    archive.org                          questions   ImageGuess/WhosThat/MediaQuiz/GeoExplore
+//  2  wolfram        wolframalpha.com                     questions   CustomTopic/STEM (auto-verified)
+//  3  gutenberg      gutenberg.org (Gutendex API)         questions   literature/history/quote packs
+//  4  music_tv       everynoise.com + tunefind.com        questions   MediaQuiz music & TV vertical (+Deezer media)
+//  5  removebg       remove.bg                            assets      Plus cosmetics / badges / stickers
+//  6  youtube_quiz   summarize.tech (+YouTube oEmbed+LLM) questions   YouTube→quiz pipeline / ViralIQ
+//  7  media_optimize squoosh.app (wsrv.nl equivalent)     tooling     QuizMediaService load size (SeedQ.optimizeMediaUrl)
+//  8  aso_mockups    smartmockups.com + shots.so          tooling     content-factory ASO/trailer pipeline
+//  9  art_cleanup    photopea + cleanup.pictures + unscreen tooling   asset editing / video bg removal
+// 10  scholar        semanticscholar.org + openculture.com questions  exam/study packs + E-E-A-T citations
+// 11  focus_audio    mynoise/coffitivity/musicforprogramming feature  Focus/Study Mode soundscapes (CC tracks)
+// 12  justwatch      justwatch.com                        questions   ViralIQ trending freshness
+// 13  tineye         tineye.com                           guardrail   image provenance (SeedQQuality.checkProvenance)
+//
+// "questions" connectors return SeedQ.SeedQuestion[] via fetchQuestions().
+// "assets"/"tooling" connectors return executable job descriptors via
+// buildAssetJob() — binary work (PNG cutouts, mockup renders) is delegated to
+// content-factory / n8n, since Goja strings cannot safely carry binary.
+var SeedQSources;
+(function (SeedQSources) {
+    function registry() {
+        return [
+            { rank: 1, id: "archive_org", site: "archive.org", kind: "questions",
+                modes: ["ImageGuess", "WhosThat", "MediaQuiz", "GeoExplore"], env_keys: [],
+                implemented: "live",
+                notes: "advancedsearch API → public-domain image/media questions; thumbnails via archive.org/services/img" },
+            { rank: 2, id: "wolfram", site: "wolframalpha.com", kind: "questions",
+                modes: ["CustomTopic", "SpeedQuiz", "BrainSprint"], env_keys: ["WOLFRAM_APP_ID"],
+                implemented: "live",
+                notes: "template-generated math/STEM, locally computed; WOLFRAM_APP_ID enables Short-Answers auto-verification" },
+            { rank: 3, id: "gutenberg", site: "gutenberg.org", kind: "questions",
+                modes: ["CustomTopic", "PickATopic"], env_keys: [],
+                implemented: "live",
+                notes: "Gutendex API → author/work attribution questions, 100% public domain" },
+            { rank: 4, id: "music_tv", site: "everynoise.com + tunefind.com", kind: "questions",
+                modes: ["MediaQuiz", "AudioQuiz", "ViralIQ"], env_keys: ["TUNEFIND_API_KEY"],
+                implemented: "live",
+                notes: "everynoise genre taxonomy (embedded) + Deezer charts for artist/track questions; tunefind song↔show mapping is partnership-key gated" },
+            { rank: 5, id: "removebg", site: "remove.bg", kind: "assets",
+                modes: ["cosmetics", "badges", "stickers"], env_keys: ["REMOVE_BG_API_KEY"],
+                implemented: "delegated",
+                notes: "sticker/cosmetic cutout factory — job descriptor executed by content-factory/n8n (binary-safe)" },
+            { rank: 6, id: "youtube_quiz", site: "summarize.tech", kind: "questions",
+                modes: ["ViralIQ", "VideoQuiz", "CustomTopic"], env_keys: ["SUMMARIZE_TECH_URL", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"],
+                implemented: "live",
+                notes: "YouTube oEmbed metadata + caller-provided summary/transcript → LLM question gen; SUMMARIZE_TECH_URL proxy optional" },
+            { rank: 7, id: "media_optimize", site: "squoosh.app", kind: "tooling",
+                modes: ["*"], env_keys: [],
+                implemented: "live",
+                notes: "every staged image is rewritten through wsrv.nl (resize+webp) — squoosh-equivalent compression at serve time" },
+            { rank: 8, id: "aso_mockups", site: "smartmockups.com + shots.so", kind: "tooling",
+                modes: ["marketing"], env_keys: [],
+                implemented: "delegated",
+                notes: "store-screenshot/mockup job descriptors for the content-factory ASO pipeline" },
+            { rank: 9, id: "art_cleanup", site: "photopea.com + cleanup.pictures + unscreen.com", kind: "tooling",
+                modes: ["assets"], env_keys: [],
+                implemented: "delegated",
+                notes: "photopea scripting payloads + cleanup/unscreen job descriptors for source-art cleanup" },
+            { rank: 10, id: "scholar", site: "semanticscholar.org + openculture.com", kind: "questions",
+                modes: ["CustomTopic", "SubjectiveQuiz"], env_keys: [],
+                implemented: "live",
+                notes: "Graph API paper search → exam-prep questions with citations (E-E-A-T / CITATIONS.md fuel)" },
+            { rank: 11, id: "focus_audio", site: "mynoise.net / coffitivity / musicforprogramming", kind: "feature",
+                modes: ["FocusMode"], env_keys: [],
+                implemented: "live",
+                notes: "CC-licensed ambient tracks from musicforprogramming RSS for Focus/Study Mode (mynoise/coffitivity as licensed-pattern references only)" },
+            { rank: 12, id: "justwatch", site: "justwatch.com", kind: "questions",
+                modes: ["ViralIQ"], env_keys: [],
+                implemented: "live",
+                notes: "popular-titles feed → trending film/show questions + sq_trending freshness signal for ViralIQ packs" },
+            { rank: 13, id: "tineye", site: "tineye.com", kind: "guardrail",
+                modes: ["*media*"], env_keys: ["TINEYE_API_KEY"],
+                implemented: "live",
+                notes: "image provenance check before media questions ship — TinEye API when keyed, public-domain domain whitelist otherwise" }
+        ];
+    }
+    SeedQSources.registry = registry;
+    // ── shared builders ─────────────────────────────────────────────────────────
+    function baseQuestion(nk, source, mode, topic) {
+        return {
+            id: "", question: "", options: [], correct_index: 0, explanation: "",
+            category: topic, topic: topic, mode: mode, difficulty: 3,
+            question_type: "Text", media_url: "", media_provenance: null,
+            source: source, citation: "", lang: "en",
+            created_ms: SeedQ.nowMs(),
+            quality: { score: 0, status: "pending", checks: [] }
+        };
+    }
+    function finalize(nk, q) {
+        // Shuffle options while tracking the correct answer.
+        var correctText = q.options[q.correct_index];
+        SeedQ.shuffle(q.options);
+        q.correct_index = q.options.indexOf(correctText);
+        q.id = SeedQ.questionId(nk, q.source, q.question, q.options);
+        return q;
+    }
+    function pickDistractors(all, correct, n) {
+        var pool = [];
+        var seen = {};
+        seen[("" + correct).toLowerCase()] = true;
+        for (var i = 0; i < all.length; i++) {
+            var v = "" + (all[i] || "");
+            var lower = v.toLowerCase();
+            if (!v || seen[lower])
+                continue;
+            seen[lower] = true;
+            pool.push(v);
+        }
+        SeedQ.shuffle(pool);
+        return pool.slice(0, n);
+    }
+    // ── #1 archive.org ──────────────────────────────────────────────────────────
+    function fetchArchiveOrg(ctx, nk, logger, mode, topic, count) {
+        var query = 'mediatype:image AND subject:("' + topic.replace(/"/g, "") + '")';
+        var url = "https://archive.org/advancedsearch.php?q=" + encodeURIComponent(query) +
+            "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&fl%5B%5D=creator&rows=50&page=1&output=json";
+        var body = SeedQ.cachedHttpGet(nk, logger, url, 6 * 3600 * 1000);
+        if (!body)
+            return [];
+        var docs = [];
+        try {
+            var parsed = JSON.parse(body);
+            docs = (parsed && parsed.response && parsed.response.docs) || [];
+        }
+        catch (e) {
+            return [];
+        }
+        var titles = [];
+        var creators = [];
+        for (var i = 0; i < docs.length; i++) {
+            if (docs[i] && docs[i].title)
+                titles.push("" + docs[i].title);
+            var cr = docs[i] && docs[i].creator;
+            if (cr)
+                creators.push("" + (cr.length !== undefined && typeof cr !== "string" ? cr[0] : cr));
+        }
+        var out = [];
+        for (var d = 0; d < docs.length && out.length < count; d++) {
+            var doc = docs[d];
+            if (!doc || !doc.identifier || !doc.title)
+                continue;
+            var title = ("" + doc.title).substring(0, 110);
+            var imgUrl = "https://archive.org/services/img/" + encodeURIComponent(doc.identifier);
+            // Image identification question (ImageGuess / WhosThat / MediaQuiz / GeoExplore)
+            var distract = pickDistractors(titles, title, 3);
+            if (distract.length === 3) {
+                var q = baseQuestion(nk, "archive_org", mode, topic);
+                q.question = "This image comes from the public-domain archives. What is it titled?";
+                q.options = [title].concat(distract);
+                q.correct_index = 0;
+                q.question_type = "Image";
+                q.media_url = imgUrl;
+                q.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
+                q.citation = "Internet Archive — archive.org/details/" + doc.identifier;
+                q.explanation = "From the Internet Archive collection (" + doc.identifier + ").";
+                q.difficulty = 3;
+                out.push(finalize(nk, q));
+            }
+            // Creator question (WhosThat flavor) when we know the creator.
+            var creator = doc.creator ? ("" + (typeof doc.creator === "string" ? doc.creator : doc.creator[0])) : "";
+            if (creator && out.length < count) {
+                var cDistract = pickDistractors(creators, creator, 3);
+                if (cDistract.length === 3) {
+                    var q2 = baseQuestion(nk, "archive_org", mode, topic);
+                    q2.question = "Who created '" + title + "'?";
+                    q2.options = [creator].concat(cDistract);
+                    q2.correct_index = 0;
+                    q2.question_type = "Image";
+                    q2.media_url = imgUrl;
+                    q2.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
+                    q2.citation = "Internet Archive — archive.org/details/" + doc.identifier;
+                    q2.difficulty = 4;
+                    out.push(finalize(nk, q2));
+                }
+            }
+        }
+        return out;
+    }
+    SeedQSources.fetchArchiveOrg = fetchArchiveOrg;
+    // ── #2 wolframalpha.com ─────────────────────────────────────────────────────
+    // Math/STEM questions are generated from templates with locally computed
+    // answers, then (when WOLFRAM_APP_ID is set) cross-verified against the
+    // Wolfram|Alpha Short Answers API. Verified items carry "wolfram_verified".
+    var WOLFRAM_VERIFY_BUDGET = 5; // API calls per ingest batch
+    function numericDistractors(answer) {
+        var deltas = [answer + 1, answer - 1, answer + 2, answer - 2, answer + 10, answer - 10,
+            Math.round(answer * 1.1), Math.round(answer * 0.9), answer + 5, answer - 5];
+        var out = [];
+        var seen = {};
+        seen["" + answer] = true;
+        for (var i = 0; i < deltas.length && out.length < 3; i++) {
+            var v = "" + deltas[i];
+            if (!seen[v]) {
+                seen[v] = true;
+                out.push(v);
+            }
+        }
+        return out;
+    }
+    function fetchWolfram(ctx, nk, logger, mode, topic, count) {
+        var appId = "" + ((ctx.env && ctx.env["WOLFRAM_APP_ID"]) || "");
+        var verifyBudget = appId ? WOLFRAM_VERIFY_BUDGET : 0;
+        var out = [];
+        function rnd(lo, hi) {
+            return lo + Math.floor(Math.random() * (hi - lo + 1));
+        }
+        for (var i = 0; i < count; i++) {
+            var kind = i % 5;
+            var text = "", answer = 0, wolframQuery = "", difficulty = 2, explanation = "";
+            if (kind === 0) { // arithmetic
+                var a = rnd(12, 99), b = rnd(12, 99);
+                answer = a * b;
+                text = "What is " + a + " × " + b + "?";
+                wolframQuery = a + " * " + b;
+                difficulty = 2;
+                explanation = a + " × " + b + " = " + answer + ".";
+            }
+            else if (kind === 1) { // percent
+                var pct = rnd(1, 19) * 5, base = rnd(4, 40) * 10;
+                answer = Math.round(base * pct / 100);
+                text = "What is " + pct + "% of " + base + "?";
+                wolframQuery = pct + "% of " + base;
+                difficulty = 3;
+                explanation = pct + "% of " + base + " = " + base + " × " + (pct / 100) + " = " + answer + ".";
+            }
+            else if (kind === 2) { // linear equation
+                var m = rnd(2, 12), x = rnd(2, 20), c = rnd(1, 30);
+                answer = x;
+                text = "Solve for x:  " + m + "x + " + c + " = " + (m * x + c);
+                wolframQuery = "solve " + m + "x + " + c + " = " + (m * x + c) + " for x";
+                difficulty = 3;
+                explanation = m + "x = " + (m * x) + ", so x = " + x + ".";
+            }
+            else if (kind === 3) { // squares
+                var s = rnd(11, 29);
+                answer = s * s;
+                text = "What is " + s + "²?";
+                wolframQuery = s + "^2";
+                difficulty = 3;
+                explanation = s + " × " + s + " = " + answer + ".";
+            }
+            else { // remainder
+                var n1 = rnd(100, 999), n2 = rnd(7, 24);
+                answer = n1 % n2;
+                text = "What is the remainder when " + n1 + " is divided by " + n2 + "?";
+                wolframQuery = n1 + " mod " + n2;
+                difficulty = 4;
+                explanation = n1 + " = " + Math.floor(n1 / n2) + " × " + n2 + " + " + answer + ".";
+            }
+            var checks = ["template_computed"];
+            if (verifyBudget > 0) {
+                verifyBudget--;
+                try {
+                    var vurl = "https://api.wolframalpha.com/v1/result?appid=" + encodeURIComponent(appId) +
+                        "&i=" + encodeURIComponent(wolframQuery);
+                    var resp = nk.httpRequest(vurl, "get", {}, "", 8000);
+                    if (resp.code >= 200 && resp.code < 300) {
+                        var m2 = /-?\d+/.exec(resp.body || "");
+                        if (m2 && parseInt(m2[0], 10) === answer) {
+                            checks.push("wolfram_verified");
+                        }
+                        else {
+                            logger.warn("[SeedQ] wolfram verify mismatch for '" + wolframQuery + "' — dropping question");
+                            continue; // verification failed → never ship it
+                        }
+                    }
+                }
+                catch (e) { /* verification unavailable → keep template_computed */ }
+            }
+            var q = baseQuestion(nk, "wolfram", mode, topic || "math");
+            q.question = text;
+            q.options = ["" + answer].concat(numericDistractors(answer));
+            q.correct_index = 0;
+            q.explanation = explanation;
+            q.difficulty = difficulty;
+            q.citation = "Computationally generated; verification via Wolfram|Alpha Short Answers API";
+            q.quality.checks = checks;
+            if (q.options.length === 4)
+                out.push(finalize(nk, q));
+        }
+        return out;
+    }
+    SeedQSources.fetchWolfram = fetchWolfram;
+    // ── #3 gutenberg.org (Gutendex) ─────────────────────────────────────────────
+    function fetchGutenberg(ctx, nk, logger, mode, topic, count) {
+        var url = "https://gutendex.com/books?languages=en&topic=" + encodeURIComponent(topic);
+        var body = SeedQ.cachedHttpGet(nk, logger, url, 24 * 3600 * 1000);
+        if (!body)
+            return [];
+        var results = [];
+        try {
+            results = JSON.parse(body).results || [];
+        }
+        catch (e) {
+            return [];
+        }
+        var authors = [];
+        var titles = [];
+        for (var i = 0; i < results.length; i++) {
+            var b = results[i];
+            if (b && b.title)
+                titles.push(("" + b.title).substring(0, 90));
+            if (b && b.authors && b.authors.length > 0 && b.authors[0].name) {
+                // Gutendex names are "Last, First" — flip for display.
+                var parts = ("" + b.authors[0].name).split(", ");
+                authors.push(parts.length === 2 ? parts[1] + " " + parts[0] : parts[0]);
+            }
+        }
+        var out = [];
+        for (var r = 0; r < results.length && out.length < count; r++) {
+            var book = results[r];
+            if (!book || !book.title || !book.authors || book.authors.length === 0 || !book.authors[0].name)
+                continue;
+            var title2 = ("" + book.title).substring(0, 90);
+            var np = ("" + book.authors[0].name).split(", ");
+            var author = np.length === 2 ? np[1] + " " + np[0] : np[0];
+            var distract = pickDistractors(authors, author, 3);
+            if (distract.length < 3)
+                continue;
+            var q = baseQuestion(nk, "gutenberg", mode, topic || "literature");
+            q.question = "Who wrote '" + title2 + "'?";
+            q.options = [author].concat(distract);
+            q.correct_index = 0;
+            q.difficulty = 3;
+            q.citation = "Project Gutenberg — gutenberg.org/ebooks/" + book.id;
+            q.explanation = "'" + title2 + "' is a public-domain work by " + author + " on Project Gutenberg.";
+            out.push(finalize(nk, q));
+            // Author's birth year question when known (history flavor).
+            var by = book.authors[0].birth_year;
+            if (by && out.length < count) {
+                var q2 = baseQuestion(nk, "gutenberg", mode, topic || "literature");
+                q2.question = "In which year was " + author + ", author of '" + title2 + "', born?";
+                q2.options = ["" + by].concat(numericDistractors(by).map(function (v) { return v; }));
+                q2.correct_index = 0;
+                q2.difficulty = 4;
+                q2.citation = "Project Gutenberg — gutenberg.org/ebooks/" + book.id;
+                if (q2.options.length === 4)
+                    out.push(finalize(nk, q2));
+            }
+        }
+        return out;
+    }
+    SeedQSources.fetchGutenberg = fetchGutenberg;
+    // ── #4 everynoise + tunefind (music & TV vertical) ─────────────────────────
+    // Genre taxonomy sampled from Every Noise at Once; Deezer charts provide
+    // artist/track/cover media (free API, no key — same ToS basis as the
+    // existing quizverse_music_quiz module). Tunefind song↔show mapping is
+    // partnership-gated behind TUNEFIND_API_KEY.
+    var EVERYNOISE_GENRES = [
+        "vaporwave", "shoegaze", "afrobeats", "k-pop", "city pop", "drill",
+        "synthwave", "bossa nova", "grime", "cumbia", "zydeco", "math rock",
+        "trip hop", "delta blues", "dream pop", "post-punk", "hyperpop",
+        "lo-fi beats", "reggaeton", "americana", "eurodance", "dark ambient",
+        "chiptune", "bluegrass", "j-rock", "highlife", "klezmer", "phonk",
+        "italo disco", "dub techno", "neo soul", "gqom", "acid jazz", "sludge metal"
+    ];
+    var FAKE_GENRE_ADJ = ["quantum", "velvet", "arctic", "plastic", "midnight", "neon", "hollow", "crimson"];
+    var FAKE_GENRE_NOUN = ["polka-core", "swampwave", "yodel-hop", "fog jazz", "sprintstep", "mothcore", "gravel soul", "drift folk"];
+    function fetchMusicTv(ctx, nk, logger, mode, topic, count) {
+        var out = [];
+        // Deezer chart → "who performs this track?" with album-art media.
+        var body = SeedQ.cachedHttpGet(nk, logger, "https://api.deezer.com/chart/0/tracks?limit=50", 12 * 3600 * 1000);
+        if (body) {
+            var tracks = [];
+            try {
+                tracks = JSON.parse(body).data || [];
+            }
+            catch (e) {
+                tracks = [];
+            }
+            var artists = [];
+            for (var i = 0; i < tracks.length; i++) {
+                if (tracks[i] && tracks[i].artist && tracks[i].artist.name)
+                    artists.push("" + tracks[i].artist.name);
+            }
+            for (var t = 0; t < tracks.length && out.length < Math.ceil(count * 0.7); t++) {
+                var tr = tracks[t];
+                if (!tr || !tr.title || !tr.artist || !tr.artist.name)
+                    continue;
+                var artist = "" + tr.artist.name;
+                var distract = pickDistractors(artists, artist, 3);
+                if (distract.length < 3)
+                    continue;
+                var q = baseQuestion(nk, "music_tv", mode, topic || "music");
+                q.question = "Which artist performs '" + ("" + tr.title).substring(0, 80) + "'?";
+                q.options = [artist].concat(distract);
+                q.correct_index = 0;
+                q.difficulty = 2;
+                if (tr.album && tr.album.cover_medium) {
+                    q.question_type = "Image";
+                    q.media_url = "" + tr.album.cover_medium;
+                    q.media_provenance = { source_domain: "dzcdn.net", license: "api_tos", checked: true, method: "domain_whitelist" };
+                }
+                q.citation = "Deezer charts (genre taxonomy: Every Noise at Once)";
+                out.push(finalize(nk, q));
+            }
+        }
+        // Every Noise taxonomy → real-vs-invented genre questions.
+        var genres = EVERYNOISE_GENRES.slice(0);
+        SeedQ.shuffle(genres);
+        for (var g = 0; g < genres.length && out.length < count; g++) {
+            var real = genres[g];
+            var fakes = [];
+            var used = {};
+            while (fakes.length < 3) {
+                var f = FAKE_GENRE_ADJ[Math.floor(Math.random() * FAKE_GENRE_ADJ.length)] + " " +
+                    FAKE_GENRE_NOUN[Math.floor(Math.random() * FAKE_GENRE_NOUN.length)];
+                if (!used[f]) {
+                    used[f] = true;
+                    fakes.push(f);
+                }
+            }
+            var q2 = baseQuestion(nk, "music_tv", mode, topic || "music");
+            q2.question = "Which of these is a real music genre catalogued on Every Noise at Once?";
+            q2.options = [real].concat(fakes);
+            q2.correct_index = 0;
+            q2.difficulty = 3;
+            q2.citation = "Every Noise at Once — everynoise.com";
+            q2.explanation = "'" + real + "' is a real genre mapped by Every Noise at Once; the others are invented.";
+            out.push(finalize(nk, q2));
+        }
+        return out;
+    }
+    SeedQSources.fetchMusicTv = fetchMusicTv;
+    // ── #6 summarize.tech / YouTube → quiz ──────────────────────────────────────
+    function llmGenerateQuestions(ctx, nk, logger, sourceText, topic, mode, count) {
+        var prompt = "Generate exactly " + count + " multiple-choice quiz questions from the following content.\n" +
+            "Return ONLY a JSON array, no prose, no code fences. Each item:\n" +
+            '{"question":"...","options":["a","b","c","d"],"correct_index":0,"explanation":"...","difficulty":1-5}\n' +
+            "Rules: 4 distinct options; unambiguous single correct answer; never include the answer text inside the question.\n\nCONTENT:\n" +
+            sourceText.substring(0, 6000);
+        var raw = "";
+        var anthropicKey = "" + ((ctx.env && ctx.env["ANTHROPIC_API_KEY"]) || "");
+        var openaiKey = "" + ((ctx.env && ctx.env["OPENAI_API_KEY"]) || "");
+        if (anthropicKey) {
+            try {
+                var resp = nk.httpRequest("https://api.anthropic.com/v1/messages", "post", {
+                    "content-type": "application/json",
+                    "x-api-key": anthropicKey,
+                    "anthropic-version": "2023-06-01"
+                }, JSON.stringify({
+                    model: "claude-3-5-haiku-latest",
+                    max_tokens: 3000,
+                    messages: [{ role: "user", content: prompt }]
+                }), 20000);
+                if (resp.code >= 200 && resp.code < 300) {
+                    var pb = JSON.parse(resp.body || "{}");
+                    raw = (pb.content && pb.content[0] && pb.content[0].text) || "";
+                }
+                else {
+                    logger.warn("[SeedQ] anthropic gen HTTP " + resp.code + " (check ANTHROPIC_API_KEY)");
+                }
+            }
+            catch (e) {
+                logger.warn("[SeedQ] anthropic gen failed: " + (e && e.message ? e.message : String(e)));
+            }
+        }
+        if (!raw && openaiKey) {
+            try {
+                var resp2 = nk.httpRequest("https://api.openai.com/v1/chat/completions", "post", {
+                    "content-type": "application/json",
+                    "authorization": "Bearer " + openaiKey
+                }, JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.4
+                }), 20000);
+                if (resp2.code >= 200 && resp2.code < 300) {
+                    var pb2 = JSON.parse(resp2.body || "{}");
+                    raw = (pb2.choices && pb2.choices[0] && pb2.choices[0].message && pb2.choices[0].message.content) || "";
+                }
+                else {
+                    logger.warn("[SeedQ] openai gen HTTP " + resp2.code + " (check OPENAI_API_KEY)");
+                }
+            }
+            catch (e2) {
+                logger.warn("[SeedQ] openai gen failed: " + (e2 && e2.message ? e2.message : String(e2)));
+            }
+        }
+        if (!raw)
+            return [];
+        // Strip code fences and grab the outermost JSON array.
+        raw = raw.replace(/```json/gi, "").replace(/```/g, "");
+        var start = raw.indexOf("["), end = raw.lastIndexOf("]");
+        if (start < 0 || end <= start)
+            return [];
+        var items = [];
+        try {
+            items = JSON.parse(raw.substring(start, end + 1));
+        }
+        catch (e3) {
+            return [];
+        }
+        var out = [];
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (!it || !it.question || !it.options || it.options.length !== 4)
+                continue;
+            var q = baseQuestion(nk, "youtube_quiz", mode, topic);
+            q.question = "" + it.question;
+            q.options = [];
+            for (var o = 0; o < 4; o++)
+                q.options.push("" + it.options[o]);
+            q.correct_index = SeedQ.clampInt(it.correct_index, 0, 3, 0);
+            q.explanation = "" + (it.explanation || "");
+            q.difficulty = SeedQ.clampInt(it.difficulty, 1, 5, 3);
+            q.quality.checks = ["llm_generated"];
+            out.push(finalize(nk, q));
+        }
+        return out;
+    }
+    function fetchYoutubeQuiz(ctx, nk, logger, mode, topic, count, params) {
+        params = params || {};
+        var videoUrl = "" + (params.video_url || "");
+        var basis = "" + (params.summary || params.transcript || "");
+        var title = "", channel = "";
+        if (videoUrl) {
+            var oembed = SeedQ.cachedHttpGet(nk, logger, "https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent(videoUrl), 24 * 3600 * 1000);
+            if (oembed) {
+                try {
+                    var meta = JSON.parse(oembed);
+                    title = "" + (meta.title || "");
+                    channel = "" + (meta.author_name || "");
+                }
+                catch (e) { /* ignore */ }
+            }
+            // Optional summarize.tech-style proxy (self-hosted; no public API exists).
+            var sumUrl = "" + ((ctx.env && ctx.env["SUMMARIZE_TECH_URL"]) || "");
+            if (!basis && sumUrl) {
+                var sum = SeedQ.cachedHttpGet(nk, logger, sumUrl + encodeURIComponent(videoUrl), 24 * 3600 * 1000);
+                if (sum)
+                    basis = sum.substring(0, 8000);
+            }
+        }
+        if (!basis && title)
+            basis = "Video: '" + title + "' by channel '" + channel + "'. Topic: " + topic + ".";
+        if (!basis)
+            return [];
+        var out = llmGenerateQuestions(ctx, nk, logger, basis, topic || title || "video", mode, count);
+        for (var i = 0; i < out.length; i++) {
+            out[i].citation = videoUrl ? ("YouTube — " + videoUrl + (title ? " ('" + title + "')" : "")) : out[i].citation;
+        }
+        return out;
+    }
+    SeedQSources.fetchYoutubeQuiz = fetchYoutubeQuiz;
+    // ── #10 semanticscholar.org + openculture.com ──────────────────────────────
+    function fetchScholar(ctx, nk, logger, mode, topic, count) {
+        var url = "https://api.semanticscholar.org/graph/v1/paper/search?query=" + encodeURIComponent(topic) +
+            "&fields=title,year,authors,venue&limit=25";
+        var body = SeedQ.cachedHttpGet(nk, logger, url, 24 * 3600 * 1000);
+        if (!body)
+            return [];
+        var papers = [];
+        try {
+            papers = JSON.parse(body).data || [];
+        }
+        catch (e) {
+            return [];
+        }
+        var authorNames = [];
+        for (var i = 0; i < papers.length; i++) {
+            var au = papers[i] && papers[i].authors;
+            if (au && au.length > 0 && au[0].name)
+                authorNames.push("" + au[0].name);
+        }
+        var out = [];
+        for (var p = 0; p < papers.length && out.length < count; p++) {
+            var paper = papers[p];
+            if (!paper || !paper.title || !paper.year)
+                continue;
+            var title = ("" + paper.title).substring(0, 110);
+            var citation = "Semantic Scholar: \"" + title + "\" (" + paper.year + ")" +
+                (paper.venue ? ", " + paper.venue : "") + " — semanticscholar.org (see also openculture.com)";
+            // Publication-year question.
+            var yq = baseQuestion(nk, "scholar", mode, topic);
+            yq.question = "In which year was the research paper '" + title + "' published?";
+            yq.options = ["" + paper.year].concat(numericDistractors(paper.year));
+            yq.correct_index = 0;
+            yq.difficulty = 4;
+            yq.citation = citation;
+            if (yq.options.length === 4)
+                out.push(finalize(nk, yq));
+            // First-author question when we have enough distractor authors.
+            var firstAuthor = (paper.authors && paper.authors.length > 0 && paper.authors[0].name) ? "" + paper.authors[0].name : "";
+            if (firstAuthor && out.length < count) {
+                var distract = pickDistractors(authorNames, firstAuthor, 3);
+                if (distract.length === 3) {
+                    var aq = baseQuestion(nk, "scholar", mode, topic);
+                    aq.question = "Who is the first author of the paper '" + title + "'?";
+                    aq.options = [firstAuthor].concat(distract);
+                    aq.correct_index = 0;
+                    aq.difficulty = 5;
+                    aq.citation = citation;
+                    out.push(finalize(nk, aq));
+                }
+            }
+        }
+        return out;
+    }
+    SeedQSources.fetchScholar = fetchScholar;
+    // ── #12 justwatch.com (ViralIQ freshness) ───────────────────────────────────
+    function fetchJustWatch(ctx, nk, logger, mode, topic, count) {
+        // JustWatch retired the legacy REST popular-titles endpoint; the public
+        // GraphQL endpoint serves the same data.
+        var gql = "query($country:Country!,$language:Language!,$first:Int!){" +
+            "popularTitles(country:$country,first:$first){edges{node{" +
+            "... on MovieOrShow{objectType content(country:$country,language:$language){title originalReleaseYear}}}}}}";
+        var reqBody = JSON.stringify({ query: gql, variables: { country: "US", language: "en", first: 40 } });
+        // 12h cache keyed on the request signature (POST — cachedHttpGet is GET-only).
+        var cacheKey = "post:" + nk.sha256Hash("justwatch_popular_v1").substring(0, 24);
+        var cached = SeedQ.readSystem(nk, SeedQ.COLL_SOURCE_CACHE, cacheKey);
+        var body = null;
+        if (cached && cached.body && (SeedQ.nowMs() - (cached.fetched_ms || 0)) < 12 * 3600 * 1000) {
+            body = cached.body;
+        }
+        else {
+            try {
+                var resp = nk.httpRequest("https://apis.justwatch.com/graphql", "post", { "Content-Type": "application/json", "User-Agent": "quizverse-seedq/1.0" }, reqBody, 15000);
+                if (resp.code >= 200 && resp.code < 300 && resp.body) {
+                    body = resp.body;
+                    SeedQ.writeSystem(nk, SeedQ.COLL_SOURCE_CACHE, cacheKey, { fetched_ms: SeedQ.nowMs(), body: body });
+                }
+                else {
+                    logger.warn("[SeedQ] justwatch graphql -> " + resp.code);
+                }
+            }
+            catch (err) {
+                logger.warn("[SeedQ] justwatch graphql failed: " + (err && err.message ? err.message : String(err)));
+            }
+            if (!body && cached && cached.body)
+                body = cached.body; // stale fallback
+        }
+        if (!body)
+            return [];
+        var items = [];
+        try {
+            var edges = JSON.parse(body).data.popularTitles.edges || [];
+            for (var e = 0; e < edges.length; e++) {
+                var node = edges[e] && edges[e].node;
+                if (node && node.content && node.content.title) {
+                    items.push({
+                        title: node.content.title,
+                        original_release_year: node.content.originalReleaseYear,
+                        object_type: ("" + (node.objectType || "")).toLowerCase() === "show" ? "show" : "movie"
+                    });
+                }
+            }
+        }
+        catch (e2) {
+            return [];
+        }
+        if (items.length === 0)
+            return [];
+        // Freshness signal for ViralIQ packs — consumed by the client/live-ops.
+        var trendingTitles = [];
+        for (var i = 0; i < items.length; i++) {
+            if (items[i] && items[i].title)
+                trendingTitles.push("" + items[i].title);
+        }
+        SeedQ.writeSystem(nk, SeedQ.COLL_SOURCE_CACHE, "sq_trending", {
+            fetched_ms: SeedQ.nowMs(), titles: trendingTitles.slice(0, 40), source: "justwatch.com"
+        });
+        var out = [];
+        for (var t = 0; t < items.length && out.length < count; t++) {
+            var it = items[t];
+            if (!it || !it.title || !it.original_release_year)
+                continue;
+            var title = ("" + it.title).substring(0, 90);
+            var q = baseQuestion(nk, "justwatch", mode, topic || "trending");
+            q.question = "'" + title + "' is trending right now. In which year was it originally released?";
+            q.options = ["" + it.original_release_year].concat(numericDistractors(it.original_release_year));
+            q.correct_index = 0;
+            q.difficulty = 2;
+            q.citation = "JustWatch popular titles — justwatch.com";
+            q.explanation = "'" + title + "' (" + (it.object_type === "show" ? "series" : "film") + ", " + it.original_release_year + ") is on the current JustWatch popularity chart.";
+            if (q.options.length === 4)
+                out.push(finalize(nk, q));
+        }
+        return out;
+    }
+    SeedQSources.fetchJustWatch = fetchJustWatch;
+    // ── #11 Focus/Study Mode soundscapes ────────────────────────────────────────
+    // CC-licensed long-form ambient mixes from the musicforprogramming RSS feed.
+    // mynoise.net / coffitivity are referenced as the UX pattern — their audio
+    // is NOT redistributed (licensing), which is exactly the caveat in the plan.
+    function getFocusTracks(nk, logger) {
+        var doc = SeedQ.readSystem(nk, SeedQ.COLL_FOCUS_TRACKS, "tracks");
+        if (doc && doc.tracks && doc.tracks.length > 0 && (SeedQ.nowMs() - (doc.fetched_ms || 0)) < 7 * 86400 * 1000) {
+            return doc;
+        }
+        var tracks = [];
+        var body = SeedQ.cachedHttpGet(nk, logger, "https://musicforprogramming.net/rss.xml", 24 * 3600 * 1000, { "Accept": "application/rss+xml" });
+        if (body) {
+            // <item><title>…</title> … <enclosure url="…"/></item>
+            var itemRe = /<item>([\s\S]*?)<\/item>/g;
+            var m;
+            while ((m = itemRe.exec(body)) !== null && tracks.length < 20) {
+                var chunk = m[1];
+                var tm = /<title>([^<]+)<\/title>/.exec(chunk);
+                var em = /<enclosure[^>]*url="([^"]+)"/.exec(chunk);
+                if (tm && em) {
+                    tracks.push({
+                        title: tm[1],
+                        url: em[1],
+                        source: "musicforprogramming.net",
+                        license: "CC — attribution required",
+                        kind: "ambient_mix"
+                    });
+                }
+            }
+        }
+        var out = {
+            fetched_ms: SeedQ.nowMs(),
+            tracks: tracks,
+            pattern_references: [
+                { site: "mynoise.net", note: "soundscape-blend UX pattern reference only — do not redistribute audio" },
+                { site: "coffitivity.com", note: "ambient-cafe UX pattern reference only — do not redistribute audio" }
+            ]
+        };
+        if (tracks.length > 0)
+            SeedQ.writeSystem(nk, SeedQ.COLL_FOCUS_TRACKS, "tracks", out);
+        return out;
+    }
+    SeedQSources.getFocusTracks = getFocusTracks;
+    // ── #5 / #8 / #9 asset-factory job descriptors ──────────────────────────────
+    // Binary pipelines (PNG cutouts, mockup renders, video bg removal) run in
+    // content-factory / n8n; Nakama emits ready-to-execute job descriptors so
+    // API keys and parameters live in ONE audited place.
+    function buildAssetJob(ctx, kind, params) {
+        params = params || {};
+        if (kind === "removebg") {
+            var key = "" + ((ctx.env && ctx.env["REMOVE_BG_API_KEY"]) || "");
+            return {
+                ok: true,
+                job: {
+                    connector: "removebg",
+                    purpose: "" + (params.purpose || "plus_cosmetics"), // plus_cosmetics | badges | stickers | imageguess_cleanup
+                    request: {
+                        endpoint: "https://api.remove.bg/v1.0/removebg",
+                        method: "POST",
+                        headers: { "X-Api-Key": key ? "<REMOVE_BG_API_KEY set>" : "<MISSING — set REMOVE_BG_API_KEY>" },
+                        form: { image_url: "" + (params.image_url || ""), size: "auto", format: "png" }
+                    },
+                    output: { upload_to: "s3://" + ((ctx.env && ctx.env["AWS_S3_BUCKET"]) || "<AWS_S3_BUCKET>") + "/quiz-verse/cosmetics/" },
+                    key_present: !!key
+                }
+            };
+        }
+        if (kind === "aso_mockups") {
+            return {
+                ok: true,
+                job: {
+                    connector: "aso_mockups",
+                    purpose: "store_screenshots",
+                    steps: [
+                        { tool: "smartmockups.com", action: "device-frame raw screenshots", inputs: params.screenshot_urls || [] },
+                        { tool: "shots.so", action: "compose gradient/branded store shots", inputs: params.screenshot_urls || [] },
+                        { tool: "content-factory", action: "assemble ASO set (6.5in + 5.5in + tablet) and push to App Store Connect / Play Console pipeline" }
+                    ],
+                    notes: "manual/browser tools — no public APIs; executed by the marketing content-factory run"
+                }
+            };
+        }
+        if (kind === "art_cleanup") {
+            return {
+                ok: true,
+                job: {
+                    connector: "art_cleanup",
+                    purpose: "" + (params.purpose || "imageguess_source_art"),
+                    steps: [
+                        {
+                            tool: "photopea.com", action: "scripted edit",
+                            script: 'app.open("' + ("" + (params.image_url || "")) + '"); /* crop/levels */ app.activeDocument.saveToOE("png");'
+                        },
+                        { tool: "cleanup.pictures", action: "erase watermarks/objects", input: "" + (params.image_url || "") },
+                        { tool: "unscreen.com", action: "video background removal (AIHost/AIFortuneTeller/trailer clips)", input: "" + (params.video_url || "") }
+                    ],
+                    output: { upload_to: "s3://" + ((ctx.env && ctx.env["AWS_S3_BUCKET"]) || "<AWS_S3_BUCKET>") + "/quiz-verse/cleaned/" }
+                }
+            };
+        }
+        return { ok: false, error: "unknown asset job kind: " + kind + " (expected removebg | aso_mockups | art_cleanup)" };
+    }
+    SeedQSources.buildAssetJob = buildAssetJob;
+    // ── dispatcher ──────────────────────────────────────────────────────────────
+    function fetchQuestions(ctx, nk, logger, sourceId, mode, topic, count, params) {
+        if (sourceId === "archive_org")
+            return fetchArchiveOrg(ctx, nk, logger, mode, topic, count);
+        if (sourceId === "wolfram")
+            return fetchWolfram(ctx, nk, logger, mode, topic, count);
+        if (sourceId === "gutenberg")
+            return fetchGutenberg(ctx, nk, logger, mode, topic, count);
+        if (sourceId === "music_tv")
+            return fetchMusicTv(ctx, nk, logger, mode, topic, count);
+        if (sourceId === "youtube_quiz")
+            return fetchYoutubeQuiz(ctx, nk, logger, mode, topic, count, params);
+        if (sourceId === "scholar")
+            return fetchScholar(ctx, nk, logger, mode, topic, count);
+        if (sourceId === "justwatch")
+            return fetchJustWatch(ctx, nk, logger, mode, topic, count);
+        return [];
+    }
+    SeedQSources.fetchQuestions = fetchQuestions;
+    SeedQSources.QUESTION_SOURCES = ["archive_org", "wolfram", "gutenberg", "music_tv", "youtube_quiz", "scholar", "justwatch"];
+})(SeedQSources || (SeedQSources = {}));
 // ---------------------------------------------------------------------------
 // ActiveRolling — rolling-window distinct-user counts for admin live KPIs.
 //
