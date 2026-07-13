@@ -292,6 +292,25 @@ await check("SRC-03", "sources", "Cron batch and source registry are bounded", a
   return { connectors: sources.sources.length, tick_results: (tick.tick.results || []).length };
 });
 
+await check("SRC-04", "sources", "Reviewed Gutenberg outage fallback is mode-correct", async () => {
+  const topic = `no_upstream_results_${RUN}`;
+  const modes = ["DailyQuiz", "TrueFalseQuiz", "EmojiQuiz"];
+  for (const mode of modes) {
+    const ingested = await adminRpc("quizverse_seedq_ingest", {
+      source: "gutenberg", mode, topic, count: 60,
+    });
+    assert(ingested.ok && ingested.result.accepted >= 50, `${mode} reviewed fallback did not reach threshold`);
+  }
+  const user = await deviceAuth("fallback");
+  const tf = await rpc(user, "quizverse_seedq_get_staged", { mode: "TrueFalseQuiz", topic, set_size: 4 });
+  const emoji = await rpc(user, "quizverse_seedq_get_staged", { mode: "EmojiQuiz", topic, set_size: 4 });
+  assert((tf.sets || []).flatMap((s) => s.questions).every((q) => q.options.length === 2 &&
+    q.options.includes("True") && q.options.includes("False")), "TrueFalse fallback schema mismatch");
+  assert((emoji.sets || []).flatMap((s) => s.questions).every((q) => /emoji clue|emoji/i.test(q.question)),
+    "Emoji fallback is not mode-specific");
+  return { modes, accepted_minimum: 50 };
+});
+
 await check("SEC-01", "api_security", "Admin RPC rejects user session without service token", async () => {
   const user = await deviceAuth("forbidden");
   const res = await rpc(user, "quizverse_seedq_pool_stats", {});

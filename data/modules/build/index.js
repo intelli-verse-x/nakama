@@ -69207,7 +69207,7 @@ var SeedQ;
             { mode: "SpaceTrivia", aliases: ["SpaceQuiz"], kind: "question", source: "archive_org", default_topic: "space", media: "image", support: "direct", fallback_mode: "ImageQuiz", inventory_mode: "SpaceTrivia", delivery_contract: "ImageGuess_Unified.Space", seedq_required: true, reason: "public-domain space archive" },
             { mode: "EmojiQuiz", aliases: ["Emoji"], kind: "question", source: "gutenberg", default_topic: "general", media: "none", support: "fallback", fallback_mode: "WeeklyQuiz", inventory_mode: "EmojiQuiz", delivery_contract: "WeeklyQuiz_Unified.Emoji", seedq_required: true, reason: "authored emoji pack preferred; generic weekly fallback" },
             { mode: "HealthQuiz", aliases: ["Health"], kind: "question", source: "health_catalog", default_topic: "health", media: "none", support: "direct", fallback_mode: "", inventory_mode: "HealthQuiz", delivery_contract: "WeeklyQuiz_Unified.Health score-based MCQ", seedq_required: true, reason: "50 cited OpenStax anatomy/health-science MCQs provide deterministic reviewed fallback inventory" },
-            { mode: "FortuneQuiz", aliases: ["Fortune"], kind: "question", source: "gutenberg", default_topic: "general", media: "none", support: "fallback", fallback_mode: "WeeklyQuiz", inventory_mode: "FortuneQuiz", delivery_contract: "WeeklyQuiz_Unified.Fortune", seedq_required: true, reason: "entertainment quiz variant inherits approved weekly inventory when needed" },
+            { mode: "FortuneQuiz", aliases: ["Fortune"], kind: "non_question", source: "gutenberg", default_topic: "general", media: "none", support: "direct", fallback_mode: "", inventory_mode: "", delivery_contract: "WeeklyQuiz_Unified.Fortune score-weighted personality outcome", seedq_required: false, reason: "answer choices contribute outcome scores rather than a truthful correct answer index; the dedicated weekly questionnaire schema remains authoritative" },
             { mode: "PredictionQuiz", aliases: ["Prediction"], kind: "non_question", source: "justwatch", default_topic: "trending", media: "optional", support: "direct", fallback_mode: "", inventory_mode: "", delivery_contract: "WeeklyQuiz_Unified.Prediction stores selections and reveals outcomes later", seedq_required: false, reason: "future-outcome prediction has no truthful correct answer at staging time; exclude from MCQ inventory denominator" },
             { mode: "GeoExplore", aliases: ["GeoQuiz", "GeographyQuiz"], kind: "question", source: "archive_org", default_topic: "maps", media: "image", support: "direct", fallback_mode: "ImageQuiz", inventory_mode: "GeoExplore", delivery_contract: "QuizModeType.GeoExplore", seedq_required: true, reason: "public-domain maps" },
             { mode: "WhosThat", aliases: ["Who's That", "WhoIsThat"], kind: "question", source: "archive_org", default_topic: "portraits", media: "image", support: "direct", fallback_mode: "ImageQuiz", inventory_mode: "WhosThat", delivery_contract: "QuizModeType.WhosThat", seedq_required: true, reason: "public-domain portraits" },
@@ -69596,7 +69596,9 @@ var SeedQ;
         // the message as a printf format string, so percent-escapes get mangled.
         var logUrl = url.split("?")[0];
         try {
-            var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 15000);
+            // Nakama's JavaScript RPC context is bounded. Leave enough time after a
+            // slow source for deterministic fallback generation and storage writes.
+            var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 7000);
             if (resp.code >= 200 && resp.code < 300 && resp.body) {
                 // Cap what we cache — Goja strings are fine but storage rows shouldn't balloon.
                 if (resp.body.length < 400000) {
@@ -71484,17 +71486,98 @@ var SeedQSources;
     }
     SeedQSources.fetchWolfram = fetchWolfram;
     // ── #3 gutenberg.org (Gutendex) ─────────────────────────────────────────────
+    function fetchReviewedLiteratureFallback(nk, mode, topic, count) {
+        var facts = [
+            ["Pride and Prejudice", "Jane Austen", "👩‍❤️‍👨⚖️"], ["Sense and Sensibility", "Jane Austen", "🧠❤️"],
+            ["Moby-Dick", "Herman Melville", "🐋🌊"], ["Great Expectations", "Charles Dickens", "⭐📈"],
+            ["A Tale of Two Cities", "Charles Dickens", "🏙️🏙️"], ["Jane Eyre", "Charlotte Bronte", "👩🔥🏰"],
+            ["Wuthering Heights", "Emily Bronte", "🌬️🏔️❤️"], ["Frankenstein", "Mary Shelley", "⚡🧟"],
+            ["Dracula", "Bram Stoker", "🧛🩸"], ["The Adventures of Sherlock Holmes", "Arthur Conan Doyle", "🔍🕵️"],
+            ["The Time Machine", "H. G. Wells", "⏰⚙️"], ["The War of the Worlds", "H. G. Wells", "👽🌍"],
+            ["The Picture of Dorian Gray", "Oscar Wilde", "🖼️👨"], ["Treasure Island", "Robert Louis Stevenson", "🏴‍☠️🗺️"],
+            ["The Strange Case of Dr Jekyll and Mr Hyde", "Robert Louis Stevenson", "🧪👥"],
+            ["Little Women", "Louisa May Alcott", "👭👭"], ["The Adventures of Tom Sawyer", "Mark Twain", "👦🎨"],
+            ["Adventures of Huckleberry Finn", "Mark Twain", "🛶👦"], ["The Wonderful Wizard of Oz", "L. Frank Baum", "👠🌪️"],
+            ["Anne of Green Gables", "Lucy Maud Montgomery", "👩‍🦰🏡"], ["The Secret Garden", "Frances Hodgson Burnett", "🔑🌹"],
+            ["Alice's Adventures in Wonderland", "Lewis Carroll", "🐇🕳️"], ["Peter Pan", "J. M. Barrie", "🧚🏴‍☠️"],
+            ["The Jungle Book", "Rudyard Kipling", "🐻🐍👦"], ["Around the World in Eighty Days", "Jules Verne", "🌍⏱️"],
+            ["Twenty Thousand Leagues Under the Sea", "Jules Verne", "🚢🐙🌊"],
+            ["The Count of Monte Cristo", "Alexandre Dumas", "🏰💰⚔️"], ["The Three Musketeers", "Alexandre Dumas", "3️⃣⚔️"],
+            ["The Scarlet Letter", "Nathaniel Hawthorne", "🔴🔤"], ["The Call of the Wild", "Jack London", "🐕❄️"]
+        ];
+        var titles = [], authors = [], emojis = [];
+        for (var i = 0; i < facts.length; i++) {
+            titles.push(facts[i][0]);
+            authors.push(facts[i][1]);
+            emojis.push(facts[i][2]);
+        }
+        var citation = "Project Gutenberg public-domain catalog — https://www.gutenberg.org/";
+        var out = [];
+        for (var f = 0; f < facts.length && out.length < count; f++) {
+            var q = baseQuestion(nk, "gutenberg_fallback", mode, topic || "literature");
+            if (mode === "TrueFalseQuiz") {
+                var isTrue = f % 2 === 0;
+                var claimedAuthor = isTrue ? facts[f][1] : facts[(f + 7) % facts.length][1];
+                q.question = "'" + facts[f][0] + "' was written by " + claimedAuthor + ".";
+                q.options = ["True", "False"];
+                q.correct_index = isTrue ? 0 : 1;
+                q.explanation = "'" + facts[f][0] + "' was written by " + facts[f][1] + ".";
+            }
+            else if (mode === "EmojiQuiz") {
+                q.question = "Which public-domain title matches this emoji clue: " + facts[f][2] + "?";
+                q.options = [facts[f][0], titles[(f + 7) % facts.length], titles[(f + 13) % facts.length], titles[(f + 19) % facts.length]];
+                q.correct_index = 0;
+                q.explanation = "The reviewed clue " + facts[f][2] + " maps to '" + facts[f][0] + "'.";
+            }
+            else {
+                q.question = "Who wrote '" + facts[f][0] + "'?";
+                q.options = [facts[f][1], authors[(f + 7) % facts.length], authors[(f + 13) % facts.length], authors[(f + 19) % facts.length]];
+                q.correct_index = 0;
+                q.explanation = "'" + facts[f][0] + "' is a public-domain work by " + facts[f][1] + ".";
+            }
+            q.citation = citation;
+            q.difficulty = 2 + (f % 3);
+            q.quality.checks = ["reviewed_static_fallback", "project_gutenberg_catalog"];
+            out.push(finalize(nk, q));
+            if (out.length >= count)
+                break;
+            var q2 = baseQuestion(nk, "gutenberg_fallback", mode, topic || "literature");
+            if (mode === "TrueFalseQuiz") {
+                q2.question = "'" + facts[f][0] + "' was not written by " + facts[f][1] + ".";
+                q2.options = ["True", "False"];
+                q2.correct_index = 1;
+                q2.explanation = "'" + facts[f][0] + "' was written by " + facts[f][1] + ".";
+            }
+            else if (mode === "EmojiQuiz") {
+                q2.question = "Which reviewed emoji clue represents '" + facts[f][0] + "'?";
+                q2.options = [facts[f][2], emojis[(f + 7) % facts.length], emojis[(f + 13) % facts.length], emojis[(f + 19) % facts.length]];
+                q2.correct_index = 0;
+                q2.explanation = facts[f][2] + " is the reviewed clue for '" + facts[f][0] + "'.";
+            }
+            else {
+                q2.question = "Which public-domain work was written by " + facts[f][1] + "?";
+                q2.options = [facts[f][0], titles[(f + 5) % facts.length], titles[(f + 11) % facts.length], titles[(f + 17) % facts.length]];
+                q2.correct_index = 0;
+                q2.explanation = facts[f][1] + " wrote '" + facts[f][0] + "'.";
+            }
+            q2.citation = citation;
+            q2.difficulty = 2 + ((f + 1) % 3);
+            q2.quality.checks = ["reviewed_static_fallback", "project_gutenberg_catalog"];
+            out.push(finalize(nk, q2));
+        }
+        return out;
+    }
     function fetchGutenberg(ctx, nk, logger, mode, topic, count) {
         var url = "https://gutendex.com/books?languages=en&topic=" + encodeURIComponent(topic);
         var body = SeedQ.cachedHttpGet(nk, logger, url, 24 * 3600 * 1000);
         if (!body)
-            return [];
+            return fetchReviewedLiteratureFallback(nk, mode, topic, count);
         var results = [];
         try {
             results = JSON.parse(body).results || [];
         }
         catch (e) {
-            return [];
+            return fetchReviewedLiteratureFallback(nk, mode, topic, count);
         }
         var authors = [];
         var titles = [];
@@ -71539,6 +71622,11 @@ var SeedQSources;
                 if (q2.options.length === 4)
                     out.push(finalize(nk, q2));
             }
+        }
+        if (out.length < count) {
+            var fallback = fetchReviewedLiteratureFallback(nk, mode, topic, count - out.length);
+            for (var fi = 0; fi < fallback.length && out.length < count; fi++)
+                out.push(fallback[fi]);
         }
         return out;
     }

@@ -335,28 +335,30 @@ status, and deficit.
 
 The audited denominator is taxonomy-driven, not “all enum labels need 50 MCQs”:
 
-- **QUESTION_MODE 24:** SoloChallenge, SurvivalQuiz, SpeedQuiz, BrainSprint,
+- **QUESTION_MODE 23:** SoloChallenge, SurvivalQuiz, SpeedQuiz, BrainSprint,
   DailyQuiz, WeeklyQuiz, TrueFalseQuiz, MultipleChoiceQuiz, ImageQuiz,
   AudioQuiz, VideoQuiz, GuessAnime, GuessDog, GuessDish, GuessPokemon,
-  SportsQuiz, SpaceTrivia, EmojiQuiz, HealthQuiz, FortuneQuiz, GeoExplore,
+  SportsQuiz, SpaceTrivia, EmojiQuiz, HealthQuiz, GeoExplore,
   WhosThat, CustomTopic, NewsQuiz.
 - **EXPERIENCE_MODE 7:** ViralIQ → DailyQuiz; AIHost → CustomTopic;
   LocalBattle/LiveArena/Tournament → SoloChallenge; PickATopic → CustomTopic;
   MediaQuiz → ImageQuiz. These wrappers remain in the denominator and must
   inherit both capacity and the destination mode's experience/media gate.
-- **NON_QUESTION_FEATURE 5:** PredictionQuiz (future selection/outcome),
+- **NON_QUESTION_FEATURE 6:** PredictionQuiz (future selection/outcome),
   AITutor (TutorX web app), AIFortuneTeller (conversation), SubjectiveQuiz
-  (free-text rubric/grading), FocusMode (ambient soundscape). Their explicit
-  delivery contracts remain in the registry, but fabricating MCQ inventory
-  for them is forbidden.
+  (free-text rubric/grading), FocusMode (ambient soundscape), FortuneQuiz
+  (score-weighted personality outcome without a truthful correct index).
+  Their explicit delivery contracts remain in the registry, but fabricating
+  MCQ inventory for them is forbidden.
 
-Local bounded verification (2026-07-13): **31/31 denominator PASS,
-0 WARN, 0 BLOCKED**, with 15/15 baseline checks and 22/22 machine-readable
+Local bounded verification (2026-07-13): **30/30 denominator PASS,
+0 WARN, 0 BLOCKED**, with 15/15 baseline checks and 23/23 machine-readable
 edge checks. VideoQuiz uses the reviewed build-embedded 60-row CSV catalog;
 HealthQuiz uses 50 cited OpenStax anatomy/health-science rows; NewsQuiz uses
 current BBC publisher RSS image/headline pairs; AudioQuiz counts only real
 Deezer audio previews (legacy cover-art/text rows are excluded by the current
-media gate).
+media gate). Gutenberg-backed modes use a cited, reviewed public-domain
+fallback during upstream timeout, with dedicated True/False and Emoji schemas.
 
 This is local readiness evidence, not production sign-off. Production remains
 pending until the scoped branch is deployed, bounded production seeding

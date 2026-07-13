@@ -180,7 +180,7 @@ namespace SeedQ {
       { mode:"SpaceTrivia",aliases:["SpaceQuiz"],kind:"question",source:"archive_org",default_topic:"space",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"SpaceTrivia",delivery_contract:"ImageGuess_Unified.Space",seedq_required:true,reason:"public-domain space archive" },
       { mode:"EmojiQuiz",aliases:["Emoji"],kind:"question",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"WeeklyQuiz",inventory_mode:"EmojiQuiz",delivery_contract:"WeeklyQuiz_Unified.Emoji",seedq_required:true,reason:"authored emoji pack preferred; generic weekly fallback" },
       { mode:"HealthQuiz",aliases:["Health"],kind:"question",source:"health_catalog",default_topic:"health",media:"none",support:"direct",fallback_mode:"",inventory_mode:"HealthQuiz",delivery_contract:"WeeklyQuiz_Unified.Health score-based MCQ",seedq_required:true,reason:"50 cited OpenStax anatomy/health-science MCQs provide deterministic reviewed fallback inventory" },
-      { mode:"FortuneQuiz",aliases:["Fortune"],kind:"question",source:"gutenberg",default_topic:"general",media:"none",support:"fallback",fallback_mode:"WeeklyQuiz",inventory_mode:"FortuneQuiz",delivery_contract:"WeeklyQuiz_Unified.Fortune",seedq_required:true,reason:"entertainment quiz variant inherits approved weekly inventory when needed" },
+      { mode:"FortuneQuiz",aliases:["Fortune"],kind:"non_question",source:"gutenberg",default_topic:"general",media:"none",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"WeeklyQuiz_Unified.Fortune score-weighted personality outcome",seedq_required:false,reason:"answer choices contribute outcome scores rather than a truthful correct answer index; the dedicated weekly questionnaire schema remains authoritative" },
       { mode:"PredictionQuiz",aliases:["Prediction"],kind:"non_question",source:"justwatch",default_topic:"trending",media:"optional",support:"direct",fallback_mode:"",inventory_mode:"",delivery_contract:"WeeklyQuiz_Unified.Prediction stores selections and reveals outcomes later",seedq_required:false,reason:"future-outcome prediction has no truthful correct answer at staging time; exclude from MCQ inventory denominator" },
       { mode:"GeoExplore",aliases:["GeoQuiz","GeographyQuiz"],kind:"question",source:"archive_org",default_topic:"maps",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"GeoExplore",delivery_contract:"QuizModeType.GeoExplore",seedq_required:true,reason:"public-domain maps" },
       { mode:"WhosThat",aliases:["Who's That","WhoIsThat"],kind:"question",source:"archive_org",default_topic:"portraits",media:"image",support:"direct",fallback_mode:"ImageQuiz",inventory_mode:"WhosThat",delivery_contract:"QuizModeType.WhosThat",seedq_required:true,reason:"public-domain portraits" },
@@ -548,7 +548,9 @@ namespace SeedQ {
     // the message as a printf format string, so percent-escapes get mangled.
     var logUrl = url.split("?")[0];
     try {
-      var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 15000);
+      // Nakama's JavaScript RPC context is bounded. Leave enough time after a
+      // slow source for deterministic fallback generation and storage writes.
+      var resp = nk.httpRequest(url, "get", headers || { "Accept": "application/json" }, "", 7000);
       if (resp.code >= 200 && resp.code < 300 && resp.body) {
         // Cap what we cache — Goja strings are fine but storage rows shouldn't balloon.
         if (resp.body.length < 400000) {
