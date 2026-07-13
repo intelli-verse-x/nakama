@@ -65348,11 +65348,42 @@ var SatoriCreatorEvents;
             submitted: false,
         });
     }
+    function looksLikeNakamaUuid(s) {
+        if (!s)
+            return false;
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s).trim());
+    }
+    /** Reject orphan device sessions that submit with another user's UUID as deviceId metadata. */
+    function validateSubmitDeviceIdentity(nk, logger, sessionUserId, data) {
+        var rawDevice = String(data.deviceId || data.device_id || "").trim();
+        if (!rawDevice || !looksLikeNakamaUuid(rawDevice))
+            return "";
+        if (rawDevice === sessionUserId)
+            return "";
+        try {
+            var accounts = nk.accountsGetId([rawDevice]);
+            if (!accounts || accounts.length === 0)
+                return "";
+            var acct = accounts[0];
+            var hasIdentity = !!(acct && ((acct.email && String(acct.email).trim()) ||
+                (acct.customId && String(acct.customId).trim())));
+            if (!hasIdentity)
+                return "";
+            logger.warn("[CreatorEvent] Submit identity mismatch: session=%s deviceMeta=%s", sessionUserId, rawDevice);
+            return "Session mismatch: reopen Live Events from the QuizVerse app so rewards credit to your account.";
+        }
+        catch (e) {
+            return "";
+        }
+    }
     function rpcSubmit(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         if (!data.eventId)
             return RpcHelpers.errorResponse("eventId required");
+        var identityError = validateSubmitDeviceIdentity(nk, logger, userId, data);
+        if (identityError)
+            return RpcHelpers.errorResponse(identityError);
         var eventId = String(data.eventId);
         if (readCompletedAnswer(nk, eventId, userId)) {
             return RpcHelpers.errorResponse("You have already completed this event.");
@@ -79556,6 +79587,8 @@ var Referrals;
 //   tournament_settle                       (manual trigger; cron calls same impl)
 //   tournament_eliminate_round              (manual trigger; cron calls same impl)
 //   tournament_referral_settle_topN         (manual trigger)
+//   kyc_profile_sync                        (approved DOB → account metadata)
+//   kyc_verification_status_sync            (all KYC statuses → cross-platform UI)
 // =============================================================================
 var TournamentRpcs;
 (function (TournamentRpcs) {
@@ -79607,6 +79640,32 @@ var TournamentRpcs;
         }
         catch (_) { }
         return "";
+    }
+    function readUserKycFields(nk, userId) {
+        var out = { kyc_status: "none", kyc_decline_reason: "", kyc_session_id: "", kyc_updated_at: "" };
+        if (!userId)
+            return out;
+        try {
+            var acc = nk.accountsGetId([userId]);
+            if (acc && acc.length > 0) {
+                var md = acc[0].user.metadata;
+                if (md) {
+                    if (md.kyc_status)
+                        out.kyc_status = "" + md.kyc_status;
+                    if (md.kyc_decline_reason)
+                        out.kyc_decline_reason = "" + md.kyc_decline_reason;
+                    if (md.kyc_session_id)
+                        out.kyc_session_id = "" + md.kyc_session_id;
+                    if (md.kyc_updated_at)
+                        out.kyc_updated_at = "" + md.kyc_updated_at;
+                }
+            }
+        }
+        catch (_) { }
+        return out;
+    }
+    function isAllowedKycStatus(status) {
+        return status === "none" || status === "in_progress" || status === "pending" || status === "declined" || status === "approved";
     }
     function readUserDob(nk, userId) {
         try {
@@ -80530,6 +80589,7 @@ var TournamentRpcs;
         var countryAllowed = TournamentEconomy.isCountryAllowed(cfg, country);
         var stateBlocked = country === "US" && !!state && TournamentEconomy.isUsStateEntryBlocked(state);
         var ageBlocked = userId ? ageInfo.age < cfg.min_age : false;
+        var kyc = userId ? readUserKycFields(nk, userId) : { kyc_status: "none", kyc_decline_reason: "", kyc_session_id: "", kyc_updated_at: "" };
         return RpcHelpers.successResponse({
             ok: true,
             user_id: userId,
@@ -80537,6 +80597,10 @@ var TournamentRpcs;
             state: state || null,
             eligible: !!userId && countryAllowed && !stateBlocked && !ageBlocked,
             age_blocked: ageBlocked,
+            kyc_status: kyc.kyc_status,
+            kyc_decline_reason: kyc.kyc_decline_reason,
+            kyc_session_id: kyc.kyc_session_id,
+            kyc_updated_at: kyc.kyc_updated_at,
             // Distinguishes "no verified DOB yet → show Verify-your-age CTA" from
             // "verified DOB on file but under min_age → hard block".
             dob_on_file: !!ageInfo.dob_iso,
@@ -80598,6 +80662,52 @@ var TournamentRpcs;
         }
         logger.info("kyc_profile_sync: dob set for user %s via %s", userId, provider);
         return RpcHelpers.successResponse({ ok: true, user_id: userId, dob_iso: dobIso, kyc_provider: provider });
+    }
+    // ── RPC: kyc_verification_status_sync (service-only) ────────────────────────
+    // Called by the web KYC webhook on every Didit/Veriff status change.
+    // Stores the live verification state in account metadata so Web, Android,
+    // and iOS can read it via tournament_caller_status. Does NOT touch age_blocked
+    // or dob_iso — those remain kyc_profile_sync's job on approval only.
+    function rpcKycVerificationStatusSync(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        if (!isServiceCaller(ctx, data))
+            return RpcHelpers.errorResponse("service-only", 401);
+        var userId = "" + (data.user_id || "");
+        var sessionId = "" + (data.session_id || "");
+        var provider = "" + (data.kyc_provider || "unknown");
+        var kycStatus = "" + (data.kyc_status || "");
+        var declineReason = "" + (data.decline_reason || "");
+        var updatedAt = "" + (data.updated_at || "");
+        if (!userId)
+            return RpcHelpers.errorResponse("user_id required", 400);
+        if (!sessionId)
+            return RpcHelpers.errorResponse("session_id required", 400);
+        if (!isAllowedKycStatus(kycStatus))
+            return RpcHelpers.errorResponse("invalid kyc_status", 400);
+        var metadata = {};
+        try {
+            var accounts = nk.accountsGetId([userId]);
+            if (!accounts || accounts.length === 0)
+                return RpcHelpers.errorResponse("account not found", 404);
+            metadata = accounts[0].user.metadata || {};
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("account lookup failed", 404);
+        }
+        metadata["kyc_status"] = kycStatus;
+        metadata["kyc_session_id"] = sessionId;
+        metadata["kyc_provider"] = provider;
+        metadata["kyc_decline_reason"] = declineReason;
+        metadata["kyc_updated_at"] = updatedAt || new Date().toISOString();
+        try {
+            nk.accountUpdateId(userId, null, null, null, null, null, null, metadata);
+        }
+        catch (e) {
+            logger.error("kyc_verification_status_sync: accountUpdateId failed for %s: %s", userId, e.message);
+            return RpcHelpers.errorResponse("metadata update failed", 500);
+        }
+        logger.info("kyc_verification_status_sync: status=%s user=%s session=%s", kycStatus, userId, sessionId);
+        return RpcHelpers.successResponse({ ok: true, user_id: userId, kyc_status: kycStatus });
     }
     // ── RPC: tournament_bracket_seed_topN (service-only) ────────────────────────
     // Pushes the top-N entrants from the qualifier leaderboard into the Bracket
@@ -81474,6 +81584,7 @@ var TournamentRpcs;
         initializer.registerRpc("tournament_get", rpcGet);
         initializer.registerRpc("tournament_caller_status", rpcCallerStatus);
         initializer.registerRpc("kyc_profile_sync", rpcKycProfileSync);
+        initializer.registerRpc("kyc_verification_status_sync", rpcKycVerificationStatusSync);
         initializer.registerRpc("tournament_bracket_state", rpcBracketState);
         initializer.registerRpc("tournament_pre_enroll", auth(rpcPreEnroll));
         initializer.registerRpc("tournament_enter", auth(rpcEnter));
