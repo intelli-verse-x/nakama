@@ -7,6 +7,9 @@ LTI 1.3 / LTI Advantage **Tool** web service for the LMS integration plan
 - **Student quiz player** (server-rendered + vanilla JS, iframe-safe, no cookies needed in dev mode)
 - **Teacher deep-linking picker** with Moodle XML / Canvas QTI upload + fidelity report
 - **Converters**: Moodle XML ⇄ canonical questions, Canvas QTI 1.2 zip ⇄ canonical questions
+- **Image-safe interchange**: manifest/base64 extraction, verified media types, 5 MiB/file and 20 MiB/package limits, controlled local storage
+- **Canvas teacher OAuth**: PKCE connection, course QTI pull, encrypted token storage, `content_migrations` QTI push
+- **Standalone bridge**: public `/converter` surface for Canvas QTI ↔ Moodle XML conversion
 - **Nakama lms-bridge client** for Workstream B's RPC contract (live, with local-mock fallback)
 - **AGS grade-back**: tool-side `Grade.submitScore` (primary for E2E), Nakama `lms_grade_push` (production path)
 
@@ -34,6 +37,12 @@ Requires Node 20+. State lives in `web/lms-tool/data/` (ltijs sqlite DB + local 
 | `LMS_BRIDGE_SERVICE_TOKEN` | read from repo `.env` | Service token required by every lms-bridge RPC |
 | `LMS_TOOL_DEV_MODE` | `true` | ltijs devMode (ltik-only auth; required for plain-http iframes). Set `false` behind HTTPS |
 | `MOODLE_URL` | `http://localhost:8081` | Workstream A's local Moodle (used for admin-page hints only) |
+| `LMS_TOOL_MEDIA` | `data/media` | Controlled extracted-media directory |
+| `CANVAS_BASE_URL` | unset | Institution Canvas origin; HTTPS required except localhost |
+| `CANVAS_OAUTH_CLIENT_ID` | unset | Teacher OAuth developer-key client id |
+| `CANVAS_OAUTH_CLIENT_SECRET` | unset | Teacher OAuth developer-key secret |
+| `CANVAS_OAUTH_REDIRECT_URI` | `<tool>/api/canvas/oauth/callback` | Exact developer-key redirect URI |
+| `CANVAS_TOKEN_ENCRYPTION_KEY` | unset | 32+ character key used for AES-256-GCM token storage |
 
 The repo root `.env` is loaded first, then `web/lms-tool/.env` overrides.
 
@@ -53,6 +62,12 @@ The repo root `.env` is loaded first, then `web/lms-tool/.env` overrides.
 | `POST /api/deeplink/respond` | (ltik-authed) deep-linking response form (`ltiResourceLink` + `lineItem`) |
 | `POST /api/import` | (ltik-authed) upload Moodle XML / QTI zip → convert → `lms_import_pack` + fidelity report |
 | `GET /api/export/:packId.xml` / `.zip` | (ltik-authed) canonical pack → Moodle XML / QTI 1.2 zip |
+| `GET /converter` | Standalone Canvas ↔ Moodle converter |
+| `POST /api/converter/convert` | Public converter API; always returns fidelity + provenance |
+| `GET /api/canvas/oauth/start` | (teacher LTI launch) start Canvas OAuth with PKCE |
+| `GET /api/canvas/courses` | List connected teacher's active courses |
+| `POST /api/canvas/courses/:courseId/pull` | Export each classic quiz as QTI and import as packs |
+| `POST /api/canvas/courses/:courseId/push/:packId` | Push generated QTI via Canvas `content_migrations` |
 
 ## Registering with the local Moodle (Workstream A: http://localhost:8081)
 
@@ -125,17 +140,20 @@ Canonical shape: `{question_id, text, options[], correct_index, explanation?}`.
 
 | Direction | Function | Notes |
 |---|---|---|
-| Moodle XML → canonical | `parseMoodleXml(xml)` | `multichoice` single-answer (`fraction="100"`); HTML stripped safely; base64 images/other types skipped **with fidelity notes** |
-| QTI 1.2 zip → canonical | `parseQtiZip(buffer)` | manifest-first resource resolution (falls back to XML scan); `respcondition`/`setvar SCORE=100` → correct index |
+| Moodle XML → canonical | `parseMoodleXml(xml)` | `multichoice` single-answer; rich text/metadata retained; valid base64 images extracted and preserved |
+| QTI 1.2 zip → canonical | `parseQtiZip(buffer)` | manifest-required resource resolution; media retained; `respcondition`/`setvar SCORE=100` → correct index |
 | canonical → Moodle XML | `generateMoodleXml(pack)` | round-trips through `parseMoodleXml` |
 | canonical → QTI 1.2 zip | `generateQtiZip(pack)` | `imsmanifest.xml` + assessment XML; round-trips through `parseQtiZip` |
 
-Every import produces a **fidelity report** (plan §13.2: no silent lossy imports) —
-`{imported, imported_with_loss, skipped, items[{name,status,notes}], global_notes}` — surfaced to
-the teacher in the picker and returned by `/api/import`.
+Every import produces and stores a **fidelity report** (plan §13.2: no silent lossy imports) —
+`{report_id,generated_at,source,imported,imported_with_loss,skipped,items[{name,status,notes,fields_dropped}],global_notes}` —
+surfaced to the teacher and returned by import/converter APIs. Packs also retain source provenance
+(`platform`, format, course/quiz IDs when known, source URL/hash, export/import timestamps).
 
-Tests: `npm test` (9 tests: parse, fidelity, negative, both round-trips, plus the shared
-`.lms-dev/fixtures/` files when present).
+Tests: `npm test` includes format parsing, image-preserving cross-format round trips, path/type/size
+security checks, provenance/fidelity validation, encrypted OAuth token storage, and Canvas REST
+protocol tests. Set `LMS_REAL_FIXTURE_DIR=/path/to/.lms-dev/fixtures` to require the externally
+captured Moodle/Canvas fixtures instead of skipping them.
 
 ## File map
 

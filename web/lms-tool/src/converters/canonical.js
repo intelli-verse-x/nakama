@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 /**
  * Canonical question shape shared by all converters:
  *   { question_id, text, options[], correct_index, explanation? }
@@ -56,7 +58,10 @@ function escapeXml(s) {
  */
 function createFidelityReport(sourceFormat) {
   const report = {
+    report_id: `fid_${crypto.randomBytes(8).toString('hex')}`,
+    generated_at: new Date().toISOString(),
     source_format: sourceFormat,
+    source: {},
     total: 0,
     imported: 0,
     imported_with_loss: 0,
@@ -67,11 +72,46 @@ function createFidelityReport(sourceFormat) {
   return {
     report,
     addGlobalNote(note) { report.global_notes.push(note); },
-    record(name, status, notes) {
+    setSource(source) { report.source = { ...(source || {}) }; },
+    record(name, status, notes, details) {
+      if (!['imported', 'imported_with_loss', 'skipped'].includes(status)) {
+        throw new Error(`Invalid fidelity status: ${status}`);
+      }
       report.total += 1;
       report[status] += 1;
-      report.items.push({ name: name || '(unnamed question)', status, notes: notes || [] });
+      report.items.push({
+        name: name || '(unnamed question)',
+        status,
+        notes: notes || [],
+        fields_dropped: (details && details.fields_dropped) || [],
+        source_id: (details && details.source_id) || null,
+      });
     },
+  };
+}
+
+function assertFidelityReport(report) {
+  if (!report || !report.report_id || !report.generated_at || !report.source_format) {
+    throw new Error('Every import must include a complete fidelity report');
+  }
+  if (report.total !== report.imported + report.imported_with_loss + report.skipped) {
+    throw new Error('Fidelity report totals are inconsistent');
+  }
+  return report;
+}
+
+function buildProvenance(platform, format, details) {
+  const source = details || {};
+  return {
+    platform,
+    format,
+    course_id: source.course_id || null,
+    quiz_id: source.quiz_id || null,
+    filename: source.filename || null,
+    source_url: source.source_url || null,
+    exported_at: source.exported_at || null,
+    imported_at: source.imported_at || new Date().toISOString(),
+    source_sha256: source.source_sha256 || null,
   };
 }
 
@@ -80,4 +120,12 @@ function asArray(v) {
   return Array.isArray(v) ? v : [v];
 }
 
-module.exports = { stripHtml, decodeEntities, escapeXml, createFidelityReport, asArray };
+module.exports = {
+  stripHtml,
+  decodeEntities,
+  escapeXml,
+  createFidelityReport,
+  assertFidelityReport,
+  buildProvenance,
+  asArray,
+};

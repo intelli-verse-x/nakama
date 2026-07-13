@@ -19,6 +19,8 @@ const PICKER_CSS = `
   .fid ul { margin: 6px 0 0; padding-left: 18px; }
   .fid .loss { color: var(--warn); }
   .fid .skip { color: var(--err); }
+  .canvas-row { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-top:14px; }
+  .canvas-row select { min-width:240px; }
 `;
 
 const PICKER_JS = `
@@ -91,15 +93,48 @@ const PICKER_JS = `
     $('deeplink-form').submit();
   };
 
+  if (cfg.canvasEnabled) {
+    $('canvas-connect').onclick = function () {
+      window.open('/api/canvas/oauth/start?ltik=' + encodeURIComponent(cfg.ltik), 'qv-canvas-oauth', 'width=720,height=760');
+    };
+    $('canvas-load').onclick = function () {
+      $('canvas-status').textContent = 'Loading courses…';
+      fetch('/api/canvas/courses?ltik=' + encodeURIComponent(cfg.ltik))
+        .then(function(r){return r.json().then(function(body){return {ok:r.ok,body:body};});})
+        .then(function(result){
+          if(!result.ok) throw new Error(result.body.message||result.body.error);
+          var select=$('canvas-course'); select.innerHTML='';
+          result.body.courses.forEach(function(course){
+            var option=document.createElement('option'); option.value=course.id; option.textContent=course.name||('Course '+course.id); select.appendChild(option);
+          });
+          $('canvas-pull').disabled=!result.body.courses.length;
+          $('canvas-status').textContent=result.body.courses.length+' teacher course(s) available';
+        }).catch(function(err){$('canvas-status').textContent='Canvas: '+err.message;});
+    };
+    $('canvas-pull').onclick = function () {
+      var courseId=$('canvas-course').value;
+      if(!courseId)return;
+      this.disabled=true; $('canvas-status').textContent='Pulling classic quizzes as QTI…';
+      fetch('/api/canvas/courses/'+encodeURIComponent(courseId)+'/pull?ltik='+encodeURIComponent(cfg.ltik),{method:'POST'})
+        .then(function(r){return r.json().then(function(body){return {ok:r.ok,body:body};});})
+        .then(function(result){
+          if(!result.ok) throw new Error(result.body.message||result.body.error);
+          result.body.imported.forEach(function(p){cfg.packs.unshift({pack_id:p.pack_id,title:p.title,question_count:p.fidelity.imported+p.fidelity.imported_with_loss,source:{kind:'canvas'}});});
+          renderPacks(); $('canvas-status').textContent='Imported '+result.body.imported.length+' Canvas quiz pack(s).';
+        }).catch(function(err){$('canvas-status').textContent='Canvas pull failed: '+err.message;})
+        .finally(function(){$('canvas-pull').disabled=false;});
+    };
+  }
+
   renderPacks();
 })();
 `;
 
 /**
- * @param {object} p { ltik, packs[], nakamaStatus }
+ * @param {object} p { ltik, packs[], nakamaStatus, canvasEnabled }
  */
 function renderPicker(p) {
-  const cfg = { ltik: p.ltik, packs: p.packs };
+  const cfg = { ltik: p.ltik, packs: p.packs, canvasEnabled: Boolean(p.canvasEnabled) };
   const anyMocked = Object.values(p.nakamaStatus.rpcs).includes('mocked');
 
   const body = `
@@ -113,6 +148,17 @@ function renderPicker(p) {
     <p id="upload-status" style="margin:8px 0 0"></p>
   </div>
   <div class="fid" id="fidelity" style="display:none"></div>
+
+  ${p.canvasEnabled ? `<div class="drop">
+    <strong>Pull from Canvas with teacher OAuth</strong>
+    <div class="canvas-row">
+      <button type="button" class="ghost" id="canvas-connect">Connect Canvas</button>
+      <button type="button" class="ghost" id="canvas-load">Load courses</button>
+      <select id="canvas-course" aria-label="Canvas course"></select>
+      <button type="button" class="primary" id="canvas-pull" disabled>Pull quizzes</button>
+    </div>
+    <p id="canvas-status" style="margin:8px 0 0"></p>
+  </div>` : ''}
 
   <div id="pack-list"></div>
 

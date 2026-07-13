@@ -11,7 +11,9 @@ const { buildQtiFixture } = require('./fixtures/make-qti-fixture');
 
 const FIXTURES = path.join(__dirname, 'fixtures');
 // Workstream A also produces shared fixtures; use them when present.
-const SHARED_FIXTURES = path.join(__dirname, '..', '..', '..', '.lms-dev', 'fixtures');
+const SHARED_FIXTURES = process.env.LMS_REAL_FIXTURE_DIR
+  ? path.resolve(process.env.LMS_REAL_FIXTURE_DIR)
+  : path.join(__dirname, '..', '..', '..', '.lms-dev', 'fixtures');
 
 // ---------------------------------------------------------------------------
 // (a) Moodle XML → canonical
@@ -88,7 +90,7 @@ test('QTI zip import: rejects zip without any QTI XML', () => {
   const AdmZip = require('adm-zip');
   const zip = new AdmZip();
   zip.addFile('readme.txt', Buffer.from('hi'));
-  assert.throws(() => parseQtiZip(zip.toBuffer()), /No QTI assessment XML/);
+  assert.throws(() => parseQtiZip(zip.toBuffer()), /No imsmanifest\.xml/);
 });
 
 // ---------------------------------------------------------------------------

@@ -81,6 +81,7 @@ module.exports = {
   DEV_MODE: (process.env.LMS_TOOL_DEV_MODE || 'true') === 'true',
   DB_PATH: process.env.LMS_TOOL_DB || path.join(TOOL_ROOT, 'data', 'ltijs.sqlite'),
   PACK_STORE_PATH: process.env.LMS_TOOL_PACKS || path.join(TOOL_ROOT, 'data', 'packs.json'),
+  MEDIA_STORE_PATH: process.env.LMS_TOOL_MEDIA || path.join(TOOL_ROOT, 'data', 'media'),
   NAKAMA: {
     baseUrl: process.env.NAKAMA_BASE_URL || 'http://localhost:7350',
     // Nakama's runtime http key: the repo compose file passes no --runtime.http_key
@@ -89,6 +90,20 @@ module.exports = {
     serviceToken: process.env.LMS_BRIDGE_SERVICE_TOKEN || '', // read from repo .env once Workstream B adds it
   },
   MOODLE_URL: process.env.MOODLE_URL || 'http://localhost:8081',
+  CANVAS: {
+    enabled: Boolean(
+      process.env.CANVAS_BASE_URL &&
+      process.env.CANVAS_OAUTH_CLIENT_ID &&
+      process.env.CANVAS_OAUTH_CLIENT_SECRET &&
+      process.env.CANVAS_TOKEN_ENCRYPTION_KEY
+    ),
+    baseUrl: process.env.CANVAS_BASE_URL || '',
+    clientId: process.env.CANVAS_OAUTH_CLIENT_ID || '',
+    clientSecret: process.env.CANVAS_OAUTH_CLIENT_SECRET || '',
+    redirectUri: process.env.CANVAS_OAUTH_REDIRECT_URI || `${TOOL_URL}/api/canvas/oauth/callback`,
+    tokenEncryptionKey: process.env.CANVAS_TOKEN_ENCRYPTION_KEY || '',
+    tokenStorePath: process.env.CANVAS_TOKEN_STORE || path.join(TOOL_ROOT, 'data', 'canvas-tokens.enc.json'),
+  },
   keys,
   canonicalPublicJwk,
 };

@@ -9,14 +9,19 @@ const Database = require('ltijs-sequelize');
 const config = require('./config');
 const nakama = require('./nakama-client');
 const packStore = require('./pack-store');
+const { createMediaStore } = require('./media-store');
 const { parseMoodleXml, generateMoodleXml } = require('./converters/moodle-xml');
 const { parseQtiZip, generateQtiZip } = require('./converters/qti');
+const { assertFidelityReport, buildProvenance } = require('./converters/canonical');
+const { setupCanvasRoutes } = require('./routes/canvas');
+const { setupConverterRoutes } = require('./routes/converter');
 const { renderPlayer } = require('./pages/player');
 const { renderPicker } = require('./pages/picker');
 const { renderAdmin } = require('./pages/admin');
 const { renderIndex } = require('./pages/index');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+const mediaStore = createMediaStore(config.MEDIA_STORE_PATH);
 
 fs.mkdirSync(path.dirname(config.DB_PATH), { recursive: true });
 
@@ -131,8 +136,15 @@ async function resolvePack(claims) {
   return { session, pack, platformId, integrationNote };
 }
 
-function sanitizeQuestions(pack) {
-  return pack.questions.map((q) => ({ question_id: q.question_id, text: q.text, options: q.options }));
+function sanitizeQuestions(pack, ltik) {
+  const media = new Map((pack.media || []).map((asset) => [asset.media_id, asset]));
+  return pack.questions.map((q) => ({
+    question_id: q.question_id,
+    text: q.text,
+    options: q.options,
+    images: (q.image_ids || []).map((id) => media.get(id)).filter(Boolean)
+      .map((asset) => ({ url: `/media/${asset.media_id}?ltik=${encodeURIComponent(ltik)}`, alt: asset.filename })),
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +163,7 @@ lti.onConnect(async (token, req, res) => {
       studentName: claims.name,
       packId: pack.pack_id,
       title: pack.title,
-      questions: sanitizeQuestions(pack),
+      questions: sanitizeQuestions(pack, res.locals.ltik),
       scoreMaximum,
       hasLineItem: Boolean(claims.sub) && Boolean(claims.endpoint.lineitem || (claims.endpoint.scope || []).length),
       returnUrl: claims.return_url,
@@ -170,6 +182,7 @@ lti.onDeepLinking(async (token, req, res) => {
       ltik: res.locals.ltik,
       packs: packStore.listPacks(),
       nakamaStatus: nakama.getIntegrationStatus(),
+      canvasEnabled: config.CANVAS.enabled,
     }));
   } catch (err) {
     console.error('[lms-tool] deep linking failed:', err);
@@ -383,9 +396,15 @@ function setupRoutes() {
     try {
       let parsed;
       let sourcePlatform;
-      if (/\.zip$/i.test(name)) { parsed = parseQtiZip(req.file.buffer); sourcePlatform = 'canvas'; }
-      else if (/\.xml$/i.test(name)) { parsed = parseMoodleXml(req.file.buffer.toString('utf8')); sourcePlatform = 'moodle'; }
+      if (/\.zip$/i.test(name)) {
+        parsed = parseQtiZip(req.file.buffer, { source: { filename: name } });
+        sourcePlatform = 'canvas';
+      } else if (/\.xml$/i.test(name)) {
+        parsed = parseMoodleXml(req.file.buffer.toString('utf8'), { source: { filename: name } });
+        sourcePlatform = 'moodle';
+      }
       else return res.status(400).json({ error: 'unsupported_type', message: 'Upload a Moodle XML (.xml) or QTI 1.2 package (.zip)' });
+      assertFidelityReport(parsed.fidelity);
 
       if (parsed.questions.length === 0) {
         return res.status(422).json({ error: 'nothing_importable', fidelity: parsed.fidelity });
@@ -396,7 +415,9 @@ function setupRoutes() {
         pack_id: packId,
         title: parsed.title,
         questions: parsed.questions,
-        source: { platform: sourcePlatform, format: parsed.fidelity.source_format, filename: name, imported_at: new Date().toISOString() },
+        media: mediaStore.persist(parsed.media || []),
+        source: buildProvenance(sourcePlatform, parsed.fidelity.source_format, { filename: name }),
+        fidelity: parsed.fidelity,
       };
       packStore.upsertPack(pack); // local mirror for picker/player/fallback grading
 
@@ -406,7 +427,8 @@ function setupRoutes() {
           pack_id: packId,
           title: pack.title,
           questions: pack.questions,
-          source: { platform: sourcePlatform, format: parsed.fidelity.source_format },
+          source: pack.source,
+          fidelity: pack.fidelity,
         });
         importResult = data.report || data;
       } catch (err) {
@@ -430,10 +452,11 @@ function setupRoutes() {
   app.get('/api/export/:packId.:format', async (req, res) => {
     const pack = packStore.getPack(req.params.packId);
     if (!pack) return res.status(404).send('Unknown pack');
+    const exportPack = { ...pack, media: (pack.media || []).map(mediaStore.hydrate) };
     if (req.params.format === 'xml') {
-      res.type('application/xml').attachment(`${pack.pack_id}.moodle.xml`).send(generateMoodleXml(pack));
+      res.type('application/xml').attachment(`${pack.pack_id}.moodle.xml`).send(generateMoodleXml(exportPack));
     } else if (req.params.format === 'zip') {
-      res.type('application/zip').attachment(`${pack.pack_id}.qti.zip`).send(generateQtiZip(pack));
+      res.type('application/zip').attachment(`${pack.pack_id}.qti.zip`).send(generateQtiZip(exportPack));
     } else {
       res.status(400).send('format must be xml (Moodle) or zip (QTI 1.2)');
     }
@@ -498,6 +521,10 @@ function setupRoutes() {
       res.status(400).json({ error: 'register_failed', message: err.message });
     }
   });
+
+  app.get('/media/:mediaId', mediaStore.serve);
+  setupConverterRoutes(app);
+  setupCanvasRoutes({ app, config, packStore, mediaStore, nakama });
 }
 
 /** Live Nakama returns per_question (no explanations); enrich from the local pack mirror. */
@@ -525,7 +552,10 @@ async function start() {
     '/health',
     config.ROUTES.toolJwks,
     { route: '/admin/register', method: 'GET' },
-    { route: '/admin/register-platform', method: 'POST' }
+    { route: '/admin/register-platform', method: 'POST' },
+    { route: '/converter', method: 'GET' },
+    { route: '/api/converter/convert', method: 'POST' },
+    { route: '/api/canvas/oauth/callback', method: 'GET' }
   );
 
   await lti.deploy({ port: config.PORT, serverless: false, silent: true });

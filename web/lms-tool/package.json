@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "mock-nakama": "node mock-nakama/server.js",
-    "test": "node --test \"test/*.test.js\""
+    "test": "node --test \"test/*.test.js\"",
+    "proof:fixtures": "node scripts/verify-p4p5-fixtures.js"
   },
   "engines": {
     "node": ">=20"

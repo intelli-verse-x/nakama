@@ -29,6 +29,8 @@ const PLAYER_CSS = `
   .bd-item.right .bd-label { color: var(--ok); }
   .bd-item.wrong .bd-label { color: var(--err); }
   .explanation { font-size: .88rem; color: var(--muted); margin-top: 6px; }
+  .question-media { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+  .question-media img { max-width:100%; max-height:360px; object-fit:contain; border-radius:8px; }
   .screen { display: none; }
   .screen.active { display: block; }
 `;
@@ -60,6 +62,15 @@ const PLAYER_JS = `
     $('qnum').textContent = 'Question ' + (current + 1) + ' of ' + cfg.questions.length;
     $('progress-fill').style.width = Math.round(((current + 1) / cfg.questions.length) * 100) + '%';
     $('qtext').textContent = q.text;
+    var media = $('qmedia');
+    media.innerHTML = '';
+    (q.images || []).forEach(function (image) {
+      var img = document.createElement('img');
+      img.src = image.url;
+      img.alt = image.alt || 'Question image';
+      img.loading = 'lazy';
+      media.appendChild(img);
+    });
 
     var box = $('options');
     box.innerHTML = '';
@@ -204,6 +215,7 @@ function renderPlayer(p) {
     <div class="qnum" id="qnum"></div>
     <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     <h2 id="qtext"></h2>
+    <div class="question-media" id="qmedia"></div>
     <div id="options"></div>
     <div class="nav-row">
       <button class="ghost" id="btn-prev">Previous</button>
