@@ -360,10 +360,12 @@ Deezer audio previews (legacy cover-art/text rows are excluded by the current
 media gate). Gutenberg-backed modes use a cited, reviewed public-domain
 fallback during upstream timeout, with dedicated True/False and Emoji schemas.
 
-This is local readiness evidence, not production sign-off. Production remains
-pending until the scoped branch is deployed, bounded production seeding
-finishes, and the baseline, edge matrix, and independent fresh-persona
-verification all pass against the production runtime.
+Production verification (2026-07-13) on commit `908833a5a` and its
+digest-pinned image completed bounded idempotent seeding at **30/30 PASS,
+0 WARN, 0 BLOCKED**. Independent fresh-persona verification passed 15/15
+baseline checks and 23/23 edge checks, including three ready sets for every
+denominator route, IN/US/GLOBAL isolation, behavior divergence, review/media
+gates, no-repeat refill, duplicate-consume idempotency, and outage fallback.
 
 ### Geo decision and cache isolation
 
