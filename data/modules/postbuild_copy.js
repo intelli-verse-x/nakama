@@ -217,16 +217,26 @@ if (modulesContent && legacyContent) {
 // legacy registration (the Fortune Wheel anti-pattern). This mirrors the manual
 // fix applied to legacy_runtime.js and prevents the whole class from recurring.
 //
-// NOTE: only var∩var collisions are handled here. "Mixed" cases (a name that is
-// a function-declaration in one file and a var-expression in the other) are NOT
-// auto-resolved — auto-renaming those would risk destabilizing core
-// quizverse_*/lasttolive_* RPCs. They are reported as a WARN for manual review.
+// Mixed-shape collisions are auto-resolved like var∩var: rename ONLY the
+// legacy *definition* to `__legacy_<name>` so modern module handlers win.
 function findTopLevelVarFunctionNames(content) {
   var names = new Set();
   var re = /^(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*function\b/gm;
   var m;
   while ((m = re.exec(content)) !== null) names.add(m[1]);
   return names;
+}
+
+function renameLegacyHandlerDefinition(legacySrc, name) {
+  var varDefRe = new RegExp('^((?:var|let|const)\\s+)' + name + '(\\s*=\\s*function\\b)', 'm');
+  if (varDefRe.test(legacySrc)) {
+    return { content: legacySrc.replace(varDefRe, '$1__legacy_' + name + '$2'), kind: 'var' };
+  }
+  var fnDefRe = new RegExp('^(function\\s+)' + name + '(\\s*\\()', 'm');
+  if (fnDefRe.test(legacySrc)) {
+    return { content: legacySrc.replace(fnDefRe, '$1__legacy_' + name + '$2'), kind: 'function' };
+  }
+  return null;
 }
 
 if (modulesContent && legacyContent) {
@@ -245,9 +255,9 @@ if (modulesContent && legacyContent) {
       ' var-expression handler collision(s) — renaming the LEGACY definition so the module copy wins:');
     for (var vci = 0; vci < varCollisions.length; vci++) {
       var vName = varCollisions[vci];
-      var defRe = new RegExp('^((?:var|let|const)\\s+)' + vName + '(\\s*=\\s*function\\b)', 'm');
-      if (defRe.test(legacyContent)) {
-        legacyContent = legacyContent.replace(defRe, '$1__legacy_' + vName + '$2');
+      var vRenamed = renameLegacyHandlerDefinition(legacyContent, vName);
+      if (vRenamed) {
+        legacyContent = vRenamed.content;
         console.log('[postbuild]   renamed legacy definition: ' + vName + ' -> __legacy_' + vName +
           ' (registration/call sites left bound to the modern global)');
       } else {
@@ -259,14 +269,28 @@ if (modulesContent && legacyContent) {
     console.log('[postbuild] No var-expression handler collisions detected between modules and legacy');
   }
 
-  // Report (do NOT auto-fix) mixed-shape collisions so they stay on the radar.
   var mixedSet = {};
   legacyVarFns.forEach(function (n) { if (moduleFnDecls.has(n)) mixedSet[n] = true; });
   moduleVarFns.forEach(function (n) { if (legacyFnDecls.has(n)) mixedSet[n] = true; });
+  for (var vci2 = 0; vci2 < varCollisions.length; vci2++) delete mixedSet[varCollisions[vci2]];
   var mixed = Object.keys(mixedSet).sort();
   if (mixed.length > 0) {
-    console.log('[postbuild] WARN: ' + mixed.length + ' mixed-shape name collision(s) (function-decl vs var-expression) ' +
-      'NOT auto-resolved — review if any of these RPCs misbehave: ' + mixed.join(', '));
+    console.log('[postbuild] Detected ' + mixed.length +
+      ' mixed-shape handler collision(s) — renaming the LEGACY definition so the module copy wins:');
+    for (var mci = 0; mci < mixed.length; mci++) {
+      var mName = mixed[mci];
+      var mRenamed = renameLegacyHandlerDefinition(legacyContent, mName);
+      if (mRenamed) {
+        legacyContent = mRenamed.content;
+        console.log('[postbuild]   renamed legacy ' + mRenamed.kind + ' definition: ' + mName +
+          ' -> __legacy_' + mName + ' (registration/call sites left bound to the modern global)');
+      } else {
+        console.log('[postbuild]   WARN: mixed-collision "' + mName +
+          '" detected but legacy definition not locatable — left untouched');
+      }
+    }
+  } else {
+    console.log('[postbuild] No mixed-shape handler collisions detected between modules and legacy');
   }
 }
 

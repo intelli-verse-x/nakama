@@ -1069,22 +1069,17 @@ namespace LegacyPush {
   }
 
   // ─── Quiet hours: 22:00 – 08:00 in the user's local time ───────────────────
-  // Fallback offset (minutes) for users whose client never sent a PARSEABLE
-  // timezone. The Unity client historically sent `TimeZoneInfo.Local.Id`,
-  // which on many Android/IL2CPP devices resolves to the literal string
-  // "Local" (and sometimes empty/"Unknown") — none of which we can parse.
-  // The OLD code defaulted those to 0 (UTC), which silently collapsed the
-  // per-user "09:00–13:00 local" daily-push window to 09:00–13:00 *UTC*.
-  // For the India-majority user base that meant the daily quiz fired at
-  // 2:30–6:30 PM IST instead of the morning (and at 2–9 AM for US users).
-  // Since the base is India-first, fall back to IST (+330) so the bulk of
-  // users get a sensible morning window. The permanent fix is the client
-  // sending a numeric offset ("+05:30"), which the parser below honours
-  // exactly for every region.
-  // Last-resort when timezone AND country are unknown. Prefer country-aware
-  // defaults below (US→ET, IN→IST, …) so T1 users with "Local"/empty TZ still
-  // land in a real local morning window instead of UTC night.
-  var NOTIF_DEFAULT_TZ_OFFSET_MIN = 0; // UTC — only when country also unknown
+  // Fallback for users whose client never sent a PARSEABLE timezone.
+  // The Unity client historically sent `TimeZoneInfo.Local.Id`, which on many
+  // Android/IL2CPP devices resolves to the literal string "Local" (and
+  // sometimes empty/"Unknown") — none of which we can parse.
+  // The OLD code defaulted those to 0 (UTC), which collapsed the per-user
+  // send windows to UTC and gated ~99% of opted-in users outside premium
+  // 17–21 / daily 09–13. Product default market is the USA — when timezone
+  // AND country are unknown, treat the user as US Eastern (DST-aware) so
+  // Soft T1 morning/evening windows match US local time. Explicit numeric
+  // offsets ("+05:30" / "-04:00") and known IANA/country values still win.
+  var NOTIF_DEFAULT_COUNTRY = "US";
 
   // Soft T1: rough DST helpers (no tzdb in Goja). Good enough for send windows
   // (±1h error only near transition Sundays). Northern = US/CA/EU; AU = southern.
@@ -1162,9 +1157,10 @@ namespace LegacyPush {
 
   /** Country → default IANA offset when client sent Local/empty/Unknown. US→ET. */
   function offsetMinutesForCountry(cc: string, nowMs: number): number {
-    if (!cc) return NOTIF_DEFAULT_TZ_OFFSET_MIN;
     var nDst = _inNorthernDst(nowMs);
     var aDst = _inAuDst(nowMs);
+    // Product default market = USA (Eastern). Unknown/empty country lands here
+    // so Local-timezone users enter Soft T1 US morning/evening windows.
     var map: { [k: string]: number } = {
       // Americas — US majority population is Eastern; West Coast still gets
       // 06–10 local (usable) instead of 02–06 UTC night under the old default.
@@ -1181,8 +1177,8 @@ namespace LegacyPush {
       "PH": 480, "MY": 480, "AE": 240, "IL": nDst ? 180 : 120,
       "ZA": 120, "NG": 60, "EG": 120, "PK": 300, "BD": 360, "LK": 330, "NP": 345
     };
-    var key = String(cc).toUpperCase();
-    return map[key] !== undefined ? map[key] : NOTIF_DEFAULT_TZ_OFFSET_MIN;
+    var key = String(cc || NOTIF_DEFAULT_COUNTRY).toUpperCase();
+    return map[key] !== undefined ? map[key] : map[NOTIF_DEFAULT_COUNTRY];
   }
 
   function resolveCountryCodeForTz(nk: nkruntime.Nakama, userId: string, account?: any): string {
@@ -1205,9 +1201,13 @@ namespace LegacyPush {
         }
         var loc = acc.user.location ? String(acc.user.location).trim().toUpperCase() : "";
         if (/^[A-Z]{2}$/.test(loc)) return loc;
+        // lang_tag often carries region (en-US / en-IN) when country was never written.
+        var lang = acc.user.langTag ? String(acc.user.langTag).trim() : "";
+        var langM = /^[a-zA-Z]{2}-([A-Z]{2})$/.exec(lang);
+        if (langM) return langM[1];
       }
     } catch (_) {}
-    return "";
+    return NOTIF_DEFAULT_COUNTRY;
   }
 
   function getUserTimezoneOffsetMinutes(nk: nkruntime.Nakama, userId: string): number {
@@ -1224,7 +1224,7 @@ namespace LegacyPush {
       var tzLower = String(tz || "").trim().toLowerCase();
       if (tzLower === "z" || tzLower === "utc" || tzLower === "gmt") return 0;
       // Unparseable sentinels → country-aware default (US→ET, IN→IST, …).
-      // Old UTC-only fallback put US users in a 02–09 AM local night window.
+      // Missing country defaults to USA (Eastern).
       if (!tz || tzLower === "local" || tzLower === "unknown") {
         var ccBad = resolveCountryCodeForTz(nk, userId, account);
         return offsetMinutesForCountry(ccBad, nowMs);
@@ -1238,11 +1238,11 @@ namespace LegacyPush {
       }
       var iana = buildIanaOffsetMap(nowMs);
       if (iana[String(tz)] !== undefined) return iana[String(tz)];
-      // Unknown IANA/Windows string → still try country before UTC.
+      // Unknown IANA/Windows string → country (default US) before hard-fail.
       var ccUnk = resolveCountryCodeForTz(nk, userId, account);
-      if (ccUnk) return offsetMinutesForCountry(ccUnk, nowMs);
+      return offsetMinutesForCountry(ccUnk, nowMs);
     } catch (_) {}
-    return NOTIF_DEFAULT_TZ_OFFSET_MIN;
+    return offsetMinutesForCountry(NOTIF_DEFAULT_COUNTRY, nowMs);
   }
 
   function getUserLocalHour(nk: nkruntime.Nakama, userId: string): number {
@@ -1262,9 +1262,11 @@ namespace LegacyPush {
   ): void {
     var cc = "";
     try { cc = GeoTier.getCountryForPushAnalytics(nk, userId) || ""; } catch (_) { cc = ""; }
+    // Soft T1 product default = USA when geo never resolved (matches send-window default).
+    if (!cc) cc = NOTIF_DEFAULT_COUNTRY;
     var tier = "unknown";
     try { tier = GeoTier.classifyCountryTier(cc); } catch (_) { tier = "unknown"; }
-    var key = cc || "ZZ";
+    var key = cc || NOTIF_DEFAULT_COUNTRY;
     if (!byCountry[key]) byCountry[key] = { sent: 0, gated: 0 };
     if (!byTier[tier]) byTier[tier] = { sent: 0, gated: 0 };
     if (didSend) { byCountry[key].sent++; byTier[tier].sent++; }
@@ -2677,6 +2679,56 @@ namespace LegacyPush {
     return JSON.stringify({ success: true });
   }
 
+  // Read-only health for external monitors (n8n). Does NOT send pushes —
+  // Nakama's in-process notif_scheduler_v1 owns all cron dispatch.
+  function rpcNotifPushHealth(ctx: nkruntime.Context, _logger: nkruntime.Logger, nk: nkruntime.Nakama, _payload: string): string {
+    if (ctx.userId) return RpcHelpers.errorResponse("Admin only");
+    var todayKey = todayDateKey();
+    var nowMin = Math.floor(Date.now() / 60000);
+    var utcHour = new Date().getUTCHours();
+    var daily = readDailyQuizCursor(nk, todayKey);
+    var schedTasks: { [k: string]: number } = {};
+    var schedUpdatedAt = 0;
+    try {
+      var srow = nk.storageRead([{
+        collection: "notif_scheduler",
+        key: "dispatch_state_v1",
+        userId: Constants.SYSTEM_USER_ID
+      }]);
+      if (srow && srow.length > 0 && srow[0].value) {
+        var sv: any = srow[0].value;
+        if (sv.tasks) schedTasks = sv.tasks as { [k: string]: number };
+        if (typeof sv.updatedAt === "number") schedUpdatedAt = sv.updatedAt;
+      }
+    } catch (_) {}
+    var dailyAge = schedTasks["daily_quiz"] ? (nowMin - schedTasks["daily_quiz"]) : 9999;
+    var premiumAge = schedTasks["premium_daily_quiz"] ? (nowMin - schedTasks["premium_daily_quiz"]) : 9999;
+    var schedulerFresh = dailyAge <= 45 && premiumAge <= 90;
+    // After US Eastern morning window ends (~17:00 UTC EDT / 18:00 EST), expect sends.
+    var dailyExpected = utcHour >= 18;
+    var premiumExpected = utcHour >= 2 && utcHour < 9; // post US ET evening (21:00 ET ≈ 01–02 UTC)
+    var alerts: string[] = [];
+    if (!schedulerFresh) alerts.push("scheduler_stale");
+    if (dailyExpected && daily.dateKey === todayKey && daily.sent < 50) alerts.push("daily_sent_low");
+    if (dailyExpected && daily.dateKey === todayKey && (daily.gateReasons && daily.gateReasons.sendFailed > 200)) {
+      alerts.push("daily_send_failed_high");
+    }
+    return RpcHelpers.successResponse({
+      ok: alerts.length === 0,
+      todayKey: todayKey,
+      utcHour: utcHour,
+      defaultCountry: NOTIF_DEFAULT_COUNTRY,
+      scheduler: { fresh: schedulerFresh, updatedAt: schedUpdatedAt, dailyAgeMin: dailyAge, premiumAgeMin: premiumAge, tasks: schedTasks },
+      daily: {
+        sent: daily.sent, gated: daily.gated, scanned: daily.scanned,
+        reported: !!daily.reported, gateReasons: daily.gateReasons || {},
+        byTier: daily.byTier || {}, expected: dailyExpected
+      },
+      premiumExpected: premiumExpected,
+      alerts: alerts
+    });
+  }
+
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("push_register_token", rpcPushRegisterToken);
     initializer.registerRpc("push_send_event", rpcPushSendEvent);
@@ -2694,5 +2746,6 @@ namespace LegacyPush {
     initializer.registerRpc("notif_cron_review", rpcNotifCronReview);
     initializer.registerRpc("notif_friend_request_sent", rpcNotifFriendRequestSent);
     initializer.registerRpc("notif_friend_challenge", rpcNotifFriendChallenge);
+    initializer.registerRpc("notif_push_health", rpcNotifPushHealth);
   }
 }
