@@ -4189,6 +4189,10 @@ declare namespace SeedQ {
     var COLL_INGEST_STATE: string;
     var COLL_SOURCE_STATUS: string;
     var COLL_FOCUS_TRACKS: string;
+    var COLL_CRAWL_JOBS: string;
+    var COLL_CRAWL_IDEMPOTENCY: string;
+    var COLL_CRAWL_QUARANTINE: string;
+    var COLL_CRAWL_AUTH_NONCES: string;
     var TARGET_READY_SETS: number;
     var MIN_READY_SETS: number;
     var DEFAULT_SET_SIZE: number;
@@ -4206,6 +4210,20 @@ declare namespace SeedQ {
         license: string;
         checked: boolean;
         method: string;
+    }
+    interface CrawlProvenance {
+        job_id: string;
+        provider: string;
+        canonical_url: string;
+        source_url: string;
+        creator: string;
+        license_url: string;
+        published_at: string;
+        transcript_url?: string;
+        cited_segment?: string;
+        asset_hash: string;
+        stem_hash: string;
+        review_kind: string;
     }
     interface QualityInfo {
         score: number;
@@ -4247,6 +4265,11 @@ declare namespace SeedQ {
         media_mime?: string;
         behavior_tags?: string[];
         selection_reasons?: string[];
+        crawl_provenance?: CrawlProvenance;
+        media_embed_url?: string;
+        media_thumbnail_url?: string;
+        media_timecode_seconds?: number;
+        media_fallback?: string;
     }
     interface StagedSet {
         schema_version: number;
@@ -4321,16 +4344,32 @@ declare namespace SeedQ {
         samples: number;
         minimum_samples: number;
         weakest_topics: string[];
+        preferred_topics: string[];
+        preferred_modes: string[];
+        media_affinity: string[];
         recent_miss_topics: string[];
         avg_response_ms: number;
         generated_at: string;
         unsupported_signals: string[];
+        exploration_percent: number;
     }
     function computeBehaviorProfile(nk: nkruntime.Nakama, userId: string): BehaviorProfile;
     function computeAdaptiveProfile(nk: nkruntime.Nakama, userId: string, topic: string): AdaptiveProfile;
     function optimizeMediaUrl(url: string): string;
     function cachedHttpGet(nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string, ttlMs: number, headers?: any): string | null;
 }
+declare var __rpc_quizverse_seedq_crawl_job_submit: any;
+declare var __rpc_quizverse_seedq_crawl_job_status: any;
+declare var __rpc_quizverse_seedq_crawl_candidate_ingest: any;
+declare namespace SeedQCrawl {
+    function rpcSubmit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcStatus(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcIngestCandidates(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+}
+declare function seedqCrawlSafeInvoke(handler: any, ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcSeedqCrawlJobSubmit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcSeedqCrawlJobStatus(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcSeedqCrawlCandidateIngest(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
 declare namespace SeedQEngine {
     function readPool(nk: nkruntime.Nakama, mode: string, topic: string): any;
     function ingestIntoPool(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, candidates: SeedQ.SeedQuestion[]): {

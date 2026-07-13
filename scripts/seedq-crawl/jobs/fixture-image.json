@@ -1,0 +1,23 @@
+{
+  "mode": "ImageQuiz",
+  "topic": "history",
+  "country_codes": ["IN"],
+  "locales": ["en-IN"],
+  "interest_tags": ["history", "art", "archives"],
+  "target_difficulty": 2,
+  "age_band": "13+",
+  "media_type": "image",
+  "count": 16,
+  "freshness_window_days": 365,
+  "allowed_domains": ["wikimedia.org"],
+  "denied_domains": [],
+  "allowed_licenses": ["public_domain", "cc0", "cc_by"],
+  "query_hints": ["public domain historical images"],
+  "source_strategy": "fixture",
+  "idempotency_key": "seedq-fixture-image-v1",
+  "crawl_budget": 20,
+  "max_pages": 16,
+  "max_assets": 16,
+  "timeout_ms": 10000,
+  "max_attempts": 3
+}

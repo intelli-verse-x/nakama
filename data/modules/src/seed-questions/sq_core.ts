@@ -42,7 +42,7 @@ declare var __qvsSeen: any; // provided by data/modules/quizverse_seen/quizverse
 
 namespace SeedQ {
 
-  export var MODULE_VERSION = "seed-questions/1.2.0";
+  export var MODULE_VERSION = "seed-questions/1.3.0";
   export var CACHE_SCHEMA_VERSION = 2;
 
   // ── Collections ────────────────────────────────────────────────────────────
@@ -54,6 +54,10 @@ namespace SeedQ {
   export var COLL_INGEST_STATE = "sq_ingest_state";
   export var COLL_SOURCE_STATUS = "sq_source_status";
   export var COLL_FOCUS_TRACKS = "sq_focus_tracks";
+  export var COLL_CRAWL_JOBS = "sq_crawl_jobs";
+  export var COLL_CRAWL_IDEMPOTENCY = "sq_crawl_idempotency";
+  export var COLL_CRAWL_QUARANTINE = "sq_crawl_quarantine";
+  export var COLL_CRAWL_AUTH_NONCES = "sq_crawl_auth_nonces";
 
   // ── Tunables ────────────────────────────────────────────────────────────────
   export var TARGET_READY_SETS = 3;    // keep 2–3 sets staged; top up to 3
@@ -75,6 +79,21 @@ namespace SeedQ {
     license: string;            // "public_domain" | "cc" | "api_tos" | "unknown"
     checked: boolean;
     method: string;             // "tineye" | "domain_whitelist" | "none"
+  }
+
+  export interface CrawlProvenance {
+    job_id: string;
+    provider: string;
+    canonical_url: string;
+    source_url: string;
+    creator: string;
+    license_url: string;
+    published_at: string;
+    transcript_url?: string;
+    cited_segment?: string;
+    asset_hash: string;
+    stem_hash: string;
+    review_kind: string;        // "deterministic_auto" | "agent_supplemental"
   }
 
   export interface QualityInfo {
@@ -119,6 +138,11 @@ namespace SeedQ {
     media_mime?: string;
     behavior_tags?: string[];
     selection_reasons?: string[];
+    crawl_provenance?: CrawlProvenance;
+    media_embed_url?: string;
+    media_thumbnail_url?: string;
+    media_timecode_seconds?: number;
+    media_fallback?: string;
   }
 
   export interface StagedSet {
@@ -429,21 +453,26 @@ namespace SeedQ {
     samples: number;
     minimum_samples: number;
     weakest_topics: string[];
+    preferred_topics: string[];
+    preferred_modes: string[];
+    media_affinity: string[];
     recent_miss_topics: string[];
     avg_response_ms: number;
     generated_at: string;
     unsupported_signals: string[];
+    exploration_percent: number;
   }
 
   // Uses the persisted per-user quiz history written by quiz_submit_result.
-  // It intentionally does not invent preferred-mode, abandon, or media-affinity
-  // signals: those events exist in analytics_events but are not currently
-  // materialized into a cheap user-owned read model.
+  // Mode/media affinity is used only when those fields are present in persisted
+  // history. Missing fields remain unsupported rather than inferred.
   export function computeBehaviorProfile(nk: nkruntime.Nakama, userId: string): BehaviorProfile {
     var history: any = readUser(nk, "quiz-verse_quiz_history", "history", userId);
     var entries: any[] = (history && history.entries) ? history.entries : [];
     if (entries.length > HISTORY_READ_CAP) entries = entries.slice(entries.length - HISTORY_READ_CAP);
     var stats: { [topic: string]: any } = {};
+    var modeCounts: { [mode: string]: number } = {};
+    var mediaCounts: { [kind: string]: number } = {};
     var recentMisses: string[] = [];
     var totalMs = 0, timed = 0, validEntries = 0;
     for (var i = 0; i < entries.length; i++) {
@@ -458,6 +487,12 @@ namespace SeedQ {
       else if (i >= entries.length - 20 && recentMisses.indexOf(topic) < 0) recentMisses.push(topic);
       var ms = parseInt(e.time_ms || e.timeMs || 0, 10);
       if (ms > 0 && ms < 120000) { totalMs += ms; timed++; }
+      var mode = slugify(e.mode || e.quiz_mode || "");
+      if (mode && mode !== "general") modeCounts[mode] = (modeCounts[mode] || 0) + 1;
+      var mediaTag = slugify(e.media_type || e.question_type || "");
+      if (mediaTag === "image" || mediaTag === "video" || mediaTag === "audio") {
+        mediaCounts[mediaTag] = (mediaCounts[mediaTag] || 0) + 1;
+      }
     }
     var topics = Object.keys(stats);
     topics.sort(function (a: string, b: string): number {
@@ -467,20 +502,36 @@ namespace SeedQ {
       if (stats[a].total !== stats[b].total) return stats[b].total - stats[a].total;
       return a < b ? -1 : 1;
     });
+    var preferredTopics = Object.keys(stats);
+    preferredTopics.sort(function (a: string, b: string): number { return stats[b].total - stats[a].total; });
+    var modes = Object.keys(modeCounts);
+    modes.sort(function (a: string, b: string): number { return modeCounts[b] - modeCounts[a]; });
+    var mediaKinds = Object.keys(mediaCounts);
+    mediaKinds.sort(function (a: string, b: string): number { return mediaCounts[b] - mediaCounts[a]; });
     var signals: string[] = [];
     if (validEntries >= 5) signals.push("topic_accuracy");
     if (validEntries >= 5 && recentMisses.length > 0) signals.push("recent_misses");
     if (timed >= 5) signals.push("response_latency");
+    if (validEntries >= 5 && modes.length > 0) signals.push("mode_affinity");
+    if (validEntries >= 5 && mediaKinds.length > 0) signals.push("media_affinity");
     return {
       basis: validEntries >= 5 ? "quiz_history" : "sparse_history_fallback",
       signals_used: signals,
       samples: validEntries,
       minimum_samples: 5,
       weakest_topics: validEntries >= 5 ? topics.slice(0, 3) : [],
+      preferred_topics: validEntries >= 5 ? preferredTopics.slice(0, 5) : [],
+      preferred_modes: validEntries >= 5 ? modes.slice(0, 3) : [],
+      media_affinity: validEntries >= 5 ? mediaKinds.slice(0, 3) : [],
       recent_miss_topics: validEntries >= 5 ? recentMisses.slice(0, 5) : [],
       avg_response_ms: timed >= 5 ? Math.round(totalMs / timed) : 0,
       generated_at: isoTime(nowMs()),
-      unsupported_signals: ["preferred_modes", "skip_abandon_frustration", "media_affinity"]
+      unsupported_signals: [
+        modes.length > 0 ? "" : "preferred_modes",
+        "skip_abandon_frustration",
+        mediaKinds.length > 0 ? "" : "media_affinity"
+      ].filter(function (v: string): boolean { return !!v; }),
+      exploration_percent: 20
     };
   }
 

@@ -976,7 +976,10 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     initializer.registerRpc("quizverse_seedq_pool_stats", rpcSeedqPoolStats);
     initializer.registerRpc("quizverse_seedq_asset_job", rpcSeedqAssetJob);
     initializer.registerRpc("quizverse_seedq_provenance", rpcSeedqProvenance);
-    logger.info("[SeedQ] quizverse_seedq_get_staged/_consume_set/_review/_focus_tracks/_sources/_ingest/_ingest_tick/_pool_stats/_asset_job/_provenance registered");
+    initializer.registerRpc("quizverse_seedq_crawl_job_submit", rpcSeedqCrawlJobSubmit);
+    initializer.registerRpc("quizverse_seedq_crawl_job_status", rpcSeedqCrawlJobStatus);
+    initializer.registerRpc("quizverse_seedq_crawl_candidate_ingest", rpcSeedqCrawlCandidateIngest);
+    logger.info("[SeedQ] staged/review/ingest/crawl RPCs registered");
   } catch (err: any) {
     logger.error("[SeedQ] Failed to register: " + (err && err.message ? err.message : String(err)));
   }

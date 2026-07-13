@@ -363,6 +363,7 @@ namespace SeedQuestions {
       var byDifficulty: { [d: string]: number } = {};
       var byCountry: { [c: string]: number } = {};
       var approved = 0, reviewed = 0, uxApproved = 0, mediaHealthy = 0, behaviorTagged = 0;
+      var crawlSourced = 0, crawlImages = 0, crawlVideos = 0, rightsApproved = 0;
       for (var qi = 0; qi < pool.questions.length; qi++) {
         var q = pool.questions[qi];
         bySource[q.source] = (bySource[q.source] || 0) + 1;
@@ -377,6 +378,13 @@ namespace SeedQuestions {
           mediaHealthy++;
         }
         if (q.behavior_tags && q.behavior_tags.length > 0) behaviorTagged++;
+        if (q.crawl_provenance) {
+          crawlSourced++;
+          if (q.question_type === "Image") crawlImages++;
+          if (q.question_type === "Video") crawlVideos++;
+        }
+        if (q.media_provenance && q.media_provenance.checked &&
+            q.media_provenance.license !== "unknown") rightsApproved++;
         if (!q.country_codes || q.country_codes.length === 0) byCountry["global"] = (byCountry["global"] || 0) + 1;
         else for (var ci = 0; ci < q.country_codes.length; ci++) byCountry[q.country_codes[ci]] = (byCountry[q.country_codes[ci]] || 0) + 1;
       }
@@ -385,6 +393,8 @@ namespace SeedQuestions {
         size: pool.questions.length, quarantined: quarantined,
         approved: approved, reviewed: reviewed, semantic_approved: approved,
         ux_approved: uxApproved, media_healthy: mediaHealthy, behavior_tagged: behaviorTagged,
+        crawl_sourced: crawlSourced, crawl_images: crawlImages, crawl_videos: crawlVideos,
+        rights_approved: rightsApproved,
         production_minimum: SeedQ.MODE_PRODUCTION_MIN,
         ready_for_staging: approved >= SeedQ.MODE_PRODUCTION_MIN,
         by_source: bySource, by_difficulty: byDifficulty, by_country: byCountry,
@@ -399,11 +409,14 @@ namespace SeedQuestions {
     for (var mi = 0; mi < modes.length; mi++) {
       var directKey = SeedQ.poolKey(modes[mi].mode, modes[mi].default_topic);
       var directSize = 0, directApproved = 0, directUx = 0, directMedia = 0, directBehavior = 0, directCountries: any = {};
+      var directCrawl = 0, directCrawlImages = 0, directCrawlVideos = 0, directRights = 0;
       for (var pi = 0; pi < pools.length; pi++) {
         if (pools[pi].key === directKey) {
           directSize = pools[pi].size; directApproved = pools[pi].approved;
           directUx = pools[pi].ux_approved; directMedia = pools[pi].media_healthy;
           directBehavior = pools[pi].behavior_tagged; directCountries = pools[pi].by_country;
+          directCrawl = pools[pi].crawl_sourced; directCrawlImages = pools[pi].crawl_images;
+          directCrawlVideos = pools[pi].crawl_videos; directRights = pools[pi].rights_approved;
           break;
         }
       }
@@ -445,6 +458,8 @@ namespace SeedQuestions {
         default_topic: modes[mi].default_topic, direct_size: directSize,
         semantic_approved: directApproved, ux_approved: directUx, media_healthy: directMedia,
         behavior_tagged: directBehavior, geo_counts: directCountries,
+        crawl_sourced: directCrawl, crawl_images: directCrawlImages,
+        crawl_videos: directCrawlVideos, rights_approved: directRights,
         inventory_mode: effectiveMode, effective_topic: effectiveTopic, effective_size: effectiveSize,
         effective_semantic_approved: effectiveApproved, effective_ux_approved: effectiveUx,
         effective_media_healthy: effectiveMedia, effective_behavior_tagged: effectiveBehavior,

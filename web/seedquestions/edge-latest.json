@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "suite": "seedq-edge-matrix",
-  "run_id": "mrioppci_hodkbp",
+  "run_id": "mrioxlhs_xriy9o",
   "host": "https://seedquestions.quizverse.world",
-  "generated_at": "2026-07-13T03:50:48.950Z",
+  "generated_at": "2026-07-13T03:56:57.124Z",
   "taxonomy": {
     "question": 23,
     "experience": 7,
@@ -20,7 +20,7 @@
       "category": "identity",
       "name": "Country normalization and global fallback",
       "status": "PASS",
-      "duration_ms": 711,
+      "duration_ms": 313,
       "evidence": {
         "lower": {
           "country": "IN",
@@ -56,7 +56,7 @@
       "category": "identity",
       "name": "Fresh and sparse users are not profiled",
       "status": "PASS",
-      "duration_ms": 354,
+      "duration_ms": 148,
       "evidence": {
         "basis": "sparse_history_fallback",
         "signals_used": [],
@@ -65,7 +65,7 @@
         "weakest_topics": [],
         "recent_miss_topics": [],
         "avg_response_ms": 0,
-        "generated_at": "2026-07-13T03:50:37.709Z",
+        "generated_at": "2026-07-13T03:56:44.834Z",
         "unsupported_signals": [
           "preferred_modes",
           "skip_abandon_frustration",
@@ -78,7 +78,7 @@
       "category": "identity",
       "name": "User and country cache isolation",
       "status": "PASS",
-      "duration_ms": 836,
+      "duration_ms": 299,
       "evidence": {
         "isolated_keys": 3
       }
@@ -88,7 +88,7 @@
       "category": "api_security",
       "name": "Structured malformed JSON and validation errors",
       "status": "PASS",
-      "duration_ms": 189,
+      "duration_ms": 190,
       "evidence": {
         "malformed": "MALFORMED_JSON",
         "missing": "INVALID_ARGUMENT",
@@ -100,7 +100,7 @@
       "category": "api_security",
       "name": "Numeric bounds reject coercion and extremes",
       "status": "PASS",
-      "duration_ms": 461,
+      "duration_ms": 466,
       "evidence": {
         "rejected": 9
       }
@@ -110,7 +110,7 @@
       "category": "api_security",
       "name": "Aliases normalize; non-question routes fail explicitly",
       "status": "PASS",
-      "duration_ms": 177,
+      "duration_ms": 184,
       "evidence": {
         "alias": "SoloChallenge",
         "non_question": "non_question"
@@ -121,7 +121,7 @@
       "category": "staging",
       "name": "All denominator modes stage exact ready depth",
       "status": "PASS",
-      "duration_ms": 3231,
+      "duration_ms": 3921,
       "evidence": {
         "routes": 30,
         "ready_sets_each": 3
@@ -132,7 +132,7 @@
       "category": "staging",
       "name": "Concurrent staging converges without duplicate IDs",
       "status": "PASS",
-      "duration_ms": 465,
+      "duration_ms": 451,
       "evidence": {
         "simultaneous_calls": 8,
         "final_unique_ids": 18
@@ -143,7 +143,7 @@
       "category": "staging",
       "name": "Consume replay is idempotent and unknown IDs fail",
       "status": "PASS",
-      "duration_ms": 377,
+      "duration_ms": 389,
       "evidence": {
         "first_merged": 10,
         "duplicate_merged": 0
@@ -154,7 +154,7 @@
       "category": "staging",
       "name": "Concurrent duplicate consume has one effective merge",
       "status": "PASS",
-      "duration_ms": 435,
+      "duration_ms": 612,
       "evidence": {
         "calls": 6,
         "effective_merges": 1
@@ -165,10 +165,10 @@
       "category": "staging",
       "name": "Cache contract is self-contained and time bounded",
       "status": "PASS",
-      "duration_ms": 132,
+      "duration_ms": 133,
       "evidence": {
         "schema": 2,
-        "ttl_ms": 86399976
+        "ttl_ms": 86399972
       }
     },
     {
@@ -176,7 +176,7 @@
       "category": "quality",
       "name": "Malformed authored questions fail closed",
       "status": "PASS",
-      "duration_ms": 63,
+      "duration_ms": 65,
       "evidence": {
         "rejected": 8
       }
@@ -186,7 +186,7 @@
       "category": "quality",
       "name": "Every served item has review and valid answer shape",
       "status": "PASS",
-      "duration_ms": 579,
+      "duration_ms": 602,
       "evidence": {
         "representative_modes": 6
       }
@@ -196,7 +196,7 @@
       "category": "quality",
       "name": "Visual/audio/video mode-specific media gates",
       "status": "PASS",
-      "duration_ms": 399,
+      "duration_ms": 450,
       "evidence": {
         "ImageQuiz": "image",
         "AudioQuiz": "audio",
@@ -209,7 +209,7 @@
       "category": "sources",
       "name": "Duplicate static ingest is bounded and idempotent",
       "status": "PASS",
-      "duration_ms": 122,
+      "duration_ms": 124,
       "evidence": {
         "fetched_cap": 50,
         "duplicates": 50
@@ -220,7 +220,7 @@
       "category": "sources",
       "name": "Coverage exposes deficits, errors, and semantic lineage",
       "status": "PASS",
-      "duration_ms": 1175,
+      "duration_ms": 1823,
       "evidence": {
         "pass": 30,
         "warn": 0,
@@ -232,7 +232,7 @@
       "category": "sources",
       "name": "Cron batch and source registry are bounded",
       "status": "PASS",
-      "duration_ms": 71,
+      "duration_ms": 60,
       "evidence": {
         "connectors": 16,
         "tick_results": 1
@@ -243,7 +243,7 @@
       "category": "sources",
       "name": "Reviewed Gutenberg outage fallback is mode-correct",
       "status": "PASS",
-      "duration_ms": 492,
+      "duration_ms": 453,
       "evidence": {
         "modes": [
           "DailyQuiz",
@@ -258,7 +258,7 @@
       "category": "api_security",
       "name": "Admin RPC rejects user session without service token",
       "status": "PASS",
-      "duration_ms": 97,
+      "duration_ms": 96,
       "evidence": {
         "error_code": "FORBIDDEN"
       }
@@ -268,9 +268,9 @@
       "category": "api_security",
       "name": "Responses contain no secret-shaped fields",
       "status": "PASS",
-      "duration_ms": 1565,
+      "duration_ms": 1655,
       "evidence": {
-        "inspected_bytes": 108268
+        "inspected_bytes": 113287
       }
     },
     {
@@ -278,7 +278,7 @@
       "category": "runtime",
       "name": "Generated bundle is ES5-compatible and RPCs are direct",
       "status": "PASS",
-      "duration_ms": 16,
+      "duration_ms": 19,
       "evidence": {
         "direct_rpc_registration": true,
         "serve_time_network": false
@@ -289,7 +289,7 @@
       "category": "client_contract",
       "name": "Offline/account-switch metadata and honest repeats",
       "status": "PASS",
-      "duration_ms": 130,
+      "duration_ms": 149,
       "evidence": {
         "cache_schema": 2,
         "availability": "ready"
@@ -300,7 +300,7 @@
       "category": "client_contract",
       "name": "Aahaa fresh-user and unknown-action handling",
       "status": "PASS",
-      "duration_ms": 158,
+      "duration_ms": 155,
       "evidence": {
         "fresh_feed_items": 0,
         "unknown_action_rejected": true

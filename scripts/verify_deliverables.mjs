@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // verify_deliverables.mjs — Seed Questions × Aahaa deliverable verifier.
 // ─────────────────────────────────────────────────────────────────────────────
-// Runs 12 numbered checks covering every deliverable of the SeedQ/Aahaa
+// Runs 15 numbered checks covering every deliverable of the SeedQ/Aahaa
 // project (see docs/VERIFIER_LOOP.md for the check → deliverable map) against
 // a live Nakama backend. Every run mints FRESH device-auth personas, so the
 // suite is repeatable forever and never depends on prior state.
@@ -54,12 +54,14 @@ const c = (code, s) => (NO_COLOR ? s : `\x1b[${code}m${s}\x1b[0m`);
 const green = (s) => c("32;1", s), red = (s) => c("31;1", s), dim = (s) => c("2", s),
   bold = (s) => c("1", s), cyan = (s) => c("36", s), yellow = (s) => c("33", s);
 
-// ── the 17 RPC ids shipped by this project ───────────────────────────────────
+// ── the 20 RPC ids shipped by this project ───────────────────────────────────
 const RPC_IDS = [
   "quizverse_seedq_get_staged", "quizverse_seedq_consume_set", "quizverse_seedq_review",
   "quizverse_seedq_focus_tracks", "quizverse_seedq_sources", "quizverse_seedq_ingest",
   "quizverse_seedq_ingest_tick", "quizverse_seedq_pool_stats", "quizverse_seedq_asset_job",
   "quizverse_seedq_provenance",
+  "quizverse_seedq_crawl_job_submit", "quizverse_seedq_crawl_job_status",
+  "quizverse_seedq_crawl_candidate_ingest",
   "quizverse_aahaa_get", "quizverse_aahaa_react", "quizverse_aahaa_fact_pack",
   "quizverse_aahaa_profile_set", "quizverse_aahaa_generate_all", "quizverse_aahaa_validate",
   "quizverse_aahaa_catalog",
@@ -203,12 +205,12 @@ async function runSuite() {
   console.log(dim(`host=${HOST}  run=${runId}  ${new Date().toISOString()}\n`));
 
   // 1 · RPC registration in the built bundle (skip gracefully off-repo).
-  await check(1, "RPC registration ×17", "RPC Surface", async () => {
+  await check(1, "RPC registration ×20", "RPC Surface", async () => {
     if (!existsSync(INDEX_JS)) return "index.js not present — skipped (in-cluster / off-repo run); covered by repo-local runs";
     const bundle = readFileSync(INDEX_JS, "utf8");
     const missing = RPC_IDS.filter((id) => !bundle.includes(`registerRpc("${id}"`));
     assert(missing.length === 0, "missing registerRpc in index.js: " + missing.join(", "));
-    return `all 17 RPC ids registered in data/modules/index.js`;
+    return `all ${RPC_IDS.length} RPC ids registered in data/modules/index.js`;
   });
 
   // 2 · Fresh persona staging.
@@ -494,8 +496,8 @@ async function runSuite() {
     const mathIds = new Set(allStagedIds(mathRes));
     const historyIds = allStagedIds(historyRes);
     assert(historyIds.some((id) => !mathIds.has(id)), "distinct behavior profiles produced identical staged IDs");
-    const mathReasons = mathRes.sets.flatMap((s) => s.questions).filter((q) => q.selection_reasons.includes("behavior_weakness_or_recent_miss")).length;
-    const historyReasons = historyRes.sets.flatMap((s) => s.questions).filter((q) => q.selection_reasons.includes("behavior_weakness_or_recent_miss")).length;
+    const mathReasons = mathRes.sets.flatMap((s) => s.questions).filter((q) => q.selection_reasons.includes("interest_or_learning_signal")).length;
+    const historyReasons = historyRes.sets.flatMap((s) => s.questions).filter((q) => q.selection_reasons.includes("interest_or_learning_signal")).length;
     assert(mathReasons > 0 && historyReasons > 0, `behavior selection reasons absent: ${mathReasons}/${historyReasons}`);
     return `same country IN; math vs history weakness produced distinct sets with ${mathReasons}/${historyReasons} behavior-ranked questions; malformed UX rejected`;
   });

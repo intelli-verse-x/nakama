@@ -1,5 +1,5 @@
 {
-  "ts": "2026-07-13T03:50:16.658Z",
+  "ts": "2026-07-13T03:56:34.654Z",
   "host": "https://seedquestions.quizverse.world",
   "overall": "PASS",
   "checks": [
@@ -9,15 +9,15 @@
       "deliverable": "RPC Surface",
       "pass": true,
       "detail": "all 17 RPC ids registered in data/modules/index.js",
-      "ms": 27
+      "ms": 25
     },
     {
       "id": 2,
       "name": "Fresh persona staging",
       "deliverable": "SeedQ Adaptive",
       "pass": true,
-      "detail": "persona vfy_a_lp1wz6: 3 sets × 6 questions; cache schema v2, 31477 serialized bytes round-trip with IDs/media/answers intact",
-      "ms": 614
+      "detail": "fresh persona: 3 sets × 6 questions; cache schema v2, serialized payload round-tripped with IDs/media/answers intact",
+      "ms": 443
     },
     {
       "id": 3,
@@ -25,14 +25,14 @@
       "deliverable": "SeedQ Adaptive",
       "pass": true,
       "detail": "high 100% acc → target d5 (topic, n=24) > low 25% acc → d1 (topic, n=24)",
-      "ms": 770
+      "ms": 944
     },
     {
       "id": 4,
       "name": "Pre-staged depth 2–3",
       "deliverable": "D1 No-repeat",
       "pass": true,
-      "detail": "sets 2–3 pre-built behind set 1: set_mriop4n6_qozn53, set_mriop4n6_dpcfca",
+      "detail": "sets 2–3 were pre-built behind set 1",
       "ms": 0
     },
     {
@@ -48,16 +48,16 @@
       "name": "Consume → restage no-overlap",
       "deliverable": "D1 No-repeat",
       "pass": true,
-      "detail": "consumed set_mriop4n6_abu7jf (6 ids) → immediate depth 3, fetched depth 3, 0 overlap while fresh pool remained",
-      "ms": 629
+      "detail": "consumed one 6-question set → immediate depth 3, fetched depth 3, 0 overlap while fresh pool remained",
+      "ms": 405
     },
     {
       "id": 7,
       "name": "No-repeat chokepoint ×2",
       "deliverable": "D1 No-repeat",
       "pass": true,
-      "detail": "disjoint: [vq_e2g9yw48_1,vq_e2g9yw48_2,vq_e2g9yw48_3,vq_e2g9yw48_4,vq_e2g9yw48_5,vq_e2g9yw48_6] vs [vq_e2g9yw48_7,vq_e2g9yw48_8,vq_e2g9yw48_9,vq_e2g9yw48_10,vq_e2g9yw48_11,vq_e2g9yw48_12]; policies fresh=6/6 review=0/0",
-      "ms": 112
+      "detail": "two consecutive sets were disjoint; policies fresh=6/6 review=0/0",
+      "ms": 115
     },
     {
       "id": 8,
@@ -73,7 +73,7 @@
       "deliverable": "SeedQ Media",
       "pass": true,
       "detail": "4 image questions: all media_url via wsrv.nl, all with provenance (public_domain)",
-      "ms": 90
+      "ms": 88
     },
     {
       "id": 10,
@@ -81,7 +81,7 @@
       "deliverable": "D2 Fact-pack · D3 Aahaa",
       "pass": true,
       "detail": "feed=3 wows (top: wow.a.lock_it_in, tier A); fact pack answered=24 ≥ 24; react(shown) ok",
-      "ms": 173
+      "ms": 170
     },
     {
       "id": 11,
@@ -89,15 +89,15 @@
       "deliverable": "D4 Validator",
       "pass": true,
       "detail": "fabricated → pass:false (2 violations: numeric claims not present in fact pack: 987654); faithful \"You answered 24 questions with 100% accuracy. Keep going.\" → pass:true",
-      "ms": 89
+      "ms": 94
     },
     {
       "id": 12,
       "name": "Sources ×16 + pool stats",
       "deliverable": "Sources",
       "pass": true,
-      "detail": "16 connectors registered; 33 pools (e.g. guessanime_anime:120, sportsquiz_sports:100, weeklyquiz_general:60)",
-      "ms": 1477
+      "detail": "16 connectors registered; 39 pools (e.g. imageguess_space:44, pickatopic_history:0, guessdog_dogs:113)",
+      "ms": 1305
     },
     {
       "id": 13,
@@ -105,7 +105,7 @@
       "deliverable": "Mode Coverage",
       "pass": true,
       "detail": "36 canonical modes resolved; 30/30 question-consuming routes staged ≥2 sets; 0 WARN/BLOCKED",
-      "ms": 4542
+      "ms": 4421
     },
     {
       "id": 14,
@@ -113,7 +113,7 @@
       "deliverable": "Geo · Quality",
       "pass": true,
       "detail": "IN 12/6 relevant/global; US 12/6; invalid ZZ → global-only; all reviewed",
-      "ms": 557
+      "ms": 533
     },
     {
       "id": 15,
@@ -121,7 +121,29 @@
       "deliverable": "Behavior Ranking",
       "pass": true,
       "detail": "same country IN; math vs history weakness produced distinct sets with 9/9 behavior-ranked questions; malformed UX rejected",
-      "ms": 377
+      "ms": 380
     }
-  ]
+  ],
+  "schema_version": 2,
+  "production": {
+    "module_version": "seed-questions/1.2.0",
+    "image_digest": "sha256:0f3b5364959fbe58a1b7285b25b2c8241f0f5e414deda7bbc905b2c44a97f08b",
+    "suites": {
+      "baseline": {
+        "pass": 15,
+        "total": 15
+      },
+      "all_mode": {
+        "pass": 30,
+        "total": 30,
+        "warn": 0,
+        "blocked": 0
+      },
+      "edge": {
+        "pass": 23,
+        "total": 23,
+        "fail": 0
+      }
+    }
+  }
 }

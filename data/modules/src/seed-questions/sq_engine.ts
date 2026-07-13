@@ -126,8 +126,12 @@ namespace SeedQEngine {
     tags.push(SeedQ.slugify(q.topic || q.category || ""));
     for (var i = 0; i < tags.length; i++) {
       var tag = SeedQ.slugify(tags[i]);
-      if (behavior.weakest_topics.indexOf(tag) >= 0 || behavior.recent_miss_topics.indexOf(tag) >= 0) return true;
+      if (behavior.weakest_topics.indexOf(tag) >= 0 || behavior.recent_miss_topics.indexOf(tag) >= 0 ||
+          behavior.preferred_topics.indexOf(tag) >= 0) return true;
     }
+    var mediaType = SeedQ.slugify(q.question_type || "");
+    if (behavior.media_affinity.indexOf(mediaType) >= 0) return true;
+    if (behavior.preferred_modes.indexOf(SeedQ.slugify(q.mode || "")) >= 0) return true;
     return false;
   }
 
@@ -136,7 +140,9 @@ namespace SeedQEngine {
     for (var i = 0; i < candidates.length; i++) {
       (behaviorMatch(candidates[i], behavior) ? matched : rest).push(candidates[i]);
     }
-    var out = selectAdaptive(matched, target, Math.ceil(n * 0.3));
+    // Cap interest-weighted rows at 40%. At least 60% remains curriculum/
+    // diversity inventory, which includes the explicit 20% exploration floor.
+    var out = selectAdaptive(matched, target, Math.ceil(n * 0.4));
     out = out.concat(selectAdaptive(rest, target, n - out.length));
     if (out.length < n) out = out.concat(selectAdaptive(matched.slice(out.length), target, n - out.length));
     return out.slice(0, n);
@@ -390,7 +396,8 @@ namespace SeedQEngine {
           copy.selection_reasons = ["quality_approved", "ux_approved", "no_repeat",
             seenIds[copy.id] ? "smart_review" : "fresh",
             questionMatchesCountry(copy, geo.country) ? "geo_relevant" : "global_curriculum",
-            behaviorMatch(copy, behavior) ? "behavior_weakness_or_recent_miss" : "adaptive_difficulty"];
+            behaviorMatch(copy, behavior) ? "interest_or_learning_signal" : "diversity_exploration",
+            "adaptive_difficulty"];
           // Honest-repeat disclosure (D1 §6.2): mark recycled questions so the
           // client renders "N new + M Smart Review repeats", never a silent repeat.
           if (seenIds[copy.id]) { copy.recycled = true; setReview++; }

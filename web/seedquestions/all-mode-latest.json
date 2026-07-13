@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-07-13T03:57:35.482Z",
+  "host": "https://seedquestions.quizverse.world",
+  "target": 50,
+  "seeded_inventory_modes": 23,
+  "denominator_modes": 30,
+  "pass": 30,
+  "warn": 0,
+  "blocked": 0,
+  "release_gate": "PASS"
+}

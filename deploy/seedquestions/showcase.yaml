@@ -6,17 +6,24 @@
 # Static pages live in web/seedquestions/ — fully self-contained demos (inline
 # CSS/JS, no build step):
 #   index.html  — interactive showcase (staging, Aahaa feed, catalog, top-5)
-#   verify.html — 12-check verifier loop UI (same suite as verify_deliverables.mjs)
+#   verify.html — 15-check baseline plus all-mode and edge evidence
+#   unity.html  — Unity integration contract, caching guide, and acceptance tests
+#   scenarios.html + scenarios-latest.json — sanitized, auditable persona evidence
 #
-# Generate the ConfigMap FROM the repo files (single directory mount at /):
+# Generate the ConfigMap FROM the repo files (single directory mount at /,
+# so every listed key is served as a same-name static file):
 #
 #   kubectl -n aicart create configmap seedq-showcase-html \
 #     --from-file=index.html=web/seedquestions/index.html \
 #     --from-file=verify.html=web/seedquestions/verify.html \
+#     --from-file=unity.html=web/seedquestions/unity.html \
+#     --from-file=scenarios.html=web/seedquestions/scenarios.html \
+#     --from-file=scenarios-latest.json=web/seedquestions/scenarios-latest.json \
+#     --from-file=top5-real-users.json=web/seedquestions/top5-real-users.json \
+#     --from-file=verify-latest.json=web/seedquestions/verify-latest.json \
+#     --from-file=edge-latest.json=web/seedquestions/edge-latest.json \
+#     --from-file=all-mode-latest.json=web/seedquestions/all-mode-latest.json \
 #     --dry-run=client -o yaml | kubectl apply -f -
-#
-# Optional — pre-baked evidence for verify.html "Server-side evidence" panel:
-#     --from-file=verify-latest.json=web/seedquestions/verify-latest.json
 #
 # Re-run whenever any of those files change, then:
 #   kubectl -n aicart rollout restart deploy/seedq-showcase
@@ -24,6 +31,8 @@
 # URLs after ingress apply:
 #   https://seedquestions.quizverse.world/          → index.html
 #   https://seedquestions.quizverse.world/verify.html
+#   https://seedquestions.quizverse.world/unity.html
+#   https://seedquestions.quizverse.world/scenarios.html
 #
 # Apply order:
 #   1. the configmap command above
