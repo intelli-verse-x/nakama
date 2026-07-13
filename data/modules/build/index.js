@@ -31289,6 +31289,42 @@ var IdentityResolver;
             // Idempotent delete; if already gone, that's fine.
         }
     }
+    /** True when an existing binding was auto-minted for an unauthenticated channel user. */
+    function isGhostBindingRecord(existing) {
+        if (!existing)
+            return false;
+        if (("" + (existing.confidence || "")).toLowerCase() === "low")
+            return true;
+        var src = "" + (existing.source || "");
+        if (src.indexOf("conv_hub_") === 0)
+            return true;
+        if (src.indexOf("service_ghost") === 0)
+            return true;
+        return false;
+    }
+    function isGhostAccount(nk, userId) {
+        try {
+            var users = nk.usersGetId([userId]);
+            if (users && users.length > 0) {
+                var u = users[0];
+                if (u.customId) {
+                    return ("" + u.customId).indexOf("ghost:") === 0;
+                }
+            }
+        }
+        catch (err) {
+            /* treat unknown as non-ghost */
+        }
+        return false;
+    }
+    /** Ghost / conv-hub bindings may be replaced when the real user opts in via identity_link. */
+    function isReplaceableGhostBinding(nk, existing) {
+        if (!existing || !existing.cognito_sub)
+            return false;
+        if (isGhostBindingRecord(existing))
+            return true;
+        return isGhostAccount(nk, existing.cognito_sub);
+    }
     function isServiceCaller(ctx, payload) {
         var token = payload && payload.service_token;
         if (!token)
@@ -31390,13 +31426,19 @@ var IdentityResolver;
             if (!externalId) {
                 return RpcHelpers.errorResponse("external_id failed normalisation", 400);
             }
-            // If a binding already exists to a DIFFERENT user, refuse and surface the
-            // collision. The web layer will then show "this channel is already linked
-            // to another account; contact support to merge."
+            // If a binding already exists to a DIFFERENT user, refuse unless the old
+            // row is a conv-hub / ghost mint that the real account is replacing.
             var existing = readLink(nk, channel, externalId);
             if (existing && existing.cognito_sub && existing.cognito_sub !== userId) {
-                logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + userId);
-                return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
+                if (isReplaceableGhostBinding(nk, existing)) {
+                    deleteLink(nk, channel, externalId, existing.cognito_sub);
+                    logger.info("identity_link replaced ghost binding: channel=" + channel +
+                        " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + userId);
+                }
+                else {
+                    logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + userId);
+                    return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
+                }
             }
             var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
             var confidence = ("" + (data.confidence || "high")).slice(0, 16);
