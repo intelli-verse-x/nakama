@@ -11115,9 +11115,9 @@ var QvCacheRefreshCron;
             return false;
         }
     }
-    function refreshOneTopic(nk, logger, env, topic) {
+    function refreshOneTopic(nk, logger, env, topic, force) {
         var t0 = nowMs();
-        var r = QvQuestionCache.refreshCache(nk, logger, env, topic);
+        var r = QvQuestionCache.refreshCache(nk, logger, env, topic, !!force);
         var elapsed = nowMs() - t0;
         logger.info(formatLog("[topic_result]", {
             event: "cache_refresh_topic",
@@ -11125,7 +11125,8 @@ var QvCacheRefreshCron;
             ok: r.ok,
             count: r.count,
             error: r.error || "none",
-            elapsed_ms: elapsed
+            elapsed_ms: elapsed,
+            force: !!force
         }));
         return {
             topic: topic,
@@ -11173,8 +11174,8 @@ var QvCacheRefreshCron;
         }
         return results;
     }
-    function runModeTopic(nk, logger, env, topic) {
-        return [refreshOneTopic(nk, logger, env, topic)];
+    function runModeTopic(nk, logger, env, topic, force) {
+        return [refreshOneTopic(nk, logger, env, topic, force)];
     }
     function runModeAll(nk, logger, env) {
         if (!acquireFullRefreshGate(nk)) {
@@ -11217,6 +11218,7 @@ var QvCacheRefreshCron;
         if (mode === "topic" && !topic) {
             throw new Error(JSON.stringify({ code: 3, message: "topic is required when mode=topic" }));
         }
+        var force = !!req.force;
         var env = ctx.env || {};
         var started = nowMs();
         var topicCount = mode === "cold_start" ? COLD_START_TOPICS.length : (mode === "topic" ? 1 : 0);
@@ -11224,7 +11226,8 @@ var QvCacheRefreshCron;
             event: "cache_refresh_tick_start",
             mode: mode,
             topic_count: topicCount,
-            topic: topic || "none"
+            topic: topic || "none",
+            force: force
         }));
         var results = drainPendingRefreshes(nk, logger, env);
         var gated = false;
@@ -11232,7 +11235,7 @@ var QvCacheRefreshCron;
             results = results.concat(runModeColdStart(nk, logger, env));
         }
         else if (mode === "topic") {
-            results = results.concat(runModeTopic(nk, logger, env, topic));
+            results = results.concat(runModeTopic(nk, logger, env, topic, force));
         }
         else {
             var allRun = runModeAll(nk, logger, env);
@@ -11815,7 +11818,7 @@ var QvGetQuestions;
             cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
             ghibli: "ghibli", disney: "disney", starwars: "swapi",
             countries: "restcountries", flags: "restcountries",
-            space: "nasa", movies: "tmdb", sports: "sportsdb+opentdb",
+            space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
             music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
             video_quiz: "catalog", ai: "claude",
             math: "opentdb", art: "artic", history: "opentdb+jservice"
@@ -18633,7 +18636,7 @@ var QvQuestionCache;
             cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
             ghibli: "ghibli", disney: "disney", starwars: "swapi",
             countries: "restcountries", flags: "restcountries",
-            space: "nasa", movies: "tmdb", sports: "sportsdb+opentdb",
+            space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
             music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
             video_quiz: "catalog", ai: "claude",
             math: "opentdb", art: "artic", history: "opentdb+jservice"
@@ -19430,11 +19433,103 @@ var QvQuestionCache;
         return results;
     }
     // ── 7. Studio Ghibli ──────────────────────────────────────────────────────
+    // Studio Ghibli has only ~22 theatrical features in ghibliapi. Asking for 25
+    // used to hard-cap at 22 (QVBF / "typed 25 fetched 22"). World-class pool:
+    //   1) Prefer BOTH poster (`image`) AND banner (`movie_banner`) when URLs differ
+    //      → ~44 unique Image-Guess cards from the same free API (no key needed).
+    //   2) Bonus: AniList Studio Ghibli (id 21) cover art — free GraphQL, no key —
+    //      adds alternate covers / shorts / co-productions with distinct media URLs.
+    // Quality gate + Unity session dedup key on provider_key / media URL, so shared
+    // question text ("Which Studio Ghibli film is this?") is intentional and safe.
+    /** Downscale TMDB original/banner paths so Unity image preload stays under timeout. */
+    function ghibliDisplayUrl(url) {
+        if (!url)
+            return url;
+        var u = String(url);
+        u = u.replace("/t/p/original/", "/t/p/w780/");
+        u = u.replace("/t/p/w1280/", "/t/p/w780/");
+        return u;
+    }
+    function pushGhibliIdentity(results, titlePool, title, imageUrl, providerKey, explanation, meta) {
+        if (!title || !imageUrl)
+            return false;
+        var exTitle = {};
+        exTitle[title] = true;
+        var wt = pickExcluding(titlePool, exTitle, 3);
+        if (wt.length < 3)
+            return false;
+        var opts = [{ text: title, is_correct: true }];
+        for (var wi = 0; wi < wt.length; wi++)
+            opts.push({ text: wt[wi], is_correct: false });
+        var display = ghibliDisplayUrl(imageUrl);
+        results.push({
+            provider_key: providerKey,
+            topic: "ghibli", lang: "en",
+            question_text: "Which Studio Ghibli film is this?",
+            question_type: "single_select",
+            raw_options: opts,
+            has_media: true,
+            media: { type: "image", url: display, thumbnail_url: display, duration_seconds: null, mime_type: "image/jpeg" },
+            explanation: explanation,
+            difficulty: "medium", provider: "ghibli",
+            meta: meta
+        });
+        return true;
+    }
+    function loadGhibliFilms(nk, logger) {
+        var endpoints = [
+            "https://ghibliapi.vercel.app/films",
+            "https://ghibli-api.vercel.app/api/films"
+        ];
+        for (var ei = 0; ei < endpoints.length; ei++) {
+            try {
+                var payload = httpGet(nk, endpoints[ei]);
+                var list = Array.isArray(payload) ? payload
+                    : (payload && Array.isArray(payload.data) ? payload.data : null);
+                if (list && list.length > 0) {
+                    logger.info("[QvQCache/ghibli] films_source=" + endpoints[ei] + " count=" + list.length);
+                    return list;
+                }
+            }
+            catch (e) {
+                logger.warn("[QvQCache/ghibli] films endpoint failed " + endpoints[ei] + ": " + (e && e.message));
+            }
+        }
+        throw new Error("Ghibli API: no films from any mirror");
+    }
+    /** Best-effort AniList Studio Ghibli covers — never fails the ghibli topic alone. */
+    function appendGhibliAniList(nk, logger, results, titlePool) {
+        try {
+            var query = "query($page:Int,$perPage:Int){Studio(id:21){media(page:$page,perPage:$perPage,sort:POPULARITY_DESC){nodes{id title{english romaji}coverImage{large}}}}}";
+            for (var page = 1; page <= 2; page++) {
+                var gql = httpPost(nk, "https://graphql.anilist.co", {
+                    query: query,
+                    variables: { page: page, perPage: 50 }
+                });
+                var nodes = (gql && gql.data && gql.data.Studio && gql.data.Studio.media
+                    && Array.isArray(gql.data.Studio.media.nodes))
+                    ? gql.data.Studio.media.nodes : [];
+                if (nodes.length === 0)
+                    break;
+                for (var ni = 0; ni < nodes.length; ni++) {
+                    var node = nodes[ni];
+                    var titleAL = (node.title && (node.title.english || node.title.romaji)) || null;
+                    var cover = (node.coverImage && node.coverImage.large) || null;
+                    if (!titleAL || !cover)
+                        continue;
+                    if (titlePool.indexOf(titleAL) < 0)
+                        titlePool.push(titleAL);
+                    pushGhibliIdentity(results, titlePool, titleAL, cover, "ghibli_anilist_" + (node.id || djb2(titleAL)), "\"" + titleAL + "\" is a Studio Ghibli title.", { title: titleAL, source: "anilist" });
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[QvQCache/ghibli] AniList bonus skipped: " + (e && e.message));
+        }
+    }
     function fetchGhibli(nk, logger) {
         var results = [];
-        var data3 = httpGet(nk, "https://ghibliapi.vercel.app/films");
-        if (!Array.isArray(data3))
-            throw new Error("Ghibli API: no array");
+        var data3 = loadGhibliFilms(nk, logger);
         var titlePool = [];
         for (var gx2 = 0; gx2 < data3.length; gx2++) {
             if (data3[gx2].title)
@@ -19442,48 +19537,58 @@ var QvQuestionCache;
         }
         var withImage = 0;
         var skipped = 0;
+        var emittedPosters = 0;
+        var emittedBanners = 0;
         for (var gi4 = 0; gi4 < data3.length; gi4++) {
             var film = data3[gi4];
             try {
                 var ftitle = film.title || null;
-                var filmImage = film.movie_banner || null;
+                var poster = film.image || null;
+                var banner = film.movie_banner || null;
                 var fdirector = film.director || null;
                 var fyear = film.release_date || null;
-                if (!ftitle || !filmImage) {
+                if (!ftitle || (!poster && !banner)) {
                     skipped++;
                     continue;
                 }
                 withImage++;
-                var exTitle = {};
-                exTitle[ftitle] = true;
-                var wt = pickExcluding(titlePool, exTitle, 3);
-                if (wt.length < 3) {
-                    skipped++;
-                    continue;
+                var explain = "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".";
+                var metaBase = { title: ftitle, director: fdirector, year: fyear };
+                var filmId = film.id || djb2(ftitle);
+                if (poster) {
+                    if (pushGhibliIdentity(results, titlePool, ftitle, poster, "ghibli_poster_" + filmId, explain, metaBase)) {
+                        emittedPosters++;
+                    }
+                    else {
+                        skipped++;
+                    }
                 }
-                var gOpts2 = [{ text: ftitle, is_correct: true }];
-                for (var wti = 0; wti < wt.length; wti++)
-                    gOpts2.push({ text: wt[wti], is_correct: false });
-                results.push({
-                    provider_key: "ghibli_poster_" + (film.id || djb2(ftitle)),
-                    topic: "ghibli", lang: "en",
-                    question_text: "Which Studio Ghibli film is this?",
-                    question_type: "single_select",
-                    raw_options: gOpts2,
-                    has_media: true,
-                    media: { type: "image", url: filmImage, thumbnail_url: filmImage, duration_seconds: null, mime_type: "image/jpeg" },
-                    explanation: "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".",
-                    difficulty: "medium", provider: "ghibli",
-                    meta: { title: ftitle, director: fdirector, year: fyear }
-                });
+                // Second card when banner URL differs — same answer, different artwork.
+                if (banner && banner !== poster) {
+                    if (pushGhibliIdentity(results, titlePool, ftitle, banner, "ghibli_banner_" + filmId, explain, metaBase)) {
+                        emittedBanners++;
+                    }
+                }
+                else if (!poster && banner) {
+                    if (pushGhibliIdentity(results, titlePool, ftitle, banner, "ghibli_banner_" + filmId, explain, metaBase)) {
+                        emittedBanners++;
+                    }
+                }
             }
             catch (e) {
                 skipped++;
                 logger.debug("[QvQCache/ghibli] skip: " + (e && e.message));
             }
         }
+        var beforeAni = results.length;
+        appendGhibliAniList(nk, logger, results, titlePool);
         logger.info("[QvQCache/ghibli] event=ghibli_fetch_summary total_films=" + data3.length +
-            " with_image=" + withImage + " skipped=" + skipped + " emitted=" + results.length);
+            " with_image=" + withImage + " skipped=" + skipped +
+            " posters=" + emittedPosters + " banners=" + emittedBanners +
+            " anilist_added=" + (results.length - beforeAni) +
+            " emitted=" + results.length);
+        if (results.length === 0)
+            throw new Error("ghibli: 0 questions after fetch");
         return results;
     }
     function getRandomInt(min, max) {
@@ -19824,59 +19929,181 @@ var QvQuestionCache;
         }
         return topicResults;
     }
-    // ── 11. NASA APOD (Space) — key-gated; falls back to DEMO_KEY ─────────────
-    function fetchNasa(nk, env, logger) {
-        var results = [];
-        var apiKey = envKey(env, "NASA_API_KEY") || "DEMO_KEY";
-        var data7 = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=50&thumbs=true");
+    // ── 11. Space Trivia (NASA APOD + open image sources) ─────────────────────
+    // Loading failures were driven by: (1) DEMO_KEY rate-limits when env sets
+    // NASA_API_KEY=DEMO_KEY (skipping FALLBACK_KEYS), (2) serving APOD *hdurl*
+    // into Unity (multi-MB → preload timeouts), (3) APOD-only pool with videos
+    // filtered out. Fix: resolve a real key, prefer the smaller APOD `url`, and
+    // top up from Spaceflight News + NASA Images Library (both keyless).
+    function resolveNasaApiKey(env) {
+        var fromEnv = "";
+        if (env && env["NASA_API_KEY"] && String(env["NASA_API_KEY"]).trim()) {
+            fromEnv = String(env["NASA_API_KEY"]).trim();
+        }
+        var fromFallback = FALLBACK_KEYS["NASA_API_KEY"]
+            ? String(FALLBACK_KEYS["NASA_API_KEY"]).trim() : "";
+        // Prefer a non-DEMO key whenever available — DEMO_KEY is shared & throttled.
+        if (fromEnv && fromEnv !== "DEMO_KEY")
+            return fromEnv;
+        if (fromFallback && fromFallback !== "DEMO_KEY")
+            return fromFallback;
+        if (fromEnv)
+            return fromEnv;
+        if (fromFallback)
+            return fromFallback;
+        return "DEMO_KEY";
+    }
+    function pushSpaceIdentity(results, titlePool, title, imageUrl, providerKey, explanation, provider) {
+        if (!title || title.length < 5 || !imageUrl)
+            return false;
+        var exSp = {};
+        exSp[title] = true;
+        var wspc = pickExcluding(titlePool, exSp, 3);
+        if (wspc.length < 3) {
+            wspc = pick(SPACE_OBJECTS.filter(function (s) { return s !== title; }), 3);
+        }
+        if (wspc.length < 3)
+            return false;
+        var sOpts = [{ text: title, is_correct: true }];
+        for (var wspi = 0; wspi < wspc.length; wspi++)
+            sOpts.push({ text: wspc[wspi], is_correct: false });
+        results.push({
+            provider_key: providerKey,
+            topic: "space", lang: "en",
+            question_text: "What is featured in this space image?",
+            question_type: "single_select",
+            raw_options: sOpts,
+            has_media: true,
+            media: { type: "image", url: imageUrl, thumbnail_url: imageUrl, duration_seconds: null, mime_type: "image/jpeg" },
+            explanation: explanation,
+            difficulty: "hard", provider: provider,
+            meta: { title: title }
+        });
+        return true;
+    }
+    function appendNasaApod(nk, env, logger, results) {
+        var apiKey = resolveNasaApiKey(env);
+        var data7 = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=25&thumbs=true");
         if (!Array.isArray(data7))
             throw new Error("NASA APOD: expected array");
+        var titlePool = [];
+        for (var ti = 0; ti < data7.length; ti++) {
+            var t = (data7[ti].title || "").trim();
+            if (t)
+                titlePool.push(t);
+        }
+        // Blend static distractors so short batches still have 3 wrongs.
+        for (var si = 0; si < SPACE_OBJECTS.length; si++)
+            titlePool.push(SPACE_OBJECTS[si]);
+        var emitted = 0;
         for (var ni = 0; ni < data7.length; ni++) {
             var apod = data7[ni];
             try {
-                // #QVVBS-CACHE: NASA APOD is occasionally a video embed (YouTube/Vimeo url,
-                // no hdurl) instead of a photo — media_type is "video" on those days. Passing
-                // that url through as an "image" media item made Unity try to load a video
-                // page as a texture, which fails to render — the "Space Trivia (Image-related
-                // issue observed)" report. Skip non-image entries; the other ~48 items in this
-                // 50-count APOD batch cover the gap.
                 if (apod.media_type && apod.media_type !== "image")
                     continue;
                 var atitle = (apod.title || "").trim();
                 var adate = apod.date || "";
-                var aurl = apod.hdurl || apod.url || null;
-                var athumb = apod.thumbnail_url || aurl;
+                // Prefer the standard-resolution `url` for Unity preload; hdurl is often multi-MB.
+                var aurl = apod.url || apod.hdurl || null;
                 if (!atitle || atitle.length < 5 || !aurl)
                     continue;
-                var exSp = {};
-                exSp[atitle] = true;
-                var wspc = pickExcluding(SPACE_OBJECTS, exSp, 3);
-                if (wspc.length < 3) {
-                    wspc = pick(SPACE_OBJECTS.filter(function (s) { return s !== atitle; }), 3);
-                }
-                if (wspc.length < 3)
-                    continue;
-                var sOpts = [{ text: atitle, is_correct: true }];
-                for (var wspi = 0; wspi < wspc.length; wspi++)
-                    sOpts.push({ text: wspc[wspi], is_correct: false });
                 var aexpl = (apod.explanation || "").substring(0, 200);
-                results.push({
-                    provider_key: "nasa_" + djb2(atitle + adate),
-                    topic: "space", lang: "en",
-                    question_text: "What is featured in this NASA Astronomy Picture of the Day?",
-                    question_type: "single_select",
-                    raw_options: sOpts,
-                    has_media: true,
-                    media: { type: "image", url: athumb, thumbnail_url: athumb, duration_seconds: null, mime_type: "image/jpeg" },
-                    explanation: "NASA APOD " + adate + ": " + atitle + ". " + aexpl,
-                    difficulty: "hard", provider: "nasa",
-                    meta: { title: atitle }
-                });
+                if (pushSpaceIdentity(results, titlePool, atitle, aurl, "nasa_" + djb2(atitle + adate), "NASA APOD " + adate + ": " + atitle + ". " + aexpl, "nasa")) {
+                    emitted++;
+                }
             }
             catch (e) {
                 logger.debug("[QvQCache/nasa] skip: " + (e && e.message));
             }
         }
+        logger.info("[QvQCache/nasa] event=apod_fetch count=" + data7.length + " emitted=" + emitted + " key=" + (apiKey === "DEMO_KEY" ? "DEMO_KEY" : "custom"));
+    }
+    function appendSpaceflightNews(nk, logger, results) {
+        try {
+            var sf = httpGet(nk, "https://api.spaceflightnewsapi.net/v4/articles/?limit=40");
+            if (!sf || !Array.isArray(sf.results))
+                return;
+            var titlePool = [];
+            for (var t = 0; t < sf.results.length; t++) {
+                if (sf.results[t].title)
+                    titlePool.push(sf.results[t].title);
+            }
+            for (var si = 0; si < SPACE_OBJECTS.length; si++)
+                titlePool.push(SPACE_OBJECTS[si]);
+            var emitted = 0;
+            for (var i = 0; i < sf.results.length; i++) {
+                var item = sf.results[i];
+                var title = (item.title || "").trim();
+                var img = item.image_url || null;
+                if (!title || !img)
+                    continue;
+                if (pushSpaceIdentity(results, titlePool, title, img, "spaceflight_" + (item.id || djb2(title)), (item.news_site ? item.news_site + ": " : "") + title, "spaceflightnews")) {
+                    emitted++;
+                }
+            }
+            logger.info("[QvQCache/space] event=spaceflight_fetch emitted=" + emitted);
+        }
+        catch (e) {
+            logger.warn("[QvQCache/space] SpaceflightNews: " + (e && e.message));
+        }
+    }
+    function appendNasaImageLibrary(nk, logger, results) {
+        var queries = ["nebula", "galaxy", "mars", "saturn", "apollo", "hubble"];
+        var titlePool = SPACE_OBJECTS.slice();
+        var emitted = 0;
+        for (var qi = 0; qi < queries.length; qi++) {
+            try {
+                var lib = httpGet(nk, "https://images-api.nasa.gov/search?q=" + queries[qi] +
+                    "&media_type=image&page_size=15");
+                var items = (lib && lib.collection && Array.isArray(lib.collection.items))
+                    ? lib.collection.items : [];
+                for (var ii = 0; ii < items.length; ii++) {
+                    var it = items[ii];
+                    var d0 = (it.data && it.data[0]) ? it.data[0] : null;
+                    if (!d0)
+                        continue;
+                    var title = (d0.title || "").trim();
+                    if (!title || title.length < 5)
+                        continue;
+                    var preview = null;
+                    var links = Array.isArray(it.links) ? it.links : [];
+                    for (var li = 0; li < links.length; li++) {
+                        if (links[li] && links[li].href && (!links[li].rel || links[li].rel === "preview")) {
+                            preview = links[li].href;
+                            break;
+                        }
+                    }
+                    if (!preview)
+                        continue;
+                    if (titlePool.indexOf(title) < 0)
+                        titlePool.push(title);
+                    var nasaId = d0.nasa_id || djb2(title + queries[qi]);
+                    if (pushSpaceIdentity(results, titlePool, title, preview, "nasalib_" + nasaId, "NASA Image Library: " + title, "nasa_images")) {
+                        emitted++;
+                    }
+                }
+            }
+            catch (e) {
+                logger.debug("[QvQCache/space] nasa_lib q=" + queries[qi] + " failed: " + (e && e.message));
+            }
+        }
+        logger.info("[QvQCache/space] event=nasa_lib_fetch emitted=" + emitted);
+    }
+    function fetchNasa(nk, env, logger) {
+        var results = [];
+        // Keyless sources first — NASA APOD is slower and rate-limited; never let a
+        // single APOD timeout leave Space Trivia with an empty pool.
+        appendSpaceflightNews(nk, logger, results);
+        appendNasaImageLibrary(nk, logger, results);
+        try {
+            appendNasaApod(nk, env, logger, results);
+        }
+        catch (e) {
+            logger.warn("[QvQCache/space] APOD failed (pool still has backups): " + (e && e.message));
+        }
+        if (results.length === 0)
+            throw new Error("space: all providers returned 0 image questions");
+        logger.info("[QvQCache/space] event=space_fetch_total emitted=" + results.length);
         return results;
     }
     // ── 12. TMDB (Movies) — requires TMDB_API_KEY ─────────────────────────────
@@ -21450,10 +21677,10 @@ var QvRemoteConfig;
             { id: "sports", label: "Sports", icon_url: S3_ICONS_BASE + "sports.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 4, max_count: 30 },
             { id: "countries", label: "Countries", icon_url: S3_ICONS_BASE + "countries.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 5, max_count: 30 },
             { id: "flags", label: "Flags", icon_url: S3_ICONS_BASE + "flags.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 6, max_count: 30 },
-            { id: "space", label: "Space", icon_url: S3_ICONS_BASE + "space.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 7, max_count: 30 },
+            { id: "space", label: "Space", icon_url: S3_ICONS_BASE + "space.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 7, max_count: 50 },
             { id: "music", label: "Music", icon_url: S3_ICONS_BASE + "music.png", has_media: true, media_type: "audio", enabled: true, is_new: false, badge: null, sort_order: 8, max_count: 30 },
             { id: "disney", label: "Disney", icon_url: S3_ICONS_BASE + "disney.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 9, max_count: 30 },
-            { id: "ghibli", label: "Studio Ghibli", icon_url: S3_ICONS_BASE + "ghibli.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 10, max_count: 30 },
+            { id: "ghibli", label: "Studio Ghibli", icon_url: S3_ICONS_BASE + "ghibli.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 10, max_count: 50 },
             { id: "starwars", label: "Star Wars", icon_url: S3_ICONS_BASE + "starwars.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 11, max_count: 30 },
             { id: "food", label: "Food", icon_url: S3_ICONS_BASE + "food.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 12, max_count: 30 },
             { id: "cocktail", label: "Cocktails", icon_url: S3_ICONS_BASE + "cocktail.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 13, max_count: 30 },
@@ -29463,6 +29690,7 @@ var QvEntitlements;
     // Without this guard, a retried webhook (e.g. after a slow/aborted response)
     // would double-count the same purchase in analytics_live_daily.revenue_usd.
     var RC_REVENUE_LEDGER_COLLECTION = "qv_rc_revenue_ledger";
+    var RC_LIFECYCLE_LEDGER_COLLECTION = "qv_rc_lifecycle_ledger";
     // NAKAMA_WEBHOOK_SECRET is set in docker-compose.yml environment + RUNTIME_ENV_KEYS.
     // RevenueCat webhook Authorization header must match this value.
     // If the env var is unset, signature checking is SKIPPED (dev-only behaviour).
@@ -29533,6 +29761,18 @@ var QvEntitlements;
     function rpcGetEntitlements(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         try {
+            // VIP Layer 0 — permanent Pro+ for hard-coded QA allow-list.
+            if (QvVipOverride.isVipUserId(userId)) {
+                logger.info("[QvEntitlements] VIP override active for user=" + userId);
+                var vipCons = Storage.readJson(nk, COLLECTION, KEY_CONS, userId) || {};
+                var vipOne = Storage.readJson(nk, COLLECTION, KEY_ONE, userId) || {};
+                return RpcHelpers.successResponse({
+                    subscriptions: QvVipOverride.vipSubscriptionSnapshot(),
+                    consumables: vipCons,
+                    one_time: vipOne,
+                    vip: true
+                });
+            }
             var subs = Storage.readJson(nk, COLLECTION, KEY_SUBS, userId) || {};
             var cons = Storage.readJson(nk, COLLECTION, KEY_CONS, userId) || {};
             var oneTime = Storage.readJson(nk, COLLECTION, KEY_ONE, userId) || {};
@@ -29658,6 +29898,80 @@ var QvEntitlements;
             logger.warn("[QvEntitlements] rc_sync: recordRcRevenueLive failed (non-fatal): " + (e && e.message ? e.message : String(e)));
         }
     }
+    function recordRcLifecycleEvent(ctx, logger, nk, targetUserId, event, eventType, productId, store) {
+        try {
+            var isTrial = !!(event && (event.period_type === "trial" || event.period_type === "TRIAL" ||
+                event.trial === true || event.is_trial === true));
+            var eventName = null;
+            if (eventType === "CANCELLATION")
+                eventName = isTrial ? "trial_cancelled" : "subscription_cancelled";
+            else if (eventType === "RENEWAL")
+                eventName = "subscription_renewed";
+            else if (eventType === "UNCANCELLATION")
+                eventName = "subscription_uncancelled";
+            else if (eventType === "EXPIRATION")
+                eventName = isTrial ? "trial_expired" : "subscription_expired";
+            else if (eventType === "INITIAL_PURCHASE" && isTrial)
+                eventName = "trial_start";
+            if (!eventName || !targetUserId)
+                return;
+            var eventId = (event && event.id) ? String(event.id) : null;
+            if (eventId) {
+                try {
+                    nk.storageWrite([{
+                            collection: RC_LIFECYCLE_LEDGER_COLLECTION,
+                            key: eventId,
+                            userId: Constants.SYSTEM_USER_ID,
+                            value: { eventId: eventId, eventName: eventName, userId: targetUserId, recordedAt: new Date().toISOString() },
+                            permissionRead: 0,
+                            permissionWrite: 0,
+                            version: "*"
+                        }]);
+                }
+                catch (dupErr) {
+                    logger.info("[QvEntitlements] rc_sync: duplicate lifecycle event id=" + eventId + " skipped");
+                    return;
+                }
+            }
+            var gameId = (ctx.env && ctx.env["DEFAULT_GAME_ID"]) || "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+            var nowSec = Math.floor(Date.now() / 1000);
+            persistNormalizedEvent(nk, logger, {
+                userId: targetUserId,
+                gameId: gameId,
+                eventName: eventName,
+                originalEventName: eventName,
+                canonicalized: false,
+                eventData: {
+                    product_id: productId,
+                    store: store || "unknown",
+                    source: "revenuecat_webhook",
+                    rc_event_type: eventType,
+                    rc_event_id: eventId,
+                    is_trial: isTrial,
+                    expiration_at_ms: event && event.expiration_at_ms ? Number(event.expiration_at_ms) : null,
+                    cancel_reason: event && event.cancel_reason ? String(event.cancel_reason) : null,
+                    expiration_reason: event && event.expiration_reason ? String(event.expiration_reason) : null,
+                    environment: event && event.environment ? String(event.environment) : null,
+                    entitlement_ids: event && event.entitlement_ids ? event.entitlement_ids : []
+                },
+                platform: null,
+                sessionId: null,
+                timestamp: new Date(nowSec * 1000).toISOString(),
+                unixTimestamp: nowSec,
+                schemaVersion: 1,
+                clientEventId: eventId,
+                eventTime: null,
+                quizSessionId: null,
+                screenId: null,
+                privacyTier: 1,
+                v2Warnings: []
+            });
+        }
+        catch (e) {
+            logger.warn("[QvEntitlements] rc_sync: lifecycle analytics failed (non-fatal): " +
+                (e && e.message ? e.message : String(e)));
+        }
+    }
     // ── quizverse_rc_sync ───────────────────────────────────────────────────
     //
     //  Called by the RevenueCat S2S webhook (POST) or manually from the
@@ -29740,6 +30054,7 @@ var QvEntitlements;
         // dropped for products this RPC doesn't grant a tier for. Never throws
         // and never blocks entitlement granting (see try/catch inside).
         recordRcRevenueLive(ctx, logger, nk, targetUserId, event, eventType, productId, store);
+        recordRcLifecycleEvent(ctx, logger, nk, targetUserId, event, eventType, productId, store);
         // ── Consumable path (AI Voice session credits) ───────────────────────
         // Triggered by web Stripe webhook (store = "web_stripe") or RC consumable
         // purchases.  productId pattern: *.aivoice.*  or  *.voice_pack.*
@@ -30222,6 +30537,9 @@ var QvLapNoteQuota;
         return KEY_PREFIX + date;
     }
     function subscriptionTier(nk, userId, nowMs) {
+        // VIP Layer 0 — unlimited notes for hard-coded QA allow-list.
+        if (QvVipOverride.isVipUserId(userId))
+            return "pro_plus";
         var rows = nk.storageRead([{
                 collection: "qv_entitlements",
                 key: "subscriptions",
@@ -30556,6 +30874,55 @@ var QuizVerseRevenueCatAdmin;
     }
     QuizVerseRevenueCatAdmin.register = register;
 })(QuizVerseRevenueCatAdmin || (QuizVerseRevenueCatAdmin = {}));
+// ---------------------------------------------------------------------------
+//  vip-override.ts  —  hard-coded Nakama user IDs with permanent Pro+ access
+//
+//  Mirrors Unity Trivia.Monetization.VipUserOverride and web lap-vip-override.ts.
+//  Used by quizverse_get_entitlements + quizverse_lap_note_quota so VIP QA
+//  accounts are not blocked by free-tier note limits or missing RC grants.
+// ---------------------------------------------------------------------------
+var QvVipOverride;
+(function (QvVipOverride) {
+    // Keep in sync with:
+    //   Assets/_QuizVerse/Scripts/Monetization/VipUserOverride.cs
+    //   web/lib/link-and-play/lap-vip-override.ts
+    var VIP_IDS = [
+        "6ffac0b4-d999-4736-8741-898b2d36101b", // tester
+        "99a67d10-30e8-4ba6-ade5-8856beb07fcd", // Kartik — lehey82964@gixpos.com
+    ];
+    var _vipSet = null;
+    function vipSet() {
+        if (_vipSet)
+            return _vipSet;
+        _vipSet = {};
+        for (var i = 0; i < VIP_IDS.length; i++) {
+            var id = String(VIP_IDS[i] || "").trim().toLowerCase();
+            if (id)
+                _vipSet[id] = true;
+        }
+        return _vipSet;
+    }
+    function isVipUserId(userId) {
+        if (!userId)
+            return false;
+        return !!vipSet()[String(userId).trim().toLowerCase()];
+    }
+    QvVipOverride.isVipUserId = isVipUserId;
+    /** Synthetic Pro+ subscription snapshot for VIP accounts. */
+    function vipSubscriptionSnapshot() {
+        return {
+            tier: "pro_plus",
+            status: "active",
+            productId: "vip_override",
+            store: "vip_override",
+            expiresAt: null,
+            entitlement_ids: ["pro_plus", "pro", "plus", "linkplay_pro", "linkplay_proplus"],
+            updatedAt: new Date().toISOString(),
+            source: "vip_override"
+        };
+    }
+    QvVipOverride.vipSubscriptionSnapshot = vipSubscriptionSnapshot;
+})(QvVipOverride || (QvVipOverride = {}));
 // =============================================================================
 // account_merge.ts — Ghost Nakama user → Cognito user merge
 //
@@ -36884,6 +37251,60 @@ var LegacyChat;
         }
     }
     LegacyChat.afterChannelMessageSend = afterChannelMessageSend;
+    // ─── Displayable content helpers (filter empty {} junk from history) ────────
+    function extractChatDisplayText(content) {
+        if (content === null || content === undefined)
+            return "";
+        if (typeof content === "object") {
+            var keys = ["text", "message", "content", "msg", "body"];
+            for (var i = 0; i < keys.length; i++) {
+                var v = content[keys[i]];
+                if (typeof v === "string" && v.trim() !== "")
+                    return v.trim();
+            }
+            return "";
+        }
+        var s = String(content).trim();
+        if (!s || s === "{}" || s === "null")
+            return "";
+        if (s.charAt(0) === "{") {
+            try {
+                return extractChatDisplayText(JSON.parse(s));
+            }
+            catch (_e) {
+                return s;
+            }
+        }
+        return s;
+    }
+    function isDisplayableChatContent(content) {
+        return extractChatDisplayText(content) !== "";
+    }
+    function filterDisplayableMessages(messages) {
+        if (!messages || !messages.length)
+            return [];
+        var out = [];
+        for (var i = 0; i < messages.length; i++) {
+            var m = messages[i];
+            if (!m)
+                continue;
+            if (isDisplayableChatContent(m.content))
+                out.push(m);
+        }
+        return out;
+    }
+    function normalizeOutboundChatPayload(content) {
+        if (typeof content === "object" && content !== null) {
+            if (!isDisplayableChatContent(content)) {
+                throw new Error("message content required");
+            }
+            return content;
+        }
+        var text = String(content || "").trim();
+        if (!text)
+            throw new Error("message content required");
+        return { text: text };
+    }
     function rpcSendGroupChatMessage(ctx, logger, nk, payload) {
         try {
             var userId = RpcHelpers.requireUserId(ctx);
@@ -36893,8 +37314,9 @@ var LegacyChat;
             var content = data.content || data.message || data.messageText || "";
             if (!groupId)
                 return RpcHelpers.errorResponse("groupId required");
+            var payloadObj = normalizeOutboundChatPayload(content);
             var channelId = nk.channelIdBuild(userId, groupId, 3);
-            var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+            var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
             var senderName = resolveSenderName(nk, userId, username);
             pushGroupMessage(ctx, logger, nk, userId, senderName, groupId, content);
             return RpcHelpers.successResponse({ messageId: ack.messageId });
@@ -36912,8 +37334,10 @@ var LegacyChat;
             var content = data.content || data.message || data.messageText || "";
             if (!targetUserId)
                 return RpcHelpers.errorResponse("userId required");
+            var payloadObj = normalizeOutboundChatPayload(content);
             var channelId = nk.channelIdBuild(userId, targetUserId, 2);
-            var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+            // Store as {"text":"..."} so Unity ChatMessageTextParser shows it (same as socket path).
+            var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
             var senderName = resolveSenderName(nk, userId, username);
             pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
             // Ephemeral in-app socket notification — delivered to recipient's connected socket
@@ -37003,9 +37427,10 @@ var LegacyChat;
             var username = ctx.username || "";
             var data = RpcHelpers.parseRpcPayload(payload);
             var roomName = data.roomName || data.room || "general";
-            var content = data.content || data.message || "";
+            var content = data.content || data.message || data.messageText || "";
+            var payloadObj = normalizeOutboundChatPayload(content);
             var channelId = nk.channelIdBuild(undefined, roomName, 1);
-            var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+            var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
             return RpcHelpers.successResponse({ messageId: ack.messageId });
         }
         catch (e) {
@@ -37025,7 +37450,7 @@ var LegacyChat;
             var cursor = data.cursor || "";
             var result = nk.channelMessagesList(channelId, limit, forward, cursor);
             return RpcHelpers.successResponse({
-                messages: result.messages || [],
+                messages: filterDisplayableMessages(result.messages || []),
                 nextCursor: result.nextCursor || "",
                 prevCursor: result.prevCursor || ""
             });
@@ -37047,7 +37472,7 @@ var LegacyChat;
             var cursor = data.cursor || "";
             var result = nk.channelMessagesList(channelId, limit, forward, cursor);
             return RpcHelpers.successResponse({
-                messages: result.messages || [],
+                messages: filterDisplayableMessages(result.messages || []),
                 nextCursor: result.nextCursor || "",
                 prevCursor: result.prevCursor || ""
             });
@@ -37067,7 +37492,7 @@ var LegacyChat;
             var cursor = data.cursor || "";
             var result = nk.channelMessagesList(channelId, limit, forward, cursor);
             return RpcHelpers.successResponse({
-                messages: result.messages || [],
+                messages: filterDisplayableMessages(result.messages || []),
                 nextCursor: result.nextCursor || "",
                 prevCursor: result.prevCursor || ""
             });
@@ -37265,7 +37690,22 @@ var LegacyChat;
     function beforeChannelMessageSend(ctx, logger, nk, envelope) {
         var msg = envelope ? envelope.channelMessageSend : null;
         if (msg) {
-            enforceChatHygiene(ctx, nk, String(msg.content || ""));
+            var rawContent = msg.content;
+            // Reject empty {} / blank payloads so they never land in durable history
+            // (QVBF_149: empty rows looked like "sent then vanished" on reopen).
+            var parsed = rawContent;
+            if (typeof rawContent === "string") {
+                try {
+                    parsed = JSON.parse(rawContent);
+                }
+                catch (_e) {
+                    parsed = rawContent;
+                }
+            }
+            if (!isDisplayableChatContent(parsed)) {
+                throw new Error("message content required");
+            }
+            enforceChatHygiene(ctx, nk, String(rawContent || ""));
             try {
                 msg.persist = true;
             }

@@ -365,6 +365,56 @@ namespace LegacyChat {
     }
   }
 
+  // ─── Displayable content helpers (filter empty {} junk from history) ────────
+  function extractChatDisplayText(content: any): string {
+    if (content === null || content === undefined) return "";
+    if (typeof content === "object") {
+      var keys = ["text", "message", "content", "msg", "body"];
+      for (var i = 0; i < keys.length; i++) {
+        var v = (content as any)[keys[i]];
+        if (typeof v === "string" && v.trim() !== "") return v.trim();
+      }
+      return "";
+    }
+    var s = String(content).trim();
+    if (!s || s === "{}" || s === "null") return "";
+    if (s.charAt(0) === "{") {
+      try {
+        return extractChatDisplayText(JSON.parse(s));
+      } catch (_e) {
+        return s;
+      }
+    }
+    return s;
+  }
+
+  function isDisplayableChatContent(content: any): boolean {
+    return extractChatDisplayText(content) !== "";
+  }
+
+  function filterDisplayableMessages(messages: any[]): any[] {
+    if (!messages || !messages.length) return [];
+    var out: any[] = [];
+    for (var i = 0; i < messages.length; i++) {
+      var m = messages[i];
+      if (!m) continue;
+      if (isDisplayableChatContent(m.content)) out.push(m);
+    }
+    return out;
+  }
+
+  function normalizeOutboundChatPayload(content: any): any {
+    if (typeof content === "object" && content !== null) {
+      if (!isDisplayableChatContent(content)) {
+        throw new Error("message content required");
+      }
+      return content;
+    }
+    var text = String(content || "").trim();
+    if (!text) throw new Error("message content required");
+    return { text: text };
+  }
+
   function rpcSendGroupChatMessage(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var userId = RpcHelpers.requireUserId(ctx);
@@ -373,8 +423,9 @@ namespace LegacyChat {
       var groupId = data.groupId;
       var content = data.content || data.message || data.messageText || "";
       if (!groupId) return RpcHelpers.errorResponse("groupId required");
+      var payloadObj = normalizeOutboundChatPayload(content);
       var channelId = nk.channelIdBuild(userId, groupId, 3);
-      var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+      var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
       var senderName = resolveSenderName(nk, userId, username);
       pushGroupMessage(ctx, logger, nk, userId, senderName, groupId, content);
       return RpcHelpers.successResponse({ messageId: ack.messageId });
@@ -391,8 +442,10 @@ namespace LegacyChat {
       var targetUserId = data.userId || data.targetUserId;
       var content = data.content || data.message || data.messageText || "";
       if (!targetUserId) return RpcHelpers.errorResponse("userId required");
+      var payloadObj = normalizeOutboundChatPayload(content);
       var channelId = nk.channelIdBuild(userId, targetUserId, 2);
-      var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+      // Store as {"text":"..."} so Unity ChatMessageTextParser shows it (same as socket path).
+      var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
       var senderName = resolveSenderName(nk, userId, username);
       pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
       // Ephemeral in-app socket notification — delivered to recipient's connected socket
@@ -484,9 +537,10 @@ namespace LegacyChat {
       var username = ctx.username || "";
       var data = RpcHelpers.parseRpcPayload(payload);
       var roomName = data.roomName || data.room || "general";
-      var content = data.content || data.message || "";
+      var content = data.content || data.message || data.messageText || "";
+      var payloadObj = normalizeOutboundChatPayload(content);
       var channelId = nk.channelIdBuild(undefined, roomName, 1);
-      var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+      var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
       return RpcHelpers.successResponse({ messageId: ack.messageId });
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "Failed to send room message");
@@ -505,7 +559,7 @@ namespace LegacyChat {
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
-        messages: result.messages || [],
+        messages: filterDisplayableMessages(result.messages || []),
         nextCursor: result.nextCursor || "",
         prevCursor: result.prevCursor || ""
       });
@@ -526,7 +580,7 @@ namespace LegacyChat {
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
-        messages: result.messages || [],
+        messages: filterDisplayableMessages(result.messages || []),
         nextCursor: result.nextCursor || "",
         prevCursor: result.prevCursor || ""
       });
@@ -546,7 +600,7 @@ namespace LegacyChat {
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
-        messages: result.messages || [],
+        messages: filterDisplayableMessages(result.messages || []),
         nextCursor: result.nextCursor || "",
         prevCursor: result.prevCursor || ""
       });
@@ -755,7 +809,17 @@ namespace LegacyChat {
   ): nkruntime.EnvelopeChannelMessageSend | void {
     var msg: any = envelope ? (envelope as any).channelMessageSend : null;
     if (msg) {
-      enforceChatHygiene(ctx, nk, String(msg.content || ""));
+      var rawContent = msg.content;
+      // Reject empty {} / blank payloads so they never land in durable history
+      // (QVBF_149: empty rows looked like "sent then vanished" on reopen).
+      var parsed: any = rawContent;
+      if (typeof rawContent === "string") {
+        try { parsed = JSON.parse(rawContent); } catch (_e) { parsed = rawContent; }
+      }
+      if (!isDisplayableChatContent(parsed)) {
+        throw new Error("message content required");
+      }
+      enforceChatHygiene(ctx, nk, String(rawContent || ""));
       try {
         msg.persist = true;
       } catch (e: any) {

@@ -267,7 +267,7 @@ namespace QvQuestionCache {
       cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
       ghibli: "ghibli", disney: "disney", starwars: "swapi",
       countries: "restcountries", flags: "restcountries",
-      space: "nasa", movies: "tmdb", sports: "sportsdb+opentdb",
+      space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
       music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
       video_quiz: "catalog", ai: "claude",
       math: "opentdb", art: "artic", history: "opentdb+jservice"
@@ -1035,57 +1035,178 @@ namespace QvQuestionCache {
   }
 
   // ── 7. Studio Ghibli ──────────────────────────────────────────────────────
+  // Studio Ghibli has only ~22 theatrical features in ghibliapi. Asking for 25
+  // used to hard-cap at 22 (QVBF / "typed 25 fetched 22"). World-class pool:
+  //   1) Prefer BOTH poster (`image`) AND banner (`movie_banner`) when URLs differ
+  //      → ~44 unique Image-Guess cards from the same free API (no key needed).
+  //   2) Bonus: AniList Studio Ghibli (id 21) cover art — free GraphQL, no key —
+  //      adds alternate covers / shorts / co-productions with distinct media URLs.
+  // Quality gate + Unity session dedup key on provider_key / media URL, so shared
+  // question text ("Which Studio Ghibli film is this?") is intentional and safe.
+
+  /** Downscale TMDB original/banner paths so Unity image preload stays under timeout. */
+  function ghibliDisplayUrl(url: string): string {
+    if (!url) return url;
+    var u = String(url);
+    u = u.replace("/t/p/original/", "/t/p/w780/");
+    u = u.replace("/t/p/w1280/", "/t/p/w780/");
+    return u;
+  }
+
+  function pushGhibliIdentity(
+    results: RawQuestion[],
+    titlePool: string[],
+    title: string,
+    imageUrl: string,
+    providerKey: string,
+    explanation: string,
+    meta: any
+  ): boolean {
+    if (!title || !imageUrl) return false;
+    var exTitle: { [k: string]: boolean } = {};
+    exTitle[title] = true;
+    var wt = pickExcluding(titlePool, exTitle, 3);
+    if (wt.length < 3) return false;
+    var opts: RawOpt[] = [{ text: title, is_correct: true }];
+    for (var wi = 0; wi < wt.length; wi++) opts.push({ text: wt[wi] as string, is_correct: false });
+    var display = ghibliDisplayUrl(imageUrl);
+    results.push({
+      provider_key: providerKey,
+      topic: "ghibli", lang: "en",
+      question_text: "Which Studio Ghibli film is this?",
+      question_type: "single_select",
+      raw_options: opts,
+      has_media: true,
+      media: { type: "image", url: display, thumbnail_url: display, duration_seconds: null, mime_type: "image/jpeg" },
+      explanation: explanation,
+      difficulty: "medium", provider: "ghibli",
+      meta: meta
+    });
+    return true;
+  }
+
+  function loadGhibliFilms(nk: nkruntime.Nakama, logger: nkruntime.Logger): any[] {
+    var endpoints = [
+      "https://ghibliapi.vercel.app/films",
+      "https://ghibli-api.vercel.app/api/films"
+    ];
+    for (var ei = 0; ei < endpoints.length; ei++) {
+      try {
+        var payload: any = httpGet(nk, endpoints[ei]);
+        var list: any[] = Array.isArray(payload) ? payload
+          : (payload && Array.isArray(payload.data) ? payload.data : null);
+        if (list && list.length > 0) {
+          logger.info("[QvQCache/ghibli] films_source=" + endpoints[ei] + " count=" + list.length);
+          return list;
+        }
+      } catch (e: any) {
+        logger.warn("[QvQCache/ghibli] films endpoint failed " + endpoints[ei] + ": " + (e && e.message));
+      }
+    }
+    throw new Error("Ghibli API: no films from any mirror");
+  }
+
+  /** Best-effort AniList Studio Ghibli covers — never fails the ghibli topic alone. */
+  function appendGhibliAniList(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    results: RawQuestion[],
+    titlePool: string[]
+  ): void {
+    try {
+      var query = "query($page:Int,$perPage:Int){Studio(id:21){media(page:$page,perPage:$perPage,sort:POPULARITY_DESC){nodes{id title{english romaji}coverImage{large}}}}}";
+      for (var page = 1; page <= 2; page++) {
+        var gql: any = httpPost(nk, "https://graphql.anilist.co", {
+          query: query,
+          variables: { page: page, perPage: 50 }
+        });
+        var nodes: any[] = (gql && gql.data && gql.data.Studio && gql.data.Studio.media
+          && Array.isArray(gql.data.Studio.media.nodes))
+          ? gql.data.Studio.media.nodes : [];
+        if (nodes.length === 0) break;
+        for (var ni = 0; ni < nodes.length; ni++) {
+          var node: any = nodes[ni];
+          var titleAL = (node.title && (node.title.english || node.title.romaji)) || null;
+          var cover = (node.coverImage && node.coverImage.large) || null;
+          if (!titleAL || !cover) continue;
+          if (titlePool.indexOf(titleAL) < 0) titlePool.push(titleAL);
+          pushGhibliIdentity(
+            results, titlePool, titleAL, cover,
+            "ghibli_anilist_" + (node.id || djb2(titleAL)),
+            "\"" + titleAL + "\" is a Studio Ghibli title.",
+            { title: titleAL, source: "anilist" }
+          );
+        }
+      }
+    } catch (e: any) {
+      logger.warn("[QvQCache/ghibli] AniList bonus skipped: " + (e && e.message));
+    }
+  }
+
   function fetchGhibli(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
     var results: RawQuestion[] = [];
-    var data3: any[] = httpGet(nk, "https://ghibliapi.vercel.app/films");
-    if (!Array.isArray(data3)) throw new Error("Ghibli API: no array");
+    var data3: any[] = loadGhibliFilms(nk, logger);
     var titlePool: string[] = [];
     for (var gx2 = 0; gx2 < data3.length; gx2++) {
       if (data3[gx2].title) titlePool.push(data3[gx2].title);
     }
     var withImage = 0;
     var skipped = 0;
+    var emittedPosters = 0;
+    var emittedBanners = 0;
 
     for (var gi4 = 0; gi4 < data3.length; gi4++) {
       var film: any = data3[gi4];
       try {
         var ftitle = film.title || null;
-        var filmImage = film.movie_banner || null;
+        var poster = film.image || null;
+        var banner = film.movie_banner || null;
         var fdirector = film.director || null;
         var fyear = film.release_date || null;
-        if (!ftitle || !filmImage) {
+        if (!ftitle || (!poster && !banner)) {
           skipped++;
           continue;
         }
         withImage++;
-        var exTitle: { [k: string]: boolean } = {};
-        exTitle[ftitle] = true;
-        var wt = pickExcluding(titlePool, exTitle, 3);
-        if (wt.length < 3) {
-          skipped++;
-          continue;
+        var explain = "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".";
+        var metaBase: any = { title: ftitle, director: fdirector, year: fyear };
+        var filmId = film.id || djb2(ftitle);
+
+        if (poster) {
+          if (pushGhibliIdentity(results, titlePool, ftitle, poster,
+            "ghibli_poster_" + filmId, explain, metaBase)) {
+            emittedPosters++;
+          } else {
+            skipped++;
+          }
         }
-        var gOpts2: RawOpt[] = [{ text: ftitle, is_correct: true }];
-        for (var wti = 0; wti < wt.length; wti++) gOpts2.push({ text: wt[wti] as string, is_correct: false });
-        results.push({
-          provider_key: "ghibli_poster_" + (film.id || djb2(ftitle)),
-          topic: "ghibli", lang: "en",
-          question_text: "Which Studio Ghibli film is this?",
-          question_type: "single_select",
-          raw_options: gOpts2,
-          has_media: true,
-          media: { type: "image", url: filmImage, thumbnail_url: filmImage, duration_seconds: null, mime_type: "image/jpeg" },
-          explanation: "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".",
-          difficulty: "medium", provider: "ghibli",
-          meta: { title: ftitle, director: fdirector, year: fyear }
-        });
+        // Second card when banner URL differs — same answer, different artwork.
+        if (banner && banner !== poster) {
+          if (pushGhibliIdentity(results, titlePool, ftitle, banner,
+            "ghibli_banner_" + filmId, explain, metaBase)) {
+            emittedBanners++;
+          }
+        } else if (!poster && banner) {
+          if (pushGhibliIdentity(results, titlePool, ftitle, banner,
+            "ghibli_banner_" + filmId, explain, metaBase)) {
+            emittedBanners++;
+          }
+        }
       } catch (e: any) {
         skipped++;
         logger.debug("[QvQCache/ghibli] skip: " + (e && e.message));
       }
     }
+
+    var beforeAni = results.length;
+    appendGhibliAniList(nk, logger, results, titlePool);
+
     logger.info("[QvQCache/ghibli] event=ghibli_fetch_summary total_films=" + data3.length +
-      " with_image=" + withImage + " skipped=" + skipped + " emitted=" + results.length);
+      " with_image=" + withImage + " skipped=" + skipped +
+      " posters=" + emittedPosters + " banners=" + emittedBanners +
+      " anilist_added=" + (results.length - beforeAni) +
+      " emitted=" + results.length);
+    if (results.length === 0) throw new Error("ghibli: 0 questions after fetch");
     return results;
   }
 
@@ -1415,52 +1536,186 @@ namespace QvQuestionCache {
     return topicResults;
   }
 
-  // ── 11. NASA APOD (Space) — key-gated; falls back to DEMO_KEY ─────────────
-  function fetchNasa(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger, ): RawQuestion[] {
-    var results: RawQuestion[] = [];
-    var apiKey = envKey(env, "NASA_API_KEY") || "DEMO_KEY";
-    var data7: any = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=50&thumbs=true");
+  // ── 11. Space Trivia (NASA APOD + open image sources) ─────────────────────
+  // Loading failures were driven by: (1) DEMO_KEY rate-limits when env sets
+  // NASA_API_KEY=DEMO_KEY (skipping FALLBACK_KEYS), (2) serving APOD *hdurl*
+  // into Unity (multi-MB → preload timeouts), (3) APOD-only pool with videos
+  // filtered out. Fix: resolve a real key, prefer the smaller APOD `url`, and
+  // top up from Spaceflight News + NASA Images Library (both keyless).
+
+  function resolveNasaApiKey(env: any): string {
+    var fromEnv = "";
+    if (env && env["NASA_API_KEY"] && String(env["NASA_API_KEY"]).trim()) {
+      fromEnv = String(env["NASA_API_KEY"]).trim();
+    }
+    var fromFallback = FALLBACK_KEYS["NASA_API_KEY"]
+      ? String(FALLBACK_KEYS["NASA_API_KEY"]).trim() : "";
+    // Prefer a non-DEMO key whenever available — DEMO_KEY is shared & throttled.
+    if (fromEnv && fromEnv !== "DEMO_KEY") return fromEnv;
+    if (fromFallback && fromFallback !== "DEMO_KEY") return fromFallback;
+    if (fromEnv) return fromEnv;
+    if (fromFallback) return fromFallback;
+    return "DEMO_KEY";
+  }
+
+  function pushSpaceIdentity(
+    results: RawQuestion[],
+    titlePool: string[],
+    title: string,
+    imageUrl: string,
+    providerKey: string,
+    explanation: string,
+    provider: string
+  ): boolean {
+    if (!title || title.length < 5 || !imageUrl) return false;
+    var exSp: { [k: string]: boolean } = {};
+    exSp[title] = true;
+    var wspc = pickExcluding(titlePool, exSp, 3);
+    if (wspc.length < 3) {
+      wspc = pick(SPACE_OBJECTS.filter(function(s) { return s !== title; }), 3);
+    }
+    if (wspc.length < 3) return false;
+    var sOpts: RawOpt[] = [{ text: title, is_correct: true }];
+    for (var wspi = 0; wspi < wspc.length; wspi++) sOpts.push({ text: wspc[wspi] as string, is_correct: false });
+    results.push({
+      provider_key: providerKey,
+      topic: "space", lang: "en",
+      question_text: "What is featured in this space image?",
+      question_type: "single_select",
+      raw_options: sOpts,
+      has_media: true,
+      media: { type: "image", url: imageUrl, thumbnail_url: imageUrl, duration_seconds: null, mime_type: "image/jpeg" },
+      explanation: explanation,
+      difficulty: "hard", provider: provider,
+      meta: { title: title }
+    });
+    return true;
+  }
+
+  function appendNasaApod(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger, results: RawQuestion[]): void {
+    var apiKey = resolveNasaApiKey(env);
+    var data7: any = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=25&thumbs=true");
     if (!Array.isArray(data7)) throw new Error("NASA APOD: expected array");
 
+    var titlePool: string[] = [];
+    for (var ti = 0; ti < data7.length; ti++) {
+      var t = (data7[ti].title || "").trim();
+      if (t) titlePool.push(t);
+    }
+    // Blend static distractors so short batches still have 3 wrongs.
+    for (var si = 0; si < SPACE_OBJECTS.length; si++) titlePool.push(SPACE_OBJECTS[si]);
+
+    var emitted = 0;
     for (var ni = 0; ni < data7.length; ni++) {
       var apod: any = data7[ni];
       try {
-        // #QVVBS-CACHE: NASA APOD is occasionally a video embed (YouTube/Vimeo url,
-        // no hdurl) instead of a photo — media_type is "video" on those days. Passing
-        // that url through as an "image" media item made Unity try to load a video
-        // page as a texture, which fails to render — the "Space Trivia (Image-related
-        // issue observed)" report. Skip non-image entries; the other ~48 items in this
-        // 50-count APOD batch cover the gap.
         if (apod.media_type && apod.media_type !== "image") continue;
         var atitle = (apod.title || "").trim();
         var adate  = apod.date || "";
-        var aurl   = apod.hdurl || apod.url || null;
-        var athumb = apod.thumbnail_url || aurl;
+        // Prefer the standard-resolution `url` for Unity preload; hdurl is often multi-MB.
+        var aurl   = apod.url || apod.hdurl || null;
         if (!atitle || atitle.length < 5 || !aurl) continue;
-        var exSp: { [k: string]: boolean } = {};
-        exSp[atitle] = true;
-        var wspc = pickExcluding(SPACE_OBJECTS, exSp, 3);
-        if (wspc.length < 3) {
-          wspc = pick(SPACE_OBJECTS.filter(function(s) { return s !== atitle; }), 3);
-        }
-        if (wspc.length < 3) continue;
-        var sOpts: RawOpt[] = [{ text: atitle, is_correct: true }];
-        for (var wspi = 0; wspi < wspc.length; wspi++) sOpts.push({ text: wspc[wspi] as string, is_correct: false });
         var aexpl = (apod.explanation || "").substring(0, 200);
-        results.push({
-          provider_key: "nasa_" + djb2(atitle + adate),
-          topic: "space", lang: "en",
-          question_text: "What is featured in this NASA Astronomy Picture of the Day?",
-          question_type: "single_select",
-          raw_options: sOpts,
-          has_media: true,
-          media: { type: "image", url: athumb, thumbnail_url: athumb, duration_seconds: null, mime_type: "image/jpeg" },
-          explanation: "NASA APOD " + adate + ": " + atitle + ". " + aexpl,
-          difficulty: "hard", provider: "nasa",
-          meta: { title: atitle }
-        });
+        if (pushSpaceIdentity(
+          results, titlePool, atitle, aurl,
+          "nasa_" + djb2(atitle + adate),
+          "NASA APOD " + adate + ": " + atitle + ". " + aexpl,
+          "nasa"
+        )) {
+          emitted++;
+        }
       } catch (e: any) { logger.debug("[QvQCache/nasa] skip: " + (e && e.message)); }
     }
+    logger.info("[QvQCache/nasa] event=apod_fetch count=" + data7.length + " emitted=" + emitted + " key=" + (apiKey === "DEMO_KEY" ? "DEMO_KEY" : "custom"));
+  }
+
+  function appendSpaceflightNews(nk: nkruntime.Nakama, logger: nkruntime.Logger, results: RawQuestion[]): void {
+    try {
+      var sf: any = httpGet(nk, "https://api.spaceflightnewsapi.net/v4/articles/?limit=40");
+      if (!sf || !Array.isArray(sf.results)) return;
+      var titlePool: string[] = [];
+      for (var t = 0; t < sf.results.length; t++) {
+        if (sf.results[t].title) titlePool.push(sf.results[t].title);
+      }
+      for (var si = 0; si < SPACE_OBJECTS.length; si++) titlePool.push(SPACE_OBJECTS[si]);
+      var emitted = 0;
+      for (var i = 0; i < sf.results.length; i++) {
+        var item: any = sf.results[i];
+        var title = (item.title || "").trim();
+        var img = item.image_url || null;
+        if (!title || !img) continue;
+        if (pushSpaceIdentity(
+          results, titlePool, title, img,
+          "spaceflight_" + (item.id || djb2(title)),
+          (item.news_site ? item.news_site + ": " : "") + title,
+          "spaceflightnews"
+        )) {
+          emitted++;
+        }
+      }
+      logger.info("[QvQCache/space] event=spaceflight_fetch emitted=" + emitted);
+    } catch (e: any) {
+      logger.warn("[QvQCache/space] SpaceflightNews: " + (e && e.message));
+    }
+  }
+
+  function appendNasaImageLibrary(nk: nkruntime.Nakama, logger: nkruntime.Logger, results: RawQuestion[]): void {
+    var queries = ["nebula", "galaxy", "mars", "saturn", "apollo", "hubble"];
+    var titlePool: string[] = SPACE_OBJECTS.slice();
+    var emitted = 0;
+    for (var qi = 0; qi < queries.length; qi++) {
+      try {
+        var lib: any = httpGet(nk,
+          "https://images-api.nasa.gov/search?q=" + queries[qi] +
+          "&media_type=image&page_size=15");
+        var items: any[] = (lib && lib.collection && Array.isArray(lib.collection.items))
+          ? lib.collection.items : [];
+        for (var ii = 0; ii < items.length; ii++) {
+          var it: any = items[ii];
+          var d0: any = (it.data && it.data[0]) ? it.data[0] : null;
+          if (!d0) continue;
+          var title = (d0.title || "").trim();
+          if (!title || title.length < 5) continue;
+          var preview: string = null;
+          var links: any[] = Array.isArray(it.links) ? it.links : [];
+          for (var li = 0; li < links.length; li++) {
+            if (links[li] && links[li].href && (!links[li].rel || links[li].rel === "preview")) {
+              preview = links[li].href;
+              break;
+            }
+          }
+          if (!preview) continue;
+          if (titlePool.indexOf(title) < 0) titlePool.push(title);
+          var nasaId = d0.nasa_id || djb2(title + queries[qi]);
+          if (pushSpaceIdentity(
+            results, titlePool, title, preview,
+            "nasalib_" + nasaId,
+            "NASA Image Library: " + title,
+            "nasa_images"
+          )) {
+            emitted++;
+          }
+        }
+      } catch (e: any) {
+        logger.debug("[QvQCache/space] nasa_lib q=" + queries[qi] + " failed: " + (e && e.message));
+      }
+    }
+    logger.info("[QvQCache/space] event=nasa_lib_fetch emitted=" + emitted);
+  }
+
+  function fetchNasa(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    // Keyless sources first — NASA APOD is slower and rate-limited; never let a
+    // single APOD timeout leave Space Trivia with an empty pool.
+    appendSpaceflightNews(nk, logger, results);
+    appendNasaImageLibrary(nk, logger, results);
+    try {
+      appendNasaApod(nk, env, logger, results);
+    } catch (e: any) {
+      logger.warn("[QvQCache/space] APOD failed (pool still has backups): " + (e && e.message));
+    }
+    if (results.length === 0) throw new Error("space: all providers returned 0 image questions");
+    logger.info("[QvQCache/space] event=space_fetch_total emitted=" + results.length);
     return results;
   }
 
