@@ -63,6 +63,7 @@ services:
           QV_DOGCEO_BREED_SAMPLE
           QV_GET_QUESTIONS_RATE_MAX
           LMS_BRIDGE_SERVICE_TOKEN LTI_TOOL_PRIVATE_KEY_B64 LTI_TOOL_KID
+          QV_LAP_DEV_VIP
         "
         RUNTIME_ENV_FLAGS=""
         for k in $$RUNTIME_ENV_KEYS; do
@@ -191,6 +192,9 @@ services:
       - LMS_BRIDGE_SERVICE_TOKEN=${LMS_BRIDGE_SERVICE_TOKEN:-}
       - LTI_TOOL_PRIVATE_KEY_B64=${LTI_TOOL_PRIVATE_KEY_B64:-}
       - LTI_TOOL_KID=${LTI_TOOL_KID:-}
+      # Local/dev only: treat every authenticated user as Link & Play Pro+
+      # (unlimited notes + VIP entitlements). NEVER set to 1/true in production.
+      - QV_LAP_DEV_VIP=${QV_LAP_DEV_VIP:-1}
       # Geo-aware quiz uses iTunes RSS and Deezer API — both free, no key needed
     volumes:
       - ./:/nakama/data

@@ -4,6 +4,10 @@
 //  Mirrors Unity Trivia.Monetization.VipUserOverride and web lap-vip-override.ts.
 //  Used by quizverse_get_entitlements + quizverse_lap_note_quota so VIP QA
 //  accounts are not blocked by free-tier note limits or missing RC grants.
+//
+//  Development unlock: set runtime env QV_LAP_DEV_VIP=1|true|yes|on to treat
+//  EVERY authenticated caller as Pro+ (unlimited notes / full entitlements).
+//  MUST stay unset / "0" in production.
 // ---------------------------------------------------------------------------
 
 namespace QvVipOverride {
@@ -31,6 +35,22 @@ namespace QvVipOverride {
   export function isVipUserId(userId: string): boolean {
     if (!userId) return false;
     return !!vipSet()[String(userId).trim().toLowerCase()];
+  }
+
+  /** True when this Nakama runtime is configured as a LAP dev VIP sandbox. */
+  export function isDevVipMode(ctx: nkruntime.Context): boolean {
+    var raw = "";
+    if (ctx && ctx.env) {
+      raw = String(ctx.env["QV_LAP_DEV_VIP"] || "");
+    }
+    var v = raw.trim().toLowerCase();
+    return v === "1" || v === "true" || v === "yes" || v === "on";
+  }
+
+  /** Allow-list VIP OR whole-runtime development VIP unlock. */
+  export function isVipUnlocked(ctx: nkruntime.Context, userId: string): boolean {
+    if (isVipUserId(userId)) return true;
+    return isDevVipMode(ctx);
   }
 
   /** Synthetic Pro+ subscription snapshot for VIP accounts. */

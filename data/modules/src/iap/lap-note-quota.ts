@@ -46,9 +46,16 @@ namespace QvLapNoteQuota {
     return KEY_PREFIX + date;
   }
 
-  function subscriptionTier(nk: nkruntime.Nakama, userId: string, nowMs: number): string {
-    // VIP Layer 0 — unlimited notes for hard-coded QA allow-list.
-    if (QvVipOverride.isVipUserId(userId)) return "pro_plus";
+  function subscriptionTier(
+    nk: nkruntime.Nakama,
+    userId: string,
+    nowMs: number,
+    ctx?: nkruntime.Context
+  ): string {
+    // VIP Layer 0 — unlimited notes for allow-list + optional QV_LAP_DEV_VIP runtime.
+    if (ctx ? QvVipOverride.isVipUnlocked(ctx, userId) : QvVipOverride.isVipUserId(userId)) {
+      return "pro_plus";
+    }
 
     var rows = nk.storageRead([{
       collection: "qv_entitlements",
@@ -155,7 +162,7 @@ namespace QvLapNoteQuota {
     var action = String(data.action || "status").toLowerCase();
     var now = new Date();
     var date = action === "release" && data.date ? String(data.date) : utcDate(now);
-    var tier = subscriptionTier(nk, userId, now.getTime());
+    var tier = subscriptionTier(nk, userId, now.getTime(), ctx);
     var limit = limitForTier(tier);
     var resetAt = nextUtcReset(now);
 

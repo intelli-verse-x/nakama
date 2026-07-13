@@ -126597,9 +126597,10 @@ var QvEntitlements;
     function rpcGetEntitlements(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         try {
-            // VIP Layer 0 — permanent Pro+ for hard-coded QA allow-list.
-            if (QvVipOverride.isVipUserId(userId)) {
-                logger.info("[QvEntitlements] VIP override active for user=" + userId);
+            // VIP Layer 0 — allow-list QA IDs, or whole-runtime QV_LAP_DEV_VIP unlock.
+            if (QvVipOverride.isVipUnlocked(ctx, userId)) {
+                logger.info("[QvEntitlements] VIP override active for user=" + userId +
+                    (QvVipOverride.isDevVipMode(ctx) && !QvVipOverride.isVipUserId(userId) ? " (QV_LAP_DEV_VIP)" : ""));
                 var vipCons = Storage.readJson(nk, COLLECTION, KEY_CONS, userId) || {};
                 var vipOne = Storage.readJson(nk, COLLECTION, KEY_ONE, userId) || {};
                 return RpcHelpers.successResponse({
@@ -127374,10 +127375,11 @@ var QvLapNoteQuota;
     function quotaKey(date) {
         return KEY_PREFIX + date;
     }
-    function subscriptionTier(nk, userId, nowMs) {
-        // VIP Layer 0 — unlimited notes for hard-coded QA allow-list.
-        if (QvVipOverride.isVipUserId(userId))
+    function subscriptionTier(nk, userId, nowMs, ctx) {
+        // VIP Layer 0 — unlimited notes for allow-list + optional QV_LAP_DEV_VIP runtime.
+        if (ctx ? QvVipOverride.isVipUnlocked(ctx, userId) : QvVipOverride.isVipUserId(userId)) {
             return "pro_plus";
+        }
         var rows = nk.storageRead([{
                 collection: "qv_entitlements",
                 key: "subscriptions",
@@ -127461,7 +127463,7 @@ var QvLapNoteQuota;
         var action = String(data.action || "status").toLowerCase();
         var now = new Date();
         var date = action === "release" && data.date ? String(data.date) : utcDate(now);
-        var tier = subscriptionTier(nk, userId, now.getTime());
+        var tier = subscriptionTier(nk, userId, now.getTime(), ctx);
         var limit = limitForTier(tier);
         var resetAt = nextUtcReset(now);
         if (limit < 0) {
@@ -127720,6 +127722,10 @@ var QuizVerseRevenueCatAdmin;
 //  Mirrors Unity Trivia.Monetization.VipUserOverride and web lap-vip-override.ts.
 //  Used by quizverse_get_entitlements + quizverse_lap_note_quota so VIP QA
 //  accounts are not blocked by free-tier note limits or missing RC grants.
+//
+//  Development unlock: set runtime env QV_LAP_DEV_VIP=1|true|yes|on to treat
+//  EVERY authenticated caller as Pro+ (unlimited notes / full entitlements).
+//  MUST stay unset / "0" in production.
 // ---------------------------------------------------------------------------
 var QvVipOverride;
 (function (QvVipOverride) {
@@ -127748,6 +127754,21 @@ var QvVipOverride;
         return !!vipSet()[String(userId).trim().toLowerCase()];
     }
     QvVipOverride.isVipUserId = isVipUserId;
+    function isDevVipMode(ctx) {
+        var raw = "";
+        if (ctx && ctx.env) {
+            raw = String(ctx.env["QV_LAP_DEV_VIP"] || "");
+        }
+        var v = raw.trim().toLowerCase();
+        return v === "1" || v === "true" || v === "yes" || v === "on";
+    }
+    QvVipOverride.isDevVipMode = isDevVipMode;
+    function isVipUnlocked(ctx, userId) {
+        if (isVipUserId(userId))
+            return true;
+        return isDevVipMode(ctx);
+    }
+    QvVipOverride.isVipUnlocked = isVipUnlocked;
     /** Synthetic Pro+ subscription snapshot for VIP accounts. */
     function vipSubscriptionSnapshot() {
         return {

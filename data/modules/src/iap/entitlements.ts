@@ -107,9 +107,10 @@ namespace QvEntitlements {
     var userId = RpcHelpers.requireUserId(ctx);
 
     try {
-      // VIP Layer 0 — permanent Pro+ for hard-coded QA allow-list.
-      if (QvVipOverride.isVipUserId(userId)) {
-        logger.info("[QvEntitlements] VIP override active for user=" + userId);
+      // VIP Layer 0 — allow-list QA IDs, or whole-runtime QV_LAP_DEV_VIP unlock.
+      if (QvVipOverride.isVipUnlocked(ctx, userId)) {
+        logger.info("[QvEntitlements] VIP override active for user=" + userId +
+          (QvVipOverride.isDevVipMode(ctx) && !QvVipOverride.isVipUserId(userId) ? " (QV_LAP_DEV_VIP)" : ""));
         var vipCons = Storage.readJson<any>(nk, COLLECTION, KEY_CONS, userId) || {};
         var vipOne  = Storage.readJson<any>(nk, COLLECTION, KEY_ONE, userId) || {};
         return RpcHelpers.successResponse({
