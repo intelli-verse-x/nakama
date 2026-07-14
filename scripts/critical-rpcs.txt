@@ -53,6 +53,14 @@ nakama_analytics_tick
 # src/legacy/wallet.ts:750 — verified pre-merge against master.
 wallet_get_balances
 
+# ── World-cricket (server-authoritative batting; new 2026-07 deploy) ──
+# Core scoring/leaderboard path. Registration-proof only (404 = the
+# Goja hoist dropped the module — the rev-924 failure class).
+cricket_session_start
+cricket_ball_play
+cricket_leaderboard_get
+cricket_template_upsert
+
 # ── Intelliverse Router credit metering (2026-07-12 outage) ────────
 # router_wallet_* backs ALL router media/voice/conversation metering
 # (walletHold). The 2026-07-12 13:08Z master deploy (gha73) shipped a

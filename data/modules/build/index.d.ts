@@ -5986,6 +5986,138 @@ declare namespace UserModel {
     function register(initializer: nkruntime.Initializer): void;
 }
 /**
+ * WorldCricket — playable single-player cricket mini-game for Intelliverse
+ * generated worlds (baseline: Lord's Cricket Ground).
+ *
+ * Distinct from WorldTrivia's checkpoint loop: here the player BATS. A bowler
+ * delivers a deterministic sequence of balls (seeded per session); the client
+ * renders the delivery and the player times a tap/click/swipe. The client
+ * reports only the timing offset (+ optional shot type); the SERVER decides the
+ * outcome (dot/1/2/3/4/6/out), tallies runs, wickets and overs, and writes the
+ * leaderboard. The client never grades a ball or counts a run — server
+ * authoritative, exactly like WorldTrivia.
+ *
+ * Anti-cheat baseline: each delivery's outcome is a pure function of
+ * (sessionSeed, ballIndex, reported timing, shot). Because ballIndex only ever
+ * advances, a player cannot re-roll the same ball for a better result, and a
+ * "perfect" (0ms) report on a genuinely hard delivery still isn't a guaranteed
+ * six — difficulty is baked into the deterministic mapping. The server also
+ * rejects out-of-order balls, impossibly-fast responses, and stale/foreign
+ * sessions. Timing itself is inherently client-measured (a reaction game), so
+ * that surface is trusted the way any timing game must.
+ *
+ * Follows the router-wallet / world-trivia module conventions: global
+ * namespace, SYSTEM-owned storage objects, {success,data}/{success,error}
+ * envelopes, OCC with up to 3 retries on session mutations, soft router-wallet
+ * reward hook on finish. Drop-in for nakama-multiplayer-kernel: copy to
+ * data/modules/src/world_cricket/ and call WorldCricket.register(initializer)
+ * from main.ts InitModule.
+ */
+declare namespace WorldCricket {
+    var SYSTEM_USER_ID: string;
+    var TEMPLATES_COLLECTION: string;
+    var SESSIONS_COLLECTION: string;
+    var LEADERBOARDS_COLLECTION: string;
+    var MAX_OCC_RETRIES: number;
+    var LEADERBOARD_SIZE: number;
+    var IDLE_EXPIRY_MS: number;
+    var MIN_RESPONSE_MS: number;
+    var MAX_TIMING_OFFSET_MS: number;
+    var SHOTS: string[];
+    var AGGRESSIVE_SHOTS: string[];
+    var LENGTHS: string[];
+    var LINES: string[];
+    interface CricketSettings {
+        overs: number;
+        wickets: number;
+        finishRewardCredits: number;
+    }
+    var DEFAULT_SETTINGS: CricketSettings;
+    interface CricketTemplate {
+        appId: string;
+        templateId: string;
+        name: string;
+        assets: any;
+        settings: CricketSettings;
+        updatedAtMs: number;
+    }
+    interface Delivery {
+        ballIndex: number;
+        speedKph: number;
+        length: string;
+        line: string;
+        isSpin: boolean;
+        travelMs: number;
+        perfectMs: number;
+        difficulty: number;
+    }
+    interface PendingBall {
+        ballIndex: number;
+        issuedAtMs: number;
+    }
+    interface SessionValue {
+        sessionId: string;
+        appId: string;
+        userId: string;
+        templateId: string;
+        seed: number;
+        status: string;
+        settings: CricketSettings;
+        runs: number;
+        balls: number;
+        wickets: number;
+        fours: number;
+        sixes: number;
+        ballLog: number[];
+        pending: PendingBall | null;
+        startedAtMs: number;
+        lastEventAtMs: number;
+        finishedAtMs?: number;
+        version: number;
+    }
+    interface LeaderboardEntry {
+        sessionId: string;
+        userId: string;
+        runs: number;
+        balls: number;
+        wickets: number;
+        fours: number;
+        sixes: number;
+        strikeRate: number;
+        durationMs: number;
+        finishedAt: string;
+    }
+    function fnv1a32(str: string): number;
+    function mulberry32(seed: number): () => number;
+    /** Delivery is a pure function of (seed, ballIndex). */
+    function deliveryFor(seed: number, ballIndex: number): Delivery;
+    interface BallOutcome {
+        runs: number;
+        out: boolean;
+        dismissal: string | null;
+        timing: string;
+        boundary: boolean;
+        commentary: string;
+    }
+    /** Outcome is a pure function of (delivery, signed timing offset, shot, seed). */
+    function gradeBall(seed: number, d: Delivery, timingOffsetMs: number, shot: string): BallOutcome;
+    function rpcTemplateUpsert(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionStart(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    /**
+     * Play the currently-pending ball. Client sends the ballIndex it played, the
+     * measured timing offset (ms; negative = early, positive = late) and an
+     * optional shot. Server grades authoritatively, advances the innings, and
+     * either issues the next delivery or finalises the innings.
+     */
+    function rpcBallPlay(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    /** Manual finish / declare — commit the current innings early to the board. */
+    function rpcSessionFinish(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionAbandon(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcLeaderboardGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function register(initializer: nkruntime.Initializer): void;
+}
+/**
  * WorldTrivia — playable world templates game loop for Intelliverse.
  *
  * The founder's loop: a player moves through a generated 3D world, hits
