@@ -587,6 +587,11 @@ func StorageWriteObjects(ctx context.Context, logger *zap.Logger, db *sql.DB, me
 			if writeErr == runtime.ErrStorageRejectedVersion || writeErr == runtime.ErrStorageRejectedPermission {
 				logger.Debug("Error writing storage objects.", zap.Error(writeErr))
 				return StatusError(codes.InvalidArgument, "Storage write rejected.", writeErr)
+			} else if errors.Is(writeErr, context.Canceled) || errors.Is(writeErr, context.DeadlineExceeded) {
+				// The request context was cancelled or its deadline elapsed mid-write (typically the client
+				// disconnected). This is not a server-side write failure, so log at debug to keep it out of
+				// the error stream. See core_account.go for the same convention on other DB call sites.
+				logger.Debug("Storage write aborted by cancelled or expired context.", zap.Error(writeErr))
 			} else {
 				logger.Error("Error writing storage objects.", zap.Error(writeErr))
 			}
@@ -597,6 +602,13 @@ func StorageWriteObjects(ctx context.Context, logger *zap.Logger, db *sql.DB, me
 	}); err != nil {
 		if e, ok := err.(*statusError); ok {
 			return nil, e.Code(), e.Cause()
+		}
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			// Context cancellation/expiry at this layer almost always means the client went away or the
+			// request deadline elapsed mid-write. Report it as codes.Canceled and log at debug so it is
+			// distinguishable from genuine DB write failures and does not inflate error dashboards.
+			logger.Debug("Storage write aborted by cancelled or expired context.", zap.Error(err))
+			return nil, codes.Canceled, err
 		}
 		logger.Error("Error writing storage objects.", zap.Error(err))
 		return nil, codes.Internal, err
