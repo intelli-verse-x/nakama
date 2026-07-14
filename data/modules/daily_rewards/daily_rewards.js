@@ -377,7 +377,16 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
         return utils.handleError(ctx, null, "Invalid gameId UUID format");
     }
     
+    // Session callers (Unity / Bearer): ctx.userId.
+    // Server-to-server (http_key): QuizVerse Conversation Hub / personalize
+    // pass userId|user_id explicitly. http_key is admin-level and this RPC
+    // is READ-ONLY — same pattern as analytics_get_player_profile.
+    // X-Nakama-Server-User-Id is NOT a Nakama-native header and does not
+    // populate ctx.userId on this cluster.
     var userId = ctx.userId;
+    if (!userId) {
+        userId = (data && (data.userId || data.user_id)) || "";
+    }
     if (!userId) {
         return utils.handleError(ctx, null, "User not authenticated");
     }
