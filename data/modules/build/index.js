@@ -13785,7 +13785,25 @@ var QvGetQuestions;
             }
             catch (_rwq) { /* non-critical */ }
         }
-        // ── 6. Write inflight + pack document (Task 1b.3) ──────────────────────
+        // ── 6. Remint signed audio URLs BEFORE pack write ──────────────────────
+        // Deezer hdnea tokens expire in ~15m. Remint first so the stored pack and
+        // the client response both carry fresh URLs. Then drop any rows remint had
+        // to scrub (legacy pool without track_id) so Unity never receives
+        // has_media=false audio quiz items.
+        try {
+            QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
+        }
+        catch (_audRef) { /* non-fatal */ }
+        if (requireMedia) {
+            var keepMedia = [];
+            for (var kmi = 0; kmi < picked.length; kmi++) {
+                var kq = picked[kmi];
+                if (kq && kq.has_media && kq.media && kq.media.url)
+                    keepMedia.push(kq);
+            }
+            picked = keepMedia;
+        }
+        // ── 7. Write inflight + pack document (Task 1b.3) ──────────────────────
         var packId = makePackId(nk, gameId, topic);
         writePackStorage(nk, userId, packId, topic, lang, langActual, gameId, picked);
         logger.info("[QvGetQ][DONE] traceId=" + traceId +
@@ -13797,13 +13815,8 @@ var QvGetQuestions;
             " pool=" + pool.length + " seen=" + seenIds.length +
             " inflight=" + inflightIds.length + " cache_expired=" + cacheResult.expired +
             " coldStart=" + coldStartApplied + " mode=" + mode);
-        // ── 7. Build client-safe response ──────────────────────────────────────
+        // ── 8. Build client-safe response ──────────────────────────────────────
         // Strip internal `provider` field — Unity doesn't need to know the source.
-        // Re-mint Deezer hdnea preview URLs before delivery so Unity never sees 403s.
-        try {
-            QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
-        }
-        catch (_audRef) { /* non-fatal */ }
         var clientQs = [];
         for (var ci = 0; ci < picked.length; ci++) {
             var q = picked[ci];
@@ -22047,6 +22060,15 @@ var QvQuestionCache;
                             oldQ.question_text !== "Which anime is shown in this image?") {
                             continue;
                         }
+                        // Music: never carry Deezer rows missing track_id — their hdnea
+                        // preview URLs expire in ~15m and cannot be reminted at serve time.
+                        if (topic === "music" && oldQ.has_media && oldQ.media &&
+                            oldQ.media.type === "audio" &&
+                            !oldQ.media.track_id &&
+                            !(typeof oldQ.provider_key === "string" &&
+                                /^deezer_\d+$/.test(oldQ.provider_key))) {
+                            continue;
+                        }
                         merged.push(oldQ);
                         mergedIds[oldQ.id] = true;
                         carried++;
@@ -22159,7 +22181,8 @@ var QvQuestionCache;
     // Call this on the questions about to be delivered (get_questions / warm).
     // Mutates media.url in place when a fresh preview is obtained.
     var DEEZER_URL_SKEW_MS = 12 * 60 * 1000; // remint if <12m left (live tokens ~15m)
-    var DEEZER_REFRESH_CAP = 16; // hard cap per RPC to bound latency
+    // Audio Quiz fetches ~15–23 clips; keep headroom so remint never scrubs mid-pack.
+    var DEEZER_REFRESH_CAP = 32; // hard cap per RPC to bound latency
     function parseHdneaExpiryMs(url) {
         if (!url)
             return 0;
@@ -22186,21 +22209,60 @@ var QvQuestionCache;
         }
         return "";
     }
-    function needsDeezerPreviewRefresh(q) {
+    // Legacy music-pool rows (pre track_id deploy) only keep explanation text like:
+    //   "\"Choosin' Texas\" is performed by Ella Langley."
+    // Recover a Deezer track id via search so serve-time remint still works.
+    function recoverDeezerTrackIdFromExplanation(nk, logger, q) {
+        var expl = q && typeof q.explanation === "string" ? q.explanation : "";
+        if (!expl)
+            return "";
+        var m = expl.match(/"([^"]+)"\s+is performed by\s+(.+?)\.?$/i);
+        if (!m)
+            return "";
+        var title = m[1].trim();
+        var artist = m[2].trim();
+        if (!title || !artist)
+            return "";
+        try {
+            var qstr = encodeURIComponent("track:\"" + title + "\" artist:\"" + artist + "\"");
+            var search = httpGet(nk, "https://api.deezer.com/search?q=" + qstr + "&limit=5");
+            var hits = search && Array.isArray(search.data) ? search.data : [];
+            for (var hi = 0; hi < hits.length; hi++) {
+                var hit = hits[hi];
+                if (!hit || !hit.id)
+                    continue;
+                var hitArtist = hit.artist && hit.artist.name ? String(hit.artist.name) : "";
+                if (hitArtist && hitArtist.toLowerCase() === artist.toLowerCase() && hit.preview) {
+                    return String(hit.id);
+                }
+            }
+            if (hits.length > 0 && hits[0].id && hits[0].preview)
+                return String(hits[0].id);
+        }
+        catch (e) {
+            logger.debug("[QvQCache/deezer] explanation search failed: " +
+                (e && e.message ? e.message : String(e)));
+        }
+        return "";
+    }
+    function isDeezerMediaQuestion(q) {
         if (!q || !q.media || typeof q.media.url !== "string")
             return false;
         var url = q.media.url;
-        var isDeezer = url.indexOf("dzcdn.net") >= 0 ||
+        return (url.indexOf("dzcdn.net") >= 0 ||
             url.indexOf("deezer.com") >= 0 ||
             q.provider === "deezer" ||
             (typeof q.provider_key === "string" && q.provider_key.indexOf("deezer_") === 0) ||
-            (q.media && q.media.source === "deezer");
-        if (!isDeezer)
+            (q.media && q.media.source === "deezer"));
+    }
+    function needsDeezerPreviewRefresh(q) {
+        if (!isDeezerMediaQuestion(q))
             return false;
-        if (!extractDeezerTrackId(q))
-            return false;
+        var url = q.media.url;
         // Live Deezer hdnea tokens are ~15 minutes (measured 2026-07-14). Always
         // remint at serve time unless the URL is brand-new (>12m remaining).
+        // Even legacy rows without track_id enter this path so explanation-search
+        // recovery can remint them instead of scrubbing to has_media=false.
         var expMs = parseHdneaExpiryMs(url);
         if (expMs <= 0)
             return true;
@@ -22221,6 +22283,17 @@ var QvQuestionCache;
             if (!needsDeezerPreviewRefresh(q))
                 continue;
             var trackId = extractDeezerTrackId(q);
+            if (!trackId) {
+                trackId = recoverDeezerTrackIdFromExplanation(nk, logger, q);
+                if (trackId) {
+                    if (!q.media)
+                        q.media = {};
+                    q.media.track_id = trackId;
+                    q.media.source = "deezer";
+                    if (!q.provider_key)
+                        q.provider_key = "deezer_" + trackId;
+                }
+            }
             if (!trackId)
                 continue;
             attempted++;
@@ -22234,6 +22307,8 @@ var QvQuestionCache;
                 q.media.url = fresh;
                 q.media.track_id = trackId;
                 q.media.source = "deezer";
+                if (!q.provider_key)
+                    q.provider_key = "deezer_" + trackId;
                 refreshed++;
             }
             catch (e) {
@@ -32108,6 +32183,67 @@ var IdentityResolver;
         }
         return false;
     }
+    /**
+     * Map a Nakama user UUID → Cognito custom_id when the account has a real
+     * (non-ghost) custom auth id. Identity links historically stored the
+     * Nakama UUID when /api/identity/link called identity_link as the Nakama
+     * user instead of the Cognito sub — AI Notes ownerUserId needs Cognito.
+     *
+     * Cognito custom_id lives on the Account (nk.accountGetId), not reliably
+     * on User from usersGetId — live probe 2026-07-14: heal no-op'd until
+     * we switched to accountGetId.
+     *
+     * If `id` is already a Cognito sub (not a Nakama user UUID), accountGetId
+     * throws/misses and we return `id` unchanged.
+     */
+    function canonicalCognitoSub(nk, id) {
+        var raw = ("" + (id || "")).trim();
+        if (!raw)
+            return raw;
+        try {
+            var account = nk.accountGetId(raw);
+            if (account) {
+                var cid = "";
+                if (account.customId) {
+                    cid = ("" + account.customId).trim();
+                }
+                else if (account.user && account.user.customId) {
+                    cid = ("" + account.user.customId).trim();
+                }
+                if (cid && cid.indexOf("ghost:") !== 0) {
+                    return cid;
+                }
+            }
+        }
+        catch (err) {
+            /* leave raw — id may already be a Cognito sub */
+        }
+        return raw;
+    }
+    /** Rewrite a forward+reverse binding when stored cognito_sub is a Nakama UUID. */
+    function healStoredCognitoSub(nk, logger, channel, externalId, record) {
+        if (!record || !record.cognito_sub)
+            return record;
+        var stored = "" + record.cognito_sub;
+        var canonical = canonicalCognitoSub(nk, stored);
+        if (!canonical || canonical === stored)
+            return record;
+        var source = ("" + (record.source || "identity_heal")).slice(0, 64);
+        var confidence = ("" + (record.confidence || "high")).slice(0, 16);
+        try {
+            deleteLink(nk, channel, externalId, stored);
+            writeLink(nk, channel, externalId, canonical, source, confidence);
+            record.cognito_sub = canonical;
+            logger.info("identity healed cognito_sub: channel=" + channel +
+                " old=" + stored + " new=" + canonical);
+        }
+        catch (err) {
+            logger.warn("identity heal failed: " + (err && err.message ? err.message : String(err)));
+            // Still return canonical for this response even if rewrite failed.
+            record.cognito_sub = canonical;
+        }
+        return record;
+    }
     /** Ghost / conv-hub bindings may be replaced when the real user opts in via identity_link. */
     function isReplaceableGhostBinding(nk, existing) {
         if (!existing || !existing.cognito_sub)
@@ -32167,6 +32303,7 @@ var IdentityResolver;
             if (!record) {
                 return RpcHelpers.successResponse(null);
             }
+            record = healStoredCognitoSub(nk, logger, channel, externalId, record);
             // Last-seen update is best-effort and does not block the read.
             try {
                 record.last_seen = Math.floor(Date.now() / 1000);
@@ -32204,6 +32341,8 @@ var IdentityResolver;
     function rpcLink(ctx, logger, nk, payload) {
         try {
             var userId = RpcHelpers.requireUserId(ctx);
+            // Prefer Cognito custom_id when the caller is a Nakama UUID session.
+            var callerSub = canonicalCognitoSub(nk, userId);
             var data = RpcHelpers.parseRpcPayload(payload);
             var channel = ("" + (data.channel || "")).toLowerCase();
             var externalIdRaw = data.external_id || data.externalId;
@@ -32220,26 +32359,33 @@ var IdentityResolver;
             // If a binding already exists to a DIFFERENT user, refuse unless the old
             // row is a conv-hub / ghost mint that the real account is replacing.
             var existing = readLink(nk, channel, externalId);
-            if (existing && existing.cognito_sub && existing.cognito_sub !== userId) {
-                if (isReplaceableGhostBinding(nk, existing)) {
-                    deleteLink(nk, channel, externalId, existing.cognito_sub);
-                    logger.info("identity_link replaced ghost binding: channel=" + channel +
-                        " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + userId);
+            if (existing && existing.cognito_sub) {
+                var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
+                if (existingSub !== callerSub) {
+                    if (isReplaceableGhostBinding(nk, existing)) {
+                        deleteLink(nk, channel, externalId, existing.cognito_sub);
+                        logger.info("identity_link replaced ghost binding: channel=" + channel +
+                            " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + callerSub);
+                    }
+                    else {
+                        logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + callerSub);
+                        return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
+                    }
                 }
-                else {
-                    logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + userId);
-                    return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
+                else if (("" + existing.cognito_sub) !== callerSub) {
+                    // Same account, but stored under Nakama UUID — rewrite to Cognito.
+                    deleteLink(nk, channel, externalId, existing.cognito_sub);
                 }
             }
             var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
             var confidence = ("" + (data.confidence || "high")).slice(0, 16);
-            writeLink(nk, channel, externalId, userId, source, confidence);
-            logger.info("identity_link ok: user=" + userId + " channel=" + channel + " ext=" + externalId);
+            writeLink(nk, channel, externalId, callerSub, source, confidence);
+            logger.info("identity_link ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
             return RpcHelpers.successResponse({
                 linked: true,
                 channel: channel,
                 external_id: externalId,
-                cognito_sub: userId,
+                cognito_sub: callerSub,
                 confidence: confidence,
             });
         }
@@ -32266,15 +32412,18 @@ var IdentityResolver;
                 return RpcHelpers.errorResponse("external_id is required", 400);
             }
             var externalId = normalizeExternalId(channel, "" + externalIdRaw);
+            var callerSub = canonicalCognitoSub(nk, userId);
             var existing = readLink(nk, channel, externalId);
             if (!existing) {
                 return RpcHelpers.successResponse({ unlinked: true });
             }
-            if (existing.cognito_sub !== userId) {
+            var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
+            if (existingSub !== callerSub) {
                 return RpcHelpers.errorResponse("not authorised to unlink this binding", 403);
             }
-            deleteLink(nk, channel, externalId, userId);
-            logger.info("identity_unlink ok: user=" + userId + " channel=" + channel + " ext=" + externalId);
+            // Delete under the stored key (may still be a Nakama UUID pre-heal).
+            deleteLink(nk, channel, externalId, existing.cognito_sub);
+            logger.info("identity_unlink ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
             return RpcHelpers.successResponse({ unlinked: true });
         }
         catch (err) {
@@ -32395,16 +32544,18 @@ var IdentityResolver;
             if (!externalId) {
                 return RpcHelpers.errorResponse("external_id failed normalisation", 400);
             }
-            // 1. Fast path: existing binding.
+            // 1. Fast path: existing binding (heal Nakama-UUID-as-cognito_sub).
             var existing = readLink(nk, channel, externalId);
             if (existing && existing.cognito_sub) {
+                existing = healStoredCognitoSub(nk, logger, channel, externalId, existing);
+                var isGhost = isGhostBindingRecord(existing) || isGhostAccount(nk, existing.cognito_sub);
                 return RpcHelpers.successResponse({
                     cognito_sub: existing.cognito_sub,
                     channel: channel,
                     external_id: externalId,
                     linked_at: existing.linked_at,
                     confidence: existing.confidence || "medium",
-                    is_ghost: false,
+                    is_ghost: isGhost,
                 });
             }
             // 2. Slow path: mint a ghost. authenticateCustom with create=true
