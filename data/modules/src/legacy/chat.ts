@@ -316,7 +316,9 @@ namespace LegacyChat {
   // nk.channelMessageSend() calls do NOT trigger this hook, so there is no
   // double-push risk with the RPCs. We read the resolved target from the
   // output ack (groupId / userIdOne / userIdTwo); the input channelId is opaque.
-  function afterChannelMessageSend(
+  // Exported: invoked via the global rtAfterChannelMessageSendHook wrapper in
+  // zz_realtime_hook_handlers.js (see beforeChannelMessageSend note below).
+  export function afterChannelMessageSend(
     ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama,
     output: nkruntime.EnvelopeChannelMessageSend | null, input: nkruntime.EnvelopeChannelMessageSend
   ): void {
@@ -363,6 +365,56 @@ namespace LegacyChat {
     }
   }
 
+  // ─── Displayable content helpers (filter empty {} junk from history) ────────
+  function extractChatDisplayText(content: any): string {
+    if (content === null || content === undefined) return "";
+    if (typeof content === "object") {
+      var keys = ["text", "message", "content", "msg", "body"];
+      for (var i = 0; i < keys.length; i++) {
+        var v = (content as any)[keys[i]];
+        if (typeof v === "string" && v.trim() !== "") return v.trim();
+      }
+      return "";
+    }
+    var s = String(content).trim();
+    if (!s || s === "{}" || s === "null") return "";
+    if (s.charAt(0) === "{") {
+      try {
+        return extractChatDisplayText(JSON.parse(s));
+      } catch (_e) {
+        return s;
+      }
+    }
+    return s;
+  }
+
+  function isDisplayableChatContent(content: any): boolean {
+    return extractChatDisplayText(content) !== "";
+  }
+
+  function filterDisplayableMessages(messages: any[]): any[] {
+    if (!messages || !messages.length) return [];
+    var out: any[] = [];
+    for (var i = 0; i < messages.length; i++) {
+      var m = messages[i];
+      if (!m) continue;
+      if (isDisplayableChatContent(m.content)) out.push(m);
+    }
+    return out;
+  }
+
+  function normalizeOutboundChatPayload(content: any): any {
+    if (typeof content === "object" && content !== null) {
+      if (!isDisplayableChatContent(content)) {
+        throw new Error("message content required");
+      }
+      return content;
+    }
+    var text = String(content || "").trim();
+    if (!text) throw new Error("message content required");
+    return { text: text };
+  }
+
   function rpcSendGroupChatMessage(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var userId = RpcHelpers.requireUserId(ctx);
@@ -371,8 +423,9 @@ namespace LegacyChat {
       var groupId = data.groupId;
       var content = data.content || data.message || data.messageText || "";
       if (!groupId) return RpcHelpers.errorResponse("groupId required");
+      var payloadObj = normalizeOutboundChatPayload(content);
       var channelId = nk.channelIdBuild(userId, groupId, 3);
-      var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+      var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
       var senderName = resolveSenderName(nk, userId, username);
       pushGroupMessage(ctx, logger, nk, userId, senderName, groupId, content);
       return RpcHelpers.successResponse({ messageId: ack.messageId });
@@ -389,8 +442,10 @@ namespace LegacyChat {
       var targetUserId = data.userId || data.targetUserId;
       var content = data.content || data.message || data.messageText || "";
       if (!targetUserId) return RpcHelpers.errorResponse("userId required");
+      var payloadObj = normalizeOutboundChatPayload(content);
       var channelId = nk.channelIdBuild(userId, targetUserId, 2);
-      var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+      // Store as {"text":"..."} so Unity ChatMessageTextParser shows it (same as socket path).
+      var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
       var senderName = resolveSenderName(nk, userId, username);
       pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
       // Ephemeral in-app socket notification — delivered to recipient's connected socket
@@ -482,9 +537,10 @@ namespace LegacyChat {
       var username = ctx.username || "";
       var data = RpcHelpers.parseRpcPayload(payload);
       var roomName = data.roomName || data.room || "general";
-      var content = data.content || data.message || "";
+      var content = data.content || data.message || data.messageText || "";
+      var payloadObj = normalizeOutboundChatPayload(content);
       var channelId = nk.channelIdBuild(undefined, roomName, 1);
-      var ack = nk.channelMessageSend(channelId, { body: content }, userId, username, true);
+      var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
       return RpcHelpers.successResponse({ messageId: ack.messageId });
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "Failed to send room message");
@@ -503,7 +559,7 @@ namespace LegacyChat {
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
-        messages: result.messages || [],
+        messages: filterDisplayableMessages(result.messages || []),
         nextCursor: result.nextCursor || "",
         prevCursor: result.prevCursor || ""
       });
@@ -524,7 +580,7 @@ namespace LegacyChat {
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
-        messages: result.messages || [],
+        messages: filterDisplayableMessages(result.messages || []),
         nextCursor: result.nextCursor || "",
         prevCursor: result.prevCursor || ""
       });
@@ -544,7 +600,7 @@ namespace LegacyChat {
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
-        messages: result.messages || [],
+        messages: filterDisplayableMessages(result.messages || []),
         nextCursor: result.nextCursor || "",
         prevCursor: result.prevCursor || ""
       });
@@ -710,20 +766,30 @@ namespace LegacyChat {
   // before-hook — the client gets the error back, the send never lands.
   var MAX_MESSAGE_CHARS = 4000;
   var CHAT_RATE_MAX = 10;           // messages
-  var CHAT_RATE_WINDOW_MS = 10000;  // per this many ms, per user
-  var chatSendLog: { [userId: string]: number[] } = {};
+  var CHAT_RATE_WINDOW_SEC = 10;     // per this many seconds, per user
 
-  function enforceChatHygiene(ctx: nkruntime.Context, content: string): void {
+  function enforceChatHygiene(
+    ctx: nkruntime.Context,
+    nk: nkruntime.Nakama,
+    content: string
+  ): void {
     if (content.length > MAX_MESSAGE_CHARS) {
       throw new Error("Message too long (max " + MAX_MESSAGE_CHARS + " characters).");
     }
-    var now = Date.now();
-    var log = (chatSendLog[ctx.userId] || []).filter(function (t) { return now - t < CHAT_RATE_WINDOW_MS; });
-    if (log.length >= CHAT_RATE_MAX) {
+
+    // Nakama executes handlers across a Goja VM pool (and multiple pods in
+    // production), so module-local counters are not authoritative. Use the
+    // shared storage-backed limiter to enforce one contract everywhere.
+    var decision = SharedRateLimit.checkUserWindow(
+      ctx,
+      nk,
+      "channel_message_send",
+      CHAT_RATE_WINDOW_SEC,
+      CHAT_RATE_MAX
+    );
+    if (!decision.allowed) {
       throw new Error("You're sending messages too fast — slow down.");
     }
-    log.push(now);
-    chatSendLog[ctx.userId] = log;
   }
 
   // Before-hook for realtime ChannelMessageSend. Forces persist=true so every
@@ -732,13 +798,28 @@ namespace LegacyChat {
   // see it, unread counts can't be derived, and history RPCs return nothing.
   // Clients sometimes omit `persist` or send it false; we override server-side
   // so durability is not client-dependent.
-  function beforeChannelMessageSend(
+  // Exported: invoked via the global rtBeforeChannelMessageSendHook wrapper in
+  // zz_realtime_hook_handlers.js. Registration lives in postbuild's InitModule
+  // wrapper — Nakama's AST walker only sees register calls that are direct
+  // statements in InitModule's body, so registering from here never worked
+  // ("js realtime registerRtBefore hook function key could not be extracted").
+  export function beforeChannelMessageSend(
     ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama,
     envelope: nkruntime.EnvelopeChannelMessageSend
   ): nkruntime.EnvelopeChannelMessageSend | void {
     var msg: any = envelope ? (envelope as any).channelMessageSend : null;
     if (msg) {
-      enforceChatHygiene(ctx, String(msg.content || ""));
+      var rawContent = msg.content;
+      // Reject empty {} / blank payloads so they never land in durable history
+      // (QVBF_149: empty rows looked like "sent then vanished" on reopen).
+      var parsed: any = rawContent;
+      if (typeof rawContent === "string") {
+        try { parsed = JSON.parse(rawContent); } catch (_e) { parsed = rawContent; }
+      }
+      if (!isDisplayableChatContent(parsed)) {
+        throw new Error("message content required");
+      }
+      enforceChatHygiene(ctx, nk, String(rawContent || ""));
       try {
         msg.persist = true;
       } catch (e: any) {
@@ -749,22 +830,52 @@ namespace LegacyChat {
   }
 
   export function register(initializer: nkruntime.Initializer): void {
+    // withCleanAuthError wraps a handler once at registration time, but when
+    // register() is auto-invoked at IIFE scope by the postbuild script,
+    // RpcHelpers may not be initialised yet — LegacyChat sorts before
+    // shared/rpc-helpers on Linux (case-sensitive readdir). An eager
+    // RpcHelpers.withCleanAuthError(...) here throws at startup and takes
+    // down the entire JS runtime (GHA run 29118582453 / e3c96bd):
+    //   TypeError: Cannot read property 'withCleanAuthError' of undefined
+    // Use a lazy wrapper (same pattern as hermes.ts / quest_engine.ts).
+    type StrictRpc = (ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string) => string;
+    function auth(fn: nkruntime.RpcFunction): nkruntime.RpcFunction {
+      var wrapped: StrictRpc | null = null;
+      return function(ctx, logger, nk, payload): string {
+        if (!wrapped) {
+          const strictFn = fn as StrictRpc;
+          wrapped = (typeof RpcHelpers !== "undefined" && RpcHelpers.withCleanAuthError)
+            ? RpcHelpers.withCleanAuthError(strictFn)
+            : strictFn;
+        }
+        return wrapped(ctx, logger, nk, payload);
+      };
+    }
+
     initializer.registerRpc("send_group_chat_message", rpcSendGroupChatMessage);
     initializer.registerRpc("send_direct_message", rpcSendDirectMessage);
     initializer.registerRpc("send_chat_room_message", rpcSendChatRoomMessage);
     // Delivers queued offline challenge messages; Unity calls this once per session.
-    initializer.registerRpc("quizverse_deliver_pending_chat_messages", rpcDeliverPendingChatMessages);
+    // withCleanAuthError: live-server smoke test (2026-07-09) found this + the two
+    // read/unread RPCs below throwing a raw Goja 500 for unauthenticated callers
+    // instead of the clean JSON every other chat RPC in this file returns — belt
+    // and suspenders on top of each handler's own try/catch.
+    initializer.registerRpc("quizverse_deliver_pending_chat_messages", auth(rpcDeliverPendingChatMessages));
     initializer.registerRpc("get_group_chat_history", rpcGetGroupChatHistory);
     initializer.registerRpc("get_direct_message_history", rpcGetDirectMessageHistory);
     initializer.registerRpc("get_chat_room_history", rpcGetChatRoomHistory);
     initializer.registerRpc("mark_direct_messages_read", rpcMarkDirectMessagesRead);
-    initializer.registerRpc("mark_group_messages_read", rpcMarkGroupMessagesRead);
-    initializer.registerRpc("get_unread_counts", rpcGetUnreadCounts);
+    initializer.registerRpc("mark_group_messages_read", auth(rpcMarkGroupMessagesRead));
+    initializer.registerRpc("get_unread_counts", auth(rpcGetUnreadCounts));
 
-    // Force durable persistence for realtime chat (offline delivery + history +
-    // unread counts), then push-notify after the message lands.
-    initializer.registerRtBefore("ChannelMessageSend", beforeChannelMessageSend);
-    // Push notifications for messages sent directly over the realtime socket.
-    initializer.registerRtAfter("ChannelMessageSend", afterChannelMessageSend);
+    // NB: the ChannelMessageSend realtime hooks are NOT registered here.
+    // Nakama's AST walker can't see register calls nested inside helper
+    // functions, so registering from register() always failed with
+    // "js realtime registerRtBefore hook function key could not be
+    // extracted: not found" — which also aborted every legacy registration
+    // after LegacyChat in main.ts (quests-economy bridge, multi-game,
+    // storage, analytics retention, gift cards, coupons). Registration now
+    // happens in postbuild's InitModule wrapper via the global wrappers in
+    // zz_realtime_hook_handlers.js.
   }
 }

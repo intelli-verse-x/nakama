@@ -45,12 +45,18 @@ namespace LegacyFriends {
       var ids: string[] = data.ids ? (Array.isArray(data.ids) ? data.ids : [data.ids]) : [];
       var usernames: string[] = data.usernames ? (Array.isArray(data.usernames) ? data.usernames : [data.usernames]) : [];
       if (data.userId) ids.push(data.userId);
+      if (data.targetUserId) ids.push(data.targetUserId);
       if (data.username) usernames.push(data.username);
       if (ids.length === 0 && usernames.length === 0) {
         return RpcHelpers.errorResponse("ids or usernames required");
       }
-      var result = nk.friendsBlock(userId, username, ids, usernames);
-      return RpcHelpers.successResponse({ friends: result.friends || [] });
+      // nakama-common's .d.ts types this as returning FriendList, but this
+      // server's Goja binding hands back `undefined` — every single call
+      // crashed with "Cannot read property 'friends' of undefined" (found
+      // live by the Social Zone eval suite's friends_block round-trip
+      // test). Guard defensively instead of assuming either shape.
+      var result: any = nk.friendsBlock(userId, username, ids, usernames);
+      return RpcHelpers.successResponse({ friends: (result && result.friends) || [] });
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "Failed to block");
     }
@@ -64,12 +70,15 @@ namespace LegacyFriends {
       var ids: string[] = data.ids ? (Array.isArray(data.ids) ? data.ids : [data.ids]) : [];
       var usernames: string[] = data.usernames ? (Array.isArray(data.usernames) ? data.usernames : [data.usernames]) : [];
       if (data.userId) ids.push(data.userId);
+      if (data.targetUserId) ids.push(data.targetUserId);
       if (data.username) usernames.push(data.username);
       if (ids.length === 0 && usernames.length === 0) {
         return RpcHelpers.errorResponse("ids or usernames required");
       }
-      var result = nk.friendsDelete(userId, username, ids, usernames);
-      return RpcHelpers.successResponse({ friends: result.friends || [] });
+      // Same defensive guard as rpcFriendsBlock above — this server's
+      // nk.friendsDelete binding also hands back `undefined`.
+      var result: any = nk.friendsDelete(userId, username, ids, usernames);
+      return RpcHelpers.successResponse({ friends: (result && result.friends) || [] });
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "Failed to unblock");
     }
@@ -88,7 +97,8 @@ namespace LegacyFriends {
       if (ids.length === 0 && usernames.length === 0) {
         return RpcHelpers.errorResponse("ids or usernames required");
       }
-      var result = nk.friendsDelete(userId, username, ids, usernames);
+      // Same defensive guard as rpcFriendsBlock/rpcFriendsUnblock above.
+      var result: any = nk.friendsDelete(userId, username, ids, usernames);
 
       var sendNotif = (globalThis as any).sendFriendsNotification as
         | ((nk: nkruntime.Nakama, logger: nkruntime.Logger, subjectKey: string,
@@ -111,7 +121,7 @@ namespace LegacyFriends {
         }
       }
 
-      return RpcHelpers.successResponse({ friends: result.friends || [] });
+      return RpcHelpers.successResponse({ friends: (result && result.friends) || [] });
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "Failed to remove friend");
     }

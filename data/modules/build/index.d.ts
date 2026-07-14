@@ -5,6 +5,132 @@ declare var __TS_OWNED_RPCS: {
 declare function groupAfterJoinHook(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: void, request: nkruntime.JoinGroupRequest): void;
 declare function groupAfterLeaveHook(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: void, request: nkruntime.LeaveGroupRequest): void;
 declare function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, initializer: nkruntime.Initializer): void;
+declare namespace AahaaCatalog {
+    interface WowCandidate {
+        wow_id: string;
+        tier: string;
+        vars: {
+            [k: string]: any;
+        };
+        score: number;
+        signal: string;
+    }
+    interface CatalogEntry {
+        wow_id: string;
+        tier: string;
+        surface: string;
+        copy_template: string;
+        cta_action_id: string;
+        loop_event: string;
+        mechanic: string;
+        priority_class: string;
+        celebratory: boolean;
+        fullscreen: boolean;
+        cooldown_days: number;
+        base_score: number;
+        data_sources: string[];
+        eval: (facts: AahaaFacts.FactPack, profile: any) => WowCandidate | null;
+    }
+    function catalog(): CatalogEntry[];
+    function renderCopy(template: string, vars: {
+        [k: string]: any;
+    }): string;
+}
+declare namespace AahaaEngine {
+    var MODULE_VERSION: string;
+    var COLL_PROFILE: string;
+    var COLL_FEED: string;
+    var COLL_STATS: string;
+    var COLL_BATCH: string;
+    var KEY_PROFILE: string;
+    var KEY_FEED: string;
+    var AAHAA_PER_FEED: number;
+    var WEEKLY_CAP: number;
+    var MUTE_DAYS: number;
+    var RATING_SUPPRESS_DAYS: number;
+    var CTR_MIN_SHOWS: number;
+    var CTR_FLOOR: number;
+    function readProfile(nk: nkruntime.Nakama, userId: string): any;
+    function writeProfile(nk: nkruntime.Nakama, userId: string, profile: any): void;
+    function recordReaction(nk: nkruntime.Nakama, wowId: string, action: string): void;
+    interface GeneratedWow {
+        wow_id: string;
+        tier: string;
+        surface: string;
+        copy: string;
+        copy_template: string;
+        vars: {
+            [k: string]: any;
+        };
+        cta_action_id: string;
+        loop_event: string;
+        mechanic: string;
+        priority_class: string;
+        fullscreen: boolean;
+        signal: string;
+        data_sources: string[];
+        score: number;
+        trace_id: string;
+    }
+    function generateForUser(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string): {
+        feed: GeneratedWow[];
+        facts: AahaaFacts.FactPack;
+        suppressed: string[];
+        rating_prompt_suppressed: boolean;
+    };
+    function markFired(nk: nkruntime.Nakama, userId: string, wowId: string, fullscreen: boolean): void;
+    function muteWow(nk: nkruntime.Nakama, userId: string, wowId: string): void;
+    function notePoolExhausted(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, mode: string, topic: string): void;
+    function generateAll(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, maxUsers: number, resetCursor: boolean): any;
+}
+declare namespace AahaaFacts {
+    var FACT_PACK_VERSION: string;
+    interface TopicStat {
+        topic: string;
+        answered: number;
+        correct: number;
+        accuracy_pct: number;
+        avg_time_ms: number;
+    }
+    interface FactPack {
+        version: string;
+        computed_ms: number;
+        user_id: string;
+        identity: any;
+        lifetime: any;
+        recent: any;
+        topics: {
+            list: TopicStat[];
+            strongest: TopicStat | null;
+            weakest: TopicStat | null;
+            top3: string[];
+        };
+        modes: any;
+        streaks: any;
+        social: any;
+        seedq: any;
+        onboarding: any;
+        derived: any;
+        lineage: {
+            [group: string]: any;
+        };
+    }
+    function buildFactPack(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string): FactPack;
+}
+declare namespace Aahaa {
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace AahaaValidator {
+    interface ValidationResult {
+        pass: boolean;
+        violations: string[];
+        numeric_claims: string[];
+        unmatched_numbers: string[];
+        word_count: number;
+        fallback_template: string;
+    }
+    function validate(text: string, facts: any, opts: any): ValidationResult;
+}
 declare namespace AiPipelines {
     function register(initializer: nkruntime.Initializer): void;
 }
@@ -671,6 +797,10 @@ declare namespace QvAnalyticsCron {
 declare namespace BlogEmbed {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare function persistNormalizedEvent(nk: nkruntime.Nakama, logger: nkruntime.Logger, ev: any): void;
+declare namespace QuizVerseBrainPrompts {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QvCacheRefreshCron {
     function register(initializer: nkruntime.Initializer): void;
     /**
@@ -930,6 +1060,11 @@ declare namespace QvQuestionCache {
      * Use before readCache to decide whether to trigger a background refresh.
      */
     export function isCacheValid(nk: nkruntime.Nakama, topic: string): boolean;
+    /**
+     * Queue a provider refresh without blocking a player RPC on external I/O.
+     * The cache refresh scheduler drains this collection on its next tick.
+     */
+    export function requestRefresh(nk: nkruntime.Nakama, logger: nkruntime.Logger, topic: string, reason: string): void;
     /**
      * Refresh ALL cacheable topics one-by-one with a 2 s stagger between each.
      * The stagger prevents simultaneous bursts against external providers.
@@ -1228,8 +1363,16 @@ declare namespace QvExplainerVideos {
     function grantExplainerCredits(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, productId: string, quantity: number): number;
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QvLapNoteQuota {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QuizVerseRevenueCatAdmin {
     function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace QvVipOverride {
+    function isVipUserId(userId: string): boolean;
+    /** Synthetic Pro+ subscription snapshot for VIP accounts. */
+    function vipSubscriptionSnapshot(): any;
 }
 declare namespace AccountMerge {
     function register(initializer: nkruntime.Initializer): void;
@@ -1456,7 +1599,9 @@ declare namespace LegacyAnalytics {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyChat {
+    function afterChannelMessageSend(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, output: nkruntime.EnvelopeChannelMessageSend | null, input: nkruntime.EnvelopeChannelMessageSend): void;
     function flushFailedChatPushes(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): void;
+    function beforeChannelMessageSend(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, envelope: nkruntime.EnvelopeChannelMessageSend): nkruntime.EnvelopeChannelMessageSend | void;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyCoupons {
@@ -1573,6 +1718,18 @@ declare namespace PushAlerts {
         noQuiz?: boolean;
         byLocale: {
             [locale: string]: {
+                sent: number;
+                gated: number;
+            };
+        };
+        byCountry?: {
+            [cc: string]: {
+                sent: number;
+                gated: number;
+            };
+        };
+        byTier?: {
+            [tier: string]: {
                 sent: number;
                 gated: number;
             };
@@ -1791,6 +1948,10 @@ declare namespace LibraryCountdownPlugin {
  * scope and populates the __rpc_* globals in pooled Goja VMs.
  */
 declare namespace N8nPackStatePlugin {
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace LmsBridge {
+    var MODULE_VERSION: string;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace MpKernelAgent {
@@ -3699,6 +3860,67 @@ declare namespace Research {
     var MODULE_VERSION: string;
     function register(initializer: nkruntime.Initializer): void;
 }
+/**
+ * RouterWallet — app-id credit wallets for Intelliverse Router.
+ *
+ * Replicates the QuizVerse coins pattern (storage-object wallets) but keyed
+ * by APP ID instead of user id: collection "router_wallets", key
+ * `wallet_{appId}`, owned by the SYSTEM user since apps are not Nakama users.
+ *
+ * Drop-in module for nakama-multiplayer-kernel: copy this folder to
+ * data/modules/src/router_wallet/ and call RouterWallet.register(initializer)
+ * from main.ts InitModule. Self-contained on purpose — no references to the
+ * kernel's shared namespaces (Storage/RpcHelpers/Constants).
+ *
+ * All RPCs are SERVER-TO-SERVER ONLY (http_key auth): any call with a
+ * ctx.userId is rejected.
+ *
+ * Concurrency: optimistic concurrency control via the storage object version
+ * — every write passes the version read ("*" for create) and retries up to
+ * 3 times on conflict.
+ */
+declare namespace RouterWallet {
+    var SYSTEM_USER_ID: string;
+    var WALLETS_COLLECTION: string;
+    var LEDGER_COLLECTION: string;
+    var CREDIT_REFS_COLLECTION: string;
+    var MAX_OCC_RETRIES: number;
+    var CREDIT_KINDS: string[];
+    interface WalletHold {
+        kind: string;
+        amount: number;
+        createdAt: string;
+    }
+    interface WalletValue {
+        appId: string;
+        workspaceId: string;
+        currencies: {
+            [kind: string]: number;
+        };
+        holds: {
+            [holdId: string]: WalletHold;
+        };
+        version: number;
+    }
+    interface LedgerEntry {
+        appId: string;
+        kind: string;
+        delta: number;
+        balanceAfter: number;
+        reason: string;
+        ref: string | null;
+        holdId?: string;
+        createdAt: string;
+    }
+    function availableBalance(wallet: WalletValue, kind: string): number;
+    function rpcGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcCredit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcDebit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcHold(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSettle(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcHistory(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace AnalyticsAlerts {
     interface RpcSample {
         ts: number;
@@ -3964,6 +4186,173 @@ declare namespace SatoriWebhooks {
     function register(initializer: nkruntime.Initializer): void;
     function registerEventHandlers(): void;
 }
+declare var __qvsSeen: any;
+declare namespace SeedQ {
+    var MODULE_VERSION: string;
+    var COLL_POOL: string;
+    var COLL_POOL_INDEX: string;
+    var COLL_REVIEW: string;
+    var COLL_STAGED: string;
+    var COLL_SOURCE_CACHE: string;
+    var COLL_INGEST_STATE: string;
+    var COLL_FOCUS_TRACKS: string;
+    var TARGET_READY_SETS: number;
+    var MIN_READY_SETS: number;
+    var DEFAULT_SET_SIZE: number;
+    var MAX_SET_SIZE: number;
+    var POOL_MAX_QUESTIONS: number;
+    var CONSUMED_SET_TTL_MS: number;
+    var SEEN_SCOPE: string;
+    var HISTORY_READ_CAP: number;
+    interface Provenance {
+        source_domain: string;
+        license: string;
+        checked: boolean;
+        method: string;
+    }
+    interface QualityInfo {
+        score: number;
+        status: string;
+        checks: string[];
+    }
+    interface SeedQuestion {
+        id: string;
+        question: string;
+        options: string[];
+        correct_index: number;
+        explanation: string;
+        category: string;
+        topic: string;
+        mode: string;
+        difficulty: number;
+        question_type: string;
+        media_url: string;
+        media_provenance: Provenance | null;
+        source: string;
+        citation: string;
+        lang: string;
+        created_ms: number;
+        quality: QualityInfo;
+    }
+    interface StagedSet {
+        set_id: string;
+        mode: string;
+        topic: string;
+        status: string;
+        difficulty_target: number;
+        question_ids: string[];
+        questions: SeedQuestion[];
+        fresh_count?: number;
+        review_count?: number;
+        created_ms: number;
+        consumed_ms: number;
+    }
+    function nowMs(): number;
+    function slugify(s: string): string;
+    function poolKey(mode: string, topic: string): string;
+    function questionId(nk: nkruntime.Nakama, source: string, question: string, options: string[]): string;
+    function shuffle<T>(arr: T[]): T[];
+    function randSuffix(): string;
+    function clampInt(v: any, lo: number, hi: number, dflt: number): number;
+    function readSystem(nk: nkruntime.Nakama, collection: string, key: string): any;
+    function writeSystem(nk: nkruntime.Nakama, collection: string, key: string, value: any): void;
+    function readUser(nk: nkruntime.Nakama, collection: string, key: string, userId: string): any;
+    function writeUser(nk: nkruntime.Nakama, collection: string, key: string, userId: string, value: any): void;
+    function seenTopic(mode: string, topic: string): string;
+    function getSeenIdSet(nk: nkruntime.Nakama, userId: string, mode: string, topic: string): {
+        [id: string]: boolean;
+    };
+    function mergeSeenIds(nk: nkruntime.Nakama, userId: string, mode: string, topic: string, ids: string[]): void;
+    interface AdaptiveProfile {
+        target_difficulty: number;
+        basis: string;
+        sample_size: number;
+        accuracy_pct: number;
+    }
+    function computeAdaptiveProfile(nk: nkruntime.Nakama, userId: string, topic: string): AdaptiveProfile;
+    /** Admin/cron RPCs: http_key only (ctx.userId empty). Optional service_token when env is set. */
+    function isHttpKeyAdmin(ctx: nkruntime.Context, data: any): boolean;
+    /** Block SSRF targets (RFC1918, link-local, metadata) for outbound fetches. */
+    function isPublicHttpsUrl(url: string): boolean;
+    function optimizeMediaUrl(url: string): string;
+    function cachedHttpGet(nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string, ttlMs: number, headers?: any): string | null;
+}
+declare namespace SeedQEngine {
+    function readPool(nk: nkruntime.Nakama, mode: string, topic: string): any;
+    function ingestIntoPool(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, candidates: SeedQ.SeedQuestion[]): {
+        accepted: number;
+        rejected: number;
+        duplicates: number;
+        pool_size: number;
+    };
+    interface StageResult {
+        doc: any;
+        ready: SeedQ.StagedSet[];
+        built: number;
+        pool_size: number;
+        pool_available: number;
+        recycled: boolean;
+        pool_exhausted: boolean;
+        content_generation_queued: boolean;
+        next_refresh_eta_sec: number;
+        fresh_count: number;
+        review_count: number;
+        adaptive: SeedQ.AdaptiveProfile;
+    }
+    function queuePriorityCombo(nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string): void;
+    function ensureStaged(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, mode: string, topic: string, wantSets: number, setSize: number): StageResult;
+    function consumeSet(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, mode: string, topic: string, setId: string): {
+        found: boolean;
+        merged: number;
+    };
+    function defaultCombos(): any[];
+    function ingestTick(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, batchCombos: number, perComboCount: number): any;
+}
+declare namespace SeedQQuality {
+    var SAFE_MEDIA_DOMAINS: string[];
+    function mediaDomainSafe(url: string): boolean;
+    function checkProvenance(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string): SeedQ.Provenance;
+    function autoQa(q: SeedQ.SeedQuestion): SeedQ.QualityInfo;
+    var FLAG_REASONS: {
+        [k: string]: boolean;
+    };
+    function applyReview(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, mode: string, topic: string, qid: string, vote: string, // "up" | "down" | "flag"
+    reason: string): {
+        entry: any;
+        quarantined: boolean;
+        duplicate: boolean;
+    };
+    function getQuarantineSet(nk: nkruntime.Nakama, mode: string, topic: string): {
+        [qid: string]: boolean;
+    };
+}
+declare namespace SeedQuestions {
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace SeedQSources {
+    interface SourceMeta {
+        rank: number;
+        id: string;
+        site: string;
+        kind: string;
+        modes: string[];
+        env_keys: string[];
+        implemented: string;
+        notes: string;
+    }
+    function registry(): SourceMeta[];
+    function fetchArchiveOrg(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    function fetchWolfram(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    function fetchGutenberg(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    function fetchMusicTv(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    function fetchYoutubeQuiz(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number, params: any): SeedQ.SeedQuestion[];
+    function fetchScholar(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    function fetchJustWatch(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    function getFocusTracks(nk: nkruntime.Nakama, logger: nkruntime.Logger): any;
+    function buildAssetJob(ctx: nkruntime.Context, kind: string, params: any): any;
+    function fetchQuestions(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, sourceId: string, mode: string, topic: string, count: number, params: any): SeedQ.SeedQuestion[];
+    var QUESTION_SOURCES: string[];
+}
 declare namespace ActiveRolling {
     interface Touch {
         u: string;
@@ -4162,6 +4551,19 @@ declare namespace GeoTier {
      * an unknown geo as "no nearby scoping possible".
      */
     function getUserCountry(nk: nkruntime.Nakama, userId: string): string;
+    /** True when ISO alpha-2 is a Tier-1 (premium) market per T1_COUNTRIES. */
+    function isT1Country(countryCode: string): boolean;
+    /**
+     * Map ISO alpha-2 → t1|t2|t3. Unknown / empty → "unknown" (not silently t3)
+     * so push soft-T1 reports can separate "no geo" from emerging markets.
+     */
+    function classifyCountryTier(countryCode: string): string;
+    /**
+     * Cache-first country for push analytics / soft T1 reporting.
+     * Never HTTP. Order: geo_tier cache → users.metadata.country →
+     * account.user.location (2-letter). Returns "" if unresolved.
+     */
+    function getCountryForPushAnalytics(nk: nkruntime.Nakama, userId: string): string;
     /**
      * Resolve + cache the user's country in one call (cache-first, then
      * IP-API fallback). Returns the resolved alpha-2 code, or "" when even
@@ -4206,6 +4608,12 @@ declare namespace SharedRateLimit {
         retryAfterSec?: number;
     }
     function check(ctx: nkruntime.Context, nk: nkruntime.Nakama, rpcName: string, opts: RateLimitOpts): RateLimitDecision;
+    /**
+     * Check an arbitrary per-user sliding window using the same distributed
+     * storage buckets as the standard second/minute limits. Realtime hooks use
+     * this when their product contract is not a one-second or one-minute window.
+     */
+    function checkUserWindow(ctx: nkruntime.Context, nk: nkruntime.Nakama, operationName: string, windowSec: number, limit: number): RateLimitDecision;
     function enforce(ctx: nkruntime.Context, nk: nkruntime.Nakama, rpcName: string, opts: RateLimitOpts): string | null;
 }
 declare namespace RewardEngine {
@@ -5558,6 +5966,242 @@ declare namespace Satori {
     }
 }
 declare namespace UserModel {
+    function register(initializer: nkruntime.Initializer): void;
+}
+/**
+ * WorldTrivia — playable world templates game loop for Intelliverse.
+ *
+ * The founder's loop: a player moves through a generated 3D world, hits
+ * CHECKPOINTS, answers a TRIVIA QUESTION at each, and may FINISH after 5
+ * CORRECT answers. ALWAYS-UNIQUE COLORED OBJECTS spawn per session as a
+ * scavenger-hunt secondary mechanic (uniqueness via seeded RNG from the
+ * server-generated sessionId). Full design: docs/worlds/game-loop.md.
+ *
+ * Follows the router-wallet module conventions: global namespace, storage
+ * objects owned by the SYSTEM user, {success,data}/{success,error} envelopes,
+ * optimistic concurrency control with up to 3 retries on session mutations.
+ *
+ * Everything is App-ID scoped (multi-tenant): templates, trivia packs, and
+ * sessions all carry an appId consistent with the repo's "apps" model.
+ *
+ * Auth split:
+ *  - authoring RPCs (world_template_upsert, world_trivia_pack_upsert) are
+ *    SERVER-TO-SERVER ONLY (http_key), like all router_wallet RPCs;
+ *  - gameplay RPCs require an authenticated Nakama user (ctx.userId) and
+ *    verify session ownership — the game is server-authoritative, the client
+ *    never grades answers or counts progress.
+ *
+ * Drop-in module for nakama-multiplayer-kernel: copy this folder to
+ * data/modules/src/world_trivia/ and call WorldTrivia.register(initializer)
+ * from main.ts InitModule. Self-contained; the router-wallet finish-reward
+ * hook resolves RouterWallet softly at call time and is skipped when the
+ * wallet module is not installed.
+ */
+declare namespace WorldTrivia {
+    var SYSTEM_USER_ID: string;
+    var TEMPLATES_COLLECTION: string;
+    var PACKS_COLLECTION: string;
+    var SESSIONS_COLLECTION: string;
+    var LEADERBOARDS_COLLECTION: string;
+    var STORIES_COLLECTION: string;
+    var STORY_NARRATION_COLLECTION: string;
+    var MAX_OCC_RETRIES: number;
+    var ANSWER_MIN_INTERVAL_MS: number;
+    var SCORE_CORRECT: number;
+    var SCORE_OBJECT_FOUND: number;
+    var SCORE_FINISH_BONUS: number;
+    var IDLE_EXPIRY_MS: number;
+    var LEADERBOARD_SIZE: number;
+    var PROXIMITY_SLACK: number;
+    var SPEED_SLACK: number;
+    var QUESTION_STREAM: number;
+    var OBJECT_SHAPES: string[];
+    var DEFAULT_SETTINGS: TemplateSettings;
+    interface Vec3 {
+        x: number;
+        y: number;
+        z: number;
+    }
+    interface Checkpoint {
+        id: string;
+        name: string;
+        position: Vec3;
+        radius: number;
+    }
+    interface ScavengerVolume {
+        min: Vec3;
+        max: Vec3;
+    }
+    interface TemplateSettings {
+        requiredCorrect: number;
+        objectCount: number;
+        maxSpeed: number;
+        maxAnswerSeconds: number;
+        collectRadius: number;
+        finishRewardCredits: number;
+    }
+    interface WorldTemplate {
+        appId: string;
+        templateId: string;
+        name: string;
+        packId: string;
+        assets: {
+            splatUrl?: string;
+            meshUrl?: string;
+        };
+        spawnPoint: Vec3;
+        checkpoints: Checkpoint[];
+        scavengerVolumes: ScavengerVolume[];
+        settings: TemplateSettings;
+        updatedAt: string;
+    }
+    interface TriviaQuestion {
+        id: string;
+        text: string;
+        choices: string[];
+        correctIndex: number;
+        category?: string;
+    }
+    interface TriviaPack {
+        appId: string;
+        packId: string;
+        questions: TriviaQuestion[];
+        updatedAt: string;
+    }
+    interface StoryBeat {
+        checkpointIndex: number;
+        checkpointId?: string;
+        objectHint?: string;
+        text: string;
+    }
+    interface StoryNarration {
+        intro: string;
+        beats: StoryBeat[];
+        ambient: string[];
+        finale: string;
+    }
+    interface StoryQuestion extends TriviaQuestion {
+        checkpointIndex?: number;
+        explanation?: string;
+    }
+    /** Full story — server-only storage, never client-readable. */
+    interface StoryValue {
+        appId: string;
+        templateId: string;
+        conceptId: string;
+        title: string;
+        language: string;
+        narration: StoryNarration;
+        questions: StoryQuestion[];
+        schemaVersion: number;
+        updatedAt: string;
+    }
+    interface ScavengerObject {
+        id: string;
+        color: string;
+        shape: string;
+        position: Vec3;
+    }
+    interface PendingQuestion {
+        questionId: string;
+        checkpointId: string;
+        issuedAtMs: number;
+    }
+    interface SessionValue {
+        sessionId: string;
+        appId: string;
+        userId: string;
+        templateId: string;
+        packId: string;
+        conceptId?: string;
+        lastAnswerAtMs?: number;
+        seed: number;
+        status: string;
+        lap: number;
+        visitedCheckpoints: string[];
+        pendingQuestion: PendingQuestion | null;
+        questionQueue: string[];
+        askedQuestionIds: string[];
+        correctCount: number;
+        wrongCount: number;
+        finishEligible: boolean;
+        objects: ScavengerObject[];
+        objectsFound: string[];
+        score: number;
+        lastPosition: Vec3;
+        lastEventAtMs: number;
+        startedAtMs: number;
+        finishedAtMs: number | null;
+        version: number;
+    }
+    interface LeaderboardEntry {
+        sessionId: string;
+        userId: string;
+        score: number;
+        correctCount: number;
+        wrongCount: number;
+        objectsFound: number;
+        durationMs: number;
+        finishedAt: string;
+    }
+    /** FNV-1a 32-bit hash — session seed derivation from the sessionId UUID. */
+    function fnv1a32(str: string): number;
+    /** mulberry32 PRNG — tiny, fast, deterministic across JS runtimes. */
+    function mulberry32(seed: number): () => number;
+    /**
+     * Derive the per-session scavenger layout from the seed. Colors are unique
+     * within the session by construction: a random start hue, then even
+     * 360/N spacing with ±10° jitter (spacing 45° at N=8, so hues can never
+     * collide), fixed saturation/lightness. Draw order per object is fixed
+     * (jitter, volume, x, y, z) — the viewer replays it byte-for-byte.
+     */
+    function deriveObjects(seed: number, count: number, volumes: ScavengerVolume[]): ScavengerObject[];
+    function shuffleIds(ids: string[], rnd: () => number): string[];
+    function rpcTemplateUpsert(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcPackUpsert(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    /**
+     * Narration redaction built field-by-field from scratch (whitelist, never
+     * a delete-fields blacklist) so no future StoryValue field can leak into
+     * client-readable storage by default.
+     */
+    function narrationView(story: StoryValue): {
+        appId: string;
+        templateId: string;
+        conceptId: string;
+        title: string;
+        language: string;
+        schemaVersion: number;
+        narration: {
+            intro: string;
+            beats: any[];
+            ambient: string[];
+            finale: string;
+        };
+        questionCount: number;
+        updatedAt: string;
+    };
+    /**
+     * world_story_upsert — s2s only (loader tool path). Ingests the generator's
+     * story.json: validates, stores the FULL story (questions + correctIndex +
+     * explanation) server-only, and writes the narration-only redaction to the
+     * public collection. Correct answers never exist in any client-fetchable
+     * object.
+     */
+    function rpcStoryUpsert(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    /**
+     * world_story_get — client manifest + narration for (world, concept).
+     * Serves ONLY the redacted narration view; never questions, choices,
+     * correctness or explanations.
+     */
+    function rpcStoryGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionStart(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcCheckpointReach(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcAnswerSubmit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcObjectFound(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionFinish(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSessionAbandon(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcLeaderboardGet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace KbEnrichment {

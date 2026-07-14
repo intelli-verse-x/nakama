@@ -1069,26 +1069,149 @@ namespace LegacyPush {
   }
 
   // ─── Quiet hours: 22:00 – 08:00 in the user's local time ───────────────────
-  // Fallback offset (minutes) for users whose client never sent a PARSEABLE
-  // timezone. The Unity client historically sent `TimeZoneInfo.Local.Id`,
-  // which on many Android/IL2CPP devices resolves to the literal string
-  // "Local" (and sometimes empty/"Unknown") — none of which we can parse.
-  // The OLD code defaulted those to 0 (UTC), which silently collapsed the
-  // per-user "09:00–13:00 local" daily-push window to 09:00–13:00 *UTC*.
-  // For the India-majority user base that meant the daily quiz fired at
-  // 2:30–6:30 PM IST instead of the morning (and at 2–9 AM for US users).
-  // Since the base is India-first, fall back to IST (+330) so the bulk of
-  // users get a sensible morning window. The permanent fix is the client
-  // sending a numeric offset ("+05:30"), which the parser below honours
-  // exactly for every region.
-  // UTC (offset 0) is the safe global default. IST (+330) was used previously
-  // because the user base was India-first, but it silently gated ALL users in
-  // other timezones (e.g. USA 9 AM ET = 14:00 UTC → appeared as 19:30 IST →
-  // always outside the send window). UTC-0 means users with unparseable
-  // timezone strings ("Local", "Unknown") receive pushes based on server UTC,
-  // which is neutral — the quiet-hours guard (22:00-08:00) still protects them.
-  var NOTIF_DEFAULT_TZ_OFFSET_MIN = 0; // UTC — safe global fallback
+  // Fallback for users whose client never sent a PARSEABLE timezone.
+  // The Unity client historically sent `TimeZoneInfo.Local.Id`, which on many
+  // Android/IL2CPP devices resolves to the literal string "Local" (and
+  // sometimes empty/"Unknown") — none of which we can parse.
+  // The OLD code defaulted those to 0 (UTC), which collapsed the per-user
+  // send windows to UTC and gated ~99% of opted-in users outside premium
+  // 17–21 / daily 09–13. Product default market is the USA — when timezone
+  // AND country are unknown, treat the user as US Eastern (DST-aware) so
+  // Soft T1 morning/evening windows match US local time. Explicit numeric
+  // offsets ("+05:30" / "-04:00") and known IANA/country values still win.
+  var NOTIF_DEFAULT_COUNTRY = "US";
+
+  // Soft T1: rough DST helpers (no tzdb in Goja). Good enough for send windows
+  // (±1h error only near transition Sundays). Northern = US/CA/EU; AU = southern.
+  function _nthSundayUtc(year: number, month0: number, n: number): number {
+    var d = new Date(Date.UTC(year, month0, 1));
+    var day = d.getUTCDay();
+    var firstSun = 1 + ((7 - day) % 7);
+    return Date.UTC(year, month0, firstSun + (n - 1) * 7);
+  }
+  function _lastSundayUtc(year: number, month0: number): number {
+    var d = new Date(Date.UTC(year, month0 + 1, 0));
+    var day = d.getUTCDay();
+    return Date.UTC(year, month0, d.getUTCDate() - day);
+  }
+  function _inNorthernDst(nowMs: number): boolean {
+    var y = new Date(nowMs).getUTCFullYear();
+    // Approx US: 2nd Sun Mar → 1st Sun Nov; EU similar (last Sun Mar/Oct).
+    // Use US bounds — EU differs by ~1 week; still inside 09–13 / 17–21 windows.
+    var start = _nthSundayUtc(y, 2, 2);
+    var end = _nthSundayUtc(y, 10, 1);
+    return nowMs >= start && nowMs < end;
+  }
+  function _inAuDst(nowMs: number): boolean {
+    var y = new Date(nowMs).getUTCFullYear();
+    // AU: first Sun Oct → first Sun Apr (spans year boundary)
+    var start = _nthSundayUtc(y, 9, 1);
+    var end = _nthSundayUtc(y, 3, 1);
+    return nowMs >= start || nowMs < end;
+  }
+
+  function buildIanaOffsetMap(nowMs: number): { [k: string]: number } {
+    var nDst = _inNorthernDst(nowMs);
+    var aDst = _inAuDst(nowMs);
+    return {
+      "Asia/Kolkata": 330, "Asia/Calcutta": 330, "Asia/Karachi": 300, "Asia/Dhaka": 360,
+      "Asia/Kathmandu": 345, "Asia/Colombo": 330, "Asia/Tokyo": 540, "Asia/Seoul": 540,
+      "Asia/Shanghai": 480, "Asia/Singapore": 480, "Asia/Hong_Kong": 480, "Asia/Dubai": 240,
+      "Asia/Jakarta": 420, "Asia/Bangkok": 420, "Asia/Manila": 480, "Asia/Tehran": 210,
+      // UK / Ireland (T1)
+      "Europe/London": nDst ? 60 : 0, "Europe/Dublin": nDst ? 60 : 0,
+      "Europe/Berlin": nDst ? 120 : 60, "Europe/Paris": nDst ? 120 : 60,
+      "Europe/Madrid": nDst ? 120 : 60, "Europe/Rome": nDst ? 120 : 60,
+      "Europe/Amsterdam": nDst ? 120 : 60, "Europe/Stockholm": nDst ? 120 : 60,
+      "Europe/Oslo": nDst ? 120 : 60, "Europe/Copenhagen": nDst ? 120 : 60,
+      "Europe/Helsinki": nDst ? 180 : 120, "Europe/Zurich": nDst ? 120 : 60,
+      "Europe/Vienna": nDst ? 120 : 60, "Europe/Brussels": nDst ? 120 : 60,
+      "Europe/Moscow": 180, "Europe/Istanbul": 180,
+      // USA / Canada (T1) — DST-aware
+      "America/New_York": nDst ? -240 : -300, "America/Toronto": nDst ? -240 : -300,
+      "America/Chicago": nDst ? -300 : -360, "America/Denver": nDst ? -360 : -420,
+      "America/Los_Angeles": nDst ? -420 : -480, "America/Phoenix": -420,
+      "America/Vancouver": nDst ? -420 : -480, "America/Edmonton": nDst ? -360 : -420,
+      "America/Winnipeg": nDst ? -300 : -360, "America/Halifax": nDst ? -180 : -240,
+      "America/Sao_Paulo": -180, "America/Mexico_City": nDst ? -300 : -360,
+      // Australia / NZ (T1) — southern DST (Brisbane/Perth no DST)
+      "Australia/Sydney": aDst ? 660 : 600, "Australia/Melbourne": aDst ? 660 : 600,
+      "Australia/Hobart": aDst ? 660 : 600, "Australia/Adelaide": aDst ? 630 : 570,
+      "Australia/Brisbane": 600, "Australia/Perth": 480,
+      "Pacific/Auckland": aDst ? 780 : 720,
+      "Africa/Cairo": 120, "Africa/Johannesburg": 120, "Africa/Lagos": 60,
+      // Windows TZ IDs (editor / some Unity builds write these to account.timezone)
+      "Eastern Standard Time": nDst ? -240 : -300,
+      "Central Standard Time": nDst ? -300 : -360,
+      "Mountain Standard Time": nDst ? -360 : -420,
+      "Pacific Standard Time": nDst ? -420 : -480,
+      "GMT Standard Time": nDst ? 60 : 0,
+      "India Standard Time": 330,
+      "AUS Eastern Standard Time": aDst ? 660 : 600,
+      "Tokyo Standard Time": 540,
+      "Korea Standard Time": 540,
+      "China Standard Time": 480,
+      "Singapore Standard Time": 480
+    };
+  }
+
+  /** Country → default IANA offset when client sent Local/empty/Unknown. US→ET. */
+  function offsetMinutesForCountry(cc: string, nowMs: number): number {
+    var nDst = _inNorthernDst(nowMs);
+    var aDst = _inAuDst(nowMs);
+    // Product default market = USA (Eastern). Unknown/empty country lands here
+    // so Local-timezone users enter Soft T1 US morning/evening windows.
+    var map: { [k: string]: number } = {
+      // Americas — US majority population is Eastern; West Coast still gets
+      // 06–10 local (usable) instead of 02–06 UTC night under the old default.
+      "US": nDst ? -240 : -300, "CA": nDst ? -240 : -300, "MX": nDst ? -300 : -360,
+      "BR": -180,
+      // Europe / UK
+      "GB": nDst ? 60 : 0, "IE": nDst ? 60 : 0, "DE": nDst ? 120 : 60, "FR": nDst ? 120 : 60,
+      "NL": nDst ? 120 : 60, "BE": nDst ? 120 : 60, "AT": nDst ? 120 : 60, "CH": nDst ? 120 : 60,
+      "SE": nDst ? 120 : 60, "NO": nDst ? 120 : 60, "DK": nDst ? 120 : 60, "FI": nDst ? 180 : 120,
+      "ES": nDst ? 120 : 60, "IT": nDst ? 120 : 60, "PT": nDst ? 60 : 0,
+      // APAC
+      "AU": aDst ? 660 : 600, "NZ": aDst ? 780 : 720, "JP": 540, "KR": 540,
+      "SG": 480, "HK": 480, "TW": 480, "CN": 480, "IN": 330, "ID": 420, "TH": 420,
+      "PH": 480, "MY": 480, "AE": 240, "IL": nDst ? 180 : 120,
+      "ZA": 120, "NG": 60, "EG": 120, "PK": 300, "BD": 360, "LK": 330, "NP": 345
+    };
+    var key = String(cc || NOTIF_DEFAULT_COUNTRY).toUpperCase();
+    return map[key] !== undefined ? map[key] : map[NOTIF_DEFAULT_COUNTRY];
+  }
+
+  function resolveCountryCodeForTz(nk: nkruntime.Nakama, userId: string, account?: any): string {
+    try {
+      var geoCc = GeoTier.getCountryForPushAnalytics(nk, userId);
+      if (geoCc) return String(geoCc).toUpperCase();
+    } catch (_) {}
+    try {
+      var acc: any = account || nk.accountGetId(userId);
+      if (acc && acc.user) {
+        var meta: any = {};
+        try {
+          if (acc.user.metadata) {
+            meta = typeof acc.user.metadata === "string"
+              ? JSON.parse(acc.user.metadata) : acc.user.metadata;
+          }
+        } catch (_) { meta = {}; }
+        if (meta && typeof meta.country === "string" && meta.country.length === 2) {
+          return String(meta.country).toUpperCase();
+        }
+        var loc = acc.user.location ? String(acc.user.location).trim().toUpperCase() : "";
+        if (/^[A-Z]{2}$/.test(loc)) return loc;
+        // lang_tag often carries region (en-US / en-IN) when country was never written.
+        var lang = acc.user.langTag ? String(acc.user.langTag).trim() : "";
+        var langM = /^[a-zA-Z]{2}-([A-Z]{2})$/.exec(lang);
+        if (langM) return langM[1];
+      }
+    } catch (_) {}
+    return NOTIF_DEFAULT_COUNTRY;
+  }
+
   function getUserTimezoneOffsetMinutes(nk: nkruntime.Nakama, userId: string): number {
+    var nowMs = Date.now();
     try {
       var account: any = nk.accountGetId(userId);
       var tz = account && account.user ? account.user.timezone : "";
@@ -1100,9 +1223,11 @@ namespace LegacyPush {
       // "unknown" fallback).
       var tzLower = String(tz || "").trim().toLowerCase();
       if (tzLower === "z" || tzLower === "utc" || tzLower === "gmt") return 0;
-      // Unparseable sentinels the client is known to emit → use default.
+      // Unparseable sentinels → country-aware default (US→ET, IN→IST, …).
+      // Missing country defaults to USA (Eastern).
       if (!tz || tzLower === "local" || tzLower === "unknown") {
-        return NOTIF_DEFAULT_TZ_OFFSET_MIN;
+        var ccBad = resolveCountryCodeForTz(nk, userId, account);
+        return offsetMinutesForCountry(ccBad, nowMs);
       }
       // Numeric offset, the canonical correct form the client should send:
       //   "+05:30", "-04:00", "+0530", "+9".
@@ -1111,27 +1236,41 @@ namespace LegacyPush {
         var sign = m[1] === "-" ? -1 : 1;
         return sign * (parseInt(m[2], 10) * 60 + parseInt(m[3] || "0", 10));
       }
-      // Common IANA fallbacks (cheap built-in lookup; no tz lib in Goja)
-      var iana: { [k: string]: number } = {
-        "Asia/Kolkata": 330, "Asia/Calcutta": 330, "Asia/Karachi": 300, "Asia/Dhaka": 360,
-        "Asia/Kathmandu": 345, "Asia/Colombo": 330, "Asia/Tokyo": 540, "Asia/Seoul": 540,
-        "Asia/Shanghai": 480, "Asia/Singapore": 480, "Asia/Hong_Kong": 480, "Asia/Dubai": 240,
-        "Asia/Jakarta": 420, "Asia/Bangkok": 420, "Asia/Manila": 480, "Asia/Tehran": 210,
-        "Europe/London": 0, "Europe/Dublin": 0, "Europe/Berlin": 60, "Europe/Paris": 60,
-        "Europe/Madrid": 60, "Europe/Rome": 60, "Europe/Moscow": 180, "Europe/Istanbul": 180,
-        "America/New_York": -300, "America/Toronto": -300, "America/Chicago": -360,
-        "America/Denver": -420, "America/Los_Angeles": -480, "America/Sao_Paulo": -180,
-        "America/Mexico_City": -360, "Africa/Cairo": 120, "Africa/Johannesburg": 120,
-        "Africa/Lagos": 60, "Australia/Sydney": 600, "Pacific/Auckland": 720
-      };
+      var iana = buildIanaOffsetMap(nowMs);
       if (iana[String(tz)] !== undefined) return iana[String(tz)];
+      // Unknown IANA/Windows string → country (default US) before hard-fail.
+      var ccUnk = resolveCountryCodeForTz(nk, userId, account);
+      return offsetMinutesForCountry(ccUnk, nowMs);
     } catch (_) {}
-    return NOTIF_DEFAULT_TZ_OFFSET_MIN;
+    return offsetMinutesForCountry(NOTIF_DEFAULT_COUNTRY, nowMs);
   }
 
   function getUserLocalHour(nk: nkruntime.Nakama, userId: string): number {
     var offsetMin = getUserTimezoneOffsetMinutes(nk, userId);
     return new Date(Date.now() + offsetMin * 60000).getUTCHours();
+  }
+
+  // Soft T1 (option B): never hard-gate by country. Track geo for Discord
+  // reports so US/UK/AU health is visible while global sends continue.
+  type GeoBucket = { [k: string]: { sent: number; gated: number } };
+  function bumpGeoStats(
+    byCountry: GeoBucket,
+    byTier: GeoBucket,
+    nk: nkruntime.Nakama,
+    userId: string,
+    didSend: boolean
+  ): void {
+    var cc = "";
+    try { cc = GeoTier.getCountryForPushAnalytics(nk, userId) || ""; } catch (_) { cc = ""; }
+    // Soft T1 product default = USA when geo never resolved (matches send-window default).
+    if (!cc) cc = NOTIF_DEFAULT_COUNTRY;
+    var tier = "unknown";
+    try { tier = GeoTier.classifyCountryTier(cc); } catch (_) { tier = "unknown"; }
+    var key = cc || NOTIF_DEFAULT_COUNTRY;
+    if (!byCountry[key]) byCountry[key] = { sent: 0, gated: 0 };
+    if (!byTier[tier]) byTier[tier] = { sent: 0, gated: 0 };
+    if (didSend) { byCountry[key].sent++; byTier[tier].sent++; }
+    else { byCountry[key].gated++; byTier[tier].gated++; }
   }
 
   function isInQuietHours(nk: nkruntime.Nakama, userId: string): boolean {
@@ -1478,6 +1617,8 @@ namespace LegacyPush {
     sent: number;
     gated: number;
     byLocale: { [l: string]: { sent: number; gated: number } };
+    byCountry: { [cc: string]: { sent: number; gated: number } };
+    byTier: { [tier: string]: { sent: number; gated: number } };
     gateReasons: PushAlerts.GateReasons;
     dedupedDevices: number;
     reported: boolean;
@@ -1486,14 +1627,20 @@ namespace LegacyPush {
   function readDailyQuizCursor(nk: nkruntime.Nakama, todayKey: string): DailyQuizCursor {
     var fresh: DailyQuizCursor = {
       dateKey: todayKey, offset: 0, scanned: 0, sent: 0, gated: 0,
-      byLocale: {}, gateReasons: { quietHours: 0, alreadySent: 0, noToken: 0, sendFailed: 0 },
+      byLocale: {}, byCountry: {}, byTier: {},
+      gateReasons: { quietHours: 0, alreadySent: 0, noToken: 0, sendFailed: 0 },
       dedupedDevices: 0, reported: false
     };
     try {
       var objs = nk.storageRead([{ collection: DQ_CURSOR_COLLECTION, key: DQ_CURSOR_KEY, userId: Constants.SYSTEM_USER_ID }]);
       if (objs && objs.length > 0 && objs[0].value) {
         var v: any = objs[0].value;
-        if (v.dateKey === todayKey) return v as DailyQuizCursor;
+        if (v.dateKey === todayKey) {
+          if (!v.byCountry) v.byCountry = {};
+          if (!v.byTier) v.byTier = {};
+          if (!v.byLocale) v.byLocale = {};
+          return v as DailyQuizCursor;
+        }
       }
     } catch (_) { /* fall through to fresh */ }
     return fresh;
@@ -1538,6 +1685,8 @@ namespace LegacyPush {
 
     var cursor = readDailyQuizCursor(nk, todayKey);
     var byLocale = cursor.byLocale;
+    var byCountry = cursor.byCountry || {};
+    var byTier = cursor.byTier || {};
     var gateReasons = cursor.gateReasons;
     var sent = 0, gated = 0, scanned = 0;
     // One shared set per run: devices (endpoint ARNs) already pushed. Catches
@@ -1561,15 +1710,26 @@ namespace LegacyPush {
         // The scheduler comment always documented this range; the old 07–22 guard
         // let pushes fire at 7 AM or 9 PM, which both feel wrong and caused
         // the screenshot "5 notifications before noon" problem.
-        if (h < 9 || h >= 13) { gated++; gateReasons.quietHours++; byLocale[locale].gated++; continue; }
-        if (hasMarker(nk, u, "daily_quiz", todayKey)) { gated++; gateReasons.alreadySent++; byLocale[locale].gated++; continue; }
+        if (h < 9 || h >= 13) {
+          gated++; gateReasons.quietHours++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }
+        if (hasMarker(nk, u, "daily_quiz", todayKey)) {
+          gated++; gateReasons.alreadySent++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }
         var topic = pickQuizTopic(quiz, locale);
         var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "daily_quiz",
           "daily_quiz_title", "daily_quiz_body", { topic: topic },
           { data: { screen: "daily_quiz" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
-        if (ok) { recordMarker(nk, u, "daily_quiz", todayKey); sent++; byLocale[locale].sent++; }
-        else {
+        if (ok) {
+          recordMarker(nk, u, "daily_quiz", todayKey); sent++; byLocale[locale].sent++;
+          bumpGeoStats(byCountry, byTier, nk, u, true);
+        } else {
           gated++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
           // Distinguish no-token from send-failure cheaply using the exported helper
           // (reads the same storage key sendLocalizedPushToUser already read).
           if (!LegacyPush.userHasPushTokens(nk, u)) {
@@ -1591,6 +1751,8 @@ namespace LegacyPush {
     cursor.sent += sent;
     cursor.gated += gated;
     cursor.byLocale = byLocale;
+    cursor.byCountry = byCountry;
+    cursor.byTier = byTier;
     cursor.gateReasons = gateReasons;
     cursor.dedupedDevices += runDedupStats.skippedDevices;
     cursor.offset = completedPass ? 0 : offset;
@@ -1600,7 +1762,8 @@ namespace LegacyPush {
       PushAlerts.postCronReport(nk, logger, {
         cronName: "daily_quiz", dateKey: todayKey, topic: reportTopic,
         scanned: cursor.scanned, sent: cursor.sent, gated: cursor.gated,
-        byLocale: cursor.byLocale, gateReasons: cursor.gateReasons,
+        byLocale: cursor.byLocale, byCountry: cursor.byCountry, byTier: cursor.byTier,
+        gateReasons: cursor.gateReasons,
         dedupedDevices: cursor.dedupedDevices
       });
       cursor.reported = true;
@@ -1654,6 +1817,8 @@ namespace LegacyPush {
     var todayKey = todayDateKey();
     var sent = 0, gated = 0, scanned = 0;
     var byLocale: { [l: string]: { sent: number; gated: number } } = {};
+    var byCountry: GeoBucket = {};
+    var byTier: GeoBucket = {};
     var gateReasons: PushAlerts.GateReasons = { quietHours: 0, alreadySent: 0, noToken: 0, sendFailed: 0 };
     var quizMissedAll = false;
     // Per-run memo of the premium quiz per base language. The old code called
@@ -1688,17 +1853,32 @@ namespace LegacyPush {
         // Sending it in the morning (old guard: 09:00–22:00) caused it to land
         // 13 minutes after the regular daily quiz — two back-to-back pushes that
         // felt like spam. Evening is the natural "second touch" of the day.
-        if (h < 17 || h >= 21) { gated++; gateReasons.quietHours++; byLocale[locale].gated++; continue; }
-        if (hasMarker(nk, u, "daily_premium_quiz", todayKey)) { gated++; gateReasons.alreadySent++; byLocale[locale].gated++; continue; }
+        if (h < 17 || h >= 21) {
+          gated++; gateReasons.quietHours++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }
+        if (hasMarker(nk, u, "daily_premium_quiz", todayKey)) {
+          gated++; gateReasons.alreadySent++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }
         var quiz = premiumQuizForLocale(locale);
-        if (!quiz) { gated++; byLocale[locale].gated++; quizMissedAll = true; continue; }
+        if (!quiz) {
+          gated++; byLocale[locale].gated++; quizMissedAll = true;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }
         var topic = pickQuizTopic(quiz, locale);
         var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "daily_premium_quiz",
           "daily_premium_quiz_title", "daily_premium_quiz_body", { topic: topic },
           { data: { screen: "daily_premium_quiz" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
-        if (ok) { recordMarker(nk, u, "daily_premium_quiz", todayKey); sent++; byLocale[locale].sent++; }
-        else {
+        if (ok) {
+          recordMarker(nk, u, "daily_premium_quiz", todayKey); sent++; byLocale[locale].sent++;
+          bumpGeoStats(byCountry, byTier, nk, u, true);
+        } else {
           gated++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
           if (!LegacyPush.userHasPushTokens(nk, u)) {
             gateReasons.noToken++;
           } else {
@@ -1743,7 +1923,8 @@ namespace LegacyPush {
         cronName: "premium_daily_quiz", dateKey: todayKey, topic: reportTopic,
         scanned: scanned, sent: sent, gated: gated,
         noQuiz: isNoQuiz,
-        byLocale: byLocale, gateReasons: gateReasons,
+        byLocale: byLocale, byCountry: byCountry, byTier: byTier,
+        gateReasons: gateReasons,
         dedupedDevices: runDedupStats.skippedDevices
       });
     }
@@ -1876,6 +2057,8 @@ namespace LegacyPush {
     var todayKey = todayDateKey();
     var sent = 0, gated = 0, scanned = 0;
     var byLocale: { [l: string]: { sent: number; gated: number } } = {};
+    var byCountry: GeoBucket = {};
+    var byTier: GeoBucket = {};
     var gateReasons: PushAlerts.GateReasons = { quietHours: 0, alreadySent: 0, noToken: 0, sendFailed: 0 };
     var batch = 100, offset = 0;
     // Cross-account device dedup within this run (same phone under multiple accounts).
@@ -1895,8 +2078,16 @@ namespace LegacyPush {
         var locale = getUserLocale(nk, u);
         if (!byLocale[locale]) byLocale[locale] = { sent: 0, gated: 0 };
         var h = getUserLocalHour(nk, u);
-        if (h < 10 || h >= 20) { gated++; gateReasons.quietHours++; byLocale[locale].gated++; continue; }  // weekly window 10:00–20:00 local
-        if (hasMarker(nk, u, dayMarkerKey, todayKey)) { gated++; gateReasons.alreadySent++; byLocale[locale].gated++; continue; }
+        if (h < 10 || h >= 20) {
+          gated++; gateReasons.quietHours++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }  // weekly window 10:00–20:00 local
+        if (hasMarker(nk, u, dayMarkerKey, todayKey)) {
+          gated++; gateReasons.alreadySent++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
+          continue;
+        }
         // Push one notification mentioning whichever changed type has copy in user's locale (first match).
         var pushedForType: string | null = null;
         for (var c = 0; c < changedTypes.length; c++) {
@@ -1908,9 +2099,12 @@ namespace LegacyPush {
         var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "weekly_quiz",
           "weekly_quiz_title", "weekly_quiz_body", { type: typeLabel },
           { data: { screen: "weekly_quiz", type: pushedForType }, dedupArns: runDedupArns, dedupStats: runDedupStats });
-        if (ok) { recordMarker(nk, u, dayMarkerKey, todayKey); sent++; byLocale[locale].sent++; }
-        else {
+        if (ok) {
+          recordMarker(nk, u, dayMarkerKey, todayKey); sent++; byLocale[locale].sent++;
+          bumpGeoStats(byCountry, byTier, nk, u, true);
+        } else {
           gated++; byLocale[locale].gated++;
+          bumpGeoStats(byCountry, byTier, nk, u, false);
           if (!LegacyPush.userHasPushTokens(nk, u)) { gateReasons.noToken++; } else { gateReasons.sendFailed++; }
         }
       }
@@ -1922,7 +2116,9 @@ namespace LegacyPush {
     // (it runs hourly; a no-change report every hour would be noise).
     PushAlerts.postCronReport(nk, logger, {
       cronName: "weekly_quiz", dateKey: todayKey, topic: changedTypes.join(", "),
-      scanned: scanned, sent: sent, gated: gated, byLocale: byLocale, gateReasons: gateReasons,
+      scanned: scanned, sent: sent, gated: gated,
+      byLocale: byLocale, byCountry: byCountry, byTier: byTier,
+      gateReasons: gateReasons,
       dedupedDevices: runDedupStats.skippedDevices
     });
     return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, changedTypes: changedTypes, dedupedDevices: runDedupStats.skippedDevices });
@@ -2483,6 +2679,56 @@ namespace LegacyPush {
     return JSON.stringify({ success: true });
   }
 
+  // Read-only health for external monitors (n8n). Does NOT send pushes —
+  // Nakama's in-process notif_scheduler_v1 owns all cron dispatch.
+  function rpcNotifPushHealth(ctx: nkruntime.Context, _logger: nkruntime.Logger, nk: nkruntime.Nakama, _payload: string): string {
+    if (ctx.userId) return RpcHelpers.errorResponse("Admin only");
+    var todayKey = todayDateKey();
+    var nowMin = Math.floor(Date.now() / 60000);
+    var utcHour = new Date().getUTCHours();
+    var daily = readDailyQuizCursor(nk, todayKey);
+    var schedTasks: { [k: string]: number } = {};
+    var schedUpdatedAt = 0;
+    try {
+      var srow = nk.storageRead([{
+        collection: "notif_scheduler",
+        key: "dispatch_state_v1",
+        userId: Constants.SYSTEM_USER_ID
+      }]);
+      if (srow && srow.length > 0 && srow[0].value) {
+        var sv: any = srow[0].value;
+        if (sv.tasks) schedTasks = sv.tasks as { [k: string]: number };
+        if (typeof sv.updatedAt === "number") schedUpdatedAt = sv.updatedAt;
+      }
+    } catch (_) {}
+    var dailyAge = schedTasks["daily_quiz"] ? (nowMin - schedTasks["daily_quiz"]) : 9999;
+    var premiumAge = schedTasks["premium_daily_quiz"] ? (nowMin - schedTasks["premium_daily_quiz"]) : 9999;
+    var schedulerFresh = dailyAge <= 45 && premiumAge <= 90;
+    // After US Eastern morning window ends (~17:00 UTC EDT / 18:00 EST), expect sends.
+    var dailyExpected = utcHour >= 18;
+    var premiumExpected = utcHour >= 2 && utcHour < 9; // post US ET evening (21:00 ET ≈ 01–02 UTC)
+    var alerts: string[] = [];
+    if (!schedulerFresh) alerts.push("scheduler_stale");
+    if (dailyExpected && daily.dateKey === todayKey && daily.sent < 50) alerts.push("daily_sent_low");
+    if (dailyExpected && daily.dateKey === todayKey && (daily.gateReasons && daily.gateReasons.sendFailed > 200)) {
+      alerts.push("daily_send_failed_high");
+    }
+    return RpcHelpers.successResponse({
+      ok: alerts.length === 0,
+      todayKey: todayKey,
+      utcHour: utcHour,
+      defaultCountry: NOTIF_DEFAULT_COUNTRY,
+      scheduler: { fresh: schedulerFresh, updatedAt: schedUpdatedAt, dailyAgeMin: dailyAge, premiumAgeMin: premiumAge, tasks: schedTasks },
+      daily: {
+        sent: daily.sent, gated: daily.gated, scanned: daily.scanned,
+        reported: !!daily.reported, gateReasons: daily.gateReasons || {},
+        byTier: daily.byTier || {}, expected: dailyExpected
+      },
+      premiumExpected: premiumExpected,
+      alerts: alerts
+    });
+  }
+
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("push_register_token", rpcPushRegisterToken);
     initializer.registerRpc("push_send_event", rpcPushSendEvent);
@@ -2500,5 +2746,6 @@ namespace LegacyPush {
     initializer.registerRpc("notif_cron_review", rpcNotifCronReview);
     initializer.registerRpc("notif_friend_request_sent", rpcNotifFriendRequestSent);
     initializer.registerRpc("notif_friend_challenge", rpcNotifFriendChallenge);
+    initializer.registerRpc("notif_push_health", rpcNotifPushHealth);
   }
 }

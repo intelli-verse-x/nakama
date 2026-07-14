@@ -9,11 +9,11 @@ declare var __TS_OWNED_RPCS: { [id: string]: boolean } | undefined;
 
 // Group membership cross-device sync after-hooks. Defined as global-scope
 // functions in data/modules/groups/groups.js (a discovered module → hoisted to
-// the VM global object). They MUST be registered from here rather than from
-// groups.js's own InitModule: postbuild.js renames discovered-module InitModule
-// functions to __ModuleInit_N and never calls them, and its AST bridge only
-// forwards registerRpc / registerMatch — registerAfterJoinGroup /
-// registerAfterLeaveGroup calls placed there would be silently dropped.
+// the VM global object). Registered by postbuild.js's generated InitModule
+// wrapper (section 5b-bis) — NOT from this file: postbuild renames this
+// InitModule to __OriginalInitModule, and Nakama's AST walker only inspects
+// the final InitModule declaration, so registrations here always failed with
+// "function key could not be extracted: not found".
 declare function groupAfterJoinHook(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: void, request: nkruntime.JoinGroupRequest): void;
 declare function groupAfterLeaveHook(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: void, request: nkruntime.LeaveGroupRequest): void;
 
@@ -171,6 +171,16 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[LiveBanner] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- Quizverse Brain contextual prompt gate ----
+  // Server-authoritative daily/weekly frequency, cross-device OCC reservation,
+  // idempotent lifecycle commits, successful-visit tracking, and telemetry.
+  try {
+    QuizVerseBrainPrompts.register(initializer);
+    logger.info("[BrainPrompt] evaluate + commit RPCs registered");
+  } catch (err: any) {
+    logger.error("[BrainPrompt] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- QuizVerse product telemetry (quizverse_product_metrics → n8n WF-09) ----
   // Independent of QuizVerse Next.js /admin/metrics — both may call WF-09 in parallel.
   try {
@@ -196,6 +206,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QvEntitlements] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- Link & Play server-authoritative daily note quota ----
+  try {
+    QvLapNoteQuota.register(initializer);
+    logger.info("[QvLapNoteQuota] quizverse_lap_note_quota registered");
+  } catch (err: any) {
+    logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
   try {
     QuizVerseRevenueCatAdmin.register(initializer);
@@ -210,6 +228,24 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[QvExplainerVideos] quizverse_videos_status/consume/grant registered");
   } catch (err: any) {
     logger.error("[QvExplainerVideos] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- Intelliverse Router app-id credit wallets (s2s-only RPCs) ----
+  try {
+    logger.info("[RouterWallet] Registering router wallet RPCs...");
+    RouterWallet.register(initializer);
+  } catch (err: any) {
+    logger.error("[RouterWallet] Failed to register: " + (err.message || String(err)));
+  }
+
+  // ---- Intelliverse world-trivia game loop (playable world templates) ----
+  // Registered AFTER RouterWallet so the session-finish reward hook can find
+  // the wallet namespace (soft dependency — skips crediting when absent).
+  try {
+    logger.info("[WorldTrivia] Registering world trivia RPCs...");
+    WorldTrivia.register(initializer);
+  } catch (err: any) {
+    logger.error("[WorldTrivia] Failed to register: " + (err.message || String(err)));
   }
 
   // ---- Legacy System Registration (backward-compatible RPCs) ----
@@ -427,27 +463,15 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     SocialEngagementExtras.register(initializer);
 
     // ── Group membership cross-device sync hooks ──────────────────────────
-    // After a successful built-in JoinGroup / LeaveGroup, send the acting user
-    // a self-notification (code 500 / 501) so ALL of their open sockets — i.e.
-    // their other devices — refresh "My Groups" in real time. Without this,
-    // only the device that performed the action knows the membership changed.
-    // Handlers live in data/modules/groups/groups.js (global scope).
-    try {
-      if (typeof groupAfterJoinHook === "function") {
-        initializer.registerAfterJoinGroup(groupAfterJoinHook);
-        logger.info("[Groups] registerAfterJoinGroup hook installed (cross-device sync, code 500)");
-      } else {
-        logger.warn("[Groups] groupAfterJoinHook not found — cross-device join sync disabled");
-      }
-      if (typeof groupAfterLeaveHook === "function") {
-        initializer.registerAfterLeaveGroup(groupAfterLeaveHook);
-        logger.info("[Groups] registerAfterLeaveGroup hook installed (cross-device sync, code 501)");
-      } else {
-        logger.warn("[Groups] groupAfterLeaveHook not found — cross-device leave sync disabled");
-      }
-    } catch (err: any) {
-      logger.error("[Groups] Failed to install group membership sync hooks: " + (err && err.message ? err.message : String(err)));
-    }
+    // NB: registerAfterJoinGroup / registerAfterLeaveGroup are NOT called
+    // here. postbuild renames this function to __OriginalInitModule, and
+    // Nakama's AST walker only inspects the body of the FINAL `InitModule`
+    // declaration — so any hook registration placed here fails at runtime
+    // with "js registerAfterJoinGroup function key could not be extracted:
+    // not found" (it did, on every boot). The registrations are emitted by
+    // postbuild.js (section 5b-bis) into its generated InitModule wrapper,
+    // pointing at the global groupAfterJoinHook / groupAfterLeaveHook
+    // declared in data/modules/groups/groups.js.
 
     logger.info("[Legacy] Registering push RPCs...");
     LegacyPush.register(initializer);
@@ -666,6 +690,24 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     } catch (err: any) {
       logger.error("[LearnerToolbelt] failed to register: " + (err && err.message ? err.message : String(err)));
     }
+
+  // ---- LMS Bridge (LTI 1.3 — Canvas / Moodle integration) ----
+  // Nakama side of the LMS integration (docs/LMS_INTEGRATION_RESEARCH_AND_PLAN.md
+  // §5/§8): platform registry, LTI sub → Nakama user mapping (custom auth),
+  // resource-link/pack bindings, server-side grading vs quizverse_packs, the
+  // AGS grade queue + RS256 client-credentials score push worker, and the
+  // pre-parsed content import pipeline with fidelity reports. The web tier
+  // (quizverse.world) owns OIDC/JWKS/deep-link UI and calls these RPCs with
+  // LMS_BRIDGE_SERVICE_TOKEN. Single-arg register() so postbuild's
+  // autoInvokeRegister re-runs it on every pooled Goja VM.
+  // See data/modules/src/lms-bridge/lms_bridge.ts.
+  try {
+    logger.info("[LmsBridge] Registering lms_* RPCs (platforms, launch, deeplink bind, attempt grading, AGS grade push, pack import, link status)...");
+    LmsBridge.register(initializer);
+    logger.info("[LmsBridge] lms_platform_upsert/_list/_delete, lms_launch_session, lms_deeplink_bind, lms_attempt_complete, lms_grade_push, lms_import_pack, lms_link_status registered");
+  } catch (err: any) {
+    logger.error("[LmsBridge] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
 
     logger.info("[KbEnrichment] Registering KB enrichment cron RPCs (continuous derived-attribute refresh)...");
     try {
@@ -931,6 +973,39 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[Research] quizverse_research_consent/_assignment_get/_diagnostic_submit/_survey_submit/_waitlist_join/_export registered");
   } catch (err: any) {
     logger.error("[Research] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- Seed Questions ("Staged Questions") engine ----
+  // Keeps 2–3 quality-gated, never-seen, difficulty-adapted question sets
+  // staged per (user, mode, topic), fed by 13 external content-source
+  // connectors (archive.org, WolframAlpha, Gutenberg, everynoise/Deezer,
+  // Semantic Scholar, JustWatch, YouTube→LLM, TinEye provenance, ...).
+  // Public surface: seedquestions.quizverse.world (deploy/seedquestions/).
+  // Single-arg register() so postbuild's autoInvokeRegister re-runs it on
+  // every pooled Goja VM. See data/modules/src/seed-questions/.
+  try {
+    logger.info("[SeedQ] Registering quizverse_seedq_* RPCs (staged sets, review, ingest, sources, focus tracks)...");
+    SeedQuestions.register(initializer);
+    logger.info("[SeedQ] quizverse_seedq_get_staged/_consume_set/_review/_focus_tracks/_sources/_ingest/_ingest_tick/_pool_stats/_asset_job/_provenance registered");
+  } catch (err: any) {
+    logger.error("[SeedQ] Failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
+  // ---- Aahaa (Wow Moments) engine ----
+  // Per-userID "the app gets me" moments: deterministic Fact Pack (KB-1) →
+  // deducible catalog (tiers S–E) → respect-ladder ranking with server-side
+  // caps/cooldowns/mutes/CTR kill switch → per-user feed. Includes the
+  // Repetition-Fatigue intercept (wow.e.pool_exhausted + rating suppression,
+  // fed by the seedq engine), the No-Hallucination validator for AI Host /
+  // Fortune Teller / Tutor narration, and the generate-all cron batch that
+  // builds an Aahaa feed for EVERY userID with quiz history.
+  // See data/modules/src/aahaa/ + docs/AAHAA_WOW_ENGINE.md.
+  try {
+    logger.info("[Aahaa] Registering quizverse_aahaa_* RPCs (feed, react, fact pack, profile, generate-all, validator, catalog)...");
+    Aahaa.register(initializer);
+    logger.info("[Aahaa] quizverse_aahaa_get/_react/_fact_pack/_profile_set/_generate_all/_validate/_catalog registered");
+  } catch (err: any) {
+    logger.error("[Aahaa] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
 
   // ---- Fantasy Cricket RPCs ----

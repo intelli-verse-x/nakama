@@ -1,4 +1,4 @@
-﻿// question_cache.ts — QuizVerse question-delivery cache layer.
+// question_cache.ts — QuizVerse question-delivery cache layer.
 //
 // NO RPCS IN THIS FILE — utility namespace only.
 // Called by get_questions.ts (Phase 1b) and by a background cron refresh.
@@ -54,6 +54,7 @@ namespace QvQuestionCache {
   var COL_CACHE        = "qv_cache_";        // full key: qv_cache_{topic}
   var COL_CIRCUIT      = "qv_circuit_breakers";
   var COL_REFRESH_GATE = "qv_cache_refresh_gate";
+  var COL_REFRESH_REQ  = "qv_cache_refresh_requests";
   var REFRESH_GATE_MS  = 30 * 1000;          // dedupe concurrent / back-to-back refreshes
 
   // Per-topic cache TTL (ms)
@@ -66,11 +67,14 @@ namespace QvQuestionCache {
     sports:    2  * 3600000,
     news:      6  * 3600000,
     space:     6  * 3600000,
+    math:      6  * 3600000,
+    history:   12 * 3600000,
     food:      12 * 3600000,
     cocktail:  12 * 3600000,
     anime:     24 * 3600000,
     dog:       24 * 3600000,
     disney:    24 * 3600000,
+    art:       7  * 24 * 3600000,
     pokemon:   72 * 3600000,
     ghibli:    72 * 3600000,
     starwars:  72 * 3600000,
@@ -112,14 +116,15 @@ namespace QvQuestionCache {
   //   NASA        → https://api.nasa.gov  (already defaults to DEMO_KEY)
 
   var FALLBACK_KEYS: { [k: string]: string } = {
-    TMDB_API_KEY:       "93ca6d6373e2584a56bfe144bee48280",
+    TMDB_API_KEY: "93ca6d6373e2584a56bfe144bee48280",
+    REST_COUNTRIES_API_KEY: "rc_live_97dedc18b8484adbbef2908738179d54",
     LASTFM_API_KEY:     "",   // ← paste your Last.fm key here
-    GNEWS_API_KEY:      "996c2e560c01a91df9d4a9ddbef0e38e",
-    CURRENTS_API_KEY:   "vJ7f8IPcf_vrhpwk2_-wqzVOpFCxHV26zMhKv4NPV_KiXb-r",
+    GNEWS_API_KEY: "996c2e560c01a91df9d4a9ddbef0e38e",
+    CURRENTS_API_KEY: "vJ7f8IPcf_vrhpwk2_-wqzVOpFCxHV26zMhKv4NPV_KiXb-r",
     MEDIASTACK_API_KEY: "ec6ef35b59624891e5604efb140adefb",
-    NEWSAPI_API_KEY:    "5cbc52d4e9e14df683ed965b04cbf6fb",
+    NEWSAPI_API_KEY: "5cbc52d4e9e14df683ed965b04cbf6fb",
     GUARDIAN_API_KEY:   "test",   // Guardian developer tier — replace with production key when ready
-    NASA_API_KEY:       "g2ofGlzt9YRi0pt2xHhLjCygLWdi6536mEGezmr9"   // safe public fallback (50 req/day)
+    NASA_API_KEY: "g2ofGlzt9YRi0pt2xHhLjCygLWdi6536mEGezmr9"   // safe public fallback (50 req/day)
   };
 
   function envKey(env: any, key: string): string {
@@ -258,13 +263,14 @@ namespace QvQuestionCache {
 
   function topicProvider(topic: string): string {
     var map: { [t: string]: string } = {
-      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
+      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan+anilist+opentdb", pokemon: "pokeapi",
       cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
       ghibli: "ghibli", disney: "disney", starwars: "swapi",
       countries: "restcountries", flags: "restcountries",
-      space: "nasa", movies: "tmdb", sports: "sportsdb",
-      music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
-      video_quiz: "catalog", ai: "claude"
+      space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
+      music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
+      video_quiz: "catalog", ai: "claude",
+      math: "opentdb", art: "artic", history: "opentdb+jservice"
     };
     return map[topic] || topic;
   }
@@ -299,6 +305,33 @@ namespace QvQuestionCache {
       return JSON.parse(resp.body);
     }
     throw new Error("httpGet exhausted retries for " + url.substring(0, 80));
+  }
+
+  function httpPost(nk: nkruntime.Nakama, url: string, bodyObj: any, extraHeaders?: { [k: string]: string }): any {
+    var headers: { [k: string]: string } = { "Accept": "application/json", "Content-Type": "application/json", "User-Agent": "QuizVerse/1.0" };
+    if (extraHeaders) {
+      for (var k2 in extraHeaders) {
+        if (extraHeaders.hasOwnProperty(k2)) headers[k2] = extraHeaders[k2];
+      }
+    }
+    var backoffMs2 = 1000;
+    for (var attempt2 = 0; attempt2 <= HTTP_MAX_RETRIES; attempt2++) {
+      if (attempt2 > 0) sleep(backoffMs2);
+      var resp2 = nk.httpRequest(url, "post", headers, JSON.stringify(bodyObj));
+      if (!resp2) throw new Error("no_response from " + url.substring(0, 80));
+      if (resp2.code === 429) {
+        if (attempt2 === HTTP_MAX_RETRIES) {
+          throw new Error("HTTP 429 rate-limited after " + HTTP_MAX_RETRIES + " retries: " + url.substring(0, 80));
+        }
+        backoffMs2 = backoffMs2 * 2;
+        continue;
+      }
+      if (resp2.code < 200 || resp2.code >= 300) {
+        throw new Error("HTTP " + resp2.code + " from " + url.substring(0, 80));
+      }
+      return JSON.parse(resp2.body);
+    }
+    throw new Error("httpPost exhausted retries for " + url.substring(0, 80));
   }
 
   // ── Circuit breaker ────────────────────────────────────────────────────────
@@ -667,106 +700,157 @@ namespace QvQuestionCache {
   }
 
   // ── 2. Jikan (Anime) ──────────────────────────────────────────────────────
+  // ── 3a. AniList (Anime, bonus) — free, keyless GraphQL, different pool than Jikan ──
+  // #QVVBS-CACHE (2026-07): requested via Firecrawl research for more free anime
+  // content variety. AniList (https://graphql.anilist.co) needs no API key for
+  // public data and ranks by a different popularity signal than Jikan/MAL, so its
+  // top-N barely overlaps Jikan's — this is genuinely new questions, not the same
+  // ~75 titles re-templated. Best-effort only: AniList failing must never fail the
+  // "anime" topic since Jikan (fetchJikan) already covers it on its own.
+  function fetchAniList(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var query = "query($page:Int,$perPage:Int){Page(page:$page,perPage:$perPage){media(type:ANIME,sort:POPULARITY_DESC,isAdult:false){title{english romaji}startDate{year}episodes genres coverImage{large}}}}";
+    var media: any[] = [];
+    for (var pg2 = 1; pg2 <= 2; pg2++) {
+      try {
+        var gqlResp: any = httpPost(nk, "https://graphql.anilist.co", { query: query, variables: { page: pg2, perPage: 50 } });
+        if (gqlResp && gqlResp.data && gqlResp.data.Page && Array.isArray(gqlResp.data.Page.media)) {
+          media = media.concat(gqlResp.data.Page.media);
+        }
+      } catch (alErr: any) {
+        logger.debug("[QvQCache/anilist] page " + pg2 + " fetch failed: " + (alErr && alErr.message));
+      }
+    }
+    if (media.length === 0) return results; // best-effort — Jikan already covers this topic
+
+    // Image Guess must ask players to identify the pictured anime. The previous
+    // genre/year templates displayed a cover while asking unrelated metadata,
+    // which made the mode feel internally inconsistent.
+    var allTitlesAL: string[] = [];
+    for (var ag2 = 0; ag2 < media.length; ag2++) {
+      var mediaTitle = media[ag2] && media[ag2].title
+        ? (media[ag2].title.english || media[ag2].title.romaji)
+        : "";
+      if (mediaTitle) allTitlesAL.push(String(mediaTitle));
+    }
+
+    for (var mi = 0; mi < media.length; mi++) {
+      var m: any = media[mi];
+      try {
+        var titleAL: string = (m.title && (m.title.english || m.title.romaji)) || "Unknown";
+        var coverAL: string | null = (m.coverImage && m.coverImage.large) || null;
+        var mediaAL: any = coverAL ? { type: "image", url: coverAL, thumbnail_url: null, duration_seconds: null, mime_type: "image/jpeg" } : null;
+        if (!coverAL) continue;
+
+        var excludeTitleAL: { [k: string]: boolean } = {};
+        excludeTitleAL[titleAL] = true;
+        var wrongTitlesAL = pickExcluding(allTitlesAL, excludeTitleAL, 3);
+        if (wrongTitlesAL.length < 3) continue;
+
+        var titleOptsAL: RawOpt[] = [{ text: titleAL, is_correct: true }];
+        for (var wti2 = 0; wti2 < wrongTitlesAL.length; wti2++) {
+          titleOptsAL.push({ text: wrongTitlesAL[wti2] as string, is_correct: false });
+        }
+        results.push({
+          provider_key: "anilist_identity_" + djb2(titleAL),
+          topic: "anime", lang: "en",
+          question_text: "Which anime is shown in this image?",
+          question_type: "single_select",
+          raw_options: titleOptsAL, has_media: true, media: mediaAL,
+          explanation: "The image shows \"" + titleAL + "\".",
+          difficulty: "medium", provider: "anilist",
+          meta: { title: titleAL }
+        });
+      } catch (e: any) { logger.debug("[QvQCache/anilist] skip: " + (e && e.message)); }
+    }
+    return results;
+  }
+
   function fetchJikan(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
     var results: RawQuestion[] = [];
-    var data = httpGet(nk, "https://api.jikan.moe/v4/top/anime?page=1&limit=25&filter=bypopularity");
-    if (!data || !Array.isArray(data.data)) throw new Error("Jikan: no data array");
-
-    var animeList: any[] = data.data;
-    // Collect all genres from results for wrong-answer pool
-    var genreSet: { [g: string]: boolean } = {};
-    for (var ag = 0; ag < animeList.length; ag++) {
-      var gens: any[] = animeList[ag].genres || [];
-      for (var gi2 = 0; gi2 < gens.length; gi2++) genreSet[gens[gi2].name] = true;
+    // #QVVBS-CACHE: was a single page (25 anime) forever — the exact same top-25
+    // list every refresh, capping the server-wide "anime" pool at ~24 questions
+    // post-quality-gate (2026-07 "limited pool / repeated questions" report). Jikan
+    // allows up to 25/page; pulling 3 pages triples the source pool to ~75 distinct
+    // anime per refresh, compounding with the merge-on-refresh accumulation in
+    // refreshCache(). Jikan's public rate limit is 3 req/s / 60 req/min, so 3
+    // sequential calls here are well within budget.
+    var animeList: any[] = [];
+    for (var pg = 1; pg <= 3; pg++) {
+      try {
+        var pageData: any = httpGet(nk, "https://api.jikan.moe/v4/top/anime?page=" + pg + "&limit=25&filter=bypopularity");
+        if (pageData && Array.isArray(pageData.data)) animeList = animeList.concat(pageData.data);
+      } catch (pageErr: any) {
+        logger.debug("[QvQCache/jikan] page " + pg + " fetch failed: " + (pageErr && pageErr.message));
+        if (pg === 1) throw pageErr; // page 1 failing = genuine outage, keep old error semantics
+      }
     }
-    var allGenres: string[] = Object.keys(genreSet).length >= 6 ? Object.keys(genreSet) : ANIME_GENRES;
+    if (animeList.length === 0) throw new Error("Jikan: no data array");
+    // Use titles as distractors so every media-backed anime row is a true
+    // visual-identification question rather than a genre/year trivia question.
+    var allAnimeTitles: string[] = [];
+    for (var ag = 0; ag < animeList.length; ag++) {
+      var animeTitle = animeList[ag]
+        ? (animeList[ag].title_english || animeList[ag].title)
+        : "";
+      if (animeTitle) allAnimeTitles.push(String(animeTitle));
+    }
 
     for (var ai = 0; ai < animeList.length; ai++) {
       var a: any = animeList[ai];
       try {
         var title = a.title_english || a.title || "Unknown";
-        var year = a.year
-          || (a.aired && a.aired.prop && a.aired.prop.from && a.aired.prop.from.year)
-          || null;
-        var episodes = a.episodes || null;
-        var genres: string[] = [];
-        var agenres: any[] = a.genres || [];
-        for (var gi3 = 0; gi3 < agenres.length; gi3++) genres.push(agenres[gi3].name);
         var imageUrl: string | null = (a.images && a.images.jpg && a.images.jpg.image_url)
           ? a.images.jpg.image_url : null;
+        if (!imageUrl) continue;
 
-        var media: any = imageUrl ? { type: "image", url: imageUrl, thumbnail_url: null, duration_seconds: null, mime_type: "image/jpeg" } : null;
-        var tpl = Math.floor(Math.random() * 3);
-        var q: RawQuestion | null = null;
+        var excludeTitle: { [k: string]: boolean } = {};
+        excludeTitle[title] = true;
+        var wrongTitles = pickExcluding(allAnimeTitles, excludeTitle, 3);
+        if (wrongTitles.length < 3) continue;
 
-        if (tpl === 0 && genres.length > 0) {
-          // Genre template
-          var correctGenre = genres[0];
-          var exSet: { [k: string]: boolean } = {};
-          for (var gx = 0; gx < genres.length; gx++) exSet[genres[gx]] = true;
-          var wg = pickExcluding(allGenres, exSet, 3);
-          if (wg.length < 3) tpl = 2; // fall through to year
-          else {
-            var gOpts: RawOpt[] = [{ text: correctGenre, is_correct: true }];
-            for (var wgi = 0; wgi < wg.length; wgi++) gOpts.push({ text: wg[wgi], is_correct: false });
-            q = {
-              provider_key: "jikan_genre_" + (a.mal_id || ai),
-              topic: "anime", lang: "en",
-              question_text: "What genre best describes the anime \"" + title + "\"?",
-              question_type: "single_select",
-              raw_options: gOpts, has_media: !!imageUrl, media: media,
-              explanation: "\"" + title + "\" belongs to the " + genres.join(", ") + " genre(s).",
-              difficulty: "medium", provider: "jikan",
-              meta: { title: title, year: year, genres: genres }
-            };
-          }
+        var titleOpts: RawOpt[] = [{ text: title, is_correct: true }];
+        for (var wti = 0; wti < wrongTitles.length; wti++) {
+          titleOpts.push({ text: wrongTitles[wti] as string, is_correct: false });
         }
-        if (tpl === 1 && episodes) {
-          // Episode count template
-          var ep = episodes;
-          var eOpts: RawOpt[] = [
-            { text: String(ep), is_correct: true },
-            { text: String(Math.max(1, ep - Math.floor(Math.random() * 8) - 3)), is_correct: false },
-            { text: String(ep + Math.floor(Math.random() * 10) + 2), is_correct: false },
-            { text: String(ep + Math.floor(Math.random() * 20) + 14), is_correct: false }
-          ];
-          q = {
-            provider_key: "jikan_ep_" + (a.mal_id || ai),
-            topic: "anime", lang: "en",
-            question_text: "How many episodes does \"" + title + "\" have?",
-            question_type: "single_select",
-            raw_options: eOpts, has_media: !!imageUrl, media: media,
-            explanation: "\"" + title + "\" has " + ep + " episodes.",
-            difficulty: "hard", provider: "jikan",
-            meta: { title: title, year: year }
-          };
-        }
-        if ((tpl === 2 || !q) && year) {
-          // Release year template
-          var yr = Number(year);
-          if (isNaN(yr)) { q = null; } else {
-            var yOpts: RawOpt[] = [
-              { text: String(yr),     is_correct: true },
-              { text: String(yr - 2), is_correct: false },
-              { text: String(yr + 1), is_correct: false },
-              { text: String(yr - 5), is_correct: false }
-            ];
-            q = {
-              provider_key: "jikan_year_" + (a.mal_id || ai),
-              topic: "anime", lang: "en",
-              question_text: "In what year did \"" + title + "\" first air?",
-              question_type: "single_select",
-              raw_options: yOpts, has_media: !!imageUrl, media: media,
-              explanation: "\"" + title + "\" first aired in " + yr + ".",
-              difficulty: "medium", provider: "jikan",
-              meta: { title: title, year: year }
-            };
-          }
-        }
-        if (q) results.push(q);
+        results.push({
+          provider_key: "jikan_identity_" + (a.mal_id || ai),
+          topic: "anime", lang: "en",
+          question_text: "Which anime is shown in this image?",
+          question_type: "single_select",
+          raw_options: titleOpts,
+          has_media: true,
+          media: { type: "image", url: imageUrl, thumbnail_url: null, duration_seconds: null, mime_type: "image/jpeg" },
+          explanation: "The image shows \"" + title + "\".",
+          difficulty: "medium", provider: "jikan",
+          meta: { title: title }
+        });
       } catch (e: any) { logger.debug("[QvQCache/jikan] skip[" + ai + "]: " + (e && e.message)); }
     }
     return results;
+  }
+
+  // Jikan is the primary/required anime source (throws → topic fails, same as before
+  // this change). AniList is merged in as best-effort bonus variety on top — see
+  // fetchAniList's comment for why it barely overlaps Jikan's pool.
+  function fetchAnimeQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var out = fetchJikan(nk, logger);
+    // AniList: different popularity signal than Jikan/MAL → genuinely different questions
+    try {
+      out = out.concat(fetchAniList(nk, logger));
+    } catch (e: any) {
+      logger.debug("[QvQCache/anime] AniList bonus fetch skipped: " + (e && e.message));
+    }
+    // OpenTDB anime (cat 31) — curated text MCQ from the game-show trivia DB,
+    // covers different angles (voice actors, episode counts, studio facts) that
+    // Jikan/AniList image-matching questions don't. Best-effort only.
+    try {
+      var otdbAnime = fetchOpenTdbCategory(nk, logger, 31, 30, "anime", "anime_manga");
+      out = out.concat(otdbAnime);
+    } catch (e: any) {
+      logger.debug("[QvQCache/anime] OpenTDB cat=31 bonus fetch skipped: " + (e && e.message));
+    }
+    return out;
   }
 
   // ── 3. PokeAPI ────────────────────────────────────────────────────────────
@@ -903,7 +987,7 @@ namespace QvQuestionCache {
     }
     var breedSample = 40;
     if (env && env["QV_DOGCEO_BREED_SAMPLE"]) {
-      var parsed = parseInt(env["QV_DOGCEO_BREED_SAMPLE"], 40);
+      var parsed = parseInt(env["QV_DOGCEO_BREED_SAMPLE"], 10);
       if (!isNaN(parsed) && parsed > 0) breedSample = parsed;
     }
     var selected = pick(allBreeds, breedSample);
@@ -946,61 +1030,183 @@ namespace QvQuestionCache {
           breedName.replace(/\s+/g, "_") + " reason=" + skipReason);
       }
     }
+    if (results.length === 0) throw new Error("dogceo: 0 questions after breed sampling");
     return results;
   }
 
   // ── 7. Studio Ghibli ──────────────────────────────────────────────────────
+  // Studio Ghibli has only ~22 theatrical features in ghibliapi. Asking for 25
+  // used to hard-cap at 22 (QVBF / "typed 25 fetched 22"). World-class pool:
+  //   1) Prefer BOTH poster (`image`) AND banner (`movie_banner`) when URLs differ
+  //      → ~44 unique Image-Guess cards from the same free API (no key needed).
+  //   2) Bonus: AniList Studio Ghibli (id 21) cover art — free GraphQL, no key —
+  //      adds alternate covers / shorts / co-productions with distinct media URLs.
+  // Quality gate + Unity session dedup key on provider_key / media URL, so shared
+  // question text ("Which Studio Ghibli film is this?") is intentional and safe.
+
+  /** Downscale TMDB original/banner paths so Unity image preload stays under timeout. */
+  function ghibliDisplayUrl(url: string): string {
+    if (!url) return url;
+    var u = String(url);
+    u = u.replace("/t/p/original/", "/t/p/w780/");
+    u = u.replace("/t/p/w1280/", "/t/p/w780/");
+    return u;
+  }
+
+  function pushGhibliIdentity(
+    results: RawQuestion[],
+    titlePool: string[],
+    title: string,
+    imageUrl: string,
+    providerKey: string,
+    explanation: string,
+    meta: any
+  ): boolean {
+    if (!title || !imageUrl) return false;
+    var exTitle: { [k: string]: boolean } = {};
+    exTitle[title] = true;
+    var wt = pickExcluding(titlePool, exTitle, 3);
+    if (wt.length < 3) return false;
+    var opts: RawOpt[] = [{ text: title, is_correct: true }];
+    for (var wi = 0; wi < wt.length; wi++) opts.push({ text: wt[wi] as string, is_correct: false });
+    var display = ghibliDisplayUrl(imageUrl);
+    results.push({
+      provider_key: providerKey,
+      topic: "ghibli", lang: "en",
+      question_text: "Which Studio Ghibli film is this?",
+      question_type: "single_select",
+      raw_options: opts,
+      has_media: true,
+      media: { type: "image", url: display, thumbnail_url: display, duration_seconds: null, mime_type: "image/jpeg" },
+      explanation: explanation,
+      difficulty: "medium", provider: "ghibli",
+      meta: meta
+    });
+    return true;
+  }
+
+  function loadGhibliFilms(nk: nkruntime.Nakama, logger: nkruntime.Logger): any[] {
+    var endpoints = [
+      "https://ghibliapi.vercel.app/films",
+      "https://ghibli-api.vercel.app/api/films"
+    ];
+    for (var ei = 0; ei < endpoints.length; ei++) {
+      try {
+        var payload: any = httpGet(nk, endpoints[ei]);
+        var list: any[] = Array.isArray(payload) ? payload
+          : (payload && Array.isArray(payload.data) ? payload.data : null);
+        if (list && list.length > 0) {
+          logger.info("[QvQCache/ghibli] films_source=" + endpoints[ei] + " count=" + list.length);
+          return list;
+        }
+      } catch (e: any) {
+        logger.warn("[QvQCache/ghibli] films endpoint failed " + endpoints[ei] + ": " + (e && e.message));
+      }
+    }
+    throw new Error("Ghibli API: no films from any mirror");
+  }
+
+  /** Best-effort AniList Studio Ghibli covers — never fails the ghibli topic alone. */
+  function appendGhibliAniList(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    results: RawQuestion[],
+    titlePool: string[]
+  ): void {
+    try {
+      var query = "query($page:Int,$perPage:Int){Studio(id:21){media(page:$page,perPage:$perPage,sort:POPULARITY_DESC){nodes{id title{english romaji}coverImage{large}}}}}";
+      for (var page = 1; page <= 2; page++) {
+        var gql: any = httpPost(nk, "https://graphql.anilist.co", {
+          query: query,
+          variables: { page: page, perPage: 50 }
+        });
+        var nodes: any[] = (gql && gql.data && gql.data.Studio && gql.data.Studio.media
+          && Array.isArray(gql.data.Studio.media.nodes))
+          ? gql.data.Studio.media.nodes : [];
+        if (nodes.length === 0) break;
+        for (var ni = 0; ni < nodes.length; ni++) {
+          var node: any = nodes[ni];
+          var titleAL = (node.title && (node.title.english || node.title.romaji)) || null;
+          var cover = (node.coverImage && node.coverImage.large) || null;
+          if (!titleAL || !cover) continue;
+          if (titlePool.indexOf(titleAL) < 0) titlePool.push(titleAL);
+          pushGhibliIdentity(
+            results, titlePool, titleAL, cover,
+            "ghibli_anilist_" + (node.id || djb2(titleAL)),
+            "\"" + titleAL + "\" is a Studio Ghibli title.",
+            { title: titleAL, source: "anilist" }
+          );
+        }
+      }
+    } catch (e: any) {
+      logger.warn("[QvQCache/ghibli] AniList bonus skipped: " + (e && e.message));
+    }
+  }
+
   function fetchGhibli(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
     var results: RawQuestion[] = [];
-    var data3: any[] = httpGet(nk, "https://ghibliapi.vercel.app/films");
-    if (!Array.isArray(data3)) throw new Error("Ghibli API: no array");
+    var data3: any[] = loadGhibliFilms(nk, logger);
     var titlePool: string[] = [];
     for (var gx2 = 0; gx2 < data3.length; gx2++) {
       if (data3[gx2].title) titlePool.push(data3[gx2].title);
     }
     var withImage = 0;
     var skipped = 0;
+    var emittedPosters = 0;
+    var emittedBanners = 0;
 
     for (var gi4 = 0; gi4 < data3.length; gi4++) {
       var film: any = data3[gi4];
       try {
         var ftitle = film.title || null;
-        var filmImage = film.movie_banner || null;
+        var poster = film.image || null;
+        var banner = film.movie_banner || null;
         var fdirector = film.director || null;
         var fyear = film.release_date || null;
-        if (!ftitle || !filmImage) {
+        if (!ftitle || (!poster && !banner)) {
           skipped++;
           continue;
         }
         withImage++;
-        var exTitle: { [k: string]: boolean } = {};
-        exTitle[ftitle] = true;
-        var wt = pickExcluding(titlePool, exTitle, 3);
-        if (wt.length < 3) {
-          skipped++;
-          continue;
+        var explain = "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".";
+        var metaBase: any = { title: ftitle, director: fdirector, year: fyear };
+        var filmId = film.id || djb2(ftitle);
+
+        if (poster) {
+          if (pushGhibliIdentity(results, titlePool, ftitle, poster,
+            "ghibli_poster_" + filmId, explain, metaBase)) {
+            emittedPosters++;
+          } else {
+            skipped++;
+          }
         }
-        var gOpts2: RawOpt[] = [{ text: ftitle, is_correct: true }];
-        for (var wti = 0; wti < wt.length; wti++) gOpts2.push({ text: wt[wti] as string, is_correct: false });
-        results.push({
-          provider_key: "ghibli_poster_" + (film.id || djb2(ftitle)),
-          topic: "ghibli", lang: "en",
-          question_text: "Which Studio Ghibli film is this?",
-          question_type: "single_select",
-          raw_options: gOpts2,
-          has_media: true,
-          media: { type: "image", url: filmImage, thumbnail_url: filmImage, duration_seconds: null, mime_type: "image/jpeg" },
-          explanation: "\"" + ftitle + "\" (" + (fyear || "?") + ") — directed by " + (fdirector || "unknown") + ".",
-          difficulty: "medium", provider: "ghibli",
-          meta: { title: ftitle, director: fdirector, year: fyear }
-        });
+        // Second card when banner URL differs — same answer, different artwork.
+        if (banner && banner !== poster) {
+          if (pushGhibliIdentity(results, titlePool, ftitle, banner,
+            "ghibli_banner_" + filmId, explain, metaBase)) {
+            emittedBanners++;
+          }
+        } else if (!poster && banner) {
+          if (pushGhibliIdentity(results, titlePool, ftitle, banner,
+            "ghibli_banner_" + filmId, explain, metaBase)) {
+            emittedBanners++;
+          }
+        }
       } catch (e: any) {
         skipped++;
         logger.debug("[QvQCache/ghibli] skip: " + (e && e.message));
       }
     }
+
+    var beforeAni = results.length;
+    appendGhibliAniList(nk, logger, results, titlePool);
+
     logger.info("[QvQCache/ghibli] event=ghibli_fetch_summary total_films=" + data3.length +
-      " with_image=" + withImage + " skipped=" + skipped + " emitted=" + results.length);
+      " with_image=" + withImage + " skipped=" + skipped +
+      " posters=" + emittedPosters + " banners=" + emittedBanners +
+      " anilist_added=" + (results.length - beforeAni) +
+      " emitted=" + results.length);
+    if (results.length === 0) throw new Error("ghibli: 0 questions after fetch");
     return results;
   }
 
@@ -1162,54 +1368,78 @@ namespace QvQuestionCache {
     var apiKey = envKey(env, "REST_COUNTRIES_API_KEY");
     var keyPresent = !!apiKey;
 
-    logger.info("[QvQCache/restcountries] event=provider_v5_fetch_start topic=" + topic +
+    logger.info("[QvQCache/restcountries] event=provider_fetch_start topic=" + topic +
       " key_present=" + (keyPresent ? "true" : "false") +
-      " host=api.restcountries.com limit=100 paginated=true");
+      " host=" + (keyPresent ? "api.restcountries.com" : "restcountries.com"));
 
-    if (!apiKey) throw new Error("missing_api_key");
-
-    var authHeaders: { [k: string]: string } = { "Authorization": "Bearer " + apiKey };
-    var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
     var objects: any[] = [];
-    var offset = 0;
     var pagesFetched = 0;
 
-    while (true) {
-      var pageUrl = baseUrl + "&offset=" + offset;
-      var parsed: any;
+    if (apiKey) {
       try {
-        parsed = httpGet(nk, pageUrl, authHeaders);
-      } catch (he: any) {
-        var hmsg = he && he.message ? he.message : String(he);
-        if (hmsg.indexOf("HTTP 401") !== -1) throw new Error("http_401");
-        if (hmsg.indexOf("HTTP 403") !== -1) throw new Error("http_403");
-        throw he;
+        var authHeaders: { [k: string]: string } = { "Authorization": "Bearer " + apiKey };
+        var baseUrl = "https://api.restcountries.com/countries/v5?response_fields=names.common,capitals,region,population,codes.alpha_2,flag.url_png&limit=100";
+        var offset = 0;
+        while (true) {
+          var pageUrl = baseUrl + "&offset=" + offset;
+          var parsed: any;
+          try {
+            parsed = httpGet(nk, pageUrl, authHeaders);
+          } catch (he: any) {
+            var hmsg = he && he.message ? he.message : String(he);
+            if (hmsg.indexOf("HTTP 401") !== -1) throw new Error("http_401");
+            if (hmsg.indexOf("HTTP 403") !== -1) throw new Error("http_403");
+            throw he;
+          }
+
+          if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
+            throw new Error("unexpected_response_shape");
+          }
+
+          var pageObjects: any[] = parsed.data.objects;
+          var meta: any = parsed.data.meta || {};
+          pagesFetched++;
+          for (var pi = 0; pi < pageObjects.length; pi++) objects.push(pageObjects[pi]);
+          if (!meta.more) break;
+          offset += 100;
+          if (offset > 1000) break;
+        }
+      } catch (paidErr: any) {
+        // A missing/expired paid-provider key must never disable Flag Quiz.
+        logger.warn("[QvQCache/restcountries] authenticated provider failed; using keyless fallback error=" +
+          (paidErr && paidErr.message ? paidErr.message : String(paidErr)));
+        objects = [];
+        pagesFetched = 0;
       }
-
-      if (parsed && parsed.success === false && parsed.errors) {
-        throw new Error("restcountries_v3_deprecated");
-      }
-      if (!parsed || !parsed.data || !parsed.data.objects || !Array.isArray(parsed.data.objects)) {
-        throw new Error("unexpected_response_shape");
-      }
-
-      var pageObjects: any[] = parsed.data.objects;
-      var meta: any = parsed.data.meta || {};
-      pagesFetched++;
-      logger.info("[QvQCache/restcountries] event=provider_v5_page_done topic=" + topic +
-        " offset=" + offset +
-        " page_count=" + pageObjects.length +
-        " meta_total=" + (meta.total ? meta.total : 0) +
-        " meta_more=" + (meta.more ? "true" : "false"));
-
-      for (var pi = 0; pi < pageObjects.length; pi++) objects.push(pageObjects[pi]);
-
-      if (!meta.more) break;
-      offset += 100;
-      if (offset > 1000) break;
     }
 
-    logger.info("[QvQCache/restcountries] event=provider_v5_fetch_done topic=" + topic +
+    if (objects.length === 0) {
+      // Keyless fallback keeps Guess the Flag/Countries playable on cold
+      // deploys. Rest Countries v3 was retired in 2026, so use the pinned
+      // world-countries dataset and deterministic FlagCDN PNG URLs.
+      var publicRows: any = httpGet(
+        nk,
+        "https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json"
+      );
+      if (!Array.isArray(publicRows)) throw new Error("world_countries_unexpected_shape");
+      for (var pri = 0; pri < publicRows.length; pri++) {
+        var publicCountry: any = publicRows[pri];
+        var publicCode = publicCountry && publicCountry.cca2
+          ? String(publicCountry.cca2).toLowerCase()
+          : "";
+        objects.push({
+          names: { common: publicCountry && publicCountry.name ? publicCountry.name.common : "" },
+          capitals: publicCountry ? publicCountry.capital : [],
+          region: publicCountry ? publicCountry.region : "",
+          population: publicCountry ? publicCountry.population : 0,
+          codes: { alpha_2: publicCountry ? publicCountry.cca2 : "" },
+          flag: { url_png: publicCode ? "https://flagcdn.com/w320/" + publicCode + ".png" : "" }
+        });
+      }
+      pagesFetched = 1;
+    }
+
+    logger.info("[QvQCache/restcountries] event=provider_fetch_done topic=" + topic +
       " object_count=" + objects.length +
       " pages_fetched=" + pagesFetched);
 
@@ -1231,7 +1461,9 @@ namespace QvQuestionCache {
 
     var flagRawCount = 0;
     var capRawCount = 0;
-    var sample2 = pick(withCap, 40);
+    // Keep the full country set in the server cache. Sampling only 40 countries
+    // permanently starved Guess the Flag and made seen-ledger exhaustion common.
+    var sample2 = pick(withCap, Math.min(withCap.length, 200));
     for (var ci3 = 0; ci3 < sample2.length; ci3++) {
       var country: any = sample2[ci3];
       try {
@@ -1294,48 +1526,196 @@ namespace QvQuestionCache {
       " raw_flags=" + flagRawCount +
       " raw_countries=" + capRawCount);
 
-    return results;
+    // Keep topic caches semantically pure. Previously qv_cache_flags also
+    // contained capital-city rows (and qv_cache_countries contained flag rows),
+    // so a visual Flag Quiz could receive the wrong question contract.
+    var topicResults: RawQuestion[] = [];
+    for (var tri = 0; tri < results.length; tri++) {
+      if (results[tri].topic === topic) topicResults.push(results[tri]);
+    }
+    return topicResults;
   }
 
-  // ── 11. NASA APOD (Space) — key-gated; falls back to DEMO_KEY ─────────────
-  function fetchNasa(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger, ): RawQuestion[] {
-    var results: RawQuestion[] = [];
-    var apiKey = envKey(env, "NASA_API_KEY") || "DEMO_KEY";
-    var data7: any = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=50&thumbs=true");
+  // ── 11. Space Trivia (NASA APOD + open image sources) ─────────────────────
+  // Loading failures were driven by: (1) DEMO_KEY rate-limits when env sets
+  // NASA_API_KEY=DEMO_KEY (skipping FALLBACK_KEYS), (2) serving APOD *hdurl*
+  // into Unity (multi-MB → preload timeouts), (3) APOD-only pool with videos
+  // filtered out. Fix: resolve a real key, prefer the smaller APOD `url`, and
+  // top up from Spaceflight News + NASA Images Library (both keyless).
+
+  function resolveNasaApiKey(env: any): string {
+    var fromEnv = "";
+    if (env && env["NASA_API_KEY"] && String(env["NASA_API_KEY"]).trim()) {
+      fromEnv = String(env["NASA_API_KEY"]).trim();
+    }
+    var fromFallback = FALLBACK_KEYS["NASA_API_KEY"]
+      ? String(FALLBACK_KEYS["NASA_API_KEY"]).trim() : "";
+    // Prefer a non-DEMO key whenever available — DEMO_KEY is shared & throttled.
+    if (fromEnv && fromEnv !== "DEMO_KEY") return fromEnv;
+    if (fromFallback && fromFallback !== "DEMO_KEY") return fromFallback;
+    if (fromEnv) return fromEnv;
+    if (fromFallback) return fromFallback;
+    return "DEMO_KEY";
+  }
+
+  function pushSpaceIdentity(
+    results: RawQuestion[],
+    titlePool: string[],
+    title: string,
+    imageUrl: string,
+    providerKey: string,
+    explanation: string,
+    provider: string
+  ): boolean {
+    if (!title || title.length < 5 || !imageUrl) return false;
+    var exSp: { [k: string]: boolean } = {};
+    exSp[title] = true;
+    var wspc = pickExcluding(titlePool, exSp, 3);
+    if (wspc.length < 3) {
+      wspc = pick(SPACE_OBJECTS.filter(function(s) { return s !== title; }), 3);
+    }
+    if (wspc.length < 3) return false;
+    var sOpts: RawOpt[] = [{ text: title, is_correct: true }];
+    for (var wspi = 0; wspi < wspc.length; wspi++) sOpts.push({ text: wspc[wspi] as string, is_correct: false });
+    results.push({
+      provider_key: providerKey,
+      topic: "space", lang: "en",
+      question_text: "What is featured in this space image?",
+      question_type: "single_select",
+      raw_options: sOpts,
+      has_media: true,
+      media: { type: "image", url: imageUrl, thumbnail_url: imageUrl, duration_seconds: null, mime_type: "image/jpeg" },
+      explanation: explanation,
+      difficulty: "hard", provider: provider,
+      meta: { title: title }
+    });
+    return true;
+  }
+
+  function appendNasaApod(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger, results: RawQuestion[]): void {
+    var apiKey = resolveNasaApiKey(env);
+    var data7: any = httpGet(nk, "https://api.nasa.gov/planetary/apod?api_key=" + apiKey + "&count=25&thumbs=true");
     if (!Array.isArray(data7)) throw new Error("NASA APOD: expected array");
 
+    var titlePool: string[] = [];
+    for (var ti = 0; ti < data7.length; ti++) {
+      var t = (data7[ti].title || "").trim();
+      if (t) titlePool.push(t);
+    }
+    // Blend static distractors so short batches still have 3 wrongs.
+    for (var si = 0; si < SPACE_OBJECTS.length; si++) titlePool.push(SPACE_OBJECTS[si]);
+
+    var emitted = 0;
     for (var ni = 0; ni < data7.length; ni++) {
       var apod: any = data7[ni];
       try {
+        if (apod.media_type && apod.media_type !== "image") continue;
         var atitle = (apod.title || "").trim();
         var adate  = apod.date || "";
-        var aurl   = apod.hdurl || apod.url || null;
-        var athumb = apod.thumbnail_url || aurl;
+        // Prefer the standard-resolution `url` for Unity preload; hdurl is often multi-MB.
+        var aurl   = apod.url || apod.hdurl || null;
         if (!atitle || atitle.length < 5 || !aurl) continue;
-        var exSp: { [k: string]: boolean } = {};
-        exSp[atitle] = true;
-        var wspc = pickExcluding(SPACE_OBJECTS, exSp, 3);
-        if (wspc.length < 3) {
-          wspc = pick(SPACE_OBJECTS.filter(function(s) { return s !== atitle; }), 3);
-        }
-        if (wspc.length < 3) continue;
-        var sOpts: RawOpt[] = [{ text: atitle, is_correct: true }];
-        for (var wspi = 0; wspi < wspc.length; wspi++) sOpts.push({ text: wspc[wspi] as string, is_correct: false });
         var aexpl = (apod.explanation || "").substring(0, 200);
-        results.push({
-          provider_key: "nasa_" + djb2(atitle + adate),
-          topic: "space", lang: "en",
-          question_text: "What is featured in this NASA Astronomy Picture of the Day?",
-          question_type: "single_select",
-          raw_options: sOpts,
-          has_media: true,
-          media: { type: "image", url: athumb, thumbnail_url: athumb, duration_seconds: null, mime_type: "image/jpeg" },
-          explanation: "NASA APOD " + adate + ": " + atitle + ". " + aexpl,
-          difficulty: "hard", provider: "nasa",
-          meta: { title: atitle }
-        });
+        if (pushSpaceIdentity(
+          results, titlePool, atitle, aurl,
+          "nasa_" + djb2(atitle + adate),
+          "NASA APOD " + adate + ": " + atitle + ". " + aexpl,
+          "nasa"
+        )) {
+          emitted++;
+        }
       } catch (e: any) { logger.debug("[QvQCache/nasa] skip: " + (e && e.message)); }
     }
+    logger.info("[QvQCache/nasa] event=apod_fetch count=" + data7.length + " emitted=" + emitted + " key=" + (apiKey === "DEMO_KEY" ? "DEMO_KEY" : "custom"));
+  }
+
+  function appendSpaceflightNews(nk: nkruntime.Nakama, logger: nkruntime.Logger, results: RawQuestion[]): void {
+    try {
+      var sf: any = httpGet(nk, "https://api.spaceflightnewsapi.net/v4/articles/?limit=40");
+      if (!sf || !Array.isArray(sf.results)) return;
+      var titlePool: string[] = [];
+      for (var t = 0; t < sf.results.length; t++) {
+        if (sf.results[t].title) titlePool.push(sf.results[t].title);
+      }
+      for (var si = 0; si < SPACE_OBJECTS.length; si++) titlePool.push(SPACE_OBJECTS[si]);
+      var emitted = 0;
+      for (var i = 0; i < sf.results.length; i++) {
+        var item: any = sf.results[i];
+        var title = (item.title || "").trim();
+        var img = item.image_url || null;
+        if (!title || !img) continue;
+        if (pushSpaceIdentity(
+          results, titlePool, title, img,
+          "spaceflight_" + (item.id || djb2(title)),
+          (item.news_site ? item.news_site + ": " : "") + title,
+          "spaceflightnews"
+        )) {
+          emitted++;
+        }
+      }
+      logger.info("[QvQCache/space] event=spaceflight_fetch emitted=" + emitted);
+    } catch (e: any) {
+      logger.warn("[QvQCache/space] SpaceflightNews: " + (e && e.message));
+    }
+  }
+
+  function appendNasaImageLibrary(nk: nkruntime.Nakama, logger: nkruntime.Logger, results: RawQuestion[]): void {
+    var queries = ["nebula", "galaxy", "mars", "saturn", "apollo", "hubble"];
+    var titlePool: string[] = SPACE_OBJECTS.slice();
+    var emitted = 0;
+    for (var qi = 0; qi < queries.length; qi++) {
+      try {
+        var lib: any = httpGet(nk,
+          "https://images-api.nasa.gov/search?q=" + queries[qi] +
+          "&media_type=image&page_size=15");
+        var items: any[] = (lib && lib.collection && Array.isArray(lib.collection.items))
+          ? lib.collection.items : [];
+        for (var ii = 0; ii < items.length; ii++) {
+          var it: any = items[ii];
+          var d0: any = (it.data && it.data[0]) ? it.data[0] : null;
+          if (!d0) continue;
+          var title = (d0.title || "").trim();
+          if (!title || title.length < 5) continue;
+          var preview: string = null;
+          var links: any[] = Array.isArray(it.links) ? it.links : [];
+          for (var li = 0; li < links.length; li++) {
+            if (links[li] && links[li].href && (!links[li].rel || links[li].rel === "preview")) {
+              preview = links[li].href;
+              break;
+            }
+          }
+          if (!preview) continue;
+          if (titlePool.indexOf(title) < 0) titlePool.push(title);
+          var nasaId = d0.nasa_id || djb2(title + queries[qi]);
+          if (pushSpaceIdentity(
+            results, titlePool, title, preview,
+            "nasalib_" + nasaId,
+            "NASA Image Library: " + title,
+            "nasa_images"
+          )) {
+            emitted++;
+          }
+        }
+      } catch (e: any) {
+        logger.debug("[QvQCache/space] nasa_lib q=" + queries[qi] + " failed: " + (e && e.message));
+      }
+    }
+    logger.info("[QvQCache/space] event=nasa_lib_fetch emitted=" + emitted);
+  }
+
+  function fetchNasa(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    // Keyless sources first — NASA APOD is slower and rate-limited; never let a
+    // single APOD timeout leave Space Trivia with an empty pool.
+    appendSpaceflightNews(nk, logger, results);
+    appendNasaImageLibrary(nk, logger, results);
+    try {
+      appendNasaApod(nk, env, logger, results);
+    } catch (e: any) {
+      logger.warn("[QvQCache/space] APOD failed (pool still has backups): " + (e && e.message));
+    }
+    if (results.length === 0) throw new Error("space: all providers returned 0 image questions");
+    logger.info("[QvQCache/space] event=space_fetch_total emitted=" + results.length);
     return results;
   }
 
@@ -1447,7 +1827,200 @@ namespace QvQuestionCache {
     return results;
   }
 
-  // ── 14. Last.fm (Music) — requires LASTFM_API_KEY ─────────────────────────
+  // Combines TheSportsDB visual team questions with OpenTDB Sports (cat 21)
+  // text MCQs. OpenTDB sports covers trivia that image-only team questions
+  // can't (records, rules, championships) — genuinely different content.
+  function fetchSportsQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var out = fetchSportsdb(nk, logger);
+    try {
+      var otdbSports = fetchOpenTdbCategory(nk, logger, 21, 30, "sports", "general_sports");
+      out = out.concat(otdbSports);
+    } catch (e: any) {
+      logger.debug("[QvQCache/sports] OpenTDB cat=21 bonus fetch skipped: " + (e && e.message));
+    }
+    return out;
+  }
+
+  // ── 14a. iTunes Search (Music/Audio) — keyless 30s AAC previews ───────────
+  function fetchItunesMusic(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var terms = ["top%20hits", "global%20hits", "popular%20music"];
+    var tracks: any[] = [];
+    for (var ipg = 0; ipg < terms.length; ipg++) {
+      try {
+        var page: any = httpGet(
+          nk,
+          "https://itunes.apple.com/search?term=" + terms[ipg] +
+          "&country=US&media=music&entity=song&limit=50"
+        );
+        if (page && Array.isArray(page.results)) tracks = tracks.concat(page.results);
+      } catch (itunesErr: any) {
+        logger.debug("[QvQCache/itunes] fetch failed term=" + terms[ipg] + ": " +
+          (itunesErr && itunesErr.message));
+      }
+    }
+    if (tracks.length === 0) throw new Error("iTunes Search: no tracks");
+
+    var artistSet: { [name: string]: boolean } = {};
+    for (var ia = 0; ia < tracks.length; ia++) {
+      if (tracks[ia] && tracks[ia].artistName) artistSet[String(tracks[ia].artistName)] = true;
+    }
+    var artists = Object.keys(artistSet);
+    var results: RawQuestion[] = [];
+    for (var it = 0; it < tracks.length; it++) {
+      var track: any = tracks[it];
+      try {
+        if (!track || !track.previewUrl || !track.artistName || !track.trackName) continue;
+        if (track.trackExplicitness === "explicit") continue;
+        var artist = String(track.artistName);
+        var excludeArtist: { [name: string]: boolean } = {};
+        excludeArtist[artist] = true;
+        var wrongArtists = pickExcluding(artists, excludeArtist, 3);
+        if (wrongArtists.length < 3) continue;
+
+        var opts: RawOpt[] = [{ text: artist, is_correct: true }];
+        for (var iwo = 0; iwo < wrongArtists.length; iwo++) {
+          opts.push({ text: wrongArtists[iwo] as string, is_correct: false });
+        }
+        results.push({
+          provider_key: "itunes_" + String(track.trackId || djb2(track.trackName + artist)),
+          topic: "music", lang: "en",
+          question_text: "Listen to the clip — who is the artist performing this song?",
+          question_type: "single_select",
+          raw_options: opts,
+          has_media: true,
+          media: {
+            type: "audio",
+            url: String(track.previewUrl),
+            thumbnail_url: track.artworkUrl100 ? String(track.artworkUrl100) : null,
+            duration_seconds: 30,
+            mime_type: "audio/mp4"
+          },
+          explanation: "\"" + String(track.trackName) + "\" is performed by " + artist + ".",
+          difficulty: "medium", provider: "itunes",
+          meta: { track_title: String(track.trackName) }
+        });
+      } catch (itunesRowErr: any) {
+        logger.debug("[QvQCache/itunes] row skipped: " +
+          (itunesRowErr && itunesRowErr.message));
+      }
+    }
+    if (results.length === 0) throw new Error("iTunes Search: zero playable previews");
+    return results;
+  }
+
+  // ── 14b. Deezer (Music/Audio) — keyless 30s MP3 previews ─────────────────
+  // #QVVBS-CACHE (2026-07): "Audio Quiz (AI) — Not Working" — grepping this whole
+  // file for media.type==="audio" turned up zero matches anywhere; the "music"
+  // topic (the only music-adjacent topic that existed) was 100% text trivia via
+  // fetchLastfm() with has_media:false, AND that function hard-throws because
+  // LASTFM_API_KEY has never been configured (FALLBACK_KEYS entry is ""). So the
+  // AI-driven Audio Quiz mode had literally no server-side source of playable
+  // audio, ever. Deezer's public chart API needs no API key/auth and returns a
+  // native 30-second MP3 `preview` URL per track — exactly the has_media:true
+  // audio content this topic was missing. Made primary; fetchLastfm (below)
+  // is merged in as bonus text-trivia variety only if a key is ever configured.
+  function fetchDeezer(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    // 3 pages (index 0/50/100) of the global Top-100+ chart — a single page repeats
+    // the exact same ~50 songs every refresh (same "limited pool" failure mode fixed
+    // for Jikan below). Deezer's public API is unauthenticated/keyless with no
+    // documented hard rate limit for this scale, so 3 sequential calls is safe.
+    var tracks: any[] = [];
+    for (var pg = 0; pg < 3; pg++) {
+      try {
+        var chartPage: any = httpGet(nk, "https://api.deezer.com/chart/0/tracks?limit=50&index=" + (pg * 50));
+        if (chartPage && Array.isArray(chartPage.data)) tracks = tracks.concat(chartPage.data);
+      } catch (pageErr: any) {
+        logger.debug("[QvQCache/deezer] page " + pg + " fetch failed: " + (pageErr && pageErr.message));
+        if (pg === 0) throw pageErr; // page 0 failing = genuine outage
+      }
+    }
+    if (tracks.length === 0) throw new Error("Deezer: no tracks in chart");
+    // Deduplicate artist names before building the wrong-answer pool.
+    // A top-150 chart routinely contains 3-5 songs per popular artist (Taylor Swift,
+    // Bad Bunny, etc.). Pushing every track's artist into a plain array and then
+    // calling pickExcluding on it yields duplicates like [Swift, Swift, Bad Bunny]
+    // because pickExcluding only excludes the *correct* artist, not repeated names
+    // already selected as wrong answers — the bug flagged in PR review.
+    // Using an object set and Object.keys() mirrors the genreSet pattern used by
+    // fetchJikan, fetchAniList, and every other multi-pick helper in this file.
+    var artistNamesSet: { [name: string]: boolean } = {};
+    for (var di = 0; di < tracks.length; di++) {
+      var artOf: any = tracks[di].artist;
+      if (artOf && artOf.name) artistNamesSet[artOf.name] = true;
+    }
+    var artistNames: string[] = Object.keys(artistNamesSet);
+    for (var dj = 0; dj < tracks.length; dj++) {
+      var trk: any = tracks[dj];
+      try {
+        if (trk.explicit_lyrics === true) continue; // keep quiz content family-safe
+        var previewUrl: string = trk.preview || "";
+        var trackTitle: string = trk.title || trk.title_short || "Unknown";
+        var artistName: string = trk.artist && trk.artist.name ? trk.artist.name : "";
+        if (!previewUrl || !trackTitle || !artistName) continue;
+
+        var excludeD: { [k: string]: boolean } = {};
+        excludeD[artistName] = true;
+        var wrongArtists = pickExcluding(artistNames, excludeD, 3);
+        if (wrongArtists.length < 3) continue;
+
+        var dOpts: RawOpt[] = [{ text: artistName, is_correct: true }];
+        for (var wi = 0; wi < wrongArtists.length; wi++) {
+          dOpts.push({ text: wrongArtists[wi] as string, is_correct: false });
+        }
+
+        var cover: string | null = (trk.album && (trk.album.cover_medium || trk.album.cover_big)) || null;
+
+        results.push({
+          provider_key: "deezer_" + (trk.id || djb2(trackTitle + artistName)),
+          topic: "music", lang: "en",
+          question_text: "Listen to the clip — who is the artist performing this song?",
+          question_type: "single_select",
+          raw_options: dOpts,
+          has_media: true,
+          media: {
+            type: "audio", url: previewUrl, thumbnail_url: cover,
+            duration_seconds: 30, mime_type: "audio/mpeg"
+          },
+          explanation: "\"" + trackTitle + "\" is performed by " + artistName + ".",
+          difficulty: "medium", provider: "deezer",
+          meta: { track_title: trackTitle }
+        });
+      } catch (e: any) { logger.debug("[QvQCache/deezer] skip: " + (e && e.message)); }
+    }
+    return results;
+  }
+
+  // Prefer Deezer MP3 previews, but its chart endpoint can legally return
+  // {data:[],total:0}. iTunes Search is the independent keyless fallback and
+  // currently provides stable 30-second AAC previews.
+  function fetchMusicQuiz(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger): RawQuestion[] {
+    var out: RawQuestion[] = [];
+    try {
+      out = fetchDeezer(nk, logger);
+    } catch (deezerErr: any) {
+      logger.warn("[QvQCache/music] Deezer unavailable; switching to iTunes Search: " +
+        (deezerErr && deezerErr.message ? deezerErr.message : String(deezerErr)));
+    }
+    if (out.length < 30) {
+      try {
+        out = out.concat(fetchItunesMusic(nk, logger));
+      } catch (itunesErr: any) {
+        logger.warn("[QvQCache/music] iTunes fallback failed: " +
+          (itunesErr && itunesErr.message ? itunesErr.message : String(itunesErr)));
+      }
+    }
+    try {
+      var fmKeyCheck = envKey(env, "LASTFM_API_KEY");
+      if (fmKeyCheck) out = out.concat(fetchLastfm(nk, env, logger));
+    } catch (e: any) {
+      logger.debug("[QvQCache/music] Last.fm bonus fetch skipped: " + (e && e.message));
+    }
+    if (out.length === 0) throw new Error("music: all audio providers returned zero questions");
+    return out;
+  }
+
+  // ── 14c. Last.fm (Music) — requires LASTFM_API_KEY ────────────────────────
   function fetchLastfm(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger): RawQuestion[] {
     var results: RawQuestion[] = [];
     var fmKey = envKey(env, "LASTFM_API_KEY");
@@ -1456,9 +2029,12 @@ namespace QvQuestionCache {
     var tracks: any  = httpGet(nk, "https://ws.audioscrobbler.com/2.0/?method=chart.getTopTracks&api_key=" + fmKey + "&format=json&limit=30");
     if (!artists || !artists.artists || !artists.artists.artist) throw new Error("Last.fm: no artists");
     if (!tracks  || !tracks.tracks  || !tracks.tracks.track)   throw new Error("Last.fm: no tracks");
-    var artistNames: string[] = [];
+    var artistNameSet: { [name: string]: boolean } = {};
     var aa: any[] = artists.artists.artist;
-    for (var ai2 = 0; ai2 < aa.length; ai2++) { if (aa[ai2].name) artistNames.push(aa[ai2].name); }
+    for (var ai2 = 0; ai2 < aa.length; ai2++) {
+      if (aa[ai2].name) artistNameSet[aa[ai2].name] = true;
+    }
+    var artistNames: string[] = Object.keys(artistNameSet);
     var trackList: any[] = tracks.tracks.track;
     for (var ti3 = 0; ti3 < trackList.length; ti3++) {
       var track: any = trackList[ti3];
@@ -1899,6 +2475,201 @@ namespace QvQuestionCache {
     return results;
   }
 
+  // ── 20. Math (OpenTDB Mathematics + Computers) — free, no key ───────────────
+  // OpenTDB category 19 = Science: Mathematics (~400 verified MCQs)
+  // OpenTDB category 18 = Science: Computers (bonus variety)
+  // Two batches so the pool stays large after the quality gate filters weak entries.
+  function fetchMathQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var batches: Array<{ id: number; amt: number; label: string }> = [
+      { id: 19, amt: 50, label: "mathematics" },
+      { id: 18, amt: 30, label: "science_computers" }
+    ];
+    for (var bi = 0; bi < batches.length; bi++) {
+      var b = batches[bi];
+      try {
+        var batch = fetchOpenTdbCategory(nk, logger, b.id, b.amt, "math", b.label);
+        for (var qi = 0; qi < batch.length; qi++) results.push(batch[qi]);
+      } catch (e: any) {
+        logger.debug("[QvQCache/math] OpenTDB cat=" + b.id + " failed (non-fatal): " + (e && e.message));
+      }
+    }
+    if (results.length === 0) throw new Error("math: all OpenTDB fetches returned 0 questions");
+    logger.info("[QvQCache/math] event=math_fetch count=" + results.length);
+    return results;
+  }
+
+  // ── 21. Art Institute of Chicago (Art) — free, no key, CC0 images ─────────
+  // https://api.artic.edu/api/v1/artworks — thousands of artworks with CC0
+  // images hosted via IIIF. No API key required. Question format: show artwork
+  // image and ask who painted/created it. Wrong answers are other artist names
+  // from the same batch (same pattern as fetchJikan genreSet deduplication).
+  function fetchArtInstitute(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var allArtists: { [name: string]: boolean } = {};
+    var rawWorks: Array<{ title: string; artist: string; imageId: string; date: string }> = [];
+
+    var pages = [1, 2, 3];
+    for (var pi = 0; pi < pages.length; pi++) {
+      try {
+        var url = "https://api.artic.edu/api/v1/artworks?fields=id,title,artist_display,date_display,artwork_type_title,image_id&limit=50&page=" + pages[pi];
+        var resp: any = httpGet(nk, url);
+        if (!resp || !Array.isArray(resp.data)) continue;
+        for (var wi = 0; wi < resp.data.length; wi++) {
+          var w: any = resp.data[wi];
+          if (!w.image_id || !w.title || !w.artist_display) continue;
+          // artist_display is "Georges Seurat\nFrench, 1859–1891" — take only the name part
+          var artistRaw: string = w.artist_display || "";
+          var artistName: string = artistRaw.indexOf("\n") >= 0 ? artistRaw.substring(0, artistRaw.indexOf("\n")).trim() : artistRaw.trim();
+          // Skip "Unknown" / "After X" / "Attributed to X" style entries — poor quiz quality
+          if (!artistName || artistName.length < 3) continue;
+          if (artistName.indexOf("Unknown") === 0 || artistName.indexOf("After ") === 0) continue;
+          allArtists[artistName] = true;
+          rawWorks.push({
+            title: (w.title || "").trim(),
+            artist: artistName,
+            imageId: w.image_id,
+            date: w.date_display || ""
+          });
+        }
+      } catch (e: any) {
+        logger.debug("[QvQCache/artic] page " + pages[pi] + " failed (non-fatal): " + (e && e.message));
+      }
+    }
+
+    var artistPool: string[] = Object.keys(allArtists);
+    if (rawWorks.length === 0 || artistPool.length < 4) {
+      throw new Error("artic: insufficient works or artists (works=" + rawWorks.length + " artists=" + artistPool.length + ")");
+    }
+
+    for (var ai = 0; ai < rawWorks.length; ai++) {
+      var work = rawWorks[ai];
+      try {
+        var exArt: { [k: string]: boolean } = {};
+        exArt[work.artist] = true;
+        var wrongArtists = pickExcluding(artistPool, exArt, 3);
+        if (wrongArtists.length < 3) continue;
+
+        var imageUrl = "https://www.artic.edu/iiif/2/" + work.imageId + "/full/843,/0/default.jpg";
+        var artOpts: RawOpt[] = [{ text: work.artist, is_correct: true }];
+        for (var wai = 0; wai < wrongArtists.length; wai++) {
+          artOpts.push({ text: wrongArtists[wai] as string, is_correct: false });
+        }
+
+        results.push({
+          provider_key: "artic_" + djb2(work.title + work.artist),
+          topic: "art", lang: "en",
+          question_text: "Who created this artwork?",
+          question_type: "single_select",
+          raw_options: artOpts,
+          has_media: true,
+          media: { type: "image", url: imageUrl, thumbnail_url: imageUrl, duration_seconds: null, mime_type: "image/jpeg" },
+          explanation: "\"" + work.title + "\"" + (work.date ? " (" + work.date + ")" : "") + " by " + work.artist + ".",
+          difficulty: "medium", provider: "artic",
+          meta: { title: work.title, artist: work.artist }
+        });
+      } catch (e: any) { logger.debug("[QvQCache/artic] skip work: " + (e && e.message)); }
+    }
+    logger.info("[QvQCache/artic] event=art_fetch works=" + rawWorks.length + " artists=" + artistPool.length + " emitted=" + results.length);
+    return results;
+  }
+
+  // ── 22. History (OpenTDB History + jService Jeopardy) — free, no key ───────
+  // OpenTDB category 23 = History (primary, well-structured MCQ with 3 distractors)
+  // jService = archive of real Jeopardy clues (bonus variety, best-effort only)
+  // jService clues are in Jeopardy format: "question" is the statement, "answer"
+  // is the keyword response. We collect all answers from the batch to use as a
+  // shared wrong-answer pool — same deduplication-set pattern used throughout.
+  function fetchJservice(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    var clues: any[] = [];
+    // Fetch 2 batches of 100 for a wider pool
+    var endpoints = [
+      "https://jservice.io/api/random?count=100",
+      "https://jservice.io/api/random?count=100"
+    ];
+    for (var ei = 0; ei < endpoints.length; ei++) {
+      try {
+        var raw: any = httpGet(nk, endpoints[ei]);
+        if (Array.isArray(raw)) {
+          for (var ci = 0; ci < raw.length; ci++) clues.push(raw[ci]);
+        }
+      } catch (e: any) {
+        logger.debug("[QvQCache/jservice] fetch failed (non-fatal): " + (e && e.message));
+      }
+    }
+    if (clues.length === 0) return results;
+
+    // Collect deduplicated answer pool for wrong-answer picking
+    var answerSet: { [a: string]: boolean } = {};
+    for (var ai2 = 0; ai2 < clues.length; ai2++) {
+      var ans: string = (clues[ai2].answer || "").replace(/<[^>]+>/g, "").trim();
+      if (ans && ans.length > 0 && ans.length < 60) answerSet[ans] = true;
+    }
+    var answerPool: string[] = Object.keys(answerSet);
+    if (answerPool.length < 4) return results;
+
+    for (var ji = 0; ji < clues.length; ji++) {
+      var clue: any = clues[ji];
+      try {
+        // Strip HTML tags that jService sometimes embeds in question/answer
+        var qText: string = (clue.question || "").replace(/<[^>]+>/g, "").trim();
+        var answer: string = (clue.answer || "").replace(/<[^>]+>/g, "").trim();
+        if (!qText || !answer || qText.length < 10 || answer.length > 60) continue;
+        // Skip question-less clues or answers that are just numbers
+        if (/^\d+$/.test(answer)) continue;
+
+        var exJ: { [k: string]: boolean } = {};
+        exJ[answer] = true;
+        var wrongJ = pickExcluding(answerPool, exJ, 3);
+        if (wrongJ.length < 3) continue;
+
+        var catTitle: string = (clue.category && clue.category.title) ? clue.category.title : "";
+        var jOpts: RawOpt[] = [{ text: answer, is_correct: true }];
+        for (var wji = 0; wji < wrongJ.length; wji++) {
+          jOpts.push({ text: wrongJ[wji] as string, is_correct: false });
+        }
+
+        results.push({
+          provider_key: "jservice_" + (clue.id || djb2(qText)),
+          topic: "history", lang: "en",
+          question_text: qText,
+          question_type: "single_select",
+          raw_options: jOpts,
+          has_media: false,
+          media: null,
+          explanation: catTitle ? "Category: " + catTitle : "",
+          difficulty: "hard",
+          provider: "jservice",
+          meta: { category: catTitle }
+        });
+      } catch (e: any) { logger.debug("[QvQCache/jservice] skip clue: " + (e && e.message)); }
+    }
+    logger.info("[QvQCache/jservice] event=jservice_fetch clues=" + clues.length + " emitted=" + results.length);
+    return results;
+  }
+
+  function fetchHistoryQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger): RawQuestion[] {
+    var results: RawQuestion[] = [];
+    // Primary: OpenTDB History (category 23) — structured MCQ with 3 distractors
+    try {
+      var opentdbBatch = fetchOpenTdbCategory(nk, logger, 23, 50, "history", "history");
+      for (var oi = 0; oi < opentdbBatch.length; oi++) results.push(opentdbBatch[oi]);
+    } catch (e: any) {
+      logger.warn("[QvQCache/history] OpenTDB cat=23 failed: " + (e && e.message));
+    }
+    // Bonus: jService Jeopardy archive — real questions from the TV show
+    try {
+      var jsBatch = fetchJservice(nk, logger);
+      for (var ji2 = 0; ji2 < jsBatch.length; ji2++) results.push(jsBatch[ji2]);
+    } catch (e: any) {
+      logger.debug("[QvQCache/history] jService bonus failed (non-fatal): " + (e && e.message));
+    }
+    if (results.length === 0) throw new Error("history: all fetches returned 0 questions");
+    logger.info("[QvQCache/history] event=history_fetch count=" + results.length);
+    return results;
+  }
+
   // ── Provider router ────────────────────────────────────────────────────────
 
   function fetchForTopic(nk: nkruntime.Nakama, env: any, logger: nkruntime.Logger, topic: string): RawQuestion[] {
@@ -1906,7 +2677,8 @@ namespace QvQuestionCache {
       case "geography":   return fetchGeoQuiz(nk, logger);
       case "speed_quiz":  return fetchSpeedQuiz(nk, logger);
       case "true_false":  return fetchTrueFalseQuiz(nk, logger);
-      case "anime":     return fetchJikan(nk, logger);
+      case "opentdb":     return fetchOpenTdbCategory(nk, logger, 9, 50, "opentdb", "");
+      case "anime":     return fetchAnimeQuiz(nk, logger);
       case "pokemon":   return fetchPokeapi(nk, logger);
       case "cocktail":  return fetchCocktaildb(nk, logger);
       case "food":      return fetchMealdb(nk, logger);
@@ -1924,9 +2696,12 @@ namespace QvQuestionCache {
       }
       case "space":    return fetchNasa(nk, env, logger);
       case "movies":   return fetchTmdb(nk, env, logger);
-      case "sports":   return fetchSportsdb(nk, logger);
-      case "music":    return fetchLastfm(nk, env, logger);
+      case "sports":   return fetchSportsQuiz(nk, logger);
+      case "music":    return fetchMusicQuiz(nk, env, logger);
       case "news":     return fetchNews(nk, env, logger);
+      case "math":     return fetchMathQuiz(nk, logger);
+      case "art":      return fetchArtInstitute(nk, logger);
+      case "history":  return fetchHistoryQuiz(nk, logger);
       case "daily":
       case "weekly":   return fetchS3(nk, env, logger, topic);
       case "video_quiz": return fetchVideoQuiz(nk, env, logger);
@@ -1948,6 +2723,8 @@ namespace QvQuestionCache {
   ): void {
     var now = nowMs();
     var pages = Math.ceil(questions.length / MAX_PER_DOC);
+    var generation = topic + "_" + now + "_" + Math.floor(Math.random() * 1000000);
+    var writes: nkruntime.StorageWriteRequest[] = [];
     for (var p = 0; p < pages; p++) {
       var slice = questions.slice(p * MAX_PER_DOC, (p + 1) * MAX_PER_DOC);
       var langs: { [l: string]: number } = {};
@@ -1955,12 +2732,13 @@ namespace QvQuestionCache {
         var l = slice[qi].lang || "en";
         langs[l] = (langs[l] || 0) + 1;
       }
-      nk.storageWrite([{
+      writes.push({
         collection:      COL_CACHE + topic,
         key:             "pool_" + p,
         userId:          Constants.SYSTEM_USER_ID,
         value: {
           topic:          topic,
+          generation:     generation,
           page:           p,
           page_count:     pages,
           cached_at_ms:   now,
@@ -1975,9 +2753,14 @@ namespace QvQuestionCache {
         },
         permissionRead:  1,
         permissionWrite: 0
-      }]);
-      logger.info("[QvQCache/" + topic + "] wrote pool_" + p + " (" + slice.length + " questions)");
+      });
     }
+    // Nakama commits a storageWrite batch transactionally. Readers therefore
+    // see either the previous generation or this complete generation, never a
+    // page-by-page mixture.
+    nk.storageWrite(writes);
+    logger.info("[QvQCache/" + topic + "] wrote generation=" + generation +
+      " pages=" + pages + " questions=" + questions.length);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2053,13 +2836,18 @@ namespace QvQuestionCache {
         ? rows[0].value.last_refresh_ms : 0;
       if (nowMs() - lastMs < REFRESH_GATE_MS) return false;
 
+      var expectedVersion = rows && rows.length > 0 ? rows[0].version : "*";
       nk.storageWrite([{
         collection: COL_REFRESH_GATE, key: topic, userId: Constants.SYSTEM_USER_ID,
         value: { last_refresh_ms: nowMs() },
+        version: expectedVersion,
         permissionRead: 0, permissionWrite: 0
       }]);
       return true;
-    } catch (_e) { return true; }
+    } catch (_e) {
+      // A version conflict means another node acquired the lease first.
+      return false;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2095,6 +2883,12 @@ namespace QvQuestionCache {
       logger.info("[QvQCache/" + topic + "] refresh gated — recent refresh in progress or completed" +
         " event=provider_refresh_gated topic=" + topic);
       return { ok: true, topic: topic, count: 0 };
+    }
+    if (force) {
+      // Best effort: update the normal lease timestamp for observability and to
+      // gate subsequent non-forced refreshes. Schema-repair callers may bypass
+      // an old lease because stale data must not survive until the next TTL.
+      tryAcquireRefreshGate(nk, topic);
     }
 
     try {
@@ -2151,8 +2945,47 @@ namespace QvQuestionCache {
       // ── Claude 1-sentence enrichment for still-blank explanations ─────────
       claudeEnrichBatch(nk, env, logger, normalized);
 
-      // Cap: max 500 questions total (5 pages × 100) — keeps storage sane
-      var capped = normalized.slice(0, MAX_PER_DOC * 5);
+      // ── Merge with existing unexpired pool (accumulate, don't overwrite) ──
+      // #QVVBS-CACHE (2026-07): writeCache() used to fully replace the previous
+      // pool every refresh cycle. Providers like Jikan return a small, largely
+      // repeating page per fetch, so topics such as "anime" were permanently stuck
+      // at ~24 questions server-wide — exhausted fast by qv_seen tracking, causing
+      // "AI could not generate additional questions" and "limited question pool /
+      // repeated questions" (Survival Quiz). NormalizedQuestion.id is a stable hash
+      // of (topic, provider, provider_key), so merging by id is a safe dedupe key
+      // across refresh cycles — new questions are kept first so capping below
+      // always favors freshness.
+      var merged: NormalizedQuestion[] = normalized;
+      try {
+        var existingPool = readCache(nk, logger, topic);
+        if (existingPool.questions.length > 0) {
+          var mergedIds: { [id: string]: boolean } = {};
+          for (var mi = 0; mi < normalized.length; mi++) mergedIds[normalized[mi].id] = true;
+          var carried = 0;
+          for (var ei2 = 0; ei2 < existingPool.questions.length; ei2++) {
+            var oldQ = existingPool.questions[ei2];
+            if (mergedIds[oldQ.id]) continue;
+            // Schema migration: remove media-backed anime metadata templates.
+            // Image Guess now exclusively asks users to identify the pictured
+            // title; carrying old genre/year rows would preserve the bug forever.
+            if (topic === "anime" && oldQ.has_media && oldQ.media &&
+                oldQ.media.type === "image" &&
+                oldQ.question_text !== "Which anime is shown in this image?") {
+              continue;
+            }
+            merged.push(oldQ);
+            mergedIds[oldQ.id] = true;
+            carried++;
+          }
+          logger.info("[QvQCache/" + topic + "] merged " + normalized.length + " new + " + carried + " carried-over = " + merged.length + " total");
+        }
+      } catch (mergeErr: any) {
+        logger.warn("[QvQCache/" + topic + "] merge-with-existing failed, using fresh fetch only: " + (mergeErr && mergeErr.message));
+      }
+
+      // Cap: max 500 questions total (5 pages × 100) — keeps storage sane. New
+      // questions are already first in `merged`, so capping keeps the freshest.
+      var capped = merged.slice(0, MAX_PER_DOC * 5);
 
       // ── Write cache ───────────────────────────────────────────────────────
       var qStats = {
@@ -2200,6 +3033,7 @@ namespace QvQuestionCache {
       var pageCount: number = page0.page_count || 1;
       var expiresMs: number = page0.expires_at_ms || 0;
       var cachedMs: number  = page0.cached_at_ms  || 0;
+      var generation: string = page0.generation || "";
       var expired = expiresMs > 0 ? expiresMs < nowMs() : true;
 
       if (Array.isArray(page0.questions)) questions = questions.concat(page0.questions);
@@ -2210,8 +3044,12 @@ namespace QvQuestionCache {
         var extra = nk.storageRead(reqs);
         if (extra) {
           for (var ei = 0; ei < extra.length; ei++) {
-            if (extra[ei] && extra[ei].value && Array.isArray(extra[ei].value.questions)) {
+            if (extra[ei] && extra[ei].value &&
+                (!generation || extra[ei].value.generation === generation) &&
+                Array.isArray(extra[ei].value.questions)) {
               questions = questions.concat(extra[ei].value.questions);
+            } else if (generation) {
+              logger.warn("[QvQCache/" + topic + "] skipped mismatched cache page generation");
             }
           }
         }
@@ -2235,6 +3073,37 @@ namespace QvQuestionCache {
       var doc: any = rows[0].value;
       return doc.expires_at_ms ? doc.expires_at_ms > nowMs() : false;
     } catch (_e) { return false; }
+  }
+
+  /**
+   * Queue a provider refresh without blocking a player RPC on external I/O.
+   * The cache refresh scheduler drains this collection on its next tick.
+   */
+  export function requestRefresh(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    topic: string,
+    reason: string
+  ): void {
+    try {
+      nk.storageWrite([{
+        collection: COL_REFRESH_REQ,
+        key: topic,
+        userId: Constants.SYSTEM_USER_ID,
+        value: {
+          topic: topic,
+          reason: reason,
+          requested_at_ms: nowMs()
+        },
+        permissionRead: 0,
+        permissionWrite: 0
+      }]);
+      logger.info("[QvQCache/" + topic + "] queued background refresh reason=" + reason +
+        " event=provider_refresh_queued");
+    } catch (err: any) {
+      logger.warn("[QvQCache/" + topic + "] failed to queue refresh: " +
+        (err && err.message ? err.message : String(err)));
+    }
   }
 
   /**

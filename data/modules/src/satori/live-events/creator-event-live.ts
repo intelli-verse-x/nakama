@@ -17,6 +17,13 @@ namespace SatoriCreatorEvents {
     points?: number;
   }
 
+  interface CreatorEventBestGuessRound {
+    question?: string;
+    answer?: string;
+    acceptedAnswers?: string[];
+    clues?: string[];
+  }
+
   interface CreatorEventPrizeTier {
     tier: string;
     percentage: number;
@@ -97,6 +104,8 @@ namespace SatoriCreatorEvents {
     prizeFunding?: PrizeFunding;
     creatorEmail?: string;
     questions: CreatorEventQuestion[];
+    /** Multi-round Best Guess: per-round content when not flattened into questions[]. */
+    rounds?: CreatorEventBestGuessRound[];
     clues?: string[];
     answer?: string;
     /** Best Guess: AI-expanded synonym list (publish time). */
@@ -129,6 +138,7 @@ namespace SatoriCreatorEvents {
     rank?: number;
     claimedAt?: number;
     eliminated?: boolean;
+    abandonedAt?: number;
   }
 
   interface CreatorEventsIndex {
@@ -606,6 +616,41 @@ namespace SatoriCreatorEvents {
     return Math.floor(maxSpeedBonus * ratio);
   }
 
+  function hasSubmitAnswerPayload(data: any): boolean {
+    if (!data || typeof data !== "object") return false;
+    if (data.answer !== undefined && data.answer !== null && String(data.answer).trim() !== "") return true;
+    var answers = Array.isArray(data.answers) ? data.answers : (Array.isArray(data.qAnswers) ? data.qAnswers : null);
+    return !!(answers && answers.length > 0);
+  }
+
+  function eventDefinitionForScoring(def: CreatorEventDefinition, questions: CreatorEventQuestion[]): CreatorEventDefinition {
+    var copy = {} as CreatorEventDefinition;
+    for (var k in def) {
+      if (Object.prototype.hasOwnProperty.call(def, k)) (copy as any)[k] = (def as any)[k];
+    }
+    copy.questions = questions;
+    return copy;
+  }
+
+  /** Multi-round Best Guess stores rounds[] in storage; derive questions[] for scoring. */
+  function questionsFromBestGuessRounds(def: CreatorEventDefinition): CreatorEventQuestion[] {
+    var rounds = def.rounds;
+    if (!rounds || !rounds.length || rounds.length <= 1) return [];
+    var out: CreatorEventQuestion[] = [];
+    for (var i = 0; i < rounds.length; i++) {
+      var round = rounds[i] as any;
+      if (!round) continue;
+      var ans = String(round.answer || "").trim();
+      if (!ans) continue;
+      out.push({
+        question: String(round.question || ("Question " + (i + 1))).trim(),
+        answer: ans,
+        acceptedAnswers: Array.isArray(round.acceptedAnswers) ? round.acceptedAnswers : undefined,
+      });
+    }
+    return out;
+  }
+
   function scoreQuestionSet(def: CreatorEventDefinition, data: any, nowMs: number): any {
     var questions = def.questions || [];
     if (!questions || questions.length === 0) {
@@ -691,6 +736,68 @@ namespace SatoriCreatorEvents {
     };
   }
 
+  function rpcAbandon(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    var userId = RpcHelpers.requireUserId(ctx);
+    var data = RpcHelpers.parseRpcPayload(payload);
+    if (!data.eventId) return RpcHelpers.errorResponse("eventId required");
+
+    var eventId = String(data.eventId);
+    var existing = readCompletedAnswer(nk, eventId, userId);
+    if (existing) {
+      if (existing.abandoned === true) {
+        return RpcHelpers.successResponse({ success: true, eventId: eventId, abandoned: true });
+      }
+      return RpcHelpers.errorResponse("You have already finished this event.");
+    }
+
+    var userStates = getUserStates(nk, userId);
+    if (!userStates[eventId] || !userStates[eventId].joinedAt) {
+      return RpcHelpers.errorResponse("You have not joined this event.");
+    }
+
+    var nowMs = Date.now();
+    var answerRecord: any = {
+      eventId: eventId,
+      playerId: userId,
+      deviceId: data.deviceId || data.device_id || "",
+      playerName: String(data.playerName || data.displayName || data.player_name || ctx.username || "").trim(),
+      answer: "",
+      correct: false,
+      score: 0,
+      speedBonus: 0,
+      submitMs: nowMs,
+      elapsedSec: 0,
+      answered: false,
+      abandoned: true,
+      correctCount: 0,
+      totalQuestions: 0,
+      qAnswers: [],
+      source: "creator_event_abandon_rpc",
+    };
+
+    try {
+      nk.storageWrite([{
+        collection: "event_answers",
+        key: eventId,
+        userId: userId,
+        value: answerRecord,
+        permissionRead: 2,
+        permissionWrite: 0,
+        version: "*",
+      }]);
+    } catch (writeErr: any) {
+      logger.warn("[CreatorEvent] Abandon write failed for user=%s event=%s: %s", userId, eventId, writeErr.message || String(writeErr));
+      return RpcHelpers.errorResponse("Could not record event exit.");
+    }
+
+    writeSpaAnswerIndexEntry(nk, logger, eventId, userId, 0, nowMs);
+
+    userStates[eventId].abandonedAt = Math.floor(nowMs / 1000);
+    saveUserStates(nk, userId, userStates);
+
+    return RpcHelpers.successResponse({ success: true, eventId: eventId, abandoned: true });
+  }
+
   function rpcCanPlay(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
@@ -699,14 +806,18 @@ namespace SatoriCreatorEvents {
     var eventId = String(data.eventId);
     var completedAnswer = readCompletedAnswer(nk, eventId, userId);
     if (completedAnswer) {
+      var abandoned = completedAnswer.abandoned === true;
       return RpcHelpers.successResponse({
         success: true,
         eventId: eventId,
         canPlay: false,
-        played: 1,
-        completed: true,
-        submitted: true,
-        reason: "You have already completed this event.",
+        played: abandoned ? 0 : 1,
+        completed: !abandoned,
+        submitted: !abandoned,
+        abandoned: abandoned,
+        reason: abandoned
+          ? "You left this event and cannot play again."
+          : "You have already completed this event.",
         score: completedAnswer.score || 0,
         correct: completedAnswer.correct === true,
       });
@@ -739,10 +850,45 @@ namespace SatoriCreatorEvents {
     });
   }
 
+  function looksLikeNakamaUuid(s: string): boolean {
+    if (!s) return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s).trim());
+  }
+
+  /** Reject orphan device sessions that submit with another user's UUID as deviceId metadata. */
+  function validateSubmitDeviceIdentity(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    sessionUserId: string,
+    data: any,
+  ): string {
+    var rawDevice = String(data.deviceId || data.device_id || "").trim();
+    if (!rawDevice || !looksLikeNakamaUuid(rawDevice)) return "";
+    if (rawDevice === sessionUserId) return "";
+    try {
+      var accounts = nk.accountsGetId([rawDevice]);
+      if (!accounts || accounts.length === 0) return "";
+      var acct = accounts[0];
+      var hasIdentity = !!(acct && (
+        (acct.email && String(acct.email).trim()) ||
+        (acct.customId && String(acct.customId).trim())
+      ));
+      if (!hasIdentity) return "";
+      logger.warn("[CreatorEvent] Submit identity mismatch: session=%s deviceMeta=%s",
+        sessionUserId, rawDevice);
+      return "Session mismatch: reopen Live Events from the QuizVerse app so rewards credit to your account.";
+    } catch (e: any) {
+      return "";
+    }
+  }
+
   function rpcSubmit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
     if (!data.eventId) return RpcHelpers.errorResponse("eventId required");
+
+    var identityError = validateSubmitDeviceIdentity(nk, logger, userId, data);
+    if (identityError) return RpcHelpers.errorResponse(identityError);
 
     var eventId = String(data.eventId);
     if (readCompletedAnswer(nk, eventId, userId)) {
@@ -759,15 +905,29 @@ namespace SatoriCreatorEvents {
 
     var mode = String(def.gameMode || "best_guess").toLowerCase();
     if (mode === "speed_quiz" || mode === "elimination") {
-      var hasAnswerArray = Array.isArray(data.answers) || Array.isArray(data.qAnswers);
-      if (!hasAnswerArray && (data.answer === undefined || data.answer === null)) return RpcHelpers.errorResponse("answers required");
-    } else if (data.answer === undefined || data.answer === null) {
+      if (!hasSubmitAnswerPayload(data)) return RpcHelpers.errorResponse("answers required");
+    } else if (!hasSubmitAnswerPayload(data)) {
       return RpcHelpers.errorResponse("answer required");
     }
 
-    var scoreResult = (mode === "speed_quiz" || mode === "elimination")
-      ? scoreQuestionSet(def, data, nowMs)
-      : scoreBestGuess(def, data.answer, nowMs);
+    var scoreResult: any;
+    if (mode === "speed_quiz" || mode === "elimination") {
+      scoreResult = scoreQuestionSet(def, data, nowMs);
+    } else if (mode === "best_guess") {
+      var bgQuestions = def.questions && def.questions.length > 1 ? def.questions : questionsFromBestGuessRounds(def);
+      var hasMultiAnswers = (Array.isArray(data.answers) && data.answers.length > 0)
+        || (Array.isArray(data.qAnswers) && data.qAnswers.length > 0);
+      if (bgQuestions.length > 1 && hasMultiAnswers) {
+        var scoringDef = (!def.questions || def.questions.length <= 1)
+          ? eventDefinitionForScoring(def, bgQuestions)
+          : def;
+        scoreResult = scoreQuestionSet(scoringDef, data, nowMs);
+      } else {
+        scoreResult = scoreBestGuess(def, data.answer, nowMs);
+      }
+    } else {
+      scoreResult = scoreBestGuess(def, data.answer, nowMs);
+    }
     if (scoreResult.error) return RpcHelpers.errorResponse(scoreResult.error);
 
     var answerRecord: any = {
@@ -1132,7 +1292,16 @@ namespace SatoriCreatorEvents {
   }
 
   function rpcCreate(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
-    var userId = RpcHelpers.requireUserId(ctx);
+    // Allow server-to-server calls (Content Factory / n8n via http_key) — same
+    // pattern as rpcUpdatePromo. Unauthenticated calls without admin key are rejected.
+    var userId = ctx.userId || "";
+    var isServerCall = !userId;
+    if (isServerCall && !isAdminCtx(ctx, nk)) {
+      return RpcHelpers.errorResponse("AUTH_REQUIRED: sign in or use admin http_key");
+    }
+    if (isServerCall) {
+      userId = Constants.SYSTEM_USER_ID;
+    }
     var data = RpcHelpers.parseRpcPayload(payload);
 
     if (!data.title) return RpcHelpers.errorResponse("title required");
@@ -1228,8 +1397,16 @@ namespace SatoriCreatorEvents {
   }
 
   function rpcPublish(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
-    var userId = RpcHelpers.requireUserId(ctx);
-    var isAdmin = isAdminCtx(ctx, nk);
+    // Allow server-to-server calls (Content Factory bootstrap / n8n via http_key).
+    var userId = ctx.userId || "";
+    var isServerCall = !userId;
+    if (isServerCall && !isAdminCtx(ctx, nk)) {
+      return RpcHelpers.errorResponse("AUTH_REQUIRED: sign in or use admin http_key");
+    }
+    var isAdmin = isServerCall || isAdminCtx(ctx, nk);
+    if (isServerCall) {
+      userId = Constants.SYSTEM_USER_ID;
+    }
     var data = RpcHelpers.parseRpcPayload(payload);
 
     var event: CreatorEventDefinition | null = null;
@@ -1762,6 +1939,7 @@ namespace SatoriCreatorEvents {
     initializer.registerRpc("creator_event_get", rpcGet);
     initializer.registerRpc("creator_event_clock", rpcServerClock);
     initializer.registerRpc("creator_event_join", rpcJoin);
+    initializer.registerRpc("creator_event_abandon", rpcAbandon);
     initializer.registerRpc("creator_event_can_play", rpcCanPlay);
     initializer.registerRpc("creator_event_submit", rpcSubmit);
     initializer.registerRpc("creator_event_leaderboard", rpcLeaderboard);
