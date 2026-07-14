@@ -54,13 +54,13 @@ function safeStorageRead(nk, logger, collection, key, userId) {
 // ─── RPC: player_get_full_profile ───────────────────────────────────────────
 
 function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
-    if (!ctx.userId) return profileErrorResponse('User not authenticated');
-
     var data = profileValidatePayload(payload);
     if (data === null) return profileErrorResponse('Invalid JSON payload');
 
     var gameId = data.gameId || 'quizverse';
-    var userId = ctx.userId;
+    // Session: ctx.userId. http_key S2S (Conversation Hub personalize): user_id in body.
+    var userId = ctx.userId || (data && (data.user_id || data.userId)) || '';
+    if (!userId) return profileErrorResponse('User not authenticated');
 
     // ─── 1. Account & Metadata ──────────────────────────────────────────
     var account = null;
