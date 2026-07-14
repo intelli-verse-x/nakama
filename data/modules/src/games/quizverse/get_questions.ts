@@ -1687,7 +1687,24 @@ namespace QvGetQuestions {
       } catch (_rwq) { /* non-critical */ }
     }
 
-    // ── 6. Write inflight + pack document (Task 1b.3) ──────────────────────
+    // ── 6. Remint signed audio URLs BEFORE pack write ──────────────────────
+    // Deezer hdnea tokens expire in ~15m. Remint first so the stored pack and
+    // the client response both carry fresh URLs. Then drop any rows remint had
+    // to scrub (legacy pool without track_id) so Unity never receives
+    // has_media=false audio quiz items.
+    try {
+      QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
+    } catch (_audRef) { /* non-fatal */ }
+    if (requireMedia) {
+      var keepMedia: any[] = [];
+      for (var kmi = 0; kmi < picked.length; kmi++) {
+        var kq = picked[kmi];
+        if (kq && kq.has_media && kq.media && kq.media.url) keepMedia.push(kq);
+      }
+      picked = keepMedia;
+    }
+
+    // ── 7. Write inflight + pack document (Task 1b.3) ──────────────────────
     var packId = makePackId(nk, gameId, topic);
     writePackStorage(nk, userId, packId, topic, lang, langActual, gameId, picked);
 
@@ -1701,12 +1718,8 @@ namespace QvGetQuestions {
       " inflight=" + inflightIds.length + " cache_expired=" + cacheResult.expired +
       " coldStart=" + coldStartApplied + " mode=" + mode);
 
-    // ── 7. Build client-safe response ──────────────────────────────────────
+    // ── 8. Build client-safe response ──────────────────────────────────────
     // Strip internal `provider` field — Unity doesn't need to know the source.
-    // Re-mint Deezer hdnea preview URLs before delivery so Unity never sees 403s.
-    try {
-      QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
-    } catch (_audRef) { /* non-fatal */ }
     var clientQs: any[] = [];
     for (var ci = 0; ci < picked.length; ci++) {
       var q = picked[ci];

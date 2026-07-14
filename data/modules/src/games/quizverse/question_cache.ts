@@ -2980,6 +2980,15 @@ namespace QvQuestionCache {
                 oldQ.question_text !== "Which anime is shown in this image?") {
               continue;
             }
+            // Music: never carry Deezer rows missing track_id — their hdnea
+            // preview URLs expire in ~15m and cannot be reminted at serve time.
+            if (topic === "music" && oldQ.has_media && oldQ.media &&
+                oldQ.media.type === "audio" &&
+                !oldQ.media.track_id &&
+                !(typeof oldQ.provider_key === "string" &&
+                  /^deezer_\d+$/.test(oldQ.provider_key))) {
+              continue;
+            }
             merged.push(oldQ);
             mergedIds[oldQ.id] = true;
             carried++;
@@ -3116,19 +3125,60 @@ namespace QvQuestionCache {
     return "";
   }
 
-  function needsDeezerPreviewRefresh(q: any): boolean {
+  // Legacy music-pool rows (pre track_id deploy) only keep explanation text like:
+  //   "\"Choosin' Texas\" is performed by Ella Langley."
+  // Recover a Deezer track id via search so serve-time remint still works.
+  function recoverDeezerTrackIdFromExplanation(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    q: any
+  ): string {
+    var expl = q && typeof q.explanation === "string" ? q.explanation : "";
+    if (!expl) return "";
+    var m = expl.match(/"([^"]+)"\s+is performed by\s+(.+?)\.?$/i);
+    if (!m) return "";
+    var title = m[1].trim();
+    var artist = m[2].trim();
+    if (!title || !artist) return "";
+    try {
+      var qstr = encodeURIComponent("track:\"" + title + "\" artist:\"" + artist + "\"");
+      var search: any = httpGet(nk, "https://api.deezer.com/search?q=" + qstr + "&limit=5");
+      var hits: any[] = search && Array.isArray(search.data) ? search.data : [];
+      for (var hi = 0; hi < hits.length; hi++) {
+        var hit = hits[hi];
+        if (!hit || !hit.id) continue;
+        var hitArtist = hit.artist && hit.artist.name ? String(hit.artist.name) : "";
+        if (hitArtist && hitArtist.toLowerCase() === artist.toLowerCase() && hit.preview) {
+          return String(hit.id);
+        }
+      }
+      if (hits.length > 0 && hits[0].id && hits[0].preview) return String(hits[0].id);
+    } catch (e: any) {
+      logger.debug("[QvQCache/deezer] explanation search failed: " +
+        (e && e.message ? e.message : String(e)));
+    }
+    return "";
+  }
+
+  function isDeezerMediaQuestion(q: any): boolean {
     if (!q || !q.media || typeof q.media.url !== "string") return false;
     var url = q.media.url;
-    var isDeezer =
+    return (
       url.indexOf("dzcdn.net") >= 0 ||
       url.indexOf("deezer.com") >= 0 ||
       q.provider === "deezer" ||
       (typeof q.provider_key === "string" && q.provider_key.indexOf("deezer_") === 0) ||
-      (q.media && q.media.source === "deezer");
-    if (!isDeezer) return false;
-    if (!extractDeezerTrackId(q)) return false;
+      (q.media && q.media.source === "deezer")
+    );
+  }
+
+  function needsDeezerPreviewRefresh(q: any): boolean {
+    if (!isDeezerMediaQuestion(q)) return false;
+    var url = q.media.url;
     // Live Deezer hdnea tokens are ~15 minutes (measured 2026-07-14). Always
     // remint at serve time unless the URL is brand-new (>12m remaining).
+    // Even legacy rows without track_id enter this path so explanation-search
+    // recovery can remint them instead of scrubbing to has_media=false.
     var expMs = parseHdneaExpiryMs(url);
     if (expMs <= 0) return true;
     return expMs <= (nowMs() + DEEZER_URL_SKEW_MS);
@@ -3151,6 +3201,15 @@ namespace QvQuestionCache {
       var q = questions[i];
       if (!needsDeezerPreviewRefresh(q)) continue;
       var trackId = extractDeezerTrackId(q);
+      if (!trackId) {
+        trackId = recoverDeezerTrackIdFromExplanation(nk, logger, q);
+        if (trackId) {
+          if (!q.media) q.media = {};
+          q.media.track_id = trackId;
+          q.media.source = "deezer";
+          if (!q.provider_key) q.provider_key = "deezer_" + trackId;
+        }
+      }
       if (!trackId) continue;
       attempted++;
       try {
@@ -3163,6 +3222,7 @@ namespace QvQuestionCache {
         q.media.url = fresh;
         q.media.track_id = trackId;
         q.media.source = "deezer";
+        if (!q.provider_key) q.provider_key = "deezer_" + trackId;
         refreshed++;
       } catch (e: any) {
         logger.warn("[QvQCache/deezer] refresh failed track=" + trackId + ": " +
