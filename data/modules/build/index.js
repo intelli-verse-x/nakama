@@ -13450,6 +13450,10 @@ var QvGetQuestions;
                 var rqPackId = rqResult.packId;
                 logger.info("[QvGetQ] ⚡ readyqueue fast-path pack=" + rqPackId +
                     " topic=" + topic + " n=" + rqServed.length);
+                try {
+                    QvQuestionCache.refreshSignedAudioUrls(nk, logger, rqServed);
+                }
+                catch (_rqRef) { /* non-fatal — client may still get a playable itunes row */ }
                 var rqClientQs = [];
                 for (var rqi = 0; rqi < rqServed.length; rqi++) {
                     var rqq = rqServed[rqi];
@@ -13795,6 +13799,11 @@ var QvGetQuestions;
             " coldStart=" + coldStartApplied + " mode=" + mode);
         // ── 7. Build client-safe response ──────────────────────────────────────
         // Strip internal `provider` field — Unity doesn't need to know the source.
+        // Re-mint Deezer hdnea preview URLs before delivery so Unity never sees 403s.
+        try {
+            QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
+        }
+        catch (_audRef) { /* non-fatal */ }
         var clientQs = [];
         for (var ci = 0; ci < picked.length; ci++) {
             var q = picked[ci];
@@ -18381,6 +18390,11 @@ var QvPrewarmCron;
         var after = QvQuestionCache.readCache(nk, logger, topic);
         var queueWritten = prewarmTopic(nk, logger, userId, topic, minCount);
         var readyQuestions = readReadyQueue(nk, userId, topic);
+        try {
+            // Warmup media_urls are prefetched by Unity at boot — must be fresh Deezer tokens.
+            QvQuestionCache.refreshSignedAudioUrls(nk, logger, readyQuestions);
+        }
+        catch (_warmAud) { /* non-fatal */ }
         var mediaUrls = [];
         var mediaSeen = {};
         // Prefer rows with question_text + media.url so client startup prefetch is useful.
@@ -19133,7 +19147,7 @@ var QvQuestionCache;
         speed_quiz: 1 * 3600000,
         true_false: 1 * 3600000,
         movies: 2 * 3600000,
-        music: 2 * 3600000,
+        music: 45 * 60000, // Deezer hdnea tokens die in ~30–120m; keep pool short + serve-time refresh
         sports: 2 * 3600000,
         news: 6 * 3600000,
         space: 6 * 3600000,
@@ -19464,7 +19478,8 @@ var QvQuestionCache;
             media: raw.media,
             explanation: raw.explanation,
             difficulty: raw.difficulty,
-            provider: raw.provider
+            provider: raw.provider,
+            provider_key: raw.provider_key
         };
     }
     // ── Explanation enrichment ─────────────────────────────────────────────────
@@ -21025,8 +21040,9 @@ var QvQuestionCache;
                     dOpts.push({ text: wrongArtists[wi], is_correct: false });
                 }
                 var cover = (trk.album && (trk.album.cover_medium || trk.album.cover_big)) || null;
+                var deezerTrackId = trk.id ? String(trk.id) : "";
                 results.push({
-                    provider_key: "deezer_" + (trk.id || djb2(trackTitle + artistName)),
+                    provider_key: "deezer_" + (deezerTrackId || djb2(trackTitle + artistName)),
                     topic: "music", lang: "en",
                     question_text: "Listen to the clip — who is the artist performing this song?",
                     question_type: "single_select",
@@ -21034,11 +21050,14 @@ var QvQuestionCache;
                     has_media: true,
                     media: {
                         type: "audio", url: previewUrl, thumbnail_url: cover,
-                        duration_seconds: 30, mime_type: "audio/mpeg"
+                        duration_seconds: 30, mime_type: "audio/mpeg",
+                        // track_id lets get_questions re-mint hdnea-signed preview URLs at serve time
+                        // (Deezer CDN tokens expire in ~30–120 min while the music pool TTL is 2h).
+                        track_id: deezerTrackId, source: "deezer"
                     },
                     explanation: "\"" + trackTitle + "\" is performed by " + artistName + ".",
                     difficulty: "medium", provider: "deezer",
-                    meta: { track_title: trackTitle }
+                    meta: { track_title: trackTitle, track_id: deezerTrackId }
                 });
             }
             catch (e) {
@@ -22130,6 +22149,128 @@ var QvQuestionCache;
         }
     }
     QvQuestionCache.isCacheValid = isCacheValid;
+    // ── Signed audio URL refresh (Deezer hdnea) ────────────────────────────────
+    //
+    // Deezer chart `preview` URLs are Akamai-signed (hdnea=exp=…~hmac=…). Tokens
+    // expire in roughly 30–120 minutes. The music question pool is cached longer
+    // (and readyqueue/warmup can hold rows even longer), so Unity clients were
+    // receiving 403 CDN failures for otherwise-valid questions.
+    //
+    // Call this on the questions about to be delivered (get_questions / warm).
+    // Mutates media.url in place when a fresh preview is obtained.
+    var DEEZER_URL_SKEW_MS = 10 * 60 * 1000; // refresh if expiring within 10 minutes
+    var DEEZER_REFRESH_CAP = 16; // hard cap per RPC to bound latency
+    function parseHdneaExpiryMs(url) {
+        if (!url)
+            return 0;
+        var m = url.match(/[?&]hdnea=[^&]*exp=(\d+)/);
+        if (!m)
+            m = url.match(/exp=(\d+)/);
+        if (!m)
+            return 0;
+        var sec = parseInt(m[1], 10);
+        return isNaN(sec) ? 0 : sec * 1000;
+    }
+    function extractDeezerTrackId(q) {
+        if (!q)
+            return "";
+        if (q.media && q.media.track_id)
+            return String(q.media.track_id);
+        if (q.meta && q.meta.track_id)
+            return String(q.meta.track_id);
+        var pk = typeof q.provider_key === "string" ? q.provider_key : "";
+        if (pk.indexOf("deezer_") === 0) {
+            var idPart = pk.substring("deezer_".length);
+            if (/^\d+$/.test(idPart))
+                return idPart;
+        }
+        return "";
+    }
+    function needsDeezerPreviewRefresh(q) {
+        if (!q || !q.media || typeof q.media.url !== "string")
+            return false;
+        var url = q.media.url;
+        var isDeezer = url.indexOf("dzcdn.net") >= 0 ||
+            url.indexOf("deezer.com") >= 0 ||
+            q.provider === "deezer" ||
+            (typeof q.provider_key === "string" && q.provider_key.indexOf("deezer_") === 0) ||
+            (q.media && q.media.source === "deezer");
+        if (!isDeezer)
+            return false;
+        var trackId = extractDeezerTrackId(q);
+        if (!trackId)
+            return false;
+        var expMs = parseHdneaExpiryMs(url);
+        if (expMs <= 0)
+            return true; // signed URL missing/unparseable — refresh
+        return expMs <= (nowMs() + DEEZER_URL_SKEW_MS);
+    }
+    /**
+     * Re-mint Deezer preview URLs that are expired or near expiry.
+     * Safe to call on mixed pools — non-Deezer rows are skipped.
+     * Returns count of URLs successfully refreshed.
+     */
+    function refreshSignedAudioUrls(nk, logger, questions) {
+        if (!questions || questions.length === 0)
+            return 0;
+        var refreshed = 0;
+        var attempted = 0;
+        for (var i = 0; i < questions.length && attempted < DEEZER_REFRESH_CAP; i++) {
+            var q = questions[i];
+            if (!needsDeezerPreviewRefresh(q))
+                continue;
+            var trackId = extractDeezerTrackId(q);
+            if (!trackId)
+                continue;
+            attempted++;
+            try {
+                var track = httpGet(nk, "https://api.deezer.com/track/" + trackId);
+                var fresh = track && typeof track.preview === "string" ? track.preview : "";
+                if (!fresh) {
+                    logger.debug("[QvQCache/deezer] refresh empty preview track=" + trackId);
+                    continue;
+                }
+                q.media.url = fresh;
+                q.media.track_id = trackId;
+                q.media.source = "deezer";
+                refreshed++;
+            }
+            catch (e) {
+                logger.warn("[QvQCache/deezer] refresh failed track=" + trackId + ": " +
+                    (e && e.message ? e.message : String(e)));
+            }
+        }
+        if (attempted > 0) {
+            logger.info("[QvQCache/deezer] serve-time preview refresh attempted=" +
+                attempted + " refreshed=" + refreshed);
+        }
+        // Drop still-expired Deezer URLs (legacy pool rows without track_id) so Unity
+        // never prefetches a guaranteed-403 link.
+        var scrubbed = 0;
+        for (var sj = 0; sj < questions.length; sj++) {
+            var sq = questions[sj];
+            if (!sq || !sq.media || typeof sq.media.url !== "string")
+                continue;
+            if (sq.media.url.indexOf("dzcdn.net") < 0)
+                continue;
+            var leftMs = parseHdneaExpiryMs(sq.media.url);
+            if (leftMs > 0 && leftMs <= nowMs()) {
+                sq.has_media = false;
+                sq.media = null;
+                scrubbed++;
+            }
+        }
+        if (scrubbed > 0) {
+            logger.warn("[QvQCache/deezer] scrubbed " + scrubbed +
+                " expired preview URL(s) without refreshable track_id — queuing music cache rebuild");
+            try {
+                requestRefresh(nk, logger, "music", "deezer_signed_url_expired");
+            }
+            catch (_qr) { /* ignore */ }
+        }
+        return refreshed;
+    }
+    QvQuestionCache.refreshSignedAudioUrls = refreshSignedAudioUrls;
     /**
      * Queue a provider refresh without blocking a player RPC on external I/O.
      * The cache refresh scheduler drains this collection on its next tick.

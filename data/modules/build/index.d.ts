@@ -1036,6 +1036,7 @@ declare namespace QvQuestionCache {
         explanation: string;
         difficulty: string;
         provider: string;
+        provider_key?: string;
     }
     /**
      * Idempotent seed: writes qv_catalog_video_quiz/catalog_{lang} + meta when the
@@ -1077,6 +1078,12 @@ declare namespace QvQuestionCache {
      * Use before readCache to decide whether to trigger a background refresh.
      */
     export function isCacheValid(nk: nkruntime.Nakama, topic: string): boolean;
+    /**
+     * Re-mint Deezer preview URLs that are expired or near expiry.
+     * Safe to call on mixed pools — non-Deezer rows are skipped.
+     * Returns count of URLs successfully refreshed.
+     */
+    export function refreshSignedAudioUrls(nk: nkruntime.Nakama, logger: nkruntime.Logger, questions: any[]): number;
     /**
      * Queue a provider refresh without blocking a player RPC on external I/O.
      * The cache refresh scheduler drains this collection on its next tick.

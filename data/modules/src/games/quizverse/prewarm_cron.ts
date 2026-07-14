@@ -420,6 +420,10 @@ namespace QvPrewarmCron {
     var after = QvQuestionCache.readCache(nk, logger, topic);
     var queueWritten = prewarmTopic(nk, logger, userId, topic, minCount);
     var readyQuestions = readReadyQueue(nk, userId, topic);
+    try {
+      // Warmup media_urls are prefetched by Unity at boot — must be fresh Deezer tokens.
+      QvQuestionCache.refreshSignedAudioUrls(nk, logger, readyQuestions);
+    } catch (_warmAud) { /* non-fatal */ }
     var mediaUrls: string[] = [];
     var mediaSeen: { [url: string]: boolean } = {};
     // Prefer rows with question_text + media.url so client startup prefetch is useful.
