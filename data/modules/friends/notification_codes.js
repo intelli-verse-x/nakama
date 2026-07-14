@@ -122,11 +122,22 @@ function friendNotifDataFromPayload(payload, senderId) {
     if (p.fromDisplayName) data.fromDisplayName = String(p.fromDisplayName);
     if (p.acceptedBy) data.acceptedBy = String(p.acceptedBy);
     if (p.acceptedByDisplayName) data.acceptedByDisplayName = String(p.acceptedByDisplayName);
+    if (p.acceptedByUsername) data.acceptedByUsername = String(p.acceptedByUsername);
     if (p.declinedBy) data.declinedBy = String(p.declinedBy);
     if (p.cancelledBy) data.cancelledBy = String(p.cancelledBy);
     if (p.removedByUserId) data.removedByUserId = String(p.removedByUserId);
     if (p.friendUserId) data.friendUserId = String(p.friendUserId);
+    // Challenge deep-link fields — required so Unity can open UnifiedRoomPanel /
+    // Phantom from inbox + FCM taps (friend_challenge / friend_challenge_accepted).
+    if (p.challengeId) data.challengeId = String(p.challengeId);
+    if (p.roomCode) data.roomCode = String(p.roomCode);
+    if (p.shareCode) data.shareCode = String(p.shareCode);
+    if (p.gameId) data.gameId = String(p.gameId);
+    if (p.isAsync === true || p.isAsync === false) data.isAsync = String(p.isAsync);
+    if (p.session_id) data.session_id = String(p.session_id);
+    if (p.sessionId) data.sessionId = String(p.sessionId);
     if (senderId) data.senderId = String(senderId);
+    data.screen = data.screen || 'friends';
     return data;
 }
 
@@ -199,6 +210,10 @@ function sendFriendsPushBridge(ctx, nk, logger, subjectKey, userId, payload, sen
     var p = payload || {};
     var data = friendNotifDataFromPayload(payload, senderId);
     data.screen = 'friends';
+    // Unity FCM / DeepLinkRouter keys off data.type — always set for OS shade taps.
+    if (NotifSubject.hasOwnProperty(subjectKey)) {
+        data.type = NotifSubject[subjectKey];
+    }
 
     try {
         if (subjectKey === 'FRIEND_CHALLENGE_RECEIVED') {
