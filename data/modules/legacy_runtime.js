@@ -23513,9 +23513,63 @@ function rpcGetPlayerStats(ctx, logger, nk, payload) {
         var targetUserId = data.userId || ctx.userId;
         var records = nk.storageRead([{ collection: 'player_stats', key: 'stats', userId: targetUserId }]);
         var stats = (records && records.length > 0) ? JSON.parse(records[0].value) : {
-            userId: targetUserId, totalGamesPlayed: 0, totalCorrectAnswers: 0, totalQuestions: 0,
-            winRate: 0, currentStreak: 0, bestStreak: 0, averageScore: 0, favoriteCategory: '', lastPlayedAt: 0
+            userId: targetUserId, totalGamesPlayed: 0, totalWins: 0, totalCorrectAnswers: 0, totalQuestions: 0,
+            winRate: 0, currentStreak: 0, bestStreak: 0, averageScore: 0, favoriteCategory: '', lastPlayedAt: 0,
+            totalXP: 0, currentLevel: 0
         };
+        if (typeof stats.totalWins !== 'number') stats.totalWins = 0;
+        if (typeof stats.totalXP !== 'number') stats.totalXP = 0;
+        if (typeof stats.currentLevel !== 'number') stats.currentLevel = 0;
+
+        // Merge player_metadata counters written by rpc_update_player_metadata
+        // (Unity SyncDisplayStatsToServerFireAndForget) — player_stats is often empty.
+        try {
+            var metaRecords = nk.storageRead([{ collection: 'player_metadata', key: 'metadata', userId: targetUserId }]);
+            if (metaRecords && metaRecords.length > 0) {
+                var meta = typeof metaRecords[0].value === 'string'
+                    ? JSON.parse(metaRecords[0].value)
+                    : (metaRecords[0].value || {});
+                var metaGames = parseInt(meta.totalGamesPlayed, 10) || 0;
+                var metaWins = parseInt(meta.totalWins, 10) || 0;
+                var metaCorrect = parseInt(meta.totalCorrectAnswers, 10) || 0;
+                var metaAnswered = parseInt(meta.totalQuestionsAnswered, 10) || 0;
+                var metaXp = parseInt(meta.xp, 10) || 0;
+                var metaLevel = parseInt(meta.level, 10) || 0;
+                if (meta.customData) {
+                    metaCorrect = Math.max(metaCorrect, parseInt(meta.customData.totalCorrectAnswers, 10) || 0);
+                    metaAnswered = Math.max(metaAnswered, parseInt(meta.customData.totalQuestionsAnswered, 10) || 0);
+                }
+                stats.totalGamesPlayed = Math.max(parseInt(stats.totalGamesPlayed, 10) || 0, metaGames);
+                stats.totalWins = Math.max(parseInt(stats.totalWins, 10) || 0, metaWins);
+                stats.totalCorrectAnswers = Math.max(parseInt(stats.totalCorrectAnswers, 10) || 0, metaCorrect);
+                stats.totalQuestions = Math.max(parseInt(stats.totalQuestions, 10) || 0, metaAnswered);
+                stats.totalXP = Math.max(parseInt(stats.totalXP, 10) || 0, metaXp);
+                stats.currentLevel = Math.max(parseInt(stats.currentLevel, 10) || 0, metaLevel);
+            }
+        } catch (me) { /* non-fatal metadata merge */ }
+
+        // Also fold in qv_player_stats/summary when present (quiz_submit_result path).
+        try {
+            var qvRecords = nk.storageRead([{ collection: 'qv_player_stats', key: 'summary', userId: targetUserId }]);
+            if (qvRecords && qvRecords.length > 0) {
+                var qv = typeof qvRecords[0].value === 'string'
+                    ? JSON.parse(qvRecords[0].value)
+                    : (qvRecords[0].value || {});
+                var qvGames = parseInt(qv.quizzesTaken, 10) || parseInt(qv.totalGames, 10) || 0;
+                var qvWins = parseInt(qv.wins, 10) || parseInt(qv.totalWins, 10) || 0;
+                var qvCorrect = parseInt(qv.correctAnswers, 10) || parseInt(qv.totalCorrect, 10) || 0;
+                var qvAnswered = parseInt(qv.totalQuestions, 10) || 0;
+                stats.totalGamesPlayed = Math.max(parseInt(stats.totalGamesPlayed, 10) || 0, qvGames);
+                stats.totalWins = Math.max(parseInt(stats.totalWins, 10) || 0, qvWins);
+                stats.totalCorrectAnswers = Math.max(parseInt(stats.totalCorrectAnswers, 10) || 0, qvCorrect);
+                stats.totalQuestions = Math.max(parseInt(stats.totalQuestions, 10) || 0, qvAnswered);
+            }
+        } catch (qe) { /* non-fatal quiz summary merge */ }
+
+        var answered = parseInt(stats.totalQuestions, 10) || 0;
+        var correct = parseInt(stats.totalCorrectAnswers, 10) || 0;
+        stats.winRate = answered > 0 ? Math.round((correct / answered) * 100) : (stats.winRate || 0);
+
         try {
             var accts = nk.accountsGetId([targetUserId]);
             if (accts && accts.length > 0) {

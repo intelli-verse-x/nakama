@@ -10,10 +10,19 @@ namespace LegacyPlayer {
     xp?: number;
     totalGamesPlayed?: number;
     totalWins?: number;
+    totalCorrectAnswers?: number;
+    totalQuestionsAnswered?: number;
     favoriteGame?: string;
     bio?: string;
     customData?: { [key: string]: any };
     updatedAt?: string;
+  }
+
+  /** Monotonic merge for counter fields — never let a stale client clobber a higher server value. */
+  function mergeCounterField(current: number | undefined, incoming: any): number {
+    var cur = typeof current === "number" ? current : (parseInt(String(current || "0"), 10) || 0);
+    var next = typeof incoming === "number" ? incoming : (parseInt(String(incoming || "0"), 10) || 0);
+    return Math.max(cur, next);
   }
 
   function getPlayerMetadata(nk: nkruntime.Nakama, userId: string): PlayerMetadata {
@@ -57,8 +66,37 @@ namespace LegacyPlayer {
     if (data.timezone !== undefined) metadata.timezone = data.timezone;
     if (data.bio !== undefined) metadata.bio = data.bio;
     if (data.favoriteGame !== undefined) metadata.favoriteGame = data.favoriteGame;
+
+    // Profile progression counters (Unity PlayerDisplayStatsResolver.SyncDisplayStatsToServerFireAndForget).
+    // Math.max so a stale device cannot rewind Played / Win% / XP after logout or reinstall.
+    if (data.level !== undefined) metadata.level = mergeCounterField(metadata.level, data.level);
+    if (data.xp !== undefined) metadata.xp = mergeCounterField(metadata.xp, data.xp);
+    if (data.totalGamesPlayed !== undefined) {
+      metadata.totalGamesPlayed = mergeCounterField(metadata.totalGamesPlayed, data.totalGamesPlayed);
+    }
+    if (data.totalWins !== undefined) {
+      metadata.totalWins = mergeCounterField(metadata.totalWins, data.totalWins);
+    }
+    if (data.totalCorrectAnswers !== undefined) {
+      metadata.totalCorrectAnswers = mergeCounterField(metadata.totalCorrectAnswers, data.totalCorrectAnswers);
+    }
+    if (data.totalQuestionsAnswered !== undefined) {
+      metadata.totalQuestionsAnswered = mergeCounterField(
+        metadata.totalQuestionsAnswered,
+        data.totalQuestionsAnswered
+      );
+    }
+
+    // Keep accuracy counters discoverable via customData for older clients.
+    if (!metadata.customData) metadata.customData = {};
+    if (metadata.totalCorrectAnswers !== undefined) {
+      metadata.customData["totalCorrectAnswers"] = metadata.totalCorrectAnswers;
+    }
+    if (metadata.totalQuestionsAnswered !== undefined) {
+      metadata.customData["totalQuestionsAnswered"] = metadata.totalQuestionsAnswered;
+    }
+
     if (data.customData !== undefined) {
-      if (!metadata.customData) metadata.customData = {};
       for (var k in data.customData) {
         metadata.customData[k] = data.customData[k];
       }

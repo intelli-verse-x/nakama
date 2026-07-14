@@ -41251,6 +41251,12 @@ var LegacyNotifScheduler;
 })(LegacyNotifScheduler || (LegacyNotifScheduler = {}));
 var LegacyPlayer;
 (function (LegacyPlayer) {
+    /** Monotonic merge for counter fields — never let a stale client clobber a higher server value. */
+    function mergeCounterField(current, incoming) {
+        var cur = typeof current === "number" ? current : (parseInt(String(current || "0"), 10) || 0);
+        var next = typeof incoming === "number" ? incoming : (parseInt(String(incoming || "0"), 10) || 0);
+        return Math.max(cur, next);
+    }
     function getPlayerMetadata(nk, userId) {
         var data = Storage.readJson(nk, Constants.PLAYER_METADATA_COLLECTION, "metadata", userId);
         return data || {};
@@ -41293,9 +41299,34 @@ var LegacyPlayer;
             metadata.bio = data.bio;
         if (data.favoriteGame !== undefined)
             metadata.favoriteGame = data.favoriteGame;
+        // Profile progression counters (Unity PlayerDisplayStatsResolver.SyncDisplayStatsToServerFireAndForget).
+        // Math.max so a stale device cannot rewind Played / Win% / XP after logout or reinstall.
+        if (data.level !== undefined)
+            metadata.level = mergeCounterField(metadata.level, data.level);
+        if (data.xp !== undefined)
+            metadata.xp = mergeCounterField(metadata.xp, data.xp);
+        if (data.totalGamesPlayed !== undefined) {
+            metadata.totalGamesPlayed = mergeCounterField(metadata.totalGamesPlayed, data.totalGamesPlayed);
+        }
+        if (data.totalWins !== undefined) {
+            metadata.totalWins = mergeCounterField(metadata.totalWins, data.totalWins);
+        }
+        if (data.totalCorrectAnswers !== undefined) {
+            metadata.totalCorrectAnswers = mergeCounterField(metadata.totalCorrectAnswers, data.totalCorrectAnswers);
+        }
+        if (data.totalQuestionsAnswered !== undefined) {
+            metadata.totalQuestionsAnswered = mergeCounterField(metadata.totalQuestionsAnswered, data.totalQuestionsAnswered);
+        }
+        // Keep accuracy counters discoverable via customData for older clients.
+        if (!metadata.customData)
+            metadata.customData = {};
+        if (metadata.totalCorrectAnswers !== undefined) {
+            metadata.customData["totalCorrectAnswers"] = metadata.totalCorrectAnswers;
+        }
+        if (metadata.totalQuestionsAnswered !== undefined) {
+            metadata.customData["totalQuestionsAnswered"] = metadata.totalQuestionsAnswered;
+        }
         if (data.customData !== undefined) {
-            if (!metadata.customData)
-                metadata.customData = {};
             for (var k in data.customData) {
                 metadata.customData[k] = data.customData[k];
             }
@@ -77836,6 +77867,8 @@ var SocialGroupSearch;
             // open-only filter (default true): closed groups are invite-only and
             // should not surface in public discovery unless explicitly requested.
             var openOnly = data.openOnly !== false;
+            // Also surface open groups that predate metadata.gameId (legacy rows).
+            // They are attributable only as open/public clans; closed legacy rows stay hidden.
             var rows = [];
             try {
                 // Build IN-list placeholders ($1..$N) for every accepted gameId alias.
@@ -77848,6 +77881,9 @@ var SocialGroupSearch;
                 var inClause = inPlaceholders.join(", ");
                 var openParamIdx = inParams.length + 1;
                 var nextIdx = openParamIdx + 1;
+                // Match: (gameId alias) OR (missing gameId AND open group)
+                var gameIdPredicate = "(((metadata->>'gameId') IN (" + inClause + ")) " +
+                    " OR ((((metadata->>'gameId') IS NULL) OR ((metadata->>'gameId') = '')) AND state = 0))";
                 if (query) {
                     // Escape ILIKE wildcards in user input, then wrap in %...%.
                     var escaped = query.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
@@ -77857,7 +77893,7 @@ var SocialGroupSearch;
                     var qParams = inParams.concat([openOnly, "%" + escaped + "%", limit + 1, offset]);
                     rows = nk.sqlQuery("SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
                         "FROM groups " +
-                        "WHERE (metadata->>'gameId') IN (" + inClause + ") " +
+                        "WHERE " + gameIdPredicate + " " +
                         "  AND ($" + openParamIdx + " = false OR state = 0) " +
                         "  AND name ILIKE $" + queryParamIdx + " " +
                         "ORDER BY edge_count DESC, name ASC " +
@@ -77869,7 +77905,7 @@ var SocialGroupSearch;
                     var bParams = inParams.concat([openOnly, limit + 1, offset]);
                     rows = nk.sqlQuery("SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
                         "FROM groups " +
-                        "WHERE (metadata->>'gameId') IN (" + inClause + ") " +
+                        "WHERE " + gameIdPredicate + " " +
                         "  AND ($" + openParamIdx + " = false OR state = 0) " +
                         "ORDER BY edge_count DESC, name ASC " +
                         "LIMIT $" + limitParamIdx2 + " OFFSET $" + offsetParamIdx2, bParams);
