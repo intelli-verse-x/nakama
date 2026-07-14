@@ -180,6 +180,66 @@ namespace IdentityResolver {
     return false;
   }
 
+  /**
+   * Map a Nakama user UUID → Cognito custom_id when the account has a real
+   * (non-ghost) custom auth id. Identity links historically stored the
+   * Nakama UUID when /api/identity/link called identity_link as the Nakama
+   * user instead of the Cognito sub — AI Notes ownerUserId needs Cognito.
+   *
+   * If `id` is already a Cognito sub (not a Nakama user UUID), usersGetId
+   * misses and we return `id` unchanged.
+   */
+  function canonicalCognitoSub(nk: nkruntime.Nakama, id: string): string {
+    var raw = ("" + (id || "")).trim();
+    if (!raw) return raw;
+    try {
+      var users = nk.usersGetId([raw]);
+      if (users && users.length > 0) {
+        var u: any = users[0];
+        var cid = u && u.customId ? ("" + u.customId).trim() : "";
+        if (cid && cid.indexOf("ghost:") !== 0) {
+          return cid;
+        }
+      }
+    } catch (err: any) {
+      /* leave raw */
+    }
+    return raw;
+  }
+
+  /** Rewrite a forward+reverse binding when stored cognito_sub is a Nakama UUID. */
+  function healStoredCognitoSub(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    channel: string,
+    externalId: string,
+    record: any,
+  ): any {
+    if (!record || !record.cognito_sub) return record;
+    var stored = "" + record.cognito_sub;
+    var canonical = canonicalCognitoSub(nk, stored);
+    if (!canonical || canonical === stored) return record;
+
+    var source = ("" + (record.source || "identity_heal")).slice(0, 64);
+    var confidence = ("" + (record.confidence || "high")).slice(0, 16);
+    try {
+      deleteLink(nk, channel, externalId, stored);
+      writeLink(nk, channel, externalId, canonical, source, confidence);
+      record.cognito_sub = canonical;
+      logger.info(
+        "identity healed cognito_sub: channel=" + channel +
+          " old=" + stored + " new=" + canonical,
+      );
+    } catch (err: any) {
+      logger.warn(
+        "identity heal failed: " + (err && err.message ? err.message : String(err)),
+      );
+      // Still return canonical for this response even if rewrite failed.
+      record.cognito_sub = canonical;
+    }
+    return record;
+  }
+
   /** Ghost / conv-hub bindings may be replaced when the real user opts in via identity_link. */
   function isReplaceableGhostBinding(nk: nkruntime.Nakama, existing: any): boolean {
     if (!existing || !existing.cognito_sub) return false;
@@ -242,6 +302,8 @@ namespace IdentityResolver {
         return RpcHelpers.successResponse(null);
       }
 
+      record = healStoredCognitoSub(nk, logger, channel, externalId, record);
+
       // Last-seen update is best-effort and does not block the read.
       try {
         record.last_seen = Math.floor(Date.now() / 1000);
@@ -279,6 +341,8 @@ namespace IdentityResolver {
   function rpcLink(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var userId = RpcHelpers.requireUserId(ctx);
+      // Prefer Cognito custom_id when the caller is a Nakama UUID session.
+      var callerSub = canonicalCognitoSub(nk, userId);
       var data = RpcHelpers.parseRpcPayload(payload);
 
       var channel = ("" + (data.channel || "")).toLowerCase();
@@ -297,30 +361,36 @@ namespace IdentityResolver {
       // If a binding already exists to a DIFFERENT user, refuse unless the old
       // row is a conv-hub / ghost mint that the real account is replacing.
       var existing = readLink(nk, channel, externalId);
-      if (existing && existing.cognito_sub && existing.cognito_sub !== userId) {
-        if (isReplaceableGhostBinding(nk, existing)) {
+      if (existing && existing.cognito_sub) {
+        var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
+        if (existingSub !== callerSub) {
+          if (isReplaceableGhostBinding(nk, existing)) {
+            deleteLink(nk, channel, externalId, existing.cognito_sub);
+            logger.info(
+              "identity_link replaced ghost binding: channel=" + channel +
+              " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + callerSub,
+            );
+          } else {
+            logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + callerSub);
+            return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
+          }
+        } else if (("" + existing.cognito_sub) !== callerSub) {
+          // Same account, but stored under Nakama UUID — rewrite to Cognito.
           deleteLink(nk, channel, externalId, existing.cognito_sub);
-          logger.info(
-            "identity_link replaced ghost binding: channel=" + channel +
-            " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + userId,
-          );
-        } else {
-          logger.warn("identity_link conflict: channel=" + channel + " external_id=" + externalId + " existing_sub=" + existing.cognito_sub + " caller_sub=" + userId);
-          return RpcHelpers.errorResponse("external_id is already linked to another account", 409);
         }
       }
 
       var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
       var confidence = ("" + (data.confidence || "high")).slice(0, 16);
-      writeLink(nk, channel, externalId, userId, source, confidence);
+      writeLink(nk, channel, externalId, callerSub, source, confidence);
 
-      logger.info("identity_link ok: user=" + userId + " channel=" + channel + " ext=" + externalId);
+      logger.info("identity_link ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
 
       return RpcHelpers.successResponse({
         linked: true,
         channel: channel,
         external_id: externalId,
-        cognito_sub: userId,
+        cognito_sub: callerSub,
         confidence: confidence,
       });
     } catch (err: any) {
@@ -349,16 +419,19 @@ namespace IdentityResolver {
       }
       var externalId = normalizeExternalId(channel, "" + externalIdRaw);
 
+      var callerSub = canonicalCognitoSub(nk, userId);
       var existing = readLink(nk, channel, externalId);
       if (!existing) {
         return RpcHelpers.successResponse({ unlinked: true });
       }
-      if (existing.cognito_sub !== userId) {
+      var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
+      if (existingSub !== callerSub) {
         return RpcHelpers.errorResponse("not authorised to unlink this binding", 403);
       }
 
-      deleteLink(nk, channel, externalId, userId);
-      logger.info("identity_unlink ok: user=" + userId + " channel=" + channel + " ext=" + externalId);
+      // Delete under the stored key (may still be a Nakama UUID pre-heal).
+      deleteLink(nk, channel, externalId, existing.cognito_sub);
+      logger.info("identity_unlink ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
 
       return RpcHelpers.successResponse({ unlinked: true });
     } catch (err: any) {
@@ -480,16 +553,19 @@ namespace IdentityResolver {
         return RpcHelpers.errorResponse("external_id failed normalisation", 400);
       }
 
-      // 1. Fast path: existing binding.
+      // 1. Fast path: existing binding (heal Nakama-UUID-as-cognito_sub).
       var existing = readLink(nk, channel, externalId);
       if (existing && existing.cognito_sub) {
+        existing = healStoredCognitoSub(nk, logger, channel, externalId, existing);
+        var isGhost =
+          isGhostBindingRecord(existing) || isGhostAccount(nk, existing.cognito_sub);
         return RpcHelpers.successResponse({
           cognito_sub: existing.cognito_sub,
           channel: channel,
           external_id: externalId,
           linked_at: existing.linked_at,
           confidence: existing.confidence || "medium",
-          is_ghost: false,
+          is_ghost: isGhost,
         });
       }
 
