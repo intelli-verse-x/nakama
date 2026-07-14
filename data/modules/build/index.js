@@ -5779,13 +5779,24 @@ var ConvCapture;
         }
     }
     // ── RPC: conv_my_list ──────────────────────────────────────────────────
-    // User-side. Powers the /me/reveal trust-anchor page — returns the most
-    // recent N messages for the authenticated caller. NEVER accepts user_id
-    // from the payload (that would let a JWT enumerate other users' chat).
+    // User-side (JWT): lists the authenticated caller's messages for /me/reveal.
+    // Service-side (CONV_CAPTURE_SERVICE_TOKEN + user_id): Conversation Hub
+    // personalize / Phase 4 quiz-CTA continuation — http_key has empty
+    // ctx.userId, so the hub cannot use the JWT path. Random clients with only
+    // a user JWT still cannot pass user_id for another account.
     function rpcMyConvList(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = "" + (ctx.userId || "");
+            if (!userId) {
+                if (!isServiceCaller(ctx, data)) {
+                    return RpcHelpers.errorResponse("User ID is required", 401);
+                }
+                userId = "" + (data.user_id || data.userId || "");
+                if (!userId) {
+                    return RpcHelpers.errorResponse("user_id required for service caller", 400);
+                }
+            }
             var limit = Math.min(Math.max(parseInt("" + (data.limit || "50")) || 50, 1), MAX_LIST_LIMIT);
             var cursor = "" + (data.cursor || "");
             var page = nk.storageList(userId, COLLECTION_CONV, limit, cursor);
