@@ -186,23 +186,31 @@ namespace IdentityResolver {
    * Nakama UUID when /api/identity/link called identity_link as the Nakama
    * user instead of the Cognito sub — AI Notes ownerUserId needs Cognito.
    *
-   * If `id` is already a Cognito sub (not a Nakama user UUID), usersGetId
-   * misses and we return `id` unchanged.
+   * Cognito custom_id lives on the Account (nk.accountGetId), not reliably
+   * on User from usersGetId — live probe 2026-07-14: heal no-op'd until
+   * we switched to accountGetId.
+   *
+   * If `id` is already a Cognito sub (not a Nakama user UUID), accountGetId
+   * throws/misses and we return `id` unchanged.
    */
   function canonicalCognitoSub(nk: nkruntime.Nakama, id: string): string {
     var raw = ("" + (id || "")).trim();
     if (!raw) return raw;
     try {
-      var users = nk.usersGetId([raw]);
-      if (users && users.length > 0) {
-        var u: any = users[0];
-        var cid = u && u.customId ? ("" + u.customId).trim() : "";
+      var account: any = nk.accountGetId(raw);
+      if (account) {
+        var cid = "";
+        if (account.customId) {
+          cid = ("" + account.customId).trim();
+        } else if (account.user && account.user.customId) {
+          cid = ("" + account.user.customId).trim();
+        }
         if (cid && cid.indexOf("ghost:") !== 0) {
           return cid;
         }
       }
     } catch (err: any) {
-      /* leave raw */
+      /* leave raw — id may already be a Cognito sub */
     }
     return raw;
   }
