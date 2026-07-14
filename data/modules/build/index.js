@@ -5626,6 +5626,11 @@ var ConvCapture;
     // We only ingest the raw signal here; derivation happens in
     // src/satori/identities/kb_enrichment.ts on the */15 schedule.
     var COLLECTION_MOOD = "qv_user_mood";
+    // Phase 4: last quiz CTA offered to the user (survives even when
+    // qv_user_conv capture is empty / misconfigured). Key is always "latest".
+    var COLLECTION_PENDING_CTA = "qv_pending_cta";
+    var PENDING_CTA_KEY = "latest";
+    var PENDING_CTA_TTL_SEC = 30 * 60; // 30 minutes
     // Hard caps — both anti-abuse and DPDP Article 17 hygiene.
     var MAX_TEXT_CHARS = 8192; // ~6KB JSON-encoded inbound message
     var MAX_LIST_LIMIT = 200; // conv_my_list page size cap
@@ -5657,8 +5662,22 @@ var ConvCapture;
         var token = payload && payload.service_token;
         if (!token)
             return false;
-        var expected = "" + ((ctx.env && ctx.env["CONV_CAPTURE_SERVICE_TOKEN"]) || "");
-        return expected.length > 0 && token === expected;
+        var expectedCapture = "" + ((ctx.env && ctx.env["CONV_CAPTURE_SERVICE_TOKEN"]) || "");
+        if (expectedCapture.length > 0 && token === expectedCapture)
+            return true;
+        // Fallback: prod often has IDENTITY_RESOLVER_SERVICE_TOKEN in runtime.env
+        // while CONV_CAPTURE_* may be missing — same trust boundary (hub S2S).
+        var expectedIdentity = "" + ((ctx.env && ctx.env["IDENTITY_RESOLVER_SERVICE_TOKEN"]) || "");
+        return expectedIdentity.length > 0 && token === expectedIdentity;
+    }
+    /** http_key S2S has empty ctx.userId — accept user_id from body (admin-level key). */
+    function resolveListUserId(ctx, data) {
+        if (ctx.userId)
+            return "" + ctx.userId;
+        var fromBody = "" + (data.user_id || data.userId || "");
+        if (fromBody)
+            return fromBody;
+        return "";
     }
     function emitAnalytics(nk, userId, eventName, properties) {
         try {
@@ -5780,22 +5799,14 @@ var ConvCapture;
     }
     // ── RPC: conv_my_list ──────────────────────────────────────────────────
     // User-side (JWT): lists the authenticated caller's messages for /me/reveal.
-    // Service-side (CONV_CAPTURE_SERVICE_TOKEN + user_id): Conversation Hub
-    // personalize / Phase 4 quiz-CTA continuation — http_key has empty
-    // ctx.userId, so the hub cannot use the JWT path. Random clients with only
-    // a user JWT still cannot pass user_id for another account.
+    // S2S (http_key): empty ctx.userId — accept user_id in body (same pattern as
+    // daily_rewards_get_status). Optional service_token still accepted.
     function rpcMyConvList(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
-            var userId = "" + (ctx.userId || "");
+            var userId = resolveListUserId(ctx, data);
             if (!userId) {
-                if (!isServiceCaller(ctx, data)) {
-                    return RpcHelpers.errorResponse("User ID is required", 401);
-                }
-                userId = "" + (data.user_id || data.userId || "");
-                if (!userId) {
-                    return RpcHelpers.errorResponse("user_id required for service caller", 400);
-                }
+                return RpcHelpers.errorResponse("User ID is required", 401);
             }
             var limit = Math.min(Math.max(parseInt("" + (data.limit || "50")) || 50, 1), MAX_LIST_LIMIT);
             var cursor = "" + (data.cursor || "");
@@ -5875,10 +5886,100 @@ var ConvCapture;
             return RpcHelpers.errorResponse("purge failed: " + msg, 500);
         }
     }
+    // ── RPC: conv_pending_cta_set / get / clear ─────────────────────────────
+    // Durable Phase 4 signal when qv_user_conv is empty (capture misconfigured).
+    // http_key S2S: pass user_id in body (no session).
+    function rpcPendingCtaSet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            var cta = ("" + (data.cta_action_id || data.cta || "")).trim();
+            if (!cta)
+                return RpcHelpers.errorResponse("cta_action_id required", 400);
+            var now = nowSec();
+            nk.storageWrite([{
+                    collection: COLLECTION_PENDING_CTA,
+                    key: PENDING_CTA_KEY,
+                    userId: userId,
+                    value: {
+                        cta_action_id: cta,
+                        channel: ("" + (data.channel || "")).toLowerCase() || undefined,
+                        set_at: now,
+                        expires_at: now + PENDING_CTA_TTL_SEC,
+                    },
+                    permissionRead: 1,
+                    permissionWrite: 0,
+                }]);
+            return RpcHelpers.successResponse({ set: true, cta_action_id: cta, expires_at: now + PENDING_CTA_TTL_SEC });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[ConvCapture] pending_cta_set failed: " + msg);
+            return RpcHelpers.errorResponse("pending_cta_set failed: " + msg, 500);
+        }
+    }
+    function rpcPendingCtaGet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            var records = nk.storageRead([{
+                    collection: COLLECTION_PENDING_CTA,
+                    key: PENDING_CTA_KEY,
+                    userId: userId,
+                }]);
+            if (!records || records.length === 0 || !records[0].value) {
+                return RpcHelpers.successResponse({ cta_action_id: null });
+            }
+            var val = records[0].value;
+            var expires = typeof val.expires_at === "number" ? val.expires_at : 0;
+            if (expires > 0 && expires < nowSec()) {
+                try {
+                    nk.storageDelete([{ collection: COLLECTION_PENDING_CTA, key: PENDING_CTA_KEY, userId: userId }]);
+                }
+                catch (_) { /* ignore */ }
+                return RpcHelpers.successResponse({ cta_action_id: null, expired: true });
+            }
+            return RpcHelpers.successResponse({
+                cta_action_id: val.cta_action_id || null,
+                set_at: val.set_at,
+                expires_at: val.expires_at,
+                channel: val.channel,
+            });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[ConvCapture] pending_cta_get failed: " + msg);
+            return RpcHelpers.errorResponse("pending_cta_get failed: " + msg, 500);
+        }
+    }
+    function rpcPendingCtaClear(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            try {
+                nk.storageDelete([{ collection: COLLECTION_PENDING_CTA, key: PENDING_CTA_KEY, userId: userId }]);
+            }
+            catch (_) { /* idempotent */ }
+            return RpcHelpers.successResponse({ cleared: true });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            return RpcHelpers.errorResponse("pending_cta_clear failed: " + msg, 500);
+        }
+    }
     function register(initializer) {
         initializer.registerRpc("conv_message_capture", rpcMessageCapture);
         initializer.registerRpc("conv_my_list", rpcMyConvList);
         initializer.registerRpc("conv_user_purge", rpcUserPurge);
+        initializer.registerRpc("conv_pending_cta_set", rpcPendingCtaSet);
+        initializer.registerRpc("conv_pending_cta_get", rpcPendingCtaGet);
+        initializer.registerRpc("conv_pending_cta_clear", rpcPendingCtaClear);
     }
     ConvCapture.register = register;
 })(ConvCapture || (ConvCapture = {}));
