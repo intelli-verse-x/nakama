@@ -266,8 +266,16 @@ function main() {
     fs.mkdirSync(BUILD_DIR, { recursive: true });
   }
 
+  // Content-hash version (not wall-clock). Timestamp versions made every
+  // `npm run build` rewrite the ~350KB `globalThis.__QV_VIDEO_QUIZ_CATALOG__`
+  // line in index.js even when CSV inputs were unchanged — exploding PR diffs.
+  const crypto = require('crypto');
+  const payloadForHash = JSON.stringify({ source: 'FallbackQuestions_csv', langs: langs });
+  const version =
+    'sha1:' + crypto.createHash('sha1').update(payloadForHash).digest('hex').slice(0, 16);
+
   const catalog = {
-    version: new Date().toISOString(),
+    version: version,
     source: 'FallbackQuestions_csv',
     langs: langs,
   };
