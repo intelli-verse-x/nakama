@@ -161,38 +161,6 @@ type poseQuantizedJSON struct {
 	ConfidencePct  uint32 `json:"confidence_pct"`
 }
 
-type avatarChannel int
-
-const (
-	chHead avatarChannel = iota
-	chHandLeft
-	chHandRight
-	chBody
-	chFace
-	chFingerLeft
-	chFingerRight
-)
-
-func (c avatarChannel) name() string {
-	switch c {
-	case chHead:
-		return "head"
-	case chHandLeft:
-		return "hand_l"
-	case chHandRight:
-		return "hand_r"
-	case chBody:
-		return "body"
-	case chFace:
-		return "face"
-	case chFingerLeft:
-		return "finger_l"
-	case chFingerRight:
-		return "finger_r"
-	}
-	return "?"
-}
-
 // channelBudget — per-channel per-second publish budget.
 type channelBudget struct {
 	hzMax       int
@@ -403,11 +371,10 @@ func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.D
 		s.removeFromAOI(p.GetUserId())
 		delete(s.avatars, p.GetUserId())
 	}
-	if len(s.avatars) < s.init.MinPlayers && len(s.avatars) > 0 {
-		// Soft quorum loss — for avatar-only rooms we don't end immediately;
-		// the client may reconnect within ReconnectGraceMs. v1 leaves it to
-		// the kernel to call MatchSignal("force_end") after grace expires.
-	}
+	// Soft quorum loss — for avatar-only rooms we don't end immediately;
+	// the client may reconnect within ReconnectGraceMs. v1 leaves it to
+	// the kernel to call MatchSignal("force_end") after grace expires.
+	_ = len(s.avatars) < s.init.MinPlayers && len(s.avatars) > 0
 	return s
 }
 
