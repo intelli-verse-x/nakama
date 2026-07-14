@@ -10760,7 +10760,7 @@ var QuizVerseBrainPrompts;
 (function (QuizVerseBrainPrompts) {
     var COLLECTION = "qv_brain_prompt";
     var KEY = "state";
-    var SCHEMA_VERSION = 1;
+    var SCHEMA_VERSION = 2;
     var RESERVATION_TTL_MS = 10 * 60 * 1000;
     var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     var OCC_MAX_RETRIES = 5;
@@ -10788,22 +10788,49 @@ var QuizVerseBrainPrompts;
             isoWeek: isoWeek(nowMs),
             lastSuccessfulBrainVisitMs: 0,
             daily: emptyBucket(),
+            dailyWrongStreak: emptyBucket(),
+            dailyPostQuizWeak: emptyBucket(),
             weekly: emptyBucket(),
             reservation: null,
             idempotency: {}
         };
+    }
+    function resolveBucket(state, kind) {
+        if (kind === "weekly")
+            return state.weekly;
+        if (kind === "daily_wrong_streak")
+            return state.dailyWrongStreak;
+        if (kind === "daily_post_quiz_weak")
+            return state.dailyPostQuizWeak;
+        return state.daily;
+    }
+    function isDailyBucket(kind) {
+        return kind === "daily" || kind === "daily_wrong_streak" || kind === "daily_post_quiz_weak";
     }
     function normalizeState(raw, nowMs) {
         var state = raw && typeof raw === "object" ? raw : createState(nowMs);
         state.schemaVersion = SCHEMA_VERSION;
         state.lastSuccessfulBrainVisitMs = Number(state.lastSuccessfulBrainVisitMs || 0);
         state.daily = state.daily || emptyBucket();
+        state.dailyWrongStreak = state.dailyWrongStreak || emptyBucket();
+        state.dailyPostQuizWeak = state.dailyPostQuizWeak || emptyBucket();
         state.weekly = state.weekly || emptyBucket();
         state.idempotency = state.idempotency || {};
+        // Migrate legacy shared daily slot into the matching typed bucket once.
+        if (state.daily && state.daily.consumed && state.daily.promptId) {
+            if (state.daily.promptId === "wrong_streak" && !state.dailyWrongStreak.consumed) {
+                state.dailyWrongStreak = state.daily;
+            }
+            else if (state.daily.promptId === "post_quiz_weak" && !state.dailyPostQuizWeak.consumed) {
+                state.dailyPostQuizWeak = state.daily;
+            }
+        }
         if (state.utcDay !== utcDay(nowMs)) {
             state.utcDay = utcDay(nowMs);
             state.daily = emptyBucket();
-            if (state.reservation && state.reservation.bucket === "daily")
+            state.dailyWrongStreak = emptyBucket();
+            state.dailyPostQuizWeak = emptyBucket();
+            if (state.reservation && isDailyBucket(state.reservation.bucket))
                 state.reservation = null;
         }
         if (state.isoWeek !== isoWeek(nowMs)) {
@@ -10813,7 +10840,7 @@ var QuizVerseBrainPrompts;
                 state.reservation = null;
         }
         if (state.reservation && state.reservation.expiresMs <= nowMs) {
-            var reservedBucket = state.reservation.bucket === "weekly" ? state.weekly : state.daily;
+            var reservedBucket = resolveBucket(state, state.reservation.bucket);
             if (!reservedBucket.consumed)
                 state.reservation = null;
         }
@@ -10925,11 +10952,11 @@ var QuizVerseBrainPrompts;
             return null;
         var maxWrong = Math.max(0, Math.min(1000, Number(session.max_consecutive_wrong || 0)));
         if (maxWrong >= 3)
-            return { promptId: "wrong_streak", bucket: "daily" };
+            return { promptId: "wrong_streak", bucket: "daily_wrong_streak" };
         var accuracy = Number(session.category_accuracy_pct);
         var notesEligible = data.notes_eligible === true;
         if (isFinite(accuracy) && accuracy >= 0 && accuracy < 60 && notesEligible) {
-            return { promptId: "post_quiz_weak", bucket: "daily" };
+            return { promptId: "post_quiz_weak", bucket: "daily_post_quiz_weak" };
         }
         return null;
     }
@@ -10951,7 +10978,7 @@ var QuizVerseBrainPrompts;
             });
         }
         var response = mutateState(nk, userId, nowMs, function (state) {
-            var bucket = selected.bucket === "weekly" ? state.weekly : state.daily;
+            var bucket = resolveBucket(state, selected.bucket);
             if (bucket.consumed) {
                 return {
                     write: false,
@@ -11071,7 +11098,8 @@ var QuizVerseBrainPrompts;
         var idemKey = safeString(data.idempotency_key, 128);
         var clientEventId = safeString(data.client_event_id, 128);
         var directOpen = action === "opened" &&
-            (promptId === "graph" || promptId === "profile" || promptId === "manual");
+            (promptId === "graph" || promptId === "profile" || promptId === "manual" ||
+                promptId === "recap" || promptId === "orphans" || promptId === "home");
         if (!directOpen && !token)
             return RpcHelpers.errorResponse("reservation_token required", 400);
         if (!idemKey)
@@ -11080,14 +11108,18 @@ var QuizVerseBrainPrompts;
         var response = mutateState(nk, userId, nowMs, function (state) {
             var replay = state.idempotency[idemKey];
             if (replay) {
+                var replayBucket = replay.promptId === "weekly_recap"
+                    ? state.weekly
+                    : (replay.promptId === "wrong_streak"
+                        ? state.dailyWrongStreak
+                        : (replay.promptId === "post_quiz_weak" ? state.dailyPostQuizWeak : state.daily));
                 return {
                     write: false,
                     response: {
                         status: "replay",
                         action: replay.action,
                         prompt_id: replay.promptId,
-                        slot_consumed: replay.promptId === "weekly_recap"
-                            ? state.weekly.consumed : state.daily.consumed,
+                        slot_consumed: replayBucket.consumed,
                         last_successful_brain_visit_ms: state.lastSuccessfulBrainVisitMs,
                         server_time_ms: nowMs
                     }
@@ -11101,7 +11133,7 @@ var QuizVerseBrainPrompts;
                         response: { status: "rejected", reason: "reservation_mismatch", server_time_ms: nowMs }
                     };
                 }
-                var reservedBucket = reservation.bucket === "weekly" ? state.weekly : state.daily;
+                var reservedBucket = resolveBucket(state, reservation.bucket);
                 if (reservation.expiresMs <= nowMs && !reservedBucket.consumed) {
                     state.reservation = null;
                     return {
@@ -11110,7 +11142,13 @@ var QuizVerseBrainPrompts;
                     };
                 }
             }
-            var bucket = reservation && reservation.bucket === "weekly" ? state.weekly : state.daily;
+            var bucket = reservation
+                ? resolveBucket(state, reservation.bucket)
+                : (promptId === "weekly_recap"
+                    ? state.weekly
+                    : (promptId === "wrong_streak"
+                        ? state.dailyWrongStreak
+                        : (promptId === "post_quiz_weak" ? state.dailyPostQuizWeak : state.daily)));
             if (action === "shown") {
                 bucket.consumed = true;
                 bucket.promptId = promptId;
