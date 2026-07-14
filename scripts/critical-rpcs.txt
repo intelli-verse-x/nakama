@@ -72,3 +72,12 @@ world_session_start
 # serving worlds with no server-side questions.
 world_story_upsert
 world_story_get
+
+# ── World-cricket (server-authoritative batting) — STOPGAP redeploy 2026-07-14 ──
+# Registration-proof only (404 = Goja hoist dropped the module; rev-924 class).
+# NOTE: durable fix is nakama PR #316 (module on master); reverts on next master
+# push until #316 merges.
+cricket_session_start
+cricket_ball_play
+cricket_leaderboard_get
+cricket_template_upsert
