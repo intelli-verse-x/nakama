@@ -616,21 +616,90 @@ function performDailyClaim(nk, logger, userId, gameId) {
 
     utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
 
-    // QVBF_166: Grant `game` (coins) to the wallet using the `game` currency key.
-    // Previously mapped tokens→coins which was wrong when `game` and `tokens` differ.
-    var walletChanges = {};
-    if (reward.game) walletChanges.game = reward.game;
-    if (reward.xp)   walletChanges.xp   = reward.xp;
-    if (Object.keys(walletChanges).length > 0) {
+    // Grant coins/XP to the GAME STORAGE wallet (collection "wallets", key
+    // wallet_{userId}_{gameId}) — the same store HUD reads via wallet_get_balances.
+    // Do NOT use nk.walletUpdate: that credits the native account wallet, so
+    // RefreshBalancesAsync sees no change and the player gets a success toast
+    // with an unchanged coin balance.
+    var walletGranted = {};
+    var coinAmount = reward && reward.game ? Number(reward.game) : 0;
+    var xpAmount = reward && reward.xp ? Number(reward.xp) : 0;
+    if ((isFinite(coinAmount) && coinAmount > 0) || (isFinite(xpAmount) && xpAmount > 0)) {
         try {
-            nk.walletUpdate(userId, walletChanges, { source: "daily_reward", day: streakData.currentStreak, gameId: gameId }, true);
-            logger.info("[DailyRewards] Granted wallet: " + JSON.stringify(walletChanges) + " to " + userId);
+            var wallet = null;
+            if (typeof getGameWallet === "function") {
+                wallet = getGameWallet(nk, logger, userId, gameId);
+            } else {
+                var walletKey = utils.makeGameStorageKey("wallet", userId, gameId);
+                wallet = utils.readStorage(nk, logger, "wallets", walletKey, userId);
+                if (!wallet) {
+                    wallet = {
+                        userId: userId,
+                        gameId: gameId,
+                        currencies: { game: 0, tokens: 0, xp: 0 },
+                        createdAt: utils.getCurrentTimestamp()
+                    };
+                }
+            }
+
+            if (!wallet.currencies) wallet.currencies = {};
+            // Init missing game/tokens from each other (or 0) before credit.
+            if (wallet.currencies.game === undefined || wallet.currencies.game === null) {
+                wallet.currencies.game = wallet.currencies.tokens || 0;
+            }
+            if (wallet.currencies.tokens === undefined || wallet.currencies.tokens === null) {
+                wallet.currencies.tokens = wallet.currencies.game || 0;
+            }
+            if (wallet.currencies.xp === undefined || wallet.currencies.xp === null) {
+                wallet.currencies.xp = 0;
+            }
+
+            var preGame = wallet.currencies.game || 0;
+            var preTokens = wallet.currencies.tokens || 0;
+            var preXp = wallet.currencies.xp || 0;
+            logger.info("[DailyRewards] GameWallet pre-balance userId=" + userId +
+                " gameId=" + gameId + " game=" + preGame + " tokens=" + preTokens + " xp=" + preXp);
+
+            // Mirror game↔tokens like rpcWalletUpdateGameWallet (legacy path).
+            if (isFinite(coinAmount) && coinAmount > 0) {
+                wallet.currencies.game = preGame + coinAmount;
+                wallet.currencies.tokens = preTokens + coinAmount;
+                walletGranted.game = coinAmount;
+            }
+            if (isFinite(xpAmount) && xpAmount > 0) {
+                wallet.currencies.xp = preXp + xpAmount;
+                walletGranted.xp = xpAmount;
+            }
+
+            var saved = false;
+            if (typeof saveGameWallet === "function") {
+                saved = saveGameWallet(nk, logger, userId, gameId, wallet);
+            } else {
+                var saveKey = utils.makeGameStorageKey("wallet", userId, gameId);
+                wallet.updatedAt = utils.getCurrentTimestamp();
+                saved = utils.writeStorage(nk, logger, "wallets", saveKey, userId, wallet);
+            }
+
+            if (!saved) {
+                logger.error("[DailyRewards] GameWallet save FAILED userId=" + userId +
+                    " gameId=" + gameId + " granted=" + JSON.stringify(walletGranted));
+                walletGranted = {};
+            } else {
+                logger.info("[DailyRewards] GameWallet granted " + JSON.stringify(walletGranted) +
+                    " userId=" + userId + " gameId=" + gameId +
+                    " pre={game:" + preGame + ",tokens:" + preTokens + ",xp:" + preXp + "}" +
+                    " post={game:" + (wallet.currencies.game || 0) +
+                    ",tokens:" + (wallet.currencies.tokens || 0) +
+                    ",xp:" + (wallet.currencies.xp || 0) + "}");
+            }
         } catch (walletErr) {
-            logger.error("[DailyRewards] Wallet grant failed: " + walletErr.message);
+            logger.error("[DailyRewards] GameWallet grant failed: " +
+                (walletErr && walletErr.message ? walletErr.message : String(walletErr)));
+            walletGranted = {};
         }
     }
 
-    return { ok: true, streakData: streakData, reward: reward, walletGranted: walletChanges };
+    return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted };
 }
 
 /**
