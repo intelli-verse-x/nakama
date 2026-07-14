@@ -1346,6 +1346,9 @@ namespace QvGetQuestions {
         var rqPackId = rqResult.packId;
         logger.info("[QvGetQ] ⚡ readyqueue fast-path pack=" + rqPackId +
           " topic=" + topic + " n=" + rqServed.length);
+        try {
+          QvQuestionCache.refreshSignedAudioUrls(nk, logger, rqServed);
+        } catch (_rqRef) { /* non-fatal — client may still get a playable itunes row */ }
         var rqClientQs: any[] = [];
         for (var rqi = 0; rqi < rqServed.length; rqi++) {
           var rqq = rqServed[rqi];
@@ -1700,6 +1703,10 @@ namespace QvGetQuestions {
 
     // ── 7. Build client-safe response ──────────────────────────────────────
     // Strip internal `provider` field — Unity doesn't need to know the source.
+    // Re-mint Deezer hdnea preview URLs before delivery so Unity never sees 403s.
+    try {
+      QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
+    } catch (_audRef) { /* non-fatal */ }
     var clientQs: any[] = [];
     for (var ci = 0; ci < picked.length; ci++) {
       var q = picked[ci];

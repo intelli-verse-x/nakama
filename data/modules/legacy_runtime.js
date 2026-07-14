@@ -17766,21 +17766,56 @@ function compatibilityGenerateShareCode(nk) {
 /**
  * Send a push notification to a user for compatibility quiz
  */
-function compatibilitySendNotification(nk, userId, subject, content, data) {
+/**
+ * Compatibility inbox + device push (QVBF_421).
+ * ES5-safe content merge (no object spread — Goja crashes on `...data`).
+ * Optional ctx/logger enable LegacyPush FCM/APNs; without them, inbox-only.
+ */
+function compatibilitySendNotification(nk, userId, subject, content, data, ctx, logger) {
     try {
-        var notifications = [{
+        var merged = { message: content };
+        if (data && typeof data === 'object') {
+            for (var k in data) {
+                if (Object.prototype.hasOwnProperty.call(data, k)) {
+                    merged[k] = data[k];
+                }
+            }
+        }
+        nk.notificationsSend([{
             userId: userId,
             subject: subject,
-            content: JSON.stringify({
-                message: content,
-                ...data
-            }),
+            content: merged,
             code: 100,
             persistent: true
-        }];
-        nk.notificationsSend(notifications);
+        }]);
     } catch (e) {
-        // Silently fail if notification fails
+        // inbox best-effort
+    }
+
+    try {
+        if (ctx && typeof LegacyPush !== 'undefined' && LegacyPush.sendLocalizedPushToUser) {
+            var eventType = (data && data.type) ? String(data.type) : 'compatibility';
+            var titleKey = 'compatibility_generic_title';
+            var bodyKey = 'compatibility_generic_body';
+            if (eventType === 'partner_joined') {
+                titleKey = 'compatibility_partner_joined_title';
+                bodyKey = 'compatibility_partner_joined_body';
+            } else if (eventType === 'creator_completed' || eventType === 'partner_completed') {
+                titleKey = 'compatibility_partner_finished_title';
+                bodyKey = 'compatibility_partner_finished_body';
+            } else if (eventType === 'results_ready') {
+                titleKey = 'compatibility_results_ready_title';
+                bodyKey = 'compatibility_results_ready_body';
+            }
+            var vars = { name: 'Your partner', mode: 'Compatibility', subject: subject, message: content };
+            LegacyPush.sendLocalizedPushToUser(
+                ctx, logger || { warn: function () {}, info: function () {}, debug: function () {} },
+                nk, userId, eventType, titleKey, bodyKey, vars,
+                { skipQuietHours: true, data: merged }
+            );
+        }
+    } catch (pushErr) {
+        // device push best-effort
     }
 }
 
@@ -18305,7 +18340,8 @@ function rpcCompatibilityJoinSession(ctx, logger, nk, payload) {
         compatibilitySendNotification(nk, session.creatorId,
             'Partner Joined!',
             displayName + ' has joined your compatibility quiz!',
-            { type: 'partner_joined', sessionId: sessionId }
+            { type: 'partner_joined', sessionId: sessionId },
+            ctx, logger
         );
 
         logger.info('[CompatibilityQuiz] User ' + userId + ' joined session ' + sessionId);
@@ -18517,18 +18553,34 @@ function rpcCompatibilitySubmitAnswers(ctx, logger, nk, payload) {
             permissionWrite: 1
         }]);
 
-        if (isCreator && session.partnerId) {
+        if (isCreator && session.partnerId && !session.partnerCompleted) {
             compatibilitySendNotification(nk, session.partnerId,
                 'Your partner finished!',
-                session.creatorName + ' completed the quiz. Check your results!',
-                { type: 'creator_completed', sessionId: sessionId }
+                session.creatorName + ' completed the quiz. Your turn!',
+                { type: 'creator_completed', sessionId: sessionId, screen: 'compatibility' },
+                ctx, logger
             );
-        } else if (isPartner) {
+        } else if (isPartner && !session.creatorCompleted) {
             compatibilitySendNotification(nk, session.creatorId,
-                'Results are ready!',
-                session.partnerName + ' completed the quiz! See your compatibility now!',
-                { type: 'partner_completed', sessionId: sessionId }
+                'Your partner finished!',
+                session.partnerName + ' completed the quiz. Your turn!',
+                { type: 'partner_completed', sessionId: sessionId, screen: 'compatibility' },
+                ctx, logger
             );
+        } else if (session.creatorCompleted && session.partnerCompleted) {
+            var bothMsg = 'Both of you finished — check your compatibility results!';
+            compatibilitySendNotification(nk, session.creatorId,
+                'Compatibility Results!', bothMsg,
+                { type: 'results_ready', sessionId: sessionId, screen: 'compatibility' },
+                ctx, logger
+            );
+            if (session.partnerId) {
+                compatibilitySendNotification(nk, session.partnerId,
+                    'Compatibility Results!', bothMsg,
+                    { type: 'results_ready', sessionId: sessionId, screen: 'compatibility' },
+                    ctx, logger
+                );
+            }
         }
 
         logger.info('[CompatibilityQuiz] Answers submitted for session ' + sessionId);
@@ -18649,14 +18701,16 @@ function rpcCompatibilityCalculate(ctx, logger, nk, payload) {
         compatibilitySendNotification(nk, session.creatorId,
             'Compatibility Results!',
             resultMessage,
-            { type: 'results_ready', sessionId: sessionId }
+            { type: 'results_ready', sessionId: sessionId, screen: 'compatibility' },
+            ctx, logger
         );
 
         if (session.partnerId) {
             compatibilitySendNotification(nk, session.partnerId,
                 'Compatibility Results!',
                 resultMessage,
-                { type: 'results_ready', sessionId: sessionId }
+                { type: 'results_ready', sessionId: sessionId, screen: 'compatibility' },
+                ctx, logger
             );
         }
 

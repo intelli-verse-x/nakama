@@ -811,6 +811,23 @@ declare namespace QvCacheRefreshCron {
         [k: string]: string;
     }): void;
 }
+declare namespace CompatibilityQuiz {
+    /** Discover latest compatibility quiz: cache → descending week scan → first hit is latest. */
+    function fetchLatestQuiz(nk: nkruntime.Nakama, logger: nkruntime.Logger, locale: string): {
+        quiz: any;
+        sourceKey: string;
+        lang: string;
+    };
+    function rpcCreateSession(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcJoinSession(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcGetSession(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+}
+declare function rpcCompatibilityCreateSessionQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcCompatibilityJoinSessionQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcCompatibilityGetSessionQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare namespace CompatibilityQuizRegister {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QvContextResolver {
     interface ResolvedContext {
         userId: string;
@@ -1019,6 +1036,7 @@ declare namespace QvQuestionCache {
         explanation: string;
         difficulty: string;
         provider: string;
+        provider_key?: string;
     }
     /**
      * Idempotent seed: writes qv_catalog_video_quiz/catalog_{lang} + meta when the
@@ -1060,6 +1078,12 @@ declare namespace QvQuestionCache {
      * Use before readCache to decide whether to trigger a background refresh.
      */
     export function isCacheValid(nk: nkruntime.Nakama, topic: string): boolean;
+    /**
+     * Re-mint Deezer preview URLs that are expired or near expiry.
+     * Safe to call on mixed pools — non-Deezer rows are skipped.
+     * Returns count of URLs successfully refreshed.
+     */
+    export function refreshSignedAudioUrls(nk: nkruntime.Nakama, logger: nkruntime.Logger, questions: any[]): number;
     /**
      * Queue a provider refresh without blocking a player RPC on external I/O.
      * The cache refresh scheduler drains this collection on its next tick.

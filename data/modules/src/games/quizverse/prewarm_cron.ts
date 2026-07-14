@@ -420,14 +420,30 @@ namespace QvPrewarmCron {
     var after = QvQuestionCache.readCache(nk, logger, topic);
     var queueWritten = prewarmTopic(nk, logger, userId, topic, minCount);
     var readyQuestions = readReadyQueue(nk, userId, topic);
+    try {
+      // Warmup media_urls are prefetched by Unity at boot — must be fresh Deezer tokens.
+      QvQuestionCache.refreshSignedAudioUrls(nk, logger, readyQuestions);
+    } catch (_warmAud) { /* non-fatal */ }
     var mediaUrls: string[] = [];
     var mediaSeen: { [url: string]: boolean } = {};
-    for (var mi = 0; mi < readyQuestions.length && mediaUrls.length < 4; mi++) {
-      var media = readyQuestions[mi] && readyQuestions[mi].media;
+    // Prefer rows with question_text + media.url so client startup prefetch is useful.
+    for (var mi = 0; mi < readyQuestions.length && mediaUrls.length < 8; mi++) {
+      var rq = readyQuestions[mi];
+      var media = rq && rq.media;
       var mediaUrl = media && typeof media.url === "string" ? media.url : "";
       if (!mediaUrl || mediaSeen[mediaUrl]) continue;
+      var qText = rq && typeof rq.question_text === "string" ? rq.question_text : "";
+      if (!qText || qText.length < 3) continue;
       mediaSeen[mediaUrl] = true;
       mediaUrls.push(mediaUrl);
+    }
+    // Fill remaining slots from any media URL if text-filtered set was thin.
+    for (var mj = 0; mj < readyQuestions.length && mediaUrls.length < 8; mj++) {
+      var media2 = readyQuestions[mj] && readyQuestions[mj].media;
+      var mediaUrl2 = media2 && typeof media2.url === "string" ? media2.url : "";
+      if (!mediaUrl2 || mediaSeen[mediaUrl2]) continue;
+      mediaSeen[mediaUrl2] = true;
+      mediaUrls.push(mediaUrl2);
     }
 
     logger.info("[QvPrewarm] user warm topic=" + topic +

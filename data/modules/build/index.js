@@ -5626,6 +5626,11 @@ var ConvCapture;
     // We only ingest the raw signal here; derivation happens in
     // src/satori/identities/kb_enrichment.ts on the */15 schedule.
     var COLLECTION_MOOD = "qv_user_mood";
+    // Phase 4: last quiz CTA offered to the user (survives even when
+    // qv_user_conv capture is empty / misconfigured). Key is always "latest".
+    var COLLECTION_PENDING_CTA = "qv_pending_cta";
+    var PENDING_CTA_KEY = "latest";
+    var PENDING_CTA_TTL_SEC = 30 * 60; // 30 minutes
     // Hard caps — both anti-abuse and DPDP Article 17 hygiene.
     var MAX_TEXT_CHARS = 8192; // ~6KB JSON-encoded inbound message
     var MAX_LIST_LIMIT = 200; // conv_my_list page size cap
@@ -5657,8 +5662,22 @@ var ConvCapture;
         var token = payload && payload.service_token;
         if (!token)
             return false;
-        var expected = "" + ((ctx.env && ctx.env["CONV_CAPTURE_SERVICE_TOKEN"]) || "");
-        return expected.length > 0 && token === expected;
+        var expectedCapture = "" + ((ctx.env && ctx.env["CONV_CAPTURE_SERVICE_TOKEN"]) || "");
+        if (expectedCapture.length > 0 && token === expectedCapture)
+            return true;
+        // Fallback: prod often has IDENTITY_RESOLVER_SERVICE_TOKEN in runtime.env
+        // while CONV_CAPTURE_* may be missing — same trust boundary (hub S2S).
+        var expectedIdentity = "" + ((ctx.env && ctx.env["IDENTITY_RESOLVER_SERVICE_TOKEN"]) || "");
+        return expectedIdentity.length > 0 && token === expectedIdentity;
+    }
+    /** http_key S2S has empty ctx.userId — accept user_id from body (admin-level key). */
+    function resolveListUserId(ctx, data) {
+        if (ctx.userId)
+            return "" + ctx.userId;
+        var fromBody = "" + (data.user_id || data.userId || "");
+        if (fromBody)
+            return fromBody;
+        return "";
     }
     function emitAnalytics(nk, userId, eventName, properties) {
         try {
@@ -5779,13 +5798,16 @@ var ConvCapture;
         }
     }
     // ── RPC: conv_my_list ──────────────────────────────────────────────────
-    // User-side. Powers the /me/reveal trust-anchor page — returns the most
-    // recent N messages for the authenticated caller. NEVER accepts user_id
-    // from the payload (that would let a JWT enumerate other users' chat).
+    // User-side (JWT): lists the authenticated caller's messages for /me/reveal.
+    // S2S (http_key): empty ctx.userId — accept user_id in body (same pattern as
+    // daily_rewards_get_status). Optional service_token still accepted.
     function rpcMyConvList(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId) {
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            }
             var limit = Math.min(Math.max(parseInt("" + (data.limit || "50")) || 50, 1), MAX_LIST_LIMIT);
             var cursor = "" + (data.cursor || "");
             var page = nk.storageList(userId, COLLECTION_CONV, limit, cursor);
@@ -5864,10 +5886,100 @@ var ConvCapture;
             return RpcHelpers.errorResponse("purge failed: " + msg, 500);
         }
     }
+    // ── RPC: conv_pending_cta_set / get / clear ─────────────────────────────
+    // Durable Phase 4 signal when qv_user_conv is empty (capture misconfigured).
+    // http_key S2S: pass user_id in body (no session).
+    function rpcPendingCtaSet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            var cta = ("" + (data.cta_action_id || data.cta || "")).trim();
+            if (!cta)
+                return RpcHelpers.errorResponse("cta_action_id required", 400);
+            var now = nowSec();
+            nk.storageWrite([{
+                    collection: COLLECTION_PENDING_CTA,
+                    key: PENDING_CTA_KEY,
+                    userId: userId,
+                    value: {
+                        cta_action_id: cta,
+                        channel: ("" + (data.channel || "")).toLowerCase() || undefined,
+                        set_at: now,
+                        expires_at: now + PENDING_CTA_TTL_SEC,
+                    },
+                    permissionRead: 1,
+                    permissionWrite: 0,
+                }]);
+            return RpcHelpers.successResponse({ set: true, cta_action_id: cta, expires_at: now + PENDING_CTA_TTL_SEC });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[ConvCapture] pending_cta_set failed: " + msg);
+            return RpcHelpers.errorResponse("pending_cta_set failed: " + msg, 500);
+        }
+    }
+    function rpcPendingCtaGet(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            var records = nk.storageRead([{
+                    collection: COLLECTION_PENDING_CTA,
+                    key: PENDING_CTA_KEY,
+                    userId: userId,
+                }]);
+            if (!records || records.length === 0 || !records[0].value) {
+                return RpcHelpers.successResponse({ cta_action_id: null });
+            }
+            var val = records[0].value;
+            var expires = typeof val.expires_at === "number" ? val.expires_at : 0;
+            if (expires > 0 && expires < nowSec()) {
+                try {
+                    nk.storageDelete([{ collection: COLLECTION_PENDING_CTA, key: PENDING_CTA_KEY, userId: userId }]);
+                }
+                catch (_) { /* ignore */ }
+                return RpcHelpers.successResponse({ cta_action_id: null, expired: true });
+            }
+            return RpcHelpers.successResponse({
+                cta_action_id: val.cta_action_id || null,
+                set_at: val.set_at,
+                expires_at: val.expires_at,
+                channel: val.channel,
+            });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[ConvCapture] pending_cta_get failed: " + msg);
+            return RpcHelpers.errorResponse("pending_cta_get failed: " + msg, 500);
+        }
+    }
+    function rpcPendingCtaClear(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var userId = resolveListUserId(ctx, data);
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            try {
+                nk.storageDelete([{ collection: COLLECTION_PENDING_CTA, key: PENDING_CTA_KEY, userId: userId }]);
+            }
+            catch (_) { /* idempotent */ }
+            return RpcHelpers.successResponse({ cleared: true });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            return RpcHelpers.errorResponse("pending_cta_clear failed: " + msg, 500);
+        }
+    }
     function register(initializer) {
         initializer.registerRpc("conv_message_capture", rpcMessageCapture);
         initializer.registerRpc("conv_my_list", rpcMyConvList);
         initializer.registerRpc("conv_user_purge", rpcUserPurge);
+        initializer.registerRpc("conv_pending_cta_set", rpcPendingCtaSet);
+        initializer.registerRpc("conv_pending_cta_get", rpcPendingCtaGet);
+        initializer.registerRpc("conv_pending_cta_clear", rpcPendingCtaClear);
     }
     ConvCapture.register = register;
 })(ConvCapture || (ConvCapture = {}));
@@ -11319,6 +11431,529 @@ var QvCacheRefreshCron;
     var _NOOP = { registerRpc: function () { } };
     register(_NOOP);
 })(QvCacheRefreshCron || (QvCacheRefreshCron = {}));
+// compatibility_quiz.ts — QVBF_421
+// Server-owned Compatibility quiz load from S3 + session RPCs that return quiz.
+// postbuild first-wins: these RPCs override legacy_runtime.js duplicates.
+var CompatibilityQuiz;
+(function (CompatibilityQuiz) {
+    var COLLECTION = "compatibility_sessions";
+    var CACHE_COLLECTION = "compatibility_quiz_cache";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var S3_BASE = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com";
+    var PREFIX = "compatibility";
+    var CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+    var LOOKBACK_WEEKS = 12;
+    var LOOKFORWARD_WEEKS = 26;
+    var MIN_JSON_BYTES = 100;
+    var DAY_PROBE_ORDER = [1, 4, 5, 7, 3, 2, 6];
+    function ok(message, data) {
+        return JSON.stringify({ success: true, message: message, data: data });
+    }
+    function fail(message, errorCode) {
+        var out = { success: false, message: message, data: null };
+        if (errorCode)
+            out.errorCode = errorCode;
+        return JSON.stringify(out);
+    }
+    function resolveUserId(ctx, request) {
+        var userId = ctx.userId;
+        if (!userId || typeof userId !== "string" || userId.length < 10) {
+            userId = request && request.userId;
+        }
+        return userId && typeof userId === "string" && userId.length >= 10 ? userId : "";
+    }
+    function getISOWeekDate(d) {
+        var u = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        var isoDay = u.getUTCDay() === 0 ? 7 : u.getUTCDay();
+        u.setUTCDate(u.getUTCDate() + 4 - isoDay);
+        var year = u.getUTCFullYear();
+        var jan4 = new Date(Date.UTC(year, 0, 4));
+        var jan4Day = jan4.getUTCDay() === 0 ? 7 : jan4.getUTCDay();
+        var w1Start = new Date(Date.UTC(year, 0, 4 - jan4Day + 1));
+        var weekNum = Math.floor((u.getTime() - w1Start.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+        return { year: year, week: weekNum, day: isoDay };
+    }
+    function addWeeks(iso, delta) {
+        // Approximate via date math from ISO week Monday + offset.
+        var jan4 = new Date(Date.UTC(iso.year, 0, 4));
+        var jan4Day = jan4.getUTCDay() === 0 ? 7 : jan4.getUTCDay();
+        var monday = new Date(Date.UTC(iso.year, 0, 4 - jan4Day + 1));
+        monday.setUTCDate(monday.getUTCDate() + (iso.week - 1 + delta) * 7);
+        return getISOWeekDate(monday);
+    }
+    function langCandidates(locale) {
+        var l = (locale || "en").trim();
+        var base = l.split("-")[0].toLowerCase();
+        var out = [];
+        var push = function (c) {
+            if (out.indexOf(c) < 0)
+                out.push(c);
+        };
+        if (base === "zh")
+            push("zh-Hans");
+        else if (base === "pt")
+            push("pt-BR");
+        else if (l === "es-419") {
+            push("es-419");
+            push("es");
+        }
+        else {
+            push(l);
+            push(base);
+        }
+        push("en");
+        return out;
+    }
+    function tryFetchKey(nk, key, timeoutMs) {
+        var url = S3_BASE + "/" + key;
+        try {
+            var resp = nk.httpRequest(url, "get", {}, "", timeoutMs);
+            if (!resp || resp.code < 200 || resp.code >= 300)
+                return null;
+            if (!resp.body || resp.body.length < MIN_JSON_BYTES)
+                return null;
+            return JSON.parse(resp.body);
+        }
+        catch (_) {
+            return null;
+        }
+    }
+    function weekScore(year, week) {
+        return year * 100 + week;
+    }
+    function probeWeekDays(nk, year, week, lang, days) {
+        for (var i = 0; i < days.length; i++) {
+            var day = days[i];
+            var key = "quiz-verse/weekly/" + year + "-" + week + "-" + day + "-" + PREFIX + "_" + lang + ".json";
+            var quiz = tryFetchKey(nk, key, 2500);
+            if (quiz && (quiz.questions || quiz.quiz_id || quiz.quizId || quiz.title)) {
+                return { quiz: quiz, sourceKey: key, score: weekScore(year, week) };
+            }
+        }
+        return null;
+    }
+    function readCache(nk, lang) {
+        try {
+            var rows = nk.storageRead([{ collection: CACHE_COLLECTION, key: lang, userId: SYSTEM_USER }]);
+            if (!rows || rows.length === 0 || !rows[0].value)
+                return null;
+            var v = rows[0].value;
+            if (!v.quiz || !v.sourceKey || !v.cachedAt)
+                return null;
+            if (Date.now() - Number(v.cachedAt) > CACHE_TTL_MS)
+                return null;
+            return { quiz: v.quiz, sourceKey: String(v.sourceKey) };
+        }
+        catch (_) {
+            return null;
+        }
+    }
+    function writeCache(nk, lang, quiz, sourceKey) {
+        try {
+            nk.storageWrite([{
+                    collection: CACHE_COLLECTION,
+                    key: lang,
+                    userId: SYSTEM_USER,
+                    value: { quiz: quiz, sourceKey: sourceKey, cachedAt: Date.now() },
+                    permissionRead: 0,
+                    permissionWrite: 0
+                }]);
+        }
+        catch (_) { }
+    }
+    /** Discover latest compatibility quiz: cache → descending week scan → first hit is latest. */
+    function fetchLatestQuiz(nk, logger, locale) {
+        var langs = langCandidates(locale);
+        for (var li = 0; li < langs.length; li++) {
+            var lang = langs[li];
+            var cached = readCache(nk, lang);
+            if (cached) {
+                logger.info("[CompatibilityQuiz] cache hit lang=%s key=%s", lang, cached.sourceKey);
+                return { quiz: cached.quiz, sourceKey: cached.sourceKey, lang: lang };
+            }
+            var nowIso = getISOWeekDate(new Date());
+            var highOffset = LOOKFORWARD_WEEKS;
+            var lowOffset = -LOOKBACK_WEEKS;
+            // Phase 1: common publish days (1/4/5). Phase 2: remaining days.
+            var phases = [[1, 4, 5], [7, 3, 2, 6]];
+            for (var pi = 0; pi < phases.length; pi++) {
+                for (var off = highOffset; off >= lowOffset; off--) {
+                    var iso = addWeeks(nowIso, off);
+                    var hit = probeWeekDays(nk, iso.year, iso.week, lang, phases[pi]);
+                    if (hit) {
+                        writeCache(nk, lang, hit.quiz, hit.sourceKey);
+                        logger.info("[CompatibilityQuiz] S3 latest lang=%s key=%s", lang, hit.sourceKey);
+                        return { quiz: hit.quiz, sourceKey: hit.sourceKey, lang: lang };
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    CompatibilityQuiz.fetchLatestQuiz = fetchLatestQuiz;
+    function quizMeta(quiz) {
+        var quizId = (quiz && (quiz.quiz_id || quiz.quizId || quiz.weekId)) || "compatibility_quiz_v1";
+        var quizTitle = (quiz && quiz.title) || "Compatibility Quiz";
+        return { quizId: String(quizId), quizTitle: String(quizTitle) };
+    }
+    function generateShareCode(nk) {
+        for (var attempt = 0; attempt < 10; attempt++) {
+            var code = String(100000 + Math.floor(Math.random() * 900000));
+            try {
+                var existing = nk.storageRead([{
+                        collection: COLLECTION,
+                        key: "code_" + code,
+                        userId: SYSTEM_USER
+                    }]);
+                if (!existing || existing.length === 0)
+                    return code;
+            }
+            catch (_) {
+                return code;
+            }
+        }
+        return String(100000 + Math.floor(Math.random() * 900000));
+    }
+    function sessionToUnity(session) {
+        var statusMap = {
+            waiting_for_partner: 0,
+            partner_joined: 1,
+            creator_completed: 1,
+            partner_completed: 1,
+            both_completed: 2,
+            completed: 2,
+            expired: 3,
+            cancelled: 4
+        };
+        var numericStatus = typeof session.status === "number" ? session.status : (statusMap[session.status] || 0);
+        if (Date.now() > session.expiresAt && numericStatus < 2)
+            numericStatus = 3;
+        return {
+            sessionId: session.sessionId || "",
+            quizId: session.quizId || "compatibility_quiz_v1",
+            quizTitle: session.quizTitle || "Compatibility Quiz",
+            quizSourceKey: session.quizSourceKey || "",
+            createdByUserId: session.creatorId || "",
+            createdAt: session.createdAt,
+            expiresAt: session.expiresAt,
+            playerA: {
+                userId: session.creatorId || "",
+                displayName: session.creatorName || "Player A",
+                isComplete: !!session.creatorCompleted,
+                answers: session.creatorAnswers || [],
+                traitScores: session.creatorTraitScores || {},
+                resultId: session.creatorResultId || "",
+                personalityTitle: session.creatorPersonalityTitle || "",
+                personalityEmoji: session.creatorPersonalityEmoji || "",
+                completedAt: session.creatorCompletedAt || 0
+            },
+            playerB: session.partnerId ? {
+                userId: session.partnerId || "",
+                displayName: session.partnerName || "Player B",
+                isComplete: !!session.partnerCompleted,
+                answers: session.partnerAnswers || [],
+                traitScores: session.partnerTraitScores || {},
+                resultId: session.partnerResultId || "",
+                personalityTitle: session.partnerPersonalityTitle || "",
+                personalityEmoji: session.partnerPersonalityEmoji || "",
+                completedAt: session.partnerCompletedAt || 0
+            } : null,
+            compatibilityScore: session.compatibilityResult ? session.compatibilityResult.score : 0,
+            compatibilityLevel: session.compatibilityResult ? (session.compatibilityResult.level || "") : "",
+            matchingTraits: session.compatibilityResult ? (session.compatibilityResult.matchingTraits || []) : [],
+            differentTraits: session.compatibilityResult ? (session.compatibilityResult.differentTraits || []) : [],
+            compatibilityInsight: session.compatibilityResult ? (session.compatibilityResult.message || "") : "",
+            status: numericStatus,
+            shareCode: session.shareCode || "",
+            quiz: session.quizSnapshot || null
+        };
+    }
+    function notify(ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars, data) {
+        if (!userId)
+            return;
+        try {
+            // Inbox fallback (ES5-safe — never use object spread).
+            var content = { message: vars && vars.message ? vars.message : eventType, type: eventType };
+            if (data) {
+                for (var k in data) {
+                    if (Object.prototype.hasOwnProperty.call(data, k))
+                        content[k] = data[k];
+                }
+            }
+            nk.notificationsSend([{
+                    userId: userId,
+                    subject: vars && vars.subject ? vars.subject : eventType,
+                    content: content,
+                    code: 100,
+                    persistent: true
+                }]);
+        }
+        catch (_) { }
+        try {
+            if (typeof LegacyPush !== "undefined" && LegacyPush.sendLocalizedPushToUser && ctx) {
+                LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {}, { skipQuietHours: true, data: data || {} });
+            }
+        }
+        catch (e) {
+            if (logger && logger.warn) {
+                logger.warn("[CompatibilityQuiz] LegacyPush failed: %s", e && e.message ? e.message : String(e));
+            }
+        }
+    }
+    function displayNameFor(nk, userId, fallback) {
+        try {
+            var users = nk.usersGetId([userId]);
+            if (users && users.length > 0) {
+                return users[0].displayName || users[0].username || fallback;
+            }
+        }
+        catch (_) { }
+        return fallback;
+    }
+    function rpcCreateSession(ctx, logger, nk, payload) {
+        var request = {};
+        try {
+            request = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return fail("Invalid JSON payload");
+        }
+        var userId = resolveUserId(ctx, request);
+        if (!userId)
+            return fail("User authentication required. Please ensure you are logged in.", "AUTH_REQUIRED");
+        try {
+            var locale = request.lang || request.locale || "en";
+            var loaded = fetchLatestQuiz(nk, logger, locale);
+            if (!loaded) {
+                return fail("No compatibility quiz available on S3. Please try again later.", "QUIZ_UNAVAILABLE");
+            }
+            var meta = quizMeta(loaded.quiz);
+            var quizId = request.quizId || meta.quizId;
+            var quizTitle = request.quizTitle || meta.quizTitle;
+            var sessionId = nk.uuidv4();
+            var shareCode = generateShareCode(nk);
+            var now = Date.now();
+            var displayName = displayNameFor(nk, userId, request.playerDisplayName || "Unknown");
+            var sessionStorage = {
+                sessionId: sessionId,
+                shareCode: shareCode,
+                quizId: quizId,
+                quizTitle: quizTitle,
+                quizSourceKey: loaded.sourceKey,
+                quizSnapshot: loaded.quiz,
+                creatorId: userId,
+                creatorName: displayName,
+                partnerId: null,
+                partnerName: null,
+                inviteeUserId: request.inviteeUserId || null,
+                status: 0,
+                createdAt: now,
+                expiresAt: now + (48 * 60 * 60 * 1000),
+                creatorCompleted: false,
+                partnerCompleted: false,
+                creatorAnswers: null,
+                partnerAnswers: null,
+                creatorTraitScores: null,
+                partnerTraitScores: null,
+                compatibilityResult: null
+            };
+            nk.storageWrite([{
+                    collection: COLLECTION,
+                    key: sessionId,
+                    userId: userId,
+                    value: sessionStorage,
+                    permissionRead: 2,
+                    permissionWrite: 1
+                }]);
+            nk.storageWrite([{
+                    collection: COLLECTION,
+                    key: "code_" + shareCode,
+                    userId: SYSTEM_USER,
+                    value: { sessionId: sessionId, creatorId: userId },
+                    permissionRead: 2,
+                    permissionWrite: 0
+                }]);
+            var invitee = request.inviteeUserId || request.challengeUserId || request.toUserId;
+            if (invitee && typeof invitee === "string" && invitee.length >= 10 && invitee !== userId) {
+                notify(ctx, logger, nk, invitee, "compatibility_invite", "compatibility_invite_title", "compatibility_invite_body", { name: displayName, mode: "Compatibility", subject: "Compatibility Challenge!", message: displayName + " challenged you to Compatibility Quiz!" }, { type: "compatibility_invite", screen: "compatibility", sessionId: sessionId, shareCode: shareCode, fromUserId: userId });
+            }
+            logger.info("[CompatibilityQuiz] Session created %s code=%s key=%s", sessionId, shareCode, loaded.sourceKey);
+            return ok("Session created successfully", sessionToUnity(sessionStorage));
+        }
+        catch (err) {
+            logger.error("[CompatibilityQuiz] Create session error: %s", err && err.message ? err.message : String(err));
+            return fail(err && err.message ? err.message : "Create failed");
+        }
+    }
+    CompatibilityQuiz.rpcCreateSession = rpcCreateSession;
+    function rpcJoinSession(ctx, logger, nk, payload) {
+        var request = {};
+        try {
+            request = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return fail("Invalid JSON payload");
+        }
+        var userId = resolveUserId(ctx, request);
+        if (!userId)
+            return fail("User authentication required. Please ensure you are logged in.", "AUTH_REQUIRED");
+        try {
+            var shareCode = String(request.shareCode || request.shareCodeOrSessionId || "").toUpperCase().trim();
+            if (!shareCode || shareCode.length < 6)
+                return fail("Invalid share code");
+            var codeResults = nk.storageRead([{
+                    collection: COLLECTION,
+                    key: "code_" + shareCode,
+                    userId: SYSTEM_USER
+                }]);
+            if (!codeResults || codeResults.length === 0)
+                return fail("Session not found");
+            var codeRecord = codeResults[0].value;
+            var sessionId = codeRecord.sessionId;
+            var creatorId = codeRecord.creatorId;
+            var sessionResults = nk.storageRead([{
+                    collection: COLLECTION,
+                    key: sessionId,
+                    userId: creatorId
+                }]);
+            if (!sessionResults || sessionResults.length === 0)
+                return fail("Session data not found");
+            var session = sessionResults[0].value;
+            if (session.status === 3 || session.status === "expired" || Date.now() > session.expiresAt) {
+                return fail("Session has expired");
+            }
+            if (session.partnerId !== null && session.partnerId !== userId) {
+                return fail("Session already has a partner");
+            }
+            if (session.creatorId === userId)
+                return fail("Cannot join your own session");
+            // Ensure quiz snapshot exists (legacy sessions created before QVBF_421).
+            if (!session.quizSnapshot) {
+                var locale = request.lang || request.locale || "en";
+                var loaded = fetchLatestQuiz(nk, logger, locale);
+                if (loaded) {
+                    session.quizSnapshot = loaded.quiz;
+                    session.quizSourceKey = loaded.sourceKey;
+                    var meta = quizMeta(loaded.quiz);
+                    session.quizId = session.quizId || meta.quizId;
+                    session.quizTitle = session.quizTitle || meta.quizTitle;
+                }
+            }
+            var displayName = displayNameFor(nk, userId, request.playerDisplayName || "Unknown");
+            session.partnerId = userId;
+            session.partnerName = displayName;
+            session.status = 1;
+            nk.storageWrite([{
+                    collection: COLLECTION,
+                    key: sessionId,
+                    userId: creatorId,
+                    value: session,
+                    permissionRead: 2,
+                    permissionWrite: 1
+                }]);
+            notify(ctx, logger, nk, session.creatorId, "partner_joined", "compatibility_partner_joined_title", "compatibility_partner_joined_body", { name: displayName, subject: "Partner Joined!", message: displayName + " has joined your compatibility quiz!" }, { type: "partner_joined", screen: "compatibility", sessionId: sessionId, shareCode: session.shareCode || shareCode });
+            logger.info("[CompatibilityQuiz] User %s joined session %s", userId, sessionId);
+            return ok("Successfully joined session", sessionToUnity(session));
+        }
+        catch (err) {
+            logger.error("[CompatibilityQuiz] Join session error: %s", err && err.message ? err.message : String(err));
+            return fail(err && err.message ? err.message : "Join failed");
+        }
+    }
+    CompatibilityQuiz.rpcJoinSession = rpcJoinSession;
+    function rpcGetSession(ctx, logger, nk, payload) {
+        var request = {};
+        try {
+            request = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return fail("Invalid JSON payload");
+        }
+        var userId = resolveUserId(ctx, request);
+        if (!userId)
+            return fail("User authentication required. Please ensure you are logged in.", "AUTH_REQUIRED");
+        try {
+            var sessionId = request.sessionId;
+            var creatorId = null;
+            if (!sessionId && request.shareCode) {
+                var shareCode = String(request.shareCode).toUpperCase().trim();
+                var codeResults = nk.storageRead([{
+                        collection: COLLECTION,
+                        key: "code_" + shareCode,
+                        userId: SYSTEM_USER
+                    }]);
+                if (!codeResults || codeResults.length === 0)
+                    return fail("Session not found");
+                sessionId = codeResults[0].value.sessionId;
+                creatorId = codeResults[0].value.creatorId;
+            }
+            var sessionResults = nk.storageRead([{
+                    collection: COLLECTION,
+                    key: sessionId,
+                    userId: userId
+                }]);
+            if ((!sessionResults || sessionResults.length === 0) && creatorId) {
+                sessionResults = nk.storageRead([{
+                        collection: COLLECTION,
+                        key: sessionId,
+                        userId: creatorId
+                    }]);
+            }
+            // Partner may not own the object — resolve via code map if needed.
+            if ((!sessionResults || sessionResults.length === 0) && sessionId) {
+                // Try reading with known creator from a second code lookup is already done;
+                // fall through to not found.
+            }
+            if (!sessionResults || sessionResults.length === 0) {
+                // Last resort: if caller is partner, they need creatorId. Search code_* is hard;
+                // try request.creatorId if provided.
+                if (request.creatorId) {
+                    sessionResults = nk.storageRead([{
+                            collection: COLLECTION,
+                            key: sessionId,
+                            userId: request.creatorId
+                        }]);
+                }
+            }
+            if (!sessionResults || sessionResults.length === 0)
+                return fail("Session not found");
+            var session = sessionResults[0].value;
+            if (session.creatorId !== userId && session.partnerId !== userId) {
+                return fail("Not authorized to view this session");
+            }
+            return ok("Session retrieved", sessionToUnity(session));
+        }
+        catch (err) {
+            logger.error("[CompatibilityQuiz] Get session error: %s", err && err.message ? err.message : String(err));
+            return fail(err && err.message ? err.message : "Get failed");
+        }
+    }
+    CompatibilityQuiz.rpcGetSession = rpcGetSession;
+})(CompatibilityQuiz || (CompatibilityQuiz = {}));
+// Unique global names so legacy_runtime.js `rpcCompatibilityCreateSession`
+// does not overwrite these before postbuild's first-wins `__rpc_*` assignment.
+function rpcCompatibilityCreateSessionQVBF421(ctx, logger, nk, payload) {
+    return CompatibilityQuiz.rpcCreateSession(ctx, logger, nk, payload);
+}
+function rpcCompatibilityJoinSessionQVBF421(ctx, logger, nk, payload) {
+    return CompatibilityQuiz.rpcJoinSession(ctx, logger, nk, payload);
+}
+function rpcCompatibilityGetSessionQVBF421(ctx, logger, nk, payload) {
+    return CompatibilityQuiz.rpcGetSession(ctx, logger, nk, payload);
+}
+// Registration — postbuild autoInvokeRegister + NOOP at load (same pattern as remote_config.ts).
+// Must NOT declare InitModule here — src/main.ts already owns the sole InitModule.
+var CompatibilityQuizRegister;
+(function (CompatibilityQuizRegister) {
+    function register(initializer) {
+        initializer.registerRpc("compatibility_create_session", rpcCompatibilityCreateSessionQVBF421);
+        initializer.registerRpc("compatibility_join_session", rpcCompatibilityJoinSessionQVBF421);
+        initializer.registerRpc("compatibility_get_session", rpcCompatibilityGetSessionQVBF421);
+    }
+    CompatibilityQuizRegister.register = register;
+    var _NOOP = { registerRpc: function () { } };
+    register(_NOOP);
+})(CompatibilityQuizRegister || (CompatibilityQuizRegister = {}));
 // QuizVerse — Context Resolver
 //
 // Provides a single resolveContext() helper that every QuizVerse RPC
@@ -12815,6 +13450,10 @@ var QvGetQuestions;
                 var rqPackId = rqResult.packId;
                 logger.info("[QvGetQ] ⚡ readyqueue fast-path pack=" + rqPackId +
                     " topic=" + topic + " n=" + rqServed.length);
+                try {
+                    QvQuestionCache.refreshSignedAudioUrls(nk, logger, rqServed);
+                }
+                catch (_rqRef) { /* non-fatal — client may still get a playable itunes row */ }
                 var rqClientQs = [];
                 for (var rqi = 0; rqi < rqServed.length; rqi++) {
                     var rqq = rqServed[rqi];
@@ -13160,6 +13799,11 @@ var QvGetQuestions;
             " coldStart=" + coldStartApplied + " mode=" + mode);
         // ── 7. Build client-safe response ──────────────────────────────────────
         // Strip internal `provider` field — Unity doesn't need to know the source.
+        // Re-mint Deezer hdnea preview URLs before delivery so Unity never sees 403s.
+        try {
+            QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
+        }
+        catch (_audRef) { /* non-fatal */ }
         var clientQs = [];
         for (var ci = 0; ci < picked.length; ci++) {
             var q = picked[ci];
@@ -17746,15 +18390,34 @@ var QvPrewarmCron;
         var after = QvQuestionCache.readCache(nk, logger, topic);
         var queueWritten = prewarmTopic(nk, logger, userId, topic, minCount);
         var readyQuestions = readReadyQueue(nk, userId, topic);
+        try {
+            // Warmup media_urls are prefetched by Unity at boot — must be fresh Deezer tokens.
+            QvQuestionCache.refreshSignedAudioUrls(nk, logger, readyQuestions);
+        }
+        catch (_warmAud) { /* non-fatal */ }
         var mediaUrls = [];
         var mediaSeen = {};
-        for (var mi = 0; mi < readyQuestions.length && mediaUrls.length < 4; mi++) {
-            var media = readyQuestions[mi] && readyQuestions[mi].media;
+        // Prefer rows with question_text + media.url so client startup prefetch is useful.
+        for (var mi = 0; mi < readyQuestions.length && mediaUrls.length < 8; mi++) {
+            var rq = readyQuestions[mi];
+            var media = rq && rq.media;
             var mediaUrl = media && typeof media.url === "string" ? media.url : "";
             if (!mediaUrl || mediaSeen[mediaUrl])
                 continue;
+            var qText = rq && typeof rq.question_text === "string" ? rq.question_text : "";
+            if (!qText || qText.length < 3)
+                continue;
             mediaSeen[mediaUrl] = true;
             mediaUrls.push(mediaUrl);
+        }
+        // Fill remaining slots from any media URL if text-filtered set was thin.
+        for (var mj = 0; mj < readyQuestions.length && mediaUrls.length < 8; mj++) {
+            var media2 = readyQuestions[mj] && readyQuestions[mj].media;
+            var mediaUrl2 = media2 && typeof media2.url === "string" ? media2.url : "";
+            if (!mediaUrl2 || mediaSeen[mediaUrl2])
+                continue;
+            mediaSeen[mediaUrl2] = true;
+            mediaUrls.push(mediaUrl2);
         }
         logger.info("[QvPrewarm] user warm topic=" + topic +
             " cache=" + after.questions.length + " queue=" + readyQuestions.length +
@@ -18484,7 +19147,7 @@ var QvQuestionCache;
         speed_quiz: 1 * 3600000,
         true_false: 1 * 3600000,
         movies: 2 * 3600000,
-        music: 2 * 3600000,
+        music: 30 * 60000, // Deezer hdnea tokens live ~15m (measured); keep pool short + always remint on serve
         sports: 2 * 3600000,
         news: 6 * 3600000,
         space: 6 * 3600000,
@@ -18815,7 +19478,8 @@ var QvQuestionCache;
             media: raw.media,
             explanation: raw.explanation,
             difficulty: raw.difficulty,
-            provider: raw.provider
+            provider: raw.provider,
+            provider_key: raw.provider_key
         };
     }
     // ── Explanation enrichment ─────────────────────────────────────────────────
@@ -20376,8 +21040,9 @@ var QvQuestionCache;
                     dOpts.push({ text: wrongArtists[wi], is_correct: false });
                 }
                 var cover = (trk.album && (trk.album.cover_medium || trk.album.cover_big)) || null;
+                var deezerTrackId = trk.id ? String(trk.id) : "";
                 results.push({
-                    provider_key: "deezer_" + (trk.id || djb2(trackTitle + artistName)),
+                    provider_key: "deezer_" + (deezerTrackId || djb2(trackTitle + artistName)),
                     topic: "music", lang: "en",
                     question_text: "Listen to the clip — who is the artist performing this song?",
                     question_type: "single_select",
@@ -20385,11 +21050,14 @@ var QvQuestionCache;
                     has_media: true,
                     media: {
                         type: "audio", url: previewUrl, thumbnail_url: cover,
-                        duration_seconds: 30, mime_type: "audio/mpeg"
+                        duration_seconds: 30, mime_type: "audio/mpeg",
+                        // track_id lets get_questions re-mint hdnea-signed preview URLs at serve time
+                        // (Deezer CDN tokens expire in ~30–120 min while the music pool TTL is 2h).
+                        track_id: deezerTrackId, source: "deezer"
                     },
                     explanation: "\"" + trackTitle + "\" is performed by " + artistName + ".",
                     difficulty: "medium", provider: "deezer",
-                    meta: { track_title: trackTitle }
+                    meta: { track_title: trackTitle, track_id: deezerTrackId }
                 });
             }
             catch (e) {
@@ -21481,6 +22149,129 @@ var QvQuestionCache;
         }
     }
     QvQuestionCache.isCacheValid = isCacheValid;
+    // ── Signed audio URL refresh (Deezer hdnea) ────────────────────────────────
+    //
+    // Deezer chart `preview` URLs are Akamai-signed (hdnea=exp=…~hmac=…). Tokens
+    // expire in roughly 30–120 minutes. The music question pool is cached longer
+    // (and readyqueue/warmup can hold rows even longer), so Unity clients were
+    // receiving 403 CDN failures for otherwise-valid questions.
+    //
+    // Call this on the questions about to be delivered (get_questions / warm).
+    // Mutates media.url in place when a fresh preview is obtained.
+    var DEEZER_URL_SKEW_MS = 12 * 60 * 1000; // remint if <12m left (live tokens ~15m)
+    var DEEZER_REFRESH_CAP = 16; // hard cap per RPC to bound latency
+    function parseHdneaExpiryMs(url) {
+        if (!url)
+            return 0;
+        var m = url.match(/[?&]hdnea=[^&]*exp=(\d+)/);
+        if (!m)
+            m = url.match(/exp=(\d+)/);
+        if (!m)
+            return 0;
+        var sec = parseInt(m[1], 10);
+        return isNaN(sec) ? 0 : sec * 1000;
+    }
+    function extractDeezerTrackId(q) {
+        if (!q)
+            return "";
+        if (q.media && q.media.track_id)
+            return String(q.media.track_id);
+        if (q.meta && q.meta.track_id)
+            return String(q.meta.track_id);
+        var pk = typeof q.provider_key === "string" ? q.provider_key : "";
+        if (pk.indexOf("deezer_") === 0) {
+            var idPart = pk.substring("deezer_".length);
+            if (/^\d+$/.test(idPart))
+                return idPart;
+        }
+        return "";
+    }
+    function needsDeezerPreviewRefresh(q) {
+        if (!q || !q.media || typeof q.media.url !== "string")
+            return false;
+        var url = q.media.url;
+        var isDeezer = url.indexOf("dzcdn.net") >= 0 ||
+            url.indexOf("deezer.com") >= 0 ||
+            q.provider === "deezer" ||
+            (typeof q.provider_key === "string" && q.provider_key.indexOf("deezer_") === 0) ||
+            (q.media && q.media.source === "deezer");
+        if (!isDeezer)
+            return false;
+        if (!extractDeezerTrackId(q))
+            return false;
+        // Live Deezer hdnea tokens are ~15 minutes (measured 2026-07-14). Always
+        // remint at serve time unless the URL is brand-new (>12m remaining).
+        var expMs = parseHdneaExpiryMs(url);
+        if (expMs <= 0)
+            return true;
+        return expMs <= (nowMs() + DEEZER_URL_SKEW_MS);
+    }
+    /**
+     * Re-mint Deezer preview URLs that are expired or near expiry.
+     * Safe to call on mixed pools — non-Deezer rows are skipped.
+     * Returns count of URLs successfully refreshed.
+     */
+    function refreshSignedAudioUrls(nk, logger, questions) {
+        if (!questions || questions.length === 0)
+            return 0;
+        var refreshed = 0;
+        var attempted = 0;
+        for (var i = 0; i < questions.length && attempted < DEEZER_REFRESH_CAP; i++) {
+            var q = questions[i];
+            if (!needsDeezerPreviewRefresh(q))
+                continue;
+            var trackId = extractDeezerTrackId(q);
+            if (!trackId)
+                continue;
+            attempted++;
+            try {
+                var track = httpGet(nk, "https://api.deezer.com/track/" + trackId);
+                var fresh = track && typeof track.preview === "string" ? track.preview : "";
+                if (!fresh) {
+                    logger.debug("[QvQCache/deezer] refresh empty preview track=" + trackId);
+                    continue;
+                }
+                q.media.url = fresh;
+                q.media.track_id = trackId;
+                q.media.source = "deezer";
+                refreshed++;
+            }
+            catch (e) {
+                logger.warn("[QvQCache/deezer] refresh failed track=" + trackId + ": " +
+                    (e && e.message ? e.message : String(e)));
+            }
+        }
+        if (attempted > 0) {
+            logger.info("[QvQCache/deezer] serve-time preview refresh attempted=" +
+                attempted + " refreshed=" + refreshed);
+        }
+        // Drop still-expired Deezer URLs (legacy pool rows without track_id) so Unity
+        // never prefetches a guaranteed-403 link.
+        var scrubbed = 0;
+        for (var sj = 0; sj < questions.length; sj++) {
+            var sq = questions[sj];
+            if (!sq || !sq.media || typeof sq.media.url !== "string")
+                continue;
+            if (sq.media.url.indexOf("dzcdn.net") < 0)
+                continue;
+            var leftMs = parseHdneaExpiryMs(sq.media.url);
+            if (leftMs > 0 && leftMs <= nowMs()) {
+                sq.has_media = false;
+                sq.media = null;
+                scrubbed++;
+            }
+        }
+        if (scrubbed > 0) {
+            logger.warn("[QvQCache/deezer] scrubbed " + scrubbed +
+                " expired preview URL(s) without refreshable track_id — queuing music cache rebuild");
+            try {
+                requestRefresh(nk, logger, "music", "deezer_signed_url_expired");
+            }
+            catch (_qr) { /* ignore */ }
+        }
+        return refreshed;
+    }
+    QvQuestionCache.refreshSignedAudioUrls = refreshSignedAudioUrls;
     /**
      * Queue a provider refresh without blocking a player RPC on external I/O.
      * The cache refresh scheduler drains this collection on its next tick.
@@ -37488,7 +38279,9 @@ var LegacyChat;
                 return RpcHelpers.errorResponse("groupId required");
             var channelId = nk.channelIdBuild(userId, groupId, 3);
             var limit = data.limit || 100;
-            var forward = data.forward !== false;
+            // QVBF_149: default newest-first. forward=true (old default) returned the oldest
+            // page from channel start — recent messages "vanished" on reopen past `limit`.
+            var forward = data.forward === true;
             var cursor = data.cursor || "";
             var result = nk.channelMessagesList(channelId, limit, forward, cursor);
             return RpcHelpers.successResponse({
@@ -37510,7 +38303,8 @@ var LegacyChat;
                 return RpcHelpers.errorResponse("userId required");
             var channelId = nk.channelIdBuild(userId, targetUserId, 2);
             var limit = data.limit || 100;
-            var forward = data.forward !== false;
+            // QVBF_149: default newest-first (see group history comment).
+            var forward = data.forward === true;
             var cursor = data.cursor || "";
             var result = nk.channelMessagesList(channelId, limit, forward, cursor);
             return RpcHelpers.successResponse({
@@ -37530,7 +38324,8 @@ var LegacyChat;
             var roomName = data.roomName || data.room || "general";
             var channelId = nk.channelIdBuild(undefined, roomName, 1);
             var limit = data.limit || 100;
-            var forward = data.forward !== false;
+            // QVBF_149: default newest-first.
+            var forward = data.forward === true;
             var cursor = data.cursor || "";
             var result = nk.channelMessagesList(channelId, limit, forward, cursor);
             return RpcHelpers.successResponse({
@@ -41845,6 +42640,97 @@ var LegacyPush;
             ko: "{name}님이 {mode}에 도전했어요. 실력을 보여주세요!", "zh-Hans": "{name} 在 {mode} 中向你挑战。亮出实力！",
             ar: "{name} تحداك في {mode}. أرِهم ما لديك!", id: "{name} menantangmu di {mode}. Tunjukkan kehebatanmu!",
             zu: "U-{name} ukuphonsele inselelo ku-{mode}. Mbonise ukuthi unamandla!"
+        },
+        // ── Compatibility Quiz (QVBF_421) ────────────────────────────────────────
+        compatibility_invite_title: {
+            en: "💕 Compatibility Challenge!", hi: "💕 कम्पैटिबिलिटी चैलेंज!", es: "💕 ¡Reto de compatibilidad!", fr: "💕 Défi compatibilité !",
+            de: "💕 Kompatibilitäts-Challenge!", pt: "💕 Desafio de compatibilidade!", ru: "💕 Челлендж совместимости!", ja: "💕 相性チャレンジ！",
+            ko: "💕 궁합 챌린지!", "zh-Hans": "💕 默契挑战！", ar: "💕 تحدي التوافق!", id: "💕 Tantangan kompatibilitas!", zu: "💕 Inselelo yokuhambisana!"
+        },
+        compatibility_invite_body: {
+            en: "{name} challenged you to Compatibility Quiz. Join with their code!",
+            hi: "{name} ने आपको Compatibility Quiz के लिए चुनौती दी है!",
+            es: "¡{name} te retó al Compatibility Quiz!",
+            fr: "{name} t'a défié au Compatibility Quiz !",
+            de: "{name} fordert dich zum Compatibility Quiz heraus!",
+            pt: "{name} desafiou você no Compatibility Quiz!",
+            ru: "{name} бросил(а) вызов в Compatibility Quiz!",
+            ja: "{name}さんがCompatibility Quizに挑戦してきた！",
+            ko: "{name}님이 Compatibility Quiz에 도전했어요!",
+            "zh-Hans": "{name} 向你发起了 Compatibility Quiz 挑战！",
+            ar: "{name} تحداك في Compatibility Quiz!",
+            id: "{name} menantangmu di Compatibility Quiz!",
+            zu: "U-{name} ukuphonsele inselelo ku-Compatibility Quiz!"
+        },
+        compatibility_partner_joined_title: {
+            en: "🎮 Partner Joined!", hi: "🎮 पार्टनर जुड़ गए!", es: "🎮 ¡Se unió tu pareja!", fr: "🎮 Partenaire rejoint !",
+            de: "🎮 Partner beigetreten!", pt: "🎮 Parceiro entrou!", ru: "🎮 Партнёр присоединился!", ja: "🎮 パートナーが参加！",
+            ko: "🎮 파트너 참가!", "zh-Hans": "🎮 伙伴已加入！", ar: "🎮 انضم الشريك!", id: "🎮 Partner bergabung!", zu: "🎮 Uzakwethu ujoyinile!"
+        },
+        compatibility_partner_joined_body: {
+            en: "{name} joined your compatibility quiz. Play now!",
+            hi: "{name} आपके compatibility quiz में शामिल हो गए। अभी खेलें!",
+            es: "{name} se unió a tu quiz de compatibilidad. ¡Juega ya!",
+            fr: "{name} a rejoint ton quiz de compatibilité. Joue maintenant !",
+            de: "{name} ist deinem Compatibility Quiz beigetreten. Spiel jetzt!",
+            pt: "{name} entrou no seu quiz de compatibilidade. Jogue agora!",
+            ru: "{name} присоединился(ась) к вашему квизу. Играйте!",
+            ja: "{name}さんが相性クイズに参加しました。今すぐプレイ！",
+            ko: "{name}님이 궁합 퀴즈에 참여했어요. 지금 플레이하세요!",
+            "zh-Hans": "{name} 加入了你的默契测验。快来玩！",
+            ar: "انضم {name} إلى اختبار التوافق. العب الآن!",
+            id: "{name} bergabung dengan kuis kompatibilitasmu. Main sekarang!",
+            zu: "U-{name} ujoyine iquiz yakho. Dlala manje!"
+        },
+        compatibility_partner_finished_title: {
+            en: "✅ Partner Finished!", hi: "✅ पार्टनर ने पूरा किया!", es: "✅ ¡Tu pareja terminó!", fr: "✅ Partenaire terminé !",
+            de: "✅ Partner fertig!", pt: "✅ Parceiro terminou!", ru: "✅ Партнёр закончил!", ja: "✅ パートナーが完了！",
+            ko: "✅ 파트너 완료!", "zh-Hans": "✅ 伙伴已完成！", ar: "✅ أنهى الشريك!", id: "✅ Partner selesai!", zu: "✅ Uzakwethu uqede!"
+        },
+        compatibility_partner_finished_body: {
+            en: "{name} finished the quiz. Your turn!",
+            hi: "{name} ने क्विज़ पूरा कर लिया। अब आपकी बारी!",
+            es: "{name} terminó el quiz. ¡Tu turno!",
+            fr: "{name} a terminé le quiz. À ton tour !",
+            de: "{name} hat das Quiz beendet. Du bist dran!",
+            pt: "{name} terminou o quiz. Sua vez!",
+            ru: "{name} закончил(а) квиз. Твой ход!",
+            ja: "{name}さんがクイズを完了。あなたの番！",
+            ko: "{name}님이 퀴즈를 끝냈어요. 당신 차례!",
+            "zh-Hans": "{name} 完成了测验。轮到你了！",
+            ar: "أنهى {name} الاختبار. دورك!",
+            id: "{name} menyelesaikan kuis. Giliranmu!",
+            zu: "U-{name} uqedile iquiz. Ithuba lakho!"
+        },
+        compatibility_results_ready_title: {
+            en: "💕 Results Ready!", hi: "💕 रिजल्ट तैयार!", es: "💕 ¡Resultados listos!", fr: "💕 Résultats prêts !",
+            de: "💕 Ergebnisse bereit!", pt: "💕 Resultados prontos!", ru: "💕 Результаты готовы!", ja: "💕 結果が出た！",
+            ko: "💕 결과 준비됨!", "zh-Hans": "💕 结果出炉！", ar: "💕 النتائج جاهزة!", id: "💕 Hasil siap!", zu: "💕 Imiphumela ilungile!"
+        },
+        compatibility_results_ready_body: {
+            en: "Your compatibility results are ready. See how you match!",
+            hi: "आपके compatibility रिजल्ट तैयार हैं। देखें कितना मैच है!",
+            es: "Tus resultados de compatibilidad están listos.",
+            fr: "Tes résultats de compatibilité sont prêts.",
+            de: "Eure Kompatibilitäts-Ergebnisse sind bereit.",
+            pt: "Seus resultados de compatibilidade estão prontos.",
+            ru: "Результаты совместимости готовы!",
+            ja: "相性結果の準備ができました！",
+            ko: "궁합 결과가 준비됐어요!",
+            "zh-Hans": "你们的默契结果已出炉！",
+            ar: "نتائج التوافق جاهزة!",
+            id: "Hasil kompatibilitasmu sudah siap!",
+            zu: "Imiphumela yakho yokuhambisana ilungile!"
+        },
+        compatibility_generic_title: {
+            en: "💕 Compatibility Quiz", hi: "💕 Compatibility Quiz", es: "💕 Compatibility Quiz", fr: "💕 Compatibility Quiz",
+            de: "💕 Compatibility Quiz", pt: "💕 Compatibility Quiz", ru: "💕 Compatibility Quiz", ja: "💕 Compatibility Quiz",
+            ko: "💕 Compatibility Quiz", "zh-Hans": "💕 Compatibility Quiz", ar: "💕 Compatibility Quiz", id: "💕 Compatibility Quiz", zu: "💕 Compatibility Quiz"
+        },
+        compatibility_generic_body: {
+            en: "{message}", hi: "{message}", es: "{message}", fr: "{message}",
+            de: "{message}", pt: "{message}", ru: "{message}", ja: "{message}",
+            ko: "{message}", "zh-Hans": "{message}", ar: "{message}", id: "{message}", zu: "{message}"
         },
         // ── Friend request accepted ({name} = the acceptor's display name) ──────
         // Sent to the SENDER when their outgoing request is accepted.

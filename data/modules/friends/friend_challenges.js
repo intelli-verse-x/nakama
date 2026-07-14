@@ -515,8 +515,11 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
     }
 
     // ── DM chat message (best-effort; helper lives in friends.js) ──────────
+    // Clients that already send a durable [ASYNC_CHALLENGE] DM pass
+    // challengeData.skipChatInsert=true to avoid a duplicate friend_challenge bubble.
     try {
-        if (typeof sendChallengeChatMessage === 'function') {
+        var skipChat = rawData && (rawData.skipChatInsert === true || rawData.skipChatInsert === 'true' || rawData.skipChatInsert === 1);
+        if (!skipChat && typeof sendChallengeChatMessage === 'function') {
             sendChallengeChatMessage(nk, logger, senderId, targetUserId, senderName, {
                 type:            'friend_challenge',
                 challengeId:     challengeId,
@@ -529,6 +532,8 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
                 isAsync:         isAsync,
                 expiresAt:       challenge.expiresAt
             });
+        } else if (skipChat) {
+            logger.info('[FriendChallenges] skipChatInsert=true — client owns chat DM');
         }
     } catch (e) {
         logger.warn('[FriendChallenges] chat insert failed: ' + e.message);
