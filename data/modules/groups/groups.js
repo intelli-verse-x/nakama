@@ -240,7 +240,7 @@ function rpcCreateQuizverseGroup(ctx, logger, nk, payload) {
             return JSON.stringify({ success: false, error: "Group name too long (max 64 characters)" });
         }
 
-        var gameId = data.gameId || "quizverse";
+        var gameId = qvResolveGameId(data.gameId || "quizverse");
         var description = data.description ? String(data.description).substring(0, 512) : "";
         var avatarUrl = data.avatarUrl || "";
         var langTag = data.langTag || "en";

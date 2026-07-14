@@ -70,6 +70,8 @@ namespace SocialGroupSearch {
       // should not surface in public discovery unless explicitly requested.
       var openOnly = data.openOnly !== false;
 
+      // Also surface open groups that predate metadata.gameId (legacy rows).
+      // They are attributable only as open/public clans; closed legacy rows stay hidden.
       var rows: any[] = [];
       try {
         // Build IN-list placeholders ($1..$N) for every accepted gameId alias.
@@ -82,6 +84,10 @@ namespace SocialGroupSearch {
         var inClause = inPlaceholders.join(", ");
         var openParamIdx = inParams.length + 1;
         var nextIdx = openParamIdx + 1;
+        // Match: (gameId alias) OR (missing gameId AND open group)
+        var gameIdPredicate =
+          "(((metadata->>'gameId') IN (" + inClause + ")) " +
+          " OR ((((metadata->>'gameId') IS NULL) OR ((metadata->>'gameId') = '')) AND state = 0))";
 
         if (query) {
           // Escape ILIKE wildcards in user input, then wrap in %...%.
@@ -93,7 +99,7 @@ namespace SocialGroupSearch {
           rows = nk.sqlQuery(
             "SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
             "FROM groups " +
-            "WHERE (metadata->>'gameId') IN (" + inClause + ") " +
+            "WHERE " + gameIdPredicate + " " +
             "  AND ($" + openParamIdx + " = false OR state = 0) " +
             "  AND name ILIKE $" + queryParamIdx + " " +
             "ORDER BY edge_count DESC, name ASC " +
@@ -107,7 +113,7 @@ namespace SocialGroupSearch {
           rows = nk.sqlQuery(
             "SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
             "FROM groups " +
-            "WHERE (metadata->>'gameId') IN (" + inClause + ") " +
+            "WHERE " + gameIdPredicate + " " +
             "  AND ($" + openParamIdx + " = false OR state = 0) " +
             "ORDER BY edge_count DESC, name ASC " +
             "LIMIT $" + limitParamIdx2 + " OFFSET $" + offsetParamIdx2,

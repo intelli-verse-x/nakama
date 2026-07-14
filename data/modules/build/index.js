@@ -11097,9 +11097,13 @@ var QuizVerseBrainPrompts;
         var token = safeString(data.reservation_token, 64);
         var idemKey = safeString(data.idempotency_key, 128);
         var clientEventId = safeString(data.client_event_id, 128);
+        // Manual Profile / Home opens (no reservation). Keep in sync with Unity
+        // NormalizeBrainContext + web ctxToTab (Map=graph, Ask=ask|chat).
         var directOpen = action === "opened" &&
-            (promptId === "graph" || promptId === "profile" || promptId === "manual" ||
-                promptId === "recap" || promptId === "orphans" || promptId === "home");
+            (promptId === "graph" || promptId === "map" || promptId === "profile" ||
+                promptId === "manual" || promptId === "recap" || promptId === "orphans" ||
+                promptId === "home" || promptId === "ask" || promptId === "chat" ||
+                promptId === "smart_review");
         if (!directOpen && !token)
             return RpcHelpers.errorResponse("reservation_token required", 400);
         if (!idemKey)
