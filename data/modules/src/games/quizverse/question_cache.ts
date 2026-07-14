@@ -3102,7 +3102,8 @@ namespace QvQuestionCache {
   // Mutates media.url in place when a fresh preview is obtained.
 
   var DEEZER_URL_SKEW_MS = 12 * 60 * 1000; // remint if <12m left (live tokens ~15m)
-  var DEEZER_REFRESH_CAP = 16;             // hard cap per RPC to bound latency
+  // Audio Quiz fetches ~15–23 clips; keep headroom so remint never scrubs mid-pack.
+  var DEEZER_REFRESH_CAP = 32;             // hard cap per RPC to bound latency
 
   function parseHdneaExpiryMs(url: string): number {
     if (!url) return 0;

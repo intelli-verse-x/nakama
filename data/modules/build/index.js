@@ -13785,7 +13785,25 @@ var QvGetQuestions;
             }
             catch (_rwq) { /* non-critical */ }
         }
-        // ── 6. Write inflight + pack document (Task 1b.3) ──────────────────────
+        // ── 6. Remint signed audio URLs BEFORE pack write ──────────────────────
+        // Deezer hdnea tokens expire in ~15m. Remint first so the stored pack and
+        // the client response both carry fresh URLs. Then drop any rows remint had
+        // to scrub (legacy pool without track_id) so Unity never receives
+        // has_media=false audio quiz items.
+        try {
+            QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
+        }
+        catch (_audRef) { /* non-fatal */ }
+        if (requireMedia) {
+            var keepMedia = [];
+            for (var kmi = 0; kmi < picked.length; kmi++) {
+                var kq = picked[kmi];
+                if (kq && kq.has_media && kq.media && kq.media.url)
+                    keepMedia.push(kq);
+            }
+            picked = keepMedia;
+        }
+        // ── 7. Write inflight + pack document (Task 1b.3) ──────────────────────
         var packId = makePackId(nk, gameId, topic);
         writePackStorage(nk, userId, packId, topic, lang, langActual, gameId, picked);
         logger.info("[QvGetQ][DONE] traceId=" + traceId +
@@ -13797,13 +13815,8 @@ var QvGetQuestions;
             " pool=" + pool.length + " seen=" + seenIds.length +
             " inflight=" + inflightIds.length + " cache_expired=" + cacheResult.expired +
             " coldStart=" + coldStartApplied + " mode=" + mode);
-        // ── 7. Build client-safe response ──────────────────────────────────────
+        // ── 8. Build client-safe response ──────────────────────────────────────
         // Strip internal `provider` field — Unity doesn't need to know the source.
-        // Re-mint Deezer hdnea preview URLs before delivery so Unity never sees 403s.
-        try {
-            QvQuestionCache.refreshSignedAudioUrls(nk, logger, picked);
-        }
-        catch (_audRef) { /* non-fatal */ }
         var clientQs = [];
         for (var ci = 0; ci < picked.length; ci++) {
             var q = picked[ci];
@@ -22047,6 +22060,15 @@ var QvQuestionCache;
                             oldQ.question_text !== "Which anime is shown in this image?") {
                             continue;
                         }
+                        // Music: never carry Deezer rows missing track_id — their hdnea
+                        // preview URLs expire in ~15m and cannot be reminted at serve time.
+                        if (topic === "music" && oldQ.has_media && oldQ.media &&
+                            oldQ.media.type === "audio" &&
+                            !oldQ.media.track_id &&
+                            !(typeof oldQ.provider_key === "string" &&
+                                /^deezer_\d+$/.test(oldQ.provider_key))) {
+                            continue;
+                        }
                         merged.push(oldQ);
                         mergedIds[oldQ.id] = true;
                         carried++;
@@ -22159,7 +22181,8 @@ var QvQuestionCache;
     // Call this on the questions about to be delivered (get_questions / warm).
     // Mutates media.url in place when a fresh preview is obtained.
     var DEEZER_URL_SKEW_MS = 12 * 60 * 1000; // remint if <12m left (live tokens ~15m)
-    var DEEZER_REFRESH_CAP = 16; // hard cap per RPC to bound latency
+    // Audio Quiz fetches ~15–23 clips; keep headroom so remint never scrubs mid-pack.
+    var DEEZER_REFRESH_CAP = 32; // hard cap per RPC to bound latency
     function parseHdneaExpiryMs(url) {
         if (!url)
             return 0;
@@ -22186,21 +22209,60 @@ var QvQuestionCache;
         }
         return "";
     }
-    function needsDeezerPreviewRefresh(q) {
+    // Legacy music-pool rows (pre track_id deploy) only keep explanation text like:
+    //   "\"Choosin' Texas\" is performed by Ella Langley."
+    // Recover a Deezer track id via search so serve-time remint still works.
+    function recoverDeezerTrackIdFromExplanation(nk, logger, q) {
+        var expl = q && typeof q.explanation === "string" ? q.explanation : "";
+        if (!expl)
+            return "";
+        var m = expl.match(/"([^"]+)"\s+is performed by\s+(.+?)\.?$/i);
+        if (!m)
+            return "";
+        var title = m[1].trim();
+        var artist = m[2].trim();
+        if (!title || !artist)
+            return "";
+        try {
+            var qstr = encodeURIComponent("track:\"" + title + "\" artist:\"" + artist + "\"");
+            var search = httpGet(nk, "https://api.deezer.com/search?q=" + qstr + "&limit=5");
+            var hits = search && Array.isArray(search.data) ? search.data : [];
+            for (var hi = 0; hi < hits.length; hi++) {
+                var hit = hits[hi];
+                if (!hit || !hit.id)
+                    continue;
+                var hitArtist = hit.artist && hit.artist.name ? String(hit.artist.name) : "";
+                if (hitArtist && hitArtist.toLowerCase() === artist.toLowerCase() && hit.preview) {
+                    return String(hit.id);
+                }
+            }
+            if (hits.length > 0 && hits[0].id && hits[0].preview)
+                return String(hits[0].id);
+        }
+        catch (e) {
+            logger.debug("[QvQCache/deezer] explanation search failed: " +
+                (e && e.message ? e.message : String(e)));
+        }
+        return "";
+    }
+    function isDeezerMediaQuestion(q) {
         if (!q || !q.media || typeof q.media.url !== "string")
             return false;
         var url = q.media.url;
-        var isDeezer = url.indexOf("dzcdn.net") >= 0 ||
+        return (url.indexOf("dzcdn.net") >= 0 ||
             url.indexOf("deezer.com") >= 0 ||
             q.provider === "deezer" ||
             (typeof q.provider_key === "string" && q.provider_key.indexOf("deezer_") === 0) ||
-            (q.media && q.media.source === "deezer");
-        if (!isDeezer)
+            (q.media && q.media.source === "deezer"));
+    }
+    function needsDeezerPreviewRefresh(q) {
+        if (!isDeezerMediaQuestion(q))
             return false;
-        if (!extractDeezerTrackId(q))
-            return false;
+        var url = q.media.url;
         // Live Deezer hdnea tokens are ~15 minutes (measured 2026-07-14). Always
         // remint at serve time unless the URL is brand-new (>12m remaining).
+        // Even legacy rows without track_id enter this path so explanation-search
+        // recovery can remint them instead of scrubbing to has_media=false.
         var expMs = parseHdneaExpiryMs(url);
         if (expMs <= 0)
             return true;
@@ -22221,6 +22283,17 @@ var QvQuestionCache;
             if (!needsDeezerPreviewRefresh(q))
                 continue;
             var trackId = extractDeezerTrackId(q);
+            if (!trackId) {
+                trackId = recoverDeezerTrackIdFromExplanation(nk, logger, q);
+                if (trackId) {
+                    if (!q.media)
+                        q.media = {};
+                    q.media.track_id = trackId;
+                    q.media.source = "deezer";
+                    if (!q.provider_key)
+                        q.provider_key = "deezer_" + trackId;
+                }
+            }
             if (!trackId)
                 continue;
             attempted++;
@@ -22234,6 +22307,8 @@ var QvQuestionCache;
                 q.media.url = fresh;
                 q.media.track_id = trackId;
                 q.media.source = "deezer";
+                if (!q.provider_key)
+                    q.provider_key = "deezer_" + trackId;
                 refreshed++;
             }
             catch (e) {
