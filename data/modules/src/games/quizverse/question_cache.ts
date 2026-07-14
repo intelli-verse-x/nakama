@@ -63,7 +63,7 @@ namespace QvQuestionCache {
     speed_quiz:  1  * 3600000,
     true_false:  1  * 3600000,
     movies:    2  * 3600000,
-    music:     45 * 60000,   // Deezer hdnea tokens die in ~30–120m; keep pool short + serve-time refresh
+    music:     30 * 60000,   // Deezer hdnea tokens live ~15m (measured); keep pool short + always remint on serve
     sports:    2  * 3600000,
     news:      6  * 3600000,
     space:     6  * 3600000,
@@ -3092,7 +3092,7 @@ namespace QvQuestionCache {
   // Call this on the questions about to be delivered (get_questions / warm).
   // Mutates media.url in place when a fresh preview is obtained.
 
-  var DEEZER_URL_SKEW_MS = 10 * 60 * 1000; // refresh if expiring within 10 minutes
+  var DEEZER_URL_SKEW_MS = 12 * 60 * 1000; // remint if <12m left (live tokens ~15m)
   var DEEZER_REFRESH_CAP = 16;             // hard cap per RPC to bound latency
 
   function parseHdneaExpiryMs(url: string): number {
@@ -3126,10 +3126,11 @@ namespace QvQuestionCache {
       (typeof q.provider_key === "string" && q.provider_key.indexOf("deezer_") === 0) ||
       (q.media && q.media.source === "deezer");
     if (!isDeezer) return false;
-    var trackId = extractDeezerTrackId(q);
-    if (!trackId) return false;
+    if (!extractDeezerTrackId(q)) return false;
+    // Live Deezer hdnea tokens are ~15 minutes (measured 2026-07-14). Always
+    // remint at serve time unless the URL is brand-new (>12m remaining).
     var expMs = parseHdneaExpiryMs(url);
-    if (expMs <= 0) return true; // signed URL missing/unparseable — refresh
+    if (expMs <= 0) return true;
     return expMs <= (nowMs() + DEEZER_URL_SKEW_MS);
   }
 
