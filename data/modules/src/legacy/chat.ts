@@ -555,7 +555,9 @@ namespace LegacyChat {
       if (!groupId) return RpcHelpers.errorResponse("groupId required");
       var channelId = nk.channelIdBuild(userId, groupId, 3);
       var limit = data.limit || 100;
-      var forward = data.forward !== false;
+      // QVBF_149: default newest-first. forward=true (old default) returned the oldest
+      // page from channel start — recent messages "vanished" on reopen past `limit`.
+      var forward = data.forward === true;
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
@@ -576,7 +578,8 @@ namespace LegacyChat {
       if (!targetUserId) return RpcHelpers.errorResponse("userId required");
       var channelId = nk.channelIdBuild(userId, targetUserId, 2);
       var limit = data.limit || 100;
-      var forward = data.forward !== false;
+      // QVBF_149: default newest-first (see group history comment).
+      var forward = data.forward === true;
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({
@@ -596,7 +599,8 @@ namespace LegacyChat {
       var roomName = data.roomName || data.room || "general";
       var channelId = nk.channelIdBuild(undefined, roomName, 1);
       var limit = data.limit || 100;
-      var forward = data.forward !== false;
+      // QVBF_149: default newest-first.
+      var forward = data.forward === true;
       var cursor = data.cursor || "";
       var result = nk.channelMessagesList(channelId, limit, forward, cursor);
       return RpcHelpers.successResponse({

@@ -833,6 +833,97 @@ namespace LegacyPush {
       ar: "{name} تحداك في {mode}. أرِهم ما لديك!",                            id: "{name} menantangmu di {mode}. Tunjukkan kehebatanmu!",
       zu: "U-{name} ukuphonsele inselelo ku-{mode}. Mbonise ukuthi unamandla!"
     },
+    // ── Compatibility Quiz (QVBF_421) ────────────────────────────────────────
+    compatibility_invite_title: {
+      en: "💕 Compatibility Challenge!", hi: "💕 कम्पैटिबिलिटी चैलेंज!", es: "💕 ¡Reto de compatibilidad!", fr: "💕 Défi compatibilité !",
+      de: "💕 Kompatibilitäts-Challenge!", pt: "💕 Desafio de compatibilidade!", ru: "💕 Челлендж совместимости!", ja: "💕 相性チャレンジ！",
+      ko: "💕 궁합 챌린지!", "zh-Hans": "💕 默契挑战！", ar: "💕 تحدي التوافق!", id: "💕 Tantangan kompatibilitas!", zu: "💕 Inselelo yokuhambisana!"
+    },
+    compatibility_invite_body: {
+      en: "{name} challenged you to Compatibility Quiz. Join with their code!",
+      hi: "{name} ने आपको Compatibility Quiz के लिए चुनौती दी है!",
+      es: "¡{name} te retó al Compatibility Quiz!",
+      fr: "{name} t'a défié au Compatibility Quiz !",
+      de: "{name} fordert dich zum Compatibility Quiz heraus!",
+      pt: "{name} desafiou você no Compatibility Quiz!",
+      ru: "{name} бросил(а) вызов в Compatibility Quiz!",
+      ja: "{name}さんがCompatibility Quizに挑戦してきた！",
+      ko: "{name}님이 Compatibility Quiz에 도전했어요!",
+      "zh-Hans": "{name} 向你发起了 Compatibility Quiz 挑战！",
+      ar: "{name} تحداك في Compatibility Quiz!",
+      id: "{name} menantangmu di Compatibility Quiz!",
+      zu: "U-{name} ukuphonsele inselelo ku-Compatibility Quiz!"
+    },
+    compatibility_partner_joined_title: {
+      en: "🎮 Partner Joined!", hi: "🎮 पार्टनर जुड़ गए!", es: "🎮 ¡Se unió tu pareja!", fr: "🎮 Partenaire rejoint !",
+      de: "🎮 Partner beigetreten!", pt: "🎮 Parceiro entrou!", ru: "🎮 Партнёр присоединился!", ja: "🎮 パートナーが参加！",
+      ko: "🎮 파트너 참가!", "zh-Hans": "🎮 伙伴已加入！", ar: "🎮 انضم الشريك!", id: "🎮 Partner bergabung!", zu: "🎮 Uzakwethu ujoyinile!"
+    },
+    compatibility_partner_joined_body: {
+      en: "{name} joined your compatibility quiz. Play now!",
+      hi: "{name} आपके compatibility quiz में शामिल हो गए। अभी खेलें!",
+      es: "{name} se unió a tu quiz de compatibilidad. ¡Juega ya!",
+      fr: "{name} a rejoint ton quiz de compatibilité. Joue maintenant !",
+      de: "{name} ist deinem Compatibility Quiz beigetreten. Spiel jetzt!",
+      pt: "{name} entrou no seu quiz de compatibilidade. Jogue agora!",
+      ru: "{name} присоединился(ась) к вашему квизу. Играйте!",
+      ja: "{name}さんが相性クイズに参加しました。今すぐプレイ！",
+      ko: "{name}님이 궁합 퀴즈에 참여했어요. 지금 플레이하세요!",
+      "zh-Hans": "{name} 加入了你的默契测验。快来玩！",
+      ar: "انضم {name} إلى اختبار التوافق. العب الآن!",
+      id: "{name} bergabung dengan kuis kompatibilitasmu. Main sekarang!",
+      zu: "U-{name} ujoyine iquiz yakho. Dlala manje!"
+    },
+    compatibility_partner_finished_title: {
+      en: "✅ Partner Finished!", hi: "✅ पार्टनर ने पूरा किया!", es: "✅ ¡Tu pareja terminó!", fr: "✅ Partenaire terminé !",
+      de: "✅ Partner fertig!", pt: "✅ Parceiro terminou!", ru: "✅ Партнёр закончил!", ja: "✅ パートナーが完了！",
+      ko: "✅ 파트너 완료!", "zh-Hans": "✅ 伙伴已完成！", ar: "✅ أنهى الشريك!", id: "✅ Partner selesai!", zu: "✅ Uzakwethu uqede!"
+    },
+    compatibility_partner_finished_body: {
+      en: "{name} finished the quiz. Your turn!",
+      hi: "{name} ने क्विज़ पूरा कर लिया। अब आपकी बारी!",
+      es: "{name} terminó el quiz. ¡Tu turno!",
+      fr: "{name} a terminé le quiz. À ton tour !",
+      de: "{name} hat das Quiz beendet. Du bist dran!",
+      pt: "{name} terminou o quiz. Sua vez!",
+      ru: "{name} закончил(а) квиз. Твой ход!",
+      ja: "{name}さんがクイズを完了。あなたの番！",
+      ko: "{name}님이 퀴즈를 끝냈어요. 당신 차례!",
+      "zh-Hans": "{name} 完成了测验。轮到你了！",
+      ar: "أنهى {name} الاختبار. دورك!",
+      id: "{name} menyelesaikan kuis. Giliranmu!",
+      zu: "U-{name} uqedile iquiz. Ithuba lakho!"
+    },
+    compatibility_results_ready_title: {
+      en: "💕 Results Ready!", hi: "💕 रिजल्ट तैयार!", es: "💕 ¡Resultados listos!", fr: "💕 Résultats prêts !",
+      de: "💕 Ergebnisse bereit!", pt: "💕 Resultados prontos!", ru: "💕 Результаты готовы!", ja: "💕 結果が出た！",
+      ko: "💕 결과 준비됨!", "zh-Hans": "💕 结果出炉！", ar: "💕 النتائج جاهزة!", id: "💕 Hasil siap!", zu: "💕 Imiphumela ilungile!"
+    },
+    compatibility_results_ready_body: {
+      en: "Your compatibility results are ready. See how you match!",
+      hi: "आपके compatibility रिजल्ट तैयार हैं। देखें कितना मैच है!",
+      es: "Tus resultados de compatibilidad están listos.",
+      fr: "Tes résultats de compatibilité sont prêts.",
+      de: "Eure Kompatibilitäts-Ergebnisse sind bereit.",
+      pt: "Seus resultados de compatibilidade estão prontos.",
+      ru: "Результаты совместимости готовы!",
+      ja: "相性結果の準備ができました！",
+      ko: "궁합 결과가 준비됐어요!",
+      "zh-Hans": "你们的默契结果已出炉！",
+      ar: "نتائج التوافق جاهزة!",
+      id: "Hasil kompatibilitasmu sudah siap!",
+      zu: "Imiphumela yakho yokuhambisana ilungile!"
+    },
+    compatibility_generic_title: {
+      en: "💕 Compatibility Quiz", hi: "💕 Compatibility Quiz", es: "💕 Compatibility Quiz", fr: "💕 Compatibility Quiz",
+      de: "💕 Compatibility Quiz", pt: "💕 Compatibility Quiz", ru: "💕 Compatibility Quiz", ja: "💕 Compatibility Quiz",
+      ko: "💕 Compatibility Quiz", "zh-Hans": "💕 Compatibility Quiz", ar: "💕 Compatibility Quiz", id: "💕 Compatibility Quiz", zu: "💕 Compatibility Quiz"
+    },
+    compatibility_generic_body: {
+      en: "{message}", hi: "{message}", es: "{message}", fr: "{message}",
+      de: "{message}", pt: "{message}", ru: "{message}", ja: "{message}",
+      ko: "{message}", "zh-Hans": "{message}", ar: "{message}", id: "{message}", zu: "{message}"
+    },
     // ── Friend request accepted ({name} = the acceptor's display name) ──────
     // Sent to the SENDER when their outgoing request is accepted.
     friend_accepted_title: {
