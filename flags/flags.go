@@ -261,7 +261,7 @@ func (fm *FlagMaker) PrintDefaults() {
 // ParseArgs parses the arguments based on the FlagMaker's setting.
 func (fm *FlagMaker) ParseArgs(obj interface{}, args []string) ([]string, error) {
 	v := reflect.ValueOf(obj)
-	if v.Kind() != reflect.Ptr {
+	if v.Kind() != 22 { // reflect.Ptr
 		return args, fmt.Errorf("top level object must be a pointer. %v is passed", v.Type())
 	}
 	if v.IsNil() {
@@ -272,7 +272,7 @@ func (fm *FlagMaker) ParseArgs(obj interface{}, args []string) ([]string, error)
 	case reflect.Struct:
 		fm.enumerateAndCreate("", e, "")
 	case reflect.Interface:
-		if e.Elem().Kind() == reflect.Ptr {
+		if e.Elem().Kind() == 22 { // reflect.Ptr
 			fm.enumerateAndCreate("", e, "")
 		} else {
 			return args, fmt.Errorf("interface must have pointer underlying type. %v is passed", v.Type())
@@ -321,7 +321,7 @@ func (fm *FlagMaker) enumerateAndCreate(prefix string, value reflect.Value, usag
 			fm.enumerateAndCreate(prefix, value.Elem(), usage)
 		}
 		return
-	case reflect.Ptr:
+	case 22: // reflect.Ptr
 		if value.IsNil() {
 			value.Set(reflect.New(value.Type().Elem()))
 		}
