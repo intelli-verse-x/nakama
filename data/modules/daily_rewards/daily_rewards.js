@@ -445,14 +445,14 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
 function performDailyClaim(nk, logger, userId, gameId) {
     // Get current streak data (runs migration/reconcile side-effects up front so
     // the versioned read below sees a settled record).
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-
+    var streakData = getStreakData(nk, logger, userId, gameId);//
+    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);//
+//
     // Fast pre-check (cheap rejection before the OCC loop).
-    var claimCheck = canClaimToday(streakData);
-    if (!claimCheck.canClaim) {
-        return { ok: false, error: "Cannot claim reward: " + claimCheck.reason, reason: claimCheck.reason };
-    }
+    var claimCheck = canClaimToday(streakData);//
+    if (!claimCheck.canClaim) {//
+        return { ok: false, error: "Cannot claim reward: " + claimCheck.reason, reason: claimCheck.reason };//
+    }//
 
     // ── ATOMIC CLAIM (OCC / double-claim fix) ────────────────────────────────
     // The old path did read → check → walletUpdate → blind write. Two concurrent
@@ -462,86 +462,86 @@ function performDailyClaim(nk, logger, userId, gameId) {
     // CONDITIONAL write. If a concurrent claim committed first, the write fails,
     // we re-read, see lastClaim == today, and reject with "already claimed" —
     // making retries idempotent and duplicate grants impossible.
-    var reward = null;
-    var committed = false;
-    for (var attempt = 0; attempt < 2 && !committed; attempt++) {
-        var raw = readStreakRawWithVersion(nk, userId, gameId);
+    var reward = null;//
+    var committed = false;//
+    for (var attempt = 0; attempt < 2 && !committed; attempt++) {//
+        var raw = readStreakRawWithVersion(nk, userId, gameId);//
         // Fall back to the settled copy when the record does not exist yet
         // (version "*" makes the write a conditional create).
-        var claimState = raw.value || streakData;
-        if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
-        if (!claimState.claimHistory) claimState.claimHistory = [];
+        var claimState = raw.value || streakData;//
+        if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;//
+        if (!claimState.claimHistory) claimState.claimHistory = [];//
 
-        var recheck = canClaimToday(claimState);
-        if (!recheck.canClaim) {
-            return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
-        }
+        var recheck = canClaimToday(claimState);//
+        if (!recheck.canClaim) {//
+            return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };//
+        }//
 
         // Reset streak when gap spans more than one UTC day or exceeds 48h grace
         // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
-        var lastClaimTs = claimState.lastClaimTimestamp || 0;
-        if (lastClaimTs > 0) {
-            var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-            var today = getTodayUtcDateString();
-            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-            var todayDayStart = getUtcDayStartUnixFromDateString(today);
-            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-                claimState.currentStreak = 0;
-            }
-        }
+        var lastClaimTs = claimState.lastClaimTimestamp || 0;//
+        if (lastClaimTs > 0) {//
+            var lastDate = getUtcDateStringFromUnix(lastClaimTs);//
+            var today = getTodayUtcDateString();//
+            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);//
+            var todayDayStart = getUtcDayStartUnixFromDateString(today);//
+            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);//
+            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {//
+                claimState.currentStreak = 0;//
+            }//
+        }//
 
         // Update streak
-        claimState.currentStreak = (claimState.currentStreak || 0) + 1;
-        claimState.lastClaimTimestamp = utils.getUnixTimestamp();
-        claimState.totalClaims = (claimState.totalClaims || 0) + 1;
-        claimState.updatedAt = utils.getCurrentTimestamp();
+        claimState.currentStreak = (claimState.currentStreak || 0) + 1;//
+        claimState.lastClaimTimestamp = utils.getUnixTimestamp();// 
+        claimState.totalClaims = (claimState.totalClaims || 0) + 1;//
+        claimState.updatedAt = utils.getCurrentTimestamp();//
 
         // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
-        if (claimState.currentStreak > (claimState.bestStreak || 0)) {
-            claimState.bestStreak = claimState.currentStreak;
-        }
+        if (claimState.currentStreak > (claimState.bestStreak || 0)) {//
+            claimState.bestStreak = claimState.currentStreak;//
+        }//
 
         // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
         // Capped at 90 entries (~3 months) to keep the storage record small.
-        var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
-        var claimDateStr = claimDate.getUTCFullYear() + "-" +
-            (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
-            (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
-        if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {
-            claimState.claimHistory.push(claimDateStr);
-            while (claimState.claimHistory.length > 90) {
-                claimState.claimHistory.shift();
-            }
-        }
+        var claimDate = new Date(claimState.lastClaimTimestamp * 1000);//
+        var claimDateStr = claimDate.getUTCFullYear() + "-" + //
+            (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +//
+            (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();//
+        if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {//
+            claimState.claimHistory.push(claimDateStr);//
+            while (claimState.claimHistory.length > 90) {//
+                claimState.claimHistory.shift();//
+            }//
+        }//
 
-        reward = getRewardForDay(gameId, claimState.currentStreak);
+        reward = getRewardForDay(gameId, claimState.currentStreak);//
 
-        if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
-            committed = true;
-            streakData = claimState;
+        if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {//
+            committed = true;//
+            streakData = claimState;//
         }
         // On conflict: loop re-reads the fresh record; the recheck above then
         // returns "already_claimed_today" if the concurrent claim was today's.
-    }
+    }//
 
-    if (!committed) {
-        return { ok: false, error: "Failed to save streak data (concurrent update)", reason: "concurrent_update" };
-    }
+    if (!committed) {//
+        return { ok: false, error: "Failed to save streak data (concurrent update)", reason: "concurrent_update" };//
+    }//
 
     // Log reward claim for transaction history
-    var transactionKey = "transaction_log_" + userId + "_" + utils.getUnixTimestamp();
-    var transactionData = {
-        userId: userId,
-        gameId: gameId,
-        type: "daily_reward_claim",
-        day: streakData.currentStreak,
-        reward: reward,
-        timestamp: utils.getCurrentTimestamp()
-    };
-    utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, transactionData);
+    var transactionKey = "transaction_log_" + userId + "_" + utils.getUnixTimestamp();//
+    var transactionData = {//
+        userId: userId,//
+        gameId: gameId,//
+        type: "daily_reward_claim",//
+        day: streakData.currentStreak,//
+        reward: reward,//
+        timestamp: utils.getCurrentTimestamp()//
+    };//
+    utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, transactionData);//
 
-    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
+    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);//
 
     // ---------------------------------------------------------------------------
     // QVBF / RCA (2026-07-16): daily claim MUST credit storage wallets, not nk.walletUpdate.
