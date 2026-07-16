@@ -217,6 +217,12 @@ namespace TournamentRpcs {
       var countryAllowed = TournamentEconomy.isCountryAllowed(cfg, userCountry);
       var stateBlocked = userCountry === "US" && userState && TournamentEconomy.isUsStateEntryBlocked(userState);
 
+      // Daily roll-forward stores the live window on meta; clients normalize
+      // OPEN+past end_iso → SETTLING, so we must expose window_* not seed cfg.
+      var listMetaAny: any = meta;
+      var listOpenIso = listMetaAny.window_open_iso || cfg.open_start_iso;
+      var listEndIso = listMetaAny.window_end_iso || cfg.end_iso;
+
       out.push({
         slug: cfg.slug,
         name: cfg.name,
@@ -237,8 +243,8 @@ namespace TournamentRpcs {
         entry_fee_bc: cfg.entry_fee_bc,
         rake_pct: cfg.rake_pct,
         pre_enroll_start_iso: cfg.pre_enroll_start_iso,
-        open_start_iso: cfg.open_start_iso,
-        end_iso: cfg.end_iso,
+        open_start_iso: listOpenIso,
+        end_iso: listEndIso,
         badge_emoji: cfg.badge_emoji,
         caller: {
           authenticated: !!userId,
@@ -322,6 +328,10 @@ namespace TournamentRpcs {
 
     var rulesSummary = "Entry: " + cfg.entry_fee_bc + " BC · House rake: " + Math.round(cfg.rake_pct * 100) + "% · AMOE: complete " + cfg.amoe.learning_series_required_videos + " Learning Series videos for a free entry.";
 
+    var getMetaAny: any = meta;
+    var getOpenIso = getMetaAny.window_open_iso || cfg.open_start_iso;
+    var getEndIso = getMetaAny.window_end_iso || cfg.end_iso;
+
     var tournament = {
       slug: cfg.slug,
       name: cfg.name,
@@ -335,8 +345,8 @@ namespace TournamentRpcs {
       pre_enroll_count: meta.pre_enroll_count | 0,
       entry_fee_bc: cfg.entry_fee_bc,
       pre_enroll_start_iso: cfg.pre_enroll_start_iso,
-      open_start_iso: cfg.open_start_iso,
-      end_iso: cfg.end_iso,
+      open_start_iso: getOpenIso,
+      end_iso: getEndIso,
       badge_emoji: cfg.badge_emoji || null,
       pick_n: pickN,
       elimination: elimination,

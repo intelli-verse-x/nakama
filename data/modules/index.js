@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-16T10:35:35.979Z
+// Generated: 2026-07-16T11:00:23.374Z
 // RPC Count: 1317
 // ============================================================
 
@@ -178335,11 +178335,23 @@ var TournamentCrons;
         var now = nowSec();
         var anyMeta = meta;
         var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
-        var newOpenIso = unixToIso(prevWindowEnd + 1); // start where prev ended
-        var newEndIso = unixToIso(prevWindowEnd + 24 * 3600); // 24h window
+        var daySec = 24 * 3600;
+        // Catch up if cron lagged for many days (one settle must land a live window).
+        var rolls = 0;
+        while (prevWindowEnd <= now && rolls < 400) {
+            prevWindowEnd += daySec;
+            rolls++;
+        }
+        if (rolls === 0) {
+            // Still advance one day from the settled window (normal path).
+            prevWindowEnd += daySec;
+            rolls = 1;
+        }
+        var newEndIso = unixToIso(prevWindowEnd);
+        var newOpenIso = unixToIso(prevWindowEnd - daySec + 1);
         anyMeta.window_open_iso = newOpenIso;
         anyMeta.window_end_iso = newEndIso;
-        anyMeta.daily_instance = (anyMeta.daily_instance || 1) + 1;
+        anyMeta.daily_instance = (anyMeta.daily_instance || 1) + rolls;
         meta.status = "OPEN";
         meta.pot_bc = cfg.pot_seed_bc | 0;
         meta.entries_count = 0;
@@ -178521,6 +178533,18 @@ var TournamentCrons;
                         });
                     }
                 }
+                continue;
+            }
+            // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
+            if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
+                var recovered = rollDailyForward(nk, cfg, meta);
+                actions.push({
+                    slug: cfg.slug,
+                    action: "daily_recovered_from_settled",
+                    new_window_open_iso: recovered.window_open_iso,
+                    new_window_end_iso: recovered.window_end_iso,
+                    daily_instance: recovered.daily_instance,
+                });
                 continue;
             }
         }
@@ -179526,6 +179550,11 @@ var TournamentRpcs;
             var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, cfg.slug, userId) : null;
             var countryAllowed = TournamentEconomy.isCountryAllowed(cfg, userCountry);
             var stateBlocked = userCountry === "US" && userState && TournamentEconomy.isUsStateEntryBlocked(userState);
+            // Daily roll-forward stores the live window on meta; clients normalize
+            // OPEN+past end_iso → SETTLING, so we must expose window_* not seed cfg.
+            var listMetaAny = meta;
+            var listOpenIso = listMetaAny.window_open_iso || cfg.open_start_iso;
+            var listEndIso = listMetaAny.window_end_iso || cfg.end_iso;
             out.push({
                 slug: cfg.slug,
                 name: cfg.name,
@@ -179546,8 +179575,8 @@ var TournamentRpcs;
                 entry_fee_bc: cfg.entry_fee_bc,
                 rake_pct: cfg.rake_pct,
                 pre_enroll_start_iso: cfg.pre_enroll_start_iso,
-                open_start_iso: cfg.open_start_iso,
-                end_iso: cfg.end_iso,
+                open_start_iso: listOpenIso,
+                end_iso: listEndIso,
                 badge_emoji: cfg.badge_emoji,
                 caller: {
                     authenticated: !!userId,
@@ -179636,6 +179665,9 @@ var TournamentRpcs;
             prizeBreakdown.push({ label: "#1 bragging bonus", bc: cfg.elimination_schedule.final_survivor_bonus_bc | 0 });
         }
         var rulesSummary = "Entry: " + cfg.entry_fee_bc + " BC · House rake: " + Math.round(cfg.rake_pct * 100) + "% · AMOE: complete " + cfg.amoe.learning_series_required_videos + " Learning Series videos for a free entry.";
+        var getMetaAny = meta;
+        var getOpenIso = getMetaAny.window_open_iso || cfg.open_start_iso;
+        var getEndIso = getMetaAny.window_end_iso || cfg.end_iso;
         var tournament = {
             slug: cfg.slug,
             name: cfg.name,
@@ -179649,8 +179681,8 @@ var TournamentRpcs;
             pre_enroll_count: meta.pre_enroll_count | 0,
             entry_fee_bc: cfg.entry_fee_bc,
             pre_enroll_start_iso: cfg.pre_enroll_start_iso,
-            open_start_iso: cfg.open_start_iso,
-            end_iso: cfg.end_iso,
+            open_start_iso: getOpenIso,
+            end_iso: getEndIso,
             badge_emoji: cfg.badge_emoji || null,
             pick_n: pickN,
             elimination: elimination,
