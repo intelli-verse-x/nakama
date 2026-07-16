@@ -80209,11 +80209,23 @@ var TournamentCrons;
         var now = nowSec();
         var anyMeta = meta;
         var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
-        var newOpenIso = unixToIso(prevWindowEnd + 1); // start where prev ended
-        var newEndIso = unixToIso(prevWindowEnd + 24 * 3600); // 24h window
+        var daySec = 24 * 3600;
+        // Catch up if cron lagged for many days (one settle must land a live window).
+        var rolls = 0;
+        while (prevWindowEnd <= now && rolls < 400) {
+            prevWindowEnd += daySec;
+            rolls++;
+        }
+        if (rolls === 0) {
+            // Still advance one day from the settled window (normal path).
+            prevWindowEnd += daySec;
+            rolls = 1;
+        }
+        var newEndIso = unixToIso(prevWindowEnd);
+        var newOpenIso = unixToIso(prevWindowEnd - daySec + 1);
         anyMeta.window_open_iso = newOpenIso;
         anyMeta.window_end_iso = newEndIso;
-        anyMeta.daily_instance = (anyMeta.daily_instance || 1) + 1;
+        anyMeta.daily_instance = (anyMeta.daily_instance || 1) + rolls;
         meta.status = "OPEN";
         meta.pot_bc = cfg.pot_seed_bc | 0;
         meta.entries_count = 0;
@@ -80395,6 +80407,18 @@ var TournamentCrons;
                         });
                     }
                 }
+                continue;
+            }
+            // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
+            if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
+                var recovered = rollDailyForward(nk, cfg, meta);
+                actions.push({
+                    slug: cfg.slug,
+                    action: "daily_recovered_from_settled",
+                    new_window_open_iso: recovered.window_open_iso,
+                    new_window_end_iso: recovered.window_end_iso,
+                    daily_instance: recovered.daily_instance,
+                });
                 continue;
             }
         }
@@ -81308,6 +81332,9 @@ var TournamentRpcs;
         catch (_) { }
         return { age: 0, dob_iso: "" };
     }
+    // QuizVerse game wallet — same ledger TutorX / Words use
+    // (collection `wallets`, key `wallet_{userId}_{gameId}`, currencies.game).
+    var QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     function readBcBalance(nk, userId) {
         try {
             var rows = nk.storageRead([{ collection: "brain_coins", key: "wallet", userId: userId }]);
@@ -81319,39 +81346,51 @@ var TournamentRpcs;
         catch (_) { }
         return { balance: 0, lifetime_earned: 0 };
     }
-    function debitBc(nk, userId, amount, reason) {
+    /** Game-wallet coin balance (TutorX/Words parity). */
+    function readGameCoinBalance(nk, userId) {
         try {
-            var rows = nk.storageRead([{ collection: "brain_coins", key: "wallet", userId: userId }]);
-            var wallet = (rows && rows.length > 0) ? rows[0].value : { balance: 0, lifetime_earned: 0, lifetime_redeemed: 0 };
-            if ((wallet.balance | 0) < amount)
-                return false;
-            wallet.balance = (wallet.balance | 0) - amount;
-            wallet.updated_at = nowSec();
-            nk.storageWrite([{
-                    collection: "brain_coins",
-                    key: "wallet",
-                    userId: userId,
-                    value: wallet,
-                    permissionRead: 1,
-                    permissionWrite: 0,
-                }]);
-            nk.storageWrite([{
-                    collection: "brain_coins",
-                    key: "earn_log_debit_" + nowSec() + "_" + Math.random().toString(36).slice(2, 8),
-                    userId: userId,
-                    value: {
-                        code: "tournament_entry_debit",
-                        coins: -amount,
-                        unix_ts: nowSec(),
-                        date: new Date().toISOString().slice(0, 10),
-                        source: reason,
-                    },
-                    permissionRead: 1,
-                    permissionWrite: 0,
-                }]);
-            return true;
+            var wallet = WalletHelpers.getGameWallet(nk, userId, QUIZVERSE_GAME_ID);
+            var c = wallet.currencies || { game: 0, tokens: 0, xp: 0 };
+            return ((c.game | 0) || (c.tokens | 0) || 0) | 0;
         }
         catch (_) {
+            return 0;
+        }
+    }
+    /**
+     * Debit QuizVerse game coins — mirrors legacy deductGameWallet
+     * (keeps currencies.game and currencies.tokens in sync).
+     */
+    function debitGameCoins(nk, logger, ctx, userId, amount, reason) {
+        if (amount <= 0)
+            return true;
+        try {
+            var wallet = WalletHelpers.getGameWallet(nk, userId, QUIZVERSE_GAME_ID);
+            var current = ((wallet.currencies.game | 0) || (wallet.currencies.tokens | 0)) | 0;
+            if (current < amount)
+                return false;
+            wallet.currencies.game = current - amount;
+            wallet.currencies.tokens = wallet.currencies.game;
+            WalletHelpers.saveGameWallet(nk, wallet);
+            try {
+                EventBus.emit(nk, logger, ctx, EventBus.Events.CURRENCY_SPENT, {
+                    userId: userId,
+                    gameId: QUIZVERSE_GAME_ID,
+                    currencyId: "game",
+                    amount: amount,
+                    newBalance: wallet.currencies.game,
+                    reason: reason,
+                });
+            }
+            catch (_) { }
+            if (logger) {
+                logger.info("[Tournaments] debitGameCoins user=" + userId + " amount=" + amount + " reason=" + reason + " bal=" + wallet.currencies.game);
+            }
+            return true;
+        }
+        catch (e) {
+            if (logger)
+                logger.warn("[Tournaments] debitGameCoins failed: " + (e && e.message ? e.message : e));
             return false;
         }
     }
@@ -81399,6 +81438,11 @@ var TournamentRpcs;
             var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, cfg.slug, userId) : null;
             var countryAllowed = TournamentEconomy.isCountryAllowed(cfg, userCountry);
             var stateBlocked = userCountry === "US" && userState && TournamentEconomy.isUsStateEntryBlocked(userState);
+            // Daily roll-forward stores the live window on meta; clients normalize
+            // OPEN+past end_iso → SETTLING, so we must expose window_* not seed cfg.
+            var listMetaAny = meta;
+            var listOpenIso = listMetaAny.window_open_iso || cfg.open_start_iso;
+            var listEndIso = listMetaAny.window_end_iso || cfg.end_iso;
             out.push({
                 slug: cfg.slug,
                 name: cfg.name,
@@ -81419,8 +81463,8 @@ var TournamentRpcs;
                 entry_fee_bc: cfg.entry_fee_bc,
                 rake_pct: cfg.rake_pct,
                 pre_enroll_start_iso: cfg.pre_enroll_start_iso,
-                open_start_iso: cfg.open_start_iso,
-                end_iso: cfg.end_iso,
+                open_start_iso: listOpenIso,
+                end_iso: listEndIso,
                 badge_emoji: cfg.badge_emoji,
                 caller: {
                     authenticated: !!userId,
@@ -81509,6 +81553,9 @@ var TournamentRpcs;
             prizeBreakdown.push({ label: "#1 bragging bonus", bc: cfg.elimination_schedule.final_survivor_bonus_bc | 0 });
         }
         var rulesSummary = "Entry: " + cfg.entry_fee_bc + " BC · House rake: " + Math.round(cfg.rake_pct * 100) + "% · AMOE: complete " + cfg.amoe.learning_series_required_videos + " Learning Series videos for a free entry.";
+        var getMetaAny = meta;
+        var getOpenIso = getMetaAny.window_open_iso || cfg.open_start_iso;
+        var getEndIso = getMetaAny.window_end_iso || cfg.end_iso;
         var tournament = {
             slug: cfg.slug,
             name: cfg.name,
@@ -81522,8 +81569,8 @@ var TournamentRpcs;
             pre_enroll_count: meta.pre_enroll_count | 0,
             entry_fee_bc: cfg.entry_fee_bc,
             pre_enroll_start_iso: cfg.pre_enroll_start_iso,
-            open_start_iso: cfg.open_start_iso,
-            end_iso: cfg.end_iso,
+            open_start_iso: getOpenIso,
+            end_iso: getEndIso,
             badge_emoji: cfg.badge_emoji || null,
             pick_n: pickN,
             elimination: elimination,
@@ -81596,8 +81643,11 @@ var TournamentRpcs;
         return RpcHelpers.successResponse({ pre_enroll: row, founder_spots_left: founderLeft, total_pre_enroll: newCount });
     }
     // ── RPC: tournament_enter ──────────────────────────────────────────────────
-    // Charges BC; opens the entry row. Honors AMOE if user completed Learning
-    // Series (6/6 videos) — paid_via="amoe" with bc_charged=0.
+    // Charges QuizVerse game-wallet coins (same ledger as TutorX/Words);
+    // opens the entry row. Honors AMOE if user completed Learning Series
+    // (6/6 videos) — paid_via="amoe" with bc_charged=0.
+    // Field names entry_fee_bc / bc_charged kept for client contract stability;
+    // amounts are game coins, not Brain Coins.
     function rpcEnter(ctx, logger, nk, payload) {
         var rl = SharedRateLimit.enforce(ctx, nk, "tournament_enter", { perUserPerMin: 10 });
         if (rl)
@@ -81652,11 +81702,11 @@ var TournamentRpcs;
                 return RpcHelpers.successResponse({ entry: existing, idempotent: true });
         }
         else {
-            var bal = readBcBalance(nk, userId);
-            if (bal.balance < cfg.entry_fee_bc) {
-                return RpcHelpers.errorResponse("insufficient BC (balance=" + bal.balance + ", entry_fee=" + cfg.entry_fee_bc + ")", 402);
+            var gameBal = readGameCoinBalance(nk, userId);
+            if (gameBal < cfg.entry_fee_bc) {
+                return RpcHelpers.errorResponse("insufficient coins (balance=" + gameBal + ", entry_fee=" + cfg.entry_fee_bc + ")", 402);
             }
-            var debited = debitBc(nk, userId, cfg.entry_fee_bc, "tournament_enter:" + slug);
+            var debited = debitGameCoins(nk, logger, ctx, userId, cfg.entry_fee_bc, "tournament_enter:" + slug);
             if (!debited)
                 return RpcHelpers.errorResponse("debit failed", 500);
             bcCharged = cfg.entry_fee_bc;
@@ -82185,6 +82235,7 @@ var TournamentRpcs;
     // page + Unity entry flow both depend on this; returning a flat shape
     // (state_blocked / age_blocked / amoe_unlocked / balance_bc) keeps the
     // entry modal logic trivial on both clients.
+    // balance_bc = QuizVerse game-wallet coins (TutorX/Words), not Brain Coins.
     function rpcCallerStatus(ctx, _l, nk, payload) {
         var data = RpcHelpers.parseRpcPayload(payload);
         var slug = "" + (data.slug || "");
@@ -82204,7 +82255,7 @@ var TournamentRpcs;
         var country = userId ? readUserCountry(nk, userId) : "";
         var state = userId && country === "US" ? readUserState(nk, userId) : "";
         var ageInfo = userId ? readUserDob(nk, userId) : { age: 0 };
-        var balance = userId ? readBcBalance(nk, userId) : { balance: 0, lifetime_earned: 0 };
+        var gameBalance = userId ? readGameCoinBalance(nk, userId) : 0;
         var entry = userId ? TournamentsStorage.readEntry(nk, slug, userId) : null;
         var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, slug, userId) : null;
         var amoe = userId ? LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, cfg.amoe.learning_series_required_videos) : false;
@@ -82232,7 +82283,7 @@ var TournamentRpcs;
             pre_enrolled: !!preEnroll,
             founder_rank: preEnroll && preEnroll.founder_rank ? preEnroll.founder_rank : null,
             amoe_unlocked: amoe,
-            balance_bc: balance.balance,
+            balance_bc: gameBalance,
             served_at: nowSec(),
         });
     }
@@ -82920,8 +82971,8 @@ var TournamentRpcs;
             return RpcHelpers.errorResponse("must make " + TournamentEconomyV2.PICKN_DOUBLEUP_DEFAULT.eligible_after_picks + " picks first", 400);
         }
         var cost = TournamentEconomyV2.PICKN_DOUBLEUP_DEFAULT.cost_bc;
-        if (!debitBc(nk, userId, cost, "tournament_pickn_doubleup:" + slug)) {
-            return RpcHelpers.errorResponse("insufficient BC", 402);
+        if (!debitGameCoins(nk, logger, ctx, userId, cost, "tournament_pickn_doubleup:" + slug)) {
+            return RpcHelpers.errorResponse("insufficient coins", 402);
         }
         var row = TournamentLevers.writeDoubleup(nk, userId, slug, picksMade);
         TournamentLevers.logEvent(nk, "pickn_doubleup_locked", userId, {
