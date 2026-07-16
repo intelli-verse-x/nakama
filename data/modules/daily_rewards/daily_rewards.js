@@ -455,7 +455,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
     }//
 
     // ── ATOMIC CLAIM (OCC / double-claim fix) ────────────────────────────────
-    // The old path did read → check → walletUpdate → blind write. Two concurrent
+    // The old path did read → check → grant → blind write. Two concurrent
     // claims (double-tap, second device, client retry after timeout) both passed
     // the check and BOTH granted coins. Now: re-read WITH the storage version,
     // re-verify eligibility on that exact snapshot, mutate, and commit with a
@@ -549,22 +549,11 @@ function performDailyClaim(nk, logger, userId, gameId) {
 
     utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);//
 
-    // ---------------------------------------------------------------------------
-    // QVBF / RCA (2026-07-16): daily claim MUST credit storage wallets, not nk.walletUpdate.
-    //
-    // BUG: master previously did:
-    //   nk.walletUpdate(userId, { game: reward.game, xp: reward.xp }, { source: "daily_reward", ... }, true)
-    // That updates Nakama's built-in wallet ledger only. QuizVerse HUD / wallet_get_balances
-    // read collection "wallets" (WalletHelpers game wallet + global_* XP). Result: claim
-    // returned success:true while the client coin balance never moved.
-    //
-    // FIX: after OCC streak commit succeeds —
-    //   1) credit game wallet currencies.game (+ tokens mirror) via WalletHelpers
-    //   2) credit global XP via storageWrite on wallets/global_{userId}
-    //   3) on grant failure: revert partial game credit + restore preClaimSnapshot
-    //      so the day remains claimable (no silent empty credit / locked streak)
-    // Do NOT revert this block to nk.walletUpdate without also migrating the client HUD.
-    // ---------------------------------------------------------------------------
+    // ACTIVE PATH (QVBF 2026-07-16): storage wallets only.
+    // HUD / wallet_get_balances read collection "wallets" — never nk.walletUpdate.
+    // Removed legacy nk.walletUpdate path (built-in ledger; HUD never moved). Do not reintroduce.
+    // After OCC streak commit: (1) WalletHelpers game+tokens (2) global XP storageWrite
+    // (3) on grant failure revert partial game credit + preClaimSnapshot.
     var grant = reward.game || 0; //
     var xpGrant = reward.xp || 0;//
     var walletGranted = { game: grant, xp: xpGrant };//
