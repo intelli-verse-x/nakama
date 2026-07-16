@@ -1206,6 +1206,9 @@ namespace WorldTrivia {
       // post-grade reveal (correctIndex) is remapped to the slots the player
       // actually saw. undefined => legacy 1:1 (no shuffle).
       var gradedChoiceOrder: number[] | undefined = undefined;
+      // Canonical index of the player's selected choice (display slot mapped
+      // through choiceOrder). Used for grading + optionContracts feedback.
+      var gradedCanonicalChoice = choiceIndex;
 
       var session = mutateSession(nk, data.sessionId, function (s) {
         requireOwnedActive(s, userId);
@@ -1226,10 +1229,10 @@ namespace WorldTrivia {
         // the per-issue shuffle before grading. Grading is entirely
         // server-side: the client never saw correctIndex.
         gradedChoiceOrder = s.pendingQuestion.choiceOrder;
-        var canonicalChoice = (gradedChoiceOrder && choiceIndex < gradedChoiceOrder.length)
+        gradedCanonicalChoice = (gradedChoiceOrder && choiceIndex < gradedChoiceOrder.length)
           ? gradedChoiceOrder[choiceIndex]
           : choiceIndex;
-        correct = !answerExpired && canonicalChoice === (question as TriviaQuestion).correctIndex;
+        correct = !answerExpired && gradedCanonicalChoice === (question as TriviaQuestion).correctIndex;
 
         if (correct) {
           s.correctCount += 1;
@@ -1266,12 +1269,14 @@ namespace WorldTrivia {
         progress: progressView(session, template)
       };
       // Learning layer: the explanation ships only AFTER grading.
+      // optionContracts are stored in CANONICAL choice order — index via
+      // gradedCanonicalChoice, not the player's display slot.
       if (question.explanation) answerOut.explanation = question.explanation;
-      if (question.optionContracts && question.optionContracts[choiceIndex]) {
-        answerOut.feedback = question.optionContracts[choiceIndex].feedback;
+      if (question.optionContracts && question.optionContracts[gradedCanonicalChoice]) {
+        answerOut.feedback = question.optionContracts[gradedCanonicalChoice].feedback;
         // V9 clients that still render the legacy explanation field receive
         // the same selected-choice-specific line, never the full audit proof.
-        answerOut.explanation = question.optionContracts[choiceIndex].feedback;
+        answerOut.explanation = question.optionContracts[gradedCanonicalChoice].feedback;
       }
       return ok(answerOut);
     } catch (e: any) {
