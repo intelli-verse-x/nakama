@@ -464,6 +464,8 @@ function performDailyClaim(nk, logger, userId, gameId) {
     // making retries idempotent and duplicate grants impossible.
     var reward = null;//
     var committed = false;//
+    // Pre-mutation streak snapshot — restored if wallet grant fails after OCC commit.
+    var preClaimSnapshot = null;//
     for (var attempt = 0; attempt < 2 && !committed; attempt++) {//
         var raw = readStreakRawWithVersion(nk, userId, gameId);//
         // Fall back to the settled copy when the record does not exist yet
@@ -476,6 +478,9 @@ function performDailyClaim(nk, logger, userId, gameId) {
         if (!recheck.canClaim) {//
             return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };//
         }//
+
+        // Deep-copy BEFORE mutation so a post-commit wallet failure can roll back.
+        var snapshotBeforeClaim = JSON.parse(JSON.stringify(claimState));//
 
         // Reset streak when gap spans more than one UTC day or exceeds 48h grace
         // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
@@ -520,6 +525,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
         if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {//
             committed = true;//
             streakData = claimState;//
+            preClaimSnapshot = snapshotBeforeClaim;//
         }
         // On conflict: loop re-reads the fresh record; the recheck above then
         // returns "already_claimed_today" if the concurrent claim was today's.
@@ -555,13 +561,16 @@ function performDailyClaim(nk, logger, userId, gameId) {
     // FIX: after OCC streak commit succeeds —
     //   1) credit game wallet currencies.game (+ tokens mirror) via WalletHelpers
     //   2) credit global XP via storageWrite on wallets/global_{userId}
-    //   3) hard-fail the claim if either grant throws (no silent empty credit)
+    //   3) on grant failure: revert partial game credit + restore preClaimSnapshot
+    //      so the day remains claimable (no silent empty credit / locked streak)
     // Do NOT revert this block to nk.walletUpdate without also migrating the client HUD.
     // ---------------------------------------------------------------------------
     var grant = reward.game || 0; //
     var xpGrant = reward.xp || 0;//
     var walletGranted = { game: grant, xp: xpGrant };//
     if (grant > 0 || xpGrant > 0) {//
+        var gameGrantApplied = false;//
+        var preGameCurrencies = null;//
         try {//
             // (1) Per-game storage wallet — what wallet_get_balances / HUD display.
             if (grant > 0) {//
@@ -571,17 +580,26 @@ function performDailyClaim(nk, logger, userId, gameId) {
                 }//
                 if (gw.currencies.game === undefined) gw.currencies.game = 0;//
                 if (gw.currencies.tokens === undefined) gw.currencies.tokens = 0;//
+                preGameCurrencies = { game: gw.currencies.game, tokens: gw.currencies.tokens };//
                 gw.currencies.game += grant;//
                 gw.currencies.tokens += grant; // mirror: legacy clients still read tokens
                 WalletHelpers.saveGameWallet(nk, gw);//
+                gameGrantApplied = true;//
             }//
             // (2) Global XP ledger (wallets / global_{userId}).
+            // Server storageRead with userId always works (perms gate client/API only).
+            // Default write ACL 1/1 matches Storage.writeJson / saveGlobalWallet;
+            // preserve existing object ACLs when rewriting a migrated record.
             if (xpGrant > 0) {//
                 var globalKey = "global_" + userId;//
                 var globalReads = nk.storageRead([{ collection: "wallets", key: globalKey, userId: userId }]);//
                 var globalWallet;//
+                var globalPermRead = 1;//
+                var globalPermWrite = 1;//
                 if (globalReads && globalReads.length > 0 && globalReads[0].value) {//
                     globalWallet = globalReads[0].value;//
+                    if (typeof globalReads[0].permissionRead === "number") globalPermRead = globalReads[0].permissionRead;//
+                    if (typeof globalReads[0].permissionWrite === "number") globalPermWrite = globalReads[0].permissionWrite;//
                 } else {//
                     globalWallet = { userId: userId, currencies: { global: 0, xut: 0, xp: 0 }, items: {} };//
                 }//
@@ -595,15 +613,36 @@ function performDailyClaim(nk, logger, userId, gameId) {
                     key: globalKey,//
                     userId: userId,//
                     value: globalWallet,//
-                    permissionRead: 1,//
-                    permissionWrite: 1//
+                    permissionRead: globalPermRead,//
+                    permissionWrite: globalPermWrite//
                 }]);//
             }//
             logger.info("[DailyRewards] Granted storage wallet: " + JSON.stringify(walletGranted) + " to " + userId);//
         } catch (walletErr) {//
-            // (3) Streak already committed — surface grant failure so client can retry / support can reconcile.
-            var grantMsg = (walletErr && walletErr.message) ? walletErr.message : String(walletErr);
+            // (3) Streak already committed — roll back streak + any partial game
+            // wallet credit so the user can retry without losing the day.
+            var grantMsg = (walletErr && walletErr.message) ? walletErr.message : String(walletErr);//
             logger.error("[DailyRewards] Wallet grant failed after claim commit: " + grantMsg);//
+            if (gameGrantApplied && preGameCurrencies) {//
+                try {//
+                    var gwRevert = WalletHelpers.getGameWallet(nk, userId, gameId);//
+                    if (!gwRevert.currencies) gwRevert.currencies = { game: 0, tokens: 0, xp: 0 };//
+                    gwRevert.currencies.game = preGameCurrencies.game;//
+                    gwRevert.currencies.tokens = preGameCurrencies.tokens;//
+                    WalletHelpers.saveGameWallet(nk, gwRevert);//
+                    logger.info("[DailyRewards] Reverted partial game wallet grant for " + userId);//
+                } catch (gwRevertErr) {//
+                    logger.error("[DailyRewards] Failed to revert game wallet after grant error: " + ((gwRevertErr && gwRevertErr.message) ? gwRevertErr.message : String(gwRevertErr)));//
+                }//
+            }//
+            if (preClaimSnapshot) {//
+                try {//
+                    saveStreakData(nk, logger, userId, gameId, preClaimSnapshot);//
+                    logger.info("[DailyRewards] Reverted streak after wallet grant failure for " + userId);//
+                } catch (streakRevertErr) {//
+                    logger.error("[DailyRewards] CRITICAL: streak revert failed after wallet grant error for " + userId + ": " + ((streakRevertErr && streakRevertErr.message) ? streakRevertErr.message : String(streakRevertErr)));//
+                }//
+            }//
             return { ok: false, error: "Wallet grant failed: " + grantMsg, reason: "wallet_grant_failed" };//
         }//
     }//
