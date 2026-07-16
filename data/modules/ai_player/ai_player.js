@@ -4,38 +4,10 @@
 //       ai_trivia_generate, ai_daily_briefing, ai_group_hype
 
 // ============================================================================
-// ⚠️  HARDCODED LLM KEYS — TEMPORARY, REMOVE BEFORE OPEN-SOURCING
-// ============================================================================
-// Why these exist:
-//   The EKS deployment in `aicart/intelliverse-nakama` had no `OPENAI_API_KEY`
-//   set in its env, so every chat RPC was returning canned replies on iOS
-//   builds. Until we wire the K8s Secret properly, these constants act as a
-//   last-resort fallback — `getActiveProvider()` first checks `ctx.env` and
-//   only uses the hardcoded value if the env var is missing or empty.
-//
-// How to enable / disable:
-//   • Paste your OpenAI key into `HARDCODED_OPENAI_KEY` below. Same for the
-//     other two providers if you have keys.
-//   • Leave a constant as the empty string '' to disable that provider's
-//     hardcoded fallback (env var is still consulted first either way).
-//
-// SECURITY (read before committing):
-//   • These strings end up in the Docker image and in this repo's git history.
-//   • Anyone with read access to this repo or to the ECR image can extract
-//     them. That includes every developer, CI runner, and anything that ever
-//     pulls the image.
-//   • This is acceptable as a temporary unblock for iOS playtest — NOT for a
-//     public production server. Rotate the key the moment a proper K8s
-//     Secret is wired up, and delete these constants.
-// ============================================================================
-
-var HARDCODED_OPENAI_KEY    = ''; // ← paste sk-proj-... here
-var HARDCODED_ANTHROPIC_KEY = ''; // ← paste sk-ant-...  here (optional)
-var HARDCODED_XAI_KEY       = ''; // ← paste xai-...     here (optional)
-
-// ============================================================================
 // LLM CLIENT INFRASTRUCTURE
 // ============================================================================
+// API keys MUST come from ctx.env (RUNTIME_ENV_KEYS / K8s Secret). Never hardcode
+// keys in this file — they ship in git history and Docker images.
 
 var QWEN3_DEFAULT_BASE_URL = 'http://vllm-coder-pro.content-factory.svc.cluster.local:8000';
 var QWEN3_DEFAULT_MODEL    = 'Qwen/Qwen3-7B-Instruct';
@@ -52,45 +24,39 @@ var LLM_PROVIDERS = {
     openai: {
         url: 'https://api.openai.com/v1/chat/completions',
         model: 'gpt-4o-mini',
-        envKey: 'OPENAI_API_KEY',
-        hardcoded: function () { return HARDCODED_OPENAI_KEY; }
+        envKey: 'OPENAI_API_KEY'
     },
     claude: {
         url: 'https://api.anthropic.com/v1/messages',
         model: 'claude-sonnet-4-20250514',
-        envKey: 'ANTHROPIC_API_KEY',
-        hardcoded: function () { return HARDCODED_ANTHROPIC_KEY; }
+        envKey: 'ANTHROPIC_API_KEY'
     },
     xai: {
         url: 'https://api.x.ai/v1/chat/completions',
         model: 'grok-3-mini',
-        envKey: 'XAI_API_KEY',
-        hardcoded: function () { return HARDCODED_XAI_KEY; }
+        envKey: 'XAI_API_KEY'
     },
     qwen3: {
         // URL and model resolved at call-time via ctx.env so operators can
         // swap without a redeploy; fall back to cluster-local vLLM defaults.
         url: null,
         model: null,
-        envKey: null,
-        hardcoded: function () { return ''; }
+        envKey: null
     }
 };
 
 // Explicit fallback order so behaviour does not depend on object-iteration
-// order. If the preferred provider has neither env-var nor hardcoded key, we
-// walk this list and pick the first provider that does.
+// order. If the preferred provider has no env-var key, we walk this list and
+// pick the first provider that does (qwen3 is keyless).
 var LLM_PROVIDER_FALLBACK_ORDER = ['qwen3', 'openai', 'claude', 'xai'];
 
-// Resolves a provider's key from ctx.env first, then the hardcoded constant.
-// Returns null if both are missing/empty.
+// Resolves a provider's key from ctx.env only. Returns null if missing/empty.
 // qwen3 is keyless — this returns a sentinel so it can be selected without a key.
 function resolveProviderKey(ctx, providerName, provider) {
     if (providerName === 'qwen3') return 'no-key-required';
+    if (!provider || !provider.envKey) return null;
     var envKey = ctx && ctx.env ? ctx.env[provider.envKey] : null;
     if (envKey) return envKey;
-    var hard = provider.hardcoded ? provider.hardcoded() : '';
-    if (hard) return hard;
     return null;
 }
 
