@@ -10760,7 +10760,7 @@ var QuizVerseBrainPrompts;
 (function (QuizVerseBrainPrompts) {
     var COLLECTION = "qv_brain_prompt";
     var KEY = "state";
-    var SCHEMA_VERSION = 1;
+    var SCHEMA_VERSION = 2;
     var RESERVATION_TTL_MS = 10 * 60 * 1000;
     var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     var OCC_MAX_RETRIES = 5;
@@ -10788,22 +10788,49 @@ var QuizVerseBrainPrompts;
             isoWeek: isoWeek(nowMs),
             lastSuccessfulBrainVisitMs: 0,
             daily: emptyBucket(),
+            dailyWrongStreak: emptyBucket(),
+            dailyPostQuizWeak: emptyBucket(),
             weekly: emptyBucket(),
             reservation: null,
             idempotency: {}
         };
+    }
+    function resolveBucket(state, kind) {
+        if (kind === "weekly")
+            return state.weekly;
+        if (kind === "daily_wrong_streak")
+            return state.dailyWrongStreak;
+        if (kind === "daily_post_quiz_weak")
+            return state.dailyPostQuizWeak;
+        return state.daily;
+    }
+    function isDailyBucket(kind) {
+        return kind === "daily" || kind === "daily_wrong_streak" || kind === "daily_post_quiz_weak";
     }
     function normalizeState(raw, nowMs) {
         var state = raw && typeof raw === "object" ? raw : createState(nowMs);
         state.schemaVersion = SCHEMA_VERSION;
         state.lastSuccessfulBrainVisitMs = Number(state.lastSuccessfulBrainVisitMs || 0);
         state.daily = state.daily || emptyBucket();
+        state.dailyWrongStreak = state.dailyWrongStreak || emptyBucket();
+        state.dailyPostQuizWeak = state.dailyPostQuizWeak || emptyBucket();
         state.weekly = state.weekly || emptyBucket();
         state.idempotency = state.idempotency || {};
+        // Migrate legacy shared daily slot into the matching typed bucket once.
+        if (state.daily && state.daily.consumed && state.daily.promptId) {
+            if (state.daily.promptId === "wrong_streak" && !state.dailyWrongStreak.consumed) {
+                state.dailyWrongStreak = state.daily;
+            }
+            else if (state.daily.promptId === "post_quiz_weak" && !state.dailyPostQuizWeak.consumed) {
+                state.dailyPostQuizWeak = state.daily;
+            }
+        }
         if (state.utcDay !== utcDay(nowMs)) {
             state.utcDay = utcDay(nowMs);
             state.daily = emptyBucket();
-            if (state.reservation && state.reservation.bucket === "daily")
+            state.dailyWrongStreak = emptyBucket();
+            state.dailyPostQuizWeak = emptyBucket();
+            if (state.reservation && isDailyBucket(state.reservation.bucket))
                 state.reservation = null;
         }
         if (state.isoWeek !== isoWeek(nowMs)) {
@@ -10813,7 +10840,7 @@ var QuizVerseBrainPrompts;
                 state.reservation = null;
         }
         if (state.reservation && state.reservation.expiresMs <= nowMs) {
-            var reservedBucket = state.reservation.bucket === "weekly" ? state.weekly : state.daily;
+            var reservedBucket = resolveBucket(state, state.reservation.bucket);
             if (!reservedBucket.consumed)
                 state.reservation = null;
         }
@@ -10925,11 +10952,11 @@ var QuizVerseBrainPrompts;
             return null;
         var maxWrong = Math.max(0, Math.min(1000, Number(session.max_consecutive_wrong || 0)));
         if (maxWrong >= 3)
-            return { promptId: "wrong_streak", bucket: "daily" };
+            return { promptId: "wrong_streak", bucket: "daily_wrong_streak" };
         var accuracy = Number(session.category_accuracy_pct);
         var notesEligible = data.notes_eligible === true;
         if (isFinite(accuracy) && accuracy >= 0 && accuracy < 60 && notesEligible) {
-            return { promptId: "post_quiz_weak", bucket: "daily" };
+            return { promptId: "post_quiz_weak", bucket: "daily_post_quiz_weak" };
         }
         return null;
     }
@@ -10951,7 +10978,7 @@ var QuizVerseBrainPrompts;
             });
         }
         var response = mutateState(nk, userId, nowMs, function (state) {
-            var bucket = selected.bucket === "weekly" ? state.weekly : state.daily;
+            var bucket = resolveBucket(state, selected.bucket);
             if (bucket.consumed) {
                 return {
                     write: false,
@@ -11070,8 +11097,13 @@ var QuizVerseBrainPrompts;
         var token = safeString(data.reservation_token, 64);
         var idemKey = safeString(data.idempotency_key, 128);
         var clientEventId = safeString(data.client_event_id, 128);
+        // Manual Profile / Home opens (no reservation). Keep in sync with Unity
+        // NormalizeBrainContext + web ctxToTab (Map=graph, Ask=ask|chat).
         var directOpen = action === "opened" &&
-            (promptId === "graph" || promptId === "profile" || promptId === "manual");
+            (promptId === "graph" || promptId === "map" || promptId === "profile" ||
+                promptId === "manual" || promptId === "recap" || promptId === "orphans" ||
+                promptId === "home" || promptId === "ask" || promptId === "chat" ||
+                promptId === "smart_review");
         if (!directOpen && !token)
             return RpcHelpers.errorResponse("reservation_token required", 400);
         if (!idemKey)
@@ -11080,14 +11112,18 @@ var QuizVerseBrainPrompts;
         var response = mutateState(nk, userId, nowMs, function (state) {
             var replay = state.idempotency[idemKey];
             if (replay) {
+                var replayBucket = replay.promptId === "weekly_recap"
+                    ? state.weekly
+                    : (replay.promptId === "wrong_streak"
+                        ? state.dailyWrongStreak
+                        : (replay.promptId === "post_quiz_weak" ? state.dailyPostQuizWeak : state.daily));
                 return {
                     write: false,
                     response: {
                         status: "replay",
                         action: replay.action,
                         prompt_id: replay.promptId,
-                        slot_consumed: replay.promptId === "weekly_recap"
-                            ? state.weekly.consumed : state.daily.consumed,
+                        slot_consumed: replayBucket.consumed,
                         last_successful_brain_visit_ms: state.lastSuccessfulBrainVisitMs,
                         server_time_ms: nowMs
                     }
@@ -11101,7 +11137,7 @@ var QuizVerseBrainPrompts;
                         response: { status: "rejected", reason: "reservation_mismatch", server_time_ms: nowMs }
                     };
                 }
-                var reservedBucket = reservation.bucket === "weekly" ? state.weekly : state.daily;
+                var reservedBucket = resolveBucket(state, reservation.bucket);
                 if (reservation.expiresMs <= nowMs && !reservedBucket.consumed) {
                     state.reservation = null;
                     return {
@@ -11110,7 +11146,13 @@ var QuizVerseBrainPrompts;
                     };
                 }
             }
-            var bucket = reservation && reservation.bucket === "weekly" ? state.weekly : state.daily;
+            var bucket = reservation
+                ? resolveBucket(state, reservation.bucket)
+                : (promptId === "weekly_recap"
+                    ? state.weekly
+                    : (promptId === "wrong_streak"
+                        ? state.dailyWrongStreak
+                        : (promptId === "post_quiz_weak" ? state.dailyPostQuizWeak : state.daily)));
             if (action === "shown") {
                 bucket.consumed = true;
                 bucket.promptId = promptId;
@@ -41209,6 +41251,12 @@ var LegacyNotifScheduler;
 })(LegacyNotifScheduler || (LegacyNotifScheduler = {}));
 var LegacyPlayer;
 (function (LegacyPlayer) {
+    /** Monotonic merge for counter fields — never let a stale client clobber a higher server value. */
+    function mergeCounterField(current, incoming) {
+        var cur = typeof current === "number" ? current : (parseInt(String(current || "0"), 10) || 0);
+        var next = typeof incoming === "number" ? incoming : (parseInt(String(incoming || "0"), 10) || 0);
+        return Math.max(cur, next);
+    }
     function getPlayerMetadata(nk, userId) {
         var data = Storage.readJson(nk, Constants.PLAYER_METADATA_COLLECTION, "metadata", userId);
         return data || {};
@@ -41251,9 +41299,34 @@ var LegacyPlayer;
             metadata.bio = data.bio;
         if (data.favoriteGame !== undefined)
             metadata.favoriteGame = data.favoriteGame;
+        // Profile progression counters (Unity PlayerDisplayStatsResolver.SyncDisplayStatsToServerFireAndForget).
+        // Math.max so a stale device cannot rewind Played / Win% / XP after logout or reinstall.
+        if (data.level !== undefined)
+            metadata.level = mergeCounterField(metadata.level, data.level);
+        if (data.xp !== undefined)
+            metadata.xp = mergeCounterField(metadata.xp, data.xp);
+        if (data.totalGamesPlayed !== undefined) {
+            metadata.totalGamesPlayed = mergeCounterField(metadata.totalGamesPlayed, data.totalGamesPlayed);
+        }
+        if (data.totalWins !== undefined) {
+            metadata.totalWins = mergeCounterField(metadata.totalWins, data.totalWins);
+        }
+        if (data.totalCorrectAnswers !== undefined) {
+            metadata.totalCorrectAnswers = mergeCounterField(metadata.totalCorrectAnswers, data.totalCorrectAnswers);
+        }
+        if (data.totalQuestionsAnswered !== undefined) {
+            metadata.totalQuestionsAnswered = mergeCounterField(metadata.totalQuestionsAnswered, data.totalQuestionsAnswered);
+        }
+        // Keep accuracy counters discoverable via customData for older clients.
+        if (!metadata.customData)
+            metadata.customData = {};
+        if (metadata.totalCorrectAnswers !== undefined) {
+            metadata.customData["totalCorrectAnswers"] = metadata.totalCorrectAnswers;
+        }
+        if (metadata.totalQuestionsAnswered !== undefined) {
+            metadata.customData["totalQuestionsAnswered"] = metadata.totalQuestionsAnswered;
+        }
         if (data.customData !== undefined) {
-            if (!metadata.customData)
-                metadata.customData = {};
             for (var k in data.customData) {
                 metadata.customData[k] = data.customData[k];
             }
@@ -77794,6 +77867,8 @@ var SocialGroupSearch;
             // open-only filter (default true): closed groups are invite-only and
             // should not surface in public discovery unless explicitly requested.
             var openOnly = data.openOnly !== false;
+            // Also surface open groups that predate metadata.gameId (legacy rows).
+            // They are attributable only as open/public clans; closed legacy rows stay hidden.
             var rows = [];
             try {
                 // Build IN-list placeholders ($1..$N) for every accepted gameId alias.
@@ -77806,6 +77881,9 @@ var SocialGroupSearch;
                 var inClause = inPlaceholders.join(", ");
                 var openParamIdx = inParams.length + 1;
                 var nextIdx = openParamIdx + 1;
+                // Match: (gameId alias) OR (missing gameId AND open group)
+                var gameIdPredicate = "(((metadata->>'gameId') IN (" + inClause + ")) " +
+                    " OR ((((metadata->>'gameId') IS NULL) OR ((metadata->>'gameId') = '')) AND state = 0))";
                 if (query) {
                     // Escape ILIKE wildcards in user input, then wrap in %...%.
                     var escaped = query.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
@@ -77815,7 +77893,7 @@ var SocialGroupSearch;
                     var qParams = inParams.concat([openOnly, "%" + escaped + "%", limit + 1, offset]);
                     rows = nk.sqlQuery("SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
                         "FROM groups " +
-                        "WHERE (metadata->>'gameId') IN (" + inClause + ") " +
+                        "WHERE " + gameIdPredicate + " " +
                         "  AND ($" + openParamIdx + " = false OR state = 0) " +
                         "  AND name ILIKE $" + queryParamIdx + " " +
                         "ORDER BY edge_count DESC, name ASC " +
@@ -77827,7 +77905,7 @@ var SocialGroupSearch;
                     var bParams = inParams.concat([openOnly, limit + 1, offset]);
                     rows = nk.sqlQuery("SELECT id, name, description, avatar_url, edge_count, max_count, state, metadata " +
                         "FROM groups " +
-                        "WHERE (metadata->>'gameId') IN (" + inClause + ") " +
+                        "WHERE " + gameIdPredicate + " " +
                         "  AND ($" + openParamIdx + " = false OR state = 0) " +
                         "ORDER BY edge_count DESC, name ASC " +
                         "LIMIT $" + limitParamIdx2 + " OFFSET $" + offsetParamIdx2, bParams);
@@ -85950,6 +86028,40 @@ var WorldTrivia;
                 var question = { id: q.id, text: q.text, choices: q.choices, correctIndex: correctIndex };
                 if (q.category)
                     question.category = q.category;
+                // Learning layer parity with stories: packs may carry the post-grade
+                // explanation line. It is storage-only until world_answer_submit
+                // grades — questionView never includes it.
+                if (q.explanation)
+                    question.explanation = String(q.explanation);
+                if (q.learningObjectiveId)
+                    question.learningObjectiveId = String(q.learningObjectiveId);
+                if (q.targetRelation)
+                    question.targetRelation = q.targetRelation;
+                if (q.assessmentContext)
+                    question.assessmentContext = q.assessmentContext;
+                if (q.correctEvidence)
+                    question.correctEvidence = String(q.correctEvidence);
+                if (Array.isArray(q.optionContracts)) {
+                    if (q.optionContracts.length !== q.choices.length) {
+                        throw new Error("questions[" + i + "].optionContracts must align with choices");
+                    }
+                    question.optionContracts = q.optionContracts.map(function (contract, choiceIndex) {
+                        if (Number(contract.choiceIndex) !== choiceIndex ||
+                            Boolean(contract.isCorrect) !== (choiceIndex === correctIndex) ||
+                            !contract.feedback) {
+                            throw new Error("questions[" + i + "].optionContracts[" + choiceIndex + "] invalid");
+                        }
+                        return {
+                            choiceIndex: choiceIndex,
+                            isCorrect: choiceIndex === correctIndex,
+                            misconceptionId: contract.misconceptionId ? String(contract.misconceptionId) : undefined,
+                            temptingReason: String(contract.temptingReason || ""),
+                            exclusionReason: String(contract.exclusionReason || ""),
+                            evidence: String(contract.evidence || ""),
+                            feedback: String(contract.feedback)
+                        };
+                    });
+                }
                 questions.push(question);
             }
             var pack = {
@@ -85990,6 +86102,7 @@ var WorldTrivia;
             title: story.title,
             language: story.language,
             schemaVersion: story.schemaVersion,
+            sourceArtifactHash: story.artifactHash,
             narration: {
                 intro: story.narration.intro,
                 beats: beats,
@@ -86065,6 +86178,35 @@ var WorldTrivia;
                     question.category = q.category;
                 if (q.explanation)
                     question.explanation = String(q.explanation);
+                if (q.learningObjectiveId)
+                    question.learningObjectiveId = String(q.learningObjectiveId);
+                if (q.targetRelation)
+                    question.targetRelation = q.targetRelation;
+                if (q.assessmentContext)
+                    question.assessmentContext = q.assessmentContext;
+                if (q.correctEvidence)
+                    question.correctEvidence = String(q.correctEvidence);
+                if (Array.isArray(q.optionContracts)) {
+                    if (q.optionContracts.length !== q.choices.length) {
+                        throw new Error("questions[" + i + "].optionContracts must align with choices");
+                    }
+                    question.optionContracts = q.optionContracts.map(function (contract, choiceIndex) {
+                        if (Number(contract.choiceIndex) !== choiceIndex ||
+                            Boolean(contract.isCorrect) !== (choiceIndex === correctIndex) ||
+                            !contract.feedback) {
+                            throw new Error("questions[" + i + "].optionContracts[" + choiceIndex + "] invalid");
+                        }
+                        return {
+                            choiceIndex: choiceIndex,
+                            isCorrect: choiceIndex === correctIndex,
+                            misconceptionId: contract.misconceptionId ? String(contract.misconceptionId) : undefined,
+                            temptingReason: String(contract.temptingReason || ""),
+                            exclusionReason: String(contract.exclusionReason || ""),
+                            evidence: String(contract.evidence || ""),
+                            feedback: String(contract.feedback)
+                        };
+                    });
+                }
                 if (typeof q.checkpointIndex === "number" && isFinite(q.checkpointIndex) && q.checkpointIndex >= 0) {
                     question.checkpointIndex = Math.floor(q.checkpointIndex);
                 }
@@ -86079,8 +86221,41 @@ var WorldTrivia;
                 narration: { intro: narration.intro, beats: beats, ambient: narration.ambient || [], finale: narration.finale },
                 questions: questions,
                 schemaVersion: typeof data.schemaVersion === "number" ? data.schemaVersion : 1,
+                artifactHash: data.artifactHash ? String(data.artifactHash) : undefined,
                 updatedAt: new Date().toISOString()
             };
+            if (story.artifactHash && !/^[a-f0-9]{64}$/.test(story.artifactHash)) {
+                throw new Error("artifactHash must be a lowercase SHA-256 hex digest");
+            }
+            if (data.semanticValidation &&
+                data.semanticValidation.artifactHash !== story.artifactHash) {
+                throw new Error("semanticValidation.artifactHash must match artifactHash");
+            }
+            if (data.answerOnlyValidation &&
+                (data.answerOnlyValidation.version !== "v8" ||
+                    data.answerOnlyValidation.artifactHash !== story.artifactHash ||
+                    data.answerOnlyValidation.threshold !== 7 ||
+                    data.answerOnlyValidation.consensusCueCount !== 0)) {
+                throw new Error("answerOnlyValidation must be a passing v8 stamp for artifactHash");
+            }
+            if (data.relevanceValidation &&
+                (data.relevanceValidation.version !== "v9" ||
+                    data.relevanceValidation.artifactHash !== story.artifactHash ||
+                    data.relevanceValidation.validQuestions !== data.relevanceValidation.totalQuestions ||
+                    data.relevanceValidation.judgeCount !== 2 ||
+                    data.relevanceValidation.consensus !== true)) {
+                throw new Error("relevanceValidation must be a passing v9 stamp for artifactHash");
+            }
+            if (data.feedbackValidation &&
+                (data.feedbackValidation.version !== "v9" ||
+                    data.feedbackValidation.artifactHash !== story.artifactHash ||
+                    data.feedbackValidation.validQuestions !== data.feedbackValidation.totalQuestions ||
+                    data.feedbackValidation.minimumScore !== 9.5)) {
+                throw new Error("feedbackValidation must be a passing v9 stamp for artifactHash");
+            }
+            if ((data.relevanceValidation && !data.feedbackValidation) || (!data.relevanceValidation && data.feedbackValidation)) {
+                throw new Error("v9 relevanceValidation and feedbackValidation must be supplied together");
+            }
             var key = storyKey(data.appId, data.templateId, data.conceptId);
             writeSystemObject(nk, WorldTrivia.STORIES_COLLECTION, key, story);
             writePublicNarration(nk, key, narrationView(story));
@@ -86090,7 +86265,8 @@ var WorldTrivia;
                 conceptId: story.conceptId,
                 title: story.title,
                 beatCount: beats.length,
-                questionCount: questions.length
+                questionCount: questions.length,
+                artifactHash: story.artifactHash
             });
         }
         catch (e) {
@@ -86421,6 +86597,12 @@ var WorldTrivia;
             // Learning layer: the explanation ships only AFTER grading.
             if (question.explanation)
                 answerOut.explanation = question.explanation;
+            if (question.optionContracts && question.optionContracts[choiceIndex]) {
+                answerOut.feedback = question.optionContracts[choiceIndex].feedback;
+                // V9 clients that still render the legacy explanation field receive
+                // the same selected-choice-specific line, never the full audit proof.
+                answerOut.explanation = question.optionContracts[choiceIndex].feedback;
+            }
             return ok(answerOut);
         }
         catch (e) {

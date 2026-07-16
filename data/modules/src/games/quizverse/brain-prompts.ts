@@ -19,7 +19,7 @@ declare function persistNormalizedEvent(
 namespace QuizVerseBrainPrompts {
   var COLLECTION = "qv_brain_prompt";
   var KEY = "state";
-  var SCHEMA_VERSION = 1;
+  var SCHEMA_VERSION = 2;
   var RESERVATION_TTL_MS = 10 * 60 * 1000;
   var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
   var OCC_MAX_RETRIES = 5;
@@ -33,10 +33,13 @@ namespace QuizVerseBrainPrompts {
     openedMs: number;
   }
 
+  // Per-prompt daily caps: wrong_streak and post_quiz_weak are independent (max 1/day each).
+  type BucketKind = "weekly" | "daily_wrong_streak" | "daily_post_quiz_weak" | "daily";
+
   interface PromptReservation {
     token: string;
     promptId: string;
-    bucket: "daily" | "weekly";
+    bucket: BucketKind;
     clientEventId: string;
     resultId: string;
     createdMs: number;
@@ -55,6 +58,8 @@ namespace QuizVerseBrainPrompts {
     isoWeek: string;
     lastSuccessfulBrainVisitMs: number;
     daily: PromptBucket;
+    dailyWrongStreak: PromptBucket;
+    dailyPostQuizWeak: PromptBucket;
     weekly: PromptBucket;
     reservation: PromptReservation | null;
     idempotency: { [key: string]: IdempotencyRecord };
@@ -96,10 +101,23 @@ namespace QuizVerseBrainPrompts {
       isoWeek: isoWeek(nowMs),
       lastSuccessfulBrainVisitMs: 0,
       daily: emptyBucket(),
+      dailyWrongStreak: emptyBucket(),
+      dailyPostQuizWeak: emptyBucket(),
       weekly: emptyBucket(),
       reservation: null,
       idempotency: {}
     };
+  }
+
+  function resolveBucket(state: PromptState, kind: BucketKind): PromptBucket {
+    if (kind === "weekly") return state.weekly;
+    if (kind === "daily_wrong_streak") return state.dailyWrongStreak;
+    if (kind === "daily_post_quiz_weak") return state.dailyPostQuizWeak;
+    return state.daily;
+  }
+
+  function isDailyBucket(kind: BucketKind): boolean {
+    return kind === "daily" || kind === "daily_wrong_streak" || kind === "daily_post_quiz_weak";
   }
 
   function normalizeState(raw: any, nowMs: number): PromptState {
@@ -107,12 +125,24 @@ namespace QuizVerseBrainPrompts {
     state.schemaVersion = SCHEMA_VERSION;
     state.lastSuccessfulBrainVisitMs = Number(state.lastSuccessfulBrainVisitMs || 0);
     state.daily = state.daily || emptyBucket();
+    state.dailyWrongStreak = state.dailyWrongStreak || emptyBucket();
+    state.dailyPostQuizWeak = state.dailyPostQuizWeak || emptyBucket();
     state.weekly = state.weekly || emptyBucket();
     state.idempotency = state.idempotency || {};
+    // Migrate legacy shared daily slot into the matching typed bucket once.
+    if (state.daily && state.daily.consumed && state.daily.promptId) {
+      if (state.daily.promptId === "wrong_streak" && !state.dailyWrongStreak.consumed) {
+        state.dailyWrongStreak = state.daily;
+      } else if (state.daily.promptId === "post_quiz_weak" && !state.dailyPostQuizWeak.consumed) {
+        state.dailyPostQuizWeak = state.daily;
+      }
+    }
     if (state.utcDay !== utcDay(nowMs)) {
       state.utcDay = utcDay(nowMs);
       state.daily = emptyBucket();
-      if (state.reservation && state.reservation.bucket === "daily") state.reservation = null;
+      state.dailyWrongStreak = emptyBucket();
+      state.dailyPostQuizWeak = emptyBucket();
+      if (state.reservation && isDailyBucket(state.reservation.bucket)) state.reservation = null;
     }
     if (state.isoWeek !== isoWeek(nowMs)) {
       state.isoWeek = isoWeek(nowMs);
@@ -120,7 +150,7 @@ namespace QuizVerseBrainPrompts {
       if (state.reservation && state.reservation.bucket === "weekly") state.reservation = null;
     }
     if (state.reservation && state.reservation.expiresMs <= nowMs) {
-      var reservedBucket = state.reservation.bucket === "weekly" ? state.weekly : state.daily;
+      var reservedBucket = resolveBucket(state, state.reservation.bucket);
       if (!reservedBucket.consumed) state.reservation = null;
     }
     return state;
@@ -245,12 +275,12 @@ namespace QuizVerseBrainPrompts {
     if (trigger !== "post_quiz_results") return null;
 
     var maxWrong = Math.max(0, Math.min(1000, Number(session.max_consecutive_wrong || 0)));
-    if (maxWrong >= 3) return { promptId: "wrong_streak", bucket: "daily" };
+    if (maxWrong >= 3) return { promptId: "wrong_streak", bucket: "daily_wrong_streak" };
 
     var accuracy = Number(session.category_accuracy_pct);
     var notesEligible = data.notes_eligible === true;
     if (isFinite(accuracy) && accuracy >= 0 && accuracy < 60 && notesEligible) {
-      return { promptId: "post_quiz_weak", bucket: "daily" };
+      return { promptId: "post_quiz_weak", bucket: "daily_post_quiz_weak" };
     }
     return null;
   }
@@ -280,7 +310,7 @@ namespace QuizVerseBrainPrompts {
     }
 
     var response = mutateState(nk, userId, nowMs, function (state: PromptState): MutationResult {
-      var bucket = selected.bucket === "weekly" ? state.weekly : state.daily;
+      var bucket = resolveBucket(state, selected.bucket as BucketKind);
       if (bucket.consumed) {
         return {
           write: false,
@@ -413,8 +443,13 @@ namespace QuizVerseBrainPrompts {
     var token = safeString(data.reservation_token, 64);
     var idemKey = safeString(data.idempotency_key, 128);
     var clientEventId = safeString(data.client_event_id, 128);
+    // Manual Profile / Home opens (no reservation). Keep in sync with Unity
+    // NormalizeBrainContext + web ctxToTab (Map=graph, Ask=ask|chat).
     var directOpen = action === "opened" &&
-      (promptId === "graph" || promptId === "profile" || promptId === "manual");
+      (promptId === "graph" || promptId === "map" || promptId === "profile" ||
+       promptId === "manual" || promptId === "recap" || promptId === "orphans" ||
+       promptId === "home" || promptId === "ask" || promptId === "chat" ||
+       promptId === "smart_review");
     if (!directOpen && !token) return RpcHelpers.errorResponse("reservation_token required", 400);
     if (!idemKey) return RpcHelpers.errorResponse("idempotency_key required", 400);
 
@@ -422,14 +457,18 @@ namespace QuizVerseBrainPrompts {
     var response = mutateState(nk, userId, nowMs, function (state: PromptState): MutationResult {
       var replay = state.idempotency[idemKey];
       if (replay) {
+        var replayBucket = replay.promptId === "weekly_recap"
+          ? state.weekly
+          : (replay.promptId === "wrong_streak"
+            ? state.dailyWrongStreak
+            : (replay.promptId === "post_quiz_weak" ? state.dailyPostQuizWeak : state.daily));
         return {
           write: false,
           response: {
             status: "replay",
             action: replay.action,
             prompt_id: replay.promptId,
-            slot_consumed: replay.promptId === "weekly_recap"
-              ? state.weekly.consumed : state.daily.consumed,
+            slot_consumed: replayBucket.consumed,
             last_successful_brain_visit_ms: state.lastSuccessfulBrainVisitMs,
             server_time_ms: nowMs
           }
@@ -444,7 +483,7 @@ namespace QuizVerseBrainPrompts {
             response: { status: "rejected", reason: "reservation_mismatch", server_time_ms: nowMs }
           };
         }
-        var reservedBucket = reservation.bucket === "weekly" ? state.weekly : state.daily;
+        var reservedBucket = resolveBucket(state, reservation.bucket);
         if (reservation.expiresMs <= nowMs && !reservedBucket.consumed) {
           state.reservation = null;
           return {
@@ -454,7 +493,13 @@ namespace QuizVerseBrainPrompts {
         }
       }
 
-      var bucket = reservation && reservation.bucket === "weekly" ? state.weekly : state.daily;
+      var bucket = reservation
+        ? resolveBucket(state, reservation.bucket)
+        : (promptId === "weekly_recap"
+          ? state.weekly
+          : (promptId === "wrong_streak"
+            ? state.dailyWrongStreak
+            : (promptId === "post_quiz_weak" ? state.dailyPostQuizWeak : state.daily)));
       if (action === "shown") {
         bucket.consumed = true;
         bucket.promptId = promptId;
