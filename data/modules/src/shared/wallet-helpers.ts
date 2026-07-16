@@ -1,5 +1,5 @@
 namespace WalletHelpers {
-
+ //
   export interface GameWallet {
     userId: string;
     gameId: string;
