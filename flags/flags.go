@@ -386,7 +386,8 @@ func (fm *FlagMaker) getUsage(name string, field reflect.StructField) string {
 func (fm *FlagMaker) getUnderlyingType(ttype reflect.Type) reflect.Type {
 	// this only deals with *T unnamed type, other unnamed types, e.g. []int, struct{}
 	// will return empty string.
-	if ttype.Kind() == reflect.Ptr {
+	const ptrKind = reflect.Ptr
+	if ttype.Kind() == ptrKind {
 		return fm.getUnderlyingType(ttype.Elem())
 	}
 	return ttype
