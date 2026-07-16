@@ -714,6 +714,7 @@ function rpcDailyRewardsGetHistory(ctx, logger, nk, payload) {
 // Before this block existed, daily_rewards_get_status / daily_rewards_claim
 // were silently served by the stale TS LegacyDailyRewards copy (wrong response
 // envelope -> Unity always saw streak 0; root cause of QVBF_51).
+// LegacyDailyRewards.ts was removed, so this module now serves as the canonical
 function InitModule(ctx, logger, nk, initializer) {
     initializer.registerRpc("daily_rewards_get_status", rpcDailyRewardsGetStatus);
     initializer.registerRpc("daily_rewards_claim", rpcDailyRewardsClaim);
