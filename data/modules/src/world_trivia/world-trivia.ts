@@ -60,6 +60,9 @@ namespace WorldTrivia {
   // XOR stream separator so the question shuffle and the object layout draw
   // from independent RNG streams of the same session seed.
   export var QUESTION_STREAM = 0x51ab9e3d;
+  // Independent RNG stream separator for the per-question choice-order shuffle
+  // (distinct from the question-queue and object-layout streams).
+  export var CHOICE_STREAM = 0x2f6d1c7b;
   export var OBJECT_SHAPES = ["sphere", "cube", "cone", "torus"];
 
   export var DEFAULT_SETTINGS: TemplateSettings = {
@@ -180,6 +183,10 @@ namespace WorldTrivia {
     questionId: string;
     checkpointId: string;
     issuedAtMs: number;
+    // Per-issue choice permutation (server-only). choiceOrder[displaySlot] =
+    // canonical choice index. Present for sessions issued after the answer-
+    // shuffle rollout; absent (undefined) => legacy 1:1 order (no shuffle).
+    choiceOrder?: number[];
   }
 
   export interface SessionValue {
@@ -310,6 +317,29 @@ namespace WorldTrivia {
       out[j] = tmp;
     }
     return out;
+  }
+
+  /**
+   * Deterministic per-question choice permutation so the correct answer is not
+   * pinned to a fixed slot (authored banks tend to put the answer at index 0).
+   * Returns an array `order` where `order[displaySlot] = canonicalIndex`. Drawn
+   * from an independent RNG stream of the session seed XORed with the question
+   * id hash, so it is stable per (session, question) — a recycled question keeps
+   * the same layout — yet varies question-to-question and session-to-session.
+   * Server-authoritative: grading maps the player's display slot back through
+   * this order (world_answer_submit); the client never sees correctIndex.
+   */
+  export function choiceOrderFor(seed: number, questionId: string, count: number): number[] {
+    var indices: number[] = [];
+    for (var i = 0; i < count; i++) indices.push(i);
+    var rnd = mulberry32((seed ^ CHOICE_STREAM ^ fnv1a32(questionId)) >>> 0);
+    for (var k = indices.length - 1; k > 0; k--) {
+      var j = Math.floor(rnd() * (k + 1));
+      var tmp = indices[k];
+      indices[k] = indices[j];
+      indices[j] = tmp;
+    }
+    return indices;
   }
 
   // ---- helpers ----
@@ -522,9 +552,16 @@ namespace WorldTrivia {
     };
   }
 
-  /** Question as issued to the player — never includes correctIndex. */
-  function questionView(q: TriviaQuestion) {
-    var view: any = { questionId: q.id, text: q.text, choices: q.choices };
+  /** Question as issued to the player — never includes correctIndex. When a
+   * per-issue choiceOrder is supplied the choices are reordered into display
+   * order so the correct answer is not pinned to its authored slot. */
+  function questionView(q: TriviaQuestion, order?: number[]) {
+    var choices = q.choices;
+    if (order && order.length === q.choices.length) {
+      choices = [];
+      for (var i = 0; i < order.length; i++) choices.push(q.choices[order[i]]);
+    }
+    var view: any = { questionId: q.id, text: q.text, choices: choices };
     if (q.category) view.category = q.category;
     return view;
   }
@@ -1041,6 +1078,7 @@ namespace WorldTrivia {
       var now = nowMs();
       var expired = false;
       var issuedQuestionId = "";
+      var issuedChoiceOrder: number[] | undefined = undefined;
       var expiredPrevious = false;
 
       var session = mutateSession(nk, data.sessionId, function (s) {
@@ -1104,8 +1142,16 @@ namespace WorldTrivia {
         }
         var qid = s.questionQueue.splice(pickAt, 1)[0] as string;
         s.askedQuestionIds.push(qid);
-        s.pendingQuestion = { questionId: qid, checkpointId: checkpoint.id, issuedAtMs: now };
+        // Per-issue choice shuffle: derive a deterministic display permutation so
+        // the correct answer isn't pinned to its authored slot. Stored server-only
+        // in the pending question; grading maps the display slot back through it.
+        var issuedQuestion = bankById[qid];
+        var choiceOrder = (issuedQuestion && issuedQuestion.choices && issuedQuestion.choices.length > 1)
+          ? choiceOrderFor(s.seed, qid, issuedQuestion.choices.length)
+          : undefined;
+        s.pendingQuestion = { questionId: qid, checkpointId: checkpoint.id, issuedAtMs: now, choiceOrder: choiceOrder };
         issuedQuestionId = qid;
+        issuedChoiceOrder = choiceOrder;
 
         s.visitedCheckpoints.push(checkpoint.id);
         s.lastPosition = position;
@@ -1119,7 +1165,7 @@ namespace WorldTrivia {
 
       return ok({
         checkpointId: data.checkpointId,
-        question: questionView(question),
+        question: questionView(question, issuedChoiceOrder),
         previousQuestionExpired: expiredPrevious,
         progress: progressView(session, template)
       });
@@ -1156,6 +1202,13 @@ namespace WorldTrivia {
       var sessionExpired = false;
       var answerExpired = false;
       var correct = false;
+      // Display->canonical choice permutation carried out of the mutation so the
+      // post-grade reveal (correctIndex) is remapped to the slots the player
+      // actually saw. undefined => legacy 1:1 (no shuffle).
+      var gradedChoiceOrder: number[] | undefined = undefined;
+      // Canonical index of the player's selected choice (display slot mapped
+      // through choiceOrder). Used for grading + optionContracts feedback.
+      var gradedCanonicalChoice = choiceIndex;
 
       var session = mutateSession(nk, data.sessionId, function (s) {
         requireOwnedActive(s, userId);
@@ -1172,8 +1225,14 @@ namespace WorldTrivia {
         }
 
         answerExpired = questionExpired(s.pendingQuestion, now, template.settings.maxAnswerSeconds);
-        // Grading is entirely server-side: the client never saw correctIndex.
-        correct = !answerExpired && choiceIndex === (question as TriviaQuestion).correctIndex;
+        // Map the player's DISPLAY slot back to the canonical choice index via
+        // the per-issue shuffle before grading. Grading is entirely
+        // server-side: the client never saw correctIndex.
+        gradedChoiceOrder = s.pendingQuestion.choiceOrder;
+        gradedCanonicalChoice = (gradedChoiceOrder && choiceIndex < gradedChoiceOrder.length)
+          ? gradedChoiceOrder[choiceIndex]
+          : choiceIndex;
+        correct = !answerExpired && gradedCanonicalChoice === (question as TriviaQuestion).correctIndex;
 
         if (correct) {
           s.correctCount += 1;
@@ -1194,21 +1253,30 @@ namespace WorldTrivia {
 
       if (sessionExpired) return err("Session expired after " + (IDLE_EXPIRY_MS / 60000) + " minutes idle");
 
+      // Reveal is remapped into DISPLAY space so the client highlights the slot
+      // the player actually saw: correctIndex -> its display slot.
+      var revealCorrectIndex = question.correctIndex;
+      if (gradedChoiceOrder) {
+        var ci = (gradedChoiceOrder as number[]).indexOf(question.correctIndex);
+        if (ci >= 0) revealCorrectIndex = ci;
+      }
       var answerOut: any = {
         questionId: data.questionId,
         correct: correct,
         expired: answerExpired,
         // Revealed post-grade only, so the AI host can announce the answer.
-        correctIndex: question.correctIndex,
+        correctIndex: revealCorrectIndex,
         progress: progressView(session, template)
       };
       // Learning layer: the explanation ships only AFTER grading.
+      // optionContracts are stored in CANONICAL choice order — index via
+      // gradedCanonicalChoice, not the player's display slot.
       if (question.explanation) answerOut.explanation = question.explanation;
-      if (question.optionContracts && question.optionContracts[choiceIndex]) {
-        answerOut.feedback = question.optionContracts[choiceIndex].feedback;
+      if (question.optionContracts && question.optionContracts[gradedCanonicalChoice]) {
+        answerOut.feedback = question.optionContracts[gradedCanonicalChoice].feedback;
         // V9 clients that still render the legacy explanation field receive
         // the same selected-choice-specific line, never the full audit proof.
-        answerOut.explanation = question.optionContracts[choiceIndex].feedback;
+        answerOut.explanation = question.optionContracts[gradedCanonicalChoice].feedback;
       }
       return ok(answerOut);
     } catch (e: any) {
