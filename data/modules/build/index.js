@@ -86028,6 +86028,40 @@ var WorldTrivia;
                 var question = { id: q.id, text: q.text, choices: q.choices, correctIndex: correctIndex };
                 if (q.category)
                     question.category = q.category;
+                // Learning layer parity with stories: packs may carry the post-grade
+                // explanation line. It is storage-only until world_answer_submit
+                // grades — questionView never includes it.
+                if (q.explanation)
+                    question.explanation = String(q.explanation);
+                if (q.learningObjectiveId)
+                    question.learningObjectiveId = String(q.learningObjectiveId);
+                if (q.targetRelation)
+                    question.targetRelation = q.targetRelation;
+                if (q.assessmentContext)
+                    question.assessmentContext = q.assessmentContext;
+                if (q.correctEvidence)
+                    question.correctEvidence = String(q.correctEvidence);
+                if (Array.isArray(q.optionContracts)) {
+                    if (q.optionContracts.length !== q.choices.length) {
+                        throw new Error("questions[" + i + "].optionContracts must align with choices");
+                    }
+                    question.optionContracts = q.optionContracts.map(function (contract, choiceIndex) {
+                        if (Number(contract.choiceIndex) !== choiceIndex ||
+                            Boolean(contract.isCorrect) !== (choiceIndex === correctIndex) ||
+                            !contract.feedback) {
+                            throw new Error("questions[" + i + "].optionContracts[" + choiceIndex + "] invalid");
+                        }
+                        return {
+                            choiceIndex: choiceIndex,
+                            isCorrect: choiceIndex === correctIndex,
+                            misconceptionId: contract.misconceptionId ? String(contract.misconceptionId) : undefined,
+                            temptingReason: String(contract.temptingReason || ""),
+                            exclusionReason: String(contract.exclusionReason || ""),
+                            evidence: String(contract.evidence || ""),
+                            feedback: String(contract.feedback)
+                        };
+                    });
+                }
                 questions.push(question);
             }
             var pack = {
@@ -86068,6 +86102,7 @@ var WorldTrivia;
             title: story.title,
             language: story.language,
             schemaVersion: story.schemaVersion,
+            sourceArtifactHash: story.artifactHash,
             narration: {
                 intro: story.narration.intro,
                 beats: beats,
@@ -86143,6 +86178,35 @@ var WorldTrivia;
                     question.category = q.category;
                 if (q.explanation)
                     question.explanation = String(q.explanation);
+                if (q.learningObjectiveId)
+                    question.learningObjectiveId = String(q.learningObjectiveId);
+                if (q.targetRelation)
+                    question.targetRelation = q.targetRelation;
+                if (q.assessmentContext)
+                    question.assessmentContext = q.assessmentContext;
+                if (q.correctEvidence)
+                    question.correctEvidence = String(q.correctEvidence);
+                if (Array.isArray(q.optionContracts)) {
+                    if (q.optionContracts.length !== q.choices.length) {
+                        throw new Error("questions[" + i + "].optionContracts must align with choices");
+                    }
+                    question.optionContracts = q.optionContracts.map(function (contract, choiceIndex) {
+                        if (Number(contract.choiceIndex) !== choiceIndex ||
+                            Boolean(contract.isCorrect) !== (choiceIndex === correctIndex) ||
+                            !contract.feedback) {
+                            throw new Error("questions[" + i + "].optionContracts[" + choiceIndex + "] invalid");
+                        }
+                        return {
+                            choiceIndex: choiceIndex,
+                            isCorrect: choiceIndex === correctIndex,
+                            misconceptionId: contract.misconceptionId ? String(contract.misconceptionId) : undefined,
+                            temptingReason: String(contract.temptingReason || ""),
+                            exclusionReason: String(contract.exclusionReason || ""),
+                            evidence: String(contract.evidence || ""),
+                            feedback: String(contract.feedback)
+                        };
+                    });
+                }
                 if (typeof q.checkpointIndex === "number" && isFinite(q.checkpointIndex) && q.checkpointIndex >= 0) {
                     question.checkpointIndex = Math.floor(q.checkpointIndex);
                 }
@@ -86157,8 +86221,41 @@ var WorldTrivia;
                 narration: { intro: narration.intro, beats: beats, ambient: narration.ambient || [], finale: narration.finale },
                 questions: questions,
                 schemaVersion: typeof data.schemaVersion === "number" ? data.schemaVersion : 1,
+                artifactHash: data.artifactHash ? String(data.artifactHash) : undefined,
                 updatedAt: new Date().toISOString()
             };
+            if (story.artifactHash && !/^[a-f0-9]{64}$/.test(story.artifactHash)) {
+                throw new Error("artifactHash must be a lowercase SHA-256 hex digest");
+            }
+            if (data.semanticValidation &&
+                data.semanticValidation.artifactHash !== story.artifactHash) {
+                throw new Error("semanticValidation.artifactHash must match artifactHash");
+            }
+            if (data.answerOnlyValidation &&
+                (data.answerOnlyValidation.version !== "v8" ||
+                    data.answerOnlyValidation.artifactHash !== story.artifactHash ||
+                    data.answerOnlyValidation.threshold !== 7 ||
+                    data.answerOnlyValidation.consensusCueCount !== 0)) {
+                throw new Error("answerOnlyValidation must be a passing v8 stamp for artifactHash");
+            }
+            if (data.relevanceValidation &&
+                (data.relevanceValidation.version !== "v9" ||
+                    data.relevanceValidation.artifactHash !== story.artifactHash ||
+                    data.relevanceValidation.validQuestions !== data.relevanceValidation.totalQuestions ||
+                    data.relevanceValidation.judgeCount !== 2 ||
+                    data.relevanceValidation.consensus !== true)) {
+                throw new Error("relevanceValidation must be a passing v9 stamp for artifactHash");
+            }
+            if (data.feedbackValidation &&
+                (data.feedbackValidation.version !== "v9" ||
+                    data.feedbackValidation.artifactHash !== story.artifactHash ||
+                    data.feedbackValidation.validQuestions !== data.feedbackValidation.totalQuestions ||
+                    data.feedbackValidation.minimumScore !== 9.5)) {
+                throw new Error("feedbackValidation must be a passing v9 stamp for artifactHash");
+            }
+            if ((data.relevanceValidation && !data.feedbackValidation) || (!data.relevanceValidation && data.feedbackValidation)) {
+                throw new Error("v9 relevanceValidation and feedbackValidation must be supplied together");
+            }
             var key = storyKey(data.appId, data.templateId, data.conceptId);
             writeSystemObject(nk, WorldTrivia.STORIES_COLLECTION, key, story);
             writePublicNarration(nk, key, narrationView(story));
@@ -86168,7 +86265,8 @@ var WorldTrivia;
                 conceptId: story.conceptId,
                 title: story.title,
                 beatCount: beats.length,
-                questionCount: questions.length
+                questionCount: questions.length,
+                artifactHash: story.artifactHash
             });
         }
         catch (e) {
@@ -86499,6 +86597,12 @@ var WorldTrivia;
             // Learning layer: the explanation ships only AFTER grading.
             if (question.explanation)
                 answerOut.explanation = question.explanation;
+            if (question.optionContracts && question.optionContracts[choiceIndex]) {
+                answerOut.feedback = question.optionContracts[choiceIndex].feedback;
+                // V9 clients that still render the legacy explanation field receive
+                // the same selected-choice-specific line, never the full audit proof.
+                answerOut.explanation = question.optionContracts[choiceIndex].feedback;
+            }
             return ok(answerOut);
         }
         catch (e) {
