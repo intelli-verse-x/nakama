@@ -543,15 +543,27 @@ function performDailyClaim(nk, logger, userId, gameId) {
 
     utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
 
-    // Credit the storage game wallet (currencies.game + tokens mirror) and global XP.
-    // HUD / wallet_get_balances read storage wallets — NOT Nakama's built-in nk.walletUpdate.
-    // Grant only after OCC streak commit (no double grant on conflict). Hard-fail on save failure
-    // so clients never see success:true with a silent empty wallet credit.
+    // ---------------------------------------------------------------------------
+    // QVBF / RCA (2026-07-16): daily claim MUST credit storage wallets, not nk.walletUpdate.
+    //
+    // BUG: master previously did:
+    //   nk.walletUpdate(userId, { game: reward.game, xp: reward.xp }, { source: "daily_reward", ... }, true)
+    // That updates Nakama's built-in wallet ledger only. QuizVerse HUD / wallet_get_balances
+    // read collection "wallets" (WalletHelpers game wallet + global_* XP). Result: claim
+    // returned success:true while the client coin balance never moved.
+    //
+    // FIX: after OCC streak commit succeeds —
+    //   1) credit game wallet currencies.game (+ tokens mirror) via WalletHelpers
+    //   2) credit global XP via storageWrite on wallets/global_{userId}
+    //   3) hard-fail the claim if either grant throws (no silent empty credit)
+    // Do NOT revert this block to nk.walletUpdate without also migrating the client HUD.
+    // ---------------------------------------------------------------------------
     var grant = reward.game || 0;
     var xpGrant = reward.xp || 0;
     var walletGranted = { game: grant, xp: xpGrant };
     if (grant > 0 || xpGrant > 0) {
         try {
+            // (1) Per-game storage wallet — what wallet_get_balances / HUD display.
             if (grant > 0) {
                 var gw = WalletHelpers.getGameWallet(nk, userId, gameId);
                 if (!gw.currencies) {
@@ -560,9 +572,10 @@ function performDailyClaim(nk, logger, userId, gameId) {
                 if (gw.currencies.game === undefined) gw.currencies.game = 0;
                 if (gw.currencies.tokens === undefined) gw.currencies.tokens = 0;
                 gw.currencies.game += grant;
-                gw.currencies.tokens += grant;
+                gw.currencies.tokens += grant; // mirror: legacy clients still read tokens
                 WalletHelpers.saveGameWallet(nk, gw);
             }
+            // (2) Global XP ledger (wallets / global_{userId}).
             if (xpGrant > 0) {
                 var globalKey = "global_" + userId;
                 var globalReads = nk.storageRead([{ collection: "wallets", key: globalKey, userId: userId }]);
@@ -588,6 +601,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
             }
             logger.info("[DailyRewards] Granted storage wallet: " + JSON.stringify(walletGranted) + " to " + userId);
         } catch (walletErr) {
+            // (3) Streak already committed — surface grant failure so client can retry / support can reconcile.
             var grantMsg = (walletErr && walletErr.message) ? walletErr.message : String(walletErr);
             logger.error("[DailyRewards] Wallet grant failed after claim commit: " + grantMsg);
             return { ok: false, error: "Wallet grant failed: " + grantMsg, reason: "wallet_grant_failed" };
