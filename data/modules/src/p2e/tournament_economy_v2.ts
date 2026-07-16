@@ -465,7 +465,7 @@ namespace TournamentEconomyV2 {
       pot_seed_bc: draft.pot_seed_bc,
       pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: "ALL",
-      min_age: TournamentEconomy.MIN_AGE,
+      min_age: TournamentEconomy.minAgeForSlug(draft.slug),
       amoe: TournamentEconomy.AMOE_CLASSIC,
       badge_emoji: wave2BadgeEmoji(draft.slug),
     };

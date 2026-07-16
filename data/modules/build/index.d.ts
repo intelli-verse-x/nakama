@@ -3606,6 +3606,11 @@ declare namespace TournamentEconomy {
     const REDEMPTION_BLOCK_US_STATES: string[];
     const TIER1_COUNTRIES: string[];
     const MIN_AGE = 18;
+    const PUBLIC_MIN_AGE = 0;
+    /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
+    const PUBLIC_NO_KYC_SLUGS: string[];
+    function isPublicNoKycSlug(slug: string): boolean;
+    function minAgeForSlug(slug: string): number;
     const ANTICHEAT_LATENCY_FLOOR_MS = 300;
     const ANTICHEAT_DAILY_SUBMIT_CEILING = 200;
     type TournamentStatus = "DRAFT" | "PRE_ENROLL" | "OPEN" | "ACTIVE" | "SETTLING" | "SETTLED" | "ARCHIVED";
@@ -6039,6 +6044,7 @@ declare namespace WorldTrivia {
     var PROXIMITY_SLACK: number;
     var SPEED_SLACK: number;
     var QUESTION_STREAM: number;
+    var CHOICE_STREAM: number;
     var OBJECT_SHAPES: string[];
     var DEFAULT_SETTINGS: TemplateSettings;
     interface Vec3 {
@@ -6144,6 +6150,7 @@ declare namespace WorldTrivia {
         questionId: string;
         checkpointId: string;
         issuedAtMs: number;
+        choiceOrder?: number[];
     }
     interface SessionValue {
         sessionId: string;
@@ -6195,6 +6202,17 @@ declare namespace WorldTrivia {
      */
     function deriveObjects(seed: number, count: number, volumes: ScavengerVolume[]): ScavengerObject[];
     function shuffleIds(ids: string[], rnd: () => number): string[];
+    /**
+     * Deterministic per-question choice permutation so the correct answer is not
+     * pinned to a fixed slot (authored banks tend to put the answer at index 0).
+     * Returns an array `order` where `order[displaySlot] = canonicalIndex`. Drawn
+     * from an independent RNG stream of the session seed XORed with the question
+     * id hash, so it is stable per (session, question) — a recycled question keeps
+     * the same layout — yet varies question-to-question and session-to-session.
+     * Server-authoritative: grading maps the player's display slot back through
+     * this order (world_answer_submit); the client never sees correctIndex.
+     */
+    function choiceOrderFor(seed: number, questionId: string, count: number): number[];
     function rpcTemplateUpsert(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcPackUpsert(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     /**

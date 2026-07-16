@@ -57877,6 +57877,31 @@ var TournamentEconomy;
     TournamentEconomy.TIER1_COUNTRIES = ["US", "CA", "GB", "AU", "NZ", "IE"];
     // 18+ gate (§3)
     TournamentEconomy.MIN_AGE = 18;
+    // Public / no-KYC slate: min_age 0 → age_blocked false without verified DOB.
+    // Exam / high-stakes tournaments keep MIN_AGE (Didit/Veriff still required).
+    TournamentEconomy.PUBLIC_MIN_AGE = 0;
+    /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
+    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [
+        "gk-royale-daily",
+        "pick-5-daily",
+        "movie-trivia-royale",
+        "music-history-royale",
+        "pop-culture-2010s",
+        "brain-bowl-weekly",
+        "movie-buff-weekly",
+    ];
+    function isPublicNoKycSlug(slug) {
+        for (var i = 0; i < TournamentEconomy.PUBLIC_NO_KYC_SLUGS.length; i++) {
+            if (TournamentEconomy.PUBLIC_NO_KYC_SLUGS[i] === slug)
+                return true;
+        }
+        return false;
+    }
+    TournamentEconomy.isPublicNoKycSlug = isPublicNoKycSlug;
+    function minAgeForSlug(slug) {
+        return isPublicNoKycSlug(slug) ? TournamentEconomy.PUBLIC_MIN_AGE : TournamentEconomy.MIN_AGE;
+    }
+    TournamentEconomy.minAgeForSlug = minAgeForSlug;
     // Anti-cheat baseline (§3)
     TournamentEconomy.ANTICHEAT_LATENCY_FLOOR_MS = 300;
     TournamentEconomy.ANTICHEAT_DAILY_SUBMIT_CEILING = 200;
@@ -57936,7 +57961,7 @@ var TournamentEconomy;
             pot_seed_bc: 5000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("gk-royale-daily"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "🧠",
         },
@@ -57956,7 +57981,7 @@ var TournamentEconomy;
             pot_seed_bc: 20000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("brain-bowl-weekly"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "🧪",
         },
@@ -57975,7 +58000,7 @@ var TournamentEconomy;
             pot_seed_bc: 18000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("movie-buff-weekly"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "🎬",
         },
@@ -58006,7 +58031,7 @@ var TournamentEconomy;
                 final_survivor_bonus_bc: 200000, // #1 of survivors gets a bragging-rights bonus
             },
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("survivor-week-1"),
             amoe: TournamentEconomy.AMOE_ELIMINATION,
             badge_emoji: "⚔️",
         },
@@ -58036,7 +58061,7 @@ var TournamentEconomy;
                 house_backstop_usd_per_day: 100,
             },
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("pick-5-daily"),
             amoe: TournamentEconomy.AMOE_PICK_N,
             badge_emoji: "🎯",
         },
@@ -58056,7 +58081,7 @@ var TournamentEconomy;
             pot_seed_bc: 25000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: ["US"],
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("ap-2027-prep-weekly"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "📚",
         },
@@ -58076,7 +58101,7 @@ var TournamentEconomy;
             pot_seed_bc: 30000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: ["US"],
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("sat-aug-cram"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "✏️",
         },
@@ -58095,7 +58120,7 @@ var TournamentEconomy;
             pot_seed_bc: 25000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: ["US"],
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("act-sep-sprint"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "🎓",
         },
@@ -58114,7 +58139,7 @@ var TournamentEconomy;
             pot_seed_bc: 15000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: ["IN"],
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("neet-prep-weekly"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "⚕️",
         },
@@ -58133,7 +58158,7 @@ var TournamentEconomy;
             pot_seed_bc: 15000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: ["IN"],
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("jee-main-weekly"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "🔬",
         },
@@ -58152,7 +58177,7 @@ var TournamentEconomy;
             pot_seed_bc: 20000,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: minAgeForSlug("gmat-weekly"),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: "💼",
         },
@@ -58581,7 +58606,7 @@ var TournamentEconomyV2;
             pot_seed_bc: draft.pot_seed_bc,
             pot_split_top_n: TournamentEconomy.CLASSIC_POT_SPLIT_TOP_N,
             countries_allowed: "ALL",
-            min_age: TournamentEconomy.MIN_AGE,
+            min_age: TournamentEconomy.minAgeForSlug(draft.slug),
             amoe: TournamentEconomy.AMOE_CLASSIC,
             badge_emoji: wave2BadgeEmoji(draft.slug),
         };
@@ -85575,6 +85600,9 @@ var WorldTrivia;
     // XOR stream separator so the question shuffle and the object layout draw
     // from independent RNG streams of the same session seed.
     WorldTrivia.QUESTION_STREAM = 0x51ab9e3d;
+    // Independent RNG stream separator for the per-question choice-order shuffle
+    // (distinct from the question-queue and object-layout streams).
+    WorldTrivia.CHOICE_STREAM = 0x2f6d1c7b;
     WorldTrivia.OBJECT_SHAPES = ["sphere", "cube", "cone", "torus"];
     WorldTrivia.DEFAULT_SETTINGS = {
         requiredCorrect: 5, // the founder's completion rule
@@ -85690,6 +85718,30 @@ var WorldTrivia;
         return out;
     }
     WorldTrivia.shuffleIds = shuffleIds;
+    /**
+     * Deterministic per-question choice permutation so the correct answer is not
+     * pinned to a fixed slot (authored banks tend to put the answer at index 0).
+     * Returns an array `order` where `order[displaySlot] = canonicalIndex`. Drawn
+     * from an independent RNG stream of the session seed XORed with the question
+     * id hash, so it is stable per (session, question) — a recycled question keeps
+     * the same layout — yet varies question-to-question and session-to-session.
+     * Server-authoritative: grading maps the player's display slot back through
+     * this order (world_answer_submit); the client never sees correctIndex.
+     */
+    function choiceOrderFor(seed, questionId, count) {
+        var indices = [];
+        for (var i = 0; i < count; i++)
+            indices.push(i);
+        var rnd = mulberry32((seed ^ WorldTrivia.CHOICE_STREAM ^ fnv1a32(questionId)) >>> 0);
+        for (var k = indices.length - 1; k > 0; k--) {
+            var j = Math.floor(rnd() * (k + 1));
+            var tmp = indices[k];
+            indices[k] = indices[j];
+            indices[j] = tmp;
+        }
+        return indices;
+    }
+    WorldTrivia.choiceOrderFor = choiceOrderFor;
     // ---- helpers ----
     function ok(data) {
         return JSON.stringify({ success: true, data: data });
@@ -85873,9 +85925,17 @@ var WorldTrivia;
             collectRadius: s.collectRadius
         };
     }
-    /** Question as issued to the player — never includes correctIndex. */
-    function questionView(q) {
-        var view = { questionId: q.id, text: q.text, choices: q.choices };
+    /** Question as issued to the player — never includes correctIndex. When a
+     * per-issue choiceOrder is supplied the choices are reordered into display
+     * order so the correct answer is not pinned to its authored slot. */
+    function questionView(q, order) {
+        var choices = q.choices;
+        if (order && order.length === q.choices.length) {
+            choices = [];
+            for (var i = 0; i < order.length; i++)
+                choices.push(q.choices[order[i]]);
+        }
+        var view = { questionId: q.id, text: q.text, choices: choices };
         if (q.category)
             view.category = q.category;
         return view;
@@ -86421,6 +86481,7 @@ var WorldTrivia;
             var now = nowMs();
             var expired = false;
             var issuedQuestionId = "";
+            var issuedChoiceOrder = undefined;
             var expiredPrevious = false;
             var session = mutateSession(nk, data.sessionId, function (s) {
                 requireOwnedActive(s, userId);
@@ -86492,8 +86553,16 @@ var WorldTrivia;
                 }
                 var qid = s.questionQueue.splice(pickAt, 1)[0];
                 s.askedQuestionIds.push(qid);
-                s.pendingQuestion = { questionId: qid, checkpointId: checkpoint.id, issuedAtMs: now };
+                // Per-issue choice shuffle: derive a deterministic display permutation so
+                // the correct answer isn't pinned to its authored slot. Stored server-only
+                // in the pending question; grading maps the display slot back through it.
+                var issuedQuestion = bankById[qid];
+                var choiceOrder = (issuedQuestion && issuedQuestion.choices && issuedQuestion.choices.length > 1)
+                    ? choiceOrderFor(s.seed, qid, issuedQuestion.choices.length)
+                    : undefined;
+                s.pendingQuestion = { questionId: qid, checkpointId: checkpoint.id, issuedAtMs: now, choiceOrder: choiceOrder };
                 issuedQuestionId = qid;
+                issuedChoiceOrder = choiceOrder;
                 s.visitedCheckpoints.push(checkpoint.id);
                 s.lastPosition = position;
                 s.lastEventAtMs = now;
@@ -86505,7 +86574,7 @@ var WorldTrivia;
                 return err("Question " + issuedQuestionId + " missing from " + (pre.conceptId ? "story " + pre.conceptId : "pack " + pre.packId));
             return ok({
                 checkpointId: data.checkpointId,
-                question: questionView(question),
+                question: questionView(question, issuedChoiceOrder),
                 previousQuestionExpired: expiredPrevious,
                 progress: progressView(session, template)
             });
@@ -86549,6 +86618,13 @@ var WorldTrivia;
             var sessionExpired = false;
             var answerExpired = false;
             var correct = false;
+            // Display->canonical choice permutation carried out of the mutation so the
+            // post-grade reveal (correctIndex) is remapped to the slots the player
+            // actually saw. undefined => legacy 1:1 (no shuffle).
+            var gradedChoiceOrder = undefined;
+            // Canonical index of the player's selected choice (display slot mapped
+            // through choiceOrder). Used for grading + optionContracts feedback.
+            var gradedCanonicalChoice = choiceIndex;
             var session = mutateSession(nk, data.sessionId, function (s) {
                 requireOwnedActive(s, userId);
                 if (expireIfIdle(s, now)) {
@@ -86565,8 +86641,14 @@ var WorldTrivia;
                     throw new Error("Answer rate limit: wait " + (WorldTrivia.ANSWER_MIN_INTERVAL_MS - (now - s.lastAnswerAtMs)) + "ms before answering again");
                 }
                 answerExpired = questionExpired(s.pendingQuestion, now, template.settings.maxAnswerSeconds);
-                // Grading is entirely server-side: the client never saw correctIndex.
-                correct = !answerExpired && choiceIndex === question.correctIndex;
+                // Map the player's DISPLAY slot back to the canonical choice index via
+                // the per-issue shuffle before grading. Grading is entirely
+                // server-side: the client never saw correctIndex.
+                gradedChoiceOrder = s.pendingQuestion.choiceOrder;
+                gradedCanonicalChoice = (gradedChoiceOrder && choiceIndex < gradedChoiceOrder.length)
+                    ? gradedChoiceOrder[choiceIndex]
+                    : choiceIndex;
+                correct = !answerExpired && gradedCanonicalChoice === question.correctIndex;
                 if (correct) {
                     s.correctCount += 1;
                     s.score += WorldTrivia.SCORE_CORRECT;
@@ -86586,22 +86668,32 @@ var WorldTrivia;
             });
             if (sessionExpired)
                 return err("Session expired after " + (WorldTrivia.IDLE_EXPIRY_MS / 60000) + " minutes idle");
+            // Reveal is remapped into DISPLAY space so the client highlights the slot
+            // the player actually saw: correctIndex -> its display slot.
+            var revealCorrectIndex = question.correctIndex;
+            if (gradedChoiceOrder) {
+                var ci = gradedChoiceOrder.indexOf(question.correctIndex);
+                if (ci >= 0)
+                    revealCorrectIndex = ci;
+            }
             var answerOut = {
                 questionId: data.questionId,
                 correct: correct,
                 expired: answerExpired,
                 // Revealed post-grade only, so the AI host can announce the answer.
-                correctIndex: question.correctIndex,
+                correctIndex: revealCorrectIndex,
                 progress: progressView(session, template)
             };
             // Learning layer: the explanation ships only AFTER grading.
+            // optionContracts are stored in CANONICAL choice order — index via
+            // gradedCanonicalChoice, not the player's display slot.
             if (question.explanation)
                 answerOut.explanation = question.explanation;
-            if (question.optionContracts && question.optionContracts[choiceIndex]) {
-                answerOut.feedback = question.optionContracts[choiceIndex].feedback;
+            if (question.optionContracts && question.optionContracts[gradedCanonicalChoice]) {
+                answerOut.feedback = question.optionContracts[gradedCanonicalChoice].feedback;
                 // V9 clients that still render the legacy explanation field receive
                 // the same selected-choice-specific line, never the full audit proof.
-                answerOut.explanation = question.optionContracts[choiceIndex].feedback;
+                answerOut.explanation = question.optionContracts[gradedCanonicalChoice].feedback;
             }
             return ok(answerOut);
         }
