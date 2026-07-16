@@ -543,21 +543,58 @@ function performDailyClaim(nk, logger, userId, gameId) {
 
     utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
 
-    // QVBF_166: Grant `game` (coins) to the wallet using the `game` currency key.
-    // Previously mapped tokens→coins which was wrong when `game` and `tokens` differ.
-    var walletChanges = {};
-    if (reward.game) walletChanges.game = reward.game;
-    if (reward.xp)   walletChanges.xp   = reward.xp;
-    if (Object.keys(walletChanges).length > 0) {
+    // Credit the storage game wallet (currencies.game + tokens mirror) and global XP.
+    // HUD / wallet_get_balances read storage wallets — NOT Nakama's built-in nk.walletUpdate.
+    // Grant only after OCC streak commit (no double grant on conflict). Hard-fail on save failure
+    // so clients never see success:true with a silent empty wallet credit.
+    var grant = reward.game || 0;
+    var xpGrant = reward.xp || 0;
+    var walletGranted = { game: grant, xp: xpGrant };
+    if (grant > 0 || xpGrant > 0) {
         try {
-            nk.walletUpdate(userId, walletChanges, { source: "daily_reward", day: streakData.currentStreak, gameId: gameId }, true);
-            logger.info("[DailyRewards] Granted wallet: " + JSON.stringify(walletChanges) + " to " + userId);
+            if (grant > 0) {
+                var gw = WalletHelpers.getGameWallet(nk, userId, gameId);
+                if (!gw.currencies) {
+                    gw.currencies = { game: 0, tokens: 0, xp: 0 };
+                }
+                if (gw.currencies.game === undefined) gw.currencies.game = 0;
+                if (gw.currencies.tokens === undefined) gw.currencies.tokens = 0;
+                gw.currencies.game += grant;
+                gw.currencies.tokens += grant;
+                WalletHelpers.saveGameWallet(nk, gw);
+            }
+            if (xpGrant > 0) {
+                var globalKey = "global_" + userId;
+                var globalReads = nk.storageRead([{ collection: "wallets", key: globalKey, userId: userId }]);
+                var globalWallet;
+                if (globalReads && globalReads.length > 0 && globalReads[0].value) {
+                    globalWallet = globalReads[0].value;
+                } else {
+                    globalWallet = { userId: userId, currencies: { global: 0, xut: 0, xp: 0 }, items: {} };
+                }
+                if (!globalWallet.currencies) {
+                    globalWallet.currencies = { global: 0, xut: 0, xp: 0 };
+                }
+                if (globalWallet.currencies.xp === undefined) globalWallet.currencies.xp = 0;
+                globalWallet.currencies.xp += xpGrant;
+                nk.storageWrite([{
+                    collection: "wallets",
+                    key: globalKey,
+                    userId: userId,
+                    value: globalWallet,
+                    permissionRead: 1,
+                    permissionWrite: 1
+                }]);
+            }
+            logger.info("[DailyRewards] Granted storage wallet: " + JSON.stringify(walletGranted) + " to " + userId);
         } catch (walletErr) {
-            logger.error("[DailyRewards] Wallet grant failed: " + walletErr.message);
+            var grantMsg = (walletErr && walletErr.message) ? walletErr.message : String(walletErr);
+            logger.error("[DailyRewards] Wallet grant failed after claim commit: " + grantMsg);
+            return { ok: false, error: "Wallet grant failed: " + grantMsg, reason: "wallet_grant_failed" };
         }
     }
 
-    return { ok: true, streakData: streakData, reward: reward, walletGranted: walletChanges };
+    return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted };
 }
 
 /**
