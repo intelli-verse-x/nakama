@@ -76,11 +76,23 @@ namespace TournamentCrons {
     var now = nowSec();
     var anyMeta: any = meta;
     var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
-    var newOpenIso = unixToIso(prevWindowEnd + 1);                // start where prev ended
-    var newEndIso = unixToIso(prevWindowEnd + 24 * 3600);          // 24h window
+    var daySec = 24 * 3600;
+    // Catch up if cron lagged for many days (one settle must land a live window).
+    var rolls = 0;
+    while (prevWindowEnd <= now && rolls < 400) {
+      prevWindowEnd += daySec;
+      rolls++;
+    }
+    if (rolls === 0) {
+      // Still advance one day from the settled window (normal path).
+      prevWindowEnd += daySec;
+      rolls = 1;
+    }
+    var newEndIso = unixToIso(prevWindowEnd);
+    var newOpenIso = unixToIso(prevWindowEnd - daySec + 1);
     anyMeta.window_open_iso = newOpenIso;
     anyMeta.window_end_iso = newEndIso;
-    anyMeta.daily_instance = (anyMeta.daily_instance || 1) + 1;
+    anyMeta.daily_instance = (anyMeta.daily_instance || 1) + rolls;
     meta.status = "OPEN";
     meta.pot_bc = cfg.pot_seed_bc | 0;
     meta.entries_count = 0;
@@ -253,6 +265,19 @@ namespace TournamentCrons {
             });
           }
         }
+        continue;
+      }
+
+      // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
+      if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
+        var recovered = rollDailyForward(nk, cfg, meta);
+        actions.push({
+          slug: cfg.slug,
+          action: "daily_recovered_from_settled",
+          new_window_open_iso: (recovered as any).window_open_iso,
+          new_window_end_iso: (recovered as any).window_end_iso,
+          daily_instance: (recovered as any).daily_instance,
+        });
         continue;
       }
     }

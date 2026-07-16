@@ -56,6 +56,32 @@ namespace TournamentEconomy {
   // 18+ gate (§3)
   export const MIN_AGE = 18;
 
+  // Public / no-KYC slate: min_age 0 → age_blocked false without verified DOB.
+  // Exam / high-stakes tournaments keep MIN_AGE (Didit/Veriff still required).
+  export const PUBLIC_MIN_AGE = 0;
+
+  /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
+  export const PUBLIC_NO_KYC_SLUGS: string[] = [
+    "gk-royale-daily",
+    "pick-5-daily",
+    "movie-trivia-royale",
+    "music-history-royale",
+    "pop-culture-2010s",
+    "brain-bowl-weekly",
+    "movie-buff-weekly",
+  ];
+
+  export function isPublicNoKycSlug(slug: string): boolean {
+    for (var i = 0; i < PUBLIC_NO_KYC_SLUGS.length; i++) {
+      if (PUBLIC_NO_KYC_SLUGS[i] === slug) return true;
+    }
+    return false;
+  }
+
+  export function minAgeForSlug(slug: string): number {
+    return isPublicNoKycSlug(slug) ? PUBLIC_MIN_AGE : MIN_AGE;
+  }
+
   // Anti-cheat baseline (§3)
   export const ANTICHEAT_LATENCY_FLOOR_MS = 300;
   export const ANTICHEAT_DAILY_SUBMIT_CEILING = 200;
@@ -195,7 +221,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 5000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: "ALL",
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("gk-royale-daily"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "🧠",
     },
@@ -215,7 +241,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 20000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: "ALL",
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("brain-bowl-weekly"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "🧪",
     },
@@ -234,7 +260,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 18000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: "ALL",
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("movie-buff-weekly"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "🎬",
     },
@@ -265,7 +291,7 @@ namespace TournamentEconomy {
         final_survivor_bonus_bc: 200000,  // #1 of survivors gets a bragging-rights bonus
       },
       countries_allowed: "ALL",
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("survivor-week-1"),
       amoe: AMOE_ELIMINATION,
       badge_emoji: "⚔️",
     },
@@ -295,7 +321,7 @@ namespace TournamentEconomy {
         house_backstop_usd_per_day: 100,
       },
       countries_allowed: "ALL",
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("pick-5-daily"),
       amoe: AMOE_PICK_N,
       badge_emoji: "🎯",
     },
@@ -315,7 +341,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 25000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: ["US"],
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("ap-2027-prep-weekly"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "📚",
     },
@@ -335,7 +361,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 30000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: ["US"],
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("sat-aug-cram"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "✏️",
     },
@@ -354,7 +380,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 25000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: ["US"],
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("act-sep-sprint"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "🎓",
     },
@@ -373,7 +399,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 15000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: ["IN"],
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("neet-prep-weekly"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "⚕️",
     },
@@ -392,7 +418,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 15000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: ["IN"],
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("jee-main-weekly"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "🔬",
     },
@@ -411,7 +437,7 @@ namespace TournamentEconomy {
       pot_seed_bc: 20000,
       pot_split_top_n: CLASSIC_POT_SPLIT_TOP_N,
       countries_allowed: "ALL",
-      min_age: MIN_AGE,
+      min_age: minAgeForSlug("gmat-weekly"),
       amoe: AMOE_CLASSIC,
       badge_emoji: "💼",
     },
