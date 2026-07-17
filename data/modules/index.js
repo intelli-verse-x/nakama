@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-17T11:11:03.939Z
+// Generated: 2026-07-17T16:05:39.212Z
 // RPC Count: 1317
 // ============================================================
 
@@ -156018,19 +156018,11 @@ var TournamentEconomy;
     TournamentEconomy.TIER1_COUNTRIES = ["US", "CA", "GB", "AU", "NZ", "IE"];
     // 18+ gate (§3)
     TournamentEconomy.MIN_AGE = 18;
-    // Public / no-KYC slate: min_age 0 → age_blocked false without verified DOB.
-    // Exam / high-stakes tournaments keep MIN_AGE (Didit/Veriff still required).
+    // Optional public / no-KYC allowlist. Empty = all tournaments require MIN_AGE
+    // (Didit/Veriff age gate). Add slugs here only when product wants no-KYC enter.
     TournamentEconomy.PUBLIC_MIN_AGE = 0;
-    /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
-    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [
-        "gk-royale-daily",
-        "pick-5-daily",
-        "movie-trivia-royale",
-        "music-history-royale",
-        "pop-culture-2010s",
-        "brain-bowl-weekly",
-        "movie-buff-weekly",
-    ];
+    /** Slugs that skip age/KYC before enter. Empty → all private (KYC required). */
+    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [];
     function isPublicNoKycSlug(slug) {
         for (var i = 0; i < TournamentEconomy.PUBLIC_NO_KYC_SLUGS.length; i++) {
             if (TournamentEconomy.PUBLIC_NO_KYC_SLUGS[i] === slug)
