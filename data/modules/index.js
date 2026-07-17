@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-16T13:50:43.899Z
-// RPC Count: 1318
+// Generated: 2026-07-17T11:11:03.939Z
+// RPC Count: 1317
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -1189,7 +1189,6 @@ var __rpc_daily_progress_check;
 var __rpc_daily_progress_claim;
 var __rpc_daily_reward_get_calendar;
 var __rpc_daily_rewards_get_history;
-var __rpc_daily_rewards_reconcile;
 var __rpc_analytics_appodeal;
 var __rpc_analytics_apple_appstore;
 var __rpc_apple_appstore_import;
@@ -1340,7 +1339,7 @@ var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"
 ﻿
 
 
-// --- Module: achievements\achievements.js ---
+// --- Module: achievements/achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1929,7 +1928,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player\ai_player.js ---
+// --- Module: ai_player/ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2741,7 +2740,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\admin\analytics_admin.js ---
+// --- Module: analytics/admin/analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3514,7 +3513,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\analytics.js ---
+// --- Module: analytics/analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -5532,7 +5531,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\backfill\analytics_backfill.js ---
+// --- Module: analytics/backfill/analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -6665,7 +6664,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\dropoff\analytics_dropoff.js ---
+// --- Module: analytics/dropoff/analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -7241,7 +7240,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\extended\analytics_extended.js ---
+// --- Module: analytics/extended/analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -10513,7 +10512,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
+// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -11254,7 +11253,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\hardening\analytics_hardening.js ---
+// --- Module: analytics/hardening/analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -11884,7 +11883,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\history\analytics_history.js ---
+// --- Module: analytics/history/analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -12830,7 +12829,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\modes\analytics_modes.js ---
+// --- Module: analytics/modes/analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -13432,7 +13431,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\ops\analytics_ops.js ---
+// --- Module: analytics/ops/analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -14075,7 +14074,7 @@ function __ModuleInit_12(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\player_analytics_store.js ---
+// --- Module: analytics/player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -14756,7 +14755,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics\player_profile\analytics_player_profile.js ---
+// --- Module: analytics/player_profile/analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -15545,7 +15544,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\read_models\analytics_read_models.js ---
+// --- Module: analytics/read_models/analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -16189,7 +16188,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\recap_signals\recap_signals.js ---
+// --- Module: analytics/recap_signals/recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -16492,7 +16491,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
+// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -16750,7 +16749,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\rollup\analytics_rollup.js ---
+// --- Module: analytics/rollup/analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -19765,7 +19764,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
+// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -20601,7 +20600,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\segments\analytics_segments.js ---
+// --- Module: analytics/segments/analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -21190,7 +21189,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
+// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -21625,7 +21624,7 @@ function __ModuleInit_21(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\v2\analytics_v2.js ---
+// --- Module: analytics/v2/analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -22643,7 +22642,7 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges\badge_definitions.js ---
+// --- Module: badges/badge_definitions.js ---
 /**
  * QuizVerse Badge Definitions — all 207 badges from the game manifest.
  * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
@@ -22927,7 +22926,7 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
 };
 
 
-// --- Module: badges\badge_seed_definitions.js ---
+// --- Module: badges/badge_seed_definitions.js ---
 // badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
 // Run once via admin RPC or directly call badges_bulk_create
 // Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
@@ -23070,7 +23069,7 @@ var LEGENDARY_AND_SEASONAL_BADGES = {
 // Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
 
 
-// --- Module: badges\badges.js ---
+// --- Module: badges/badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -24536,7 +24535,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: characters\characters.js ---
+// --- Module: characters/characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -25000,7 +24999,7 @@ function rpcCharacterSetActive(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: chat_moderation\chat_moderation.js ---
+// --- Module: chat_moderation/chat_moderation.js ---
 // chat_moderation.js - Chat Moderation Pipeline
 // Storage collection: chat_reports, chat_filter_config
 // RPCs: chat_filter_message (public), chat_report_message (public),
@@ -25533,7 +25532,7 @@ function __ModuleInit_27(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chatbox\chatbox.js ---
+// --- Module: chatbox/chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -26877,7 +26876,7 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: copilot\cognito_wallet_mapper.js ---
+// --- Module: copilot/cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -27109,7 +27108,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_aggregate.js ---
+// --- Module: copilot/leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27221,7 +27220,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_friends.js ---
+// --- Module: copilot/leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -27398,7 +27397,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_sync.js ---
+// --- Module: copilot/leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27473,7 +27472,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\utils.js ---
+// --- Module: copilot/utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -27559,7 +27558,7 @@ var utils = {
 };
 
 
-// --- Module: copilot\wallet_registry.js ---
+// --- Module: copilot/wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -27714,7 +27713,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot\wallet_utils.js ---
+// --- Module: copilot/wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -27820,7 +27819,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket\cricket_ai_integration.js ---
+// --- Module: cricket/cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -28661,7 +28660,7 @@ function __ModuleInit_36(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_daily_challenges.js ---
+// --- Module: cricket/cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -29236,7 +29235,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_economy.js ---
+// --- Module: cricket/cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -29913,7 +29912,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_engagement.js ---
+// --- Module: cricket/cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -30520,7 +30519,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_live_match.js ---
+// --- Module: cricket/cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -31280,7 +31279,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_predictions.js ---
+// --- Module: cricket/cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -31947,7 +31946,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_retention.js ---
+// --- Module: cricket/cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -32785,7 +32784,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_season_pass.js ---
+// --- Module: cricket/cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -33397,7 +33396,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_trivia.js ---
+// --- Module: cricket/cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -34347,7 +34346,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\engagement.js ---
+// --- Module: cricket_worldcup/engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -35016,7 +35015,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\predictions.js ---
+// --- Module: cricket_worldcup/predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -35606,7 +35605,7 @@ function __ModuleInit_46(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game\cross_game.js ---
+// --- Module: cross_game/cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -36093,7 +36092,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions\daily_missions.js ---
+// --- Module: daily_missions/daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -36472,7 +36471,7 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards\daily_progress.js ---
+// --- Module: daily_rewards/daily_progress.js ---
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
@@ -36746,7 +36745,7 @@ function __ModuleInit_49(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_reward_calendar.js ---
+// --- Module: daily_rewards/daily_reward_calendar.js ---
 // daily_reward_calendar.js - 30-Day Daily Reward Calendar View
 // Extends the daily rewards system with a full calendar preview
 // RPC: daily_reward_get_calendar
@@ -36865,452 +36864,584 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_rewards.js ---
-    // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
+// --- Module: daily_rewards/daily_rewards.js ---
+// daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
-    /**
-     * Reward configurations per gameId UUID
-     * This can be extended or moved to storage for dynamic configuration
-     */
-    /**
-     * BALANCED DAILY REWARDS CONFIGURATION
-     * 
-     * Design Philosophy:
-     * - Day 1: 40 coins = ~4 QuickPlay games (keeps them playing after free plays)
-     * - Day 3: 65 coins = Can afford first Hint power-up (75) with Day 2 leftover (milestone!)
-     * - Day 7: 200 coins = Big reward validates loyalty, can afford Extra Life (200)
-     * - Weekly total: 660 coins (enough for ~6-8 sessions/day with free plays)
-     * 
-     * Key metrics:
-     * - Creates "slightly short" feeling → drives ad watching & IAP
-     * - Never leaves user completely stuck (can always play with free plays + Day 1)
-     * - Milestone at Day 3 (first power-up affordable) creates mid-week retention hook
-     * - Day 7 jackpot encourages full week completion (4x Day 1 reward)
-     */
-    // QVBF_166: Each row now carries a `game` field (coins — the primary game
-    // currency displayed in the reward popup and granted to the wallet).
-    // `tokens` is kept for legacy compatibility but is NOT granted to the wallet.
-    // The client reads `reward.game` for the coin amount shown in the toast.
-    // RCA fix (client/server reward mismatch): `game` (the coins actually granted to
-    // the wallet) was a flat 50/day, contradicting BOTH the balanced-economy design
-    // doc above (Day 1: 40 … Day 7: 200, weekly total 660) AND the client's canonical
-    // display table (IVXDailyRewardsManager.DAILY_REWARD_COINS = 40,50,65,80,100,125,200).
-    // The popup promised the ramp while the wallet received 50. `game` now follows the
-    // documented ramp, so display == grant on every day.
-    var REWARD_CONFIGS = {
-        // Default rewards for any game - BALANCED FOR ENGAGEMENT + MONETIZATION
-        "default": [
-            { day: 1, game: 40, xp: 50, tokens: 40, description: "Welcome Back!" },
-            { day: 2, game: 50, xp: 75, tokens: 50, description: "Day 2 Reward" },
-            { day: 3, game: 65, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
-            { day: 4, game: 80, xp: 150, tokens: 80, description: "Halfway There!" },
-            { day: 5, game: 100, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
-            { day: 6, game: 125, xp: 275, tokens: 125, description: "Almost There!" },
-            { day: 7, game: 200, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
-        ],
+/**
+ * Reward configurations per gameId UUID
+ * This can be extended or moved to storage for dynamic configuration
+ */
+/**
+ * BALANCED DAILY REWARDS CONFIGURATION
+ * 
+ * Design Philosophy:
+ * - Day 1: 40 coins = ~4 QuickPlay games (keeps them playing after free plays)
+ * - Day 3: 65 coins = Can afford first Hint power-up (75) with Day 2 leftover (milestone!)
+ * - Day 7: 200 coins = Big reward validates loyalty, can afford Extra Life (200)
+ * - Weekly total: 660 coins (enough for ~6-8 sessions/day with free plays)
+ * 
+ * Key metrics:
+ * - Creates "slightly short" feeling → drives ad watching & IAP
+ * - Never leaves user completely stuck (can always play with free plays + Day 1)
+ * - Milestone at Day 3 (first power-up affordable) creates mid-week retention hook
+ * - Day 7 jackpot encourages full week completion (4x Day 1 reward)
+ */
+// QVBF_166: Each row now carries a `game` field (coins — the primary game
+// currency displayed in the reward popup and granted to the wallet).
+// `tokens` is kept for legacy compatibility but is NOT granted to the wallet.
+// The client reads `reward.game` for the coin amount shown in the toast.
+// RCA fix (client/server reward mismatch): `game` (the coins actually granted to
+// the wallet) was a flat 50/day, contradicting BOTH the balanced-economy design
+// doc above (Day 1: 40 … Day 7: 200, weekly total 660) AND the client's canonical
+// display table (IVXDailyRewardsManager.DAILY_REWARD_COINS = 40,50,65,80,100,125,200).
+// The popup promised the ramp while the wallet received 50. `game` now follows the
+// documented ramp, so display == grant on every day.
+var REWARD_CONFIGS = {
+    // Default rewards for any game - BALANCED FOR ENGAGEMENT + MONETIZATION
+    "default": [
+        { day: 1, game: 40, xp: 50, tokens: 40, description: "Welcome Back!" },
+        { day: 2, game: 50, xp: 75, tokens: 50, description: "Day 2 Reward" },
+        { day: 3, game: 65, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
+        { day: 4, game: 80, xp: 150, tokens: 80, description: "Halfway There!" },
+        { day: 5, game: 100, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
+        { day: 6, game: 125, xp: 275, tokens: 125, description: "Almost There!" },
+        { day: 7, game: 200, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
+    ],
 
-        // QuizVerse specific - CORRECT GAME ID
-        "126bf539-dae2-4bcf-964d-316c0fa1f92b": [
-            { day: 1, game: 40, xp: 50, tokens: 40, description: "Welcome Back!" },
-            { day: 2, game: 50, xp: 75, tokens: 50, description: "Day 2 Reward" },
-            { day: 3, game: 65, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
-            { day: 4, game: 80, xp: 150, tokens: 80, description: "Halfway There!" },
-            { day: 5, game: 100, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
-            { day: 6, game: 125, xp: 275, tokens: 125, description: "Almost There!" },
-            { day: 7, game: 200, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
-        ]
-    };
+    // QuizVerse specific - CORRECT GAME ID
+    "126bf539-dae2-4bcf-964d-316c0fa1f92b": [
+        { day: 1, game: 40, xp: 50, tokens: 40, description: "Welcome Back!" },
+        { day: 2, game: 50, xp: 75, tokens: 50, description: "Day 2 Reward" },
+        { day: 3, game: 65, xp: 100, tokens: 65, description: "Power-Up Unlocked! 💪" },
+        { day: 4, game: 80, xp: 150, tokens: 80, description: "Halfway There!" },
+        { day: 5, game: 100, xp: 200, tokens: 100, multiplier: "2x XP", description: "Day 5 Bonus! 🔥" },
+        { day: 6, game: 125, xp: 275, tokens: 125, description: "Almost There!" },
+        { day: 7, game: 200, xp: 400, tokens: 200, nft: "weekly_badge", description: "🎉 Weekly Champion!" }
+    ]
+};
 
-    /**
-     * UTC day helpers — daily rewards use UTC dates (matches claimHistory writes
-     * and LegacyDailyRewards.getTodayDateString). Do not use utils.getStartOfDay
-     * here; it uses local timezone.
-     */
-    function pad2Utc(n) {
-        return n < 10 ? "0" + n : String(n);
+/**
+ * UTC day helpers — daily rewards use UTC dates (matches claimHistory writes
+ * and LegacyDailyRewards.getTodayDateString). Do not use utils.getStartOfDay
+ * here; it uses local timezone.
+ */
+function pad2Utc(n) {
+    return n < 10 ? "0" + n : String(n);
+}
+
+function getUtcDateStringFromUnix(ts) {
+    var d = new Date(ts * 1000);
+    return d.getUTCFullYear() + "-" + pad2Utc(d.getUTCMonth() + 1) + "-" + pad2Utc(d.getUTCDate());
+}
+
+function getTodayUtcDateString() {
+    var d = new Date();
+    return d.getUTCFullYear() + "-" + pad2Utc(d.getUTCMonth() + 1) + "-" + pad2Utc(d.getUTCDate());
+}
+
+function getUtcDayStartUnix(ts) {
+    var d = new Date(ts * 1000);
+    d.setUTCHours(0, 0, 0, 0);
+    return Math.floor(d.getTime() / 1000);
+}
+
+function getUtcDayStartUnixFromDateString(dateStr) {
+    if (!dateStr || typeof dateStr !== "string") return 0;
+    var parts = dateStr.split("-");
+    if (parts.length !== 3) return 0;
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10) - 1;
+    var d = parseInt(parts[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return 0;
+    return Math.floor(Date.UTC(y, m, d, 0, 0, 0, 0) / 1000);
+}
+
+function maxUtcDateString(a, b) {
+    if (!a) return b || "";
+    if (!b) return a || "";
+    return a > b ? a : b;
+}
+
+/**
+ * Reconcile lastClaimTimestamp against claimHistory and legacy daily_rewards
+ * storage so eligibility checks use the true most-recent claim date.
+ */
+function reconcileStreakLastClaim(nk, logger, userId, gameId, data) {
+    var effectiveDate = "";
+    var changed = false;
+
+    if (data.lastClaimTimestamp > 0) {
+        effectiveDate = getUtcDateStringFromUnix(data.lastClaimTimestamp);
     }
 
-    function getUtcDateStringFromUnix(ts) {
-        var d = new Date(ts * 1000);
-        return d.getUTCFullYear() + "-" + pad2Utc(d.getUTCMonth() + 1) + "-" + pad2Utc(d.getUTCDate());
+    if (data.claimHistory && data.claimHistory.length > 0) {
+        var lastHistory = data.claimHistory[data.claimHistory.length - 1];
+        effectiveDate = maxUtcDateString(effectiveDate, lastHistory);
     }
 
-    function getTodayUtcDateString() {
-        var d = new Date();
-        return d.getUTCFullYear() + "-" + pad2Utc(d.getUTCMonth() + 1) + "-" + pad2Utc(d.getUTCDate());
-    }
-
-    function getUtcDayStartUnix(ts) {
-        var d = new Date(ts * 1000);
-        d.setUTCHours(0, 0, 0, 0);
-        return Math.floor(d.getTime() / 1000);
-    }
-
-    function getUtcDayStartUnixFromDateString(dateStr) {
-        if (!dateStr || typeof dateStr !== "string") return 0;
-        var parts = dateStr.split("-");
-        if (parts.length !== 3) return 0;
-        var y = parseInt(parts[0], 10);
-        var m = parseInt(parts[1], 10) - 1;
-        var d = parseInt(parts[2], 10);
-        if (isNaN(y) || isNaN(m) || isNaN(d)) return 0;
-        return Math.floor(Date.UTC(y, m, d, 0, 0, 0, 0) / 1000);
-    }
-
-    function maxUtcDateString(a, b) {
-        if (!a) return b || "";
-        if (!b) return a || "";
-        return a > b ? a : b;
-    }
-
-    /**
-     * Reconcile lastClaimTimestamp against claimHistory and legacy daily_rewards
-     * storage so eligibility checks use the true most-recent claim date.
-     */
-    function reconcileStreakLastClaim(nk, logger, userId, gameId, data) {
-        var effectiveDate = "";
-        var changed = false;
-
-        if (data.lastClaimTimestamp > 0) {
-            effectiveDate = getUtcDateStringFromUnix(data.lastClaimTimestamp);
+    try {
+        var tsStatus = utils.readStorage(nk, logger, "daily_rewards", "status_" + userId, userId);
+        if (tsStatus) {
+            if (tsStatus.lastClaimDate) {
+                effectiveDate = maxUtcDateString(effectiveDate, tsStatus.lastClaimDate);
+            }
+            if (tsStatus.rewards && tsStatus.rewards.length) {
+                for (var ri = 0; ri < tsStatus.rewards.length; ri++) {
+                    if (tsStatus.rewards[ri] && tsStatus.rewards[ri].date) {
+                        effectiveDate = maxUtcDateString(effectiveDate, tsStatus.rewards[ri].date);
+                    }
+                }
+            }
         }
+    } catch (reconcileErr) {
+        utils.logWarn(logger, "[DailyRewards] Legacy reconcile skipped: " + reconcileErr.message);
+    }
 
-        if (data.claimHistory && data.claimHistory.length > 0) {
-            var lastHistory = data.claimHistory[data.claimHistory.length - 1];
-            effectiveDate = maxUtcDateString(effectiveDate, lastHistory);
+    if (effectiveDate) {
+        var tsDate = data.lastClaimTimestamp > 0
+            ? getUtcDateStringFromUnix(data.lastClaimTimestamp)
+            : "";
+        if (effectiveDate > tsDate) {
+            data.lastClaimTimestamp = getUtcDayStartUnixFromDateString(effectiveDate);
+            changed = true;
+            utils.logInfo(logger, "[DailyRewards] Reconciled lastClaimTimestamp for " + userId +
+                ": " + (tsDate || "none") + " -> " + effectiveDate);
         }
+    }
 
+    if (changed) {
+        saveStreakData(nk, logger, userId, gameId, data);
+    }
+
+    return data;
+}
+
+/**
+ * Get or create streak data for user
+ * @param {object} nk - Nakama runtime
+ * @param {object} logger - Logger instance
+ * @param {string} userId - User ID
+ * @param {string} gameId - Game ID (UUID)
+ * @returns {object} Streak data
+ */
+function getStreakData(nk, logger, userId, gameId) {
+    var collection = "daily_streaks";
+    var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
+
+    var data = utils.readStorage(nk, logger, collection, key, userId);
+
+    if (!data) {
+        // Initialize new streak
+        data = {
+            userId: userId,
+            gameId: gameId,
+            currentStreak: 0,
+            bestStreak: 0,
+            lastClaimTimestamp: 0,
+            totalClaims: 0,
+            claimHistory: [],
+            createdAt: utils.getCurrentTimestamp()
+        };
+
+        // QVBF_51 migration: while the TS LegacyDailyRewards handler was
+        // (wrongly) serving daily_rewards_claim, it wrote streak state to
+        // collection "daily_rewards", key "status_{userId}" as
+        // { day, lastClaimDate: "YYYY-MM-DD", streak, rewards[] }.
+        // Seed from that record once so those users don't lose their streak.
         try {
             var tsStatus = utils.readStorage(nk, logger, "daily_rewards", "status_" + userId, userId);
-            if (tsStatus) {
-                if (tsStatus.lastClaimDate) {
-                    effectiveDate = maxUtcDateString(effectiveDate, tsStatus.lastClaimDate);
-                }
+            if (tsStatus && tsStatus.streak > 0 && tsStatus.lastClaimDate) {
+                var migratedDate = tsStatus.lastClaimDate;
                 if (tsStatus.rewards && tsStatus.rewards.length) {
-                    for (var ri = 0; ri < tsStatus.rewards.length; ri++) {
-                        if (tsStatus.rewards[ri] && tsStatus.rewards[ri].date) {
-                            effectiveDate = maxUtcDateString(effectiveDate, tsStatus.rewards[ri].date);
+                    for (var mi = 0; mi < tsStatus.rewards.length; mi++) {
+                        if (tsStatus.rewards[mi] && tsStatus.rewards[mi].date) {
+                            migratedDate = maxUtcDateString(migratedDate, tsStatus.rewards[mi].date);
                         }
                     }
                 }
-            }
-        } catch (reconcileErr) {
-            utils.logWarn(logger, "[DailyRewards] Legacy reconcile skipped: " + reconcileErr.message);
-        }
-
-        if (effectiveDate) {
-            var tsDate = data.lastClaimTimestamp > 0
-                ? getUtcDateStringFromUnix(data.lastClaimTimestamp)
-                : "";
-            if (effectiveDate > tsDate) {
-                data.lastClaimTimestamp = getUtcDayStartUnixFromDateString(effectiveDate);
-                changed = true;
-                utils.logInfo(logger, "[DailyRewards] Reconciled lastClaimTimestamp for " + userId +
-                    ": " + (tsDate || "none") + " -> " + effectiveDate);
-            }
-        }
-
-        if (changed) {
-            saveStreakData(nk, logger, userId, gameId, data);
-        }
-
-        return data;
-    }
-
-    /**
-     * Get or create streak data for user
-     * @param {object} nk - Nakama runtime
-     * @param {object} logger - Logger instance
-     * @param {string} userId - User ID
-     * @param {string} gameId - Game ID (UUID)
-     * @returns {object} Streak data
-     */
-    function getStreakData(nk, logger, userId, gameId) {
-        var collection = "daily_streaks";
-        var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
-        
-        var data = utils.readStorage(nk, logger, collection, key, userId);
-        
-        if (!data) {
-            // Initialize new streak
-            data = {
-                userId: userId,
-                gameId: gameId,
-                currentStreak: 0,
-                bestStreak: 0,
-                lastClaimTimestamp: 0,
-                totalClaims: 0,
-                claimHistory: [],
-                createdAt: utils.getCurrentTimestamp()
-            };
-
-            // QVBF_51 migration: while the TS LegacyDailyRewards handler was
-            // (wrongly) serving daily_rewards_claim, it wrote streak state to
-            // collection "daily_rewards", key "status_{userId}" as
-            // { day, lastClaimDate: "YYYY-MM-DD", streak, rewards[] }.
-            // Seed from that record once so those users don't lose their streak.
-            try {
-                var tsStatus = utils.readStorage(nk, logger, "daily_rewards", "status_" + userId, userId);
-                if (tsStatus && tsStatus.streak > 0 && tsStatus.lastClaimDate) {
-                    var migratedDate = tsStatus.lastClaimDate;
+                var migratedTs = getUtcDayStartUnixFromDateString(migratedDate);
+                if (migratedTs > 0) {
+                    data.currentStreak = tsStatus.streak;
+                    data.bestStreak = tsStatus.streak;
+                    data.lastClaimTimestamp = migratedTs;
+                    data.totalClaims = (tsStatus.rewards && tsStatus.rewards.length) || tsStatus.streak;
                     if (tsStatus.rewards && tsStatus.rewards.length) {
-                        for (var mi = 0; mi < tsStatus.rewards.length; mi++) {
-                            if (tsStatus.rewards[mi] && tsStatus.rewards[mi].date) {
-                                migratedDate = maxUtcDateString(migratedDate, tsStatus.rewards[mi].date);
+                        for (var ri = 0; ri < tsStatus.rewards.length && ri < 90; ri++) {
+                            if (tsStatus.rewards[ri] && tsStatus.rewards[ri].date) {
+                                data.claimHistory.push(tsStatus.rewards[ri].date);
                             }
                         }
                     }
-                    var migratedTs = getUtcDayStartUnixFromDateString(migratedDate);
-                    if (migratedTs > 0) {
-                        data.currentStreak = tsStatus.streak;
-                        data.bestStreak = tsStatus.streak;
-                        data.lastClaimTimestamp = migratedTs;
-                        data.totalClaims = (tsStatus.rewards && tsStatus.rewards.length) || tsStatus.streak;
-                        if (tsStatus.rewards && tsStatus.rewards.length) {
-                            for (var ri = 0; ri < tsStatus.rewards.length && ri < 90; ri++) {
-                                if (tsStatus.rewards[ri] && tsStatus.rewards[ri].date) {
-                                    data.claimHistory.push(tsStatus.rewards[ri].date);
-                                }
-                            }
-                        }
-                        utils.logInfo(logger, "[DailyRewards] Migrated TS-legacy streak for " + userId + ": streak=" + tsStatus.streak);
-                    }
+                    utils.logInfo(logger, "[DailyRewards] Migrated TS-legacy streak for " + userId + ": streak=" + tsStatus.streak);
                 }
-            } catch (migErr) {
-                utils.logWarn(logger, "[DailyRewards] TS-legacy migration skipped: " + migErr.message);
+            }
+        } catch (migErr) {
+            utils.logWarn(logger, "[DailyRewards] TS-legacy migration skipped: " + migErr.message);
+        }
+    }
+
+    // Backfill fields for records created before QVBF_51
+    if (typeof data.bestStreak !== "number") data.bestStreak = data.currentStreak || 0;
+    if (!data.claimHistory) data.claimHistory = [];
+
+    data = reconcileStreakLastClaim(nk, logger, userId, gameId, data);
+
+    return data;
+}
+
+/**
+ * Save streak data
+ * @param {object} nk - Nakama runtime
+ * @param {object} logger - Logger instance
+ * @param {string} userId - User ID
+ * @param {string} gameId - Game ID (UUID)
+ * @param {object} data - Streak data to save
+ * @returns {boolean} Success status
+ */
+function saveStreakData(nk, logger, userId, gameId, data) {
+    var collection = "daily_streaks";
+    var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
+    return utils.writeStorage(nk, logger, collection, key, userId, data);
+}
+
+/**
+ * OCC support (double-claim fix): raw read that also returns the storage object
+ * version, so the claim path can do a CONDITIONAL write. utils.readStorage
+ * discards the version, which forced blind writes — two concurrent
+ * daily_rewards_claim calls (double-tap, two devices, client retry) both passed
+ * canClaimToday and both granted the wallet.
+ */
+function readStreakRawWithVersion(nk, userId, gameId) {
+    var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
+    var objects = nk.storageRead([{ collection: "daily_streaks", key: key, userId: userId }]);
+    if (objects && objects.length > 0 && objects[0].value) {
+        return { value: objects[0].value, version: objects[0].version };
+    }
+    // "*" = Nakama conditional create: write succeeds only if the key does not exist yet.
+    return { value: null, version: "*" };
+}
+
+/**
+ * Conditional write — succeeds only if the record still has the version we read.
+ * Returns false on version conflict (a concurrent claim won the race).
+ */
+function saveStreakDataVersioned(nk, logger, userId, gameId, data, version) {
+    var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
+    try {
+        nk.storageWrite([{
+            collection: "daily_streaks",
+            key: key,
+            userId: userId,
+            value: data,
+            version: version,
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+        return true;
+    } catch (err) {
+        utils.logWarn(logger, "[DailyRewards] Versioned write rejected for " + userId +
+            " (concurrent claim?): " + err.message);
+        return false;
+    }
+}
+
+/**
+ * Check if user can claim reward today
+ * @param {object} streakData - Current streak data
+ * @returns {object} { canClaim: boolean, reason: string }
+ */
+function canClaimToday(streakData) {
+    var lastClaim = streakData.lastClaimTimestamp;
+
+    // First claim ever
+    if (lastClaim === 0) {
+        return { canClaim: true, reason: "first_claim" };
+    }
+
+    var lastDate = getUtcDateStringFromUnix(lastClaim);
+    var today = getTodayUtcDateString();
+
+    if (lastDate === today) {
+        return { canClaim: false, reason: "already_claimed_today" };
+    }
+
+    return { canClaim: true, reason: "eligible" };
+}
+
+/**
+ * Update streak status based on time elapsed; persist when streak breaks.
+ * @param {object} nk - Nakama runtime
+ * @param {object} logger - Logger instance
+ * @param {string} userId - User ID
+ * @param {string} gameId - Game ID (UUID)
+ * @param {object} streakData - Current streak data
+ * @returns {object} Updated streak data
+ */
+function updateStreakStatus(nk, logger, userId, gameId, streakData) {
+    var now = utils.getUnixTimestamp();
+    var lastClaim = streakData.lastClaimTimestamp;
+
+    // First claim
+    if (lastClaim === 0) {
+        return streakData;
+    }
+
+    // Check if more than 48 hours passed (streak broken)
+    if (!utils.isWithinHours(lastClaim, now, 48)) {
+        if (streakData.currentStreak !== 0) {
+            streakData.currentStreak = 0;
+            saveStreakData(nk, logger, userId, gameId, streakData);
+        }
+    }
+
+    return streakData;
+}
+
+/**
+ * Get reward configuration for current day
+ * @param {string} gameId - Game ID
+ * @param {number} day - Streak day (1-7)
+ * @returns {object} Reward configuration
+ */
+function getRewardForDay(gameId, day) {
+    var config = REWARD_CONFIGS[gameId] || REWARD_CONFIGS["default"];
+    var rewardDay = ((day - 1) % 7) + 1; // Cycle through 1-7
+
+    for (var i = 0; i < config.length; i++) {
+        if (config[i].day === rewardDay) {
+            return config[i];
+        }
+    }
+
+    // Fallback to day 1 if not found
+    return config[0];
+}
+
+/**
+ * RPC: Get daily reward status
+ * @param {object} ctx - Request context
+ * @param {object} logger - Logger instance
+ * @param {object} nk - Nakama runtime
+ * @param {string} payload - JSON payload with { gameId: "uuid" }
+ * @returns {string} JSON response
+ */
+function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC daily_rewards_get_status called");
+
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
+
+    var gameId = data.gameId;
+    if (!utils.isValidUUID(gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
+
+    // Session callers (Unity / Bearer): ctx.userId.
+    // Server-to-server (http_key): QuizVerse Conversation Hub / personalize
+    // pass userId|user_id explicitly. http_key is admin-level and this RPC
+    // is READ-ONLY — same pattern as analytics_get_player_profile.
+    // X-Nakama-Server-User-Id is NOT a Nakama-native header and does not
+    // populate ctx.userId on this cluster.
+    var userId = ctx.userId;
+    if (!userId) {
+        userId = (data && (data.userId || data.user_id)) || "";
+    }
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+
+    // Get current streak data
+    var streakData = getStreakData(nk, logger, userId, gameId);
+    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+
+    // Check if can claim
+    var claimCheck = canClaimToday(streakData);
+
+    // Get next reward info
+    var nextDay = streakData.currentStreak + 1;
+    var nextReward = getRewardForDay(gameId, nextDay);
+
+    // QVBF_166: field names must match C# DailyRewardStatus [JsonProperty] attributes.
+    // C# model maps "streak" → currentStreak, "canClaim" → canClaimToday.
+    // Keep legacy aliases alongside for any old clients still in the wild.
+    return JSON.stringify({
+        success: true,
+        userId: userId,
+        gameId: gameId,
+        streak: streakData.currentStreak,          // canonical — C# [JsonProperty("streak")]
+        currentStreak: streakData.currentStreak,   // legacy alias
+        bestStreak: streakData.bestStreak || 0,    // QVBF_51: lifetime best for dashboard
+        totalClaims: streakData.totalClaims,
+        lastClaimTimestamp: streakData.lastClaimTimestamp,
+        canClaim: claimCheck.canClaim,             // canonical — C# [JsonProperty("canClaim")]
+        canClaimToday: claimCheck.canClaim,        // legacy alias
+        claimReason: claimCheck.reason,
+        nextReward: nextReward,
+        timestamp: utils.getCurrentTimestamp()
+    });
+}
+
+/**
+ * RPC: Claim daily reward
+ * @param {object} ctx - Request context
+ * @param {object} logger - Logger instance
+ * @param {object} nk - Nakama runtime
+ * @param {string} payload - JSON payload with { gameId: "uuid" }
+ * @returns {string} JSON response
+ */
+/**
+ * DAILY PROGRESSION PLATFORM — single claim core.
+ *
+ * This is the ONLY implementation of "claim today's daily reward" in the entire
+ * backend. Every claim RPC (canonical `daily_rewards_claim`, the consolidated
+ * `daily_progress_claim`, and the legacy Arcade `quizverse_claim_daily_reward`)
+ * MUST delegate here. Do not fork this logic.
+ *
+ * Returns:
+ *   { ok: true,  streakData, reward, walletGranted }
+ *   { ok: false, error, reason }
+ */
+function performDailyClaim(nk, logger, userId, gameId) {
+    // Get current streak data (runs migration/reconcile side-effects up front so
+    // the versioned read below sees a settled record).
+    var streakData = getStreakData(nk, logger, userId, gameId);
+    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+
+    // Fast pre-check (cheap rejection before the OCC loop).
+    var claimCheck = canClaimToday(streakData);
+    if (!claimCheck.canClaim) {
+        return { ok: false, error: "Cannot claim reward: " + claimCheck.reason, reason: claimCheck.reason };
+    }
+
+    // ── ATOMIC CLAIM (OCC / double-claim fix) ────────────────────────────────
+    // The old path did read → check → walletUpdate → blind write. Two concurrent
+    // claims (double-tap, second device, client retry after timeout) both passed
+    // the check and BOTH granted coins. Now: re-read WITH the storage version,
+    // re-verify eligibility on that exact snapshot, mutate, and commit with a
+    // CONDITIONAL write. If a concurrent claim committed first, the write fails,
+    // we re-read, see lastClaim == today, and reject with "already claimed" —
+    // making retries idempotent and duplicate grants impossible.
+    var reward = null;
+    var committed = false;
+    for (var attempt = 0; attempt < 2 && !committed; attempt++) {
+        var raw = readStreakRawWithVersion(nk, userId, gameId);
+        // Fall back to the settled copy when the record does not exist yet
+        // (version "*" makes the write a conditional create).
+        var claimState = raw.value || streakData;
+        if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
+        if (!claimState.claimHistory) claimState.claimHistory = [];
+
+        var recheck = canClaimToday(claimState);
+        if (!recheck.canClaim) {
+            return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
+        }
+
+        // Reset streak when gap spans more than one UTC day or exceeds 48h grace
+        // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
+        var lastClaimTs = claimState.lastClaimTimestamp || 0;
+        if (lastClaimTs > 0) {
+            var lastDate = getUtcDateStringFromUnix(lastClaimTs);
+            var today = getTodayUtcDateString();
+            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
+            var todayDayStart = getUtcDayStartUnixFromDateString(today);
+            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
+            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
+                claimState.currentStreak = 0;
             }
         }
 
-        // Backfill fields for records created before QVBF_51
-        if (typeof data.bestStreak !== "number") data.bestStreak = data.currentStreak || 0;
-        if (!data.claimHistory) data.claimHistory = [];
+        // Update streak
+        claimState.currentStreak = (claimState.currentStreak || 0) + 1;
+        claimState.lastClaimTimestamp = utils.getUnixTimestamp();
+        claimState.totalClaims = (claimState.totalClaims || 0) + 1;
+        claimState.updatedAt = utils.getCurrentTimestamp();
 
-        data = reconcileStreakLastClaim(nk, logger, userId, gameId, data);
-
-        return data;
-    }
-
-    /**
-     * Save streak data
-     * @param {object} nk - Nakama runtime
-     * @param {object} logger - Logger instance
-     * @param {string} userId - User ID
-     * @param {string} gameId - Game ID (UUID)
-     * @param {object} data - Streak data to save
-     * @returns {boolean} Success status
-     */
-    function saveStreakData(nk, logger, userId, gameId, data) {
-        var collection = "daily_streaks";
-        var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
-        return utils.writeStorage(nk, logger, collection, key, userId, data);
-    }
-
-    /**
-     * OCC support (double-claim fix): raw read that also returns the storage object
-     * version, so the claim path can do a CONDITIONAL write. utils.readStorage
-     * discards the version, which forced blind writes — two concurrent
-     * daily_rewards_claim calls (double-tap, two devices, client retry) both passed
-     * canClaimToday and both granted the wallet.
-     */
-    function readStreakRawWithVersion(nk, userId, gameId) {
-        var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
-        var objects = nk.storageRead([{ collection: "daily_streaks", key: key, userId: userId }]);
-        if (objects && objects.length > 0 && objects[0].value) {
-            return { value: objects[0].value, version: objects[0].version };
-        }
-        // "*" = Nakama conditional create: write succeeds only if the key does not exist yet.
-        return { value: null, version: "*" };
-    }
-
-    /**
-     * Conditional write — succeeds only if the record still has the version we read.
-     * Returns false on version conflict (a concurrent claim won the race).
-     */
-    function saveStreakDataVersioned(nk, logger, userId, gameId, data, version) {
-        var key = utils.makeGameStorageKey("user_daily_streak", userId, gameId);
-        try {
-            nk.storageWrite([{
-                collection: "daily_streaks",
-                key: key,
-                userId: userId,
-                value: data,
-                version: version,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-            return true;
-        } catch (err) {
-            utils.logWarn(logger, "[DailyRewards] Versioned write rejected for " + userId +
-                " (concurrent claim?): " + err.message);
-            return false;
-        }
-    }
-
-    /**
-     * Check if user can claim reward today
-     * @param {object} streakData - Current streak data
-     * @returns {object} { canClaim: boolean, reason: string }
-     */
-    function canClaimToday(streakData) {
-        var lastClaim = streakData.lastClaimTimestamp;
-
-        // First claim ever
-        if (lastClaim === 0) {
-            return { canClaim: true, reason: "first_claim" };
+        // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
+        if (claimState.currentStreak > (claimState.bestStreak || 0)) {
+            claimState.bestStreak = claimState.currentStreak;
         }
 
-        var lastDate = getUtcDateStringFromUnix(lastClaim);
-        var today = getTodayUtcDateString();
-
-        if (lastDate === today) {
-            // Incomplete claim (OCC committed, wallet not finalized) — claim RPC resumes it.
-            if (hasActivePendingGrant(streakData, today)) {
-                return { canClaim: true, reason: "pending_grant_resume" };
-            }
-            return { canClaim: false, reason: "already_claimed_today" };
-        }
-
-        return { canClaim: true, reason: "eligible" };
-    }
-
-    /** True when streak has an unfinished wallet grant for the given UTC date. */
-    function hasActivePendingGrant(streakData, claimDate) {
-        if (!streakData || !streakData.pendingGrant) return false;
-        var pg = streakData.pendingGrant;
-        if (!claimDate) claimDate = getTodayUtcDateString();
-        return pg.claimDate === claimDate && pg.status !== "finalized";
-    }
-
-    var DAILY_REWARD_GRANT_LOCKS = "daily_reward_grant_locks";
-    var DAILY_REWARD_DEAD_LETTERS = "daily_reward_dead_letters";
-    var DAILY_REWARD_SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
-
-    function makeGrantLockKey(userId, gameId, claimDate) {
-        return userId + "_" + gameId + "_" + claimDate;
-    }
-
-    function readGrantLock(nk, userId, gameId, claimDate) {
-        var key = makeGrantLockKey(userId, gameId, claimDate);
-        var objects = nk.storageRead([{ collection: DAILY_REWARD_GRANT_LOCKS, key: key, userId: userId }]);
-        if (objects && objects.length > 0 && objects[0].value) {
-            return { value: objects[0].value, version: objects[0].version, key: key };
-        }
-        return { value: null, version: "*", key: key };
-    }
-
-    function writeGrantLock(nk, logger, userId, gameId, claimDate, value, version) {
-        var key = makeGrantLockKey(userId, gameId, claimDate);
-        try {
-            nk.storageWrite([{
-                collection: DAILY_REWARD_GRANT_LOCKS,
-                key: key,
-                userId: userId,
-                value: value,
-                version: version,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-            return true;
-        } catch (err) {
-            utils.logWarn(logger, "[DailyRewards] Grant lock write rejected: " + err.message);
-            return false;
-        }
-    }
-
-    /**
-     * Credit storage wallets (game+tokens + global XP). Idempotent via grant lock:
-     * if lock is already wallet_applied/finalized, skips credit.
-     * Transitions pending → applying (OCC) so concurrent resumes cannot double-credit.
-     */
-    function applyStorageWalletGrant(nk, logger, userId, gameId, grant, xpGrant, claimDate) {
-        var lock = readGrantLock(nk, userId, gameId, claimDate);
-        if (lock.value && (lock.value.status === "wallet_applied" || lock.value.status === "finalized")) {
-            return { ok: true, alreadyApplied: true, walletGranted: { game: grant, xp: xpGrant } };
-        }
-
-        var nowTs = utils.getUnixTimestamp();
-        var lockValue = lock.value;
-        if (!lockValue) {
-            lockValue = {
-                userId: userId,
-                gameId: gameId,
-                claimDate: claimDate,
-                game: grant,
-                xp: xpGrant,
-                status: "pending",
-                createdAt: utils.getCurrentTimestamp(),
-                updatedAt: utils.getCurrentTimestamp()
-            };
-            if (!writeGrantLock(nk, logger, userId, gameId, claimDate, lockValue, "*")) {
-                lock = readGrantLock(nk, userId, gameId, claimDate);
-                if (lock.value && (lock.value.status === "wallet_applied" || lock.value.status === "finalized")) {
-                    return { ok: true, alreadyApplied: true, walletGranted: { game: grant, xp: xpGrant } };
-                }
-                if (!lock.value) {
-                    throw new Error("Failed to create grant lock");
-                }
-                lockValue = lock.value;
-            } else {
-                lock = readGrantLock(nk, userId, gameId, claimDate);
-                lockValue = lock.value || lockValue;
+        // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
+        // Capped at 90 entries (~3 months) to keep the storage record small.
+        var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
+        var claimDateStr = claimDate.getUTCFullYear() + "-" +
+            (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
+            (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
+        if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {
+            claimState.claimHistory.push(claimDateStr);
+            while (claimState.claimHistory.length > 90) {
+                claimState.claimHistory.shift();
             }
         }
 
-        // Another worker mid-apply: if recent, bail so caller retries/resumes later.
-        if (lockValue.status === "applying") {
-            var started = lockValue.applyingAt || 0;
-            if (started > 0 && (nowTs - started) < 30) {
-                throw new Error("claim_in_progress");
-            }
-        }
+        reward = getRewardForDay(gameId, claimState.currentStreak);
 
-        if (lockValue.status === "wallet_applied" || lockValue.status === "finalized") {
-            return { ok: true, alreadyApplied: true, walletGranted: { game: grant, xp: xpGrant } };
+        if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
+            committed = true;
+            streakData = claimState;
         }
+        // On conflict: loop re-reads the fresh record; the recheck above then
+        // returns "already_claimed_today" if the concurrent claim was today's.
+    }
 
-        // OCC claim exclusive apply rights.
-        lockValue.status = "applying";
-        lockValue.applyingAt = nowTs;
-        lockValue.game = grant;
-        lockValue.xp = xpGrant;
-        lockValue.updatedAt = utils.getCurrentTimestamp();
-        lock = readGrantLock(nk, userId, gameId, claimDate);
-        if (!writeGrantLock(nk, logger, userId, gameId, claimDate, lockValue, lock.version)) {
-            lock = readGrantLock(nk, userId, gameId, claimDate);
-            if (lock.value && (lock.value.status === "wallet_applied" || lock.value.status === "finalized")) {
-                return { ok: true, alreadyApplied: true, walletGranted: { game: grant, xp: xpGrant } };
-            }
-            throw new Error("claim_in_progress");
-        }
+    if (!committed) {
+        return { ok: false, error: "Failed to save streak data (concurrent update)", reason: "concurrent_update" };
+    }
 
-        var gameGrantApplied = false;
-        var preGameCurrencies = null;
+    // Log reward claim for transaction history
+    var transactionKey = "transaction_log_" + userId + "_" + utils.getUnixTimestamp();
+    var transactionData = {
+        userId: userId,
+        gameId: gameId,
+        type: "daily_reward_claim",
+        day: streakData.currentStreak,
+        reward: reward,
+        timestamp: utils.getCurrentTimestamp()
+    };
+    utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, transactionData);
+
+    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
+
+    // Credit the storage game wallet (currencies.game + tokens mirror) and global XP.
+    // HUD / wallet_get_balances read storage wallets — NOT Nakama's built-in nk.walletUpdate.
+    // Grant only after OCC streak commit (no double grant on conflict). Hard-fail on save failure
+    // so clients never see success:true with a silent empty wallet credit.
+    var grant = reward.game || 0;
+    var xpGrant = reward.xp || 0;
+    var walletGranted = { game: grant, xp: xpGrant };
+    if (grant > 0 || xpGrant > 0) {
         try {
             if (grant > 0) {
                 var gw = WalletHelpers.getGameWallet(nk, userId, gameId);
-                if (!gw.currencies) gw.currencies = { game: 0, tokens: 0, xp: 0 };
+                if (!gw.currencies) {
+                    gw.currencies = { game: 0, tokens: 0, xp: 0 };
+                }
                 if (gw.currencies.game === undefined) gw.currencies.game = 0;
                 if (gw.currencies.tokens === undefined) gw.currencies.tokens = 0;
-                preGameCurrencies = { game: gw.currencies.game, tokens: gw.currencies.tokens };
                 gw.currencies.game += grant;
                 gw.currencies.tokens += grant;
                 WalletHelpers.saveGameWallet(nk, gw);
-                gameGrantApplied = true;
             }
             if (xpGrant > 0) {
                 var globalKey = "global_" + userId;
                 var globalReads = nk.storageRead([{ collection: "wallets", key: globalKey, userId: userId }]);
                 var globalWallet;
-                var globalPermRead = 1;
-                var globalPermWrite = 1;
                 if (globalReads && globalReads.length > 0 && globalReads[0].value) {
                     globalWallet = globalReads[0].value;
-                    if (typeof globalReads[0].permissionRead === "number") globalPermRead = globalReads[0].permissionRead;
-                    if (typeof globalReads[0].permissionWrite === "number") globalPermWrite = globalReads[0].permissionWrite;
                 } else {
                     globalWallet = { userId: userId, currencies: { global: 0, xut: 0, xp: 0 }, items: {} };
                 }
-                if (!globalWallet.currencies) globalWallet.currencies = { global: 0, xut: 0, xp: 0 };
+                if (!globalWallet.currencies) {
+                    globalWallet.currencies = { global: 0, xut: 0, xp: 0 };
+                }
                 if (globalWallet.currencies.xp === undefined) globalWallet.currencies.xp = 0;
                 globalWallet.currencies.xp += xpGrant;
                 nk.storageWrite([{
@@ -37318,735 +37449,146 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
                     key: globalKey,
                     userId: userId,
                     value: globalWallet,
-                    permissionRead: globalPermRead,
-                    permissionWrite: globalPermWrite
+                    permissionRead: 1,
+                    permissionWrite: 1
                 }]);
             }
-
-            lock = readGrantLock(nk, userId, gameId, claimDate);
-            lockValue = lock.value || lockValue;
-            lockValue.status = "wallet_applied";
-            lockValue.updatedAt = utils.getCurrentTimestamp();
-            if (!writeGrantLock(nk, logger, userId, gameId, claimDate, lockValue, lock.version)) {
-                lock = readGrantLock(nk, userId, gameId, claimDate);
-                if (lock.value && (lock.value.status === "wallet_applied" || lock.value.status === "finalized")) {
-                    return { ok: true, alreadyApplied: true, walletGranted: { game: grant, xp: xpGrant } };
-                }
-                throw new Error("Failed to mark grant lock wallet_applied");
-            }
-            return { ok: true, alreadyApplied: false, walletGranted: { game: grant, xp: xpGrant } };
-        } catch (walletErr) {
-            if (gameGrantApplied && preGameCurrencies) {
-                try {
-                    var gwRevert = WalletHelpers.getGameWallet(nk, userId, gameId);
-                    if (!gwRevert.currencies) gwRevert.currencies = { game: 0, tokens: 0, xp: 0 };
-                    gwRevert.currencies.game = preGameCurrencies.game;
-                    gwRevert.currencies.tokens = preGameCurrencies.tokens;
-                    WalletHelpers.saveGameWallet(nk, gwRevert);
-                } catch (gwRevertErr) {
-                    logger.error("[DailyRewards] Failed to revert game wallet: " + ((gwRevertErr && gwRevertErr.message) ? gwRevertErr.message : String(gwRevertErr)));
-                }
-            }
-            // Release applying lock back to pending so resume can retry.
-            try {
-                lock = readGrantLock(nk, userId, gameId, claimDate);
-                if (lock.value && lock.value.status === "applying") {
-                    lock.value.status = "pending";
-                    lock.value.updatedAt = utils.getCurrentTimestamp();
-                    writeGrantLock(nk, logger, userId, gameId, claimDate, lock.value, lock.version);
-                }
-            } catch (_) {}
-            throw walletErr;
-        }
-    }
-
-    function finalizePendingGrantOnStreak(nk, logger, userId, gameId, streakData, claimDate) {
-        if (streakData.pendingGrant) {
-            delete streakData.pendingGrant;
-        }
-        streakData.updatedAt = utils.getCurrentTimestamp();
-        saveStreakData(nk, logger, userId, gameId, streakData);
-
-        var lock = readGrantLock(nk, userId, gameId, claimDate);
-        if (lock.value) {
-            lock.value.status = "finalized";
-            lock.value.updatedAt = utils.getCurrentTimestamp();
-            writeGrantLock(nk, logger, userId, gameId, claimDate, lock.value, lock.version);
-        }
-    }
-
-    function writeDailyRewardDeadLetter(nk, logger, entry) {
-        var claimDate = entry.claimDate || getTodayUtcDateString();
-        var key = entry.userId + "_" + entry.gameId + "_" + claimDate + "_" + utils.getUnixTimestamp();
-        var value = {
-            userId: entry.userId,
-            gameId: entry.gameId,
-            claimDate: claimDate,
-            reward: entry.reward || null,
-            preClaimSnapshot: entry.preClaimSnapshot || null,
-            streakSnapshot: entry.streakSnapshot || null,
-            grantError: entry.grantError || "",
-            revertError: entry.revertError || "",
-            reason: entry.reason || "wallet_grant_and_revert_failed",
-            status: "open",
-            createdAt: utils.getCurrentTimestamp()
-        };
-        try {
-            nk.storageWrite([{
-                collection: DAILY_REWARD_DEAD_LETTERS,
-                key: key,
-                userId: DAILY_REWARD_SYSTEM_USER,
-                value: value,
-                permissionRead: 0,
-                permissionWrite: 0
-            }]);
-            logger.error("[DailyRewards] Dead letter written: " + key + " reason=" + value.reason);
-            return key;
-        } catch (dlErr) {
-            logger.error("[DailyRewards] CRITICAL: failed to write dead letter: " + ((dlErr && dlErr.message) ? dlErr.message : String(dlErr)));
-            return null;
-        }
-    }
-
-    /**
-     * Resume an OCC-committed claim whose wallet grant never finalized.
-     * Concurrent callers converge via grant-lock status (no double credit).
-     */
-    function resumePendingDailyGrant(nk, logger, userId, gameId, streakData) {
-        var pg = streakData.pendingGrant;
-        var claimDate = pg.claimDate || getTodayUtcDateString();
-        var grant = pg.game || 0;
-        var xpGrant = pg.xp || 0;
-        var reward = pg.reward || getRewardForDay(gameId, streakData.currentStreak);
-        var walletGranted = { game: grant, xp: xpGrant };
-
-        var lock = readGrantLock(nk, userId, gameId, claimDate);
-        if (lock.value && (lock.value.status === "wallet_applied" || lock.value.status === "finalized")) {
-            finalizePendingGrantOnStreak(nk, logger, userId, gameId, streakData, claimDate);
-            logger.info("[DailyRewards] Resumed pending grant (already applied) for " + userId);
-            return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted, resumed: true };
-        }
-
-        try {
-            if (grant > 0 || xpGrant > 0) {
-                var applied = applyStorageWalletGrant(nk, logger, userId, gameId, grant, xpGrant, claimDate);
-                walletGranted = applied.walletGranted;
-            }
-            finalizePendingGrantOnStreak(nk, logger, userId, gameId, streakData, claimDate);
-            logger.info("[DailyRewards] Resumed pending grant for " + userId);
-            return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted, resumed: true };
-        } catch (resumeErr) {
-            var resumeMsg = (resumeErr && resumeErr.message) ? resumeErr.message : String(resumeErr);
-            if (resumeMsg === "claim_in_progress") {
-                return { ok: false, error: "Claim wallet grant already in progress", reason: "claim_in_progress" };
-            }
-            logger.error("[DailyRewards] Resume grant failed for " + userId + ": " + resumeMsg);
-            return rollbackFailedGrant(nk, logger, userId, gameId, streakData, pg.preClaimSnapshot || null, reward, resumeMsg);
-        }
-    }
-
-    /**
-     * After wallet failure: restore pre-claim streak. If restore fails, dead-letter.
-     */
-    function rollbackFailedGrant(nk, logger, userId, gameId, streakData, preClaimSnapshot, reward, grantMsg) {
-        var claimDate = (streakData.pendingGrant && streakData.pendingGrant.claimDate) || getTodayUtcDateString();
-
-        if (preClaimSnapshot) {
-            try {
-                // Ensure rollback clears the in-progress flag.
-                if (preClaimSnapshot.pendingGrant) delete preClaimSnapshot.pendingGrant;
-                saveStreakData(nk, logger, userId, gameId, preClaimSnapshot);
-                var lock = readGrantLock(nk, userId, gameId, claimDate);
-                if (lock.value) {
-                    lock.value.status = "reverted";
-                    lock.value.updatedAt = utils.getCurrentTimestamp();
-                    writeGrantLock(nk, logger, userId, gameId, claimDate, lock.value, lock.version);
-                }
-                logger.info("[DailyRewards] Reverted streak after wallet grant failure for " + userId);
-                return { ok: false, error: "Wallet grant failed: " + grantMsg, reason: "wallet_grant_failed" };
-            } catch (streakRevertErr) {
-                var revertMsg = (streakRevertErr && streakRevertErr.message) ? streakRevertErr.message : String(streakRevertErr);
-                logger.error("[DailyRewards] CRITICAL: streak revert failed for " + userId + ": " + revertMsg);
-                var dlKey = writeDailyRewardDeadLetter(nk, logger, {
-                    userId: userId,
-                    gameId: gameId,
-                    claimDate: claimDate,
-                    reward: reward,
-                    preClaimSnapshot: preClaimSnapshot,
-                    streakSnapshot: streakData,
-                    grantError: grantMsg,
-                    revertError: revertMsg,
-                    reason: "wallet_grant_and_revert_failed"
-                });
-                // Keep pendingGrant so claim RPC can resume; stamp deadLetterKey for admins.
-                streakData.pendingGrant = streakData.pendingGrant || {};
-                streakData.pendingGrant.status = "needs_admin";
-                streakData.pendingGrant.deadLetterKey = dlKey;
-                streakData.pendingGrant.lastError = grantMsg;
-                try {
-                    saveStreakData(nk, logger, userId, gameId, streakData);
-                } catch (_) {}
-                return {
-                    ok: false,
-                    error: "Wallet grant failed and streak revert failed — queued for admin reconcile",
-                    reason: "needs_admin_reconcile",
-                    deadLetterKey: dlKey
-                };
-            }
-        }
-
-        var dlKey2 = writeDailyRewardDeadLetter(nk, logger, {
-            userId: userId,
-            gameId: gameId,
-            claimDate: claimDate,
-            reward: reward,
-            preClaimSnapshot: null,
-            streakSnapshot: streakData,
-            grantError: grantMsg,
-            revertError: "missing_preClaimSnapshot",
-            reason: "wallet_grant_failed_no_snapshot"
-        });
-        return {
-            ok: false,
-            error: "Wallet grant failed: " + grantMsg,
-            reason: "needs_admin_reconcile",
-            deadLetterKey: dlKey2
-        };
-    }
-
-    /**
-     * Update streak status based on time elapsed; persist when streak breaks.
-     * @param {object} nk - Nakama runtime
-     * @param {object} logger - Logger instance
-     * @param {string} userId - User ID
-     * @param {string} gameId - Game ID (UUID)
-     * @param {object} streakData - Current streak data
-     * @returns {object} Updated streak data
-     */
-    function updateStreakStatus(nk, logger, userId, gameId, streakData) {
-        var now = utils.getUnixTimestamp();
-        var lastClaim = streakData.lastClaimTimestamp;
-
-        // First claim
-        if (lastClaim === 0) {
-            return streakData;
-        }
-
-        // Check if more than 48 hours passed (streak broken)
-        if (!utils.isWithinHours(lastClaim, now, 48)) {
-            if (streakData.currentStreak !== 0) {
-                streakData.currentStreak = 0;
-                saveStreakData(nk, logger, userId, gameId, streakData);
-            }
-        }
-
-        return streakData;
-    }
-
-    /**
-     * Get reward configuration for current day
-     * @param {string} gameId - Game ID
-     * @param {number} day - Streak day (1-7)
-     * @returns {object} Reward configuration
-     */
-    function getRewardForDay(gameId, day) {
-        var config = REWARD_CONFIGS[gameId] || REWARD_CONFIGS["default"];
-        var rewardDay = ((day - 1) % 7) + 1; // Cycle through 1-7
-        
-        for (var i = 0; i < config.length; i++) {
-            if (config[i].day === rewardDay) {
-                return config[i];
-            }
-        }
-        
-        // Fallback to day 1 if not found
-        return config[0];
-    }
-
-    /**
-     * RPC: Get daily reward status
-     * @param {object} ctx - Request context
-     * @param {object} logger - Logger instance
-     * @param {object} nk - Nakama runtime
-     * @param {string} payload - JSON payload with { gameId: "uuid" }
-     * @returns {string} JSON response
-     */
-    function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
-        utils.logInfo(logger, "RPC daily_rewards_get_status called");
-        
-        var parsed = utils.safeJsonParse(payload);
-        if (!parsed.success) {
-            return utils.handleError(ctx, null, "Invalid JSON payload");
-        }
-        
-        var data = parsed.data;
-        var validation = utils.validatePayload(data, ['gameId']);
-        if (!validation.valid) {
-            return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-        }
-        
-        var gameId = data.gameId;
-        if (!utils.isValidUUID(gameId)) {
-            return utils.handleError(ctx, null, "Invalid gameId UUID format");
-        }
-        
-        // Session callers (Unity / Bearer): ctx.userId.
-        // Server-to-server (http_key): QuizVerse Conversation Hub / personalize
-        // pass userId|user_id explicitly. http_key is admin-level and this RPC
-        // is READ-ONLY — same pattern as analytics_get_player_profile.
-        // X-Nakama-Server-User-Id is NOT a Nakama-native header and does not
-        // populate ctx.userId on this cluster.
-        var userId = ctx.userId;
-        if (!userId) {
-            userId = (data && (data.userId || data.user_id)) || "";
-        }
-        if (!userId) {
-            return utils.handleError(ctx, null, "User not authenticated");
-        }
-        
-        // Get current streak data
-        var streakData = getStreakData(nk, logger, userId, gameId);
-        streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-        
-        // Check if can claim
-        var claimCheck = canClaimToday(streakData);
-        
-        // Get next reward info
-        var nextDay = streakData.currentStreak + 1;
-        var nextReward = getRewardForDay(gameId, nextDay);
-        
-        // QVBF_166: field names must match C# DailyRewardStatus [JsonProperty] attributes.
-        // C# model maps "streak" → currentStreak, "canClaim" → canClaimToday.
-        // Keep legacy aliases alongside for any old clients still in the wild.
-        return JSON.stringify({
-            success: true,
-            userId: userId,
-            gameId: gameId,
-            streak: streakData.currentStreak,          // canonical — C# [JsonProperty("streak")]
-            currentStreak: streakData.currentStreak,   // legacy alias
-            bestStreak: streakData.bestStreak || 0,    // QVBF_51: lifetime best for dashboard
-            totalClaims: streakData.totalClaims,
-            lastClaimTimestamp: streakData.lastClaimTimestamp,
-            canClaim: claimCheck.canClaim,             // canonical — C# [JsonProperty("canClaim")]
-            canClaimToday: claimCheck.canClaim,        // legacy alias
-            claimReason: claimCheck.reason,
-            pendingGrant: !!streakData.pendingGrant,
-            pendingGrantStatus: streakData.pendingGrant ? streakData.pendingGrant.status : null,
-            deadLetterKey: streakData.pendingGrant ? (streakData.pendingGrant.deadLetterKey || null) : null,
-            nextReward: nextReward,
-            timestamp: utils.getCurrentTimestamp()
-        });
-    }
-
-    /**
-     * DAILY PROGRESSION PLATFORM — single claim core.
-     *
-     * This is the ONLY implementation of "claim today's daily reward" in the entire
-     * backend. Every claim RPC (canonical `daily_rewards_claim`, the consolidated
-     * `daily_progress_claim`, and the legacy Arcade `quizverse_claim_daily_reward`)
-     * MUST delegate here. Do not fork this logic.
-     *
-     * Returns:
-     *   { ok: true,  streakData, reward, walletGranted }
-     *   { ok: false, error, reason, deadLetterKey? }
-     */
-    function performDailyClaim(nk, logger, userId, gameId) {
-        // Get current streak data (runs migration/reconcile side-effects up front so
-        // the versioned read below sees a settled record).
-        var streakData = getStreakData(nk, logger, userId, gameId);
-        streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-
-        // Resume incomplete claims BEFORE treating today as a fresh claim.
-        // pendingGrant = OCC committed but wallet not finalized (claim-in-progress lock).
-        var claimCheck = canClaimToday(streakData);
-        if (claimCheck.reason === "pending_grant_resume") {
-            return resumePendingDailyGrant(nk, logger, userId, gameId, streakData);
-        }
-        if (!claimCheck.canClaim) {
-            return { ok: false, error: "Cannot claim reward: " + claimCheck.reason, reason: claimCheck.reason };
-        }
-
-        // ── ATOMIC CLAIM (OCC + pendingGrant lock) ───────────────────────────────
-        // Commit streak WITH pendingGrant so concurrent callers see claim-in-progress
-        // and resume (idempotent grant lock) instead of already_claimed_today.
-        var reward = null;
-        var committed = false;
-        var preClaimSnapshot = null;
-        var claimDateStr = null;
-        for (var attempt = 0; attempt < 2 && !committed; attempt++) {
-            var raw = readStreakRawWithVersion(nk, userId, gameId);
-            var claimState = raw.value || streakData;
-            if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
-            if (!claimState.claimHistory) claimState.claimHistory = [];
-
-            var recheck = canClaimToday(claimState);
-            if (recheck.reason === "pending_grant_resume") {
-                return resumePendingDailyGrant(nk, logger, userId, gameId, claimState);
-            }
-            if (!recheck.canClaim) {
-                return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
-            }
-
-            var snapshotBeforeClaim = JSON.parse(JSON.stringify(claimState));
-            if (snapshotBeforeClaim.pendingGrant) delete snapshotBeforeClaim.pendingGrant;
-
-            var lastClaimTs = claimState.lastClaimTimestamp || 0;
-            if (lastClaimTs > 0) {
-                var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-                var today = getTodayUtcDateString();
-                var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-                var todayDayStart = getUtcDayStartUnixFromDateString(today);
-                var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-                if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-                    claimState.currentStreak = 0;
-                }
-            }
-
-            claimState.currentStreak = (claimState.currentStreak || 0) + 1;
-            claimState.lastClaimTimestamp = utils.getUnixTimestamp();
-            claimState.totalClaims = (claimState.totalClaims || 0) + 1;
-            claimState.updatedAt = utils.getCurrentTimestamp();
-
-            if (claimState.currentStreak > (claimState.bestStreak || 0)) {
-                claimState.bestStreak = claimState.currentStreak;
-            }
-
-            var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
-            claimDateStr = claimDate.getUTCFullYear() + "-" +
-                (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
-                (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
-            if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {
-                claimState.claimHistory.push(claimDateStr);
-                while (claimState.claimHistory.length > 90) {
-                    claimState.claimHistory.shift();
-                }
-            }
-
-            reward = getRewardForDay(gameId, claimState.currentStreak);
-
-            // Claim-in-progress lock: concurrent claims resume this instead of rejecting.
-            claimState.pendingGrant = {
-                status: "pending_wallet",
-                game: reward.game || 0,
-                xp: reward.xp || 0,
-                claimDate: claimDateStr,
-                reward: reward,
-                preClaimSnapshot: snapshotBeforeClaim,
-                startedAt: utils.getUnixTimestamp()
-            };
-
-            if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
-                committed = true;
-                streakData = claimState;
-                preClaimSnapshot = snapshotBeforeClaim;
-            }
-        }
-
-        if (!committed) {
-            return { ok: false, error: "Failed to save streak data (concurrent update)", reason: "concurrent_update" };
-        }
-
-        utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
-
-        // ACTIVE PATH: storage wallets via grant lock (idempotent). Never nk.walletUpdate.
-        var grant = reward.game || 0;
-        var xpGrant = reward.xp || 0;
-        var walletGranted = { game: grant, xp: xpGrant };
-        try {
-            if (grant > 0 || xpGrant > 0) {
-                var applied = applyStorageWalletGrant(nk, logger, userId, gameId, grant, xpGrant, claimDateStr);
-                walletGranted = applied.walletGranted;
-                logger.info("[DailyRewards] Granted storage wallet: " + JSON.stringify(walletGranted) + " to " + userId);
-            }
-            finalizePendingGrantOnStreak(nk, logger, userId, gameId, streakData, claimDateStr);
+            logger.info("[DailyRewards] Granted storage wallet: " + JSON.stringify(walletGranted) + " to " + userId);
         } catch (walletErr) {
             var grantMsg = (walletErr && walletErr.message) ? walletErr.message : String(walletErr);
-            if (grantMsg === "claim_in_progress") {
-                return { ok: false, error: "Claim wallet grant already in progress", reason: "claim_in_progress" };
-            }
             logger.error("[DailyRewards] Wallet grant failed after claim commit: " + grantMsg);
-            return rollbackFailedGrant(nk, logger, userId, gameId, streakData, preClaimSnapshot, reward, grantMsg);
+            return { ok: false, error: "Wallet grant failed: " + grantMsg, reason: "wallet_grant_failed" };
         }
-
-        // Transaction log only after successful finalize (avoid false claim history).
-        var transactionKey = "transaction_log_" + userId + "_" + utils.getUnixTimestamp();
-        utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, {
-            userId: userId,
-            gameId: gameId,
-            type: "daily_reward_claim",
-            day: streakData.currentStreak,
-            reward: reward,
-            timestamp: utils.getCurrentTimestamp()
-        });
-
-        return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted };
     }
 
-    /**
-     * Admin / S2S reconcile for dead-lettered daily claims.
-     * Payload: { action: "list"|"complete_grant"|"revert_streak"|"dismiss", deadLetterKey?, userId?, gameId?, limit? }
-     */
-    function rpcDailyRewardsReconcile(ctx, logger, nk, payload) {
-        try {
-            if (typeof RpcHelpers !== "undefined" && RpcHelpers.requireAdmin) {
-                RpcHelpers.requireAdmin(ctx, nk);
-            } else if (ctx.userId) {
-                throw new Error("Admin access required");
-            }
-        } catch (adminErr) {
-            return utils.handleError(ctx, null, (adminErr && adminErr.message) ? adminErr.message : "Admin access required");
-        }
+    return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted };
+}
 
-        var parsed = utils.safeJsonParse(payload || "{}");
-        if (!parsed.success) {
-            return utils.handleError(ctx, null, "Invalid JSON payload");
-        }
-        var data = parsed.data || {};
-        var action = data.action || "list";
+/**
+ * RPC: Claim daily reward (LEGACY-COMPATIBLE WRAPPER).
+ * Thin shell over performDailyClaim — keeps the response shape shipped clients
+ * expect. New clients should use `daily_progress_claim` (daily_progress.js),
+ * which returns the full progression state in the same round-trip.
+ * @param {string} payload - JSON payload with { gameId: "uuid" }
+ */
+function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC daily_rewards_claim called");
 
-        if (action === "list") {
-            var limit = data.limit || 50;
-            if (limit > 100) limit = 100;
-            var listed = nk.storageList(DAILY_REWARD_SYSTEM_USER, DAILY_REWARD_DEAD_LETTERS, limit, data.cursor || "");
-            var items = [];
-            var objects = (listed && listed.objects) ? listed.objects : [];
-            for (var i = 0; i < objects.length; i++) {
-                items.push({ key: objects[i].key, value: objects[i].value });
-            }
-            return JSON.stringify({
-                success: true,
-                action: "list",
-                items: items,
-                cursor: (listed && listed.cursor) ? listed.cursor : ""
-            });
-        }
-
-        if (!data.deadLetterKey) {
-            return utils.handleError(ctx, null, "deadLetterKey required for action " + action);
-        }
-
-        var dlReads = nk.storageRead([{
-            collection: DAILY_REWARD_DEAD_LETTERS,
-            key: data.deadLetterKey,
-            userId: DAILY_REWARD_SYSTEM_USER
-        }]);
-        if (!dlReads || dlReads.length === 0 || !dlReads[0].value) {
-            return utils.handleError(ctx, null, "Dead letter not found: " + data.deadLetterKey);
-        }
-        var dl = dlReads[0].value;
-        if (dl.status !== "open" && action !== "dismiss") {
-            return JSON.stringify({ success: true, action: action, status: dl.status, message: "already resolved" });
-        }
-
-        var userId = dl.userId;
-        var gameId = dl.gameId;
-        var claimDate = dl.claimDate || getTodayUtcDateString();
-
-        if (action === "complete_grant") {
-            var streakData = getStreakData(nk, logger, userId, gameId);
-            var grant = (dl.reward && dl.reward.game) || (streakData.pendingGrant && streakData.pendingGrant.game) || 0;
-            var xpGrant = (dl.reward && dl.reward.xp) || (streakData.pendingGrant && streakData.pendingGrant.xp) || 0;
-            try {
-                if (grant > 0 || xpGrant > 0) {
-                    applyStorageWalletGrant(nk, logger, userId, gameId, grant, xpGrant, claimDate);
-                }
-                finalizePendingGrantOnStreak(nk, logger, userId, gameId, streakData, claimDate);
-                dl.status = "resolved_complete_grant";
-                dl.resolvedAt = utils.getCurrentTimestamp();
-                dl.resolvedBy = ctx.userId || "http_key";
-                nk.storageWrite([{
-                    collection: DAILY_REWARD_DEAD_LETTERS,
-                    key: data.deadLetterKey,
-                    userId: DAILY_REWARD_SYSTEM_USER,
-                    value: dl,
-                    permissionRead: 0,
-                    permissionWrite: 0
-                }]);
-                return JSON.stringify({ success: true, action: action, userId: userId, gameId: gameId });
-            } catch (completeErr) {
-                return utils.handleError(ctx, null, "complete_grant failed: " + ((completeErr && completeErr.message) ? completeErr.message : String(completeErr)));
-            }
-        }
-
-        if (action === "revert_streak") {
-            if (!dl.preClaimSnapshot) {
-                return utils.handleError(ctx, null, "Dead letter has no preClaimSnapshot");
-            }
-            try {
-                var snap = dl.preClaimSnapshot;
-                if (snap.pendingGrant) delete snap.pendingGrant;
-                saveStreakData(nk, logger, userId, gameId, snap);
-                var lock = readGrantLock(nk, userId, gameId, claimDate);
-                if (lock.value) {
-                    lock.value.status = "reverted";
-                    lock.value.updatedAt = utils.getCurrentTimestamp();
-                    writeGrantLock(nk, logger, userId, gameId, claimDate, lock.value, lock.version);
-                }
-                dl.status = "resolved_revert_streak";
-                dl.resolvedAt = utils.getCurrentTimestamp();
-                dl.resolvedBy = ctx.userId || "http_key";
-                nk.storageWrite([{
-                    collection: DAILY_REWARD_DEAD_LETTERS,
-                    key: data.deadLetterKey,
-                    userId: DAILY_REWARD_SYSTEM_USER,
-                    value: dl,
-                    permissionRead: 0,
-                    permissionWrite: 0
-                }]);
-                return JSON.stringify({ success: true, action: action, userId: userId, gameId: gameId });
-            } catch (revertErr) {
-                return utils.handleError(ctx, null, "revert_streak failed: " + ((revertErr && revertErr.message) ? revertErr.message : String(revertErr)));
-            }
-        }
-
-        if (action === "dismiss") {
-            dl.status = "dismissed";
-            dl.resolvedAt = utils.getCurrentTimestamp();
-            dl.resolvedBy = ctx.userId || "http_key";
-            nk.storageWrite([{
-                collection: DAILY_REWARD_DEAD_LETTERS,
-                key: data.deadLetterKey,
-                userId: DAILY_REWARD_SYSTEM_USER,
-                value: dl,
-                permissionRead: 0,
-                permissionWrite: 0
-            }]);
-            return JSON.stringify({ success: true, action: action });
-        }
-
-        return utils.handleError(ctx, null, "Unknown action: " + action);
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
     }
 
-    /**
-     * RPC: Claim daily reward (LEGACY-COMPATIBLE WRAPPER).
-     * Thin shell over performDailyClaim — keeps the response shape shipped clients
-     * expect. New clients should use `daily_progress_claim` (daily_progress.js),
-     * which returns the full progression state in the same round-trip.
-     * @param {string} payload - JSON payload with { gameId: "uuid" }
-     */
-    function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
-        utils.logInfo(logger, "RPC daily_rewards_claim called");
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
 
-        var parsed = utils.safeJsonParse(payload);
-        if (!parsed.success) {
-            return utils.handleError(ctx, null, "Invalid JSON payload");
-        }
+    var gameId = data.gameId;
+    if (!utils.isValidUUID(gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
 
-        var data = parsed.data;
-        var validation = utils.validatePayload(data, ['gameId']);
-        if (!validation.valid) {
-            return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-        }
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
 
-        var gameId = data.gameId;
-        if (!utils.isValidUUID(gameId)) {
-            return utils.handleError(ctx, null, "Invalid gameId UUID format");
-        }
-
-        var userId = ctx.userId;
-        if (!userId) {
-            return utils.handleError(ctx, null, "User not authenticated");
-        }
-
-        var result = performDailyClaim(nk, logger, userId, gameId);
-        if (!result.ok) {
-            return JSON.stringify({
-                success: false,
-                error: result.error,
-                reason: result.reason || null,
-                deadLetterKey: result.deadLetterKey || null,
-                canClaimToday: result.reason === "pending_grant_resume" || result.reason === "wallet_grant_failed"
-            });
-        }
-
-        // QVBF_166: emit both `streak`/`newStreak` so C# DailyRewardClaim
-        // [JsonProperty("streak")] → newStreak deserializes the correct value.
+    var result = performDailyClaim(nk, logger, userId, gameId);
+    if (!result.ok) {
         return JSON.stringify({
-            success: true,
-            userId: userId,
-            gameId: gameId,
-            streak: result.streakData.currentStreak,        // canonical — C# [JsonProperty("streak")] → newStreak
-            newStreak: result.streakData.currentStreak,     // legacy alias
-            currentStreak: result.streakData.currentStreak, // extra alias for safety
-            bestStreak: result.streakData.bestStreak || 0,  // QVBF_51: lifetime best
-            totalClaims: result.streakData.totalClaims,
-            reward: result.reward,
-            walletGranted: result.walletGranted,
-            claimedAt: utils.getCurrentTimestamp()
+            success: false,
+            error: result.error,
+            canClaimToday: false
         });
     }
 
-    /**
-     * RPC: Get claim history (QVBF_51 — feeds the Streak Dashboard activity
-     * heatmap and Best Streak card).
-     * @param {string} payload - JSON payload with { gameId: "uuid" }
-     * @returns {string} JSON response with claimHistory (UTC YYYY-MM-DD, max 90)
-     */
-    function rpcDailyRewardsGetHistory(ctx, logger, nk, payload) {
-        utils.logInfo(logger, "RPC daily_rewards_get_history called");
+    // QVBF_166: emit both `streak`/`newStreak` so C# DailyRewardClaim
+    // [JsonProperty("streak")] → newStreak deserializes the correct value.
+    return JSON.stringify({
+        success: true,
+        userId: userId,
+        gameId: gameId,
+        streak: result.streakData.currentStreak,        // canonical — C# [JsonProperty("streak")] → newStreak
+        newStreak: result.streakData.currentStreak,     // legacy alias
+        currentStreak: result.streakData.currentStreak, // extra alias for safety
+        bestStreak: result.streakData.bestStreak || 0,  // QVBF_51: lifetime best
+        totalClaims: result.streakData.totalClaims,
+        reward: result.reward,
+        walletGranted: result.walletGranted,
+        claimedAt: utils.getCurrentTimestamp()
+    });
+}
 
-        var parsed = utils.safeJsonParse(payload);
-        if (!parsed.success) {
-            return utils.handleError(ctx, null, "Invalid JSON payload");
-        }
+/**
+ * RPC: Get claim history (QVBF_51 — feeds the Streak Dashboard activity
+ * heatmap and Best Streak card).
+ * @param {string} payload - JSON payload with { gameId: "uuid" }
+ * @returns {string} JSON response with claimHistory (UTC YYYY-MM-DD, max 90)
+ */
+function rpcDailyRewardsGetHistory(ctx, logger, nk, payload) {
+    utils.logInfo(logger, "RPC daily_rewards_get_history called");
 
-        var data = parsed.data;
-        var validation = utils.validatePayload(data, ['gameId']);
-        if (!validation.valid) {
-            return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-        }
-
-        var gameId = data.gameId;
-        if (!utils.isValidUUID(gameId)) {
-            return utils.handleError(ctx, null, "Invalid gameId UUID format");
-        }
-
-        var userId = ctx.userId;
-        if (!userId) {
-            return utils.handleError(ctx, null, "User not authenticated");
-        }
-
-        var streakData = getStreakData(nk, logger, userId, gameId);
-        streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-
-        return JSON.stringify({
-            success: true,
-            userId: userId,
-            gameId: gameId,
-            currentStreak: streakData.currentStreak,
-            bestStreak: streakData.bestStreak || 0,
-            totalClaims: streakData.totalClaims,
-            claimHistory: streakData.claimHistory || [],
-            timestamp: utils.getCurrentTimestamp()
-        });
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
     }
 
-    // ============================================================================
-    // Registration (QVBF_51)
-    // ============================================================================
-    // postbuild.js renames this `InitModule` -> `__ModuleInit_N` so it never
-    // executes directly. Its purpose is to expose literal registerRpc calls so
-    // postbuild can:
-    //   1) detect the RPC ids and create __rpc_* stub variables
-    //   2) rewrite each call into a guarded `__rpc_id = __rpc_id || handler`
-    //   3) replay those assignments at global scope BEFORE legacy fallbacks
-    //      (modules-first ordering), so THESE handlers win the stub race
-    //   4) emit `initializer.registerRpc("<id>", __rpc_<id>)` in the master InitModule
-
-    // Before this block existed, daily_rewards_get_status / daily_rewards_claim
-    // were silently served by the stale TS LegacyDailyRewards copy (wrong response
-    // envelope -> Unity always saw streak 0; root cause of QVBF_51).
-    // LegacyDailyRewards.ts was removed, so this module now serves as the canonical
-    function __ModuleInit_51(ctx, logger, nk, initializer) {
-        __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus);
-        __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim);
-        __rpc_daily_rewards_get_history = __rpc_daily_rewards_get_history || (rpcDailyRewardsGetHistory);
-        __rpc_daily_rewards_reconcile = __rpc_daily_rewards_reconcile || (rpcDailyRewardsReconcile);
-        logger.info("[DailyRewards] Module InitModule registered: 4 RPCs");
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
     }
 
+    var gameId = data.gameId;
+    if (!utils.isValidUUID(gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
 
-// --- Module: event_pipeline\event_pipeline.js ---
+    var userId = ctx.userId;
+    if (!userId) {
+        return utils.handleError(ctx, null, "User not authenticated");
+    }
+
+    var streakData = getStreakData(nk, logger, userId, gameId);
+    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+
+    return JSON.stringify({
+        success: true,
+        userId: userId,
+        gameId: gameId,
+        currentStreak: streakData.currentStreak,
+        bestStreak: streakData.bestStreak || 0,
+        totalClaims: streakData.totalClaims,
+        claimHistory: streakData.claimHistory || [],
+        timestamp: utils.getCurrentTimestamp()
+    });
+}
+
+// ============================================================================
+// Registration (QVBF_51)
+// ============================================================================
+// postbuild.js renames this `InitModule` -> `__ModuleInit_N` so it never
+// executes directly. Its purpose is to expose literal registerRpc calls so
+// postbuild can:
+//   1) detect the RPC ids and create __rpc_* stub variables
+//   2) rewrite each call into a guarded `__rpc_id = __rpc_id || handler`
+//   3) replay those assignments at global scope BEFORE legacy fallbacks
+//      (modules-first ordering), so THESE handlers win the stub race
+//   4) emit `initializer.registerRpc("<id>", __rpc_<id>)` in the master InitModule
+//
+// Before this block existed, daily_rewards_get_status / daily_rewards_claim
+// were silently served by the stale TS LegacyDailyRewards copy (wrong response
+// envelope -> Unity always saw streak 0; root cause of QVBF_51).
+function __ModuleInit_51(ctx, logger, nk, initializer) {
+    __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus);
+    __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim);
+    __rpc_daily_rewards_get_history = __rpc_daily_rewards_get_history || (rpcDailyRewardsGetHistory);
+    logger.info("[DailyRewards] Module InitModule registered: 3 RPCs");
+}
+
+// --- Module: event_pipeline/event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -38444,7 +37986,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics\external_analytics.js ---
+// --- Module: external_analytics/external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -39067,7 +38609,7 @@ function __ModuleInit_53(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers\external_pollers.js ---
+// --- Module: external_pollers/external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -39457,7 +38999,7 @@ function __ModuleInit_54(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel\fortune_wheel.js ---
+// --- Module: fortune_wheel/fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -39839,7 +39381,7 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friend_streaks\friend_streaks.js ---
+// --- Module: friend_streaks/friend_streaks.js ---
 // friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
 // RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
 // Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
@@ -40454,7 +39996,7 @@ function __ModuleInit_56(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_challenges.js ---
+// --- Module: friends/friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -41547,7 +41089,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_invites.js ---
+// --- Module: friends/friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -42965,7 +42507,7 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friends.js ---
+// --- Module: friends/friends.js ---
 // ============================================================================
 // friends.js — Helper-only module (Phase-4 C2 cleanup)
 // ============================================================================
@@ -43175,7 +42717,7 @@ function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, 
 }
 
 
-// --- Module: friends\friends_extras.js ---
+// --- Module: friends/friends_extras.js ---
 // ============================================================================
 // friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
 // ============================================================================
@@ -43734,7 +43276,7 @@ function __ModuleInit_60(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\notification_codes.js ---
+// --- Module: friends/notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -44046,7 +43588,7 @@ function sendFriendsNotification(ctx, nk, logger, subjectKey, userId, payload, s
 }
 
 
-// --- Module: game_metrics\game_metrics.js ---
+// --- Module: game_metrics/game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -44427,7 +43969,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups\groups.js ---
+// --- Module: groups/groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -46474,7 +46016,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure\batch_operations.js ---
+// --- Module: infrastructure/batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -46736,7 +46278,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure\caching.js ---
+// --- Module: infrastructure/caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -46974,7 +46516,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure\rate_limiting.js ---
+// --- Module: infrastructure/rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -47152,7 +46694,7 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 // initializer.registerRpc("submit_score", withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest\ivx_quest.js ---
+// --- Module: ivx_quest/ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -47462,7 +47004,7 @@ function __ModuleInit_68(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-badges\lap-badges.js ---
+// --- Module: lap-badges/lap-badges.js ---
 /**
  * QuizVerse Link & Play Badge Event Bridge
  *
@@ -47641,7 +47183,7 @@ function __ModuleInit_69(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-gamification\lap-gamification.js ---
+// --- Module: lap-gamification/lap-gamification.js ---
 /**
  * QuizVerse Link & Play — gamification (XP / streak / client badges).
  *
@@ -47976,7 +47518,7 @@ function __ModuleInit_70(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-library\lap-library.js ---
+// --- Module: lap-library/lap-library.js ---
 /**
  * QuizVerse Link & Play — saved learn artifacts (server-authoritative).
  *
@@ -48440,7 +47982,7 @@ function __ModuleInit_71(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-recents\lap-recents.js ---
+// --- Module: lap-recents/lap-recents.js ---
 /**
  * QuizVerse Link & Play — recent notes index (cross-surface sync).
  *
@@ -48687,7 +48229,7 @@ function __ModuleInit_72(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth\lasttolive_depth.js ---
+// --- Module: lasttolive_depth/lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -50411,7 +49953,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leagues\leagues.js ---
+// --- Module: leagues/leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -51034,7 +50576,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: learner_home_widgets\learner_home_widgets.js ---
+// --- Module: learner_home_widgets/learner_home_widgets.js ---
 // learner_home_widgets.js — Per-user Home-screen widget configs for TutorX
 // Nakama V8 JavaScript runtime (Goja ES5 — no ES modules, no Node built-ins).
 //
@@ -51336,7 +50878,7 @@ function __ModuleInit_77(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_quotes\learner_quotes.js ---
+// --- Module: learner_quotes/learner_quotes.js ---
 // learner_quotes.js — Daily LLM-personalized "confidence boost" quotes for TutorX
 // (Goja ES5, no Node built-ins, no global-scope state).
 //
@@ -51696,7 +51238,7 @@ function __ModuleInit_78(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_reminders\learner_reminders.js ---
+// --- Module: learner_reminders/learner_reminders.js ---
 // learner_reminders.js — Per-user study reminders for TutorX (Goja ES5, no Node built-ins).
 //
 // Lets a learner create study reminders (one-off or recurring: daily / weekdays /
@@ -51905,7 +51447,7 @@ function __ModuleInit_79(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_review\learner_review.js ---
+// --- Module: learner_review/learner_review.js ---
 // learner_review.js — First-class spaced-repetition review queue for TutorX
 // (Goja ES5, no Node built-ins, all RPC fns at global scope).
 //
@@ -52257,7 +51799,7 @@ function __ModuleInit_80(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: live_ops\live_ops.js ---
+// --- Module: live_ops/live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -52890,7 +52432,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest\manifest.js ---
+// --- Module: manifest/manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -53002,7 +52544,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking\matchmaking.js ---
+// --- Module: matchmaking/matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -54702,7 +54244,7 @@ function registerMultiGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: multiplayer\multiplayer_locks.js ---
+// --- Module: multiplayer/multiplayer_locks.js ---
 // multiplayer_locks.js — Multiplayer Account Lock System (QVVBS189)
 
 var LOCK_COLLECTION = "multiplayer_locks";
@@ -54911,7 +54453,7 @@ function __ModuleInit_85(ctx, logger, nk, initializer) {
     logger.info("[MultiplayerLock] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -55366,7 +54908,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications\notification_gate.js ---
+// --- Module: notifications/notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -55526,7 +55068,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications\notification_inbox.js ---
+// --- Module: notifications/notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -55979,7 +55521,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine\offer_engine.js ---
+// --- Module: offer_engine/offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -56900,7 +56442,7 @@ function __ModuleInit_89(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding\ob_analytics_emit.js ---
+// --- Module: onboarding/ob_analytics_emit.js ---
 /**
  * Server-side ob_* analytics for Unity onboarding hooks (D1/D7, welcome bonus, streak shield).
  * Writes to qv_onboarding_events — same lake as web onboarding_events_batch.
@@ -56952,7 +56494,7 @@ function obAnalyticsEmitEvent(nk, nakamaUserId, eventName, data) {
 }
 
 
-// --- Module: onboarding\onboarding.js ---
+// --- Module: onboarding/onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -58044,7 +57586,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization\personalization.js ---
+// --- Module: personalization/personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -58651,7 +58193,7 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: player\player_full_profile.js ---
+// --- Module: player/player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -58866,7 +58408,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts\player_gifts.js ---
+// --- Module: player_gifts/player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -59735,7 +59277,7 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 // These will be registered in the main index.js
 
 
-// --- Module: progression\mastery_system.js ---
+// --- Module: progression/mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -60071,7 +59613,7 @@ module.exports = {
 
 
 
-// --- Module: progression\progressive_unlocks.js ---
+// --- Module: progression/progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -61878,7 +61420,7 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quiz_results\quiz_results.js ---
+// --- Module: quiz_results/quiz_results.js ---
 // quiz_results.js - Quiz Results Tracking & Analytics System
 // Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
 //
@@ -63056,7 +62598,7 @@ function __ModuleInit_100(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_depth\quizverse_depth.js ---
+// --- Module: quizverse_depth/quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -64031,7 +63573,7 @@ function __ModuleInit_101(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_seen\quizverse_seen.js ---
+// --- Module: quizverse_seen/quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -64539,7 +64081,7 @@ function __ModuleInit_102(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: retention\collections.js ---
+// --- Module: retention/collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -65053,7 +64595,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\retention_v2.js ---
+// --- Module: retention/retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -65460,7 +65002,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\season_pass.js ---
+// --- Module: retention/season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -66122,7 +65664,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\winback.js ---
+// --- Module: retention/winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -66683,7 +66225,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads\rewarded_ads.js ---
+// --- Module: rewarded_ads/rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -67584,7 +67126,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets\s3_assets.js ---
+// --- Module: s3_assets/s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -68007,7 +67549,7 @@ function __ModuleInit_108(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat\satori_compat.js ---
+// --- Module: satori_compat/satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -68194,7 +67736,7 @@ function __ModuleInit_109(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct\satori_direct.js ---
+// --- Module: satori_direct/satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -69236,7 +68778,7 @@ function __ModuleInit_110(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases\sdk_aliases.js ---
+// --- Module: sdk_aliases/sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -69398,7 +68940,7 @@ function __ModuleInit_111(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review\smart_review.js ---
+// --- Module: smart_review/smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -70196,7 +69738,7 @@ function __ModuleInit_112(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: tournaments\tournaments.js ---
+// --- Module: tournaments/tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -70749,7 +70291,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: tutorx\tutorx_coin_gate.js ---
+// --- Module: tutorx/tutorx_coin_gate.js ---
 // tutorx_coin_gate.js — per-service TutorX AI coin pricing (mirrors TutorX SPA catalog)
 
 var TUTORX_SERVICE_CATALOG = {
@@ -70886,7 +70428,7 @@ function tutorxWriteUsage(nk, collection, userId, today, usage) {
 }
 
 
-// --- Module: visual_path\visual_path.js ---
+// --- Module: visual_path/visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -71237,7 +70779,7 @@ function __ModuleInit_115(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet\wallet.js ---
+// --- Module: wallet/wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -77241,7 +76783,7 @@ var LEGACY_REWARD_CONFIGS = {
  * @param {string} gameId - Game ID (UUID)
  * @returns {object} Streak data
  */
-function getStreakData(nk, logger, userId, gameId) {
+function __legacy_getStreakData(nk, logger, userId, gameId) {
     var collection = "daily_streaks";
     var key = makeGameStorageKey("user_daily_streak", userId, gameId);
 
@@ -77271,7 +76813,7 @@ function getStreakData(nk, logger, userId, gameId) {
  * @param {object} data - Streak data to save
  * @returns {boolean} Success status
  */
-function saveStreakData(nk, logger, userId, gameId, data) {
+function __legacy_saveStreakData(nk, logger, userId, gameId, data) {
     var collection = "daily_streaks";
     var key = makeGameStorageKey("user_daily_streak", userId, gameId);
     return writeStorage(nk, logger, collection, key, userId, data);
@@ -77282,7 +76824,7 @@ function saveStreakData(nk, logger, userId, gameId, data) {
  * @param {object} streakData - Current streak data
  * @returns {object} { canClaim: boolean, reason: string }
  */
-function canClaimToday(streakData) {
+function __legacy_canClaimToday(streakData) {
     var now = getUnixTimestamp();
     var lastClaim = streakData.lastClaimTimestamp;
 
@@ -77308,7 +76850,7 @@ function canClaimToday(streakData) {
  * @param {object} streakData - Current streak data
  * @returns {object} Updated streak data
  */
-function updateStreakStatus(streakData) {
+function __legacy_updateStreakStatus(streakData) {
     var now = getUnixTimestamp();
     var lastClaim = streakData.lastClaimTimestamp;
 
@@ -77331,7 +76873,7 @@ function updateStreakStatus(streakData) {
  * @param {number} day - Streak day (1-7)
  * @returns {object} Reward configuration
  */
-function getRewardForDay(gameId, day) {
+function __legacy_getRewardForDay(gameId, day) {
     var config = LEGACY_REWARD_CONFIGS[gameId] || LEGACY_REWARD_CONFIGS["default"];
     var rewardDay = ((day - 1) % 7) + 1; // Cycle through 1-7
 
@@ -77353,7 +76895,7 @@ function getRewardForDay(gameId, day) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
+function __legacy_rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
     logInfo(logger, "RPC daily_rewards_get_status called");
 
     var parsed = safeJsonParse(payload);
@@ -77378,15 +76920,15 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
     }
 
     // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(streakData);
+    var streakData = __legacy_getStreakData(nk, logger, userId, gameId);
+    streakData = __legacy_updateStreakStatus(streakData);
 
     // Check if can claim
-    var claimCheck = canClaimToday(streakData);
+    var claimCheck = __legacy_canClaimToday(streakData);
 
     // Get next reward info
     var nextDay = streakData.currentStreak + 1;
-    var nextReward = getRewardForDay(gameId, nextDay);
+    var nextReward = __legacy_getRewardForDay(gameId, nextDay);
 
     return JSON.stringify({
         success: true,
@@ -77395,7 +76937,7 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
         currentStreak: streakData.currentStreak,
         totalClaims: streakData.totalClaims,
         lastClaimTimestamp: streakData.lastClaimTimestamp,
-        canClaimToday: claimCheck.canClaim,
+        __legacy_canClaimToday: claimCheck.canClaim,
         claimReason: claimCheck.reason,
         nextReward: nextReward,
         timestamp: getCurrentTimestamp()
@@ -77423,7 +76965,7 @@ function rpcFriendQuestComplete(ctx, logger, nk, payload) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
+function __legacy_rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     logInfo(logger, "RPC daily_rewards_claim called");
 
     var parsed = safeJsonParse(payload);
@@ -77448,16 +76990,16 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     }
 
     // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(streakData);
+    var streakData = __legacy_getStreakData(nk, logger, userId, gameId);
+    streakData = __legacy_updateStreakStatus(streakData);
 
     // Check if can claim
-    var claimCheck = canClaimToday(streakData);
+    var claimCheck = __legacy_canClaimToday(streakData);
     if (!claimCheck.canClaim) {
         return JSON.stringify({
             success: false,
             error: "Cannot claim reward: " + claimCheck.reason,
-            canClaimToday: false
+            __legacy_canClaimToday: false
         });
     }
 
@@ -77468,10 +77010,10 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     streakData.updatedAt = getCurrentTimestamp();
 
     // Get reward for current day
-    var reward = getRewardForDay(gameId, streakData.currentStreak);
+    var reward = __legacy_getRewardForDay(gameId, streakData.currentStreak);
 
     // Save updated streak
-    if (!saveStreakData(nk, logger, userId, gameId, streakData)) {
+    if (!__legacy_saveStreakData(nk, logger, userId, gameId, streakData)) {
         return handleError(ctx, null, "Failed to save streak data");
     }
 
@@ -85444,7 +84986,7 @@ function __legacy_quizverseClaimDailyReward(context, logger, nk, payload) {
             return JSON.stringify({ success: false, error: result.error });
         }
 
-        var nextReward = getRewardForDay(gameId, result.streakData.currentStreak + 1);
+        var nextReward = __legacy_getRewardForDay(gameId, result.streakData.currentStreak + 1);
         logger.info("[" + gameId + "] User " + userId + " claimed daily reward via legacy arcade RPC. Streak: " + result.streakData.currentStreak);
 
         return JSON.stringify({
@@ -97133,9 +96675,9 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
     // Register Daily Rewards RPCs
     try {
         logger.info('[DailyRewards] Initializing Daily Rewards Module...');
-        __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus);
+        __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (__legacy_rpcDailyRewardsGetStatus);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_get_status');
-        __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim);
+        __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (__legacy_rpcDailyRewardsClaim);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_claim');
         logger.info('[DailyRewards] Successfully registered 2 Daily Rewards RPCs');
     } catch (err) {
@@ -130676,9 +130218,21 @@ var IdentityResolver;
         }
         return null;
     }
-    function writeLink(nk, channel, externalId, cognitoSub, source, confidence) {
+    /**
+     * Forward index (system-owned) stores cognito_sub in the value for AI Notes /
+     * conv-hub resolution. Reverse index MUST be owned by a real Nakama user
+     * UUID — Cognito subs are custom_ids, not users.table ids. Writing reverse
+     * under cognito_sub makes storageWrite throw → identity_link "internal error"
+     * (seen live after Connect session-Bearer fix landed on web).
+     *
+     * reverseOwnerUserId: Nakama UUID (ctx.userId / ghost userId). Falls back to
+     * cognitoSub only for legacy callers that already used a Nakama UUID as the
+     * stored cognito_sub (ghost mint path).
+     */
+    function writeLink(nk, channel, externalId, cognitoSub, source, confidence, reverseOwnerUserId) {
         var key = buildKey(channel, externalId);
         var now = Math.floor(Date.now() / 1000);
+        var reverseOwner = ("" + (reverseOwnerUserId || cognitoSub)).trim();
         var forward = {
             cognito_sub: cognitoSub,
             channel: channel,
@@ -130694,6 +130248,7 @@ var IdentityResolver;
             linked_at: now,
             source: source,
             confidence: confidence,
+            cognito_sub: cognitoSub,
         };
         nk.storageWrite([
             {
@@ -130707,20 +130262,30 @@ var IdentityResolver;
             {
                 collection: IDENTITY_LINKS_USER_COLLECTION,
                 key: key,
-                userId: cognitoSub,
+                userId: reverseOwner,
                 value: reverse,
                 permissionRead: 2,
                 permissionWrite: 0,
             },
         ]);
     }
-    function deleteLink(nk, channel, externalId, cognitoSub) {
+    function deleteLink(nk, channel, externalId, cognitoSub, reverseOwnerUserId) {
         var key = buildKey(channel, externalId);
         try {
-            nk.storageDelete([
+            var deletes = [
                 { collection: IDENTITY_LINKS_COLLECTION, key: key, userId: Constants.SYSTEM_USER_ID },
                 { collection: IDENTITY_LINKS_USER_COLLECTION, key: key, userId: cognitoSub },
-            ]);
+            ];
+            // Also clear reverse under Nakama UUID when it differs (post-fix owner).
+            var alt = ("" + (reverseOwnerUserId || "")).trim();
+            if (alt && alt !== cognitoSub) {
+                deletes.push({
+                    collection: IDENTITY_LINKS_USER_COLLECTION,
+                    key: key,
+                    userId: alt,
+                });
+            }
+            nk.storageDelete(deletes);
         }
         catch (err) {
             // Idempotent delete; if already gone, that's fine.
@@ -130802,8 +130367,8 @@ var IdentityResolver;
         var source = ("" + (record.source || "identity_heal")).slice(0, 64);
         var confidence = ("" + (record.confidence || "high")).slice(0, 16);
         try {
-            deleteLink(nk, channel, externalId, stored);
-            writeLink(nk, channel, externalId, canonical, source, confidence);
+            deleteLink(nk, channel, externalId, stored, stored);
+            writeLink(nk, channel, externalId, canonical, source, confidence, stored);
             record.cognito_sub = canonical;
             logger.info("identity healed cognito_sub: channel=" + channel +
                 " old=" + stored + " new=" + canonical);
@@ -130934,7 +130499,7 @@ var IdentityResolver;
                 var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
                 if (existingSub !== callerSub) {
                     if (isReplaceableGhostBinding(nk, existing)) {
-                        deleteLink(nk, channel, externalId, existing.cognito_sub);
+                        deleteLink(nk, channel, externalId, existing.cognito_sub, existing.cognito_sub);
                         logger.info("identity_link replaced ghost binding: channel=" + channel +
                             " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + callerSub);
                     }
@@ -130945,12 +130510,13 @@ var IdentityResolver;
                 }
                 else if (("" + existing.cognito_sub) !== callerSub) {
                     // Same account, but stored under Nakama UUID — rewrite to Cognito.
-                    deleteLink(nk, channel, externalId, existing.cognito_sub);
+                    deleteLink(nk, channel, externalId, existing.cognito_sub, userId);
                 }
             }
             var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
             var confidence = ("" + (data.confidence || "high")).slice(0, 16);
-            writeLink(nk, channel, externalId, callerSub, source, confidence);
+            // Reverse index owned by Nakama UUID (userId); forward value keeps Cognito sub.
+            writeLink(nk, channel, externalId, callerSub, source, confidence, userId);
             logger.info("identity_link ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
             return RpcHelpers.successResponse({
                 linked: true,
@@ -130961,7 +130527,13 @@ var IdentityResolver;
             });
         }
         catch (err) {
-            logger.error("identity_link failed: " + (err && err.message ? err.message : String(err)));
+            var errMsg = err && err.message ? err.message : String(err);
+            logger.error("identity_link failed: " + errMsg);
+            // Surface a stable, non-secret hint so web Connect can distinguish
+            // storage/auth failures from opaque 500s during rollout.
+            if (errMsg.indexOf("AUTH_REQUIRED") >= 0 || errMsg.indexOf("User ID is required") >= 0) {
+                return RpcHelpers.errorResponse("sign in required", 401);
+            }
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
@@ -130992,8 +130564,9 @@ var IdentityResolver;
             if (existingSub !== callerSub) {
                 return RpcHelpers.errorResponse("not authorised to unlink this binding", 403);
             }
-            // Delete under the stored key (may still be a Nakama UUID pre-heal).
-            deleteLink(nk, channel, externalId, existing.cognito_sub);
+            // Delete under the stored key (may still be a Nakama UUID pre-heal)
+            // and under the caller's Nakama UUID (post-fix reverse owner).
+            deleteLink(nk, channel, externalId, existing.cognito_sub, userId);
             logger.info("identity_unlink ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
             return RpcHelpers.successResponse({ unlinked: true });
         }
@@ -131170,7 +130743,7 @@ var IdentityResolver;
             }
             // 3. Bind the new ghost to the channel.
             var source = ("" + (data.source || "service_ghost_create")).slice(0, 64);
-            writeLink(nk, channel, externalId, ghostSub, source, "low");
+            writeLink(nk, channel, externalId, ghostSub, source, "low", ghostSub);
             logger.info("identity_resolve_or_ghost_create minted ghost: sub=" + ghostSub + " channel=" + channel + " ext=" + maskExternalId(channel, externalId));
             return RpcHelpers.successResponse({
                 cognito_sub: ghostSub,
@@ -186915,7 +186488,6 @@ try { __rpc_daily_reward_get_calendar = __rpc_daily_reward_get_calendar || (rpcD
 try { __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus); } catch(e) {}
 try { __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim); } catch(e) {}
 try { __rpc_daily_rewards_get_history = __rpc_daily_rewards_get_history || (rpcDailyRewardsGetHistory); } catch(e) {}
-try { __rpc_daily_rewards_reconcile = __rpc_daily_rewards_reconcile || (rpcDailyRewardsReconcile); } catch(e) {}
 try { __rpc_analytics_appodeal = __rpc_analytics_appodeal || (rpcAnalyticsAppodeal); } catch(e) {}
 try { __rpc_analytics_apple_appstore = __rpc_analytics_apple_appstore || (rpcAnalyticsAppleAppstore); } catch(e) {}
 try { __rpc_apple_appstore_import = __rpc_apple_appstore_import || (rpcAppleImport); } catch(e) {}
@@ -187111,8 +186683,8 @@ try { __rpc_get_time_period_leaderboard = __rpc_get_time_period_leaderboard || (
 try { __rpc_get_game_registry = __rpc_get_game_registry || (rpcGetGameRegistry); } catch(e) {}
 try { __rpc_get_game_by_id = __rpc_get_game_by_id || (rpcGetGameById); } catch(e) {}
 try { __rpc_sync_game_registry = __rpc_sync_game_registry || (rpcSyncGameRegistry); } catch(e) {}
-try { __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus); } catch(e) {}
-try { __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim); } catch(e) {}
+try { __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (__legacy_rpcDailyRewardsGetStatus); } catch(e) {}
+try { __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (__legacy_rpcDailyRewardsClaim); } catch(e) {}
 try { __rpc_quiz_submit_result = __rpc_quiz_submit_result || (__legacy_rpcQuizSubmitResult); } catch(e) {}
 try { __rpc_quiz_get_history = __rpc_quiz_get_history || (__legacy_rpcQuizGetHistory); } catch(e) {}
 try { __rpc_quiz_get_stats = __rpc_quiz_get_stats || (__legacy_rpcQuizGetStats); } catch(e) {}
@@ -188782,7 +188354,6 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("daily_progress_claim", __rpc_daily_progress_claim); } catch(e) {}
   try { initializer.registerRpc("daily_reward_get_calendar", __rpc_daily_reward_get_calendar); } catch(e) {}
   try { initializer.registerRpc("daily_rewards_get_history", __rpc_daily_rewards_get_history); } catch(e) {}
-  try { initializer.registerRpc("daily_rewards_reconcile", __rpc_daily_rewards_reconcile); } catch(e) {}
   try { initializer.registerRpc("analytics_appodeal", __rpc_analytics_appodeal); } catch(e) {}
   try { initializer.registerRpc("analytics_apple_appstore", __rpc_analytics_apple_appstore); } catch(e) {}
   try { initializer.registerRpc("apple_appstore_import", __rpc_apple_appstore_import); } catch(e) {}
@@ -189075,5 +188646,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1318 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
+  logger.info("[Postbuild] Registered " + 1317 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
 }
