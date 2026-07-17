@@ -93,6 +93,7 @@ namespace QuestEventBridge {
       }
 
       var body = JSON.stringify({
+        userId:       userId,
         nakamaGameId: gameId,
         eventType:    eventType,
         eventName:    eventName,
