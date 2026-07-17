@@ -60,7 +60,13 @@ namespace QuestEngine {
   var QUEST_ENGINE_COLLECTION = "qv_quests";
   // Collection used for admin-managed quest config (public-read, system-write)
   var QUEST_CONFIG_COLLECTION = "qv_quest_config";
+  // Players who called quest_engine_get for an App-ID — fan-out target for new quests
+  var QUEST_SUBSCRIBERS_COLLECTION = "qv_quest_subscribers";
   var DEFAULT_QUESTS_CONFIG: QuestsConfig = { quests: {} };
+  // In-app inbox code for "new quest published" (reward deliveries use 9101)
+  var NOTIFICATION_CODE_NEW_QUEST = 9102;
+  var MAX_QUEST_SUBSCRIBERS = 2000;
+  var MAX_NOTIFY_BATCH = 100;
 
   // ─── Calendar helpers ────────────────────────────────────────────────────
   // Returns the next midnight UTC boundary from a given unix timestamp (seconds).
@@ -136,6 +142,110 @@ namespace QuestEngine {
       permissionRead:  2 as nkruntime.ReadPermissionValues,
       permissionWrite: 0 as nkruntime.WritePermissionValues
     }]);
+  }
+
+  function loadSubscribers(nk: nkruntime.Nakama, gameId: string): string[] {
+    try {
+      var rows = nk.storageRead([{
+        collection: QUEST_SUBSCRIBERS_COLLECTION,
+        key: configKey(gameId),
+        userId: Constants.SYSTEM_USER_ID
+      }]);
+      if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
+        return rows[0].value.userIds as string[];
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  function saveSubscribers(nk: nkruntime.Nakama, gameId: string, userIds: string[]): void {
+    nk.storageWrite([{
+      collection: QUEST_SUBSCRIBERS_COLLECTION,
+      key: configKey(gameId),
+      userId: Constants.SYSTEM_USER_ID,
+      value: { userIds: userIds, updatedAt: Math.floor(Date.now() / 1000) },
+      permissionRead:  1 as nkruntime.ReadPermissionValues,
+      permissionWrite: 0 as nkruntime.WritePermissionValues
+    }]);
+  }
+
+  /** Register player for new-quest inbox notifications for this App-ID. */
+  function subscribeUser(nk: nkruntime.Nakama, gameId: string, userId: string): void {
+    if (!userId || !gameId) return;
+    var ids = loadSubscribers(nk, gameId);
+    if (ids.indexOf(userId) >= 0) return;
+    ids.push(userId);
+    if (ids.length > MAX_QUEST_SUBSCRIBERS) {
+      ids = ids.slice(ids.length - MAX_QUEST_SUBSCRIBERS);
+    }
+    try {
+      saveSubscribers(nk, gameId, ids);
+    } catch (_) { /* never break get */ }
+  }
+
+  function notifyNewQuests(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger,
+    gameId: string, newQuests: QuestConfig[], extraUserIds?: string[]
+  ): number {
+    if (!newQuests || newQuests.length === 0) return 0;
+    var visible: QuestConfig[] = [];
+    for (var i = 0; i < newQuests.length; i++) {
+      if (!newQuests[i].hidden) visible.push(newQuests[i]);
+    }
+    if (visible.length === 0) return 0;
+
+    var userIds = loadSubscribers(nk, gameId);
+    if (extraUserIds && extraUserIds.length) {
+      for (var e = 0; e < extraUserIds.length; e++) {
+        if (extraUserIds[e] && userIds.indexOf(extraUserIds[e]) < 0) userIds.push(extraUserIds[e]);
+      }
+    }
+    if (userIds.length === 0) {
+      logger.info("[QuestEngine] New quests saved but no subscribers yet for gameId=%s", gameId);
+      return 0;
+    }
+
+    var names: string[] = [];
+    for (var n = 0; n < visible.length && n < 5; n++) names.push(visible[n].name || visible[n].id);
+    var subject = visible.length === 1
+      ? ("🆕 New quest: " + (visible[0].name || visible[0].id))
+      : ("🆕 " + visible.length + " new quests");
+    var body = visible.length === 1
+      ? (visible[0].description || "A new quest is available. Open Quests to start.")
+      : ("New: " + names.join(", ") + (visible.length > 5 ? "…" : ""));
+
+    var questIds: string[] = [];
+    for (var q = 0; q < visible.length; q++) questIds.push(visible[q].id);
+
+    var sent = 0;
+    for (var b = 0; b < userIds.length; b += MAX_NOTIFY_BATCH) {
+      var slice = userIds.slice(b, b + MAX_NOTIFY_BATCH);
+      var batch: nkruntime.NotificationRequest[] = [];
+      for (var u = 0; u < slice.length; u++) {
+        batch.push({
+          userId: slice[u],
+          subject: subject,
+          content: {
+            type: "quest_new",
+            gameId: gameId,
+            body: body,
+            questIds: questIds,
+            count: visible.length
+          },
+          code: NOTIFICATION_CODE_NEW_QUEST,
+          persistent: true,
+          senderId: Constants.SYSTEM_USER_ID
+        });
+      }
+      try {
+        nk.notificationsSend(batch);
+        sent += batch.length;
+      } catch (err: any) {
+        logger.warn("[QuestEngine] notificationsSend failed: " + (err && err.message ? err.message : String(err)));
+      }
+    }
+    logger.info("[QuestEngine] Notified %d subscribers of %d new quest(s) gameId=%s", sent, visible.length, gameId);
+    return sent;
   }
 
   function loadUserState(nk: nkruntime.Nakama, userId: string, gameId: string): UserQuestState {
@@ -270,6 +380,9 @@ namespace QuestEngine {
     var data = RpcHelpers.parseRpcPayload(payload);
     var gameId = resolveGameId(data);
     var now = Math.floor(Date.now() / 1000);
+
+    // Opt player into new-quest inbox fan-out for this App-ID
+    try { subscribeUser(nk, gameId, userId); } catch (_) {}
 
     var config = loadConfig(nk, gameId);
     var state = loadUserState(nk, userId, gameId);
@@ -636,10 +749,41 @@ namespace QuestEngine {
     }
 
     var questCount = Object.keys(config.quests).length;
-    saveConfig(nk, gameId, config);
-    logger.info("[QuestEngine] Config saved: gameId=%s quests=%d", gameId, questCount);
 
-    return RpcHelpers.successResponse({ saved: true, questCount: questCount });
+    // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
+    // silent: true  → skip fan-out (use for bulk reseed)
+    // notifyUserIds → extra targets (optional)
+    var prev = loadConfig(nk, gameId);
+    var prevIds: { [id: string]: boolean } = {};
+    var prevKeys = Object.keys(prev.quests || {});
+    for (var pi = 0; pi < prevKeys.length; pi++) prevIds[prevKeys[pi]] = true;
+
+    var newlyAdded: QuestConfig[] = [];
+    var newKeys = Object.keys(config.quests);
+    for (var ni = 0; ni < newKeys.length; ni++) {
+      var nid = newKeys[ni];
+      if (!prevIds[nid]) newlyAdded.push(config.quests[nid]);
+    }
+
+    saveConfig(nk, gameId, config);
+    logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+
+    var notified = 0;
+    var silent = data.silent === true || data.notifyNewQuests === false;
+    if (!silent && newlyAdded.length > 0) {
+      var extra: string[] | undefined;
+      if (Array.isArray(data.notifyUserIds)) {
+        extra = data.notifyUserIds as string[];
+      }
+      notified = notifyNewQuests(nk, logger, gameId, newlyAdded, extra);
+    }
+
+    return RpcHelpers.successResponse({
+      saved: true,
+      questCount: questCount,
+      newQuestCount: newlyAdded.length,
+      notified: notified
+    });
   }
 
   // ─── RPC: quest_engine_admin_get_config ──────────────────────────────────
