@@ -397,7 +397,7 @@ func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB
 		newState, deltaPayload, reconciles := s.gen.ApplyInputs(s.gameState, genInputs, int(tick))
 		s.gameState = newState
 		// Broadcast delta.
-		if deltaPayload != nil && len(deltaPayload) > 0 {
+		if len(deltaPayload) > 0 {
 			s.broadcast(dispatcher, opTickDelta, mustMarshal(map[string]interface{}{
 				"tick":  int(tick),
 				"delta": deltaPayload,

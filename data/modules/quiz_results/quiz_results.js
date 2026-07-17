@@ -142,6 +142,17 @@ function appendKnowledgeMapHistory(nk, logger, userId, data, result, metrics) {
 }
 
 /**
+ * Nakama storageList/storageRead may return value as a parsed object or JSON string.
+ * Mirrors src/shared/storage.ts — JSON.parse on an object throws "invalid character 'o'".
+ */
+function parseStorageRecordValue(raw) {
+    if (raw == null) {
+        return null;
+    }
+    return typeof raw === "string" ? JSON.parse(raw) : raw;
+}
+
+/**
  * Quiz Result Schema
  * Captures comprehensive data about each quiz attempt
  */
@@ -422,6 +433,79 @@ function writePlayerSummary(nk, logger, userId, stats) {
 }
 
 /**
+ * Mirror canonical quiz aggregate stats into legacy profile read paths.
+ * Non-critical: never blocks result submission.
+ */
+function mirrorProgressionToLegacyStores(nk, logger, userId, stats) {
+    try {
+        var totalGames = stats.totalGames || 0;
+        var totalWins = stats.totalWins || 0;
+        var totalCorrect = stats.totalCorrect || 0;
+        var totalQuestions = stats.totalQuestions || 0;
+        var now = stats.lastPlayedAt || utils.getCurrentTimestamp();
+
+        var existingStats = utils.readStorage(nk, logger, "player_stats", "stats", userId) || {};
+        var mirroredStats = {
+            userId: userId,
+            totalGamesPlayed: Math.max(existingStats.totalGamesPlayed || 0, totalGames),
+            totalWins: Math.max(existingStats.totalWins || 0, totalWins),
+            totalCorrectAnswers: Math.max(existingStats.totalCorrectAnswers || 0, totalCorrect),
+            totalQuestionsAnswered: Math.max(existingStats.totalQuestionsAnswered || 0, totalQuestions),
+            totalQuestions: Math.max(existingStats.totalQuestions || 0, totalQuestions),
+            winRate: 0,
+            currentStreak: Math.max(existingStats.currentStreak || 0, stats.currentStreak || 0),
+            bestStreak: Math.max(existingStats.bestStreak || 0, stats.longestStreak || 0),
+            averageScore: existingStats.averageScore || 0,
+            favoriteCategory: existingStats.favoriteCategory || "",
+            lastPlayedAt: Math.max(existingStats.lastPlayedAt || 0, now)
+        };
+        if (mirroredStats.totalGamesPlayed > 0) {
+            mirroredStats.averageScore = Math.round((stats.totalScore || 0) / mirroredStats.totalGamesPlayed);
+            mirroredStats.winRate = Math.round((mirroredStats.totalWins / mirroredStats.totalGamesPlayed) * 10000) / 100;
+        }
+        utils.writeStorage(nk, logger, "player_stats", "stats", userId, mirroredStats);
+
+        var metaRecords = nk.storageRead([{
+            collection: "player_metadata",
+            key: "metadata",
+            userId: userId
+        }]);
+        var metadata = (metaRecords && metaRecords.length > 0 && metaRecords[0].value)
+            ? metaRecords[0].value
+            : {};
+        var beforeGames = metadata.totalGamesPlayed || 0;
+        metadata.totalGamesPlayed = Math.max(beforeGames, totalGames);
+        metadata.totalWins = Math.max(metadata.totalWins || 0, totalWins);
+        if (!metadata.customData) metadata.customData = {};
+        metadata.customData.totalCorrectAnswers = Math.max(
+            metadata.customData.totalCorrectAnswers || 0,
+            totalCorrect
+        );
+        metadata.customData.totalQuestionsAnswered = Math.max(
+            metadata.customData.totalQuestionsAnswered || 0,
+            totalQuestions
+        );
+        metadata.updatedAt = new Date().toISOString();
+        nk.storageWrite([{
+            collection: "player_metadata",
+            key: "metadata",
+            userId: userId,
+            value: metadata,
+            permissionRead: 2,
+            permissionWrite: 1
+        }]);
+
+        logger.info(
+            "[QuizStatsMirror] userId=" + userId +
+            " totalGames=" + totalGames +
+            " metadataGames=" + metadata.totalGamesPlayed
+        );
+    } catch (err) {
+        utils.logWarning(logger, "[QuizStatsMirror] mirror failed (non-critical): " + err.message);
+    }
+}
+
+/**
  * Update user's aggregate statistics
  */
 function updateUserStats(nk, logger, userId, gameId, result, metrics) {
@@ -519,6 +603,7 @@ function updateUserStats(nk, logger, userId, gameId, result, metrics) {
 
     // Write the compact manager-facing summary (qv_player_stats/summary).
     writePlayerSummary(nk, logger, userId, stats);
+    mirrorProgressionToLegacyStores(nk, logger, userId, stats);
 
     return stats;
 }
@@ -756,7 +841,7 @@ function rpcQuizGetHistory(ctx, logger, nk, payload) {
         
         var results = [];
         for (var obj of objects.objects || []) {
-            var result = JSON.parse(obj.value);
+            var result = parseStorageRecordValue(obj.value);
             
             // Filter by gameMode if specified
             if (data.gameMode && result.gameMode !== data.gameMode) {
@@ -946,7 +1031,7 @@ function rpcQuizCheckDailyCompletion(ctx, logger, nk, payload) {
             
             // Check if any result matches gameMode and was submitted today
             for (var obj of objects.objects || []) {
-                var result = JSON.parse(obj.value);
+                var result = parseStorageRecordValue(obj.value);
                 
                 // Check if gameMode matches
                 if (result.gameMode !== data.gameMode) {
@@ -969,7 +1054,7 @@ function rpcQuizCheckDailyCompletion(ctx, logger, nk, payload) {
             
             // Check transaction logs for quiz results submitted today
             for (var obj of transactionObjects.objects || []) {
-                var transaction = JSON.parse(obj.value);
+                var transaction = parseStorageRecordValue(obj.value);
                 
                 // Check if this is a quiz result transaction
                 if (transaction.type === "quiz_result" && 

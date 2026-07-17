@@ -18,6 +18,8 @@ namespace HiroBase {
     transactionId?: string;
     storeType: IAPStoreType;
     error?: string;
+    /** false when recordPurchase skipped a duplicate transactionId */
+    newPurchase?: boolean;
   }
 
   interface UserPurchaseHistory {
@@ -39,7 +41,7 @@ namespace HiroBase {
         if (!allowFakeReceipts) {
           return { valid: false, productId: request.productId, storeType: request.storeType, error: "Fake receipts disabled" };
         }
-        return { valid: true, productId: request.productId, storeType: request.storeType, transactionId: "fake_" + nk.uuidv4() };
+        return { valid: true, productId: request.productId, storeType: request.storeType, transactionId: "fake_" + nk.uuidv4(), newPurchase: true };
       default:
         return { valid: false, productId: request.productId, storeType: request.storeType, error: "Unknown store type" };
     }
@@ -50,8 +52,8 @@ namespace HiroBase {
       var validation = nk.purchaseValidateApple(userId, request.receipt);
       if (validation && validation.validatedPurchases && validation.validatedPurchases.length > 0) {
         var purchase = validation.validatedPurchases[0];
-        recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "apple", request.price);
-        return { valid: true, productId: request.productId, storeType: "apple", transactionId: purchase.transactionId };
+        var isNewApple = recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "apple", request.price);
+        return { valid: true, productId: request.productId, storeType: "apple", transactionId: purchase.transactionId, newPurchase: isNewApple };
       }
       return { valid: false, productId: request.productId, storeType: "apple", error: "Validation failed" };
     } catch (e: any) {
@@ -65,8 +67,8 @@ namespace HiroBase {
       var validation = nk.purchaseValidateGoogle(userId, request.receipt);
       if (validation && validation.validatedPurchases && validation.validatedPurchases.length > 0) {
         var purchase = validation.validatedPurchases[0];
-        recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "google", request.price);
-        return { valid: true, productId: request.productId, storeType: "google", transactionId: purchase.transactionId };
+        var isNewGoogle = recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "google", request.price);
+        return { valid: true, productId: request.productId, storeType: "google", transactionId: purchase.transactionId, newPurchase: isNewGoogle };
       }
       return { valid: false, productId: request.productId, storeType: "google", error: "Validation failed" };
     } catch (e: any) {
@@ -80,8 +82,8 @@ namespace HiroBase {
       var validation = nk.purchaseValidateFacebookInstant(userId, request.receipt);
       if (validation && validation.validatedPurchases && validation.validatedPurchases.length > 0) {
         var purchase = validation.validatedPurchases[0];
-        recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "facebook", request.price);
-        return { valid: true, productId: request.productId, storeType: "facebook", transactionId: purchase.transactionId };
+        var isNewFacebook = recordPurchase(nk, userId, purchase.transactionId || nk.uuidv4(), request.productId, "facebook", request.price);
+        return { valid: true, productId: request.productId, storeType: "facebook", transactionId: purchase.transactionId, newPurchase: isNewFacebook };
       }
       return { valid: false, productId: request.productId, storeType: "facebook", error: "Validation failed" };
     } catch (e: any) {
@@ -90,7 +92,7 @@ namespace HiroBase {
     }
   }
 
-  function recordPurchase(nk: nkruntime.Nakama, userId: string, transactionId: string, productId: string, storeType: string, price?: number): void {
+  function recordPurchase(nk: nkruntime.Nakama, userId: string, transactionId: string, productId: string, storeType: string, price?: number): boolean {
     var history = Storage.readJson<UserPurchaseHistory>(nk, IAP_COLLECTION, "history", userId);
     if (!history) history = { purchases: [] };
 
@@ -100,7 +102,7 @@ namespace HiroBase {
     if (transactionId && transactionId.indexOf("fake_") !== 0) {
       for (var i = 0; i < history.purchases.length; i++) {
         if (history.purchases[i].transactionId === transactionId) {
-          return; // already recorded — skip to prevent double-grant
+          return false; // already recorded — skip to prevent double-grant
         }
       }
     }
@@ -113,6 +115,7 @@ namespace HiroBase {
       price: price
     });
     Storage.writeJson(nk, IAP_COLLECTION, "history", userId, history);
+    return true;
   }
 
   // ---- Default Username Generation ----
@@ -179,6 +182,44 @@ namespace HiroBase {
         userId: userId, offerId: productId, reward: null, iap: true, price: data.price
       });
       return RpcHelpers.successResponse({ valid: true, reward: null, transactionId: result.transactionId });
+    }
+
+    // ── Coin packs: server-authoritative grant via WalletHelpers ───────────
+    if (isConsumableProduct && CoinPackCatalog.isCoinPack(productId)) {
+      var coinGrant = CoinPackCatalog.resolveCoinGrant(productId);
+      if (coinGrant === null) {
+        return RpcHelpers.errorResponse("Unknown coin pack product: " + productId);
+      }
+
+      var coinGameId = (data.gameId as string) || "default";
+      var coinWallet: WalletHelpers.GameWallet;
+      var isDuplicateTx = result.newPurchase === false;
+
+      if (isDuplicateTx) {
+        coinWallet = WalletHelpers.getGameWallet(nk, userId, coinGameId);
+        logger.info("[IAP] Coin pack already granted: userId=" + userId + " productId=" + productId + " tx=" + result.transactionId);
+        EventBus.emit(nk, logger, ctx, EventBus.Events.STORE_PURCHASE, {
+          userId: userId, offerId: productId, reward: null, iap: true, price: data.price
+        });
+        return RpcHelpers.successResponse({
+          valid: true,
+          alreadyGranted: true,
+          transactionId: result.transactionId,
+          game_balance: coinWallet.currencies.game || 0
+        });
+      }
+
+      coinWallet = WalletHelpers.addCurrency(nk, logger, ctx, userId, coinGameId, "game", coinGrant);
+      logger.info("[IAP] Coin pack granted: userId=" + userId + " productId=" + productId + " coins=" + coinGrant + " tx=" + result.transactionId);
+      EventBus.emit(nk, logger, ctx, EventBus.Events.STORE_PURCHASE, {
+        userId: userId, offerId: productId, reward: { currencies: { game: coinGrant } }, iap: true, price: data.price
+      });
+      return RpcHelpers.successResponse({
+        valid: true,
+        transactionId: result.transactionId,
+        game_balance: coinWallet.currencies.game || 0,
+        coinsGranted: coinGrant
+      });
     }
 
     // Non-subscription: try Hiro store config for reward grant

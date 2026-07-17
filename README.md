@@ -29,7 +29,11 @@ Nakama's JavaScript runtime only supports **ES Modules (ESM)**:
 - 📘 [Docker ESM Deployment Guide](./_archived_docs/esm_guides/NAKAMA_DOCKER_ESM_DEPLOYMENT.md) - Docker setup
 - 📁 [Working Examples](./examples/esm-modules/) - Copy-paste ready code
 
+<<<<<<< HEAD
 ---
+=======
+<a href="https://heroiclabs.com/docs/install-docker-quickstart/"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Docker_Logo.svg" width="170"></a>
+>>>>>>> upstream/master
 
 ## 📚 Documentation
 

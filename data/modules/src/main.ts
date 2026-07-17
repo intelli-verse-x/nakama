@@ -266,8 +266,11 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     // logger.info("[Legacy] Registering daily rewards RPCs...");
     // LegacyDailyRewards.register(initializer);
 
-    logger.info("[Legacy] Registering quiz RPCs...");
-    LegacyQuiz.register(initializer);
+    // QVBF daily-quiz-sync: LegacyQuiz de-registered — quiz_results/quiz_results.js
+    // owns quiz_submit_result, quiz_get_history, quiz_get_stats, quiz_check_daily_completion.
+    // Keeping both registrations caused legacy handlers to hijack the RPC names.
+    // logger.info("[Legacy] Registering quiz RPCs...");
+    // LegacyQuiz.register(initializer);
 
     logger.info("[Legacy] Registering game entry RPCs...");
     LegacyGameEntry.register(initializer);

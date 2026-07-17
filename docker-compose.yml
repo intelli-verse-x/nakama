@@ -17,6 +17,7 @@ services:
       timeout: 3s
       retries: 5
   nakama:
+<<<<<<< HEAD
     # Build a custom image that bakes in the analytics_metrics Go plugin.
     # The plugin registers native Prometheus counters/gauges on :9100 for
     # the analytics pipeline, which the stock image can't do from JS. See
@@ -32,6 +33,9 @@ services:
     # to RPCs via `ctx.env`. The entrypoint below forwards each whitelisted var
     # as a `--runtime.env KEY=VALUE` CLI flag, which is what makes them reach
     # `ctx.env` in analytics.js / external_analytics.js / analytics_admin.js.
+=======
+    image: registry.heroiclabs.com/heroiclabs/nakama:3.37.0
+>>>>>>> upstream/master
     entrypoint:
       - "/bin/sh"
       - "-ecx"

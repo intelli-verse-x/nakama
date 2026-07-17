@@ -107,7 +107,7 @@ type ConsoleServer struct {
 	satori               *satori.SatoriClient
 }
 
-func StartConsoleServer(logger *zap.Logger, startupLogger *zap.Logger, db *sql.DB, config Config, tracker Tracker, router MessageRouter, streamManager StreamManager, metrics Metrics, sessionRegistry SessionRegistry, sessionCache SessionCache, consoleSessionCache SessionCache, loginAttemptCache LoginAttemptCache, statusRegistry StatusRegistry, statusHandler StatusHandler, runtimeInfo *RuntimeInfo, matchRegistry MatchRegistry, configWarnings map[string]string, serverVersion string, leaderboardCache LeaderboardCache, leaderboardRankCache LeaderboardRankCache, leaderboardScheduler LeaderboardScheduler, storageIndex StorageIndex, api *ApiServer, runtime *Runtime, cookie string) *ConsoleServer {
+func StartConsoleServer(logger *zap.Logger, startupLogger *zap.Logger, db *sql.DB, config Config, tracker Tracker, router MessageRouter, streamManager StreamManager, metrics Metrics, sessionRegistry SessionRegistry, sessionCache SessionCache, consoleSessionCache SessionCache, loginAttemptCache LoginAttemptCache, statusRegistry StatusRegistry, statusHandler StatusHandler, runtimeInfo *RuntimeInfo, matchRegistry MatchRegistry, configWarnings map[string]string, serverVersion string, leaderboardCache LeaderboardCache, leaderboardRankCache LeaderboardRankCache, leaderboardScheduler LeaderboardScheduler, storageIndex StorageIndex, api *ApiServer, runtime *Runtime, cookie string, registerConsoleRouter func(*mux.Router)) *ConsoleServer {
 	var gatewayContextTimeoutMs string
 	if config.GetConsole().IdleTimeoutMs > 500 {
 		// Ensure the GRPC Gateway timeout is just under the idle timeout (if possible) to ensure it has priority.
@@ -134,20 +134,7 @@ func StartConsoleServer(logger *zap.Logger, startupLogger *zap.Logger, db *sql.D
 
 	var satoriClient *satori.SatoriClient
 	if config.GetSatori().ServerKey != "" {
-		satoriClient = satori.NewSatoriClient(
-			ctx,
-			logger,
-			config.GetSatori().Url,
-			config.GetSatori().ApiKeyName,
-			config.GetSatori().ApiKey,
-			config.GetSatori().ServerKey,
-			config.GetSatori().SigningKey,
-			config.GetSession().TokenExpirySec,
-			int64(config.GetSatori().HttpTimeoutMs),
-			false,
-			config.GetSatori().CacheMode,
-			int64(config.GetSatori().CacheTTLSec),
-		)
+		satoriClient = satori.NewSatoriClient(ctx, logger, config.GetSatori().Url, config.GetSatori().ApiKeyName, config.GetSatori().ApiKey, config.GetSatori().ServerKey, config.GetSatori().SigningKey, config.GetSession().TokenExpirySec, int64(config.GetSatori().HttpTimeoutMs), int64(config.GetSatori().CacheTTLSec), false, config.GetSatori().CacheMode, config.GetSatori().RetryCount)
 	}
 
 	s := &ConsoleServer{
@@ -260,6 +247,11 @@ func StartConsoleServer(logger *zap.Logger, startupLogger *zap.Logger, db *sql.D
 	grpcGatewayRouter.Handle("/debug/pprof/profile_js", adminBasicAuth(config.GetConsole())(http.HandlerFunc(ProfileGoja)))
 	grpcGatewayRouter.Handle("/debug/pprof/symbol", adminBasicAuth(config.GetConsole())(http.HandlerFunc(pprof.Symbol)))
 	grpcGatewayRouter.Handle("/debug/pprof/trace", adminBasicAuth(config.GetConsole())(http.HandlerFunc(pprof.Trace)))
+	if registerConsoleRouter != nil {
+		subrouter := grpcGatewayRouter.NewRoute().Subrouter()
+		subrouter.Use(adminBasicAuth(config.GetConsole()))
+		registerConsoleRouter(subrouter)
+	}
 	grpcGatewayRouter.Handle("/debug/pprof/{profile}", adminBasicAuth(config.GetConsole())(http.HandlerFunc(pprof.Index)))
 
 	customHttpAuthFunc := func(path string, methods []string, handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
@@ -587,7 +579,7 @@ func checkAuth(ctx context.Context, logger *zap.Logger, config Config, auth, pat
 		if !ok {
 			return ctx, status.Error(codes.Unauthenticated, "Console authentication invalid.")
 		}
-		ip, _ := extractClientAddressFromContext(logger, ctx)
+		ip, _ := extractClientAddressFromContext(logger, config, ctx)
 		if !loginAttemptCache.Allow(username, ip) {
 			return ctx, status.Error(codes.Unauthenticated, "Console authentication invalid.")
 		}
@@ -676,7 +668,7 @@ func checkAuthCustom(r *http.Request, logger *zap.Logger, config Config, auth, m
 		if !ok {
 			return r, false, http.StatusUnauthorized, `{"error":"Console authentication invalid.","message":"Console authentication invalid.","code":16}`
 		}
-		ip, _ := extractClientAddressFromRequest(logger, r)
+		ip, _ := extractClientAddressFromRequest(logger, config, r)
 		if !loginAttemptCache.Allow(username, ip) {
 			return r, false, http.StatusUnauthorized, `{"error":"Console authentication invalid.","message":"Console authentication invalid.","code":16}`
 		}

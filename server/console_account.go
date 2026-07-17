@@ -191,9 +191,6 @@ func (s *ConsoleServer) ExportAccount(ctx context.Context, in *console.AccountId
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Requires a valid user ID.")
 	}
-	if userID == uuid.Nil {
-		return nil, status.Error(codes.InvalidArgument, "Cannot export the system user.")
-	}
 
 	export, err := ExportAccount(ctx, logger, s.db, userID)
 	if err != nil {
@@ -207,9 +204,6 @@ func (s *ConsoleServer) ImportAccount(ctx context.Context, in *console.AccountIm
 	userID, err := uuid.FromString(in.Id)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "Requires a valid user ID.")
-	}
-	if userID == uuid.Nil {
-		return nil, status.Error(codes.InvalidArgument, "Cannot import to the system user.")
 	}
 
 	if _, err := ImportAccount(ctx, logger, s.db, s.statusRegistry, userID, in.Data); err != nil {
@@ -464,6 +458,15 @@ func (s *ConsoleServer) ListAccounts(ctx context.Context, in *console.ListAccoun
       	FROM users u JOIN user_device ud on u.id = ud.user_id
       	WHERE ud.id = $1
 		`
+		if len(in.Filter) >= 3 {
+			query += `
+				UNION
+				(SELECT id, username, display_name, avatar_url, lang_tag, location, timezone, metadata, apple_id, facebook_id, facebook_instant_game_id, google_id, gamecenter_id, steam_id, edge_count, create_time, update_time
+					FROM users
+					WHERE display_name ILIKE CONCAT('%', replace(replace(replace($1, '\', '\\'), '%', '\%'), '_', '\_'), '%')
+          LIMIT 100)
+			`
+		}
 		if userIDFilter != nil {
 			params = append(params, *userIDFilter)
 			query += `

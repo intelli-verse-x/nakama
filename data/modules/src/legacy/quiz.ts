@@ -267,10 +267,16 @@ namespace LegacyQuiz {
     return RpcHelpers.successResponse({ date: dateStr, completed: completedToday });
   }
 
+  // QVBF daily-quiz-sync: registration REMOVED.
+  //
+  // main.ts stopped calling LegacyQuiz.register(), but postbuild's auto-invoke
+  // (section 3b) injects `register();` at IIFE scope, so the registerRpc
+  // literals below kept winning the __rpc_* stub race with UNGUARDED assignments.
+  // Result: legacy handlers hijacked quiz_submit_result / quiz_check_daily_completion
+  // from quiz_results/quiz_results.js (wrong collection, wrapped JSON, no gameMode).
+  // Canonical handlers live in data/modules/quiz_results/quiz_results.js.
+  // Helper functions above are kept for learner-toolbelt storage reads.
   export function register(initializer: nkruntime.Initializer): void {
-    initializer.registerRpc("quiz_submit_result", rpcSubmitResult);
-    initializer.registerRpc("quiz_get_history", rpcGetHistory);
-    initializer.registerRpc("quiz_get_stats", rpcGetStats);
-    initializer.registerRpc("quiz_check_daily_completion", rpcCheckDailyCompletion);
+    // Intentionally empty — see comment above.
   }
 }
