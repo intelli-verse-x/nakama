@@ -3607,7 +3607,7 @@ declare namespace TournamentEconomy {
     const TIER1_COUNTRIES: string[];
     const MIN_AGE = 18;
     const PUBLIC_MIN_AGE = 0;
-    /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
+    /** Slugs that skip age/KYC before enter. Empty → all private (KYC required). */
     const PUBLIC_NO_KYC_SLUGS: string[];
     function isPublicNoKycSlug(slug: string): boolean;
     function minAgeForSlug(slug: string): number;

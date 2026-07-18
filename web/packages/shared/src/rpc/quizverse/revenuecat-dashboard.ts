@@ -13,20 +13,35 @@ export interface RevenueCatDailyPoint {
   transactions: number;
 }
 
+export interface AdRevenueDailyPoint {
+  date: string;
+  revenue: number;
+}
+
 export interface RevenueCatAdRevenueStatus {
   status: "pending" | "live";
+  source?: string;
   message: string;
+  total?: number;
+  daily?: AdRevenueDailyPoint[];
 }
 
 export interface RevenueCatDashboardResult {
-  source: "revenuecat";
+  source: "revenuecat" | "partial";
   currency: string;
   projectId: string;
   days: number;
   dateRange: { start: string; end: string };
+  iapConfigured?: boolean;
+  iapError?: string;
   overview: RevenueCatOverview;
   daily: RevenueCatDailyPoint[];
-  totals: { revenue: number; transactions: number };
+  totals: {
+    revenue: number;
+    transactions: number;
+    adRevenue?: number;
+    combined?: number;
+  };
   adRevenue: RevenueCatAdRevenueStatus;
 }
 

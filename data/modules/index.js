@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-17T17:12:18.129Z
+// Generated: 2026-07-18T14:50:47.608Z
 // RPC Count: 1317
 // ============================================================
 
@@ -1339,7 +1339,7 @@ var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"
 ﻿
 
 
-// --- Module: achievements/achievements.js ---
+// --- Module: achievements\achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1928,7 +1928,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player/ai_player.js ---
+// --- Module: ai_player\ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2740,7 +2740,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/admin/analytics_admin.js ---
+// --- Module: analytics\admin\analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3513,7 +3513,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/analytics.js ---
+// --- Module: analytics\analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -5531,7 +5531,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/backfill/analytics_backfill.js ---
+// --- Module: analytics\backfill\analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -6664,7 +6664,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/dropoff/analytics_dropoff.js ---
+// --- Module: analytics\dropoff\analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -7240,7 +7240,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/extended/analytics_extended.js ---
+// --- Module: analytics\extended\analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -10512,7 +10512,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
+// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -11253,7 +11253,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/hardening/analytics_hardening.js ---
+// --- Module: analytics\hardening\analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -11883,7 +11883,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/history/analytics_history.js ---
+// --- Module: analytics\history\analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -12829,7 +12829,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/modes/analytics_modes.js ---
+// --- Module: analytics\modes\analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -13431,7 +13431,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/ops/analytics_ops.js ---
+// --- Module: analytics\ops\analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -14074,7 +14074,7 @@ function __ModuleInit_12(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/player_analytics_store.js ---
+// --- Module: analytics\player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -14755,7 +14755,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics/player_profile/analytics_player_profile.js ---
+// --- Module: analytics\player_profile\analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -15544,7 +15544,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/read_models/analytics_read_models.js ---
+// --- Module: analytics\read_models\analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -16188,7 +16188,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/recap_signals/recap_signals.js ---
+// --- Module: analytics\recap_signals\recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -16491,7 +16491,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
+// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -16749,7 +16749,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/rollup/analytics_rollup.js ---
+// --- Module: analytics\rollup\analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -19764,7 +19764,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
+// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -20600,7 +20600,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/segments/analytics_segments.js ---
+// --- Module: analytics\segments\analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -21189,7 +21189,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
+// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -21624,7 +21624,7 @@ function __ModuleInit_21(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/v2/analytics_v2.js ---
+// --- Module: analytics\v2\analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -22642,7 +22642,7 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges/badge_definitions.js ---
+// --- Module: badges\badge_definitions.js ---
 /**
  * QuizVerse Badge Definitions — all 207 badges from the game manifest.
  * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
@@ -22926,7 +22926,7 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
 };
 
 
-// --- Module: badges/badge_seed_definitions.js ---
+// --- Module: badges\badge_seed_definitions.js ---
 // badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
 // Run once via admin RPC or directly call badges_bulk_create
 // Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
@@ -23069,7 +23069,7 @@ var LEGENDARY_AND_SEASONAL_BADGES = {
 // Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
 
 
-// --- Module: badges/badges.js ---
+// --- Module: badges\badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -24535,7 +24535,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: characters/characters.js ---
+// --- Module: characters\characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -24999,7 +24999,7 @@ function rpcCharacterSetActive(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: chat_moderation/chat_moderation.js ---
+// --- Module: chat_moderation\chat_moderation.js ---
 // chat_moderation.js - Chat Moderation Pipeline
 // Storage collection: chat_reports, chat_filter_config
 // RPCs: chat_filter_message (public), chat_report_message (public),
@@ -25532,7 +25532,7 @@ function __ModuleInit_27(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chatbox/chatbox.js ---
+// --- Module: chatbox\chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -26876,7 +26876,7 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: copilot/cognito_wallet_mapper.js ---
+// --- Module: copilot\cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -27108,7 +27108,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/leaderboard_aggregate.js ---
+// --- Module: copilot\leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27220,7 +27220,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/leaderboard_friends.js ---
+// --- Module: copilot\leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -27397,7 +27397,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/leaderboard_sync.js ---
+// --- Module: copilot\leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27472,7 +27472,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/utils.js ---
+// --- Module: copilot\utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -27558,7 +27558,7 @@ var utils = {
 };
 
 
-// --- Module: copilot/wallet_registry.js ---
+// --- Module: copilot\wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -27713,7 +27713,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot/wallet_utils.js ---
+// --- Module: copilot\wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -27819,7 +27819,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket/cricket_ai_integration.js ---
+// --- Module: cricket\cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -28660,7 +28660,7 @@ function __ModuleInit_36(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_daily_challenges.js ---
+// --- Module: cricket\cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -29235,7 +29235,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_economy.js ---
+// --- Module: cricket\cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -29912,7 +29912,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_engagement.js ---
+// --- Module: cricket\cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -30519,7 +30519,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_live_match.js ---
+// --- Module: cricket\cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -31279,7 +31279,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_predictions.js ---
+// --- Module: cricket\cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -31946,7 +31946,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_retention.js ---
+// --- Module: cricket\cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -32784,7 +32784,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_season_pass.js ---
+// --- Module: cricket\cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -33396,7 +33396,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_trivia.js ---
+// --- Module: cricket\cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -34346,7 +34346,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup/engagement.js ---
+// --- Module: cricket_worldcup\engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -35015,7 +35015,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup/predictions.js ---
+// --- Module: cricket_worldcup\predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -35605,7 +35605,7 @@ function __ModuleInit_46(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game/cross_game.js ---
+// --- Module: cross_game\cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -36092,7 +36092,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions/daily_missions.js ---
+// --- Module: daily_missions\daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -36471,7 +36471,7 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards/daily_progress.js ---
+// --- Module: daily_rewards\daily_progress.js ---
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
@@ -36745,7 +36745,7 @@ function __ModuleInit_49(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards/daily_reward_calendar.js ---
+// --- Module: daily_rewards\daily_reward_calendar.js ---
 // daily_reward_calendar.js - 30-Day Daily Reward Calendar View
 // Extends the daily rewards system with a full calendar preview
 // RPC: daily_reward_get_calendar
@@ -36864,7 +36864,7 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards/daily_rewards.js ---
+// --- Module: daily_rewards\daily_rewards.js ---
 // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
 /**
@@ -37588,7 +37588,7 @@ function __ModuleInit_51(ctx, logger, nk, initializer) {
     logger.info("[DailyRewards] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: event_pipeline/event_pipeline.js ---
+// --- Module: event_pipeline\event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -37986,7 +37986,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics/external_analytics.js ---
+// --- Module: external_analytics\external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -38609,7 +38609,7 @@ function __ModuleInit_53(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers/external_pollers.js ---
+// --- Module: external_pollers\external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -38999,7 +38999,7 @@ function __ModuleInit_54(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel/fortune_wheel.js ---
+// --- Module: fortune_wheel\fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -39381,7 +39381,7 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friend_streaks/friend_streaks.js ---
+// --- Module: friend_streaks\friend_streaks.js ---
 // friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
 // RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
 // Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
@@ -39996,7 +39996,7 @@ function __ModuleInit_56(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/friend_challenges.js ---
+// --- Module: friends\friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -41089,7 +41089,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/friend_invites.js ---
+// --- Module: friends\friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -42507,7 +42507,7 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/friends.js ---
+// --- Module: friends\friends.js ---
 // ============================================================================
 // friends.js — Helper-only module (Phase-4 C2 cleanup)
 // ============================================================================
@@ -42717,7 +42717,7 @@ function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, 
 }
 
 
-// --- Module: friends/friends_extras.js ---
+// --- Module: friends\friends_extras.js ---
 // ============================================================================
 // friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
 // ============================================================================
@@ -43276,7 +43276,7 @@ function __ModuleInit_60(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/notification_codes.js ---
+// --- Module: friends\notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -43588,7 +43588,7 @@ function sendFriendsNotification(ctx, nk, logger, subjectKey, userId, payload, s
 }
 
 
-// --- Module: game_metrics/game_metrics.js ---
+// --- Module: game_metrics\game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -43969,7 +43969,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups/groups.js ---
+// --- Module: groups\groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -46016,7 +46016,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure/batch_operations.js ---
+// --- Module: infrastructure\batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -46278,7 +46278,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure/caching.js ---
+// --- Module: infrastructure\caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -46516,7 +46516,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure/rate_limiting.js ---
+// --- Module: infrastructure\rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -46694,7 +46694,7 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 // initializer.registerRpc("submit_score", withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest/ivx_quest.js ---
+// --- Module: ivx_quest\ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -47004,7 +47004,7 @@ function __ModuleInit_68(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-badges/lap-badges.js ---
+// --- Module: lap-badges\lap-badges.js ---
 /**
  * QuizVerse Link & Play Badge Event Bridge
  *
@@ -47183,7 +47183,7 @@ function __ModuleInit_69(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-gamification/lap-gamification.js ---
+// --- Module: lap-gamification\lap-gamification.js ---
 /**
  * QuizVerse Link & Play — gamification (XP / streak / client badges).
  *
@@ -47518,7 +47518,7 @@ function __ModuleInit_70(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-library/lap-library.js ---
+// --- Module: lap-library\lap-library.js ---
 /**
  * QuizVerse Link & Play — saved learn artifacts (server-authoritative).
  *
@@ -47982,7 +47982,7 @@ function __ModuleInit_71(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-recents/lap-recents.js ---
+// --- Module: lap-recents\lap-recents.js ---
 /**
  * QuizVerse Link & Play — recent notes index (cross-surface sync).
  *
@@ -48229,7 +48229,7 @@ function __ModuleInit_72(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth/lasttolive_depth.js ---
+// --- Module: lasttolive_depth\lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -49953,7 +49953,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leagues/leagues.js ---
+// --- Module: leagues\leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -50576,7 +50576,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: learner_home_widgets/learner_home_widgets.js ---
+// --- Module: learner_home_widgets\learner_home_widgets.js ---
 // learner_home_widgets.js — Per-user Home-screen widget configs for TutorX
 // Nakama V8 JavaScript runtime (Goja ES5 — no ES modules, no Node built-ins).
 //
@@ -50878,7 +50878,7 @@ function __ModuleInit_77(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_quotes/learner_quotes.js ---
+// --- Module: learner_quotes\learner_quotes.js ---
 // learner_quotes.js — Daily LLM-personalized "confidence boost" quotes for TutorX
 // (Goja ES5, no Node built-ins, no global-scope state).
 //
@@ -51238,7 +51238,7 @@ function __ModuleInit_78(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_reminders/learner_reminders.js ---
+// --- Module: learner_reminders\learner_reminders.js ---
 // learner_reminders.js — Per-user study reminders for TutorX (Goja ES5, no Node built-ins).
 //
 // Lets a learner create study reminders (one-off or recurring: daily / weekdays /
@@ -51447,7 +51447,7 @@ function __ModuleInit_79(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_review/learner_review.js ---
+// --- Module: learner_review\learner_review.js ---
 // learner_review.js — First-class spaced-repetition review queue for TutorX
 // (Goja ES5, no Node built-ins, all RPC fns at global scope).
 //
@@ -51799,7 +51799,7 @@ function __ModuleInit_80(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: live_ops/live_ops.js ---
+// --- Module: live_ops\live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -52432,7 +52432,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest/manifest.js ---
+// --- Module: manifest\manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -52544,7 +52544,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking/matchmaking.js ---
+// --- Module: matchmaking\matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -54244,7 +54244,7 @@ function registerMultiGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: multiplayer/multiplayer_locks.js ---
+// --- Module: multiplayer\multiplayer_locks.js ---
 // multiplayer_locks.js — Multiplayer Account Lock System (QVVBS189)
 
 var LOCK_COLLECTION = "multiplayer_locks";
@@ -54453,7 +54453,7 @@ function __ModuleInit_85(ctx, logger, nk, initializer) {
     logger.info("[MultiplayerLock] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -54908,7 +54908,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications/notification_gate.js ---
+// --- Module: notifications\notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -55068,7 +55068,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications/notification_inbox.js ---
+// --- Module: notifications\notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -55521,7 +55521,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine/offer_engine.js ---
+// --- Module: offer_engine\offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -56442,7 +56442,7 @@ function __ModuleInit_89(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding/ob_analytics_emit.js ---
+// --- Module: onboarding\ob_analytics_emit.js ---
 /**
  * Server-side ob_* analytics for Unity onboarding hooks (D1/D7, welcome bonus, streak shield).
  * Writes to qv_onboarding_events — same lake as web onboarding_events_batch.
@@ -56494,7 +56494,7 @@ function obAnalyticsEmitEvent(nk, nakamaUserId, eventName, data) {
 }
 
 
-// --- Module: onboarding/onboarding.js ---
+// --- Module: onboarding\onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -57586,7 +57586,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization/personalization.js ---
+// --- Module: personalization\personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -58193,7 +58193,7 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: player/player_full_profile.js ---
+// --- Module: player\player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -58408,7 +58408,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts/player_gifts.js ---
+// --- Module: player_gifts\player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -59277,7 +59277,7 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 // These will be registered in the main index.js
 
 
-// --- Module: progression/mastery_system.js ---
+// --- Module: progression\mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -59613,7 +59613,7 @@ module.exports = {
 
 
 
-// --- Module: progression/progressive_unlocks.js ---
+// --- Module: progression\progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -61420,7 +61420,7 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quiz_results/quiz_results.js ---
+// --- Module: quiz_results\quiz_results.js ---
 // quiz_results.js - Quiz Results Tracking & Analytics System
 // Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
 //
@@ -62598,7 +62598,7 @@ function __ModuleInit_100(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_depth/quizverse_depth.js ---
+// --- Module: quizverse_depth\quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -63573,7 +63573,7 @@ function __ModuleInit_101(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_seen/quizverse_seen.js ---
+// --- Module: quizverse_seen\quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -64081,7 +64081,7 @@ function __ModuleInit_102(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: retention/collections.js ---
+// --- Module: retention\collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -64595,7 +64595,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention/retention_v2.js ---
+// --- Module: retention\retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -65002,7 +65002,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention/season_pass.js ---
+// --- Module: retention\season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -65664,7 +65664,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention/winback.js ---
+// --- Module: retention\winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -66225,7 +66225,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads/rewarded_ads.js ---
+// --- Module: rewarded_ads\rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -67126,7 +67126,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets/s3_assets.js ---
+// --- Module: s3_assets\s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -67549,7 +67549,7 @@ function __ModuleInit_108(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat/satori_compat.js ---
+// --- Module: satori_compat\satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -67736,7 +67736,7 @@ function __ModuleInit_109(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct/satori_direct.js ---
+// --- Module: satori_direct\satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -68778,7 +68778,7 @@ function __ModuleInit_110(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases/sdk_aliases.js ---
+// --- Module: sdk_aliases\sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -68940,7 +68940,7 @@ function __ModuleInit_111(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review/smart_review.js ---
+// --- Module: smart_review\smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -69738,7 +69738,7 @@ function __ModuleInit_112(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: tournaments/tournaments.js ---
+// --- Module: tournaments\tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -70291,7 +70291,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: tutorx/tutorx_coin_gate.js ---
+// --- Module: tutorx\tutorx_coin_gate.js ---
 // tutorx_coin_gate.js — per-service TutorX AI coin pricing (mirrors TutorX SPA catalog)
 
 var TUTORX_SERVICE_CATALOG = {
@@ -70428,7 +70428,7 @@ function tutorxWriteUsage(nk, collection, userId, today, usage) {
 }
 
 
-// --- Module: visual_path/visual_path.js ---
+// --- Module: visual_path\visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -70779,7 +70779,7 @@ function __ModuleInit_115(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet/wallet.js ---
+// --- Module: wallet\wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -129662,9 +129662,11 @@ var QvLapNoteQuota;
 // =============================================================================
 // RPC: admin_revenuecat_dashboard
 //
-// Server-side proxy to RevenueCat Charts API v2 for the admin dashboard.
-// IAP / subscription revenue is sourced ONLY from RevenueCat (production
-// charts) — not from Nakama analytics_live_daily (unreliable / sandbox noise).
+// Admin Metrics money panel:
+//   IAP  → RevenueCat Charts API (production gross revenue) — ground truth
+//   Ads  → Nakama analytics_live_daily / analytics_rollup_daily.ad_revenue_usd
+//          (Unity ILRD: LevelPlay / AdMob / Appodeal)
+//   Total = IAP + Ads (shown separately; never a silent blend)
 //
 // Required env (RUNTIME_ENV_KEYS):
 //   REVENUECAT_SECRET_API_KEY  — RevenueCat project secret key (sk_…)
@@ -129676,6 +129678,8 @@ var QuizVerseRevenueCatAdmin;
     var DEFAULT_PROJECT_ID = "proj0d38847e";
     var MEASURE_REVENUE = 0;
     var MEASURE_TRANSACTIONS = 1;
+    var LIVE_COLLECTION = "analytics_live_daily";
+    var ROLLUP_COLLECTION = "analytics_rollup_daily";
     function env(ctx, key) {
         return (ctx.env && ctx.env[key]) || "";
     }
@@ -129686,6 +129690,9 @@ var QuizVerseRevenueCatAdmin;
         var copy = new Date(d.getTime());
         copy.setUTCDate(copy.getUTCDate() + days);
         return copy;
+    }
+    function round2(n) {
+        return Math.round(n * 100) / 100;
     }
     function rcGet(nk, path, apiKey) {
         try {
@@ -129773,6 +129780,62 @@ var QuizVerseRevenueCatAdmin;
         }
         return { daily: daily, totalRevenue: totalRevenue, totalTransactions: totalTransactions };
     }
+    /**
+     * Read ad_revenue_usd for one UTC date from rollup (preferred) or live_daily.
+     * Uses platform-wide keys (live_all_ / rollup_all_) — same aggregate Unity ILRD writes.
+     */
+    function readAdRevenueDay(nk, dateStr) {
+        var sys = Constants.SYSTEM_USER_ID;
+        try {
+            var recs = nk.storageRead([
+                { collection: ROLLUP_COLLECTION, key: "rollup_all_" + dateStr, userId: sys },
+                { collection: LIVE_COLLECTION, key: "live_all_" + dateStr, userId: sys },
+            ]);
+            var byKey = {};
+            for (var i = 0; i < recs.length; i++) {
+                if (recs[i] && recs[i].value)
+                    byKey[recs[i].key] = recs[i].value;
+            }
+            var rollup = byKey["rollup_all_" + dateStr];
+            if (rollup && rollup.revenue) {
+                var rad = parseFloat(rollup.revenue.ad_revenue_usd);
+                if (!isNaN(rad))
+                    return rad;
+            }
+            var live = byKey["live_all_" + dateStr];
+            if (live) {
+                var lad = parseFloat(live.ad_revenue_usd);
+                if (!isNaN(lad))
+                    return lad;
+            }
+        }
+        catch (_e) { /* missing day → 0 */ }
+        return 0;
+    }
+    function readAdRevenueRange(nk, startStr, endStr) {
+        var daily = [];
+        var total = 0;
+        var cursor = new Date(startStr + "T00:00:00Z");
+        var end = new Date(endStr + "T00:00:00Z");
+        while (cursor.getTime() <= end.getTime()) {
+            var ds = isoDateUtc(cursor);
+            var ad = readAdRevenueDay(nk, ds);
+            daily.push({ date: ds, revenue: round2(ad) });
+            total += ad;
+            cursor = addDaysUtc(cursor, 1);
+        }
+        return { daily: daily, total: round2(total) };
+    }
+    function emptyIapDaily(startStr, endStr) {
+        var out = [];
+        var cursor = new Date(startStr + "T00:00:00Z");
+        var end = new Date(endStr + "T00:00:00Z");
+        while (cursor.getTime() <= end.getTime()) {
+            out.push({ date: isoDateUtc(cursor), revenue: 0, transactions: 0 });
+            cursor = addDaysUtc(cursor, 1);
+        }
+        return out;
+    }
     function rpcAdminRevenueCatDashboard(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var req;
@@ -129782,11 +129845,6 @@ var QuizVerseRevenueCatAdmin;
         catch (err) {
             return RpcHelpers.errorResponse(err.message || "invalid payload", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         }
-        var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
-        if (!apiKey) {
-            return RpcHelpers.errorResponse("RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on Nakama", 503);
-        }
-        var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
         var days = 30;
         if (req && req.days !== undefined && req.days !== null) {
             var d = parseInt(String(req.days), 10);
@@ -129798,6 +129856,43 @@ var QuizVerseRevenueCatAdmin;
         var startStr = isoDateUtc(start);
         var endStr = isoDateUtc(end);
         var currency = "USD";
+        var ads = readAdRevenueRange(nk, startStr, endStr);
+        var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
+        var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
+        // Soft-degrade: still return ad revenue if RC key is missing (prior panel
+        // looked "broken" solely because this env was unset on the prod pod).
+        if (!apiKey) {
+            logger.warn("[RevenueCatAdmin] REVENUECAT_SECRET_API_KEY missing — returning ads only");
+            return RpcHelpers.successResponse({
+                source: "partial",
+                currency: currency,
+                projectId: projectId,
+                days: days,
+                dateRange: { start: startStr, end: endStr },
+                iapConfigured: false,
+                iapError: "RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy.",
+                overview: {
+                    mrr: 0,
+                    revenue28d: 0,
+                    activeSubscriptions: 0,
+                    activeTrials: 0,
+                },
+                daily: emptyIapDaily(startStr, endStr),
+                totals: {
+                    revenue: 0,
+                    transactions: 0,
+                    adRevenue: ads.total,
+                    combined: ads.total,
+                },
+                adRevenue: {
+                    status: "live",
+                    source: "nakama_ilrd",
+                    message: "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup.",
+                    total: ads.total,
+                    daily: ads.daily,
+                },
+            });
+        }
         var overviewPath = "/projects/" +
             encodeURIComponent(projectId) +
             "/metrics/overview?currency=" +
@@ -129823,12 +129918,15 @@ var QuizVerseRevenueCatAdmin;
         }
         var metrics = overviewResp.body && overviewResp.body.metrics ? overviewResp.body.metrics : [];
         var parsed = parseDailyRevenue(chartResp.body);
+        var iapTotal = round2(parsed.totalRevenue);
+        var combined = round2(iapTotal + ads.total);
         return RpcHelpers.successResponse({
             source: "revenuecat",
             currency: currency,
             projectId: projectId,
             days: days,
             dateRange: { start: startStr, end: endStr },
+            iapConfigured: true,
             overview: {
                 mrr: metricValue(metrics, "mrr"),
                 revenue28d: metricValue(metrics, "revenue"),
@@ -129837,12 +129935,17 @@ var QuizVerseRevenueCatAdmin;
             },
             daily: parsed.daily,
             totals: {
-                revenue: parsed.totalRevenue,
+                revenue: iapTotal,
                 transactions: Math.round(parsed.totalTransactions),
+                adRevenue: ads.total,
+                combined: combined,
             },
             adRevenue: {
-                status: "pending",
-                message: "Ad revenue integration pending — Unity Appodeal must report impressions and earnings to Nakama analytics before this panel can show live data.",
+                status: "live",
+                source: "nakama_ilrd",
+                message: "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup. Live estimate until network reporting reconcile ships.",
+                total: ads.total,
+                daily: ads.daily,
             },
         });
     }
@@ -131498,28 +131601,45 @@ var LearnerToolbelt;
             return false;
         }
     }
+    /** When ownerId is a Cognito custom_id, resolve the Nakama account UUID. */
+    function nakamaUserIdFromCustomId(nk, customId) {
+        if (!customId)
+            return "";
+        try {
+            // create=false: look up existing Cognito-linked account only.
+            var auth = nk.authenticateCustom(customId, "", false);
+            if (auth && auth.userId)
+                return "" + auth.userId;
+        }
+        catch (_e) {
+            /* not a custom_id account */
+        }
+        return "";
+    }
     function isProByEntitlement(nk, userId) {
         if (!userId)
             return false;
-        // 1) Canonical path: the entitlement is written under the Nakama account id
-        //    (rc_sync's app_user_id contract; the web SPA now bills against the
-        //    Nakama account id via _nkUserId()).
+        // 1) Canonical path: entitlement written under this id (Nakama UUID or
+        //    rare legacy Cognito-as-storage-owner).
         if (entitlementActiveForOwner(nk, userId))
             return true;
-        // 2) Reconciliation: older grants — and any client that still posts the
-        //    device-auth id (the web USER_ID) — write the entitlement under a device
-        //    id linked to this Nakama account rather than the account id. The web
-        //    session is minted with authenticate/device, so that device id is on the
-        //    account. Resolve the account's devices and check each so a trialing
-        //    subscriber's higher chat cap unlocks regardless of which id was used.
+        // 2) Hub / identity_resolve often pass Cognito custom_id; RC writes under
+        //    Nakama UUID (app_user_id). Resolve Cognito → Nakama UUID and re-check.
+        var fromCustom = nakamaUserIdFromCustomId(nk, userId);
+        if (fromCustom && fromCustom !== userId && entitlementActiveForOwner(nk, fromCustom)) {
+            return true;
+        }
+        // 3) Device-id grants: older web USER_ID / device-auth writes.
+        var accountId = fromCustom || userId;
         try {
-            var account = nk.accountGetId(userId);
+            var account = nk.accountGetId(accountId);
             var devices = account && account.devices ? account.devices : null;
             if (devices && devices.length) {
                 for (var i = 0; i < devices.length; i++) {
                     var did = devices[i] && devices[i].id ? "" + devices[i].id : "";
-                    if (did && did !== userId && entitlementActiveForOwner(nk, did))
+                    if (did && did !== userId && did !== fromCustom && entitlementActiveForOwner(nk, did)) {
                         return true;
+                    }
                 }
             }
         }

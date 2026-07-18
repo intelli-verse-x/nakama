@@ -1,9 +1,11 @@
 // =============================================================================
 // RPC: admin_revenuecat_dashboard
 //
-// Server-side proxy to RevenueCat Charts API v2 for the admin dashboard.
-// IAP / subscription revenue is sourced ONLY from RevenueCat (production
-// charts) — not from Nakama analytics_live_daily (unreliable / sandbox noise).
+// Admin Metrics money panel:
+//   IAP  → RevenueCat Charts API (production gross revenue) — ground truth
+//   Ads  → Nakama analytics_live_daily / analytics_rollup_daily.ad_revenue_usd
+//          (Unity ILRD: LevelPlay / AdMob / Appodeal)
+//   Total = IAP + Ads (shown separately; never a silent blend)
 //
 // Required env (RUNTIME_ENV_KEYS):
 //   REVENUECAT_SECRET_API_KEY  — RevenueCat project secret key (sk_…)
@@ -16,6 +18,8 @@ namespace QuizVerseRevenueCatAdmin {
   var DEFAULT_PROJECT_ID = "proj0d38847e";
   var MEASURE_REVENUE = 0;
   var MEASURE_TRANSACTIONS = 1;
+  var LIVE_COLLECTION = "analytics_live_daily";
+  var ROLLUP_COLLECTION = "analytics_rollup_daily";
 
   function env(ctx: nkruntime.Context, key: string): string {
     return (ctx.env && ctx.env[key]) || "";
@@ -29,6 +33,10 @@ namespace QuizVerseRevenueCatAdmin {
     var copy = new Date(d.getTime());
     copy.setUTCDate(copy.getUTCDate() + days);
     return copy;
+  }
+
+  function round2(n: number): number {
+    return Math.round(n * 100) / 100;
   }
 
   function rcGet(
@@ -128,6 +136,68 @@ namespace QuizVerseRevenueCatAdmin {
     return { daily: daily, totalRevenue: totalRevenue, totalTransactions: totalTransactions };
   }
 
+  /**
+   * Read ad_revenue_usd for one UTC date from rollup (preferred) or live_daily.
+   * Uses platform-wide keys (live_all_ / rollup_all_) — same aggregate Unity ILRD writes.
+   */
+  function readAdRevenueDay(nk: nkruntime.Nakama, dateStr: string): number {
+    var sys = Constants.SYSTEM_USER_ID;
+    try {
+      var recs = nk.storageRead([
+        { collection: ROLLUP_COLLECTION, key: "rollup_all_" + dateStr, userId: sys },
+        { collection: LIVE_COLLECTION, key: "live_all_" + dateStr, userId: sys },
+      ]);
+      var byKey: { [k: string]: any } = {};
+      for (var i = 0; i < recs.length; i++) {
+        if (recs[i] && recs[i].value) byKey[recs[i].key] = recs[i].value;
+      }
+      var rollup = byKey["rollup_all_" + dateStr];
+      if (rollup && rollup.revenue) {
+        var rad = parseFloat(rollup.revenue.ad_revenue_usd);
+        if (!isNaN(rad)) return rad;
+      }
+      var live = byKey["live_all_" + dateStr];
+      if (live) {
+        var lad = parseFloat(live.ad_revenue_usd);
+        if (!isNaN(lad)) return lad;
+      }
+    } catch (_e) { /* missing day → 0 */ }
+    return 0;
+  }
+
+  function readAdRevenueRange(
+    nk: nkruntime.Nakama,
+    startStr: string,
+    endStr: string
+  ): {
+    daily: Array<{ date: string; revenue: number }>;
+    total: number;
+  } {
+    var daily: Array<{ date: string; revenue: number }> = [];
+    var total = 0;
+    var cursor = new Date(startStr + "T00:00:00Z");
+    var end = new Date(endStr + "T00:00:00Z");
+    while (cursor.getTime() <= end.getTime()) {
+      var ds = isoDateUtc(cursor);
+      var ad = readAdRevenueDay(nk, ds);
+      daily.push({ date: ds, revenue: round2(ad) });
+      total += ad;
+      cursor = addDaysUtc(cursor, 1);
+    }
+    return { daily: daily, total: round2(total) };
+  }
+
+  function emptyIapDaily(startStr: string, endStr: string): Array<{ date: string; revenue: number; transactions: number }> {
+    var out: Array<{ date: string; revenue: number; transactions: number }> = [];
+    var cursor = new Date(startStr + "T00:00:00Z");
+    var end = new Date(endStr + "T00:00:00Z");
+    while (cursor.getTime() <= end.getTime()) {
+      out.push({ date: isoDateUtc(cursor), revenue: 0, transactions: 0 });
+      cursor = addDaysUtc(cursor, 1);
+    }
+    return out;
+  }
+
   function rpcAdminRevenueCatDashboard(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -143,15 +213,6 @@ namespace QuizVerseRevenueCatAdmin {
       return RpcHelpers.errorResponse(err.message || "invalid payload", nkruntime.Codes.INVALID_ARGUMENT);
     }
 
-    var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
-    if (!apiKey) {
-      return RpcHelpers.errorResponse(
-        "RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on Nakama",
-        503
-      );
-    }
-
-    var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
     var days = 30;
     if (req && req.days !== undefined && req.days !== null) {
       var d = parseInt(String(req.days), 10);
@@ -163,6 +224,47 @@ namespace QuizVerseRevenueCatAdmin {
     var startStr = isoDateUtc(start);
     var endStr = isoDateUtc(end);
     var currency = "USD";
+
+    var ads = readAdRevenueRange(nk, startStr, endStr);
+    var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
+    var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
+
+    // Soft-degrade: still return ad revenue if RC key is missing (prior panel
+    // looked "broken" solely because this env was unset on the prod pod).
+    if (!apiKey) {
+      logger.warn("[RevenueCatAdmin] REVENUECAT_SECRET_API_KEY missing — returning ads only");
+      return RpcHelpers.successResponse({
+        source: "partial",
+        currency: currency,
+        projectId: projectId,
+        days: days,
+        dateRange: { start: startStr, end: endStr },
+        iapConfigured: false,
+        iapError:
+          "RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy.",
+        overview: {
+          mrr: 0,
+          revenue28d: 0,
+          activeSubscriptions: 0,
+          activeTrials: 0,
+        },
+        daily: emptyIapDaily(startStr, endStr),
+        totals: {
+          revenue: 0,
+          transactions: 0,
+          adRevenue: ads.total,
+          combined: ads.total,
+        },
+        adRevenue: {
+          status: "live",
+          source: "nakama_ilrd",
+          message:
+            "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup.",
+          total: ads.total,
+          daily: ads.daily,
+        },
+      });
+    }
 
     var overviewPath =
       "/projects/" +
@@ -201,6 +303,8 @@ namespace QuizVerseRevenueCatAdmin {
 
     var metrics = overviewResp.body && overviewResp.body.metrics ? overviewResp.body.metrics : [];
     var parsed = parseDailyRevenue(chartResp.body);
+    var iapTotal = round2(parsed.totalRevenue);
+    var combined = round2(iapTotal + ads.total);
 
     return RpcHelpers.successResponse({
       source: "revenuecat",
@@ -208,6 +312,7 @@ namespace QuizVerseRevenueCatAdmin {
       projectId: projectId,
       days: days,
       dateRange: { start: startStr, end: endStr },
+      iapConfigured: true,
       overview: {
         mrr: metricValue(metrics, "mrr"),
         revenue28d: metricValue(metrics, "revenue"),
@@ -216,13 +321,18 @@ namespace QuizVerseRevenueCatAdmin {
       },
       daily: parsed.daily,
       totals: {
-        revenue: parsed.totalRevenue,
+        revenue: iapTotal,
         transactions: Math.round(parsed.totalTransactions),
+        adRevenue: ads.total,
+        combined: combined,
       },
       adRevenue: {
-        status: "pending",
+        status: "live",
+        source: "nakama_ilrd",
         message:
-          "Ad revenue integration pending — Unity Appodeal must report impressions and earnings to Nakama analytics before this panel can show live data.",
+          "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup. Live estimate until network reporting reconcile ships.",
+        total: ads.total,
+        daily: ads.daily,
       },
     });
   }
