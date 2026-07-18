@@ -31593,9 +31593,11 @@ var QvLapNoteQuota;
 // =============================================================================
 // RPC: admin_revenuecat_dashboard
 //
-// Server-side proxy to RevenueCat Charts API v2 for the admin dashboard.
-// IAP / subscription revenue is sourced ONLY from RevenueCat (production
-// charts) — not from Nakama analytics_live_daily (unreliable / sandbox noise).
+// Admin Metrics money panel:
+//   IAP  → RevenueCat Charts API (production gross revenue) — ground truth
+//   Ads  → Nakama analytics_live_daily / analytics_rollup_daily.ad_revenue_usd
+//          (Unity ILRD: LevelPlay / AdMob / Appodeal)
+//   Total = IAP + Ads (shown separately; never a silent blend)
 //
 // Required env (RUNTIME_ENV_KEYS):
 //   REVENUECAT_SECRET_API_KEY  — RevenueCat project secret key (sk_…)
@@ -31607,6 +31609,8 @@ var QuizVerseRevenueCatAdmin;
     var DEFAULT_PROJECT_ID = "proj0d38847e";
     var MEASURE_REVENUE = 0;
     var MEASURE_TRANSACTIONS = 1;
+    var LIVE_COLLECTION = "analytics_live_daily";
+    var ROLLUP_COLLECTION = "analytics_rollup_daily";
     function env(ctx, key) {
         return (ctx.env && ctx.env[key]) || "";
     }
@@ -31617,6 +31621,9 @@ var QuizVerseRevenueCatAdmin;
         var copy = new Date(d.getTime());
         copy.setUTCDate(copy.getUTCDate() + days);
         return copy;
+    }
+    function round2(n) {
+        return Math.round(n * 100) / 100;
     }
     function rcGet(nk, path, apiKey) {
         try {
@@ -31704,6 +31711,62 @@ var QuizVerseRevenueCatAdmin;
         }
         return { daily: daily, totalRevenue: totalRevenue, totalTransactions: totalTransactions };
     }
+    /**
+     * Read ad_revenue_usd for one UTC date from rollup (preferred) or live_daily.
+     * Uses platform-wide keys (live_all_ / rollup_all_) — same aggregate Unity ILRD writes.
+     */
+    function readAdRevenueDay(nk, dateStr) {
+        var sys = Constants.SYSTEM_USER_ID;
+        try {
+            var recs = nk.storageRead([
+                { collection: ROLLUP_COLLECTION, key: "rollup_all_" + dateStr, userId: sys },
+                { collection: LIVE_COLLECTION, key: "live_all_" + dateStr, userId: sys },
+            ]);
+            var byKey = {};
+            for (var i = 0; i < recs.length; i++) {
+                if (recs[i] && recs[i].value)
+                    byKey[recs[i].key] = recs[i].value;
+            }
+            var rollup = byKey["rollup_all_" + dateStr];
+            if (rollup && rollup.revenue) {
+                var rad = parseFloat(rollup.revenue.ad_revenue_usd);
+                if (!isNaN(rad))
+                    return rad;
+            }
+            var live = byKey["live_all_" + dateStr];
+            if (live) {
+                var lad = parseFloat(live.ad_revenue_usd);
+                if (!isNaN(lad))
+                    return lad;
+            }
+        }
+        catch (_e) { /* missing day → 0 */ }
+        return 0;
+    }
+    function readAdRevenueRange(nk, startStr, endStr) {
+        var daily = [];
+        var total = 0;
+        var cursor = new Date(startStr + "T00:00:00Z");
+        var end = new Date(endStr + "T00:00:00Z");
+        while (cursor.getTime() <= end.getTime()) {
+            var ds = isoDateUtc(cursor);
+            var ad = readAdRevenueDay(nk, ds);
+            daily.push({ date: ds, revenue: round2(ad) });
+            total += ad;
+            cursor = addDaysUtc(cursor, 1);
+        }
+        return { daily: daily, total: round2(total) };
+    }
+    function emptyIapDaily(startStr, endStr) {
+        var out = [];
+        var cursor = new Date(startStr + "T00:00:00Z");
+        var end = new Date(endStr + "T00:00:00Z");
+        while (cursor.getTime() <= end.getTime()) {
+            out.push({ date: isoDateUtc(cursor), revenue: 0, transactions: 0 });
+            cursor = addDaysUtc(cursor, 1);
+        }
+        return out;
+    }
     function rpcAdminRevenueCatDashboard(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var req;
@@ -31713,11 +31776,6 @@ var QuizVerseRevenueCatAdmin;
         catch (err) {
             return RpcHelpers.errorResponse(err.message || "invalid payload", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         }
-        var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
-        if (!apiKey) {
-            return RpcHelpers.errorResponse("RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on Nakama", 503);
-        }
-        var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
         var days = 30;
         if (req && req.days !== undefined && req.days !== null) {
             var d = parseInt(String(req.days), 10);
@@ -31729,6 +31787,43 @@ var QuizVerseRevenueCatAdmin;
         var startStr = isoDateUtc(start);
         var endStr = isoDateUtc(end);
         var currency = "USD";
+        var ads = readAdRevenueRange(nk, startStr, endStr);
+        var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
+        var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
+        // Soft-degrade: still return ad revenue if RC key is missing (prior panel
+        // looked "broken" solely because this env was unset on the prod pod).
+        if (!apiKey) {
+            logger.warn("[RevenueCatAdmin] REVENUECAT_SECRET_API_KEY missing — returning ads only");
+            return RpcHelpers.successResponse({
+                source: "partial",
+                currency: currency,
+                projectId: projectId,
+                days: days,
+                dateRange: { start: startStr, end: endStr },
+                iapConfigured: false,
+                iapError: "RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy.",
+                overview: {
+                    mrr: 0,
+                    revenue28d: 0,
+                    activeSubscriptions: 0,
+                    activeTrials: 0,
+                },
+                daily: emptyIapDaily(startStr, endStr),
+                totals: {
+                    revenue: 0,
+                    transactions: 0,
+                    adRevenue: ads.total,
+                    combined: ads.total,
+                },
+                adRevenue: {
+                    status: "live",
+                    source: "nakama_ilrd",
+                    message: "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup.",
+                    total: ads.total,
+                    daily: ads.daily,
+                },
+            });
+        }
         var overviewPath = "/projects/" +
             encodeURIComponent(projectId) +
             "/metrics/overview?currency=" +
@@ -31754,12 +31849,15 @@ var QuizVerseRevenueCatAdmin;
         }
         var metrics = overviewResp.body && overviewResp.body.metrics ? overviewResp.body.metrics : [];
         var parsed = parseDailyRevenue(chartResp.body);
+        var iapTotal = round2(parsed.totalRevenue);
+        var combined = round2(iapTotal + ads.total);
         return RpcHelpers.successResponse({
             source: "revenuecat",
             currency: currency,
             projectId: projectId,
             days: days,
             dateRange: { start: startStr, end: endStr },
+            iapConfigured: true,
             overview: {
                 mrr: metricValue(metrics, "mrr"),
                 revenue28d: metricValue(metrics, "revenue"),
@@ -31768,12 +31866,17 @@ var QuizVerseRevenueCatAdmin;
             },
             daily: parsed.daily,
             totals: {
-                revenue: parsed.totalRevenue,
+                revenue: iapTotal,
                 transactions: Math.round(parsed.totalTransactions),
+                adRevenue: ads.total,
+                combined: combined,
             },
             adRevenue: {
-                status: "pending",
-                message: "Ad revenue integration pending — Unity Appodeal must report impressions and earnings to Nakama analytics before this panel can show live data.",
+                status: "live",
+                source: "nakama_ilrd",
+                message: "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup. Live estimate until network reporting reconcile ships.",
+                total: ads.total,
+                daily: ads.daily,
             },
         });
     }
@@ -33425,28 +33528,45 @@ var LearnerToolbelt;
             return false;
         }
     }
+    /** When ownerId is a Cognito custom_id, resolve the Nakama account UUID. */
+    function nakamaUserIdFromCustomId(nk, customId) {
+        if (!customId)
+            return "";
+        try {
+            // create=false: look up existing Cognito-linked account only.
+            var auth = nk.authenticateCustom(customId, "", false);
+            if (auth && auth.userId)
+                return "" + auth.userId;
+        }
+        catch (_e) {
+            /* not a custom_id account */
+        }
+        return "";
+    }
     function isProByEntitlement(nk, userId) {
         if (!userId)
             return false;
-        // 1) Canonical path: the entitlement is written under the Nakama account id
-        //    (rc_sync's app_user_id contract; the web SPA now bills against the
-        //    Nakama account id via _nkUserId()).
+        // 1) Canonical path: entitlement written under this id (Nakama UUID or
+        //    rare legacy Cognito-as-storage-owner).
         if (entitlementActiveForOwner(nk, userId))
             return true;
-        // 2) Reconciliation: older grants — and any client that still posts the
-        //    device-auth id (the web USER_ID) — write the entitlement under a device
-        //    id linked to this Nakama account rather than the account id. The web
-        //    session is minted with authenticate/device, so that device id is on the
-        //    account. Resolve the account's devices and check each so a trialing
-        //    subscriber's higher chat cap unlocks regardless of which id was used.
+        // 2) Hub / identity_resolve often pass Cognito custom_id; RC writes under
+        //    Nakama UUID (app_user_id). Resolve Cognito → Nakama UUID and re-check.
+        var fromCustom = nakamaUserIdFromCustomId(nk, userId);
+        if (fromCustom && fromCustom !== userId && entitlementActiveForOwner(nk, fromCustom)) {
+            return true;
+        }
+        // 3) Device-id grants: older web USER_ID / device-auth writes.
+        var accountId = fromCustom || userId;
         try {
-            var account = nk.accountGetId(userId);
+            var account = nk.accountGetId(accountId);
             var devices = account && account.devices ? account.devices : null;
             if (devices && devices.length) {
                 for (var i = 0; i < devices.length; i++) {
                     var did = devices[i] && devices[i].id ? "" + devices[i].id : "";
-                    if (did && did !== userId && entitlementActiveForOwner(nk, did))
+                    if (did && did !== userId && did !== fromCustom && entitlementActiveForOwner(nk, did)) {
                         return true;
+                    }
                 }
             }
         }
@@ -57908,19 +58028,11 @@ var TournamentEconomy;
     TournamentEconomy.TIER1_COUNTRIES = ["US", "CA", "GB", "AU", "NZ", "IE"];
     // 18+ gate (§3)
     TournamentEconomy.MIN_AGE = 18;
-    // Public / no-KYC slate: min_age 0 → age_blocked false without verified DOB.
-    // Exam / high-stakes tournaments keep MIN_AGE (Didit/Veriff still required).
+    // Optional public / no-KYC allowlist. Empty = all tournaments require MIN_AGE
+    // (Didit/Veriff age gate). Add slugs here only when product wants no-KYC enter.
     TournamentEconomy.PUBLIC_MIN_AGE = 0;
-    /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
-    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [
-        "gk-royale-daily",
-        "pick-5-daily",
-        "movie-trivia-royale",
-        "music-history-royale",
-        "pop-culture-2010s",
-        "brain-bowl-weekly",
-        "movie-buff-weekly",
-    ];
+    /** Slugs that skip age/KYC before enter. Empty → all private (KYC required). */
+    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [];
     function isPublicNoKycSlug(slug) {
         for (var i = 0; i < TournamentEconomy.PUBLIC_NO_KYC_SLUGS.length; i++) {
             if (TournamentEconomy.PUBLIC_NO_KYC_SLUGS[i] === slug)
@@ -59068,7 +59180,13 @@ var QuestEngine;
     var QUEST_ENGINE_COLLECTION = "qv_quests";
     // Collection used for admin-managed quest config (public-read, system-write)
     var QUEST_CONFIG_COLLECTION = "qv_quest_config";
+    // Players who called quest_engine_get for an App-ID — fan-out target for new quests
+    var QUEST_SUBSCRIBERS_COLLECTION = "qv_quest_subscribers";
     var DEFAULT_QUESTS_CONFIG = { quests: {} };
+    // In-app inbox code for "new quest published" (reward deliveries use 9101)
+    var NOTIFICATION_CODE_NEW_QUEST = 9102;
+    var MAX_QUEST_SUBSCRIBERS = 2000;
+    var MAX_NOTIFY_BATCH = 100;
     // ─── Calendar helpers ────────────────────────────────────────────────────
     // Returns the next midnight UTC boundary from a given unix timestamp (seconds).
     function nextMidnightUtc(nowSec) {
@@ -59135,6 +59253,110 @@ var QuestEngine;
                 permissionRead: 2,
                 permissionWrite: 0
             }]);
+    }
+    function loadSubscribers(nk, gameId) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: QUEST_SUBSCRIBERS_COLLECTION,
+                    key: configKey(gameId),
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+            if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
+                return rows[0].value.userIds;
+            }
+        }
+        catch (_) { }
+        return [];
+    }
+    function saveSubscribers(nk, gameId, userIds) {
+        nk.storageWrite([{
+                collection: QUEST_SUBSCRIBERS_COLLECTION,
+                key: configKey(gameId),
+                userId: Constants.SYSTEM_USER_ID,
+                value: { userIds: userIds, updatedAt: Math.floor(Date.now() / 1000) },
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    /** Register player for new-quest inbox notifications for this App-ID. */
+    function subscribeUser(nk, gameId, userId) {
+        if (!userId || !gameId)
+            return;
+        var ids = loadSubscribers(nk, gameId);
+        if (ids.indexOf(userId) >= 0)
+            return;
+        ids.push(userId);
+        if (ids.length > MAX_QUEST_SUBSCRIBERS) {
+            ids = ids.slice(ids.length - MAX_QUEST_SUBSCRIBERS);
+        }
+        try {
+            saveSubscribers(nk, gameId, ids);
+        }
+        catch (_) { /* never break get */ }
+    }
+    function notifyNewQuests(nk, logger, gameId, newQuests, extraUserIds) {
+        if (!newQuests || newQuests.length === 0)
+            return 0;
+        var visible = [];
+        for (var i = 0; i < newQuests.length; i++) {
+            if (!newQuests[i].hidden)
+                visible.push(newQuests[i]);
+        }
+        if (visible.length === 0)
+            return 0;
+        var userIds = loadSubscribers(nk, gameId);
+        if (extraUserIds && extraUserIds.length) {
+            for (var e = 0; e < extraUserIds.length; e++) {
+                if (extraUserIds[e] && userIds.indexOf(extraUserIds[e]) < 0)
+                    userIds.push(extraUserIds[e]);
+            }
+        }
+        if (userIds.length === 0) {
+            logger.info("[QuestEngine] New quests saved but no subscribers yet for gameId=%s", gameId);
+            return 0;
+        }
+        var names = [];
+        for (var n = 0; n < visible.length && n < 5; n++)
+            names.push(visible[n].name || visible[n].id);
+        var subject = visible.length === 1
+            ? ("🆕 New quest: " + (visible[0].name || visible[0].id))
+            : ("🆕 " + visible.length + " new quests");
+        var body = visible.length === 1
+            ? (visible[0].description || "A new quest is available. Open Quests to start.")
+            : ("New: " + names.join(", ") + (visible.length > 5 ? "…" : ""));
+        var questIds = [];
+        for (var q = 0; q < visible.length; q++)
+            questIds.push(visible[q].id);
+        var sent = 0;
+        for (var b = 0; b < userIds.length; b += MAX_NOTIFY_BATCH) {
+            var slice = userIds.slice(b, b + MAX_NOTIFY_BATCH);
+            var batch = [];
+            for (var u = 0; u < slice.length; u++) {
+                batch.push({
+                    userId: slice[u],
+                    subject: subject,
+                    content: {
+                        type: "quest_new",
+                        gameId: gameId,
+                        body: body,
+                        questIds: questIds,
+                        count: visible.length
+                    },
+                    code: NOTIFICATION_CODE_NEW_QUEST,
+                    persistent: true,
+                    senderId: Constants.SYSTEM_USER_ID
+                });
+            }
+            try {
+                nk.notificationsSend(batch);
+                sent += batch.length;
+            }
+            catch (err) {
+                logger.warn("[QuestEngine] notificationsSend failed: " + (err && err.message ? err.message : String(err)));
+            }
+        }
+        logger.info("[QuestEngine] Notified %d subscribers of %d new quest(s) gameId=%s", sent, visible.length, gameId);
+        return sent;
     }
     function loadUserState(nk, userId, gameId) {
         var rows = [];
@@ -59256,6 +59478,11 @@ var QuestEngine;
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
         var now = Math.floor(Date.now() / 1000);
+        // Opt player into new-quest inbox fan-out for this App-ID
+        try {
+            subscribeUser(nk, gameId, userId);
+        }
+        catch (_) { }
         var config = loadConfig(nk, gameId);
         var state = loadUserState(nk, userId, gameId);
         var stateModified = false;
@@ -59540,9 +59767,38 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Payload must contain config.quests (object) or quests (array)");
         }
         var questCount = Object.keys(config.quests).length;
+        // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
+        // silent: true  → skip fan-out (use for bulk reseed)
+        // notifyUserIds → extra targets (optional)
+        var prev = loadConfig(nk, gameId);
+        var prevIds = {};
+        var prevKeys = Object.keys(prev.quests || {});
+        for (var pi = 0; pi < prevKeys.length; pi++)
+            prevIds[prevKeys[pi]] = true;
+        var newlyAdded = [];
+        var newKeys = Object.keys(config.quests);
+        for (var ni = 0; ni < newKeys.length; ni++) {
+            var nid = newKeys[ni];
+            if (!prevIds[nid])
+                newlyAdded.push(config.quests[nid]);
+        }
         saveConfig(nk, gameId, config);
-        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d", gameId, questCount);
-        return RpcHelpers.successResponse({ saved: true, questCount: questCount });
+        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+        var notified = 0;
+        var silent = data.silent === true || data.notifyNewQuests === false;
+        if (!silent && newlyAdded.length > 0) {
+            var extra;
+            if (Array.isArray(data.notifyUserIds)) {
+                extra = data.notifyUserIds;
+            }
+            notified = notifyNewQuests(nk, logger, gameId, newlyAdded, extra);
+        }
+        return RpcHelpers.successResponse({
+            saved: true,
+            questCount: questCount,
+            newQuestCount: newlyAdded.length,
+            notified: notified
+        });
     }
     // ─── RPC: quest_engine_admin_get_config ──────────────────────────────────
     // Returns the stored quest config for a game. Server-key only.
