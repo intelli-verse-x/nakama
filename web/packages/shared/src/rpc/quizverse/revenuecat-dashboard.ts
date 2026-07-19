@@ -19,11 +19,29 @@ export interface AdRevenueDailyPoint {
 }
 
 export interface RevenueCatAdRevenueStatus {
-  status: "pending" | "live";
+  status: "pending" | "live" | "error";
   source?: string;
   message: string;
   total?: number;
   daily?: AdRevenueDailyPoint[];
+}
+
+export interface StripeRevenueDailyPoint {
+  date: string;
+  revenue: number;
+  transactions: number;
+}
+
+export interface StripeRevenueStatus {
+  status: "pending" | "live" | "error";
+  source?: string;
+  message: string;
+  total?: number;
+  transactions?: number;
+  daily?: StripeRevenueDailyPoint[];
+  configured?: boolean;
+  error?: string;
+  filteredByPrice?: boolean;
 }
 
 export interface RevenueCatDashboardResult {
@@ -39,9 +57,11 @@ export interface RevenueCatDashboardResult {
   totals: {
     revenue: number;
     transactions: number;
+    stripeRevenue?: number;
     adRevenue?: number;
     combined?: number;
   };
+  stripeRevenue?: StripeRevenueStatus;
   adRevenue: RevenueCatAdRevenueStatus;
 }
 
