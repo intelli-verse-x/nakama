@@ -383,5 +383,6 @@ export {
   type RevenueCatDashboardResult,
   type RevenueCatOverview,
   type RevenueCatDailyPoint,
+  type AdRevenueDailyPoint,
   type RevenueCatAdRevenueStatus,
 } from "./revenuecat-dashboard";
