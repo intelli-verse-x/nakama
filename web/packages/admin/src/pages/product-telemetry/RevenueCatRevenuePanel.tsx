@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
+  CreditCard,
   DollarSign,
   Loader2,
   Megaphone,
@@ -22,6 +23,7 @@ import {
 import { quizverse, serverKeyAuth, type RevenueCatDashboardResult } from "@nakama/shared";
 
 const IAP_COLOR = "142 71% 45%";
+const STRIPE_COLOR = "262 83% 58%";
 const AD_COLOR = "217 91% 60%";
 const TOTAL_COLOR = "38 92% 50%";
 
@@ -67,23 +69,26 @@ function OverviewCard({
 
 function mergeDailyChart(data: RevenueCatDashboardResult) {
   const adByDate = new Map((data.adRevenue?.daily ?? []).map((r) => [r.date, r.revenue]));
-  const iapDates = new Set(data.daily.map((r) => r.date));
+  const stripeByDate = new Map((data.stripeRevenue?.daily ?? []).map((r) => [r.date, r.revenue]));
   const allDates = Array.from(
-    new Set([...data.daily.map((r) => r.date), ...(data.adRevenue?.daily ?? []).map((r) => r.date)]),
+    new Set([
+      ...data.daily.map((r) => r.date),
+      ...(data.adRevenue?.daily ?? []).map((r) => r.date),
+      ...(data.stripeRevenue?.daily ?? []).map((r) => r.date),
+    ]),
   ).sort();
 
   return allDates.map((date) => {
-    const iapRow = data.daily.find((r) => r.date === date);
-    const iap = iapRow?.revenue ?? 0;
+    const iap = data.daily.find((r) => r.date === date)?.revenue ?? 0;
+    const stripe = stripeByDate.get(date) ?? 0;
     const ads = adByDate.get(date) ?? 0;
     return {
       label: dayLabel(date),
       iap,
+      stripe,
       ads,
-      total: iap + ads,
-      // keep legacy key for any consumers
+      total: iap + stripe + ads,
       revenue: iap,
-      hasIap: iapDates.has(date),
     };
   });
 }
@@ -98,10 +103,13 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
 
   const currency = q.data?.currency ?? "USD";
   const iapTotal = q.data?.totals.revenue ?? 0;
+  const stripeTotal = q.data?.totals.stripeRevenue ?? q.data?.stripeRevenue?.total ?? 0;
   const adTotal = q.data?.totals.adRevenue ?? q.data?.adRevenue?.total ?? 0;
-  const combined = q.data?.totals.combined ?? iapTotal + adTotal;
+  const combined = q.data?.totals.combined ?? iapTotal + stripeTotal + adTotal;
   const chartData = q.data ? mergeDailyChart(q.data) : [];
   const iapOk = q.data?.iapConfigured !== false && !q.data?.iapError;
+  const stripeOk = q.data?.stripeRevenue?.configured !== false && !q.data?.stripeRevenue?.error;
+  const stripePending = q.data?.stripeRevenue?.status === "pending";
 
   return (
     <div className="space-y-4">
@@ -112,7 +120,7 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
             Revenue
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            IAP from RevenueCat · Ads from Unity ILRD (Nakama) · Total = IAP + Ads
+            IAP (RevenueCat) · Stripe web · Ads (ILRD) · Total = sum of all three
           </p>
         </div>
         {q.data?.dateRange && (
@@ -139,28 +147,59 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
         </div>
       ) : q.data ? (
         <>
-          {!iapOk && (
-            <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
-              <div>
-                <p className="font-medium text-amber-800 dark:text-amber-300">
-                  IAP (RevenueCat) not configured on Nakama
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {q.data.iapError ??
-                    "Set REVENUECAT_SECRET_API_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy. Ad revenue still shows below."}
-                </p>
-              </div>
+          {(!iapOk || stripePending || q.data.stripeRevenue?.error) && (
+            <div className="space-y-2">
+              {!iapOk && (
+                <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+                  <div>
+                    <p className="font-medium text-amber-800 dark:text-amber-300">
+                      IAP (RevenueCat) not configured on Nakama
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {q.data.iapError ??
+                        "Set REVENUECAT_SECRET_API_KEY on the Nakama pod (RUNTIME_ENV_KEYS)."}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {(stripePending || q.data.stripeRevenue?.error) && (
+                <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+                  <div>
+                    <p className="font-medium text-amber-800 dark:text-amber-300">
+                      Stripe web revenue {stripePending ? "not configured" : "error"}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {q.data.stripeRevenue?.message ??
+                        "Set STRIPE_SECRET_KEY on the Nakama pod (RUNTIME_ENV_KEYS). Optional: STRIPE_METRICS_PRICE_IDS for /pricing-only."}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <OverviewCard
               label={`IAP · RevenueCat · ${days}d`}
               value={money(iapTotal, currency)}
               icon={DollarSign}
-              hint={iapOk ? "Gross production revenue" : "Needs REVENUECAT_SECRET_API_KEY"}
+              hint={iapOk ? "App Store / Play / RC web" : "Needs REVENUECAT_SECRET_API_KEY"}
               accent={`hsl(${IAP_COLOR})`}
+            />
+            <OverviewCard
+              label={`Stripe · web · ${days}d`}
+              value={money(stripeTotal, currency)}
+              icon={CreditCard}
+              hint={
+                stripeOk
+                  ? q.data.stripeRevenue?.filteredByPrice
+                    ? "Filtered by STRIPE_METRICS_PRICE_IDS"
+                    : "All USD charges on Stripe account"
+                  : "Needs STRIPE_SECRET_KEY"
+              }
+              accent={`hsl(${STRIPE_COLOR})`}
             />
             <OverviewCard
               label={`Ads · ILRD · ${days}d`}
@@ -173,7 +212,7 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
               label={`Total · ${days}d`}
               value={money(combined, currency)}
               icon={Sigma}
-              hint="IAP + Ads"
+              hint="IAP + Stripe + Ads"
               accent={`hsl(${TOTAL_COLOR})`}
             />
           </div>
@@ -201,7 +240,7 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
               <div>
                 <h4 className="text-sm font-semibold">Daily revenue</h4>
                 <p className="text-xs text-muted-foreground">
-                  IAP (RevenueCat) and Ads (Nakama ILRD) per day
+                  IAP (RC) + Stripe web + Ads (ILRD)
                 </p>
               </div>
               <span className="text-lg font-bold tabular-nums" style={{ color: `hsl(${TOTAL_COLOR})` }}>
@@ -217,6 +256,10 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
                     <linearGradient id="rc_iap_grad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={`hsl(${IAP_COLOR})`} stopOpacity={0.4} />
                       <stop offset="100%" stopColor={`hsl(${IAP_COLOR})`} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="rc_stripe_grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={`hsl(${STRIPE_COLOR})`} stopOpacity={0.35} />
+                      <stop offset="100%" stopColor={`hsl(${STRIPE_COLOR})`} stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="rc_ads_grad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={`hsl(${AD_COLOR})`} stopOpacity={0.35} />
@@ -238,7 +281,7 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
                   <Tooltip
                     formatter={(v: number, name: string) => [
                       money(v, currency),
-                      name === "iap" ? "IAP" : name === "ads" ? "Ads" : name,
+                      name === "iap" ? "IAP" : name === "stripe" ? "Stripe" : name === "ads" ? "Ads" : name,
                     ]}
                     contentStyle={{
                       background: "hsl(222 47% 11%)",
@@ -249,7 +292,9 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
                   />
                   <Legend
                     wrapperStyle={{ fontSize: 11 }}
-                    formatter={(value) => (value === "iap" ? "IAP" : value === "ads" ? "Ads" : value)}
+                    formatter={(value) =>
+                      value === "iap" ? "IAP" : value === "stripe" ? "Stripe" : value === "ads" ? "Ads" : value
+                    }
                   />
                   <Area
                     type="monotone"
@@ -257,6 +302,15 @@ export function RevenueCatRevenuePanel({ days = 30 }: { days?: number }) {
                     name="iap"
                     stroke={`hsl(${IAP_COLOR})`}
                     fill="url(#rc_iap_grad)"
+                    strokeWidth={2}
+                    stackId="1"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="stripe"
+                    name="stripe"
+                    stroke={`hsl(${STRIPE_COLOR})`}
+                    fill="url(#rc_stripe_grad)"
                     strokeWidth={2}
                     stackId="1"
                   />

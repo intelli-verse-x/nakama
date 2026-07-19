@@ -31594,18 +31594,24 @@ var QvLapNoteQuota;
 // RPC: admin_revenuecat_dashboard
 //
 // Admin Metrics money panel:
-//   IAP  → RevenueCat Charts API (production gross revenue) — ground truth
-//   Ads  → Nakama analytics_live_daily / analytics_rollup_daily.ad_revenue_usd
-//          (Unity ILRD: LevelPlay / AdMob / Appodeal)
-//   Total = IAP + Ads (shown separately; never a silent blend)
+//   IAP (stores / RC web) → RevenueCat Charts API — ground truth for RC path
+//   Stripe (/pricing Payment Links + other web Checkout) → Stripe Charges API
+//   Ads → Nakama analytics_live_daily / rollup ad_revenue_usd (Unity ILRD)
+//   Total = IAP + Stripe + Ads (shown separately; never a silent blend)
 //
 // Required env (RUNTIME_ENV_KEYS):
 //   REVENUECAT_SECRET_API_KEY  — RevenueCat project secret key (sk_…)
 //   REVENUECAT_PROJECT_ID      — defaults to QuizVerse proj0d38847e
+//   STRIPE_SECRET_KEY          — Stripe secret (sk_live_… / sk_test_…)
+// Optional:
+//   STRIPE_METRICS_PRICE_IDS   — comma-separated price_… IDs to include only
+//                                B2C /pricing (or other) products. If empty,
+//                                all succeeded USD charges on the account.
 // =============================================================================
 var QuizVerseRevenueCatAdmin;
 (function (QuizVerseRevenueCatAdmin) {
     var RC_API_BASE = "https://api.revenuecat.com/v2";
+    var STRIPE_API_BASE = "https://api.stripe.com/v1";
     var DEFAULT_PROJECT_ID = "proj0d38847e";
     var MEASURE_REVENUE = 0;
     var MEASURE_TRANSACTIONS = 1;
@@ -31625,6 +31631,12 @@ var QuizVerseRevenueCatAdmin;
     function round2(n) {
         return Math.round(n * 100) / 100;
     }
+    function unixSec(d) {
+        return Math.floor(d.getTime() / 1000);
+    }
+    function endOfDayUnix(dateStr) {
+        return Math.floor(new Date(dateStr + "T23:59:59Z").getTime() / 1000);
+    }
     function rcGet(nk, path, apiKey) {
         try {
             var resp = nk.httpRequest(RC_API_BASE + path, "get", {
@@ -31641,6 +31653,38 @@ var QuizVerseRevenueCatAdmin;
             }
             if (!parsed.success) {
                 return { ok: false, status: 502, body: null, error: "invalid JSON from RevenueCat" };
+            }
+            return { ok: true, status: status, body: parsed.data, error: "" };
+        }
+        catch (err) {
+            var em = err && err.message ? String(err.message) : String(err);
+            return { ok: false, status: 502, body: null, error: em };
+        }
+    }
+    function stripeGet(nk, path, apiKey) {
+        try {
+            var resp = nk.httpRequest(STRIPE_API_BASE + path, "get", {
+                Accept: "application/json",
+                Authorization: "Bearer " + apiKey,
+            }, "", 25000);
+            var status = resp.code || 0;
+            var parsed = RpcHelpers.safeJsonParse(resp.body || "{}");
+            if (status < 200 || status >= 300) {
+                var errMsg = "";
+                if (parsed.success && parsed.data) {
+                    if (parsed.data.error && parsed.data.error.message) {
+                        errMsg = String(parsed.data.error.message);
+                    }
+                    else if (parsed.data.message) {
+                        errMsg = String(parsed.data.message);
+                    }
+                }
+                if (!errMsg)
+                    errMsg = (resp.body || "").substring(0, 240);
+                return { ok: false, status: status, body: null, error: errMsg || ("HTTP " + status) };
+            }
+            if (!parsed.success) {
+                return { ok: false, status: 502, body: null, error: "invalid JSON from Stripe" };
             }
             return { ok: true, status: status, body: parsed.data, error: "" };
         }
@@ -31711,10 +31755,6 @@ var QuizVerseRevenueCatAdmin;
         }
         return { daily: daily, totalRevenue: totalRevenue, totalTransactions: totalTransactions };
     }
-    /**
-     * Read ad_revenue_usd for one UTC date from rollup (preferred) or live_daily.
-     * Uses platform-wide keys (live_all_ / rollup_all_) — same aggregate Unity ILRD writes.
-     */
     function readAdRevenueDay(nk, dateStr) {
         var sys = Constants.SYSTEM_USER_ID;
         try {
@@ -31757,7 +31797,7 @@ var QuizVerseRevenueCatAdmin;
         }
         return { daily: daily, total: round2(total) };
     }
-    function emptyIapDaily(startStr, endStr) {
+    function emptyDailySeries(startStr, endStr) {
         var out = [];
         var cursor = new Date(startStr + "T00:00:00Z");
         var end = new Date(endStr + "T00:00:00Z");
@@ -31766,6 +31806,151 @@ var QuizVerseRevenueCatAdmin;
             cursor = addDaysUtc(cursor, 1);
         }
         return out;
+    }
+    function parsePriceIdAllowlist(raw) {
+        var map = {};
+        if (!raw)
+            return map;
+        var parts = raw.split(",");
+        for (var i = 0; i < parts.length; i++) {
+            var id = (parts[i] || "").trim();
+            if (id.indexOf("price_") === 0)
+                map[id] = true;
+        }
+        return map;
+    }
+    function chargeMatchesPriceFilter(charge, allow) {
+        var keys = Object.keys(allow);
+        if (keys.length === 0)
+            return true;
+        var inv = charge && charge.invoice;
+        if (!inv || typeof inv === "string")
+            return false;
+        var lines = inv.lines && inv.lines.data ? inv.lines.data : [];
+        for (var i = 0; i < lines.length; i++) {
+            var price = lines[i] && lines[i].price;
+            var pid = price && price.id ? String(price.id) : "";
+            if (pid && allow[pid])
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Sum succeeded USD Stripe charges in [startStr, endStr] (UTC days).
+     * Net = (amount - amount_refunded) / 100.
+     */
+    function readStripeRevenueRange(nk, logger, apiKey, startStr, endStr, priceAllowRaw) {
+        var empty = emptyDailySeries(startStr, endStr);
+        if (!apiKey) {
+            return {
+                configured: false,
+                error: "Stripe not configured — set STRIPE_SECRET_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy.",
+                daily: empty,
+                total: 0,
+                transactions: 0,
+                filteredByPrice: false,
+            };
+        }
+        var allow = parsePriceIdAllowlist(priceAllowRaw);
+        var filteredByPrice = Object.keys(allow).length > 0;
+        var gte = unixSec(new Date(startStr + "T00:00:00Z"));
+        var lte = endOfDayUnix(endStr);
+        var dailyMap = {};
+        var i;
+        for (i = 0; i < empty.length; i++) {
+            dailyMap[empty[i].date] = { revenue: 0, transactions: 0 };
+        }
+        var startingAfter = "";
+        var pages = 0;
+        var maxPages = 20;
+        while (pages < maxPages) {
+            pages++;
+            var path = "/charges?limit=100" +
+                "&created[gte]=" +
+                gte +
+                "&created[lte]=" +
+                lte +
+                "&expand[]=data.invoice";
+            if (startingAfter) {
+                path += "&starting_after=" + encodeURIComponent(startingAfter);
+            }
+            var resp = stripeGet(nk, path, apiKey);
+            if (!resp.ok) {
+                logger.warn("[RevenueCatAdmin] Stripe charges failed: " + resp.error);
+                return {
+                    configured: true,
+                    error: "Stripe charges failed: " + resp.error,
+                    daily: empty,
+                    total: 0,
+                    transactions: 0,
+                    filteredByPrice: filteredByPrice,
+                };
+            }
+            var data = resp.body && resp.body.data ? resp.body.data : [];
+            for (i = 0; i < data.length; i++) {
+                var ch = data[i];
+                if (!ch || ch.status !== "succeeded" || ch.paid !== true)
+                    continue;
+                if (String(ch.currency || "").toLowerCase() !== "usd")
+                    continue;
+                if (!chargeMatchesPriceFilter(ch, allow))
+                    continue;
+                var netCents = (parseInt(String(ch.amount || 0), 10) || 0) - (parseInt(String(ch.amount_refunded || 0), 10) || 0);
+                if (netCents <= 0)
+                    continue;
+                var created = typeof ch.created === "number" ? ch.created : 0;
+                var day = isoDateUtc(new Date(created * 1000));
+                if (!dailyMap[day])
+                    dailyMap[day] = { revenue: 0, transactions: 0 };
+                dailyMap[day].revenue += netCents / 100;
+                dailyMap[day].transactions += 1;
+            }
+            if (!resp.body.has_more || data.length === 0)
+                break;
+            startingAfter = String(data[data.length - 1].id || "");
+            if (!startingAfter)
+                break;
+        }
+        var daily = [];
+        var total = 0;
+        var tx = 0;
+        var dates = Object.keys(dailyMap).sort();
+        for (i = 0; i < dates.length; i++) {
+            var d = dates[i];
+            var pt = dailyMap[d];
+            daily.push({
+                date: d,
+                revenue: round2(pt.revenue),
+                transactions: pt.transactions,
+            });
+            total += pt.revenue;
+            tx += pt.transactions;
+        }
+        return {
+            configured: true,
+            error: "",
+            daily: daily,
+            total: round2(total),
+            transactions: tx,
+            filteredByPrice: filteredByPrice,
+        };
+    }
+    function stripeBlockFromResult(stripe) {
+        return {
+            status: stripe.configured && !stripe.error ? "live" : stripe.configured ? "error" : "pending",
+            source: "stripe_charges",
+            message: stripe.error
+                ? stripe.error
+                : stripe.filteredByPrice
+                    ? "Stripe succeeded USD charges filtered by STRIPE_METRICS_PRICE_IDS (B2C /pricing prices)."
+                    : "Stripe succeeded USD charges (all products on this Stripe account). Set STRIPE_METRICS_PRICE_IDS to scope to /pricing only.",
+            total: stripe.total,
+            transactions: stripe.transactions,
+            daily: stripe.daily,
+            configured: stripe.configured,
+            error: stripe.error || undefined,
+            filteredByPrice: stripe.filteredByPrice,
+        };
     }
     function rpcAdminRevenueCatDashboard(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
@@ -31788,12 +31973,15 @@ var QuizVerseRevenueCatAdmin;
         var endStr = isoDateUtc(end);
         var currency = "USD";
         var ads = readAdRevenueRange(nk, startStr, endStr);
+        var stripeKey = env(ctx, "STRIPE_SECRET_KEY");
+        var stripePriceIds = env(ctx, "STRIPE_METRICS_PRICE_IDS");
+        var stripe = readStripeRevenueRange(nk, logger, stripeKey, startStr, endStr, stripePriceIds);
+        var stripeBlock = stripeBlockFromResult(stripe);
         var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
         var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
-        // Soft-degrade: still return ad revenue if RC key is missing (prior panel
-        // looked "broken" solely because this env was unset on the prod pod).
         if (!apiKey) {
-            logger.warn("[RevenueCatAdmin] REVENUECAT_SECRET_API_KEY missing — returning ads only");
+            logger.warn("[RevenueCatAdmin] REVENUECAT_SECRET_API_KEY missing — returning Stripe + ads");
+            var combinedNoRc = round2(stripe.total + ads.total);
             return RpcHelpers.successResponse({
                 source: "partial",
                 currency: currency,
@@ -31808,13 +31996,15 @@ var QuizVerseRevenueCatAdmin;
                     activeSubscriptions: 0,
                     activeTrials: 0,
                 },
-                daily: emptyIapDaily(startStr, endStr),
+                daily: emptyDailySeries(startStr, endStr),
                 totals: {
                     revenue: 0,
                     transactions: 0,
+                    stripeRevenue: stripe.total,
                     adRevenue: ads.total,
-                    combined: ads.total,
+                    combined: combinedNoRc,
                 },
+                stripeRevenue: stripeBlock,
                 adRevenue: {
                     status: "live",
                     source: "nakama_ilrd",
@@ -31850,7 +32040,7 @@ var QuizVerseRevenueCatAdmin;
         var metrics = overviewResp.body && overviewResp.body.metrics ? overviewResp.body.metrics : [];
         var parsed = parseDailyRevenue(chartResp.body);
         var iapTotal = round2(parsed.totalRevenue);
-        var combined = round2(iapTotal + ads.total);
+        var combined = round2(iapTotal + stripe.total + ads.total);
         return RpcHelpers.successResponse({
             source: "revenuecat",
             currency: currency,
@@ -31868,9 +32058,11 @@ var QuizVerseRevenueCatAdmin;
             totals: {
                 revenue: iapTotal,
                 transactions: Math.round(parsed.totalTransactions),
+                stripeRevenue: stripe.total,
                 adRevenue: ads.total,
                 combined: combined,
             },
+            stripeRevenue: stripeBlock,
             adRevenue: {
                 status: "live",
                 source: "nakama_ilrd",
@@ -33528,45 +33720,28 @@ var LearnerToolbelt;
             return false;
         }
     }
-    /** When ownerId is a Cognito custom_id, resolve the Nakama account UUID. */
-    function nakamaUserIdFromCustomId(nk, customId) {
-        if (!customId)
-            return "";
-        try {
-            // create=false: look up existing Cognito-linked account only.
-            var auth = nk.authenticateCustom(customId, "", false);
-            if (auth && auth.userId)
-                return "" + auth.userId;
-        }
-        catch (_e) {
-            /* not a custom_id account */
-        }
-        return "";
-    }
     function isProByEntitlement(nk, userId) {
         if (!userId)
             return false;
-        // 1) Canonical path: entitlement written under this id (Nakama UUID or
-        //    rare legacy Cognito-as-storage-owner).
+        // 1) Canonical path: the entitlement is written under the Nakama account id
+        //    (rc_sync's app_user_id contract; the web SPA now bills against the
+        //    Nakama account id via _nkUserId()).
         if (entitlementActiveForOwner(nk, userId))
             return true;
-        // 2) Hub / identity_resolve often pass Cognito custom_id; RC writes under
-        //    Nakama UUID (app_user_id). Resolve Cognito → Nakama UUID and re-check.
-        var fromCustom = nakamaUserIdFromCustomId(nk, userId);
-        if (fromCustom && fromCustom !== userId && entitlementActiveForOwner(nk, fromCustom)) {
-            return true;
-        }
-        // 3) Device-id grants: older web USER_ID / device-auth writes.
-        var accountId = fromCustom || userId;
+        // 2) Reconciliation: older grants — and any client that still posts the
+        //    device-auth id (the web USER_ID) — write the entitlement under a device
+        //    id linked to this Nakama account rather than the account id. The web
+        //    session is minted with authenticate/device, so that device id is on the
+        //    account. Resolve the account's devices and check each so a trialing
+        //    subscriber's higher chat cap unlocks regardless of which id was used.
         try {
-            var account = nk.accountGetId(accountId);
+            var account = nk.accountGetId(userId);
             var devices = account && account.devices ? account.devices : null;
             if (devices && devices.length) {
                 for (var i = 0; i < devices.length; i++) {
                     var did = devices[i] && devices[i].id ? "" + devices[i].id : "";
-                    if (did && did !== userId && did !== fromCustom && entitlementActiveForOwner(nk, did)) {
+                    if (did && did !== userId && entitlementActiveForOwner(nk, did))
                         return true;
-                    }
                 }
             }
         }

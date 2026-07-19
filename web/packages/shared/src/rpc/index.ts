@@ -107,6 +107,8 @@ export type {
   RevenueCatDailyPoint,
   AdRevenueDailyPoint,
   RevenueCatAdRevenueStatus,
+  StripeRevenueDailyPoint,
+  StripeRevenueStatus,
   RevenueCatDashboardResult,
 } from "./quizverse";
 export type {
