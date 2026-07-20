@@ -33,6 +33,20 @@ namespace QvEntitlements {
   var KEY_CONS   = "consumables";
   var KEY_ONE    = "one_time";
 
+  // Server-authoritative: clients must never be able to overwrite paid/unlimited
+  // state via Nakama storageWrite / storage_write RPC. Always permissionWrite: 0.
+  function writeEntitlement(nk: nkruntime.Nakama, key: string, userId: string, value: any): void {
+    Storage.writeJson(
+      nk,
+      COLLECTION,
+      key,
+      userId,
+      value,
+      1 as nkruntime.ReadPermissionValues,
+      0 as nkruntime.WritePermissionValues
+    );
+  }
+
   // Dedup ledger for RevenueCat webhook revenue recording — RC explicitly
   // documents that webhook retries reuse the same `event.id` + timestamp
   // (https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields).
@@ -136,7 +150,7 @@ namespace QvEntitlements {
                       " expiresAt=" + subs.expiresAt + " for user=" + userId);
           subs = { tier: null, status: "expired", productId: subs.productId, store: subs.store,
                    expiresAt: subs.expiresAt, updatedAt: new Date().toISOString() };
-          Storage.writeJson(nk, COLLECTION, KEY_SUBS, userId, subs);
+          writeEntitlement(nk, KEY_SUBS, userId, subs);
         }
       }
 
@@ -471,7 +485,7 @@ namespace QvEntitlements {
         var prev: number = Number(existing.aiVoiceCredits) || 0;
         existing.aiVoiceCredits = prev + quantity;
         existing.updatedAt = new Date().toISOString();
-        Storage.writeJson(nk, COLLECTION, KEY_CONS, targetUserId, existing);
+        writeEntitlement(nk, KEY_CONS, targetUserId, existing);
         logger.info("[QvEntitlements] rc_sync: aiVoiceCredits+" + quantity + " for user=" + targetUserId + " (prev=" + prev + " now=" + existing.aiVoiceCredits + ")");
         return RpcHelpers.successResponse({ aiVoiceCredits: existing.aiVoiceCredits, granted: quantity });
       } catch (e: any) {
@@ -540,7 +554,7 @@ namespace QvEntitlements {
       var isCancellationNotice = eventType === "CANCELLATION";
 
       if (isImmediateRevoke) {
-        Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, {
+        writeEntitlement(nk, KEY_SUBS, targetUserId, {
           tier:      null,
           status:    "expired",
           productId: productId,
@@ -556,7 +570,7 @@ namespace QvEntitlements {
         // (and the expiry-enforcement safety net in rpcGetEntitlements) correctly cut
         // access at the real period end instead of right now.
         var cancelExpiresAt = resolveExpiry(event);
-        Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, {
+        writeEntitlement(nk, KEY_SUBS, targetUserId, {
           tier:      tier,
           status:    "cancelled",
           productId: productId,
@@ -589,13 +603,13 @@ namespace QvEntitlements {
         updatedAt: new Date().toISOString()
       };
 
-      Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, subRecord);
+      writeEntitlement(nk, KEY_SUBS, targetUserId, subRecord);
 
       // For Pro+ tier, also grant Link & Play Pro+ automatically (per sign-off doc §3)
       if (tier === "pro_plus") {
         var existing = Storage.readJson<any>(nk, COLLECTION, KEY_ONE, targetUserId) || {};
         existing.linkplayProPlus = true;
-        Storage.writeJson(nk, COLLECTION, KEY_ONE, targetUserId, existing);
+        writeEntitlement(nk, KEY_ONE, targetUserId, existing);
       }
 
       logger.info("[QvEntitlements] rc_sync: subscription " + (isTrial ? "trial-granted" : "granted") + " for user=" + targetUserId + " tier=" + tier + " expiresAt=" + (expiresAt || "lifetime"));
@@ -632,13 +646,13 @@ namespace QvEntitlements {
       expiresAt: expiresAt,
       updatedAt: new Date().toISOString()
     };
-    Storage.writeJson(nk, COLLECTION, KEY_SUBS, userId, subRecord);
+    writeEntitlement(nk, KEY_SUBS, userId, subRecord);
 
     // Pro+ also includes L&P Pro+
     if (tier === "pro_plus") {
       var existing = Storage.readJson<any>(nk, COLLECTION, KEY_ONE, userId) || {};
       existing.linkplayProPlus = true;
-      Storage.writeJson(nk, COLLECTION, KEY_ONE, userId, existing);
+      writeEntitlement(nk, KEY_ONE, userId, existing);
     }
     logger.info("[QvEntitlements] grantSubscription: user=" + userId + " tier=" + tier + " expiresAt=" + (expiresAt || "lifetime"));
   }
@@ -675,7 +689,7 @@ namespace QvEntitlements {
         // here for server-side audit / duplicate prevention.
         existing.starterPackGrantCount = (existing.starterPackGrantCount || 0) + 1;
       }
-      Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, existing);
+      writeEntitlement(nk, KEY_CONS, userId, existing);
     } catch (e: any) {
       logger.warn("[QvEntitlements] grantConsumable error: " + (e && e.message ? e.message : String(e)));
     }
@@ -707,7 +721,7 @@ namespace QvEntitlements {
         var examCode = productId.replace("com.intelliverse.quizverse.exampack.", "");
         if (existing.examPacks.indexOf(examCode) === -1) existing.examPacks.push(examCode);
       }
-      Storage.writeJson(nk, COLLECTION, KEY_ONE, userId, existing);
+      writeEntitlement(nk, KEY_ONE, userId, existing);
     } catch (e: any) {
       logger.warn("[QvEntitlements] grantOneTime error: " + (e && e.message ? e.message : String(e)));
     }

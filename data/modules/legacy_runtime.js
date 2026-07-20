@@ -4733,7 +4733,7 @@ var LEGACY_REWARD_CONFIGS = {
  * @param {string} gameId - Game ID (UUID)
  * @returns {object} Streak data
  */
-function getStreakData(nk, logger, userId, gameId) {
+function __legacy_getStreakData(nk, logger, userId, gameId) {
     var collection = "daily_streaks";
     var key = makeGameStorageKey("user_daily_streak", userId, gameId);
 
@@ -4763,7 +4763,7 @@ function getStreakData(nk, logger, userId, gameId) {
  * @param {object} data - Streak data to save
  * @returns {boolean} Success status
  */
-function saveStreakData(nk, logger, userId, gameId, data) {
+function __legacy_saveStreakData(nk, logger, userId, gameId, data) {
     var collection = "daily_streaks";
     var key = makeGameStorageKey("user_daily_streak", userId, gameId);
     return writeStorage(nk, logger, collection, key, userId, data);
@@ -4774,7 +4774,7 @@ function saveStreakData(nk, logger, userId, gameId, data) {
  * @param {object} streakData - Current streak data
  * @returns {object} { canClaim: boolean, reason: string }
  */
-function canClaimToday(streakData) {
+function __legacy_canClaimToday(streakData) {
     var now = getUnixTimestamp();
     var lastClaim = streakData.lastClaimTimestamp;
 
@@ -4800,7 +4800,7 @@ function canClaimToday(streakData) {
  * @param {object} streakData - Current streak data
  * @returns {object} Updated streak data
  */
-function updateStreakStatus(streakData) {
+function __legacy_updateStreakStatus(streakData) {
     var now = getUnixTimestamp();
     var lastClaim = streakData.lastClaimTimestamp;
 
@@ -4823,7 +4823,7 @@ function updateStreakStatus(streakData) {
  * @param {number} day - Streak day (1-7)
  * @returns {object} Reward configuration
  */
-function getRewardForDay(gameId, day) {
+function __legacy_getRewardForDay(gameId, day) {
     var config = LEGACY_REWARD_CONFIGS[gameId] || LEGACY_REWARD_CONFIGS["default"];
     var rewardDay = ((day - 1) % 7) + 1; // Cycle through 1-7
 
@@ -4845,7 +4845,7 @@ function getRewardForDay(gameId, day) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
+function __legacy_rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
     logInfo(logger, "RPC daily_rewards_get_status called");
 
     var parsed = safeJsonParse(payload);
@@ -4870,15 +4870,15 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
     }
 
     // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(streakData);
+    var streakData = __legacy_getStreakData(nk, logger, userId, gameId);
+    streakData = __legacy_updateStreakStatus(streakData);
 
     // Check if can claim
-    var claimCheck = canClaimToday(streakData);
+    var claimCheck = __legacy_canClaimToday(streakData);
 
     // Get next reward info
     var nextDay = streakData.currentStreak + 1;
-    var nextReward = getRewardForDay(gameId, nextDay);
+    var nextReward = __legacy_getRewardForDay(gameId, nextDay);
 
     return JSON.stringify({
         success: true,
@@ -4915,7 +4915,7 @@ function rpcFriendQuestComplete(ctx, logger, nk, payload) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
+function __legacy_rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     logInfo(logger, "RPC daily_rewards_claim called");
 
     var parsed = safeJsonParse(payload);
@@ -4940,11 +4940,11 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     }
 
     // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(streakData);
+    var streakData = __legacy_getStreakData(nk, logger, userId, gameId);
+    streakData = __legacy_updateStreakStatus(streakData);
 
     // Check if can claim
-    var claimCheck = canClaimToday(streakData);
+    var claimCheck = __legacy_canClaimToday(streakData);
     if (!claimCheck.canClaim) {
         return JSON.stringify({
             success: false,
@@ -4960,10 +4960,10 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     streakData.updatedAt = getCurrentTimestamp();
 
     // Get reward for current day
-    var reward = getRewardForDay(gameId, streakData.currentStreak);
+    var reward = __legacy_getRewardForDay(gameId, streakData.currentStreak);
 
     // Save updated streak
-    if (!saveStreakData(nk, logger, userId, gameId, streakData)) {
+    if (!__legacy_saveStreakData(nk, logger, userId, gameId, streakData)) {
         return handleError(ctx, null, "Failed to save streak data");
     }
 
@@ -24694,9 +24694,11 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
     // Register Daily Rewards RPCs
     try {
         logger.info('[DailyRewards] Initializing Daily Rewards Module...');
-        initializer.registerRpc('daily_rewards_get_status', rpcDailyRewardsGetStatus);
+        // Prefer module handlers (data/modules/daily_rewards/). These legacy
+        // stubs stay registered only as __rpc_ fallbacks via postbuild guards.
+        initializer.registerRpc('daily_rewards_get_status', __legacy_rpcDailyRewardsGetStatus);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_get_status');
-        initializer.registerRpc('daily_rewards_claim', rpcDailyRewardsClaim);
+        initializer.registerRpc('daily_rewards_claim', __legacy_rpcDailyRewardsClaim);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_claim');
         logger.info('[DailyRewards] Successfully registered 2 Daily Rewards RPCs');
     } catch (err) {

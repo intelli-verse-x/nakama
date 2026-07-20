@@ -244,6 +244,32 @@ function rpcDailyProgressClaim(ctx, logger, nk, payload) {
     var state = buildDailyProgressState(nk, logger, v.userId, gameId);
 
     if (!result.ok) {
+        // Idempotent double-tap / concurrent claim: streak already advanced for
+        // today's UTC day. Returning success:false here made Unity show
+        // "Claim failed" even though the first writer landed the claim.
+        if (result.reason === "already_claimed_today" &&
+            state.lastClaimTimestamp > 0 &&
+            !state.canClaim) {
+            var todayUtc = (typeof getTodayUtcDateString === "function")
+                ? getTodayUtcDateString()
+                : new Date().toISOString().slice(0, 10);
+            var lastDate = (typeof getUtcDateStringFromUnix === "function")
+                ? getUtcDateStringFromUnix(state.lastClaimTimestamp)
+                : "";
+            if (lastDate === todayUtc) {
+                state.success = true;
+                state.error = null;
+                state.idempotentReplay = true;
+                state.reward = state.reward || getRewardForDay(gameId, state.currentStreak || 1);
+                state.walletGranted = state.walletGranted || {
+                    game: (state.reward && (state.reward.game || state.reward.tokens)) || 0,
+                    xp: (state.reward && state.reward.xp) || 0
+                };
+                state.newStreak = state.currentStreak;
+                state.claimedAt = utils.getCurrentTimestamp();
+                return JSON.stringify(state);
+            }
+        }
         state.success = false;
         state.error = result.error;
         state.claimRejectedReason = result.reason;

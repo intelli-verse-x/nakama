@@ -28,7 +28,16 @@ namespace QvExplainerVideos {
 
   function writeCons(nk: nkruntime.Nakama, userId: string, cons: any): void {
     cons.updatedAt = new Date().toISOString();
-    Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, cons);
+    // Server-authoritative paid credits — never owner-writable.
+    Storage.writeJson(
+      nk,
+      COLLECTION,
+      KEY_CONS,
+      userId,
+      cons,
+      1 as nkruntime.ReadPermissionValues,
+      0 as nkruntime.WritePermissionValues
+    );
   }
 
   function unitsForProductId(productId: string): number {
