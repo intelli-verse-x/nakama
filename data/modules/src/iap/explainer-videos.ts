@@ -135,6 +135,56 @@ namespace QvExplainerVideos {
     }
   }
 
+  /**
+   * Refund a consume after generation fails (consume-before-generate).
+   * Payload: { mode: "full" | "preview" }
+   */
+  function rpcVideosRefund(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    payload: string
+  ): string {
+    var userId = RpcHelpers.requireUserId(ctx);
+    var data: any;
+    try { data = RpcHelpers.parseRpcPayload(payload); }
+    catch (e: any) { return RpcHelpers.errorResponse(e.message || "bad payload"); }
+
+    var mode = (data.mode || data.consume_mode || "full") as string;
+    if (mode !== "preview" && mode !== "full") {
+      return RpcHelpers.errorResponse("mode must be preview or full");
+    }
+
+    try {
+      var cons = readCons(nk, userId);
+      if (mode === "full") {
+        var bal = Number(cons.explainerVideoCredits) || 0;
+        cons.explainerVideoCredits = bal + 1;
+        writeCons(nk, userId, cons);
+        logger.info("[QvExplainerVideos] refund full user=" + userId + " balance=" + cons.explainerVideoCredits);
+        return RpcHelpers.successResponse({
+          refunded: true,
+          refundMode: "full",
+          balance: cons.explainerVideoCredits,
+          freePreviewUsed: !!cons.explainerFreePreviewUsed
+        });
+      }
+      // preview — restore one-time free preview after failed generate
+      cons.explainerFreePreviewUsed = false;
+      writeCons(nk, userId, cons);
+      logger.info("[QvExplainerVideos] refund preview user=" + userId);
+      return RpcHelpers.successResponse({
+        refunded: true,
+        refundMode: "preview",
+        balance: Number(cons.explainerVideoCredits) || 0,
+        freePreviewUsed: false
+      });
+    } catch (e: any) {
+      logger.warn("[QvExplainerVideos] refund error: " + (e && e.message ? e.message : String(e)));
+      return RpcHelpers.errorResponse("Failed to refund explainer video credit");
+    }
+  }
+
   function rpcVideosGrant(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -190,6 +240,7 @@ namespace QvExplainerVideos {
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("quizverse_videos_status", rpcVideosStatus);
     initializer.registerRpc("quizverse_videos_consume", rpcVideosConsume);
+    initializer.registerRpc("quizverse_videos_refund", rpcVideosRefund);
     initializer.registerRpc("quizverse_videos_grant", rpcVideosGrant);
   }
 }

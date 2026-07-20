@@ -17,6 +17,10 @@ namespace QvLapNoteQuota {
   interface QuotaState {
     date: string;
     used: number;
+    /** Extra notes granted today (e.g. rewarded ad). Raises effective daily cap. */
+    bonus: number;
+    /** Idempotency: txn id of today's LAP ad-bonus claim (empty if none). */
+    adTxnId: string;
     reservations: { [id: string]: boolean };
     updatedAt: string;
   }
@@ -88,7 +92,14 @@ namespace QvLapNoteQuota {
     }]);
     if (!rows || rows.length === 0) {
       return {
-        value: { date: date, used: 0, reservations: {}, updatedAt: new Date().toISOString() },
+        value: {
+          date: date,
+          used: 0,
+          bonus: 0,
+          adTxnId: "",
+          reservations: {},
+          updatedAt: new Date().toISOString(),
+        },
         version: "*",
         exists: false
       };
@@ -98,6 +109,8 @@ namespace QvLapNoteQuota {
       value: {
         date: date,
         used: Math.max(0, Number(value.used) || 0),
+        bonus: Math.max(0, Number(value.bonus) || 0),
+        adTxnId: String(value.adTxnId || ""),
         reservations: value.reservations || {},
         updatedAt: String(value.updatedAt || "")
       },
@@ -123,6 +136,11 @@ namespace QvLapNoteQuota {
     }]);
   }
 
+  function effectiveLimit(baseLimit: number, bonus: number): number {
+    if (baseLimit < 0) return baseLimit;
+    return baseLimit + Math.max(0, bonus);
+  }
+
   function response(
     state: QuotaState,
     tier: string,
@@ -131,13 +149,17 @@ namespace QvLapNoteQuota {
     allowed?: boolean,
     reservationId?: string
   ): string {
+    var cap = effectiveLimit(limit, state.bonus);
     return RpcHelpers.successResponse({
       allowed: allowed !== false,
       tier: tier,
-      limit: limit < 0 ? null : limit,
+      limit: limit < 0 ? null : cap,
+      baseLimit: limit < 0 ? null : limit,
+      bonus: state.bonus,
       unlimited: limit < 0,
       used: state.used,
-      remaining: limit < 0 ? null : Math.max(0, limit - state.used),
+      remaining: limit < 0 ? null : Math.max(0, cap - state.used),
+      adBonusClaimed: !!state.adTxnId,
       date: state.date,
       resetAt: resetAt,
       reservationId: reservationId || ""
@@ -168,8 +190,51 @@ namespace QvLapNoteQuota {
       return response(readQuota(nk, userId, date).value, tier, limit, resetAt);
     }
 
+    // Rewarded-ad bonus notes (T3 / free-tier LAP). Server-owned; client txnId for idempotency.
+    if (action === "grant_ad_bonus") {
+      if (limit < 0) {
+        return response(readQuota(nk, userId, date).value, tier, limit, resetAt, true, "");
+      }
+      var bonusNotes = Math.min(10, Math.max(1, Math.round(Number(data.bonusNotes) || 3)));
+      var txnId = String(data.txnId || data.txn_id || "").trim();
+      if (!txnId) {
+        return RpcHelpers.errorResponse("txnId required for grant_ad_bonus");
+      }
+      var lastGrantErr: any = null;
+      for (var gAttempt = 0; gAttempt < OCC_MAX_RETRIES; gAttempt++) {
+        var gStored = readQuota(nk, userId, date);
+        var gState = gStored.value;
+        if (gState.adTxnId) {
+          if (gState.adTxnId === txnId) {
+            return response(gState, tier, limit, resetAt, true, "");
+          }
+          return RpcHelpers.errorResponse("ad bonus already claimed today");
+        }
+        gState.bonus = Math.max(0, gState.bonus) + bonusNotes;
+        gState.adTxnId = txnId;
+        try {
+          writeQuota(nk, userId, gStored);
+          logger.info(
+            "[QvLapNoteQuota] ad bonus +" +
+              bonusNotes +
+              " user=" +
+              userId +
+              " bonus=" +
+              gState.bonus,
+          );
+          return response(gState, tier, limit, resetAt, true, "");
+        } catch (gErr: any) {
+          lastGrantErr = gErr;
+        }
+      }
+      logger.error("[QvLapNoteQuota] OCC exhausted user=" + userId + " action=grant_ad_bonus");
+      throw lastGrantErr || new Error("lap_note_quota_contention");
+    }
+
     if (action !== "reserve" && action !== "release") {
-      return RpcHelpers.errorResponse("action must be status, reserve, or release");
+      return RpcHelpers.errorResponse(
+        "action must be status, reserve, release, or grant_ad_bonus",
+      );
     }
 
     var reservationId = action === "release" ? String(data.reservationId || "") : "";
@@ -190,7 +255,8 @@ namespace QvLapNoteQuota {
       var state = stored.value;
 
       if (action === "reserve") {
-        if (state.used >= limit) {
+        var cap = effectiveLimit(limit, state.bonus);
+        if (state.used >= cap) {
           return response(state, tier, limit, resetAt, false, "");
         }
         reservationId = nk.uuidv4();
