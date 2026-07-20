@@ -56,20 +56,12 @@ namespace TournamentEconomy {
   // 18+ gate (§3)
   export const MIN_AGE = 18;
 
-  // Public / no-KYC slate: min_age 0 → age_blocked false without verified DOB.
-  // Exam / high-stakes tournaments keep MIN_AGE (Didit/Veriff still required).
+  // Optional public / no-KYC allowlist. Empty = all tournaments require MIN_AGE
+  // (Didit/Veriff age gate). Add slugs here only when product wants no-KYC enter.
   export const PUBLIC_MIN_AGE = 0;
 
-  /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
-  export const PUBLIC_NO_KYC_SLUGS: string[] = [
-    "gk-royale-daily",
-    "pick-5-daily",
-    "movie-trivia-royale",
-    "music-history-royale",
-    "pop-culture-2010s",
-    "brain-bowl-weekly",
-    "movie-buff-weekly",
-  ];
+  /** Slugs that skip age/KYC before enter. Empty → all private (KYC required). */
+  export const PUBLIC_NO_KYC_SLUGS: string[] = [];
 
   export function isPublicNoKycSlug(slug: string): boolean {
     for (var i = 0; i < PUBLIC_NO_KYC_SLUGS.length; i++) {

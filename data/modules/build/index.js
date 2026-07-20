@@ -31571,6 +31571,53 @@ var QvExplainerVideos;
             return RpcHelpers.errorResponse("Failed to consume explainer video credit");
         }
     }
+    /**
+     * Refund a consume after generation fails (consume-before-generate).
+     * Payload: { mode: "full" | "preview" }
+     */
+    function rpcVideosRefund(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data;
+        try {
+            data = RpcHelpers.parseRpcPayload(payload);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse(e.message || "bad payload");
+        }
+        var mode = (data.mode || data.consume_mode || "full");
+        if (mode !== "preview" && mode !== "full") {
+            return RpcHelpers.errorResponse("mode must be preview or full");
+        }
+        try {
+            var cons = readCons(nk, userId);
+            if (mode === "full") {
+                var bal = Number(cons.explainerVideoCredits) || 0;
+                cons.explainerVideoCredits = bal + 1;
+                writeCons(nk, userId, cons);
+                logger.info("[QvExplainerVideos] refund full user=" + userId + " balance=" + cons.explainerVideoCredits);
+                return RpcHelpers.successResponse({
+                    refunded: true,
+                    refundMode: "full",
+                    balance: cons.explainerVideoCredits,
+                    freePreviewUsed: !!cons.explainerFreePreviewUsed
+                });
+            }
+            // preview — restore one-time free preview after failed generate
+            cons.explainerFreePreviewUsed = false;
+            writeCons(nk, userId, cons);
+            logger.info("[QvExplainerVideos] refund preview user=" + userId);
+            return RpcHelpers.successResponse({
+                refunded: true,
+                refundMode: "preview",
+                balance: Number(cons.explainerVideoCredits) || 0,
+                freePreviewUsed: false
+            });
+        }
+        catch (e) {
+            logger.warn("[QvExplainerVideos] refund error: " + (e && e.message ? e.message : String(e)));
+            return RpcHelpers.errorResponse("Failed to refund explainer video credit");
+        }
+    }
     function rpcVideosGrant(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data;
@@ -31618,6 +31665,7 @@ var QvExplainerVideos;
     function register(initializer) {
         initializer.registerRpc("quizverse_videos_status", rpcVideosStatus);
         initializer.registerRpc("quizverse_videos_consume", rpcVideosConsume);
+        initializer.registerRpc("quizverse_videos_refund", rpcVideosRefund);
         initializer.registerRpc("quizverse_videos_grant", rpcVideosGrant);
     }
     QvExplainerVideos.register = register;
@@ -31685,7 +31733,14 @@ var QvLapNoteQuota;
             }]);
         if (!rows || rows.length === 0) {
             return {
-                value: { date: date, used: 0, reservations: {}, updatedAt: new Date().toISOString() },
+                value: {
+                    date: date,
+                    used: 0,
+                    bonus: 0,
+                    adTxnId: "",
+                    reservations: {},
+                    updatedAt: new Date().toISOString(),
+                },
                 version: "*",
                 exists: false
             };
@@ -31695,6 +31750,8 @@ var QvLapNoteQuota;
             value: {
                 date: date,
                 used: Math.max(0, Number(value.used) || 0),
+                bonus: Math.max(0, Number(value.bonus) || 0),
+                adTxnId: String(value.adTxnId || ""),
                 reservations: value.reservations || {},
                 updatedAt: String(value.updatedAt || "")
             },
@@ -31714,14 +31771,23 @@ var QvLapNoteQuota;
                 permissionWrite: 0
             }]);
     }
+    function effectiveLimit(baseLimit, bonus) {
+        if (baseLimit < 0)
+            return baseLimit;
+        return baseLimit + Math.max(0, bonus);
+    }
     function response(state, tier, limit, resetAt, allowed, reservationId) {
+        var cap = effectiveLimit(limit, state.bonus);
         return RpcHelpers.successResponse({
             allowed: allowed !== false,
             tier: tier,
-            limit: limit < 0 ? null : limit,
+            limit: limit < 0 ? null : cap,
+            baseLimit: limit < 0 ? null : limit,
+            bonus: state.bonus,
             unlimited: limit < 0,
             used: state.used,
-            remaining: limit < 0 ? null : Math.max(0, limit - state.used),
+            remaining: limit < 0 ? null : Math.max(0, cap - state.used),
+            adBonusClaimed: !!state.adTxnId,
             date: state.date,
             resetAt: resetAt,
             reservationId: reservationId || ""
@@ -31743,8 +31809,47 @@ var QvLapNoteQuota;
         if (action === "status") {
             return response(readQuota(nk, userId, date).value, tier, limit, resetAt);
         }
+        // Rewarded-ad bonus notes (T3 / free-tier LAP). Server-owned; client txnId for idempotency.
+        if (action === "grant_ad_bonus") {
+            if (limit < 0) {
+                return response(readQuota(nk, userId, date).value, tier, limit, resetAt, true, "");
+            }
+            var bonusNotes = Math.min(10, Math.max(1, Math.round(Number(data.bonusNotes) || 3)));
+            var txnId = String(data.txnId || data.txn_id || "").trim();
+            if (!txnId) {
+                return RpcHelpers.errorResponse("txnId required for grant_ad_bonus");
+            }
+            var lastGrantErr = null;
+            for (var gAttempt = 0; gAttempt < OCC_MAX_RETRIES; gAttempt++) {
+                var gStored = readQuota(nk, userId, date);
+                var gState = gStored.value;
+                if (gState.adTxnId) {
+                    if (gState.adTxnId === txnId) {
+                        return response(gState, tier, limit, resetAt, true, "");
+                    }
+                    return RpcHelpers.errorResponse("ad bonus already claimed today");
+                }
+                gState.bonus = Math.max(0, gState.bonus) + bonusNotes;
+                gState.adTxnId = txnId;
+                try {
+                    writeQuota(nk, userId, gStored);
+                    logger.info("[QvLapNoteQuota] ad bonus +" +
+                        bonusNotes +
+                        " user=" +
+                        userId +
+                        " bonus=" +
+                        gState.bonus);
+                    return response(gState, tier, limit, resetAt, true, "");
+                }
+                catch (gErr) {
+                    lastGrantErr = gErr;
+                }
+            }
+            logger.error("[QvLapNoteQuota] OCC exhausted user=" + userId + " action=grant_ad_bonus");
+            throw lastGrantErr || new Error("lap_note_quota_contention");
+        }
         if (action !== "reserve" && action !== "release") {
-            return RpcHelpers.errorResponse("action must be status, reserve, or release");
+            return RpcHelpers.errorResponse("action must be status, reserve, release, or grant_ad_bonus");
         }
         var reservationId = action === "release" ? String(data.reservationId || "") : "";
         if (action === "release" && !reservationId) {
@@ -31762,7 +31867,8 @@ var QvLapNoteQuota;
             var stored = readQuota(nk, userId, date);
             var state = stored.value;
             if (action === "reserve") {
-                if (state.used >= limit) {
+                var cap = effectiveLimit(limit, state.bonus);
+                if (state.used >= cap) {
                     return response(state, tier, limit, resetAt, false, "");
                 }
                 reservationId = nk.uuidv4();
@@ -31795,20 +31901,30 @@ var QvLapNoteQuota;
 // =============================================================================
 // RPC: admin_revenuecat_dashboard
 //
-// Server-side proxy to RevenueCat Charts API v2 for the admin dashboard.
-// IAP / subscription revenue is sourced ONLY from RevenueCat (production
-// charts) — not from Nakama analytics_live_daily (unreliable / sandbox noise).
+// Admin Metrics money panel:
+//   IAP (stores / RC web) → RevenueCat Charts API — ground truth for RC path
+//   Stripe (/pricing Payment Links + other web Checkout) → Stripe Charges API
+//   Ads → Nakama analytics_live_daily / rollup ad_revenue_usd (Unity ILRD)
+//   Total = IAP + Stripe + Ads (shown separately; never a silent blend)
 //
 // Required env (RUNTIME_ENV_KEYS):
 //   REVENUECAT_SECRET_API_KEY  — RevenueCat project secret key (sk_…)
 //   REVENUECAT_PROJECT_ID      — defaults to QuizVerse proj0d38847e
+//   STRIPE_SECRET_KEY          — Stripe secret (sk_live_… / sk_test_…)
+// Optional:
+//   STRIPE_METRICS_PRICE_IDS   — comma-separated price_… IDs to include only
+//                                B2C /pricing (or other) products. If empty,
+//                                all succeeded USD charges on the account.
 // =============================================================================
 var QuizVerseRevenueCatAdmin;
 (function (QuizVerseRevenueCatAdmin) {
     var RC_API_BASE = "https://api.revenuecat.com/v2";
+    var STRIPE_API_BASE = "https://api.stripe.com/v1";
     var DEFAULT_PROJECT_ID = "proj0d38847e";
     var MEASURE_REVENUE = 0;
     var MEASURE_TRANSACTIONS = 1;
+    var LIVE_COLLECTION = "analytics_live_daily";
+    var ROLLUP_COLLECTION = "analytics_rollup_daily";
     function env(ctx, key) {
         return (ctx.env && ctx.env[key]) || "";
     }
@@ -31819,6 +31935,15 @@ var QuizVerseRevenueCatAdmin;
         var copy = new Date(d.getTime());
         copy.setUTCDate(copy.getUTCDate() + days);
         return copy;
+    }
+    function round2(n) {
+        return Math.round(n * 100) / 100;
+    }
+    function unixSec(d) {
+        return Math.floor(d.getTime() / 1000);
+    }
+    function endOfDayUnix(dateStr) {
+        return Math.floor(new Date(dateStr + "T23:59:59Z").getTime() / 1000);
     }
     function rcGet(nk, path, apiKey) {
         try {
@@ -31836,6 +31961,38 @@ var QuizVerseRevenueCatAdmin;
             }
             if (!parsed.success) {
                 return { ok: false, status: 502, body: null, error: "invalid JSON from RevenueCat" };
+            }
+            return { ok: true, status: status, body: parsed.data, error: "" };
+        }
+        catch (err) {
+            var em = err && err.message ? String(err.message) : String(err);
+            return { ok: false, status: 502, body: null, error: em };
+        }
+    }
+    function stripeGet(nk, path, apiKey) {
+        try {
+            var resp = nk.httpRequest(STRIPE_API_BASE + path, "get", {
+                Accept: "application/json",
+                Authorization: "Bearer " + apiKey,
+            }, "", 25000);
+            var status = resp.code || 0;
+            var parsed = RpcHelpers.safeJsonParse(resp.body || "{}");
+            if (status < 200 || status >= 300) {
+                var errMsg = "";
+                if (parsed.success && parsed.data) {
+                    if (parsed.data.error && parsed.data.error.message) {
+                        errMsg = String(parsed.data.error.message);
+                    }
+                    else if (parsed.data.message) {
+                        errMsg = String(parsed.data.message);
+                    }
+                }
+                if (!errMsg)
+                    errMsg = (resp.body || "").substring(0, 240);
+                return { ok: false, status: status, body: null, error: errMsg || ("HTTP " + status) };
+            }
+            if (!parsed.success) {
+                return { ok: false, status: 502, body: null, error: "invalid JSON from Stripe" };
             }
             return { ok: true, status: status, body: parsed.data, error: "" };
         }
@@ -31906,6 +32063,203 @@ var QuizVerseRevenueCatAdmin;
         }
         return { daily: daily, totalRevenue: totalRevenue, totalTransactions: totalTransactions };
     }
+    function readAdRevenueDay(nk, dateStr) {
+        var sys = Constants.SYSTEM_USER_ID;
+        try {
+            var recs = nk.storageRead([
+                { collection: ROLLUP_COLLECTION, key: "rollup_all_" + dateStr, userId: sys },
+                { collection: LIVE_COLLECTION, key: "live_all_" + dateStr, userId: sys },
+            ]);
+            var byKey = {};
+            for (var i = 0; i < recs.length; i++) {
+                if (recs[i] && recs[i].value)
+                    byKey[recs[i].key] = recs[i].value;
+            }
+            var rollup = byKey["rollup_all_" + dateStr];
+            if (rollup && rollup.revenue) {
+                var rad = parseFloat(rollup.revenue.ad_revenue_usd);
+                if (!isNaN(rad))
+                    return rad;
+            }
+            var live = byKey["live_all_" + dateStr];
+            if (live) {
+                var lad = parseFloat(live.ad_revenue_usd);
+                if (!isNaN(lad))
+                    return lad;
+            }
+        }
+        catch (_e) { /* missing day → 0 */ }
+        return 0;
+    }
+    function readAdRevenueRange(nk, startStr, endStr) {
+        var daily = [];
+        var total = 0;
+        var cursor = new Date(startStr + "T00:00:00Z");
+        var end = new Date(endStr + "T00:00:00Z");
+        while (cursor.getTime() <= end.getTime()) {
+            var ds = isoDateUtc(cursor);
+            var ad = readAdRevenueDay(nk, ds);
+            daily.push({ date: ds, revenue: round2(ad) });
+            total += ad;
+            cursor = addDaysUtc(cursor, 1);
+        }
+        return { daily: daily, total: round2(total) };
+    }
+    function emptyDailySeries(startStr, endStr) {
+        var out = [];
+        var cursor = new Date(startStr + "T00:00:00Z");
+        var end = new Date(endStr + "T00:00:00Z");
+        while (cursor.getTime() <= end.getTime()) {
+            out.push({ date: isoDateUtc(cursor), revenue: 0, transactions: 0 });
+            cursor = addDaysUtc(cursor, 1);
+        }
+        return out;
+    }
+    function parsePriceIdAllowlist(raw) {
+        var map = {};
+        if (!raw)
+            return map;
+        var parts = raw.split(",");
+        for (var i = 0; i < parts.length; i++) {
+            var id = (parts[i] || "").trim();
+            if (id.indexOf("price_") === 0)
+                map[id] = true;
+        }
+        return map;
+    }
+    function chargeMatchesPriceFilter(charge, allow) {
+        var keys = Object.keys(allow);
+        if (keys.length === 0)
+            return true;
+        var inv = charge && charge.invoice;
+        if (!inv || typeof inv === "string")
+            return false;
+        var lines = inv.lines && inv.lines.data ? inv.lines.data : [];
+        for (var i = 0; i < lines.length; i++) {
+            var price = lines[i] && lines[i].price;
+            var pid = price && price.id ? String(price.id) : "";
+            if (pid && allow[pid])
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Sum succeeded USD Stripe charges in [startStr, endStr] (UTC days).
+     * Net = (amount - amount_refunded) / 100.
+     */
+    function readStripeRevenueRange(nk, logger, apiKey, startStr, endStr, priceAllowRaw) {
+        var empty = emptyDailySeries(startStr, endStr);
+        if (!apiKey) {
+            return {
+                configured: false,
+                error: "Stripe not configured — set STRIPE_SECRET_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy.",
+                daily: empty,
+                total: 0,
+                transactions: 0,
+                filteredByPrice: false,
+            };
+        }
+        var allow = parsePriceIdAllowlist(priceAllowRaw);
+        var filteredByPrice = Object.keys(allow).length > 0;
+        var gte = unixSec(new Date(startStr + "T00:00:00Z"));
+        var lte = endOfDayUnix(endStr);
+        var dailyMap = {};
+        var i;
+        for (i = 0; i < empty.length; i++) {
+            dailyMap[empty[i].date] = { revenue: 0, transactions: 0 };
+        }
+        var startingAfter = "";
+        var pages = 0;
+        var maxPages = 20;
+        while (pages < maxPages) {
+            pages++;
+            var path = "/charges?limit=100" +
+                "&created[gte]=" +
+                gte +
+                "&created[lte]=" +
+                lte +
+                "&expand[]=data.invoice";
+            if (startingAfter) {
+                path += "&starting_after=" + encodeURIComponent(startingAfter);
+            }
+            var resp = stripeGet(nk, path, apiKey);
+            if (!resp.ok) {
+                logger.warn("[RevenueCatAdmin] Stripe charges failed: " + resp.error);
+                return {
+                    configured: true,
+                    error: "Stripe charges failed: " + resp.error,
+                    daily: empty,
+                    total: 0,
+                    transactions: 0,
+                    filteredByPrice: filteredByPrice,
+                };
+            }
+            var data = resp.body && resp.body.data ? resp.body.data : [];
+            for (i = 0; i < data.length; i++) {
+                var ch = data[i];
+                if (!ch || ch.status !== "succeeded" || ch.paid !== true)
+                    continue;
+                if (String(ch.currency || "").toLowerCase() !== "usd")
+                    continue;
+                if (!chargeMatchesPriceFilter(ch, allow))
+                    continue;
+                var netCents = (parseInt(String(ch.amount || 0), 10) || 0) - (parseInt(String(ch.amount_refunded || 0), 10) || 0);
+                if (netCents <= 0)
+                    continue;
+                var created = typeof ch.created === "number" ? ch.created : 0;
+                var day = isoDateUtc(new Date(created * 1000));
+                if (!dailyMap[day])
+                    dailyMap[day] = { revenue: 0, transactions: 0 };
+                dailyMap[day].revenue += netCents / 100;
+                dailyMap[day].transactions += 1;
+            }
+            if (!resp.body.has_more || data.length === 0)
+                break;
+            startingAfter = String(data[data.length - 1].id || "");
+            if (!startingAfter)
+                break;
+        }
+        var daily = [];
+        var total = 0;
+        var tx = 0;
+        var dates = Object.keys(dailyMap).sort();
+        for (i = 0; i < dates.length; i++) {
+            var d = dates[i];
+            var pt = dailyMap[d];
+            daily.push({
+                date: d,
+                revenue: round2(pt.revenue),
+                transactions: pt.transactions,
+            });
+            total += pt.revenue;
+            tx += pt.transactions;
+        }
+        return {
+            configured: true,
+            error: "",
+            daily: daily,
+            total: round2(total),
+            transactions: tx,
+            filteredByPrice: filteredByPrice,
+        };
+    }
+    function stripeBlockFromResult(stripe) {
+        return {
+            status: stripe.configured && !stripe.error ? "live" : stripe.configured ? "error" : "pending",
+            source: "stripe_charges",
+            message: stripe.error
+                ? stripe.error
+                : stripe.filteredByPrice
+                    ? "Stripe succeeded USD charges filtered by STRIPE_METRICS_PRICE_IDS (B2C /pricing prices)."
+                    : "Stripe succeeded USD charges (all products on this Stripe account). Set STRIPE_METRICS_PRICE_IDS to scope to /pricing only.",
+            total: stripe.total,
+            transactions: stripe.transactions,
+            daily: stripe.daily,
+            configured: stripe.configured,
+            error: stripe.error || undefined,
+            filteredByPrice: stripe.filteredByPrice,
+        };
+    }
     function rpcAdminRevenueCatDashboard(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var req;
@@ -31915,11 +32269,6 @@ var QuizVerseRevenueCatAdmin;
         catch (err) {
             return RpcHelpers.errorResponse(err.message || "invalid payload", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         }
-        var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
-        if (!apiKey) {
-            return RpcHelpers.errorResponse("RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on Nakama", 503);
-        }
-        var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
         var days = 30;
         if (req && req.days !== undefined && req.days !== null) {
             var d = parseInt(String(req.days), 10);
@@ -31931,6 +32280,48 @@ var QuizVerseRevenueCatAdmin;
         var startStr = isoDateUtc(start);
         var endStr = isoDateUtc(end);
         var currency = "USD";
+        var ads = readAdRevenueRange(nk, startStr, endStr);
+        var stripeKey = env(ctx, "STRIPE_SECRET_KEY");
+        var stripePriceIds = env(ctx, "STRIPE_METRICS_PRICE_IDS");
+        var stripe = readStripeRevenueRange(nk, logger, stripeKey, startStr, endStr, stripePriceIds);
+        var stripeBlock = stripeBlockFromResult(stripe);
+        var apiKey = env(ctx, "REVENUECAT_SECRET_API_KEY");
+        var projectId = env(ctx, "REVENUECAT_PROJECT_ID") || DEFAULT_PROJECT_ID;
+        if (!apiKey) {
+            logger.warn("[RevenueCatAdmin] REVENUECAT_SECRET_API_KEY missing — returning Stripe + ads");
+            var combinedNoRc = round2(stripe.total + ads.total);
+            return RpcHelpers.successResponse({
+                source: "partial",
+                currency: currency,
+                projectId: projectId,
+                days: days,
+                dateRange: { start: startStr, end: endStr },
+                iapConfigured: false,
+                iapError: "RevenueCat not configured — set REVENUECAT_SECRET_API_KEY on the Nakama pod (RUNTIME_ENV_KEYS) and redeploy.",
+                overview: {
+                    mrr: 0,
+                    revenue28d: 0,
+                    activeSubscriptions: 0,
+                    activeTrials: 0,
+                },
+                daily: emptyDailySeries(startStr, endStr),
+                totals: {
+                    revenue: 0,
+                    transactions: 0,
+                    stripeRevenue: stripe.total,
+                    adRevenue: ads.total,
+                    combined: combinedNoRc,
+                },
+                stripeRevenue: stripeBlock,
+                adRevenue: {
+                    status: "live",
+                    source: "nakama_ilrd",
+                    message: "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup.",
+                    total: ads.total,
+                    daily: ads.daily,
+                },
+            });
+        }
         var overviewPath = "/projects/" +
             encodeURIComponent(projectId) +
             "/metrics/overview?currency=" +
@@ -31956,12 +32347,15 @@ var QuizVerseRevenueCatAdmin;
         }
         var metrics = overviewResp.body && overviewResp.body.metrics ? overviewResp.body.metrics : [];
         var parsed = parseDailyRevenue(chartResp.body);
+        var iapTotal = round2(parsed.totalRevenue);
+        var combined = round2(iapTotal + stripe.total + ads.total);
         return RpcHelpers.successResponse({
             source: "revenuecat",
             currency: currency,
             projectId: projectId,
             days: days,
             dateRange: { start: startStr, end: endStr },
+            iapConfigured: true,
             overview: {
                 mrr: metricValue(metrics, "mrr"),
                 revenue28d: metricValue(metrics, "revenue"),
@@ -31970,12 +32364,19 @@ var QuizVerseRevenueCatAdmin;
             },
             daily: parsed.daily,
             totals: {
-                revenue: parsed.totalRevenue,
+                revenue: iapTotal,
                 transactions: Math.round(parsed.totalTransactions),
+                stripeRevenue: stripe.total,
+                adRevenue: ads.total,
+                combined: combined,
             },
+            stripeRevenue: stripeBlock,
             adRevenue: {
-                status: "pending",
-                message: "Ad revenue integration pending — Unity Appodeal must report impressions and earnings to Nakama analytics before this panel can show live data.",
+                status: "live",
+                source: "nakama_ilrd",
+                message: "Ad revenue from Unity ILRD (LevelPlay / AdMob / Appodeal) via analytics_live_daily / rollup. Live estimate until network reporting reconcile ships.",
+                total: ads.total,
+                daily: ads.daily,
             },
         });
     }
@@ -32349,9 +32750,21 @@ var IdentityResolver;
         }
         return null;
     }
-    function writeLink(nk, channel, externalId, cognitoSub, source, confidence) {
+    /**
+     * Forward index (system-owned) stores cognito_sub in the value for AI Notes /
+     * conv-hub resolution. Reverse index MUST be owned by a real Nakama user
+     * UUID — Cognito subs are custom_ids, not users.table ids. Writing reverse
+     * under cognito_sub makes storageWrite throw → identity_link "internal error"
+     * (seen live after Connect session-Bearer fix landed on web).
+     *
+     * reverseOwnerUserId: Nakama UUID (ctx.userId / ghost userId). Falls back to
+     * cognitoSub only for legacy callers that already used a Nakama UUID as the
+     * stored cognito_sub (ghost mint path).
+     */
+    function writeLink(nk, channel, externalId, cognitoSub, source, confidence, reverseOwnerUserId) {
         var key = buildKey(channel, externalId);
         var now = Math.floor(Date.now() / 1000);
+        var reverseOwner = ("" + (reverseOwnerUserId || cognitoSub)).trim();
         var forward = {
             cognito_sub: cognitoSub,
             channel: channel,
@@ -32367,6 +32780,7 @@ var IdentityResolver;
             linked_at: now,
             source: source,
             confidence: confidence,
+            cognito_sub: cognitoSub,
         };
         nk.storageWrite([
             {
@@ -32380,20 +32794,30 @@ var IdentityResolver;
             {
                 collection: IDENTITY_LINKS_USER_COLLECTION,
                 key: key,
-                userId: cognitoSub,
+                userId: reverseOwner,
                 value: reverse,
                 permissionRead: 2,
                 permissionWrite: 0,
             },
         ]);
     }
-    function deleteLink(nk, channel, externalId, cognitoSub) {
+    function deleteLink(nk, channel, externalId, cognitoSub, reverseOwnerUserId) {
         var key = buildKey(channel, externalId);
         try {
-            nk.storageDelete([
+            var deletes = [
                 { collection: IDENTITY_LINKS_COLLECTION, key: key, userId: Constants.SYSTEM_USER_ID },
                 { collection: IDENTITY_LINKS_USER_COLLECTION, key: key, userId: cognitoSub },
-            ]);
+            ];
+            // Also clear reverse under Nakama UUID when it differs (post-fix owner).
+            var alt = ("" + (reverseOwnerUserId || "")).trim();
+            if (alt && alt !== cognitoSub) {
+                deletes.push({
+                    collection: IDENTITY_LINKS_USER_COLLECTION,
+                    key: key,
+                    userId: alt,
+                });
+            }
+            nk.storageDelete(deletes);
         }
         catch (err) {
             // Idempotent delete; if already gone, that's fine.
@@ -32475,8 +32899,8 @@ var IdentityResolver;
         var source = ("" + (record.source || "identity_heal")).slice(0, 64);
         var confidence = ("" + (record.confidence || "high")).slice(0, 16);
         try {
-            deleteLink(nk, channel, externalId, stored);
-            writeLink(nk, channel, externalId, canonical, source, confidence);
+            deleteLink(nk, channel, externalId, stored, stored);
+            writeLink(nk, channel, externalId, canonical, source, confidence, stored);
             record.cognito_sub = canonical;
             logger.info("identity healed cognito_sub: channel=" + channel +
                 " old=" + stored + " new=" + canonical);
@@ -32607,7 +33031,7 @@ var IdentityResolver;
                 var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
                 if (existingSub !== callerSub) {
                     if (isReplaceableGhostBinding(nk, existing)) {
-                        deleteLink(nk, channel, externalId, existing.cognito_sub);
+                        deleteLink(nk, channel, externalId, existing.cognito_sub, existing.cognito_sub);
                         logger.info("identity_link replaced ghost binding: channel=" + channel +
                             " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + callerSub);
                     }
@@ -32618,12 +33042,13 @@ var IdentityResolver;
                 }
                 else if (("" + existing.cognito_sub) !== callerSub) {
                     // Same account, but stored under Nakama UUID — rewrite to Cognito.
-                    deleteLink(nk, channel, externalId, existing.cognito_sub);
+                    deleteLink(nk, channel, externalId, existing.cognito_sub, userId);
                 }
             }
             var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
             var confidence = ("" + (data.confidence || "high")).slice(0, 16);
-            writeLink(nk, channel, externalId, callerSub, source, confidence);
+            // Reverse index owned by Nakama UUID (userId); forward value keeps Cognito sub.
+            writeLink(nk, channel, externalId, callerSub, source, confidence, userId);
             logger.info("identity_link ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
             return RpcHelpers.successResponse({
                 linked: true,
@@ -32634,7 +33059,13 @@ var IdentityResolver;
             });
         }
         catch (err) {
-            logger.error("identity_link failed: " + (err && err.message ? err.message : String(err)));
+            var errMsg = err && err.message ? err.message : String(err);
+            logger.error("identity_link failed: " + errMsg);
+            // Surface a stable, non-secret hint so web Connect can distinguish
+            // storage/auth failures from opaque 500s during rollout.
+            if (errMsg.indexOf("AUTH_REQUIRED") >= 0 || errMsg.indexOf("User ID is required") >= 0) {
+                return RpcHelpers.errorResponse("sign in required", 401);
+            }
             return RpcHelpers.errorResponse("internal error", 500);
         }
     }
@@ -32665,8 +33096,9 @@ var IdentityResolver;
             if (existingSub !== callerSub) {
                 return RpcHelpers.errorResponse("not authorised to unlink this binding", 403);
             }
-            // Delete under the stored key (may still be a Nakama UUID pre-heal).
-            deleteLink(nk, channel, externalId, existing.cognito_sub);
+            // Delete under the stored key (may still be a Nakama UUID pre-heal)
+            // and under the caller's Nakama UUID (post-fix reverse owner).
+            deleteLink(nk, channel, externalId, existing.cognito_sub, userId);
             logger.info("identity_unlink ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
             return RpcHelpers.successResponse({ unlinked: true });
         }
@@ -32843,7 +33275,7 @@ var IdentityResolver;
             }
             // 3. Bind the new ghost to the channel.
             var source = ("" + (data.source || "service_ghost_create")).slice(0, 64);
-            writeLink(nk, channel, externalId, ghostSub, source, "low");
+            writeLink(nk, channel, externalId, ghostSub, source, "low", ghostSub);
             logger.info("identity_resolve_or_ghost_create minted ghost: sub=" + ghostSub + " channel=" + channel + " ext=" + maskExternalId(channel, externalId));
             return RpcHelpers.successResponse({
                 cognito_sub: ghostSub,
@@ -58079,19 +58511,11 @@ var TournamentEconomy;
     TournamentEconomy.TIER1_COUNTRIES = ["US", "CA", "GB", "AU", "NZ", "IE"];
     // 18+ gate (§3)
     TournamentEconomy.MIN_AGE = 18;
-    // Public / no-KYC slate: min_age 0 → age_blocked false without verified DOB.
-    // Exam / high-stakes tournaments keep MIN_AGE (Didit/Veriff still required).
+    // Optional public / no-KYC allowlist. Empty = all tournaments require MIN_AGE
+    // (Didit/Veriff age gate). Add slugs here only when product wants no-KYC enter.
     TournamentEconomy.PUBLIC_MIN_AGE = 0;
-    /** Entertainment / daily / pop-culture slugs that skip age/KYC before enter (~50%). */
-    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [
-        "gk-royale-daily",
-        "pick-5-daily",
-        "movie-trivia-royale",
-        "music-history-royale",
-        "pop-culture-2010s",
-        "brain-bowl-weekly",
-        "movie-buff-weekly",
-    ];
+    /** Slugs that skip age/KYC before enter. Empty → all private (KYC required). */
+    TournamentEconomy.PUBLIC_NO_KYC_SLUGS = [];
     function isPublicNoKycSlug(slug) {
         for (var i = 0; i < TournamentEconomy.PUBLIC_NO_KYC_SLUGS.length; i++) {
             if (TournamentEconomy.PUBLIC_NO_KYC_SLUGS[i] === slug)
@@ -59239,7 +59663,13 @@ var QuestEngine;
     var QUEST_ENGINE_COLLECTION = "qv_quests";
     // Collection used for admin-managed quest config (public-read, system-write)
     var QUEST_CONFIG_COLLECTION = "qv_quest_config";
+    // Players who called quest_engine_get for an App-ID — fan-out target for new quests
+    var QUEST_SUBSCRIBERS_COLLECTION = "qv_quest_subscribers";
     var DEFAULT_QUESTS_CONFIG = { quests: {} };
+    // In-app inbox code for "new quest published" (reward deliveries use 9101)
+    var NOTIFICATION_CODE_NEW_QUEST = 9102;
+    var MAX_QUEST_SUBSCRIBERS = 2000;
+    var MAX_NOTIFY_BATCH = 100;
     // ─── Calendar helpers ────────────────────────────────────────────────────
     // Returns the next midnight UTC boundary from a given unix timestamp (seconds).
     function nextMidnightUtc(nowSec) {
@@ -59306,6 +59736,110 @@ var QuestEngine;
                 permissionRead: 2,
                 permissionWrite: 0
             }]);
+    }
+    function loadSubscribers(nk, gameId) {
+        try {
+            var rows = nk.storageRead([{
+                    collection: QUEST_SUBSCRIBERS_COLLECTION,
+                    key: configKey(gameId),
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+            if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
+                return rows[0].value.userIds;
+            }
+        }
+        catch (_) { }
+        return [];
+    }
+    function saveSubscribers(nk, gameId, userIds) {
+        nk.storageWrite([{
+                collection: QUEST_SUBSCRIBERS_COLLECTION,
+                key: configKey(gameId),
+                userId: Constants.SYSTEM_USER_ID,
+                value: { userIds: userIds, updatedAt: Math.floor(Date.now() / 1000) },
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    /** Register player for new-quest inbox notifications for this App-ID. */
+    function subscribeUser(nk, gameId, userId) {
+        if (!userId || !gameId)
+            return;
+        var ids = loadSubscribers(nk, gameId);
+        if (ids.indexOf(userId) >= 0)
+            return;
+        ids.push(userId);
+        if (ids.length > MAX_QUEST_SUBSCRIBERS) {
+            ids = ids.slice(ids.length - MAX_QUEST_SUBSCRIBERS);
+        }
+        try {
+            saveSubscribers(nk, gameId, ids);
+        }
+        catch (_) { /* never break get */ }
+    }
+    function notifyNewQuests(nk, logger, gameId, newQuests, extraUserIds) {
+        if (!newQuests || newQuests.length === 0)
+            return 0;
+        var visible = [];
+        for (var i = 0; i < newQuests.length; i++) {
+            if (!newQuests[i].hidden)
+                visible.push(newQuests[i]);
+        }
+        if (visible.length === 0)
+            return 0;
+        var userIds = loadSubscribers(nk, gameId);
+        if (extraUserIds && extraUserIds.length) {
+            for (var e = 0; e < extraUserIds.length; e++) {
+                if (extraUserIds[e] && userIds.indexOf(extraUserIds[e]) < 0)
+                    userIds.push(extraUserIds[e]);
+            }
+        }
+        if (userIds.length === 0) {
+            logger.info("[QuestEngine] New quests saved but no subscribers yet for gameId=%s", gameId);
+            return 0;
+        }
+        var names = [];
+        for (var n = 0; n < visible.length && n < 5; n++)
+            names.push(visible[n].name || visible[n].id);
+        var subject = visible.length === 1
+            ? ("🆕 New quest: " + (visible[0].name || visible[0].id))
+            : ("🆕 " + visible.length + " new quests");
+        var body = visible.length === 1
+            ? (visible[0].description || "A new quest is available. Open Quests to start.")
+            : ("New: " + names.join(", ") + (visible.length > 5 ? "…" : ""));
+        var questIds = [];
+        for (var q = 0; q < visible.length; q++)
+            questIds.push(visible[q].id);
+        var sent = 0;
+        for (var b = 0; b < userIds.length; b += MAX_NOTIFY_BATCH) {
+            var slice = userIds.slice(b, b + MAX_NOTIFY_BATCH);
+            var batch = [];
+            for (var u = 0; u < slice.length; u++) {
+                batch.push({
+                    userId: slice[u],
+                    subject: subject,
+                    content: {
+                        type: "quest_new",
+                        gameId: gameId,
+                        body: body,
+                        questIds: questIds,
+                        count: visible.length
+                    },
+                    code: NOTIFICATION_CODE_NEW_QUEST,
+                    persistent: true,
+                    senderId: Constants.SYSTEM_USER_ID
+                });
+            }
+            try {
+                nk.notificationsSend(batch);
+                sent += batch.length;
+            }
+            catch (err) {
+                logger.warn("[QuestEngine] notificationsSend failed: " + (err && err.message ? err.message : String(err)));
+            }
+        }
+        logger.info("[QuestEngine] Notified %d subscribers of %d new quest(s) gameId=%s", sent, visible.length, gameId);
+        return sent;
     }
     function loadUserState(nk, userId, gameId) {
         var rows = [];
@@ -59427,6 +59961,11 @@ var QuestEngine;
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
         var now = Math.floor(Date.now() / 1000);
+        // Opt player into new-quest inbox fan-out for this App-ID
+        try {
+            subscribeUser(nk, gameId, userId);
+        }
+        catch (_) { }
         var config = loadConfig(nk, gameId);
         var state = loadUserState(nk, userId, gameId);
         var stateModified = false;
@@ -59711,9 +60250,38 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Payload must contain config.quests (object) or quests (array)");
         }
         var questCount = Object.keys(config.quests).length;
+        // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
+        // silent: true  → skip fan-out (use for bulk reseed)
+        // notifyUserIds → extra targets (optional)
+        var prev = loadConfig(nk, gameId);
+        var prevIds = {};
+        var prevKeys = Object.keys(prev.quests || {});
+        for (var pi = 0; pi < prevKeys.length; pi++)
+            prevIds[prevKeys[pi]] = true;
+        var newlyAdded = [];
+        var newKeys = Object.keys(config.quests);
+        for (var ni = 0; ni < newKeys.length; ni++) {
+            var nid = newKeys[ni];
+            if (!prevIds[nid])
+                newlyAdded.push(config.quests[nid]);
+        }
         saveConfig(nk, gameId, config);
-        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d", gameId, questCount);
-        return RpcHelpers.successResponse({ saved: true, questCount: questCount });
+        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+        var notified = 0;
+        var silent = data.silent === true || data.notifyNewQuests === false;
+        if (!silent && newlyAdded.length > 0) {
+            var extra;
+            if (Array.isArray(data.notifyUserIds)) {
+                extra = data.notifyUserIds;
+            }
+            notified = notifyNewQuests(nk, logger, gameId, newlyAdded, extra);
+        }
+        return RpcHelpers.successResponse({
+            saved: true,
+            questCount: questCount,
+            newQuestCount: newlyAdded.length,
+            notified: notified
+        });
     }
     // ─── RPC: quest_engine_admin_get_config ──────────────────────────────────
     // Returns the stored quest config for a game. Server-key only.
@@ -81538,6 +82106,9 @@ var TournamentRpcs;
         catch (_) { }
         return { age: 0, dob_iso: "" };
     }
+    // QuizVerse game wallet — same ledger TutorX / Words use
+    // (collection `wallets`, key `wallet_{userId}_{gameId}`, currencies.game).
+    var QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     function readBcBalance(nk, userId) {
         try {
             var rows = nk.storageRead([{ collection: "brain_coins", key: "wallet", userId: userId }]);
@@ -81549,39 +82120,51 @@ var TournamentRpcs;
         catch (_) { }
         return { balance: 0, lifetime_earned: 0 };
     }
-    function debitBc(nk, userId, amount, reason) {
+    /** Game-wallet coin balance (TutorX/Words parity). */
+    function readGameCoinBalance(nk, userId) {
         try {
-            var rows = nk.storageRead([{ collection: "brain_coins", key: "wallet", userId: userId }]);
-            var wallet = (rows && rows.length > 0) ? rows[0].value : { balance: 0, lifetime_earned: 0, lifetime_redeemed: 0 };
-            if ((wallet.balance | 0) < amount)
-                return false;
-            wallet.balance = (wallet.balance | 0) - amount;
-            wallet.updated_at = nowSec();
-            nk.storageWrite([{
-                    collection: "brain_coins",
-                    key: "wallet",
-                    userId: userId,
-                    value: wallet,
-                    permissionRead: 1,
-                    permissionWrite: 0,
-                }]);
-            nk.storageWrite([{
-                    collection: "brain_coins",
-                    key: "earn_log_debit_" + nowSec() + "_" + Math.random().toString(36).slice(2, 8),
-                    userId: userId,
-                    value: {
-                        code: "tournament_entry_debit",
-                        coins: -amount,
-                        unix_ts: nowSec(),
-                        date: new Date().toISOString().slice(0, 10),
-                        source: reason,
-                    },
-                    permissionRead: 1,
-                    permissionWrite: 0,
-                }]);
-            return true;
+            var wallet = WalletHelpers.getGameWallet(nk, userId, QUIZVERSE_GAME_ID);
+            var c = wallet.currencies || { game: 0, tokens: 0, xp: 0 };
+            return ((c.game | 0) || (c.tokens | 0) || 0) | 0;
         }
         catch (_) {
+            return 0;
+        }
+    }
+    /**
+     * Debit QuizVerse game coins — mirrors legacy deductGameWallet
+     * (keeps currencies.game and currencies.tokens in sync).
+     */
+    function debitGameCoins(nk, logger, ctx, userId, amount, reason) {
+        if (amount <= 0)
+            return true;
+        try {
+            var wallet = WalletHelpers.getGameWallet(nk, userId, QUIZVERSE_GAME_ID);
+            var current = ((wallet.currencies.game | 0) || (wallet.currencies.tokens | 0)) | 0;
+            if (current < amount)
+                return false;
+            wallet.currencies.game = current - amount;
+            wallet.currencies.tokens = wallet.currencies.game;
+            WalletHelpers.saveGameWallet(nk, wallet);
+            try {
+                EventBus.emit(nk, logger, ctx, EventBus.Events.CURRENCY_SPENT, {
+                    userId: userId,
+                    gameId: QUIZVERSE_GAME_ID,
+                    currencyId: "game",
+                    amount: amount,
+                    newBalance: wallet.currencies.game,
+                    reason: reason,
+                });
+            }
+            catch (_) { }
+            if (logger) {
+                logger.info("[Tournaments] debitGameCoins user=" + userId + " amount=" + amount + " reason=" + reason + " bal=" + wallet.currencies.game);
+            }
+            return true;
+        }
+        catch (e) {
+            if (logger)
+                logger.warn("[Tournaments] debitGameCoins failed: " + (e && e.message ? e.message : e));
             return false;
         }
     }
@@ -81834,8 +82417,11 @@ var TournamentRpcs;
         return RpcHelpers.successResponse({ pre_enroll: row, founder_spots_left: founderLeft, total_pre_enroll: newCount });
     }
     // ── RPC: tournament_enter ──────────────────────────────────────────────────
-    // Charges BC; opens the entry row. Honors AMOE if user completed Learning
-    // Series (6/6 videos) — paid_via="amoe" with bc_charged=0.
+    // Charges QuizVerse game-wallet coins (same ledger as TutorX/Words);
+    // opens the entry row. Honors AMOE if user completed Learning Series
+    // (6/6 videos) — paid_via="amoe" with bc_charged=0.
+    // Field names entry_fee_bc / bc_charged kept for client contract stability;
+    // amounts are game coins, not Brain Coins.
     function rpcEnter(ctx, logger, nk, payload) {
         var rl = SharedRateLimit.enforce(ctx, nk, "tournament_enter", { perUserPerMin: 10 });
         if (rl)
@@ -81890,11 +82476,11 @@ var TournamentRpcs;
                 return RpcHelpers.successResponse({ entry: existing, idempotent: true });
         }
         else {
-            var bal = readBcBalance(nk, userId);
-            if (bal.balance < cfg.entry_fee_bc) {
-                return RpcHelpers.errorResponse("insufficient BC (balance=" + bal.balance + ", entry_fee=" + cfg.entry_fee_bc + ")", 402);
+            var gameBal = readGameCoinBalance(nk, userId);
+            if (gameBal < cfg.entry_fee_bc) {
+                return RpcHelpers.errorResponse("insufficient coins (balance=" + gameBal + ", entry_fee=" + cfg.entry_fee_bc + ")", 402);
             }
-            var debited = debitBc(nk, userId, cfg.entry_fee_bc, "tournament_enter:" + slug);
+            var debited = debitGameCoins(nk, logger, ctx, userId, cfg.entry_fee_bc, "tournament_enter:" + slug);
             if (!debited)
                 return RpcHelpers.errorResponse("debit failed", 500);
             bcCharged = cfg.entry_fee_bc;
@@ -82423,6 +83009,7 @@ var TournamentRpcs;
     // page + Unity entry flow both depend on this; returning a flat shape
     // (state_blocked / age_blocked / amoe_unlocked / balance_bc) keeps the
     // entry modal logic trivial on both clients.
+    // balance_bc = QuizVerse game-wallet coins (TutorX/Words), not Brain Coins.
     function rpcCallerStatus(ctx, _l, nk, payload) {
         var data = RpcHelpers.parseRpcPayload(payload);
         var slug = "" + (data.slug || "");
@@ -82442,7 +83029,7 @@ var TournamentRpcs;
         var country = userId ? readUserCountry(nk, userId) : "";
         var state = userId && country === "US" ? readUserState(nk, userId) : "";
         var ageInfo = userId ? readUserDob(nk, userId) : { age: 0 };
-        var balance = userId ? readBcBalance(nk, userId) : { balance: 0, lifetime_earned: 0 };
+        var gameBalance = userId ? readGameCoinBalance(nk, userId) : 0;
         var entry = userId ? TournamentsStorage.readEntry(nk, slug, userId) : null;
         var preEnroll = userId ? TournamentsStorage.readPreEnroll(nk, slug, userId) : null;
         var amoe = userId ? LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, cfg.amoe.learning_series_required_videos) : false;
@@ -82470,7 +83057,7 @@ var TournamentRpcs;
             pre_enrolled: !!preEnroll,
             founder_rank: preEnroll && preEnroll.founder_rank ? preEnroll.founder_rank : null,
             amoe_unlocked: amoe,
-            balance_bc: balance.balance,
+            balance_bc: gameBalance,
             served_at: nowSec(),
         });
     }
@@ -83158,8 +83745,8 @@ var TournamentRpcs;
             return RpcHelpers.errorResponse("must make " + TournamentEconomyV2.PICKN_DOUBLEUP_DEFAULT.eligible_after_picks + " picks first", 400);
         }
         var cost = TournamentEconomyV2.PICKN_DOUBLEUP_DEFAULT.cost_bc;
-        if (!debitBc(nk, userId, cost, "tournament_pickn_doubleup:" + slug)) {
-            return RpcHelpers.errorResponse("insufficient BC", 402);
+        if (!debitGameCoins(nk, logger, ctx, userId, cost, "tournament_pickn_doubleup:" + slug)) {
+            return RpcHelpers.errorResponse("insufficient coins", 402);
         }
         var row = TournamentLevers.writeDoubleup(nk, userId, slug, picksMade);
         TournamentLevers.logEvent(nk, "pickn_doubleup_locked", userId, {

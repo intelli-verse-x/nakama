@@ -104,9 +104,29 @@ namespace IdentityResolver {
     return null;
   }
 
-  function writeLink(nk: nkruntime.Nakama, channel: string, externalId: string, cognitoSub: string, source: string, confidence: string): void {
+  /**
+   * Forward index (system-owned) stores cognito_sub in the value for AI Notes /
+   * conv-hub resolution. Reverse index MUST be owned by a real Nakama user
+   * UUID — Cognito subs are custom_ids, not users.table ids. Writing reverse
+   * under cognito_sub makes storageWrite throw → identity_link "internal error"
+   * (seen live after Connect session-Bearer fix landed on web).
+   *
+   * reverseOwnerUserId: Nakama UUID (ctx.userId / ghost userId). Falls back to
+   * cognitoSub only for legacy callers that already used a Nakama UUID as the
+   * stored cognito_sub (ghost mint path).
+   */
+  function writeLink(
+    nk: nkruntime.Nakama,
+    channel: string,
+    externalId: string,
+    cognitoSub: string,
+    source: string,
+    confidence: string,
+    reverseOwnerUserId?: string,
+  ): void {
     var key = buildKey(channel, externalId);
     var now = Math.floor(Date.now() / 1000);
+    var reverseOwner = ("" + (reverseOwnerUserId || cognitoSub)).trim();
     var forward = {
       cognito_sub: cognitoSub,
       channel: channel,
@@ -122,6 +142,7 @@ namespace IdentityResolver {
       linked_at: now,
       source: source,
       confidence: confidence,
+      cognito_sub: cognitoSub,
     };
     nk.storageWrite([
       {
@@ -135,7 +156,7 @@ namespace IdentityResolver {
       {
         collection: IDENTITY_LINKS_USER_COLLECTION,
         key: key,
-        userId: cognitoSub,
+        userId: reverseOwner,
         value: reverse,
         permissionRead: 2,
         permissionWrite: 0,
@@ -143,13 +164,29 @@ namespace IdentityResolver {
     ]);
   }
 
-  function deleteLink(nk: nkruntime.Nakama, channel: string, externalId: string, cognitoSub: string): void {
+  function deleteLink(
+    nk: nkruntime.Nakama,
+    channel: string,
+    externalId: string,
+    cognitoSub: string,
+    reverseOwnerUserId?: string,
+  ): void {
     var key = buildKey(channel, externalId);
     try {
-      nk.storageDelete([
+      var deletes: nkruntime.StorageDeleteRequest[] = [
         { collection: IDENTITY_LINKS_COLLECTION, key: key, userId: Constants.SYSTEM_USER_ID },
         { collection: IDENTITY_LINKS_USER_COLLECTION, key: key, userId: cognitoSub },
-      ]);
+      ];
+      // Also clear reverse under Nakama UUID when it differs (post-fix owner).
+      var alt = ("" + (reverseOwnerUserId || "")).trim();
+      if (alt && alt !== cognitoSub) {
+        deletes.push({
+          collection: IDENTITY_LINKS_USER_COLLECTION,
+          key: key,
+          userId: alt,
+        });
+      }
+      nk.storageDelete(deletes);
     } catch (err: any) {
       // Idempotent delete; if already gone, that's fine.
     }
@@ -231,8 +268,8 @@ namespace IdentityResolver {
     var source = ("" + (record.source || "identity_heal")).slice(0, 64);
     var confidence = ("" + (record.confidence || "high")).slice(0, 16);
     try {
-      deleteLink(nk, channel, externalId, stored);
-      writeLink(nk, channel, externalId, canonical, source, confidence);
+      deleteLink(nk, channel, externalId, stored, stored);
+      writeLink(nk, channel, externalId, canonical, source, confidence, stored);
       record.cognito_sub = canonical;
       logger.info(
         "identity healed cognito_sub: channel=" + channel +
@@ -373,7 +410,7 @@ namespace IdentityResolver {
         var existingSub = canonicalCognitoSub(nk, existing.cognito_sub);
         if (existingSub !== callerSub) {
           if (isReplaceableGhostBinding(nk, existing)) {
-            deleteLink(nk, channel, externalId, existing.cognito_sub);
+            deleteLink(nk, channel, externalId, existing.cognito_sub, existing.cognito_sub);
             logger.info(
               "identity_link replaced ghost binding: channel=" + channel +
               " ext=" + externalId + " old_sub=" + existing.cognito_sub + " new_sub=" + callerSub,
@@ -384,13 +421,14 @@ namespace IdentityResolver {
           }
         } else if (("" + existing.cognito_sub) !== callerSub) {
           // Same account, but stored under Nakama UUID — rewrite to Cognito.
-          deleteLink(nk, channel, externalId, existing.cognito_sub);
+          deleteLink(nk, channel, externalId, existing.cognito_sub, userId);
         }
       }
 
       var source = ("" + (data.source || "user_opt_in")).slice(0, 64);
       var confidence = ("" + (data.confidence || "high")).slice(0, 16);
-      writeLink(nk, channel, externalId, callerSub, source, confidence);
+      // Reverse index owned by Nakama UUID (userId); forward value keeps Cognito sub.
+      writeLink(nk, channel, externalId, callerSub, source, confidence, userId);
 
       logger.info("identity_link ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
 
@@ -402,7 +440,13 @@ namespace IdentityResolver {
         confidence: confidence,
       });
     } catch (err: any) {
-      logger.error("identity_link failed: " + (err && err.message ? err.message : String(err)));
+      var errMsg = err && err.message ? err.message : String(err);
+      logger.error("identity_link failed: " + errMsg);
+      // Surface a stable, non-secret hint so web Connect can distinguish
+      // storage/auth failures from opaque 500s during rollout.
+      if (errMsg.indexOf("AUTH_REQUIRED") >= 0 || errMsg.indexOf("User ID is required") >= 0) {
+        return RpcHelpers.errorResponse("sign in required", 401);
+      }
       return RpcHelpers.errorResponse("internal error", 500);
     }
   }
@@ -437,8 +481,9 @@ namespace IdentityResolver {
         return RpcHelpers.errorResponse("not authorised to unlink this binding", 403);
       }
 
-      // Delete under the stored key (may still be a Nakama UUID pre-heal).
-      deleteLink(nk, channel, externalId, existing.cognito_sub);
+      // Delete under the stored key (may still be a Nakama UUID pre-heal)
+      // and under the caller's Nakama UUID (post-fix reverse owner).
+      deleteLink(nk, channel, externalId, existing.cognito_sub, userId);
       logger.info("identity_unlink ok: user=" + callerSub + " channel=" + channel + " ext=" + externalId);
 
       return RpcHelpers.successResponse({ unlinked: true });
@@ -620,7 +665,7 @@ namespace IdentityResolver {
 
       // 3. Bind the new ghost to the channel.
       var source = ("" + (data.source || "service_ghost_create")).slice(0, 64);
-      writeLink(nk, channel, externalId, ghostSub, source, "low");
+      writeLink(nk, channel, externalId, ghostSub, source, "low", ghostSub);
 
       logger.info("identity_resolve_or_ghost_create minted ghost: sub=" + ghostSub + " channel=" + channel + " ext=" + maskExternalId(channel, externalId));
 

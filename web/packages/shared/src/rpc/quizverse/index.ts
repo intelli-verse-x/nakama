@@ -383,5 +383,8 @@ export {
   type RevenueCatDashboardResult,
   type RevenueCatOverview,
   type RevenueCatDailyPoint,
+  type AdRevenueDailyPoint,
   type RevenueCatAdRevenueStatus,
+  type StripeRevenueDailyPoint,
+  type StripeRevenueStatus,
 } from "./revenuecat-dashboard";
