@@ -19068,17 +19068,24 @@ function asyncChallengeGenerateShareCode(nk) {
  */
 function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data, logger) {
     try {
-        var notifications = [{
+        // ES5 object merge — Goja rejects object-spread (...data) and would abort
+        // the calling RPC (e.g. async_challenge_create with challengedUserId).
+        // Mirror compatibilitySendNotification: pass content as an object, not JSON.stringify.
+        var merged = { message: content };
+        if (data && typeof data === 'object') {
+            for (var k in data) {
+                if (Object.prototype.hasOwnProperty.call(data, k)) {
+                    merged[k] = data[k];
+                }
+            }
+        }
+        nk.notificationsSend([{
             userId: userId,
             subject: subject,
-            content: JSON.stringify({
-                message: content,
-                ...data
-            }),
+            content: merged,
             code: 101, // Async challenge notification code
             persistent: true
-        }];
-        nk.notificationsSend(notifications);
+        }]);
         if (logger) {
             logger.debug('[AsyncChallenge] notify code=101 type=' + (data && data.type ? data.type : 'unknown') +
                 ' target=' + userId + ' session=' + (data && data.sessionId ? data.sessionId : '?'));
