@@ -214,6 +214,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- Party & Trivia server-authoritative daily play quota (QVBF_345) ----
+  try {
+    QvPartyPlayQuota.register(initializer);
+    logger.info("[QvPartyPlayQuota] quizverse_party_play_quota registered");
+  } catch (err: any) {
+    logger.error("[QvPartyPlayQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
   try {
     QuizVerseRevenueCatAdmin.register(initializer);

@@ -63,6 +63,10 @@ namespace Storage {
     if (data.collection === "event_answers") {
       return RpcHelpers.errorResponse("event_answers is server-authoritative; use creator_event_submit.");
     }
+    // Paid/unlimited authority — only server RPCs (rc_sync, IAP grant) may write.
+    if (data.collection === "qv_entitlements") {
+      return RpcHelpers.errorResponse("qv_entitlements is server-authoritative; client writes denied.");
+    }
 
     var targetUserId = data.user_id || userId;
     var value = typeof data.value === "string" ? JSON.parse(data.value) : (data.value || {});

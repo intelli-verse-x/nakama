@@ -72,16 +72,31 @@ namespace TournamentCrons {
     return span > 0 && span <= 25 * 3600;
   }
 
-  function rollDailyForward(nk: nkruntime.Nakama, cfg: TournamentEconomy.TournamentConfig, meta: TournamentsStorage.MetaRow): TournamentsStorage.MetaRow {
+  function rollDailyForward(
+    nk: nkruntime.Nakama,
+    logger: nkruntime.Logger,
+    cfg: TournamentEconomy.TournamentConfig,
+    meta: TournamentsStorage.MetaRow
+  ): TournamentsStorage.MetaRow {
     var now = nowSec();
     var anyMeta: any = meta;
     var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
+    var prevEndIso = anyMeta.window_end_iso || cfg.end_iso;
     var daySec = 24 * 3600;
     // Catch up if cron lagged for many days (one settle must land a live window).
+    // Hard cap at 400 (~13 months) so a system-clock jump cannot spin forever.
     var rolls = 0;
     while (prevWindowEnd <= now && rolls < 400) {
       prevWindowEnd += daySec;
       rolls++;
+    }
+    if (rolls >= 400) {
+      logger.error(
+        "[Tournaments] rollDailyForward capped at 400 rolls for slug=%s prevEnd=%s nowUnix=%s — check system clock / cron health",
+        cfg.slug,
+        String(prevEndIso),
+        String(now)
+      );
     }
     if (rolls === 0) {
       // Still advance one day from the settled window (normal path).
@@ -255,7 +270,7 @@ namespace TournamentCrons {
         if (isDailyTournament(cfg)) {
           var reloaded = TournamentsStorage.readMeta(nk, cfg.slug);
           if (reloaded && reloaded.status === "SETTLED") {
-            var rolled = rollDailyForward(nk, cfg, reloaded);
+            var rolled = rollDailyForward(nk, logger, cfg, reloaded);
             actions.push({
               slug: cfg.slug,
               action: "daily_rolled_forward",
@@ -270,7 +285,7 @@ namespace TournamentCrons {
 
       // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
       if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
-        var recovered = rollDailyForward(nk, cfg, meta);
+        var recovered = rollDailyForward(nk, logger, cfg, meta);
         actions.push({
           slug: cfg.slug,
           action: "daily_recovered_from_settled",

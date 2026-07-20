@@ -900,6 +900,9 @@ declare namespace QuizVersePackStore {
     function readPack(nk: nkruntime.Nakama, packId: string): QuizVerseGame.IPack;
     function writePack(nk: nkruntime.Nakama, pack: QuizVerseGame.IPack): void;
 }
+declare namespace QvPartyPlayQuota {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace PersonalizedQuests {
     function register(initializer: nkruntime.Initializer): void;
 }

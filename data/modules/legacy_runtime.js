@@ -4733,7 +4733,7 @@ var LEGACY_REWARD_CONFIGS = {
  * @param {string} gameId - Game ID (UUID)
  * @returns {object} Streak data
  */
-function getStreakData(nk, logger, userId, gameId) {
+function __legacy_getStreakData(nk, logger, userId, gameId) {
     var collection = "daily_streaks";
     var key = makeGameStorageKey("user_daily_streak", userId, gameId);
 
@@ -4763,7 +4763,7 @@ function getStreakData(nk, logger, userId, gameId) {
  * @param {object} data - Streak data to save
  * @returns {boolean} Success status
  */
-function saveStreakData(nk, logger, userId, gameId, data) {
+function __legacy_saveStreakData(nk, logger, userId, gameId, data) {
     var collection = "daily_streaks";
     var key = makeGameStorageKey("user_daily_streak", userId, gameId);
     return writeStorage(nk, logger, collection, key, userId, data);
@@ -4774,7 +4774,7 @@ function saveStreakData(nk, logger, userId, gameId, data) {
  * @param {object} streakData - Current streak data
  * @returns {object} { canClaim: boolean, reason: string }
  */
-function canClaimToday(streakData) {
+function __legacy_canClaimToday(streakData) {
     var now = getUnixTimestamp();
     var lastClaim = streakData.lastClaimTimestamp;
 
@@ -4800,7 +4800,7 @@ function canClaimToday(streakData) {
  * @param {object} streakData - Current streak data
  * @returns {object} Updated streak data
  */
-function updateStreakStatus(streakData) {
+function __legacy_updateStreakStatus(streakData) {
     var now = getUnixTimestamp();
     var lastClaim = streakData.lastClaimTimestamp;
 
@@ -4823,7 +4823,7 @@ function updateStreakStatus(streakData) {
  * @param {number} day - Streak day (1-7)
  * @returns {object} Reward configuration
  */
-function getRewardForDay(gameId, day) {
+function __legacy_getRewardForDay(gameId, day) {
     var config = LEGACY_REWARD_CONFIGS[gameId] || LEGACY_REWARD_CONFIGS["default"];
     var rewardDay = ((day - 1) % 7) + 1; // Cycle through 1-7
 
@@ -4845,7 +4845,7 @@ function getRewardForDay(gameId, day) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
+function __legacy_rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
     logInfo(logger, "RPC daily_rewards_get_status called");
 
     var parsed = safeJsonParse(payload);
@@ -4870,15 +4870,15 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
     }
 
     // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(streakData);
+    var streakData = __legacy_getStreakData(nk, logger, userId, gameId);
+    streakData = __legacy_updateStreakStatus(streakData);
 
     // Check if can claim
-    var claimCheck = canClaimToday(streakData);
+    var claimCheck = __legacy_canClaimToday(streakData);
 
     // Get next reward info
     var nextDay = streakData.currentStreak + 1;
-    var nextReward = getRewardForDay(gameId, nextDay);
+    var nextReward = __legacy_getRewardForDay(gameId, nextDay);
 
     return JSON.stringify({
         success: true,
@@ -4915,7 +4915,7 @@ function rpcFriendQuestComplete(ctx, logger, nk, payload) {
  * @param {string} payload - JSON payload with { gameId: "uuid" }
  * @returns {string} JSON response
  */
-function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
+function __legacy_rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     logInfo(logger, "RPC daily_rewards_claim called");
 
     var parsed = safeJsonParse(payload);
@@ -4940,11 +4940,11 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     }
 
     // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(streakData);
+    var streakData = __legacy_getStreakData(nk, logger, userId, gameId);
+    streakData = __legacy_updateStreakStatus(streakData);
 
     // Check if can claim
-    var claimCheck = canClaimToday(streakData);
+    var claimCheck = __legacy_canClaimToday(streakData);
     if (!claimCheck.canClaim) {
         return JSON.stringify({
             success: false,
@@ -4960,10 +4960,10 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
     streakData.updatedAt = getCurrentTimestamp();
 
     // Get reward for current day
-    var reward = getRewardForDay(gameId, streakData.currentStreak);
+    var reward = __legacy_getRewardForDay(gameId, streakData.currentStreak);
 
     // Save updated streak
-    if (!saveStreakData(nk, logger, userId, gameId, streakData)) {
+    if (!__legacy_saveStreakData(nk, logger, userId, gameId, streakData)) {
         return handleError(ctx, null, "Failed to save streak data");
     }
 
@@ -19068,17 +19068,24 @@ function asyncChallengeGenerateShareCode(nk) {
  */
 function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data, logger) {
     try {
-        var notifications = [{
+        // ES5 object merge — Goja rejects object-spread (...data) and would abort
+        // the calling RPC (e.g. async_challenge_create with challengedUserId).
+        // Mirror compatibilitySendNotification: pass content as an object, not JSON.stringify.
+        var merged = { message: content };
+        if (data && typeof data === 'object') {
+            for (var k in data) {
+                if (Object.prototype.hasOwnProperty.call(data, k)) {
+                    merged[k] = data[k];
+                }
+            }
+        }
+        nk.notificationsSend([{
             userId: userId,
             subject: subject,
-            content: JSON.stringify({
-                message: content,
-                ...data
-            }),
+            content: merged,
             code: 101, // Async challenge notification code
             persistent: true
-        }];
-        nk.notificationsSend(notifications);
+        }]);
         if (logger) {
             logger.debug('[AsyncChallenge] notify code=101 type=' + (data && data.type ? data.type : 'unknown') +
                 ' target=' + userId + ' session=' + (data && data.sessionId ? data.sessionId : '?'));
@@ -19182,6 +19189,56 @@ function asyncChallengeIsLoginIdName(name) {
     return false;
 }
 
+/**
+ * QVBF_304: batched profile-name lookup. Reads each user's
+ * `player_metadata/metadata` record — the same profile store every device
+ * renders its OWN player from — and returns a map of userId → human display
+ * name. Names failing asyncChallengeIsLoginIdName are omitted. Any storage
+ * error returns whatever was resolved so far (or an empty map), so name
+ * resolution can never fail an RPC.
+ */
+function asyncChallengeReadProfileNames(nk, userIds) {
+    var names = {};
+    if (!nk || !userIds || userIds.length === 0) return names;
+    try {
+        var reads = [];
+        for (var i = 0; i < userIds.length; i++) {
+            if (userIds[i]) {
+                reads.push({ collection: 'player_metadata', key: 'metadata', userId: userIds[i] });
+            }
+        }
+        if (reads.length === 0) return names;
+        var records = nk.storageRead(reads) || [];
+        for (var r = 0; r < records.length; r++) {
+            var rec = records[r];
+            if (!rec || !rec.value || !rec.userId) continue;
+            var value = typeof rec.value === 'string' ? JSON.parse(rec.value) : rec.value;
+            if (!value || value.displayName === undefined || value.displayName === null) continue;
+            var name = String(value.displayName).trim();
+            if (name.length > 0 && !asyncChallengeIsLoginIdName(name)) {
+                names[rec.userId] = name;
+            }
+        }
+    } catch (err) {
+        // Non-fatal: fall through to session/account names.
+    }
+    return names;
+}
+
+/**
+ * QVBF_304 read-time authority chain for one player slot:
+ *   1. player_metadata.displayName (what the player's own device shows) — pre-filtered human
+ *   2. stored session name (client-supplied at create/join) if human
+ *   3. Nakama account displayName/username if human
+ *   4. keep stored value, else account value (placeholder handled downstream)
+ */
+function asyncChallengeResolveReadName(profileName, storedName, accountName) {
+    if (profileName) return profileName;
+    if (storedName && !asyncChallengeIsLoginIdName(storedName)) return storedName;
+    if (accountName && !asyncChallengeIsLoginIdName(accountName)) return accountName;
+    return storedName || accountName || '';
+}
+
 function asyncChallengeGetDisplayName(nk, userId, fallback) {
     // QVBF_304: if the caller already supplied a real human name (not a
     // generic placeholder or machine-generated login ID), use it directly.
@@ -19189,6 +19246,13 @@ function asyncChallengeGetDisplayName(nk, userId, fallback) {
     // or auto-generated, so the client-supplied name is the more reliable source.
     if (fallback && !asyncChallengeIsLoginIdName(fallback)) {
         return fallback;
+    }
+
+    // QVBF_304: prefer the profile store (player_metadata.displayName) — the
+    // name the player's own device renders — over the Nakama account name.
+    var profileNames = asyncChallengeReadProfileNames(nk, [userId]);
+    if (profileNames[userId]) {
+        return profileNames[userId];
     }
 
     // Fallback is absent or looks machine-generated — try the Nakama account.
@@ -19240,35 +19304,40 @@ function asyncChallengeSessionToUnityFormat(session, nk) {
     // QVBF_154: re-resolve player names at read time so a renamed player is
     // never shown with the name snapshotted into the session at create/join.
     // Lookup failure (deleted account, transient error) keeps stored names.
-    // QVBF_304: re-resolve player names at read time, but only override the
-    // stored name if the Nakama account name looks like a real human name.
-    // Machine-generated names (UUIDs, emails, autogenerated usernames) must not
-    // clobber the correct client-supplied name that was stored at create/join.
+    // QVBF_304: authority chain per player — profile store (player_metadata,
+    // what each player's own device shows) → stored session name → Nakama
+    // account name → stored value/placeholder. The account name is demoted so
+    // it can never clobber the profile name and cause cross-device mismatch.
     if (nk) {
         try {
             var freshIds = [];
             if (session.creatorId) freshIds.push(session.creatorId);
             if (session.opponentId) freshIds.push(session.opponentId);
             if (freshIds.length > 0) {
-                var freshUsers = nk.usersGetId(freshIds) || [];
-                for (var fu = 0; fu < freshUsers.length; fu++) {
-                    var freshName = freshUsers[fu].displayName || freshUsers[fu].username || '';
-                    if (!freshName) continue;
-                    // Only apply if it's a human-readable name (not a login ID).
-                    var freshIsReal = !asyncChallengeIsLoginIdName(freshName);
-                    if (freshUsers[fu].userId === session.creatorId) {
-                        if (freshIsReal) session.creatorName = freshName;
-                        // If stored name is also bad, use whatever we have.
-                        else if (!session.creatorName || asyncChallengeIsLoginIdName(session.creatorName)) {
-                            session.creatorName = freshName;
-                        }
+                var profileNames = asyncChallengeReadProfileNames(nk, freshIds);
+                var accountNames = {};
+                try {
+                    var freshUsers = nk.usersGetId(freshIds) || [];
+                    for (var fu = 0; fu < freshUsers.length; fu++) {
+                        accountNames[freshUsers[fu].userId] =
+                            freshUsers[fu].displayName || freshUsers[fu].username || '';
                     }
-                    if (freshUsers[fu].userId === session.opponentId) {
-                        if (freshIsReal) session.opponentName = freshName;
-                        else if (!session.opponentName || asyncChallengeIsLoginIdName(session.opponentName)) {
-                            session.opponentName = freshName;
-                        }
-                    }
+                } catch (acctErr) {
+                    // non-fatal: resolve without account names
+                }
+                if (session.creatorId) {
+                    var creatorResolved = asyncChallengeResolveReadName(
+                        profileNames[session.creatorId],
+                        session.creatorName,
+                        accountNames[session.creatorId]);
+                    if (creatorResolved) session.creatorName = creatorResolved;
+                }
+                if (session.opponentId) {
+                    var opponentResolved = asyncChallengeResolveReadName(
+                        profileNames[session.opponentId],
+                        session.opponentName,
+                        accountNames[session.opponentId]);
+                    if (opponentResolved) session.opponentName = opponentResolved;
                 }
             }
         } catch (freshErr) {
@@ -24625,9 +24694,11 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
     // Register Daily Rewards RPCs
     try {
         logger.info('[DailyRewards] Initializing Daily Rewards Module...');
-        initializer.registerRpc('daily_rewards_get_status', rpcDailyRewardsGetStatus);
+        // Prefer module handlers (data/modules/daily_rewards/). These legacy
+        // stubs stay registered only as __rpc_ fallbacks via postbuild guards.
+        initializer.registerRpc('daily_rewards_get_status', __legacy_rpcDailyRewardsGetStatus);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_get_status');
-        initializer.registerRpc('daily_rewards_claim', rpcDailyRewardsClaim);
+        initializer.registerRpc('daily_rewards_claim', __legacy_rpcDailyRewardsClaim);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_claim');
         logger.info('[DailyRewards] Successfully registered 2 Daily Rewards RPCs');
     } catch (err) {

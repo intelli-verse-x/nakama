@@ -206,6 +206,14 @@ function InitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
     }
+    // ---- Party & Trivia server-authoritative daily play quota (QVBF_345) ----
+    try {
+        QvPartyPlayQuota.register(initializer);
+        logger.info("[QvPartyPlayQuota] quizverse_party_play_quota registered");
+    }
+    catch (err) {
+        logger.error("[QvPartyPlayQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
     try {
         QuizVerseRevenueCatAdmin.register(initializer);
@@ -17527,6 +17535,194 @@ var QuizVersePackStore;
     }
     QuizVersePackStore.writePack = writePack;
 })(QuizVersePackStore || (QuizVersePackStore = {}));
+// ---------------------------------------------------------------------------
+// party-play-quota.ts — server-authoritative Party & Trivia daily play quota.
+//
+// QVBF_345: the free-play limit used to live only in device-local PlayerPrefs,
+// so the same account could bypass it by logging into another device (or
+// reinstalling). This RPC is the single source of truth, keyed by userId.
+//
+// Free: 1 play per UTC day. Pro / Pro+ / Plus subscription, VIP allow-list,
+// or the one-time Party Mode pack (qv_entitlements one_time.partyMode):
+// unlimited. Reset boundary: 00:00 UTC.
+//
+// Contract (mirrors lap-note-quota.ts):
+//   payload  {"action":"status"}  → never writes
+//   payload  {"action":"consume"} → increments used, OCC conditional write;
+//                                   at limit → allowed:false (HTTP 200, never throw)
+//   response {"success":true,"data":{allowed,tier,limit,unlimited,used,
+//             remaining,date,resetAt}}  (limit/remaining null when unlimited)
+// ---------------------------------------------------------------------------
+var QvPartyPlayQuota;
+(function (QvPartyPlayQuota) {
+    var COLLECTION = "qv_party_daily_quota";
+    var KEY_PREFIX = "plays_";
+    var OCC_MAX_RETRIES = 4;
+    var PARTY_FREE_PLAYS_PER_DAY = 1;
+    function utcDate(now) {
+        return now.toISOString().slice(0, 10);
+    }
+    function nextUtcReset(now) {
+        return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0)).toISOString();
+    }
+    function quotaKey(date) {
+        return KEY_PREFIX + date;
+    }
+    // Local copy of the lap-note-quota tier resolver (each quota module owns
+    // its own policy), extended with the one-time Party Mode pack check.
+    function subscriptionTier(nk, userId, nowMs) {
+        // VIP Layer 0 — unlimited plays for hard-coded QA allow-list.
+        if (QvVipOverride.isVipUserId(userId))
+            return "pro_plus";
+        var rows = nk.storageRead([{
+                collection: "qv_entitlements",
+                key: "subscriptions",
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0 || !rows[0].value)
+            return "free";
+        var subs = rows[0].value;
+        var tier = String(subs.tier || "").toLowerCase();
+        var status = String(subs.status || "active").toLowerCase();
+        if (!tier || status === "expired" || status === "revoked" || status === "inactive") {
+            return "free";
+        }
+        if (subs.expiresAt) {
+            var expiryMs = new Date(subs.expiresAt).getTime();
+            if (!isNaN(expiryMs) && expiryMs <= nowMs)
+                return "free";
+        }
+        return tier;
+    }
+    function hasPartyModePack(nk, userId) {
+        var rows = nk.storageRead([{
+                collection: "qv_entitlements",
+                key: "one_time",
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0 || !rows[0].value)
+            return false;
+        var oneTime = rows[0].value;
+        return oneTime.partyMode === true;
+    }
+    // -1 = unlimited.
+    function limitForTier(tier) {
+        if (tier === "pro_plus" || tier === "pro" || tier === "plus")
+            return -1;
+        return PARTY_FREE_PLAYS_PER_DAY;
+    }
+    function readQuota(nk, userId, date) {
+        var rows = nk.storageRead([{
+                collection: COLLECTION,
+                key: quotaKey(date),
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0) {
+            return {
+                value: { date: date, used: 0, updatedAt: new Date().toISOString() },
+                version: "*",
+                exists: false
+            };
+        }
+        var value = rows[0].value || {};
+        return {
+            value: {
+                date: date,
+                used: Math.max(0, Number(value.used) || 0),
+                updatedAt: String(value.updatedAt || "")
+            },
+            version: rows[0].version || "",
+            exists: true
+        };
+    }
+    function writeQuota(nk, userId, stored) {
+        stored.value.updatedAt = new Date().toISOString();
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: quotaKey(stored.value.date),
+                userId: userId,
+                value: stored.value,
+                version: stored.exists ? stored.version : "*",
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    function response(state, tier, limit, resetAt, allowed) {
+        return RpcHelpers.successResponse({
+            allowed: allowed !== false,
+            tier: tier,
+            limit: limit < 0 ? null : limit,
+            unlimited: limit < 0,
+            used: state.used,
+            remaining: limit < 0 ? null : Math.max(0, limit - state.used),
+            date: state.date,
+            resetAt: resetAt
+        });
+    }
+    function rpcPartyPlayQuota(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload) || {};
+        var action = String(data.action || "status").toLowerCase();
+        if (action !== "status" && action !== "consume") {
+            return RpcHelpers.errorResponse("action must be status or consume");
+        }
+        var now = new Date();
+        var date = utcDate(now);
+        var tier = subscriptionTier(nk, userId, now.getTime());
+        var limit = limitForTier(tier);
+        if (limit >= 0 && hasPartyModePack(nk, userId)) {
+            limit = -1;
+        }
+        var resetAt = nextUtcReset(now);
+        if (limit < 0) {
+            // Unlimited access — never consume, storage untouched.
+            return response(readQuota(nk, userId, date).value, tier, limit, resetAt, true);
+        }
+        if (action === "status") {
+            // allowed must reflect whether a play is still available today —
+            // otherwise the client's non-consuming pre-check always passes.
+            var current = readQuota(nk, userId, date).value;
+            return response(current, tier, limit, resetAt, current.used < limit);
+        }
+        // consume — OCC loop: two devices racing for the last slot serialize on
+        // the storage version; exactly one write wins per version.
+        var lastError = null;
+        for (var attempt = 0; attempt < OCC_MAX_RETRIES; attempt++) {
+            var stored = readQuota(nk, userId, date);
+            var state = stored.value;
+            if (state.used >= limit) {
+                // Business denial, not an error — HTTP 200 with allowed:false.
+                return response(state, tier, limit, resetAt, false);
+            }
+            state.used += 1;
+            try {
+                writeQuota(nk, userId, stored);
+                return response(state, tier, limit, resetAt, true);
+            }
+            catch (err) {
+                lastError = err;
+            }
+        }
+        logger.error("[QvPartyPlayQuota] OCC exhausted user=" + userId);
+        throw lastError || new Error("party_play_quota_contention");
+    }
+    function register(initializer) {
+        function auth(fn) {
+            var wrapped = null;
+            return function (ctx, logger, nk, payload) {
+                if (!wrapped) {
+                    var strictFn = fn;
+                    wrapped = (typeof RpcHelpers !== "undefined" && RpcHelpers.withCleanAuthError)
+                        ? RpcHelpers.withCleanAuthError(strictFn)
+                        : strictFn;
+                }
+                return wrapped(ctx, logger, nk, payload);
+            };
+        }
+        initializer.registerRpc("quizverse_party_play_quota", auth(rpcPartyPlayQuota));
+    }
+    QvPartyPlayQuota.register = register;
+})(QvPartyPlayQuota || (QvPartyPlayQuota = {}));
 // Personalized Quest Engine — wires Player DNA to the Quest config pool.
 //
 // Single RPC:  quizverse_get_personalized_quests
@@ -25889,14 +26085,24 @@ var AdminConsole;
         if (!data.collection || !data.key)
             return RpcHelpers.errorResponse("collection and key required");
         var userId = data.userId || Constants.SYSTEM_USER_ID;
+        // Paid/unlimited authority must never become owner-writable, even via admin.
+        // Default permissionWrite for other collections stays 1; entitlements force 0.
+        var permRead = data.permissionRead !== undefined ? data.permissionRead : 2;
+        var permWrite = data.permissionWrite !== undefined ? data.permissionWrite : 1;
+        if (data.collection === "qv_entitlements") {
+            permWrite = 0;
+            if (data.permissionWrite !== undefined && data.permissionWrite !== 0) {
+                logger.warn("[Admin] Forced permissionWrite:0 for qv_entitlements (requested=%s) key=%s userId=%s", String(data.permissionWrite), data.key, userId);
+            }
+        }
         var acks = nk.storageWrite([{
                 collection: data.collection,
                 key: data.key,
                 userId: userId,
                 value: data.value || {},
                 version: data.version || "*",
-                permissionRead: data.permissionRead !== undefined ? data.permissionRead : 2,
-                permissionWrite: data.permissionWrite !== undefined ? data.permissionWrite : 1
+                permissionRead: permRead,
+                permissionWrite: permWrite
             }]);
         logAdminAudit(nk, ctx, "admin_storage_write", { userId: userId, collection: data.collection, key: data.key });
         return RpcHelpers.successResponse({
@@ -30592,6 +30798,11 @@ var QvEntitlements;
     var KEY_SUBS = "subscriptions";
     var KEY_CONS = "consumables";
     var KEY_ONE = "one_time";
+    // Server-authoritative: clients must never be able to overwrite paid/unlimited
+    // state via Nakama storageWrite / storage_write RPC. Always permissionWrite: 0.
+    function writeEntitlement(nk, key, userId, value) {
+        Storage.writeJson(nk, COLLECTION, key, userId, value, 1, 0);
+    }
     // Dedup ledger for RevenueCat webhook revenue recording — RC explicitly
     // documents that webhook retries reuse the same `event.id` + timestamp
     // (https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields).
@@ -30696,7 +30907,7 @@ var QvEntitlements;
                         " expiresAt=" + subs.expiresAt + " for user=" + userId);
                     subs = { tier: null, status: "expired", productId: subs.productId, store: subs.store,
                         expiresAt: subs.expiresAt, updatedAt: new Date().toISOString() };
-                    Storage.writeJson(nk, COLLECTION, KEY_SUBS, userId, subs);
+                    writeEntitlement(nk, KEY_SUBS, userId, subs);
                 }
             }
             return RpcHelpers.successResponse({
@@ -31005,7 +31216,7 @@ var QvEntitlements;
                 var prev = Number(existing.aiVoiceCredits) || 0;
                 existing.aiVoiceCredits = prev + quantity;
                 existing.updatedAt = new Date().toISOString();
-                Storage.writeJson(nk, COLLECTION, KEY_CONS, targetUserId, existing);
+                writeEntitlement(nk, KEY_CONS, targetUserId, existing);
                 logger.info("[QvEntitlements] rc_sync: aiVoiceCredits+" + quantity + " for user=" + targetUserId + " (prev=" + prev + " now=" + existing.aiVoiceCredits + ")");
                 return RpcHelpers.successResponse({ aiVoiceCredits: existing.aiVoiceCredits, granted: quantity });
             }
@@ -31075,7 +31286,7 @@ var QvEntitlements;
                 eventType === "TEMPORARY_ENTITLEMENT_GRANT";
             var isCancellationNotice = eventType === "CANCELLATION";
             if (isImmediateRevoke) {
-                Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, {
+                writeEntitlement(nk, KEY_SUBS, targetUserId, {
                     tier: null,
                     status: "expired",
                     productId: productId,
@@ -31090,7 +31301,7 @@ var QvEntitlements;
                 // (and the expiry-enforcement safety net in rpcGetEntitlements) correctly cut
                 // access at the real period end instead of right now.
                 var cancelExpiresAt = resolveExpiry(event);
-                Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, {
+                writeEntitlement(nk, KEY_SUBS, targetUserId, {
                     tier: tier,
                     status: "cancelled",
                     productId: productId,
@@ -31120,12 +31331,12 @@ var QvEntitlements;
                 expiresAt: expiresAt,
                 updatedAt: new Date().toISOString()
             };
-            Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, subRecord);
+            writeEntitlement(nk, KEY_SUBS, targetUserId, subRecord);
             // For Pro+ tier, also grant Link & Play Pro+ automatically (per sign-off doc §3)
             if (tier === "pro_plus") {
                 var existing = Storage.readJson(nk, COLLECTION, KEY_ONE, targetUserId) || {};
                 existing.linkplayProPlus = true;
-                Storage.writeJson(nk, COLLECTION, KEY_ONE, targetUserId, existing);
+                writeEntitlement(nk, KEY_ONE, targetUserId, existing);
             }
             logger.info("[QvEntitlements] rc_sync: subscription " + (isTrial ? "trial-granted" : "granted") + " for user=" + targetUserId + " tier=" + tier + " expiresAt=" + (expiresAt || "lifetime"));
             return RpcHelpers.successResponse({ tier: tier, status: isTrial ? "trialing" : "active", expiresAt: expiresAt });
@@ -31152,12 +31363,12 @@ var QvEntitlements;
             expiresAt: expiresAt,
             updatedAt: new Date().toISOString()
         };
-        Storage.writeJson(nk, COLLECTION, KEY_SUBS, userId, subRecord);
+        writeEntitlement(nk, KEY_SUBS, userId, subRecord);
         // Pro+ also includes L&P Pro+
         if (tier === "pro_plus") {
             var existing = Storage.readJson(nk, COLLECTION, KEY_ONE, userId) || {};
             existing.linkplayProPlus = true;
-            Storage.writeJson(nk, COLLECTION, KEY_ONE, userId, existing);
+            writeEntitlement(nk, KEY_ONE, userId, existing);
         }
         logger.info("[QvEntitlements] grantSubscription: user=" + userId + " tier=" + tier + " expiresAt=" + (expiresAt || "lifetime"));
     }
@@ -31190,7 +31401,7 @@ var QvEntitlements;
                 // here for server-side audit / duplicate prevention.
                 existing.starterPackGrantCount = (existing.starterPackGrantCount || 0) + 1;
             }
-            Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, existing);
+            writeEntitlement(nk, KEY_CONS, userId, existing);
         }
         catch (e) {
             logger.warn("[QvEntitlements] grantConsumable error: " + (e && e.message ? e.message : String(e)));
@@ -31224,7 +31435,7 @@ var QvEntitlements;
                 if (existing.examPacks.indexOf(examCode) === -1)
                     existing.examPacks.push(examCode);
             }
-            Storage.writeJson(nk, COLLECTION, KEY_ONE, userId, existing);
+            writeEntitlement(nk, KEY_ONE, userId, existing);
         }
         catch (e) {
             logger.warn("[QvEntitlements] grantOneTime error: " + (e && e.message ? e.message : String(e)));
@@ -31266,7 +31477,8 @@ var QvExplainerVideos;
     }
     function writeCons(nk, userId, cons) {
         cons.updatedAt = new Date().toISOString();
-        Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, cons);
+        // Server-authoritative paid credits — never owner-writable.
+        Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, cons, 1, 0);
     }
     function unitsForProductId(productId) {
         if (!productId)
@@ -68545,9 +68757,17 @@ var SatoriCreatorEvents;
             return writes;
         for (var i = 0; i < writes.length; i++) {
             var w = writes[i];
-            if (w && w.collection === "event_answers") {
+            if (!w)
+                continue;
+            // Blocks native Storage Write API (/v2/storage) — storage_write RPC denylist
+            // alone is not enough; clients can bypass it via WriteStorageObjects.
+            if (w.collection === "event_answers") {
                 logger.warn("[CreatorEvent] Blocked client storage write to event_answers user=%s key=%s", ctx.userId || "", w.key || "");
                 throw new Error("event_answers is server-authoritative; use creator_event_submit.");
+            }
+            if (w.collection === "qv_entitlements") {
+                logger.warn("[QvEntitlements] Blocked client storage write to qv_entitlements user=%s key=%s", ctx.userId || "", w.key || "");
+                throw new Error("qv_entitlements is server-authoritative; client writes denied.");
             }
         }
         return writes;
@@ -76317,6 +76537,10 @@ var Storage;
         if (data.collection === "event_answers") {
             return RpcHelpers.errorResponse("event_answers is server-authoritative; use creator_event_submit.");
         }
+        // Paid/unlimited authority — only server RPCs (rc_sync, IAP grant) may write.
+        if (data.collection === "qv_entitlements") {
+            return RpcHelpers.errorResponse("qv_entitlements is server-authoritative; client writes denied.");
+        }
         var targetUserId = data.user_id || userId;
         var value = typeof data.value === "string" ? JSON.parse(data.value) : (data.value || {});
         var permRead = (data.permission_read !== undefined ? data.permission_read : 1);
@@ -80773,16 +80997,21 @@ var TournamentCrons;
         var span = isoToUnix(cfg.end_iso) - isoToUnix(cfg.open_start_iso);
         return span > 0 && span <= 25 * 3600;
     }
-    function rollDailyForward(nk, cfg, meta) {
+    function rollDailyForward(nk, logger, cfg, meta) {
         var now = nowSec();
         var anyMeta = meta;
         var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
+        var prevEndIso = anyMeta.window_end_iso || cfg.end_iso;
         var daySec = 24 * 3600;
         // Catch up if cron lagged for many days (one settle must land a live window).
+        // Hard cap at 400 (~13 months) so a system-clock jump cannot spin forever.
         var rolls = 0;
         while (prevWindowEnd <= now && rolls < 400) {
             prevWindowEnd += daySec;
             rolls++;
+        }
+        if (rolls >= 400) {
+            logger.error("[Tournaments] rollDailyForward capped at 400 rolls for slug=%s prevEnd=%s nowUnix=%s — check system clock / cron health", cfg.slug, String(prevEndIso), String(now));
         }
         if (rolls === 0) {
             // Still advance one day from the settled window (normal path).
@@ -80965,7 +81194,7 @@ var TournamentCrons;
                 if (isDailyTournament(cfg)) {
                     var reloaded = TournamentsStorage.readMeta(nk, cfg.slug);
                     if (reloaded && reloaded.status === "SETTLED") {
-                        var rolled = rollDailyForward(nk, cfg, reloaded);
+                        var rolled = rollDailyForward(nk, logger, cfg, reloaded);
                         actions.push({
                             slug: cfg.slug,
                             action: "daily_rolled_forward",
@@ -80979,7 +81208,7 @@ var TournamentCrons;
             }
             // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
             if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
-                var recovered = rollDailyForward(nk, cfg, meta);
+                var recovered = rollDailyForward(nk, logger, cfg, meta);
                 actions.push({
                     slug: cfg.slug,
                     action: "daily_recovered_from_settled",
