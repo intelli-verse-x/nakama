@@ -1109,14 +1109,25 @@ namespace AdminConsole {
     var data = RpcHelpers.parseRpcPayload(payload);
     if (!data.collection || !data.key) return RpcHelpers.errorResponse("collection and key required");
     var userId = data.userId || Constants.SYSTEM_USER_ID;
+    // Paid/unlimited authority must never become owner-writable, even via admin.
+    // Default permissionWrite for other collections stays 1; entitlements force 0.
+    var permRead = data.permissionRead !== undefined ? data.permissionRead : 2 as nkruntime.ReadPermissionValues;
+    var permWrite = data.permissionWrite !== undefined ? data.permissionWrite : 1 as nkruntime.WritePermissionValues;
+    if (data.collection === "qv_entitlements") {
+      permWrite = 0 as nkruntime.WritePermissionValues;
+      if (data.permissionWrite !== undefined && data.permissionWrite !== 0) {
+        logger.warn("[Admin] Forced permissionWrite:0 for qv_entitlements (requested=%s) key=%s userId=%s",
+          String(data.permissionWrite), data.key, userId);
+      }
+    }
     var acks = nk.storageWrite([{
       collection: data.collection,
       key: data.key,
       userId: userId,
       value: data.value || {},
       version: data.version || "*",
-      permissionRead: data.permissionRead !== undefined ? data.permissionRead : 2 as nkruntime.ReadPermissionValues,
-      permissionWrite: data.permissionWrite !== undefined ? data.permissionWrite : 1 as nkruntime.WritePermissionValues
+      permissionRead: permRead,
+      permissionWrite: permWrite
     }]);
     logAdminAudit(nk, ctx, "admin_storage_write", { userId: userId, collection: data.collection, key: data.key });
     return RpcHelpers.successResponse({

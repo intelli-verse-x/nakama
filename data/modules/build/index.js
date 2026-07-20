@@ -26085,14 +26085,24 @@ var AdminConsole;
         if (!data.collection || !data.key)
             return RpcHelpers.errorResponse("collection and key required");
         var userId = data.userId || Constants.SYSTEM_USER_ID;
+        // Paid/unlimited authority must never become owner-writable, even via admin.
+        // Default permissionWrite for other collections stays 1; entitlements force 0.
+        var permRead = data.permissionRead !== undefined ? data.permissionRead : 2;
+        var permWrite = data.permissionWrite !== undefined ? data.permissionWrite : 1;
+        if (data.collection === "qv_entitlements") {
+            permWrite = 0;
+            if (data.permissionWrite !== undefined && data.permissionWrite !== 0) {
+                logger.warn("[Admin] Forced permissionWrite:0 for qv_entitlements (requested=%s) key=%s userId=%s", String(data.permissionWrite), data.key, userId);
+            }
+        }
         var acks = nk.storageWrite([{
                 collection: data.collection,
                 key: data.key,
                 userId: userId,
                 value: data.value || {},
                 version: data.version || "*",
-                permissionRead: data.permissionRead !== undefined ? data.permissionRead : 2,
-                permissionWrite: data.permissionWrite !== undefined ? data.permissionWrite : 1
+                permissionRead: permRead,
+                permissionWrite: permWrite
             }]);
         logAdminAudit(nk, ctx, "admin_storage_write", { userId: userId, collection: data.collection, key: data.key });
         return RpcHelpers.successResponse({
@@ -68179,9 +68189,17 @@ var SatoriCreatorEvents;
             return writes;
         for (var i = 0; i < writes.length; i++) {
             var w = writes[i];
-            if (w && w.collection === "event_answers") {
+            if (!w)
+                continue;
+            // Blocks native Storage Write API (/v2/storage) — storage_write RPC denylist
+            // alone is not enough; clients can bypass it via WriteStorageObjects.
+            if (w.collection === "event_answers") {
                 logger.warn("[CreatorEvent] Blocked client storage write to event_answers user=%s key=%s", ctx.userId || "", w.key || "");
                 throw new Error("event_answers is server-authoritative; use creator_event_submit.");
+            }
+            if (w.collection === "qv_entitlements") {
+                logger.warn("[QvEntitlements] Blocked client storage write to qv_entitlements user=%s key=%s", ctx.userId || "", w.key || "");
+                throw new Error("qv_entitlements is server-authoritative; client writes denied.");
             }
         }
         return writes;
@@ -80411,16 +80429,21 @@ var TournamentCrons;
         var span = isoToUnix(cfg.end_iso) - isoToUnix(cfg.open_start_iso);
         return span > 0 && span <= 25 * 3600;
     }
-    function rollDailyForward(nk, cfg, meta) {
+    function rollDailyForward(nk, logger, cfg, meta) {
         var now = nowSec();
         var anyMeta = meta;
         var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
+        var prevEndIso = anyMeta.window_end_iso || cfg.end_iso;
         var daySec = 24 * 3600;
         // Catch up if cron lagged for many days (one settle must land a live window).
+        // Hard cap at 400 (~13 months) so a system-clock jump cannot spin forever.
         var rolls = 0;
         while (prevWindowEnd <= now && rolls < 400) {
             prevWindowEnd += daySec;
             rolls++;
+        }
+        if (rolls >= 400) {
+            logger.error("[Tournaments] rollDailyForward capped at 400 rolls for slug=%s prevEnd=%s nowUnix=%s — check system clock / cron health", cfg.slug, String(prevEndIso), String(now));
         }
         if (rolls === 0) {
             // Still advance one day from the settled window (normal path).
@@ -80603,7 +80626,7 @@ var TournamentCrons;
                 if (isDailyTournament(cfg)) {
                     var reloaded = TournamentsStorage.readMeta(nk, cfg.slug);
                     if (reloaded && reloaded.status === "SETTLED") {
-                        var rolled = rollDailyForward(nk, cfg, reloaded);
+                        var rolled = rollDailyForward(nk, logger, cfg, reloaded);
                         actions.push({
                             slug: cfg.slug,
                             action: "daily_rolled_forward",
@@ -80617,7 +80640,7 @@ var TournamentCrons;
             }
             // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
             if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
-                var recovered = rollDailyForward(nk, cfg, meta);
+                var recovered = rollDailyForward(nk, logger, cfg, meta);
                 actions.push({
                     slug: cfg.slug,
                     action: "daily_recovered_from_settled",

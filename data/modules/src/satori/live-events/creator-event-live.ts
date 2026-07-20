@@ -1921,9 +1921,16 @@ namespace SatoriCreatorEvents {
 
     for (var i = 0; i < writes.length; i++) {
       var w = writes[i];
-      if (w && w.collection === "event_answers") {
+      if (!w) continue;
+      // Blocks native Storage Write API (/v2/storage) — storage_write RPC denylist
+      // alone is not enough; clients can bypass it via WriteStorageObjects.
+      if (w.collection === "event_answers") {
         logger.warn("[CreatorEvent] Blocked client storage write to event_answers user=%s key=%s", ctx.userId || "", w.key || "");
         throw new Error("event_answers is server-authoritative; use creator_event_submit.");
+      }
+      if (w.collection === "qv_entitlements") {
+        logger.warn("[QvEntitlements] Blocked client storage write to qv_entitlements user=%s key=%s", ctx.userId || "", w.key || "");
+        throw new Error("qv_entitlements is server-authoritative; client writes denied.");
       }
     }
 
