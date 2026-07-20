@@ -103,6 +103,13 @@ export type {
   PrizeCatalogRegion,
   PrizeCatalog,
   SetPrizeCatalogResult,
+  RevenueCatOverview,
+  RevenueCatDailyPoint,
+  AdRevenueDailyPoint,
+  RevenueCatAdRevenueStatus,
+  StripeRevenueDailyPoint,
+  StripeRevenueStatus,
+  RevenueCatDashboardResult,
 } from "./quizverse";
 export type {
   OnboardingFunnelAnalyticsParams,

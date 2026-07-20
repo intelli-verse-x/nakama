@@ -1241,7 +1241,7 @@ function GameMetricsTab({
           />
           <StatGroupCard
             title="RoAS"
-            subtitle="Legacy Nakama estimates — use RevenueCat above for IAP $"
+            subtitle="Legacy Nakama estimates — use Revenue panel above for IAP + Ads $"
             stats={[
               { label: "Avg CPI", value: `$${totals.cpi.toFixed(2)}` },
               { label: "Avg LTV", value: `$${totals.ltv.toFixed(2)}` },
