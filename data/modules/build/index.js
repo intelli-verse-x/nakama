@@ -31369,6 +31369,53 @@ var QvExplainerVideos;
             return RpcHelpers.errorResponse("Failed to consume explainer video credit");
         }
     }
+    /**
+     * Refund a consume after generation fails (consume-before-generate).
+     * Payload: { mode: "full" | "preview" }
+     */
+    function rpcVideosRefund(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data;
+        try {
+            data = RpcHelpers.parseRpcPayload(payload);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse(e.message || "bad payload");
+        }
+        var mode = (data.mode || data.consume_mode || "full");
+        if (mode !== "preview" && mode !== "full") {
+            return RpcHelpers.errorResponse("mode must be preview or full");
+        }
+        try {
+            var cons = readCons(nk, userId);
+            if (mode === "full") {
+                var bal = Number(cons.explainerVideoCredits) || 0;
+                cons.explainerVideoCredits = bal + 1;
+                writeCons(nk, userId, cons);
+                logger.info("[QvExplainerVideos] refund full user=" + userId + " balance=" + cons.explainerVideoCredits);
+                return RpcHelpers.successResponse({
+                    refunded: true,
+                    refundMode: "full",
+                    balance: cons.explainerVideoCredits,
+                    freePreviewUsed: !!cons.explainerFreePreviewUsed
+                });
+            }
+            // preview — restore one-time free preview after failed generate
+            cons.explainerFreePreviewUsed = false;
+            writeCons(nk, userId, cons);
+            logger.info("[QvExplainerVideos] refund preview user=" + userId);
+            return RpcHelpers.successResponse({
+                refunded: true,
+                refundMode: "preview",
+                balance: Number(cons.explainerVideoCredits) || 0,
+                freePreviewUsed: false
+            });
+        }
+        catch (e) {
+            logger.warn("[QvExplainerVideos] refund error: " + (e && e.message ? e.message : String(e)));
+            return RpcHelpers.errorResponse("Failed to refund explainer video credit");
+        }
+    }
     function rpcVideosGrant(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data;
@@ -31416,6 +31463,7 @@ var QvExplainerVideos;
     function register(initializer) {
         initializer.registerRpc("quizverse_videos_status", rpcVideosStatus);
         initializer.registerRpc("quizverse_videos_consume", rpcVideosConsume);
+        initializer.registerRpc("quizverse_videos_refund", rpcVideosRefund);
         initializer.registerRpc("quizverse_videos_grant", rpcVideosGrant);
     }
     QvExplainerVideos.register = register;
@@ -31483,7 +31531,14 @@ var QvLapNoteQuota;
             }]);
         if (!rows || rows.length === 0) {
             return {
-                value: { date: date, used: 0, reservations: {}, updatedAt: new Date().toISOString() },
+                value: {
+                    date: date,
+                    used: 0,
+                    bonus: 0,
+                    adTxnId: "",
+                    reservations: {},
+                    updatedAt: new Date().toISOString(),
+                },
                 version: "*",
                 exists: false
             };
@@ -31493,6 +31548,8 @@ var QvLapNoteQuota;
             value: {
                 date: date,
                 used: Math.max(0, Number(value.used) || 0),
+                bonus: Math.max(0, Number(value.bonus) || 0),
+                adTxnId: String(value.adTxnId || ""),
                 reservations: value.reservations || {},
                 updatedAt: String(value.updatedAt || "")
             },
@@ -31512,14 +31569,23 @@ var QvLapNoteQuota;
                 permissionWrite: 0
             }]);
     }
+    function effectiveLimit(baseLimit, bonus) {
+        if (baseLimit < 0)
+            return baseLimit;
+        return baseLimit + Math.max(0, bonus);
+    }
     function response(state, tier, limit, resetAt, allowed, reservationId) {
+        var cap = effectiveLimit(limit, state.bonus);
         return RpcHelpers.successResponse({
             allowed: allowed !== false,
             tier: tier,
-            limit: limit < 0 ? null : limit,
+            limit: limit < 0 ? null : cap,
+            baseLimit: limit < 0 ? null : limit,
+            bonus: state.bonus,
             unlimited: limit < 0,
             used: state.used,
-            remaining: limit < 0 ? null : Math.max(0, limit - state.used),
+            remaining: limit < 0 ? null : Math.max(0, cap - state.used),
+            adBonusClaimed: !!state.adTxnId,
             date: state.date,
             resetAt: resetAt,
             reservationId: reservationId || ""
@@ -31541,8 +31607,47 @@ var QvLapNoteQuota;
         if (action === "status") {
             return response(readQuota(nk, userId, date).value, tier, limit, resetAt);
         }
+        // Rewarded-ad bonus notes (T3 / free-tier LAP). Server-owned; client txnId for idempotency.
+        if (action === "grant_ad_bonus") {
+            if (limit < 0) {
+                return response(readQuota(nk, userId, date).value, tier, limit, resetAt, true, "");
+            }
+            var bonusNotes = Math.min(10, Math.max(1, Math.round(Number(data.bonusNotes) || 3)));
+            var txnId = String(data.txnId || data.txn_id || "").trim();
+            if (!txnId) {
+                return RpcHelpers.errorResponse("txnId required for grant_ad_bonus");
+            }
+            var lastGrantErr = null;
+            for (var gAttempt = 0; gAttempt < OCC_MAX_RETRIES; gAttempt++) {
+                var gStored = readQuota(nk, userId, date);
+                var gState = gStored.value;
+                if (gState.adTxnId) {
+                    if (gState.adTxnId === txnId) {
+                        return response(gState, tier, limit, resetAt, true, "");
+                    }
+                    return RpcHelpers.errorResponse("ad bonus already claimed today");
+                }
+                gState.bonus = Math.max(0, gState.bonus) + bonusNotes;
+                gState.adTxnId = txnId;
+                try {
+                    writeQuota(nk, userId, gStored);
+                    logger.info("[QvLapNoteQuota] ad bonus +" +
+                        bonusNotes +
+                        " user=" +
+                        userId +
+                        " bonus=" +
+                        gState.bonus);
+                    return response(gState, tier, limit, resetAt, true, "");
+                }
+                catch (gErr) {
+                    lastGrantErr = gErr;
+                }
+            }
+            logger.error("[QvLapNoteQuota] OCC exhausted user=" + userId + " action=grant_ad_bonus");
+            throw lastGrantErr || new Error("lap_note_quota_contention");
+        }
         if (action !== "reserve" && action !== "release") {
-            return RpcHelpers.errorResponse("action must be status, reserve, or release");
+            return RpcHelpers.errorResponse("action must be status, reserve, release, or grant_ad_bonus");
         }
         var reservationId = action === "release" ? String(data.reservationId || "") : "";
         if (action === "release" && !reservationId) {
@@ -31560,7 +31665,8 @@ var QvLapNoteQuota;
             var stored = readQuota(nk, userId, date);
             var state = stored.value;
             if (action === "reserve") {
-                if (state.used >= limit) {
+                var cap = effectiveLimit(limit, state.bonus);
+                if (state.used >= cap) {
                     return response(state, tier, limit, resetAt, false, "");
                 }
                 reservationId = nk.uuidv4();
