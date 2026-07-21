@@ -102,6 +102,7 @@ namespace DuoQuests {
   function notifyDuo(nk: nkruntime.Nakama, logger: nkruntime.Logger, targetId: string, senderId: string, subject: string, content: any): void {
     try {
       content.type = subject;
+      content.eventType = subject;
       content.code = NOTIF_CODE_DUO;
       nk.notificationsSend([{
         userId: targetId, subject: subject, content: content,

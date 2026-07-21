@@ -239,6 +239,8 @@ namespace RewardDelivery {
       : ("You earned " + (summaryParts.join(", ") || "a reward") + "!");
     try {
       nk.notificationSend(userId, subject, {
+        type: "quest_reward",
+        eventType: "quest_reward",
         questId: questId, questName: questName, body: body,
         rewards: summaryParts, assetUrl: (richEntry && richEntry.assetUrl) || ""
       }, NOTIFICATION_CODE_REWARD, null, true);

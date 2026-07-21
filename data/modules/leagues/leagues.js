@@ -450,13 +450,23 @@ function rpcLeagueProcessSeason(ctx, logger, nk, payload) {
                 writeLeagueState(nk, logger, userId, gameId, userState);
 
                 // Send notification for promotion/demotion
+                // Codes 7201/7202 are outside friend lifecycle 1–6 / 100–105 so the
+                // inbox mapper won't remap these as friend_challenge*.
                 if (action === 'promoted' || action === 'demoted') {
                     try {
+                        var leagueEventType = action === 'promoted' ? 'league_promoted' : 'league_demoted';
                         nk.notificationsSend([{
                             userId: userId,
                             subject: action === 'promoted' ? 'League Promotion!' : 'League Update',
-                            content: { action: action, oldTier: tier, newTier: newTier, season: currentWeek },
-                            code: action === 'promoted' ? 100 : 101,
+                            content: {
+                                type: leagueEventType,
+                                eventType: leagueEventType,
+                                action: action,
+                                oldTier: tier,
+                                newTier: newTier,
+                                season: currentWeek
+                            },
+                            code: action === 'promoted' ? 7201 : 7202,
                             persistent: true
                         }]);
                     } catch (notifErr) {

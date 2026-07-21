@@ -43,14 +43,19 @@ namespace SatoriMessages {
     // Bridge to Nakama built-in notifications so the message surfaces in the
     // game clients' Notification Center (Unity reads list_notification_inbox /
     // the realtime socket, neither of which sees satori_messages storage).
-    // Code 110 is unmapped in the client NOTIFICATION_CODE_MAP, so it renders
-    // as event_type "system". Best-effort: the satori inbox write above is
-    // the source of truth.
+    // Code 110 is outside friend lifecycle 1–6 / 100–105; content.type drives routing.
     try {
       nk.notificationSend(
         userId,
         messageDef.title,
-        { title: messageDef.title, body: messageDef.body || "", messageDefId: messageDef.id, hasReward: !!messageDef.reward },
+        {
+          type: "satori_message",
+          eventType: "satori_message",
+          title: messageDef.title,
+          body: messageDef.body || "",
+          messageDefId: messageDef.id,
+          hasReward: !!messageDef.reward
+        },
         110,
         "",
         true

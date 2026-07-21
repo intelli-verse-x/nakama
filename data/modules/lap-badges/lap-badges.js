@@ -68,14 +68,17 @@ var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
         var result = JSON.parse(resultRaw);
 
         // If badges were unlocked, send a persistent notification
+        // Code 7501 is outside friend lifecycle 1–6 / 100–105 (never reuse code 1).
         if (result.badges_unlocked && result.badges_unlocked.length > 0) {
             result.badges_unlocked.forEach(function(b) {
                 try {
-                    nk.notificationSend(userId, "badge_unlocked", {
+                    nk.notificationSend(userId, b.title || "Badge Unlocked", {
+                        type: "badge_unlocked",
+                        eventType: "badge_unlocked",
                         badge_id: b.badge_id,
                         title: b.title,
                         category: b.category,
-                    }, 1, userId, "");
+                    }, 7501, null, true);
                 } catch (notifyErr) {
                     logger.warn("[LAP-Badges] Failed to send notification: " + notifyErr.message);
                 }

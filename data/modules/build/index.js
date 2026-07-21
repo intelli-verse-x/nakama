@@ -11723,7 +11723,12 @@ var CompatibilityQuiz;
             return;
         try {
             // Inbox fallback (ES5-safe — never use object spread).
-            var content = { message: vars && vars.message ? vars.message : eventType, type: eventType };
+            // Code 7701 is outside friend lifecycle 1–6 / 100–105.
+            var content = {
+                message: vars && vars.message ? vars.message : eventType,
+                type: eventType,
+                eventType: eventType
+            };
             if (data) {
                 for (var k in data) {
                     if (Object.prototype.hasOwnProperty.call(data, k))
@@ -11734,14 +11739,15 @@ var CompatibilityQuiz;
                     userId: userId,
                     subject: vars && vars.subject ? vars.subject : eventType,
                     content: content,
-                    code: 100,
+                    code: 7701,
                     persistent: true
                 }]);
         }
         catch (_) { }
         try {
             if (typeof LegacyPush !== "undefined" && LegacyPush.sendLocalizedPushToUser && ctx) {
-                LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {}, { skipQuietHours: true, data: data || {} });
+                // skipInAppNotification: inbox copy already written above — avoid duplicate.
+                LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {}, { skipQuietHours: true, skipInAppNotification: true, data: data || {} });
             }
         }
         catch (e) {
@@ -24622,7 +24628,14 @@ var Hermes;
             nk.notificationsSend([{
                     userId: userId,
                     subject: brief.headline,
-                    content: { focus: brief.focus, deeplink: brief.cta.deeplink, kind: "hermes_brief", date: brief.date },
+                    content: {
+                        type: "hermes_brief",
+                        eventType: "hermes_brief",
+                        focus: brief.focus,
+                        deeplink: brief.cta.deeplink,
+                        kind: "hermes_brief",
+                        date: brief.date
+                    },
                     code: 1101,
                     persistent: true,
                 }]);
@@ -38909,7 +38922,13 @@ var LegacyChat;
                     // Delivered to recipient's connected socket without requiring channel join,
                     // enabling real-time Social Zone badge/toast updates when chat screen is closed.
                     try {
-                        nk.notificationSend(targetUserId, senderName, { screen: "chat", fromUserId: senderId, preview: buildPreview(content) }, 9001, senderId, false);
+                        nk.notificationSend(targetUserId, senderName, {
+                            type: "direct_message",
+                            eventType: "direct_message",
+                            screen: "chat",
+                            fromUserId: senderId,
+                            preview: buildPreview(content)
+                        }, 9001, senderId, false);
                     }
                     catch (_) { }
                 }
@@ -39013,7 +39032,13 @@ var LegacyChat;
             // Ephemeral in-app socket notification — delivered to recipient's connected socket
             // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
             try {
-                nk.notificationSend(targetUserId, senderName, { screen: "chat", fromUserId: userId, preview: buildPreview(content) }, 9001, userId, false);
+                nk.notificationSend(targetUserId, senderName, {
+                    type: "direct_message",
+                    eventType: "direct_message",
+                    screen: "chat",
+                    fromUserId: userId,
+                    preview: buildPreview(content)
+                }, 9001, userId, false);
             }
             catch (_) { }
             return RpcHelpers.successResponse({ messageId: ack.messageId });
@@ -43196,6 +43221,11 @@ var LegacyPush;
                 body: data.body || "",
                 data: data.data || {}
             };
+            // Canonical machine id on both type + eventType so inbox mapper / Unity
+            // ResolveEventType never fall through to system / general.
+            var resolvedEventType = data.eventType || content.eventType || content.type || subject;
+            content.type = resolvedEventType;
+            content.eventType = resolvedEventType;
             var code = Number(data.code || DEFAULT_PUSH_NOTIFICATION_CODE);
             if (!targetUserId) {
                 logger.warn("[Push] push_send_event rejected: no targetUserId in payload.");
@@ -44230,7 +44260,13 @@ var LegacyPush;
             try {
                 nk.notificationsSend([{
                         userId: userId, subject: eventType,
-                        content: { eventType: eventType, title: title, body: body, data: mergedData },
+                        content: {
+                            type: eventType,
+                            eventType: eventType,
+                            title: title,
+                            body: body,
+                            data: mergedData
+                        },
                         code: DEFAULT_PUSH_NOTIFICATION_CODE, persistent: true
                     }]);
             }
@@ -47310,7 +47346,14 @@ var LibraryCountdownPlugin;
                     var ms = MILESTONES[m];
                     var lastEmitted = v.last_emitted || {};
                     if (wantSet[ms.id] && daysTo === ms.offset && !lastEmitted[ms.id]) {
-                        nk.notificationSend(r.userId, "Exam countdown — " + v.exam_id, { milestone: ms.id, exam_id: v.exam_id, exam_date: v.exam_date, days_to: daysTo }, 1001, "", false);
+                        nk.notificationSend(r.userId, "Exam countdown — " + v.exam_id, {
+                            type: "exam_countdown",
+                            eventType: "exam_countdown",
+                            milestone: ms.id,
+                            exam_id: v.exam_id,
+                            exam_date: v.exam_date,
+                            days_to: daysTo
+                        }, 1001, "", false);
                         v.last_emitted = lastEmitted;
                         v.last_emitted[ms.id] = now;
                         nk.storageWrite([{
@@ -51903,7 +51946,13 @@ var MpKernelAsyncTurn;
             // Notify next actor offline if they aren't online here.
             if (!ks.ended && ks.current_actor && !ks.online[ks.current_actor]) {
                 try {
-                    nk.notificationSend(ks.current_actor, "Your move", { game_id: ks.game_id, last_move_by: sender, async_match_id: matchId }, 1001, // app-defined notification code
+                    nk.notificationSend(ks.current_actor, "Your move", {
+                        type: "async_turn",
+                        eventType: "async_turn",
+                        game_id: ks.game_id,
+                        last_move_by: sender,
+                        async_match_id: matchId
+                    }, 1001, // app-defined notification code (outside friend 1–6 / 100–105)
                     "", true);
                 }
                 catch (_e) { /* swallow */ }
@@ -59830,6 +59879,7 @@ var QuestEngine;
                     subject: subject,
                     content: {
                         type: "quest_new",
+                        eventType: "quest_new",
                         gameId: gameId,
                         body: body,
                         questIds: questIds,
@@ -60528,6 +60578,8 @@ var RewardDelivery;
             : ("You earned " + (summaryParts.join(", ") || "a reward") + "!");
         try {
             nk.notificationSend(userId, subject, {
+                type: "quest_reward",
+                eventType: "quest_reward",
                 questId: questId, questName: questName, body: body,
                 rewards: summaryParts, assetUrl: (richEntry && richEntry.assetUrl) || ""
             }, NOTIFICATION_CODE_REWARD, null, true);
@@ -71038,11 +71090,16 @@ var SatoriMessages;
         // Bridge to Nakama built-in notifications so the message surfaces in the
         // game clients' Notification Center (Unity reads list_notification_inbox /
         // the realtime socket, neither of which sees satori_messages storage).
-        // Code 110 is unmapped in the client NOTIFICATION_CODE_MAP, so it renders
-        // as event_type "system". Best-effort: the satori inbox write above is
-        // the source of truth.
+        // Code 110 is outside friend lifecycle 1–6 / 100–105; content.type drives routing.
         try {
-            nk.notificationSend(userId, messageDef.title, { title: messageDef.title, body: messageDef.body || "", messageDefId: messageDef.id, hasReward: !!messageDef.reward }, 110, "", true);
+            nk.notificationSend(userId, messageDef.title, {
+                type: "satori_message",
+                eventType: "satori_message",
+                title: messageDef.title,
+                body: messageDef.body || "",
+                messageDefId: messageDef.id,
+                hasReward: !!messageDef.reward
+            }, 110, "", true);
         }
         catch (_e) { /* notification is a best-effort mirror */ }
     }
@@ -77041,6 +77098,7 @@ var DuoQuests;
     function notifyDuo(nk, logger, targetId, senderId, subject, content) {
         try {
             content.type = subject;
+            content.eventType = subject;
             content.code = NOTIF_CODE_DUO;
             nk.notificationsSend([{
                     userId: targetId, subject: subject, content: content,
@@ -78582,7 +78640,9 @@ var SocialGroupLinks;
                             userId: row.createdBy,
                             subject: "group_member_joined",
                             content: {
-                                type: "group_member_joined", code: 22,
+                                type: "group_member_joined",
+                                eventType: "group_member_joined",
+                                code: 22,
                                 groupId: row.groupId, groupName: group.name || "",
                                 joinedUserId: userId, joinedName: joinerName,
                                 viaInviteCode: code
@@ -81580,11 +81640,17 @@ var TournamentRealtime;
         if (!userIds || userIds.length === 0)
             return;
         var batch = [];
+        var payload = content || {};
+        // Ensure machine-id type for inbox/FCM routing (subject is already snake_case).
+        if (!payload.type)
+            payload.type = subject;
+        if (!payload.eventType)
+            payload.eventType = payload.type;
         for (var i = 0; i < userIds.length; i++) {
             batch.push({
                 userId: userIds[i],
                 subject: subject,
-                content: content,
+                content: payload,
                 code: code,
                 persistent: persistent,
                 senderId: Constants.SYSTEM_USER_ID,

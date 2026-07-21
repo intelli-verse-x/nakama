@@ -28,11 +28,15 @@ namespace TournamentRealtime {
   export function sendToUsers(nk: nkruntime.Nakama, userIds: string[], code: number, subject: string, content: any, persistent: boolean): void {
     if (!userIds || userIds.length === 0) return;
     var batch: nkruntime.NotificationRequest[] = [];
+    var payload: any = content || {};
+    // Ensure machine-id type for inbox/FCM routing (subject is already snake_case).
+    if (!payload.type) payload.type = subject;
+    if (!payload.eventType) payload.eventType = payload.type;
     for (var i = 0; i < userIds.length; i++) {
       batch.push({
         userId: userIds[i],
         subject: subject,
-        content: content,
+        content: payload,
         code: code,
         persistent: persistent,
         senderId: Constants.SYSTEM_USER_ID,

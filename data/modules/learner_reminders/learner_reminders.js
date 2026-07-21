@@ -170,7 +170,7 @@ function rpcLtRemindersAdd(ctx, logger, nk, payload) {
         nk.notificationsSend([{
             userId: uid,
             subject: "\u23F0 Reminder set",
-            content: { type: "reminder_set", id: rem.id, text: rem.text, time: rem.time, repeat: rem.repeat, date: rem.date },
+            content: { type: "reminder_set", eventType: "reminder_set", id: rem.id, text: rem.text, time: rem.time, repeat: rem.repeat, date: rem.date },
             code: RM_NOTIF_CODE,
             persistent: true
         }]);

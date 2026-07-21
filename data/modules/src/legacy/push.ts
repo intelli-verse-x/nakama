@@ -533,6 +533,11 @@ namespace LegacyPush {
         body: data.body || "",
         data: data.data || {}
       };
+      // Canonical machine id on both type + eventType so inbox mapper / Unity
+      // ResolveEventType never fall through to system / general.
+      var resolvedEventType = data.eventType || content.eventType || content.type || subject;
+      content.type = resolvedEventType;
+      content.eventType = resolvedEventType;
       var code = Number(data.code || DEFAULT_PUSH_NOTIFICATION_CODE);
       if (!targetUserId) {
         logger.warn("[Push] push_send_event rejected: no targetUserId in payload.");
@@ -1538,7 +1543,13 @@ namespace LegacyPush {
       try {
         nk.notificationsSend([{
           userId: userId, subject: eventType,
-          content: { eventType: eventType, title: title, body: body, data: mergedData },
+          content: {
+            type: eventType,
+            eventType: eventType,
+            title: title,
+            body: body,
+            data: mergedData
+          },
           code: DEFAULT_PUSH_NOTIFICATION_CODE, persistent: true
         }]);
       } catch (_) {}

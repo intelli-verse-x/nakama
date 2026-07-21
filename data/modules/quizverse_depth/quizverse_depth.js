@@ -578,12 +578,21 @@ function rpcQuizverseKnowledgeDuel(ctx, logger, nk, payload) {
             qvdStorageWrite(nk, collection, duelId, userId, duel);
 
             try {
+                // Signature: (userId, subject, content, code, senderId?, persistent?)
+                // Code 7401 is outside friend lifecycle 1–6 / 100–105.
                 nk.notificationSend(
                     data.opponent_id,
                     "Knowledge Duel Challenge",
-                    2,
-                    { duel_id: duelId, challenger: userId, challenger_name: ctx.username || "Unknown" },
-                    userId
+                    {
+                        type: "duel_challenge",
+                        eventType: "duel_challenge",
+                        duel_id: duelId,
+                        challenger: userId,
+                        challenger_name: ctx.username || "Unknown"
+                    },
+                    7401,
+                    userId,
+                    true
                 );
             } catch (notifErr) {
                 logger.warn("Could not send duel notification: " + notifErr.message);
@@ -657,8 +666,20 @@ function rpcQuizverseKnowledgeDuel(ctx, logger, nk, payload) {
                 if (winner !== "draw") {
                     nk.walletUpdate(winner, { coins: 50 }, { reason: "duel_win", duel_id: subDuel.duel_id }, true);
                     try {
-                        nk.notificationSend(loserId, "Duel Result", 3, { duel_id: subDuel.duel_id, result: "lost" }, winner);
-                        nk.notificationSend(winner, "Duel Result", 3, { duel_id: subDuel.duel_id, result: "won" }, loserId);
+                        // Signature: (userId, subject, content, code, senderId?, persistent?)
+                        // Code 7402 is outside friend lifecycle 1–6 / 100–105.
+                        nk.notificationSend(loserId, "Duel Result", {
+                            type: "duel_result",
+                            eventType: "duel_result",
+                            duel_id: subDuel.duel_id,
+                            result: "lost"
+                        }, 7402, winner, true);
+                        nk.notificationSend(winner, "Duel Result", {
+                            type: "duel_result",
+                            eventType: "duel_result",
+                            duel_id: subDuel.duel_id,
+                            result: "won"
+                        }, 7402, loserId, true);
                     } catch (nErr) {
                         logger.warn("Duel result notification failed: " + nErr.message);
                     }

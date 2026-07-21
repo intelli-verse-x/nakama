@@ -261,15 +261,18 @@ function rpcCrossGameChallenge(ctx, logger, nk, payload) {
         crossGameSafeWrite(nk, "cross_game_challenges", "challenge:" + challengeId, data.target_user_id, challenge);
 
         try {
+            // Code 7601 is outside friend lifecycle 1–6 / 100–105.
             nk.notificationsSend([{
                 userId: data.target_user_id,
                 subject: "Cross-Game Challenge!",
                 content: {
+                    type: "cross_game_challenge",
+                    eventType: "cross_game_challenge",
                     challenge_id: challengeId,
                     challenger_id: userId,
                     games: data.game_ids
                 },
-                code: 100,
+                code: 7601,
                 persistent: true,
                 senderId: userId
             }]);

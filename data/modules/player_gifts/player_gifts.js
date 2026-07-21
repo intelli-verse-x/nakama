@@ -155,14 +155,18 @@ function rpcGiftSend(ctx, logger, nk, payload) {
         }]);
 
         // Send notification to recipient
+        // Signature: (userId, subject, content, code, senderId?, persistent?)
+        // Code 7301 is outside friend lifecycle 1–6 / 100–105.
         try {
-            nk.notificationSend(recipientId, 'You received a gift!', 100, {
+            nk.notificationSend(recipientId, 'You received a gift!', {
+                type: 'gift_received',
+                eventType: 'gift_received',
                 gift_id: giftId,
                 sender_username: ctx.username,
                 item_type: itemType,
                 quantity: quantity,
                 message: message
-            }, senderId);
+            }, 7301, senderId, true);
         } catch (notifErr) {
             logger.warn('[Gifting] Notification failed: ' + notifErr.message);
         }
@@ -370,13 +374,17 @@ function rpcGiftClaim(ctx, logger, nk, payload) {
         }
 
         // Notify sender that gift was claimed
+        // Signature: (userId, subject, content, code, senderId?, persistent?)
+        // Code 7302 is outside friend lifecycle 1–6 / 100–105.
         try {
-            nk.notificationSend(foundGift.sender_id, 'Your gift was claimed!', 101, {
+            nk.notificationSend(foundGift.sender_id, 'Your gift was claimed!', {
+                type: 'gift_claimed',
+                eventType: 'gift_claimed',
                 gift_id: giftId,
                 claimed_by: ctx.username || userId,
                 item_type: foundGift.item_type,
                 quantity: foundGift.quantity
-            }, userId);
+            }, 7302, userId, true);
         } catch (notifErr) {
             logger.warn('[Gifting] Claim notification failed: ' + notifErr.message);
         }

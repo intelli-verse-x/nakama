@@ -252,7 +252,12 @@ namespace CompatibilityQuiz {
     if (!userId) return;
     try {
       // Inbox fallback (ES5-safe — never use object spread).
-      var content: any = { message: vars && vars.message ? vars.message : eventType, type: eventType };
+      // Code 7701 is outside friend lifecycle 1–6 / 100–105.
+      var content: any = {
+        message: vars && vars.message ? vars.message : eventType,
+        type: eventType,
+        eventType: eventType
+      };
       if (data) {
         for (var k in data) {
           if (Object.prototype.hasOwnProperty.call(data, k)) content[k] = data[k];
@@ -262,16 +267,17 @@ namespace CompatibilityQuiz {
         userId: userId,
         subject: vars && vars.subject ? vars.subject : eventType,
         content: content,
-        code: 100,
+        code: 7701,
         persistent: true
       }]);
     } catch (_) {}
 
     try {
       if (typeof LegacyPush !== "undefined" && LegacyPush.sendLocalizedPushToUser && ctx) {
+        // skipInAppNotification: inbox copy already written above — avoid duplicate.
         LegacyPush.sendLocalizedPushToUser(
           ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {},
-          { skipQuietHours: true, data: data || {} }
+          { skipQuietHours: true, skipInAppNotification: true, data: data || {} }
         );
       }
     } catch (e: any) {

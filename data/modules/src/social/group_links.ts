@@ -224,7 +224,9 @@ namespace SocialGroupLinks {
             userId:  row.createdBy,
             subject: "group_member_joined",
             content: {
-              type: "group_member_joined", code: 22,
+              type: "group_member_joined",
+              eventType: "group_member_joined",
+              code: 22,
               groupId: row.groupId, groupName: group.name || "",
               joinedUserId: userId, joinedName: joinerName,
               viaInviteCode: code
