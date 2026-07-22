@@ -366,7 +366,13 @@ namespace QuestEngine {
   }
 
   function resolveGameId(data: any): string {
-    return RpcHelpers.gameId(data) || Constants.DEFAULT_GAME_ID;
+    var id = RpcHelpers.gameId(data) || Constants.QUIZVERSE_GAME_ID;
+    // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID so
+    // Unity quest_engine_get and LiveOps share the same storage keys.
+    if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+      return Constants.QUIZVERSE_GAME_ID;
+    }
+    return id;
   }
 
   // ─── RPC: quest_engine_get ─────────────────────────────────────────────────

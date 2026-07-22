@@ -43,9 +43,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const GLOBAL_CONFIG_SCOPE = "global";
-// Quest Engine stores config under a concrete gameId; events with no gameId
-// resolve to "default" (see quest_engine.ts resolveGameId).
-const QUEST_ENGINE_DEFAULT_GAME = "default";
+// Quest Engine stores config under a concrete gameId. Global scope maps to the
+// QuizVerse UUID so Admin saves land on the same tenant Unity reads
+// (see quest_engine.ts resolveGameId — also aliases legacy "default").
+const QUEST_ENGINE_DEFAULT_GAME = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
 
 function rpcGameId(scope: string) {
   const trimmed = scope.trim();
@@ -1807,6 +1808,7 @@ function QuestEnginePanel() {
           Served to games via <code className="rounded bg-muted px-1 py-0.5 text-xs">quest_engine_get</code>.
           Steps progress automatically from analytics events; rewards auto-grant on completion.
           {" "}Scope: <code className="rounded bg-muted px-1 py-0.5 text-xs">{engineGameId}</code>
+          {" "}- Global Game Quests resolve to the QuizVerse UUID (not Hiro Challenges).
         </p>
         <div className="flex items-center gap-2">
           <button

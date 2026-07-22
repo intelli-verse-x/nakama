@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-22T05:31:43.740Z
+// Generated: 2026-07-22T11:25:01.054Z
 // RPC Count: 1319
 // ============================================================
 
@@ -110128,6 +110128,29 @@ var CompatibilityQuiz;
     var LOOKFORWARD_WEEKS = 26;
     var MIN_JSON_BYTES = 100;
     var DAY_PROBE_ORDER = [1, 4, 5, 7, 3, 2, 6];
+    // ---------------------------------------------------------------------------
+    // Notification code registry (Compatibility Quiz)
+    //
+    // Nakama: codes ≤ 0 are system-reserved; game codes must be > 0.
+    // Project ranges (do NOT reuse — collisions break client filtering):
+    //   1–499       Friends / social (friends/notification_codes.js)
+    //   500–599     Group membership sync
+    //   1001/1101   Satori live events / Hermes (avoid)
+    //   7000–7999   Feature inbox / push-adjacent
+    //     7001        Default push (legacy/push.ts)
+    //     7201/7202   League promote / demote
+    //     7301/7302   Turn / countdown style
+    //     7401/7402   Match / duel results
+    //     7501        Feature inbox (existing)
+    //     7601        Feature inbox (existing)
+    //     7701        CompatibilityQuiz (this module)
+    //   9101/9102   Quest reward / new quest
+    //
+    // Unity routes CompatibilityQuiz via content.type / eventType; this code must
+    // stay outside friend lifecycle 1–6 / 100–105 so MapFriendNotificationCode
+    // never rewrites the event type.
+    // ---------------------------------------------------------------------------
+    var NOTIF_CODE_COMPATIBILITY_QUIZ = 7701;
     function ok(message, data) {
         return JSON.stringify({ success: true, message: message, data: data });
     }
@@ -110355,7 +110378,6 @@ var CompatibilityQuiz;
             return;
         try {
             // Inbox fallback (ES5-safe — never use object spread).
-            // Code 7701 is outside friend lifecycle 1–6 / 100–105.
             var content = {
                 message: vars && vars.message ? vars.message : eventType,
                 type: eventType,
@@ -110371,7 +110393,7 @@ var CompatibilityQuiz;
                     userId: userId,
                     subject: vars && vars.subject ? vars.subject : eventType,
                     content: content,
-                    code: 7701,
+                    code: NOTIF_CODE_COMPATIBILITY_QUIZ,
                     persistent: true
                 }]);
         }
@@ -144778,6 +144800,7 @@ var LegacyQuiz;
             correctAnswers: correctAnswers,
             category: category,
             timestamp: ts,
+            gameId: data.gameId || data.game_id || Constants.QUIZVERSE_GAME_ID,
         });
         return RpcHelpers.successResponse({ result: result, stats: stats });
     }
@@ -158309,6 +158332,16 @@ var QuestEventBusBridge;
         return m;
     }
     // ── Handler for EventBus events ───────────────────────────────────────────
+    // Mirrors QuestEngine.resolveGameId — keep in sync (local to avoid namespace eval order).
+    function resolveQuestGameId(data) {
+        var id = (data && (data.gameId || data.game_id || data.appId || data.app_id))
+            ? String(data.gameId || data.game_id || data.appId || data.app_id)
+            : Constants.QUIZVERSE_GAME_ID;
+        if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+            return Constants.QUIZVERSE_GAME_ID;
+        }
+        return id;
+    }
     function handleEvent(nk, logger, ctx, eventName, data) {
         // Skip if no user context (system events without user)
         if (!ctx.userId) {
@@ -158318,8 +158351,9 @@ var QuestEventBusBridge;
         if (!questEventType) {
             return;
         }
-        // Extract common fields from event data
-        var gameId = data.gameId || data.appId || Constants.DEFAULT_GAME_ID;
+        // Extract common fields from event data — same tenant alias as quest_engine.resolveGameId
+        // (local copy avoids cross-namespace eval-order issues in the merged Goja bundle).
+        var gameId = resolveQuestGameId(data);
         var value = extractValue(eventName, data);
         var metadata = extractMetadata(eventName, data);
         logger.debug("[QuestEventBusBridge] Processing event=%s → questEventType=%s user=%s game=%s value=%d", eventName, questEventType, ctx.userId, gameId, value);
@@ -158724,7 +158758,13 @@ var QuestEngine;
         return true;
     }
     function resolveGameId(data) {
-        return RpcHelpers.gameId(data) || Constants.DEFAULT_GAME_ID;
+        var id = RpcHelpers.gameId(data) || Constants.QUIZVERSE_GAME_ID;
+        // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID so
+        // Unity quest_engine_get and LiveOps share the same storage keys.
+        if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+            return Constants.QUIZVERSE_GAME_ID;
+        }
+        return id;
     }
     // ─── RPC: quest_engine_get ─────────────────────────────────────────────────
     // Returns all non-expired quests with per-step progress for the calling user.
@@ -173809,6 +173849,8 @@ var Constants;
 (function (Constants) {
     Constants.SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
     Constants.DEFAULT_GAME_ID = "default";
+    /** QuizVerse product UUID — Quest Engine / LiveOps tenant (do not use for Hiro DEFAULT_GAME_ID). */
+    Constants.QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     function gameKey(gameId, key) {
         var gid = gameId || Constants.DEFAULT_GAME_ID;
         if (gid === Constants.DEFAULT_GAME_ID)
@@ -175415,29 +175457,44 @@ var WalletHelpers;
         Storage.writeJson(nk, Constants.WALLETS_COLLECTION, key, wallet.userId, wallet, 1, 1);
     }
     WalletHelpers.saveGameWallet = saveGameWallet;
-    function addCurrency(nk, logger, ctx, userId, gameId, currencyId, amount) {
-        var wallet = getGameWallet(nk, userId, gameId);
-        if (!wallet.currencies[currencyId]) {
-            wallet.currencies[currencyId] = 0;
+    /** Map legacy "coins" to canonical "game"; keep game ↔ tokens mirrored. */
+    function resolveCurrencyId(currencyId) {
+        return currencyId === "coins" ? "game" : currencyId;
+    }
+    function syncGameTokensMirror(wallet, resolvedId) {
+        if (resolvedId === "game" || resolvedId === "tokens") {
+            var mirrored = wallet.currencies[resolvedId] || 0;
+            wallet.currencies.game = mirrored;
+            wallet.currencies.tokens = mirrored;
         }
-        wallet.currencies[currencyId] += amount;
+    }
+    function addCurrency(nk, logger, ctx, userId, gameId, currencyId, amount) {
+        var resolvedId = resolveCurrencyId(currencyId);
+        var wallet = getGameWallet(nk, userId, gameId);
+        if (!wallet.currencies[resolvedId]) {
+            wallet.currencies[resolvedId] = 0;
+        }
+        wallet.currencies[resolvedId] += amount;
+        syncGameTokensMirror(wallet, resolvedId);
         saveGameWallet(nk, wallet);
         EventBus.emit(nk, logger, ctx, EventBus.Events.CURRENCY_EARNED, {
-            userId: userId, gameId: gameId, currencyId: currencyId, amount: amount, newBalance: wallet.currencies[currencyId]
+            userId: userId, gameId: gameId, currencyId: resolvedId, amount: amount, newBalance: wallet.currencies[resolvedId]
         });
         return wallet;
     }
     WalletHelpers.addCurrency = addCurrency;
     function spendCurrency(nk, logger, ctx, userId, gameId, currencyId, amount) {
+        var resolvedId = resolveCurrencyId(currencyId);
         var wallet = getGameWallet(nk, userId, gameId);
-        var balance = wallet.currencies[currencyId] || 0;
+        var balance = wallet.currencies[resolvedId] || 0;
         if (balance < amount) {
-            throw new Error("Insufficient " + currencyId + ": have " + balance + ", need " + amount);
+            throw new Error("Insufficient " + resolvedId + ": have " + balance + ", need " + amount);
         }
-        wallet.currencies[currencyId] = balance - amount;
+        wallet.currencies[resolvedId] = balance - amount;
+        syncGameTokensMirror(wallet, resolvedId);
         saveGameWallet(nk, wallet);
         EventBus.emit(nk, logger, ctx, EventBus.Events.CURRENCY_SPENT, {
-            userId: userId, gameId: gameId, currencyId: currencyId, amount: amount, newBalance: wallet.currencies[currencyId]
+            userId: userId, gameId: gameId, currencyId: resolvedId, amount: amount, newBalance: wallet.currencies[resolvedId]
         });
         return wallet;
     }

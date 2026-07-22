@@ -1,6 +1,8 @@
 namespace Constants {
   export const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
   export const DEFAULT_GAME_ID = "default";
+  /** QuizVerse product UUID — Quest Engine / LiveOps tenant (do not use for Hiro DEFAULT_GAME_ID). */
+  export const QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
 
   export function gameKey(gameId: string | undefined, key: string): string {
     var gid = gameId || DEFAULT_GAME_ID;

@@ -4446,6 +4446,8 @@ declare namespace ConfigLoader {
 declare namespace Constants {
     const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
     const DEFAULT_GAME_ID = "default";
+    /** QuizVerse product UUID — Quest Engine / LiveOps tenant (do not use for Hiro DEFAULT_GAME_ID). */
+    const QUIZVERSE_GAME_ID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     function gameKey(gameId: string | undefined, key: string): string;
     const HIRO_CONFIGS_COLLECTION = "hiro_configs";
     const HIRO_ACHIEVEMENTS_COLLECTION = "hiro_achievements";
