@@ -130,6 +130,25 @@ namespace QuestEngine {
     if (rows && rows.length > 0 && rows[0].value) {
       return rows[0].value as QuestsConfig;
     }
+    // Migrate orphaned "default" tenant → QuizVerse UUID (copy-forward write).
+    if (gameId === Constants.QUIZVERSE_GAME_ID) {
+      try {
+        rows = nk.storageRead([{
+          collection: QUEST_CONFIG_COLLECTION,
+          key: "default",
+          userId: Constants.SYSTEM_USER_ID
+        }]);
+      } catch (_) {
+        rows = [];
+      }
+      if (rows && rows.length > 0 && rows[0].value) {
+        var migrated = rows[0].value as QuestsConfig;
+        try {
+          saveConfig(nk, Constants.QUIZVERSE_GAME_ID, migrated);
+        } catch (_) { /* best-effort migrate */ }
+        return migrated;
+      }
+    }
     return DEFAULT_QUESTS_CONFIG;
   }
 
@@ -153,6 +172,21 @@ namespace QuestEngine {
       }]);
       if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
         return rows[0].value.userIds as string[];
+      }
+      // Migrate orphaned "default" subscribers → QuizVerse UUID (copy-forward write).
+      if (gameId === Constants.QUIZVERSE_GAME_ID) {
+        rows = nk.storageRead([{
+          collection: QUEST_SUBSCRIBERS_COLLECTION,
+          key: "default",
+          userId: Constants.SYSTEM_USER_ID
+        }]);
+        if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
+          var migratedIds = rows[0].value.userIds as string[];
+          try {
+            saveSubscribers(nk, Constants.QUIZVERSE_GAME_ID, migratedIds);
+          } catch (_) { /* best-effort migrate */ }
+          return migratedIds;
+        }
       }
     } catch (_) {}
     return [];

@@ -265,7 +265,7 @@ function QuestForm({ initial, audiences, onSubmit, onCancel, isPending, existing
   const [rewardJson, setRewardJson] = useState(
     initial?.reward
       ? JSON.stringify(initial.reward, null, 2)
-      : '{\n  "currencies": { "coins": 100 },\n  "xp": 25\n}',
+      : '{\n  "currencies": { "game": 100 },\n  "xp": 25\n}',
   );
   const [startTime, setStartTime] = useState(toDatetimeLocal(initial?.start_time_sec));
   const [endTime, setEndTime] = useState(toDatetimeLocal(initial?.end_time_sec));
@@ -1222,7 +1222,7 @@ function EngineQuestForm({ initial, onSubmit, onCancel, isPending, existingIds, 
   const [currenciesJson, setCurrenciesJson] = useState(
     initial?.reward?.guaranteed?.currencies
       ? JSON.stringify(initial.reward.guaranteed.currencies, null, 2)
-      : '{\n  "coins": 50\n}',
+      : '{\n  "game": 50\n}',
   );
   const [currenciesError, setCurrenciesError] = useState("");
 
