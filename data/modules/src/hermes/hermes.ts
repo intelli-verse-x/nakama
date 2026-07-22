@@ -233,7 +233,14 @@ namespace Hermes {
       nk.notificationsSend([{
         userId: userId,
         subject: brief.headline,
-        content: { focus: brief.focus, deeplink: brief.cta.deeplink, kind: "hermes_brief", date: brief.date },
+        content: {
+          type: "hermes_brief",
+          eventType: "hermes_brief",
+          focus: brief.focus,
+          deeplink: brief.cta.deeplink,
+          kind: "hermes_brief",
+          date: brief.date
+        },
         code: 1101,
         persistent: true,
       }]);

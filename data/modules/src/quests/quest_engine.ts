@@ -227,6 +227,7 @@ namespace QuestEngine {
           subject: subject,
           content: {
             type: "quest_new",
+            eventType: "quest_new",
             gameId: gameId,
             body: body,
             questIds: questIds,

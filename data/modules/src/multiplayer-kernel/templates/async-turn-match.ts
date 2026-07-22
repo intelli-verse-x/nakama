@@ -367,8 +367,14 @@ namespace MpKernelAsyncTurn {
         try {
           nk.notificationSend(ks.current_actor,
             "Your move",
-            { game_id: ks.game_id, last_move_by: sender, async_match_id: matchId },
-            1001,           // app-defined notification code
+            {
+              type: "async_turn",
+              eventType: "async_turn",
+              game_id: ks.game_id,
+              last_move_by: sender,
+              async_match_id: matchId
+            },
+            1001,           // app-defined notification code (outside friend 1–6 / 100–105)
             "",
             true);
         } catch (_e) { /* swallow */ }

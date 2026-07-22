@@ -87,31 +87,111 @@ function dedupeInboxNotifications(list) {
     return out;
 }
 
-function mapBuiltinNotification(n) {
-    var code = n.code || 0;
-    var eventType = NOTIFICATION_CODE_MAP[code] || 'system';
-    var content = n.content || {};
+/**
+ * True when `code` is a friend-lifecycle Nakama code (1-6 / 100-105).
+ * Code 0 / 7001 / 9001 must NOT force event_type via NOTIFICATION_CODE_MAP.
+ */
+function isFriendNotificationCode(code) {
+    return (code >= 1 && code <= 6) || (code >= 100 && code <= 105);
+}
 
-    // Extract data fields from content (Nakama stores content as an object)
+/**
+ * Subject looks like a machine id (snake_case event type), not a display name.
+ */
+function isMachineIdSubject(subject) {
+    if (!subject || typeof subject !== 'string') return false;
+    var s = subject.trim();
+    if (!s) return false;
+    // Underscore snake ids: direct_message, daily_quiz, streak_warning, …
+    if (s.indexOf('_') >= 0) return true;
+    // Known single-token machine ids (no underscore)
+    var known = {
+        motivation: true,
+        challenge: true,
+        promotion: true,
+        system: true,
+        general: true
+    };
+    return !!known[s.toLowerCase()];
+}
+
+/**
+ * Flatten content into a string map for Unity deep-link extras.
+ * Merges nested content.data object keys; never iterates a string as an object.
+ */
+function flattenNotificationContentData(content) {
     var data = {};
+    if (!content || typeof content !== 'object') return data;
+
     for (var key in content) {
-        if (content.hasOwnProperty(key)) {
-            data[key] = String(content[key]);
+        if (!content.hasOwnProperty(key)) continue;
+        if (key === 'data') continue; // merged below
+        var val = content[key];
+        if (val === null || val === undefined) continue;
+        if (typeof val === 'object') continue; // skip nested objects (avoid "[object Object]")
+        data[key] = String(val);
+    }
+
+    var nested = content.data;
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+        for (var nk in nested) {
+            if (!nested.hasOwnProperty(nk)) continue;
+            var nv = nested[nk];
+            if (nv === null || nv === undefined) continue;
+            if (typeof nv === 'object') continue;
+            data[nk] = String(nv);
         }
     }
+
+    return data;
+}
+
+/**
+ * Resolve machine-id event_type for a Nakama built-in notification.
+ * Order: content.type → eventType → event_type → friend code map → machine subject → system
+ */
+function resolveBuiltinEventType(content, code, subject) {
+    if (content) {
+        if (content.type) return String(content.type);
+        if (content.eventType) return String(content.eventType);
+        if (content.event_type) return String(content.event_type);
+    }
+    if (isFriendNotificationCode(code) && NOTIFICATION_CODE_MAP[code]) {
+        return NOTIFICATION_CODE_MAP[code];
+    }
+    if (isMachineIdSubject(subject)) {
+        return String(subject).trim();
+    }
+    return 'system';
+}
+
+function mapBuiltinNotification(n, logger) {
+    var code = n.code || 0;
+    var subject = n.subject || '';
+    var content = n.content || {};
+
+    // content may arrive as a JSON string (some send paths / storage round-trips)
+    if (typeof content === 'string') {
+        try {
+            content = JSON.parse(content);
+        } catch (parseErr) {
+            content = {};
+        }
+    }
+    if (!content || typeof content !== 'object') {
+        content = {};
+    }
+
+    var eventType = resolveBuiltinEventType(content, code, subject);
+    var data = flattenNotificationContentData(content);
 
     // Unity NotificationUI resolves inviteId — alias snake_case keys
     if (data.inviteId && !data.invite_id) data.invite_id = data.inviteId;
     if (data.fromUserId && !data.from_user_id) data.from_user_id = data.fromUserId;
 
-    // Prefer human-readable title from content; subject is a machine id
-    var title = content.title || n.subject || 'Notification';
+    // Prefer human-readable title from content; never force raw machine id when title exists
+    var title = content.title || subject || 'Notification';
     var body = content.body || content.message || '';
-
-    // content.type is the canonical machine id (friend_request, etc.)
-    if (content.type) {
-        eventType = content.type;
-    }
 
     // Parse createTime — Nakama returns RFC3339 string (e.g. "2024-01-15T10:30:00Z")
     var sentAtMs = Date.now();
@@ -122,6 +202,11 @@ function mapBuiltinNotification(n) {
         } catch (e) {
             sentAtMs = Date.now();
         }
+    }
+
+    if (logger && typeof logger.debug === 'function') {
+        logger.debug('[NotifInbox] mapBuiltin id=%s code=%s subject=%s → event_type=%s',
+            n.id || '', code, subject, eventType);
     }
 
     return {
@@ -241,7 +326,7 @@ function rpcListNotificationInbox(ctx, logger, nk, payload) {
         var builtinResult = nk.notificationsList(userId, limit, null);
         if (builtinResult && builtinResult.notifications) {
             for (var i = 0; i < builtinResult.notifications.length; i++) {
-                var mapped = mapBuiltinNotification(builtinResult.notifications[i]);
+                var mapped = mapBuiltinNotification(builtinResult.notifications[i], logger);
                 allNotifications.push(mapped);
             }
             logger.debug('[NotifInbox] Loaded ' + builtinResult.notifications.length + ' built-in notifications');

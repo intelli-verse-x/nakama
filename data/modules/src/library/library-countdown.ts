@@ -200,7 +200,14 @@ namespace LibraryCountdownPlugin {
             nk.notificationSend(
               r.userId,
               "Exam countdown — " + v.exam_id,
-              { milestone: ms.id, exam_id: v.exam_id, exam_date: v.exam_date, days_to: daysTo },
+              {
+                type: "exam_countdown",
+                eventType: "exam_countdown",
+                milestone: ms.id,
+                exam_id: v.exam_id,
+                exam_date: v.exam_date,
+                days_to: daysTo
+              },
               1001,
               "",
               false,

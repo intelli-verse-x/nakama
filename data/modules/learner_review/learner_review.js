@@ -249,7 +249,7 @@ function rpcLtReviewAdd(ctx, logger, nk, payload) {
         nk.notificationsSend([{
             userId: uid,
             subject: "\uD83E\uDDE0 Saved to review",
-            content: { type: "review_saved", id: item.id, q: item.q, exam: item.exam, due_ts: item.dueTs },
+            content: { type: "review_saved", eventType: "review_saved", id: item.id, q: item.q, exam: item.exam, due_ts: item.dueTs },
             code: RV_NOTIF_CODE,
             persistent: true
         }]);

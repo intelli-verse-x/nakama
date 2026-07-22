@@ -1,20 +1,23 @@
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
-// login streaks, the streak dashboard, calendar, shield/freeze state, and any
-// future daily-progression feature. It exposes exactly TWO production RPCs:
+// login streaks (advanced on app open / daily_progress_check), the streak
+// dashboard, calendar, shield/freeze state, and any future daily-progression
+// feature. It exposes exactly TWO production RPCs:
 //
-//   1. daily_progress_check — one request returns EVERYTHING the client needs:
-//      streak, claim eligibility, countdown/next reset, next reward, 7-day
-//      reward table, 30-day calendar + milestones, claim history, shield state,
-//      server UTC time, and a payload version.
+//   1. daily_progress_check — advances login streak once per UTC day, then
+//      returns EVERYTHING the client needs: streak, claim eligibility,
+//      countdown/next reset, next reward, 7-day reward table, 30-day calendar
+//      + milestones, claim history, shield state, server UTC time, payload version.
 //
 //   2. daily_progress_claim — validates, performs the ATOMIC/IDEMPOTENT claim
 //      (delegating to performDailyClaim in daily_rewards.js — the single claim
-//      core), and returns the SAME full state as check so the client never
-//      needs a follow-up refresh RPC.
+//      core; does NOT bump login streak), and returns the SAME full state as
+//      check so the client never needs a follow-up refresh RPC.
 //
 // SINGLE SOURCE OF TRUTH RULES:
+//   - Login streak:        currentStreak / lastOpenTimestamp via performAppOpenStreak
+//   - Claim cycle:         totalClaims / lastClaimTimestamp / claimHistory
 //   - Streak storage:      daily_streaks / user_daily_streak (daily_rewards.js)
 //   - Claim core:          performDailyClaim (daily_rewards.js) — OCC versioned
 //   - Eligibility:         canClaimToday (daily_rewards.js) — UTC day window
@@ -83,7 +86,7 @@ function dpReadShield(nk, logger, userId) {
  * a local-timezone eligibility bug and hand-rolled storage keys — both gone:
  * callers now resolve state via the canonical getStreakData/canClaimToday).
  */
-function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
+function buildDailyRewardCalendarView(gameId, claimCycleDay, canClaim) {
     var config = getCalendarConfig(gameId);
     var calendar = [];
     var milestones = [];
@@ -112,12 +115,13 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
         totalTokens += dayConfig.tokens || 0;
         totalXp += dayConfig.xp || 0;
 
+        // Claim calendar uses totalClaims cycle — not login currentStreak.
         var status = 'locked';
-        if (day <= currentStreak) {
+        if (day <= claimCycleDay) {
             status = 'claimed';
-        } else if (day === currentStreak + 1 && canClaim) {
+        } else if (day === claimCycleDay + 1 && canClaim) {
             status = 'available';
-        } else if (day === currentStreak + 1 && !canClaim) {
+        } else if (day === claimCycleDay + 1 && !canClaim) {
             status = 'claimed_today';
         }
 
@@ -142,7 +146,7 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
                 day: config[m].day,
                 name: config[m].name,
                 tier: config[m].tier,
-                reached: config[m].day <= currentStreak
+                reached: config[m].day <= claimCycleDay
             });
         }
     }
@@ -158,13 +162,14 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
  * deserializes this payload without change.
  */
 function buildDailyProgressState(nk, logger, userId, gameId) {
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+    // App open advances login streak once per UTC day (server-authoritative).
+    var streakData = performAppOpenStreak(nk, logger, userId, gameId);
 
     var claimCheck = canClaimToday(streakData);
-    var nextReward = getRewardForDay(gameId, streakData.currentStreak + 1);
+    var claimCycle = streakData.totalClaims || 0;
+    var nextReward = getRewardForDay(gameId, claimCycle + 1);
     var rewardTable = REWARD_CONFIGS[gameId] || REWARD_CONFIGS["default"];
-    var cal = buildDailyRewardCalendarView(gameId, streakData.currentStreak, claimCheck.canClaim);
+    var cal = buildDailyRewardCalendarView(gameId, claimCycle, claimCheck.canClaim);
     var shield = dpReadShield(nk, logger, userId);
     var reset = dpNextReset();
 
@@ -176,12 +181,13 @@ function buildDailyProgressState(nk, logger, userId, gameId) {
         userId: userId,
         gameId: gameId,
 
-        // ── streak (flat legacy aliases kept) ──
+        // ── login streak (app open) ──
         streak: streakData.currentStreak,
         currentStreak: streakData.currentStreak,
         bestStreak: streakData.bestStreak || 0,
-        totalClaims: streakData.totalClaims || 0,
+        totalClaims: claimCycle,
         lastClaimTimestamp: streakData.lastClaimTimestamp || 0,
+        lastOpenTimestamp: streakData.lastOpenTimestamp || 0,
 
         // ── claim eligibility ──
         canClaim: claimCheck.canClaim,
@@ -190,7 +196,7 @@ function buildDailyProgressState(nk, logger, userId, gameId) {
         nextResetUtc: reset.nextResetUtc,
         countdownSeconds: reset.countdownSeconds,
 
-        // ── rewards ──
+        // ── rewards (claim cycle) ──
         nextReward: nextReward,
         rewardTable: rewardTable,
 
@@ -260,7 +266,7 @@ function rpcDailyProgressClaim(ctx, logger, nk, payload) {
                 state.success = true;
                 state.error = null;
                 state.idempotentReplay = true;
-                state.reward = state.reward || getRewardForDay(gameId, state.currentStreak || 1);
+                state.reward = state.reward || getRewardForDay(gameId, state.totalClaims || 1);
                 state.walletGranted = state.walletGranted || {
                     game: (state.reward && (state.reward.game || state.reward.tokens)) || 0,
                     xp: (state.reward && state.reward.xp) || 0

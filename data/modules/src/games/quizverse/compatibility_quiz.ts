@@ -15,6 +15,30 @@ namespace CompatibilityQuiz {
   var MIN_JSON_BYTES = 100;
   var DAY_PROBE_ORDER = [1, 4, 5, 7, 3, 2, 6];
 
+  // ---------------------------------------------------------------------------
+  // Notification code registry (Compatibility Quiz)
+  //
+  // Nakama: codes ≤ 0 are system-reserved; game codes must be > 0.
+  // Project ranges (do NOT reuse — collisions break client filtering):
+  //   1–499       Friends / social (friends/notification_codes.js)
+  //   500–599     Group membership sync
+  //   1001/1101   Satori live events / Hermes (avoid)
+  //   7000–7999   Feature inbox / push-adjacent
+  //     7001        Default push (legacy/push.ts)
+  //     7201/7202   League promote / demote
+  //     7301/7302   Turn / countdown style
+  //     7401/7402   Match / duel results
+  //     7501        Feature inbox (existing)
+  //     7601        Feature inbox (existing)
+  //     7701        CompatibilityQuiz (this module)
+  //   9101/9102   Quest reward / new quest
+  //
+  // Unity routes CompatibilityQuiz via content.type / eventType; this code must
+  // stay outside friend lifecycle 1–6 / 100–105 so MapFriendNotificationCode
+  // never rewrites the event type.
+  // ---------------------------------------------------------------------------
+  var NOTIF_CODE_COMPATIBILITY_QUIZ = 7701;
+
   function ok(message: string, data: any): string {
     return JSON.stringify({ success: true, message: message, data: data });
   }
@@ -252,7 +276,11 @@ namespace CompatibilityQuiz {
     if (!userId) return;
     try {
       // Inbox fallback (ES5-safe — never use object spread).
-      var content: any = { message: vars && vars.message ? vars.message : eventType, type: eventType };
+      var content: any = {
+        message: vars && vars.message ? vars.message : eventType,
+        type: eventType,
+        eventType: eventType
+      };
       if (data) {
         for (var k in data) {
           if (Object.prototype.hasOwnProperty.call(data, k)) content[k] = data[k];
@@ -262,16 +290,17 @@ namespace CompatibilityQuiz {
         userId: userId,
         subject: vars && vars.subject ? vars.subject : eventType,
         content: content,
-        code: 100,
+        code: NOTIF_CODE_COMPATIBILITY_QUIZ,
         persistent: true
       }]);
     } catch (_) {}
 
     try {
       if (typeof LegacyPush !== "undefined" && LegacyPush.sendLocalizedPushToUser && ctx) {
+        // skipInAppNotification: inbox copy already written above — avoid duplicate.
         LegacyPush.sendLocalizedPushToUser(
           ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {},
-          { skipQuietHours: true, data: data || {} }
+          { skipQuietHours: true, skipInAppNotification: true, data: data || {} }
         );
       }
     } catch (e: any) {

@@ -356,7 +356,15 @@ namespace LegacyChat {
           // Ephemeral in-app socket notification (code 9001 = incoming_dm).
           // Delivered to recipient's connected socket without requiring channel join,
           // enabling real-time Social Zone badge/toast updates when chat screen is closed.
-          try { nk.notificationSend(targetUserId, senderName, { screen: "chat", fromUserId: senderId, preview: buildPreview(content) }, 9001, senderId, false); } catch (_) {}
+          try {
+            nk.notificationSend(targetUserId, senderName, {
+              type: "direct_message",
+              eventType: "direct_message",
+              screen: "chat",
+              fromUserId: senderId,
+              preview: buildPreview(content)
+            }, 9001, senderId, false);
+          } catch (_) {}
         }
       }
       // Room messages (roomName set) are intentionally not pushed to avoid broadcast spam.
@@ -450,7 +458,15 @@ namespace LegacyChat {
       pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
       // Ephemeral in-app socket notification — delivered to recipient's connected socket
       // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
-      try { nk.notificationSend(targetUserId, senderName, { screen: "chat", fromUserId: userId, preview: buildPreview(content) }, 9001, userId, false); } catch (_) {}
+      try {
+        nk.notificationSend(targetUserId, senderName, {
+          type: "direct_message",
+          eventType: "direct_message",
+          screen: "chat",
+          fromUserId: userId,
+          preview: buildPreview(content)
+        }, 9001, userId, false);
+      } catch (_) {}
       return RpcHelpers.successResponse({ messageId: ack.messageId });
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "Failed to send direct message");
