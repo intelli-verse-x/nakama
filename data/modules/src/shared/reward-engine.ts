@@ -100,10 +100,29 @@ namespace RewardEngine {
     nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context,
     userId: string, gameId: string, resolved: Hiro.ResolvedReward
   ): void {
-    // Grant currencies
-    for (var cid in resolved.currencies) {
-      if (resolved.currencies[cid] > 0) {
-        WalletHelpers.addCurrency(nk, logger, ctx, userId, gameId, cid, resolved.currencies[cid]);
+    // Normalize currencies before grant so coins/game/tokens do not stack under
+    // WalletHelpers game↔tokens mirror (single mutation per logical amount).
+    var grantCurrencies: { [id: string]: number } = {};
+    for (var rawId in resolved.currencies) {
+      if (resolved.currencies[rawId] > 0) {
+        grantCurrencies[rawId] = resolved.currencies[rawId];
+      }
+    }
+    if (grantCurrencies["coins"] !== undefined) {
+      // coins is an alias for game — prefer existing game amount if both set
+      if (grantCurrencies["game"] === undefined) {
+        grantCurrencies["game"] = grantCurrencies["coins"];
+      }
+      delete grantCurrencies["coins"];
+    }
+    if (grantCurrencies["game"] !== undefined && grantCurrencies["tokens"] !== undefined) {
+      // Both present: keep one amount on game (prefer game), drop tokens
+      delete grantCurrencies["tokens"];
+    }
+
+    for (var cid in grantCurrencies) {
+      if (grantCurrencies[cid] > 0) {
+        WalletHelpers.addCurrency(nk, logger, ctx, userId, gameId, cid, grantCurrencies[cid]);
       }
     }
 

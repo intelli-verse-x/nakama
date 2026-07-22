@@ -1,23 +1,20 @@
 // ============================================================
 // Quest EventBus Bridge — Auto-progress quests from existing events
 //
-// This module subscribes to EventBus events (QUIZ_COMPLETED, LEVEL_UP,
-// GAME_COMPLETED, etc.) that apps/games ALREADY emit, and automatically
+// This module subscribes to EventBus events (LEVEL_UP, GAME_COMPLETED,
+// CURRENCY_EARNED, etc.) that apps/games ALREADY emit, and automatically
 // progresses matching quests.
 //
-// KEY INSIGHT: Apps don't need to call any new RPC for quest progress.
-// They just send their normal analytics/gameplay events → EventBus emits
-// → this bridge listens → quests progress automatically.
-//
-// This replaces the old approach where Unity had to call RecordEvent()
-// explicitly for quest progress.
+// quiz_completed is owned by Unity ProgressionEventRouter via
+// quest_engine_record_event — do NOT map EventBus QUIZ_COMPLETED here
+// (LegacyQuiz quiz_submit_result would double-count).
 // ============================================================
 
 namespace QuestEventBusBridge {
 
   // ── EventBus event name → Quest eventType mapping ─────────────────────────
   // These map the well-known EventBus events to quest step eventTypes.
-  // Quest configs define steps with eventType like "quiz_completed", "level_up", etc.
+  // Quest configs define steps with eventType like "level_up", "currency_earned", etc.
   //
   // IMPORTANT: this map is built LAZILY (inside a function), not at namespace
   // eval time. Reading `EventBus.Events.*` at module scope creates an
@@ -36,8 +33,9 @@ namespace QuestEventBusBridge {
       return _eventTypeMap;
     }
     var m: { [eventBusEvent: string]: string } = {};
-    // Core gameplay events
-    m[EventBus.Events.QUIZ_COMPLETED] = "quiz_completed";
+    // Core gameplay events — QUIZ_COMPLETED intentionally omitted:
+    // Unity ProgressionEventRouter / quest_engine_record_event owns
+    // quiz_completed; LegacyQuiz EventBus must not re-process it.
     m[EventBus.Events.GAME_COMPLETED] = "game_completed";
     m[EventBus.Events.GAME_STARTED] = "game_started";
     // Progression events
@@ -183,6 +181,8 @@ namespace QuestEventBusBridge {
       case EventBus.Events.CURRENCY_EARNED:
       case EventBus.Events.CURRENCY_SPENT:
         if (data.currency) meta.currency = String(data.currency);
+        // WalletHelpers emits currencyId; quest filters use filterField="currency"
+        if (!meta.currency && data.currencyId) meta.currency = String(data.currencyId);
         if (data.source) meta.source = String(data.source);
         break;
       case EventBus.Events.STORE_PURCHASE:

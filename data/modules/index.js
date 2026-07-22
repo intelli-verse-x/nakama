@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-22T11:25:01.054Z
+// Generated: 2026-07-22T13:35:04.639Z
 // RPC Count: 1319
 // ============================================================
 
@@ -158261,22 +158261,19 @@ var WalletGuestSync;
 // ============================================================
 // Quest EventBus Bridge — Auto-progress quests from existing events
 //
-// This module subscribes to EventBus events (QUIZ_COMPLETED, LEVEL_UP,
-// GAME_COMPLETED, etc.) that apps/games ALREADY emit, and automatically
+// This module subscribes to EventBus events (LEVEL_UP, GAME_COMPLETED,
+// CURRENCY_EARNED, etc.) that apps/games ALREADY emit, and automatically
 // progresses matching quests.
 //
-// KEY INSIGHT: Apps don't need to call any new RPC for quest progress.
-// They just send their normal analytics/gameplay events → EventBus emits
-// → this bridge listens → quests progress automatically.
-//
-// This replaces the old approach where Unity had to call RecordEvent()
-// explicitly for quest progress.
+// quiz_completed is owned by Unity ProgressionEventRouter via
+// quest_engine_record_event — do NOT map EventBus QUIZ_COMPLETED here
+// (LegacyQuiz quiz_submit_result would double-count).
 // ============================================================
 var QuestEventBusBridge;
 (function (QuestEventBusBridge) {
     // ── EventBus event name → Quest eventType mapping ─────────────────────────
     // These map the well-known EventBus events to quest step eventTypes.
-    // Quest configs define steps with eventType like "quiz_completed", "level_up", etc.
+    // Quest configs define steps with eventType like "level_up", "currency_earned", etc.
     //
     // IMPORTANT: this map is built LAZILY (inside a function), not at namespace
     // eval time. Reading `EventBus.Events.*` at module scope creates an
@@ -158294,8 +158291,9 @@ var QuestEventBusBridge;
             return _eventTypeMap;
         }
         var m = {};
-        // Core gameplay events
-        m[EventBus.Events.QUIZ_COMPLETED] = "quiz_completed";
+        // Core gameplay events — QUIZ_COMPLETED intentionally omitted:
+        // Unity ProgressionEventRouter / quest_engine_record_event owns
+        // quiz_completed; LegacyQuiz EventBus must not re-process it.
         m[EventBus.Events.GAME_COMPLETED] = "game_completed";
         m[EventBus.Events.GAME_STARTED] = "game_started";
         // Progression events
@@ -158432,6 +158430,9 @@ var QuestEventBusBridge;
             case EventBus.Events.CURRENCY_SPENT:
                 if (data.currency)
                     meta.currency = String(data.currency);
+                // WalletHelpers emits currencyId; quest filters use filterField="currency"
+                if (!meta.currency && data.currencyId)
+                    meta.currency = String(data.currencyId);
                 if (data.source)
                     meta.source = String(data.source);
                 break;
@@ -158531,6 +158532,27 @@ var QuestEngine;
         if (rows && rows.length > 0 && rows[0].value) {
             return rows[0].value;
         }
+        // Migrate orphaned "default" tenant → QuizVerse UUID (copy-forward write).
+        if (gameId === Constants.QUIZVERSE_GAME_ID) {
+            try {
+                rows = nk.storageRead([{
+                        collection: QUEST_CONFIG_COLLECTION,
+                        key: "default",
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+            }
+            catch (_) {
+                rows = [];
+            }
+            if (rows && rows.length > 0 && rows[0].value) {
+                var migrated = rows[0].value;
+                try {
+                    saveConfig(nk, Constants.QUIZVERSE_GAME_ID, migrated);
+                }
+                catch (_) { /* best-effort migrate */ }
+                return migrated;
+            }
+        }
         return DEFAULT_QUESTS_CONFIG;
     }
     function saveConfig(nk, gameId, config) {
@@ -158552,6 +158574,22 @@ var QuestEngine;
                 }]);
             if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
                 return rows[0].value.userIds;
+            }
+            // Migrate orphaned "default" subscribers → QuizVerse UUID (copy-forward write).
+            if (gameId === Constants.QUIZVERSE_GAME_ID) {
+                rows = nk.storageRead([{
+                        collection: QUEST_SUBSCRIBERS_COLLECTION,
+                        key: "default",
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+                if (rows && rows.length > 0 && rows[0].value && Array.isArray(rows[0].value.userIds)) {
+                    var migratedIds = rows[0].value.userIds;
+                    try {
+                        saveSubscribers(nk, Constants.QUIZVERSE_GAME_ID, migratedIds);
+                    }
+                    catch (_) { /* best-effort migrate */ }
+                    return migratedIds;
+                }
             }
         }
         catch (_) { }
@@ -175065,10 +175103,28 @@ var RewardEngine;
         }
     }
     function grantReward(nk, logger, ctx, userId, gameId, resolved) {
-        // Grant currencies
-        for (var cid in resolved.currencies) {
-            if (resolved.currencies[cid] > 0) {
-                WalletHelpers.addCurrency(nk, logger, ctx, userId, gameId, cid, resolved.currencies[cid]);
+        // Normalize currencies before grant so coins/game/tokens do not stack under
+        // WalletHelpers game↔tokens mirror (single mutation per logical amount).
+        var grantCurrencies = {};
+        for (var rawId in resolved.currencies) {
+            if (resolved.currencies[rawId] > 0) {
+                grantCurrencies[rawId] = resolved.currencies[rawId];
+            }
+        }
+        if (grantCurrencies["coins"] !== undefined) {
+            // coins is an alias for game — prefer existing game amount if both set
+            if (grantCurrencies["game"] === undefined) {
+                grantCurrencies["game"] = grantCurrencies["coins"];
+            }
+            delete grantCurrencies["coins"];
+        }
+        if (grantCurrencies["game"] !== undefined && grantCurrencies["tokens"] !== undefined) {
+            // Both present: keep one amount on game (prefer game), drop tokens
+            delete grantCurrencies["tokens"];
+        }
+        for (var cid in grantCurrencies) {
+            if (grantCurrencies[cid] > 0) {
+                WalletHelpers.addCurrency(nk, logger, ctx, userId, gameId, cid, grantCurrencies[cid]);
             }
         }
         // Grant items via inventory system
@@ -175500,8 +175556,9 @@ var WalletHelpers;
     }
     WalletHelpers.spendCurrency = spendCurrency;
     function hasCurrency(nk, userId, gameId, currencyId, amount) {
+        var resolvedId = resolveCurrencyId(currencyId);
         var wallet = getGameWallet(nk, userId, gameId);
-        return (wallet.currencies[currencyId] || 0) >= amount;
+        return (wallet.currencies[resolvedId] || 0) >= amount;
     }
     WalletHelpers.hasCurrency = hasCurrency;
 })(WalletHelpers || (WalletHelpers = {}));

@@ -79,7 +79,8 @@
     }
 
     export function hasCurrency(nk: nkruntime.Nakama, userId: string, gameId: string, currencyId: string, amount: number): boolean {
+      var resolvedId = resolveCurrencyId(currencyId);
       var wallet = getGameWallet(nk, userId, gameId);
-      return (wallet.currencies[currencyId] || 0) >= amount;
+      return (wallet.currencies[resolvedId] || 0) >= amount;
     }
   }
