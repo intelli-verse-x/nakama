@@ -1,6 +1,6 @@
 // sq_sources.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Seed Questions — the 13 content-source connectors.
+// Seed Questions — content-source connectors.
 //
 //  #  id             site(s)                              kind        feeds
 //  1  archive_org    archive.org                          questions   ImageGuess/WhosThat/MediaQuiz/GeoExplore
@@ -88,7 +88,19 @@ namespace SeedQSources {
       { rank: 13, id: "tineye", site: "tineye.com", kind: "guardrail",
         modes: ["*media*"], env_keys: ["TINEYE_API_KEY"],
         implemented: "live",
-        notes: "image provenance check before media questions ship — TinEye API when keyed, public-domain domain whitelist otherwise" }
+        notes: "image provenance check before media questions ship — TinEye API when keyed, public-domain domain whitelist otherwise" },
+      { rank: 14, id: "video_catalog", site: "QuizVerse reviewed fallback CSV + IVX CDN", kind: "questions",
+        modes: ["VideoQuiz"], env_keys: [],
+        implemented: "live",
+        notes: "60 reviewed English video MCQs embedded at build time; each row resolves to an owned CDN MP4 and remains available without external APIs" },
+      { rank: 15, id: "health_catalog", site: "OpenStax Anatomy & Physiology 2e", kind: "questions",
+        modes: ["HealthQuiz"], env_keys: [],
+        implemented: "live",
+        notes: "50 deterministic anatomy/health-science MCQs derived from a cited open textbook fact table; no external API dependency" },
+      { rank: 16, id: "news_rss", site: "BBC News RSS", kind: "questions",
+        modes: ["NewsQuiz"], env_keys: [],
+        implemented: "live",
+        notes: "current publisher-feed headline/image pairs; bounded multi-feed fallback avoids API-key and quota dependency" }
     ];
   }
 
@@ -100,7 +112,8 @@ namespace SeedQSources {
       question_type: "Text", media_url: "", media_provenance: null,
       source: source, citation: "", lang: "en",
       created_ms: SeedQ.nowMs(),
-      quality: { score: 0, status: "pending", checks: [] }
+      quality: { score: 0, status: "pending", checks: [] },
+      behavior_tags: [SeedQ.slugify(topic)]
     };
   }
 
@@ -296,13 +309,91 @@ namespace SeedQSources {
   }
 
   // ── #3 gutenberg.org (Gutendex) ─────────────────────────────────────────────
+  function fetchReviewedLiteratureFallback(nk: nkruntime.Nakama, mode: string, topic: string, count: number): SeedQ.SeedQuestion[] {
+    var facts: string[][] = [
+      ["Pride and Prejudice","Jane Austen","👩‍❤️‍👨⚖️"],["Sense and Sensibility","Jane Austen","🧠❤️"],
+      ["Moby-Dick","Herman Melville","🐋🌊"],["Great Expectations","Charles Dickens","⭐📈"],
+      ["A Tale of Two Cities","Charles Dickens","🏙️🏙️"],["Jane Eyre","Charlotte Bronte","👩🔥🏰"],
+      ["Wuthering Heights","Emily Bronte","🌬️🏔️❤️"],["Frankenstein","Mary Shelley","⚡🧟"],
+      ["Dracula","Bram Stoker","🧛🩸"],["The Adventures of Sherlock Holmes","Arthur Conan Doyle","🔍🕵️"],
+      ["The Time Machine","H. G. Wells","⏰⚙️"],["The War of the Worlds","H. G. Wells","👽🌍"],
+      ["The Picture of Dorian Gray","Oscar Wilde","🖼️👨"],["Treasure Island","Robert Louis Stevenson","🏴‍☠️🗺️"],
+      ["The Strange Case of Dr Jekyll and Mr Hyde","Robert Louis Stevenson","🧪👥"],
+      ["Little Women","Louisa May Alcott","👭👭"],["The Adventures of Tom Sawyer","Mark Twain","👦🎨"],
+      ["Adventures of Huckleberry Finn","Mark Twain","🛶👦"],["The Wonderful Wizard of Oz","L. Frank Baum","👠🌪️"],
+      ["Anne of Green Gables","Lucy Maud Montgomery","👩‍🦰🏡"],["The Secret Garden","Frances Hodgson Burnett","🔑🌹"],
+      ["Alice's Adventures in Wonderland","Lewis Carroll","🐇🕳️"],["Peter Pan","J. M. Barrie","🧚🏴‍☠️"],
+      ["The Jungle Book","Rudyard Kipling","🐻🐍👦"],["Around the World in Eighty Days","Jules Verne","🌍⏱️"],
+      ["Twenty Thousand Leagues Under the Sea","Jules Verne","🚢🐙🌊"],
+      ["The Count of Monte Cristo","Alexandre Dumas","🏰💰⚔️"],["The Three Musketeers","Alexandre Dumas","3️⃣⚔️"],
+      ["The Scarlet Letter","Nathaniel Hawthorne","🔴🔤"],["The Call of the Wild","Jack London","🐕❄️"]
+    ];
+    var titles: string[] = [], authors: string[] = [], emojis: string[] = [];
+    for (var i = 0; i < facts.length; i++) {
+      titles.push(facts[i][0]); authors.push(facts[i][1]); emojis.push(facts[i][2]);
+    }
+    var citation = "Project Gutenberg public-domain catalog — https://www.gutenberg.org/";
+    var out: SeedQ.SeedQuestion[] = [];
+    for (var f = 0; f < facts.length && out.length < count; f++) {
+      var q = baseQuestion(nk, "gutenberg_fallback", mode, topic || "literature");
+      if (mode === "TrueFalseQuiz") {
+        var isTrue = f % 2 === 0;
+        var claimedAuthor = isTrue ? facts[f][1] : facts[(f + 7) % facts.length][1];
+        q.question = "'" + facts[f][0] + "' was written by " + claimedAuthor + ".";
+        q.options = ["True", "False"];
+        q.correct_index = isTrue ? 0 : 1;
+        q.explanation = "'" + facts[f][0] + "' was written by " + facts[f][1] + ".";
+      } else if (mode === "EmojiQuiz") {
+        q.question = "Which public-domain title matches this emoji clue: " + facts[f][2] + "?";
+        q.options = [facts[f][0], titles[(f + 7) % facts.length], titles[(f + 13) % facts.length], titles[(f + 19) % facts.length]];
+        q.correct_index = 0;
+        q.explanation = "The reviewed clue " + facts[f][2] + " maps to '" + facts[f][0] + "'.";
+      } else {
+        q.question = "Who wrote '" + facts[f][0] + "'?";
+        q.options = [facts[f][1], authors[(f + 7) % facts.length], authors[(f + 13) % facts.length], authors[(f + 19) % facts.length]];
+        q.correct_index = 0;
+        q.explanation = "'" + facts[f][0] + "' is a public-domain work by " + facts[f][1] + ".";
+      }
+      q.citation = citation;
+      q.difficulty = 2 + (f % 3);
+      q.quality.checks = ["reviewed_static_fallback", "project_gutenberg_catalog"];
+      out.push(finalize(nk, q));
+      if (out.length >= count) break;
+
+      var q2 = baseQuestion(nk, "gutenberg_fallback", mode, topic || "literature");
+      if (mode === "TrueFalseQuiz") {
+        q2.question = "'" + facts[f][0] + "' was not written by " + facts[f][1] + ".";
+        q2.options = ["True", "False"];
+        q2.correct_index = 1;
+        q2.explanation = "'" + facts[f][0] + "' was written by " + facts[f][1] + ".";
+      } else if (mode === "EmojiQuiz") {
+        q2.question = "Which reviewed emoji clue represents '" + facts[f][0] + "'?";
+        q2.options = [facts[f][2], emojis[(f + 7) % facts.length], emojis[(f + 13) % facts.length], emojis[(f + 19) % facts.length]];
+        q2.correct_index = 0;
+        q2.explanation = facts[f][2] + " is the reviewed clue for '" + facts[f][0] + "'.";
+      } else {
+        q2.question = "Which public-domain work was written by " + facts[f][1] + "?";
+        q2.options = [facts[f][0], titles[(f + 5) % facts.length], titles[(f + 11) % facts.length], titles[(f + 17) % facts.length]];
+        q2.correct_index = 0;
+        q2.explanation = facts[f][1] + " wrote '" + facts[f][0] + "'.";
+      }
+      q2.citation = citation;
+      q2.difficulty = 2 + ((f + 1) % 3);
+      q2.quality.checks = ["reviewed_static_fallback", "project_gutenberg_catalog"];
+      out.push(finalize(nk, q2));
+    }
+    return out;
+  }
+
   export function fetchGutenberg(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[] {
     var url = "https://gutendex.com/books?languages=en&topic=" + encodeURIComponent(topic);
     var body = SeedQ.cachedHttpGet(nk, logger, url, 24 * 3600 * 1000);
-    if (!body) return [];
+    if (!body) return fetchReviewedLiteratureFallback(nk, mode, topic, count);
 
     var results: any[] = [];
-    try { results = JSON.parse(body).results || []; } catch (e) { return []; }
+    try { results = JSON.parse(body).results || []; } catch (e) {
+      return fetchReviewedLiteratureFallback(nk, mode, topic, count);
+    }
 
     var authors: string[] = [];
     var titles: string[] = [];
@@ -348,6 +439,10 @@ namespace SeedQSources {
         if (q2.options.length === 4) out.push(finalize(nk, q2));
       }
     }
+    if (out.length < count) {
+      var fallback = fetchReviewedLiteratureFallback(nk, mode, topic, count - out.length);
+      for (var fi = 0; fi < fallback.length && out.length < count; fi++) out.push(fallback[fi]);
+    }
     return out;
   }
 
@@ -371,7 +466,7 @@ namespace SeedQSources {
     var out: SeedQ.SeedQuestion[] = [];
 
     // Deezer chart → "who performs this track?" with album-art media.
-    var body = SeedQ.cachedHttpGet(nk, logger, "https://api.deezer.com/chart/0/tracks?limit=50", 12 * 3600 * 1000);
+    var body = SeedQ.cachedHttpGet(nk, logger, "https://api.deezer.com/chart/0/tracks?limit=100", 12 * 3600 * 1000);
     if (body) {
       var tracks: any[] = [];
       try { tracks = JSON.parse(body).data || []; } catch (e) { tracks = []; }
@@ -379,7 +474,7 @@ namespace SeedQSources {
       for (var i = 0; i < tracks.length; i++) {
         if (tracks[i] && tracks[i].artist && tracks[i].artist.name) artists.push("" + tracks[i].artist.name);
       }
-      for (var t = 0; t < tracks.length && out.length < Math.ceil(count * 0.7); t++) {
+      for (var t = 0; t < tracks.length && out.length < count; t++) {
         var tr = tracks[t];
         if (!tr || !tr.title || !tr.artist || !tr.artist.name) continue;
         var artist = "" + tr.artist.name;
@@ -387,11 +482,19 @@ namespace SeedQSources {
         if (distract.length < 3) continue;
 
         var q = baseQuestion(nk, "music_tv", mode, topic || "music");
-        q.question = "Which artist performs '" + ("" + tr.title).substring(0, 80) + "'?";
+        q.question = mode === "AudioQuiz" ?
+          "Which artist performs this audio preview?" :
+          "Which artist performs '" + ("" + tr.title).substring(0, 80) + "'?";
         q.options = [artist].concat(distract);
         q.correct_index = 0;
         q.difficulty = 2;
-        if (tr.album && tr.album.cover_medium) {
+        if (mode === "AudioQuiz" && tr.preview) {
+          q.question_type = "Audio";
+          q.media_url = "" + tr.preview;
+          q.media_mime = "audio/mpeg";
+          q.media_alt = "30-second audio preview for a chart track";
+          q.media_provenance = { source_domain: "dzcdn.net", license: "api_tos", checked: true, method: "deezer_preview_api" };
+        } else if (tr.album && tr.album.cover_medium) {
           q.question_type = "Image";
           q.media_url = "" + tr.album.cover_medium;
           q.media_provenance = { source_domain: "dzcdn.net", license: "api_tos", checked: true, method: "domain_whitelist" };
@@ -400,6 +503,9 @@ namespace SeedQSources {
         out.push(finalize(nk, q));
       }
     }
+
+    // AudioQuiz must never fall through to text-only taxonomy questions.
+    if (mode === "AudioQuiz") return out;
 
     // Every Noise taxonomy → real-vs-invented genre questions.
     var genres = EVERYNOISE_GENRES.slice(0);
@@ -710,6 +816,204 @@ namespace SeedQSources {
     return out;
   }
 
+  // ── Build-embedded reviewed Video Quiz catalog ─────────────────────────────
+  // data/modules/scripts/seed-video-quiz-catalog.js validates the committed
+  // Unity fallback CSVs and postbuild embeds the result as a Goja global. This
+  // gives VideoQuiz a bounded, source-controlled fallback even when LLM/video
+  // APIs are unavailable.
+  export function fetchVideoCatalog(nk: nkruntime.Nakama, mode: string, topic: string, count: number): SeedQ.SeedQuestion[] {
+    var catalog: any = null;
+    try { catalog = (globalThis as any).__QV_VIDEO_QUIZ_CATALOG__; } catch (e) { catalog = null; }
+    var rows: any[] = catalog && catalog.langs && catalog.langs.en ? catalog.langs.en : [];
+    var out: SeedQ.SeedQuestion[] = [];
+    for (var i = 0; i < rows.length && out.length < count; i++) {
+      var row = rows[i];
+      if (!row || !row.question_text || !row.options || !row.media || !row.media.url) continue;
+      var q = baseQuestion(nk, "video_catalog", mode, topic || "video");
+      q.question = "" + row.question_text;
+      q.options = [];
+      var correctId = row.correct_option_ids && row.correct_option_ids.length ? "" + row.correct_option_ids[0] : "";
+      q.correct_index = -1;
+      for (var oi = 0; oi < row.options.length; oi++) {
+        q.options.push("" + row.options[oi].text);
+        if (("" + row.options[oi].id) === correctId) q.correct_index = oi;
+      }
+      if (q.options.length !== 4 || q.correct_index < 0) continue;
+      q.explanation = "" + (row.explanation || "");
+      q.question_type = "Video";
+      q.media_url = "" + row.media.url;
+      q.media_mime = "" + (row.media.mime_type || "video/mp4");
+      q.media_alt = "Video context for: " + q.question;
+      q.media_provenance = {
+        source_domain: "d1e6r993vuuu18.cloudfront.net",
+        license: "owned_asset",
+        checked: true,
+        method: "build_manifest"
+      };
+      q.citation = "QuizVerse reviewed fallback catalog " + (catalog.version || "versioned") +
+        "; source row " + (row.id || ("video_" + i));
+      q.difficulty = 3;
+      q.quality.checks = ["build_manifest_verified", "answer_key_reviewed", "media_manifest_resolved"];
+      q.id = SeedQ.questionId(nk, q.source, q.question, q.options);
+      out.push(q);
+    }
+    return out;
+  }
+
+  // ── Cited deterministic Health Quiz fallback ───────────────────────────────
+  // Each fact is a stable textbook statement from OpenStax Anatomy & Physiology
+  // 2e. Two complementary prompts per fact produce exactly 50 reviewed MCQs
+  // without inventing diagnoses, treatment advice, or time-sensitive guidance.
+  export function fetchHealthCatalog(nk: nkruntime.Nakama, mode: string, topic: string, count: number): SeedQ.SeedQuestion[] {
+    var facts: any[] = [
+      ["heart","pumps blood through the circulatory system"],
+      ["lungs","exchange oxygen and carbon dioxide"],
+      ["kidneys","filter blood and form urine"],
+      ["liver","produces bile for fat digestion"],
+      ["pancreas","produces insulin that helps regulate blood glucose"],
+      ["stomach","begins substantial protein digestion"],
+      ["small intestine","absorbs most digested nutrients"],
+      ["large intestine","absorbs water from remaining digestive material"],
+      ["skin","forms the body's outer protective barrier"],
+      ["brain","integrates and coordinates nervous-system activity"],
+      ["spinal cord","carries signals between the brain and much of the body"],
+      ["spleen","filters blood and supports immune function"],
+      ["gallbladder","stores and concentrates bile"],
+      ["urinary bladder","stores urine before elimination"],
+      ["thyroid gland","produces hormones that influence metabolic rate"],
+      ["pituitary gland","secretes hormones that regulate other endocrine glands"],
+      ["red bone marrow","produces blood cells"],
+      ["diaphragm","provides the main muscular force for quiet inhalation"],
+      ["esophagus","moves swallowed food toward the stomach"],
+      ["trachea","conducts air toward the bronchi"],
+      ["retina","converts light into neural signals"],
+      ["cochlea","converts sound vibrations into neural signals"],
+      ["cornea","provides much of the eye's light-bending power"],
+      ["lymph nodes","filter lymph and house immune cells"],
+      ["adrenal glands","produce hormones including epinephrine and cortisol"]
+    ];
+    var citation = "OpenStax, Anatomy and Physiology 2e — https://openstax.org/details/books/anatomy-and-physiology-2e";
+    var out: SeedQ.SeedQuestion[] = [];
+    for (var i = 0; i < facts.length && out.length < count; i++) {
+      var organOptions = [facts[i][0], facts[(i + 6) % facts.length][0], facts[(i + 12) % facts.length][0], facts[(i + 18) % facts.length][0]];
+      var q1 = baseQuestion(nk, "health_catalog", mode, topic || "health");
+      q1.question = "Which body structure primarily " + facts[i][1] + "?";
+      q1.options = organOptions;
+      q1.correct_index = 0;
+      q1.explanation = "The " + facts[i][0] + " " + facts[i][1] + ".";
+      q1.citation = citation;
+      q1.difficulty = 2 + (i % 3);
+      q1.quality.checks = ["open_textbook_fact_table", "deterministic_answer_key"];
+      out.push(finalize(nk, q1));
+      if (out.length >= count) break;
+
+      var functionOptions = [facts[i][1], facts[(i + 5) % facts.length][1], facts[(i + 10) % facts.length][1], facts[(i + 15) % facts.length][1]];
+      var q2 = baseQuestion(nk, "health_catalog", mode, topic || "health");
+      q2.question = "What is a primary function of the " + facts[i][0] + "?";
+      q2.options = functionOptions;
+      q2.correct_index = 0;
+      q2.explanation = "A primary function of the " + facts[i][0] + " is that it " + facts[i][1] + ".";
+      q2.citation = citation;
+      q2.difficulty = 2 + ((i + 1) % 3);
+      q2.quality.checks = ["open_textbook_fact_table", "deterministic_answer_key"];
+      out.push(finalize(nk, q2));
+    }
+    return out;
+  }
+
+  // ── Current-news publisher RSS fallback ────────────────────────────────────
+  // A NewsQuiz item asks which publisher headline matches the supplied article
+  // image. Both answer and image come from the same RSS item, while distractors
+  // come from other items in that same bounded fetch. No claim is inferred by
+  // an LLM and a provider outage returns zero rather than unrelated questions.
+  function decodeXml(value: string): string {
+    return ("" + (value || ""))
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+      .replace(/&amp;/g, "&").replace(/&quot;/g, "\"")
+      .replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/<[^>]+>/g, "").trim();
+  }
+
+  function fetchNewsFeed(nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string): any[] {
+    try {
+      var r = nk.httpRequest(url, "get", { "User-Agent": "IntelliVerseX-SeedQ/1.2" }, "", 10000);
+      if (r.code < 200 || r.code >= 300) {
+        logger.warn("[SeedQ] news RSS status=" + r.code + " host=feeds.bbci.co.uk");
+        return [];
+      }
+      var xml = "" + (r.body || "");
+      var items = xml.match(/<item\b[\s\S]*?<\/item>/gi) || [];
+      var out: any[] = [];
+      for (var i = 0; i < items.length; i++) {
+        var titleMatch = /<title>([\s\S]*?)<\/title>/i.exec(items[i]);
+        var linkMatch = /<link>([\s\S]*?)<\/link>/i.exec(items[i]);
+        var mediaMatch = /<media:thumbnail[^>]+url=["']([^"']+)["']/i.exec(items[i]) ||
+          /<media:content[^>]+url=["']([^"']+)["']/i.exec(items[i]) ||
+          /<enclosure[^>]+url=["']([^"']+)["'][^>]+type=["']image\//i.exec(items[i]);
+        var title = titleMatch ? decodeXml(titleMatch[1]) : "";
+        var link = linkMatch ? decodeXml(linkMatch[1]) : "";
+        var image = mediaMatch ? decodeXml(mediaMatch[1]) : "";
+        if (title.length >= 12 && /^https:\/\//i.test(link) && /^https:\/\//i.test(image)) {
+          out.push({ title: title, link: link, image: image });
+        }
+      }
+      return out;
+    } catch (e) {
+      logger.warn("[SeedQ] news RSS unavailable host=feeds.bbci.co.uk");
+      return [];
+    }
+  }
+
+  export function fetchNewsRss(nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[] {
+    var feeds = [
+      "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "https://feeds.bbci.co.uk/news/technology/rss.xml",
+      "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+      "https://feeds.bbci.co.uk/news/health/rss.xml",
+      "https://feeds.bbci.co.uk/news/business/rss.xml"
+    ];
+    var articles: any[] = [], seen: { [k: string]: boolean } = {};
+    for (var fi = 0; fi < feeds.length && articles.length < count + 3; fi++) {
+      var batch = fetchNewsFeed(nk, logger, feeds[fi]);
+      for (var bi = 0; bi < batch.length; bi++) {
+        var key = SeedQ.slugify(batch[bi].title);
+        if (!seen[key]) { seen[key] = true; articles.push(batch[bi]); }
+      }
+    }
+    var out: SeedQ.SeedQuestion[] = [];
+    for (var i = 0; i < articles.length && out.length < count; i++) {
+      if (articles.length < 4) break;
+      var q = baseQuestion(nk, "news_rss", mode, topic || "news");
+      q.question = "Which current headline matches this publisher-supplied news image?";
+      q.options = [
+        articles[i].title,
+        articles[(i + 7) % articles.length].title,
+        articles[(i + 13) % articles.length].title,
+        articles[(i + 19) % articles.length].title
+      ];
+      if (q.options[0] === q.options[1] || q.options[0] === q.options[2] ||
+          q.options[0] === q.options[3] || q.options[1] === q.options[2] ||
+          q.options[1] === q.options[3] || q.options[2] === q.options[3]) continue;
+      q.correct_index = 0;
+      q.explanation = "The image and answer headline were paired in the publisher's current RSS item.";
+      q.question_type = "Image";
+      q.media_url = articles[i].image;
+      q.media_mime = "image/jpeg";
+      q.media_alt = "Publisher image accompanying the correct news headline";
+      q.media_provenance = {
+        source_domain: "feeds.bbci.co.uk",
+        license: "publisher_feed",
+        checked: true,
+        method: "rss_item_pair"
+      };
+      q.citation = articles[i].link;
+      q.difficulty = 3;
+      q.quality.checks = ["publisher_rss_pair", "current_feed", "no_llm_inference"];
+      out.push(finalize(nk, q));
+    }
+    return out;
+  }
+
   // ── #5 / #8 / #9 asset-factory job descriptors ──────────────────────────────
   // Binary pipelines (PNG cutouts, mockup renders, video bg removal) run in
   // content-factory / n8n; Nakama emits ready-to-execute job descriptors so
@@ -779,8 +1083,11 @@ namespace SeedQSources {
     if (sourceId === "youtube_quiz") return fetchYoutubeQuiz(ctx, nk, logger, mode, topic, count, params);
     if (sourceId === "scholar") return fetchScholar(ctx, nk, logger, mode, topic, count);
     if (sourceId === "justwatch") return fetchJustWatch(ctx, nk, logger, mode, topic, count);
+    if (sourceId === "video_catalog") return fetchVideoCatalog(nk, mode, topic, count);
+    if (sourceId === "health_catalog") return fetchHealthCatalog(nk, mode, topic, count);
+    if (sourceId === "news_rss") return fetchNewsRss(nk, logger, mode, topic, count);
     return [];
   }
 
-  export var QUESTION_SOURCES = ["archive_org", "wolfram", "gutenberg", "music_tv", "youtube_quiz", "scholar", "justwatch"];
+  export var QUESTION_SOURCES = ["archive_org", "wolfram", "gutenberg", "music_tv", "youtube_quiz", "scholar", "justwatch", "video_catalog", "health_catalog", "news_rss"];
 }

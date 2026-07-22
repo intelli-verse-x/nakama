@@ -36,6 +36,7 @@ namespace SeedQQuality {
   var BANNED_FRAGMENTS = [
     "as an ai", "i cannot", "lorem ipsum", "undefined", "[object object]", "null null"
   ];
+  var EXPERIENCE_VERSION = "mobile_ux/1";
 
   export function mediaDomainSafe(url: string): boolean {
     if (!url) return true;
@@ -150,6 +151,75 @@ namespace SeedQQuality {
       status: (!fatal && score >= PASS_SCORE) ? "approved" : "rejected",
       checks: checks
     };
+  }
+
+  // Deterministic automated review is an agent review, but it is labelled
+  // precisely as auto_qa (never "human"). This is called at ingest and again
+  // at serve time so legacy pool rows cannot bypass the final gate.
+  export function experienceQa(q: SeedQ.SeedQuestion, mode: string): { approved: boolean; checks: string[] } {
+    var checks: string[] = [];
+    var ok = true;
+    var text = "" + (q.question || "");
+    var def = SeedQ.resolveMode(mode || q.mode);
+    if (text.length >= MIN_QUESTION_LEN && text.length <= (q.media_url ? 220 : 280)) checks.push("stem_mobile_readable");
+    else ok = false;
+    if (!/<[a-z][\s\S]*>/i.test(text) && !/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(text)) checks.push("unicode_html_safe");
+    else ok = false;
+    var opts = q.options || [];
+    var mobileSafe = true;
+    for (var i = 0; i < opts.length; i++) {
+      var option = "" + (opts[i] || "");
+      if (option.length === 0 || option.length > 100 || /<[a-z][\s\S]*>/i.test(option) ||
+          /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(option)) mobileSafe = false;
+    }
+    if (mobileSafe) checks.push("options_mobile_safe"); else ok = false;
+    if (q.citation || q.source === "manual" || q.source === "verifier") checks.push("citation_or_authored_source");
+    else ok = false;
+    var requiredMedia = def && (def.media === "image" || def.media === "audio" || def.media === "video") ?
+      def.media : "";
+    if (q.media_url) {
+      if (/^https:\/\//i.test(q.media_url) && q.media_provenance && q.media_provenance.checked) checks.push("media_https_provenance");
+      else ok = false;
+      if (!q.media_alt) q.media_alt = text.substring(0, 160);
+      if (q.media_alt) checks.push("media_alt_present"); else ok = false;
+      if (!q.media_mime) q.media_mime = q.question_type === "Audio" ? "audio/*" :
+        (q.question_type === "Video" ? "video/*" : "image/*");
+      if (/^(image|audio|video)\//.test(q.media_mime)) checks.push("media_metadata_supported"); else ok = false;
+      if (requiredMedia) {
+        var actualType = ("" + (q.question_type || "")).toLowerCase();
+        if (actualType === requiredMedia && q.media_mime.toLowerCase().indexOf(requiredMedia + "/") === 0) {
+          checks.push("mode_media_gate:" + requiredMedia);
+        } else {
+          ok = false;
+        }
+      }
+    } else if (requiredMedia) {
+      ok = false;
+    } else {
+      checks.push("media_not_required");
+    }
+    if (q.quality && q.quality.checks.indexOf("no_banned_fragments") >= 0) checks.push("content_safety");
+    else ok = false;
+    checks.push("experience_version:" + EXPERIENCE_VERSION);
+    return { approved: ok, checks: checks };
+  }
+
+  export function ensureReviewed(q: SeedQ.SeedQuestion, mode?: string): boolean {
+    if (!q) return false;
+    var qa = autoQa(q);
+    q.quality = qa;
+    if (qa.status !== "approved") return false;
+    var ux = experienceQa(q, mode || q.mode);
+    if (!ux.approved) return false;
+    q.review = {
+      reviewed: true,
+      reviewer: "auto_qa",
+      reviewed_at: SeedQ.isoTime(SeedQ.nowMs()),
+      checks: qa.checks.slice(0),
+      version: SeedQ.REVIEW_VERSION,
+      experience_checks: ux.checks
+    };
+    return true;
   }
 
   // ── User review aggregation ────────────────────────────────────────────────

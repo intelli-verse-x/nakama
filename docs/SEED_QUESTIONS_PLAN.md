@@ -1,8 +1,8 @@
 # Seed Questions ("Staged Questions") — Implementation Plan & Runbook
 
-**Status:** Backend live (v1.0.0) · Client integration pending
+**Status:** Backend contract v1.2.0 · Client persistence integration pending
 **Surface:** `seedquestions.intelli-verse-x.ai` → `quizverse_seedq_*` RPCs
-**Source:** `data/modules/src/seed-questions/` (4 files) · Deploy: `deploy/seedquestions/`
+**Source:** `data/modules/src/seed-questions/` (5 files) · Deploy: `deploy/seedquestions/`
 
 ---
 
@@ -10,7 +10,7 @@
 
 ```
 13 source connectors ──► sq_pool (per mode+topic, QA-gated) ──► sq_staged (per USER)
-     (sq_sources.ts)          (sq_engine.ingestIntoPool)          2–3 ready sets, always
+     (sq_sources.ts)          (sq_engine.ingestIntoPool)          target 3 ready sets
                                                                   unseen + adaptive
 User plays a set ──► consume_set ──► ids merged into qv_seen ──► auto-restage
 User reviews    ──► sq_review   ──► quarantine thresholds    ──► bad Qs never staged again
@@ -18,7 +18,7 @@ User reviews    ──► sq_review   ──► quarantine thresholds    ──�
 
 ### Checklist mapping
 
-- [x] **Nakama Seed Questions** — `quizverse_seedq_get_staged` returns 2–3 pre-built sets per (userID, mode, topic); auto-tops-up on every fetch and after every consume.
+- [x] **Nakama Seed Questions** — `quizverse_seedq_get_staged` targets 3 pre-built sets per (userID, mode, topic), never allows a request to lower the safety depth below 2, and tops up on every fetch and after every consume. This is capacity-dependent: fewer approved questions or an empty source pool is reported honestly in `availability`; no backend can promise content during a network/server outage.
 - [x] **Question Quality ensure** — two layers:
   - *Ingest gate* (`sq_quality.autoQa`): option-count/distinctness, answer-index bounds, answer-leak detection, banned-fragment scan, length bounds, media provenance. Score ≥ 70 required. Wolfram math is additionally cross-verified (`wolfram_verified` check) when `WOLFRAM_APP_ID` is set — mismatches are dropped, never shipped.
   - *User review loop* (`quizverse_seedq_review`): users rate visually/by nature (up/down/flag+reason). 2× `wrong_answer` flags → instant quarantine; 3+ net-negative → quarantine; 3× `broken_media` → quarantine. Quarantined ids are excluded from all future staging.
@@ -31,7 +31,7 @@ User reviews    ──► sq_review   ──► quarantine thresholds    ──�
 
 | RPC | Auth | Purpose |
 |---|---|---|
-| `quizverse_seedq_get_staged` | session | `{mode, topic, set_size?, want_sets?}` → 2–3 ready sets + adaptive profile + pool stats |
+| `quizverse_seedq_get_staged` | session | `{mode, topic, set_size?, want_sets?}` → target 3 ready sets + full cache payload, adaptive profile, pool stats |
 | `quizverse_seedq_consume_set` | session | mark played → merge into `qv_seen` → auto-restage |
 | `quizverse_seedq_review` | session | `{question_id, vote: up\|down\|flag, reason?}` → quality loop |
 | `quizverse_seedq_focus_tracks` | session | Focus/Study Mode ambient tracks (source #11) |
@@ -53,7 +53,7 @@ Admin/service = server-to-server `http_key` **or** `service_token == ctx.env["SE
 | 1 | archive.org | `archive_org` | **live, tested** | ImageGuess/WhosThat/MediaQuiz/GeoExplore — PD images + title/creator/year Qs |
 | 2 | wolframalpha.com | `wolfram` | **live, tested** | STEM Qs, locally computed; `WOLFRAM_APP_ID` unlocks auto-verification |
 | 3 | gutenberg.org | `gutenberg` | **live, tested** (Gutendex) | author/work attribution, birth-year Qs — 100% PD |
-| 4 | everynoise + tunefind | `music_tv` | **live, tested** | Deezer-chart artist/track Qs w/ album art + everynoise genre taxonomy Qs; tunefind gated on `TUNEFIND_API_KEY` (partnership) |
+| 4 | everynoise + tunefind | `music_tv` | **live, tested** | AudioQuiz uses Deezer 30-second audio previews; other modes may use album art + everynoise genre taxonomy; tunefind gated on `TUNEFIND_API_KEY` |
 | 5 | remove.bg | `asset_job kind=removebg` | **live (delegated)** | sticker/cosmetic/badge cutout job descriptors → content-factory/n8n executes (binary-safe); needs `REMOVE_BG_API_KEY` |
 | 6 | summarize.tech | `youtube_quiz` | **live** | YouTube oEmbed + caller summary/transcript → LLM question gen (Anthropic→OpenAI fallback); optional `SUMMARIZE_TECH_URL` self-hosted proxy (no public API exists) |
 | 7 | squoosh.app | `SeedQ.optimizeMediaUrl` | **live, tested** | every staged image auto-rewritten via wsrv.nl (resize 720px + webp) — same proxy the Unity `MediaProxyUtility` already trusts |
@@ -63,6 +63,9 @@ Admin/service = server-to-server `http_key` **or** `service_token == ctx.env["SE
 | 11 | mynoise / coffitivity / musicforprogramming | `focus_audio` | **live, tested** | CC ambient mixes from musicforprogramming RSS; mynoise/coffitivity kept as UX-pattern refs only (licensing) |
 | 12 | justwatch.com | `justwatch` | **live** (GraphQL) | trending-title Qs + `sq_trending` freshness doc for ViralIQ packs |
 | 13 | tineye.com | `provenance` / auto at ingest | **live, tested** | media provenance guardrail: TinEye API when `TINEYE_API_KEY` set, PD domain whitelist otherwise; unsafe media → QA rejection |
+| 14 | reviewed QuizVerse CSV + owned CDN | `video_catalog` | **live, tested** | build-embedded 60-row English catalog (12 locales in source), validated answer keys + MP4 manifests |
+| 15 | OpenStax A&P 2e | `health_catalog` | **live, tested** | 50 deterministic cited anatomy/health-science MCQs; no diagnosis/treatment generation |
+| 16 | BBC News RSS | `news_rss` | **live, tested** | bounded current publisher headline/image pairs; answer and image share one RSS item |
 
 ---
 
@@ -80,6 +83,55 @@ The client already has the right seams (repo `intelliverse-x-games-platform-2`, 
 7. **`DeliveredQuestion` mapping** — staged questions carry `question/options/correct_index/explanation/category/difficulty/question_type/media_url`, compatible with the existing `AIQuizItem` shape (`media_url` ↔ `folder_name` URL branch of `QuizMediaService`).
 
 Set-size guidance: `set_size=10` default; ImageGuess variants use 6 (matches current round length).
+
+### 4.1 Always-ready contract and Unity cache ToDo
+
+The RPC response is a complete play payload: stable `set_id` and question
+`id`, question text, options, `correct_index`, explanation, type, media URL,
+provenance and quality metadata are inline. Each set has `schema_version`,
+`created_ms`/`generated_at` and `expires_ms`/`expires_at`; the response also
+has `ready_depth`, `target_ready_depth`, `cache`, and `availability`.
+`cache.self_contained=true` means no follow-up RPC is required to play it.
+
+Backend guarantee, while Nakama and an adequate approved pool are available:
+
+- `get_staged` maintains 3 ready sets by default (minimum requested depth 2).
+- `consume_set` always acknowledges seen IDs and immediately refills toward 3;
+  the response reports the resulting `ready_depth`.
+- Fresh approved questions do not overlap. After fresh supply is exhausted,
+  `questions[].recycled=true` and `repeat_policy.review_count` disclose Smart
+  Review reuse. A truly empty pool cannot safely be fabricated: the response
+  may contain zero sets, reports `availability.reason="pool_empty"`, and queues
+  priority ingest. The client must use its cache, then the existing deduped S3
+  path.
+
+Unity implementation is still required for an offline guarantee:
+
+1. Maintain an in-memory queue plus encrypted/persistent disk JSON keyed by
+   exact `(userID, mode, topic)`. Never read or share another user's cache.
+2. Persist the complete response envelope. Include `schema_version`,
+   `expires_at`, and client-owned `last_sync_at`; write a temporary file, flush,
+   then atomically replace the prior cache file.
+3. On startup/login, hydrate valid disk entries into memory before network
+   sync. In the background call `get_staged` whenever ready depth reaches the
+   low watermark of 2, then atomically replace cache with the server response.
+4. Pop/retain the current set locally for uninterrupted offline play. When
+   online, send `consume_set`; when offline, queue the acknowledgement and
+   retry idempotently on reconnect. Do not discard the current set until quiz
+   completion is durably recorded.
+5. Invalidate on logout, account switch, cache `schema_version` mismatch, or
+   `expires_at`. Account switch must clear both memory and disk handles before
+   the next user is activated.
+6. Prefetch media for the next set first, then later sets under normal
+   bandwidth/storage policy. Cache by question ID plus URL fingerprint, honor
+   expiry, and keep text questions playable if optional media download fails.
+7. Fallback order: valid memory queue → valid encrypted disk queue → online
+   `get_staged` → existing `quizverse_request_questions` deduped-S3 path →
+   explicit “connect to refresh” state. Never silently invent questions.
+
+Therefore “always available offline” becomes true only after one successful
+sync has been persisted by Unity. A fresh install that has never synced cannot
+be guaranteed offline content.
 
 ---
 
@@ -262,6 +314,171 @@ mode=rpc id=quizverse_seedq_get_staged` — i.e. malformed-payload throws are
 Nakama-level 500s while handler-level validation returns 200 envelopes. No goja
 errors otherwise; **no code bugs found during the run — no source changes or
 rebuilds needed**.
+
+---
+
+## 11. Canonical all-mode, geo, UX-review, and behavior contract (v1.2)
+
+The authoritative registry is `SeedQ.modeRegistry()`. It contains 36 canonical
+modes: the 34 backend-exposed `QuizModeType` names plus `MediaQuiz`,
+`SubjectiveQuiz`, `NewsQuiz`, and `FocusMode`, with legacy aliases folded into
+canonical names (the union has overlap, hence 36 total). Unknown mode strings
+are rejected; aliases are never allowed to create an untracked pool.
+
+Production capacity threshold is **50 usable questions per canonical
+mode/default-topic**: default set size 10 × five sets. This provides three
+immediately staged sets plus two fresh no-repeat reserve sets. A mode is PASS
+only when semantic-approved, mobile-UX-approved, and media-healthy counts all
+meet 50. `quizverse_seedq_pool_stats.mode_coverage[]` reports aliases, source,
+fallback, counts, country breakdown, behavior tags, fresh sets possible,
+status, and deficit.
+
+The audited denominator is taxonomy-driven, not “all enum labels need 50 MCQs”:
+
+- **QUESTION_MODE 23:** SoloChallenge, SurvivalQuiz, SpeedQuiz, BrainSprint,
+  DailyQuiz, WeeklyQuiz, TrueFalseQuiz, MultipleChoiceQuiz, ImageQuiz,
+  AudioQuiz, VideoQuiz, GuessAnime, GuessDog, GuessDish, GuessPokemon,
+  SportsQuiz, SpaceTrivia, EmojiQuiz, HealthQuiz, GeoExplore,
+  WhosThat, CustomTopic, NewsQuiz.
+- **EXPERIENCE_MODE 7:** ViralIQ → DailyQuiz; AIHost → CustomTopic;
+  LocalBattle/LiveArena/Tournament → SoloChallenge; PickATopic → CustomTopic;
+  MediaQuiz → ImageQuiz. These wrappers remain in the denominator and must
+  inherit both capacity and the destination mode's experience/media gate.
+- **NON_QUESTION_FEATURE 6:** PredictionQuiz (future selection/outcome),
+  AITutor (TutorX web app), AIFortuneTeller (conversation), SubjectiveQuiz
+  (free-text rubric/grading), FocusMode (ambient soundscape), FortuneQuiz
+  (score-weighted personality outcome without a truthful correct index).
+  Their explicit delivery contracts remain in the registry, but fabricating
+  MCQ inventory for them is forbidden.
+
+Local bounded verification (2026-07-13): **30/30 denominator PASS,
+0 WARN, 0 BLOCKED**, with 15/15 baseline checks and 23/23 machine-readable
+edge checks. VideoQuiz uses the reviewed build-embedded 60-row CSV catalog;
+HealthQuiz uses 50 cited OpenStax anatomy/health-science rows; NewsQuiz uses
+current BBC publisher RSS image/headline pairs; AudioQuiz counts only real
+Deezer audio previews (legacy cover-art/text rows are excluded by the current
+media gate). Gutenberg-backed modes use a cited, reviewed public-domain
+fallback during upstream timeout, with dedicated True/False and Emoji schemas.
+
+Production verification (2026-07-13) on commit `908833a5a` and its
+digest-pinned image completed bounded idempotent seeding at **30/30 PASS,
+0 WARN, 0 BLOCKED**. Independent fresh-persona verification passed 15/15
+baseline checks and 23/23 edge checks, including three ready sets for every
+denominator route, IN/US/GLOBAL isolation, behavior divergence, review/media
+gates, no-repeat refill, duplicate-consume idempotency, and outage fallback.
+
+### Geo decision and cache isolation
+
+Request fields are `{country?, country_code?, locale?}`. Resolution order is:
+valid explicit ISO-3166 alpha-2 country; region-bearing explicit locale;
+existing account metadata/location country; region-bearing account locale;
+region-bearing Nakama context locale; `GLOBAL`. Invalid codes are ignored.
+There is no IP lookup and no raw location persistence.
+
+Every response includes:
+
+```json
+{
+  "personalization": {
+    "geo": {
+      "country": "IN",
+      "basis": "payload_country",
+      "locale": "en-IN",
+      "relevance_target_pct": 60,
+      "relevant_count": 12,
+      "global_count": 6,
+      "fallback_reason": ""
+    },
+    "behavior": {
+      "basis": "quiz_history",
+      "signals_used": ["topic_accuracy", "recent_misses", "response_latency"],
+      "samples": 24,
+      "minimum_samples": 5,
+      "weakest_topics": ["math"],
+      "recent_miss_topics": ["math"],
+      "avg_response_ms": 5200,
+      "unsupported_signals": ["preferred_modes", "skip_abandon_frustration", "media_affinity"]
+    }
+  }
+}
+```
+
+The cache key is exactly `userID/canonicalMode/topic/country-or-global`.
+Selection targets 60% matching-country and 40% global curriculum, then applies
+adaptive difficulty and a 30% behavior-match target inside each geo segment.
+If no country-tagged content exists, only approved global content is used and
+`fallback_reason` says so. Other-country-only questions never backfill.
+
+Behavior is derived only from the user-owned
+`quiz-verse_quiz_history/history` written by `quiz_submit_result`: topic
+accuracy, recent misses, and valid response latency, with minimum five samples.
+Malformed rows and impossible latency values are ignored; ties are broken
+deterministically by sample count then topic name. Below five valid rows, no
+weakness/recent-miss profile is claimed or used.
+Although canonical analytics events include `quiz_start`, `quiz_complete`,
+`quiz_abandoned`, `question_answered`, and `question_skipped`, preferred-mode,
+abandon/frustration, and media-affinity signals are not yet in a cheap
+user-owned read model, so v1.2 discloses them as unsupported rather than
+claiming them.
+
+### Semantic and experience review guarantee
+
+Every served item must have `quality.status="approved"` and:
+
+```json
+{
+  "review": {
+    "reviewed": true,
+    "reviewer": "auto_qa",
+    "reviewed_at": "ISO-8601",
+    "checks": ["length_ok", "options_distinct"],
+    "experience_checks": ["stem_mobile_readable", "options_mobile_safe", "content_safety"],
+    "version": "auto_qa/1"
+  }
+}
+```
+
+`auto_qa` is deterministic automated agent review, not a human claim.
+Experience QA rejects unreadable stems, oversized/invalid options, HTML/control
+characters, unsafe content, answer leakage, missing citations/authored source,
+and required media without HTTPS provenance, alt text, and supported media
+metadata. Image-, audio-, and video-required modes fail closed on missing or
+mismatched media type/MIME. The gate reruns at serve time and in coverage,
+invalidates already-staged bad sets, and excludes quarantined questions without
+network calls.
+
+### Edge-case release gate and failure policy
+
+`scripts/verify_seedq_edges.mjs` writes
+`web/seedquestions/edge-latest.json`. Every case is a release gate; WARN and
+BLOCKED coverage rows also fail release. The policy is:
+
+- Payload/auth/answer-shape/review/media failures **fail closed** with a
+  structured `error_code` and `retryable` flag. No malformed or quarantined row
+  is served.
+- External source timeout, 429, 5xx, malformed response, missing key, or empty
+  batch **fails closed at ingest** and records `last_error`,
+  `last_ingest_ms`, and `source_retryable`. It never triggers serve-time
+  network I/O and never substitutes a semantically unrelated generic pool.
+- Serving **fails available only from already reviewed storage**. If no valid
+  pool/cache exists, `availability.reason` says why and the client must render
+  unavailable; it must not invent or silently shorten a set.
+- Invalid/missing country **fails privacy-safe to GLOBAL**. Sparse/malformed
+  behavior history fails to deterministic default selection and makes no user
+  profiling claim.
+- Staging and consume use exact storage versions with eight bounded retries.
+  Seen IDs are merged before consume CAS (fail closed against repeats). Retry
+  exhaustion returns a sanitized, retryable internal envelope.
+- Offline cache is user/mode/topic/country scoped, self-contained, versioned,
+  and TTL-bounded. Account switch/logout must invalidate the active user's
+  cache namespace; first offline launch without cache is truthfully unavailable.
+
+Unity must persist the v2 response, require both semantic and experience review,
+include country in fetch/consume payloads, and submit `questionHistory` with
+category, correctness, and `time_ms`. Continue emitting analytics
+`quiz_start/quiz_complete/quiz_abandoned/question_answered/question_skipped`
+with `quiz_mode`; future behavior signals remain disabled until materialized
+into a privacy-safe per-user read model.
 
 ### Unity contract simulation (7/7 PASS)
 

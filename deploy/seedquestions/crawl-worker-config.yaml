@@ -1,0 +1,24 @@
+# SeedQ crawl worker provider configuration. This file intentionally contains
+# no credentials and does not deploy a worker image.
+#
+# Required Secret key names in aicart/seedq-crawl-secrets:
+#   service_token       -> same 32+ character SEEDQ_SERVICE_TOKEN used by Nakama
+#   firecrawl_api_key   -> FIRECRAWL_API_KEY
+#   hermes_token        -> HERMES_TOKEN
+#
+# Keep SEEDQ_CRAWL_PROVIDER=disabled until the worker image/queue is approved
+# and an authenticated, allowlisted provider crawl passes outside production.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seedq-crawl-worker-config
+  namespace: aicart
+  labels:
+    component: seed-questions
+data:
+  SEEDQ_CRAWL_PROVIDER: disabled
+  FIRECRAWL_BASE_URL: https://api.firecrawl.dev
+  FIRECRAWL_ALLOWED_DOMAINS: firecrawl.dev
+  HERMES_ENDPOINT: ""
+  HERMES_PROVIDER_MODE: ""
+  HERMES_ALLOWED_DOMAINS: ""

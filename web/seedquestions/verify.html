@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Seed Questions × Aahaa — Verifier Loop</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
-<meta name="description" content="Continuous per-deliverable verification of the QuizVerse Seed Questions and Aahaa engines — 12 live checks with PASS/FAIL evidence, re-runnable in a loop.">
+<meta name="description" content="Continuous production verification of QuizVerse Seed Questions and Aahaa — 15 baseline checks, 30-mode coverage, and 23 edge cases.">
 <style>
 :root{
   --bg:#0b1020; --bg-2:#0f172a; --panel:#111a30; --panel-2:#16223f; --line:#233252;
@@ -90,14 +90,14 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
 
 <header><div class="wrap"><nav>
   <div class="logo">Seed<em>Questions</em> × <em>Aahaa</em> · Verifier Loop</div>
-  <div class="nav-links" style="display:flex;align-items:center;gap:14px;font-size:.82rem"><a href="index.html" style="color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:600">Live showcase</a></div>
+  <div class="nav-links" style="display:flex;align-items:center;gap:10px;font-size:.78rem"><a href="index.html">Showcase</a><a href="coverage.html">Coverage</a><a href="scenarios.html">Scenarios</a><a href="unity.html">Unity</a></div>
   <span id="conn-pill"><span class="dot"></span><span id="conn-txt">idle</span></span>
 </nav></div></header>
 
 <section class="hero"><div class="wrap">
-  <span class="eyebrow">🔁 12 live checks · fresh persona every run · nothing mocked</span>
+  <span class="eyebrow">🔁 15 baseline · 30/30 modes · 23 edge cases · nothing mocked</span>
   <h1>Every deliverable, <span class="grad">verified in a loop</span>.</h1>
-  <p class="sub">This page runs the same check suite as <span class="mono">scripts/verify_deliverables.mjs</span> straight from your browser: staging depth, adaptive difficulty, no-repeat guarantees, quality gates, media provenance, the Aahaa feed, fact-pack integrity and the no-hallucination validator — each with PASS/FAIL evidence. See the <a href="index.html">interactive showcase</a> for the guided demo.</p>
+  <p class="sub">Run the authoritative 15-check baseline against the live backend, then inspect current server evidence for all 30 question-consuming routes and the 23-case edge release gate. Fresh personas and uniquely named fixtures keep every run independent.</p>
 </div></section>
 
 <!-- CONFIG + RUN -->
@@ -130,7 +130,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
 <!-- SERVER-SIDE EVIDENCE -->
 <section style="padding-top:0"><div class="wrap"><div class="card">
   <div class="sec-head"><h2>Last server-side verification</h2>
-    <span class="sec-sub">From <span class="mono">verify-latest.json</span> — written by <span class="mono">scripts/verify_deliverables.mjs</span> (local run, <span class="mono">--loop</span>, or the prod CronJob <span class="mono">seedq-verify-loop</span>).</span></div>
+    <span class="sec-sub">Fresh production artifacts from the authoritative baseline, all-mode coverage, and edge release suites. Times and runtime digest below identify the evidence actually served.</span></div>
   <div class="grid g2" id="server-grid"><div class="subcard kv" id="server-empty">Loading…</div></div>
 </div></div></section>
 
@@ -144,8 +144,11 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:var(--ink-3);font-s
 var $ = function(id){ return document.getElementById(id); };
 var LOOP_MS = 60000;
 
-// ?host= / ?key= / ?httpkey= overrides
+// ?host= / ?key= / ?httpkey= overrides (non-local hosts default to
+// same-origin — the ingress routes /v2/* on this host to Nakama)
 (function(){
+  var h = location.hostname;
+  if (h && h !== "localhost" && h !== "127.0.0.1") $("host").value = location.origin;
   var p = new URLSearchParams(location.search);
   if (p.get("host"))    $("host").value = p.get("host");
   if (p.get("key"))     $("ckey").value = p.get("key");
@@ -192,6 +195,26 @@ async function adminRpc(id, body){
 // ── suite helpers (mirrors scripts/verify_deliverables.mjs) ──────────────────
 function setIds(st){ return st.question_ids || (st.questions||[]).map(function(q){return q.id;}); }
 function allStagedIds(res){ var out=[]; (res.sets||[]).forEach(function(s){ out = out.concat(setIds(s)); }); return out; }
+function assertCacheable(res, userId){
+  var cache=res.cache||{}, qs=[];
+  assert(Number.isInteger(cache.schema_version) && cache.schema_version>=1, "cache schema_version missing");
+  assert(cache.self_contained===true && cache.contains_answer_keys===true, "payload is not self-contained");
+  assert(typeof cache.cache_key==="string" && cache.cache_key.indexOf(userId+"/")===0, "cache is not user-scoped");
+  assert(cache.expires_ms>cache.generated_ms && Date.parse(cache.expires_at)===cache.expires_ms, "cache expiry metadata invalid");
+  assert(res.ready_depth===(res.sets||[]).length && res.ready_depth>=2, "ready depth below contract");
+  (res.sets||[]).forEach(function(s){ qs=qs.concat(s.questions||[]); });
+  qs.forEach(function(q){
+    assert(q.id && q.question && Array.isArray(q.options) && q.options.length>=2, "question is not self-contained");
+    assert(Number.isInteger(q.correct_index) && q.correct_index>=0 && q.correct_index<q.options.length, "invalid answer for "+q.id);
+    assert(Object.prototype.hasOwnProperty.call(q,"media_url"), "media_url omitted for "+q.id);
+  });
+  var hydrated=JSON.parse(JSON.stringify(res)), hq=[];
+  (hydrated.sets||[]).forEach(function(s){ hq=hq.concat(s.questions||[]); });
+  assert(JSON.stringify(allStagedIds(hydrated))===JSON.stringify(allStagedIds(res)), "IDs changed after cache round-trip");
+  assert(hq.every(function(q,i){ return q.id===qs[i].id && q.correct_index===qs[i].correct_index && q.media_url===qs[i].media_url; }),
+    "IDs, media, or answers changed after cache round-trip");
+  return JSON.stringify(res).length;
+}
 function mkHistory(total, correct){
   var out=[]; for (var i=0;i<total;i++) out.push({ category:"math", correct:i<correct, time_ms:4000+Math.floor(Math.random()*3000) });
   return out;
@@ -207,7 +230,7 @@ async function seedGames(p, games, total, correct){
 
 // ── check definitions ────────────────────────────────────────────────────────
 var CHECKS = [
-  { id:1, name:"RPC registration ×17", deliverable:"RPC Surface",
+  { id:1, name:"RPC registration ×20", deliverable:"RPC Surface",
     run: async function(ctx){
       // The built bundle isn't reachable from a browser; mirror the last
       // server-side result when available.
@@ -229,7 +252,8 @@ var CHECKS = [
       assert((r.sets||[]).length === 3, "expected 3 ready sets, got "+(r.sets||[]).length);
       r.sets.forEach(function(s,i){ assert((s.questions||[]).length === 6, "set "+(i+1)+" has "+(s.questions||[]).length+" questions, expected 6"); });
       assert(r.adaptive && r.adaptive.basis === "default", 'fresh user basis expected "default", got "'+(r.adaptive&&r.adaptive.basis)+'"');
-      return "persona "+ctx.a.username+": 3 sets × 6 questions, adaptive basis \"default\" (target d"+r.adaptive.target_difficulty+")";
+      var bytes=assertCacheable(r,ctx.a.userId);
+      return "persona "+ctx.a.username+": 3 sets × 6; cache v"+r.cache.schema_version+" round-trip retained IDs/media/answers ("+bytes+" bytes)";
     } },
   { id:3, name:"Adaptive difficulty hi>lo", deliverable:"SeedQ Adaptive",
     run: async function(ctx){
@@ -265,10 +289,12 @@ var CHECKS = [
       var consumed = {}; setIds(set1).forEach(function(id){ consumed[id]=true; });
       var res = await rpc(ctx.a, "quizverse_seedq_consume_set", { mode:"CustomTopic", topic:"math", set_id:set1.set_id });
       assert(res.ok === true, "consume_set not ok: "+JSON.stringify(res).slice(0,200));
+      assert(res.ready_depth===3 && res.restaged && res.restaged.ready_sets===3, "consume did not immediately refill to depth 3");
       ctx.stage1 = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode:"CustomTopic", topic:"math", set_size:6, want_sets:3 });
       var overlap = allStagedIds(ctx.stage1).filter(function(id){ return consumed[id]; });
       assert(overlap.length === 0, overlap.length+" consumed ids reappeared after restage: "+overlap.slice(0,5).join(", "));
-      return "consumed "+set1.set_id+" ("+setIds(set1).length+" ids) → restaged "+ctx.stage1.sets.length+" sets, 0 overlap with consumed ids";
+      assert(ctx.stage1.pool.available_unseen>0 && ctx.stage1.repeat_policy.review_count===0, "fresh pool remained but Smart Review repeats were served");
+      return "consumed "+set1.set_id+" → immediate depth "+res.ready_depth+", fetched depth "+ctx.stage1.sets.length+", 0 overlap while fresh pool remained";
     } },
   { id:7, name:"No-repeat chokepoint ×2", deliverable:"D1 No-repeat",
     run: async function(ctx){
@@ -302,7 +328,7 @@ var CHECKS = [
     } },
   { id:9, name:"Media wsrv.nl + provenance", deliverable:"SeedQ Media",
     run: async function(ctx){
-      var res = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode:"ImageGuess", topic:"space", set_size:4, want_sets:1 });
+      var res = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode:"ImageGuess", topic:"space", set_size:4, want_sets:2 });
       assert(res.ok === true, "media get_staged not ok: "+JSON.stringify(res).slice(0,200));
       var qs = (res.sets && res.sets[0] && res.sets[0].questions) || [];
       assert(qs.length > 0, "no ImageGuess/space questions staged (pool empty?)");
@@ -346,16 +372,110 @@ var CHECKS = [
       assert(ok.validation && ok.validation.pass === true, "faithful rephrase unexpectedly FAILED: "+JSON.stringify(ok.validation && ok.validation.violations));
       return "fabricated → pass:false ("+fab.validation.violations.length+" violations: "+fab.validation.violations.join(" · ")+")\nfaithful \""+faithful+"\" → pass:true";
     } },
-  { id:12, name:"Sources ×13 + pool stats", deliverable:"Sources",
+  { id:12, name:"Sources ×16 + pool stats", deliverable:"Sources",
     run: async function(ctx){
       var src = await adminRpc("quizverse_seedq_sources", {});
       assert(src.ok === true, "sources not ok: "+JSON.stringify(src).slice(0,200));
       var n = (src.sources||[]).length;
-      assert(n === 13, "expected 13 connectors, got "+n);
+      assert(n === 16, "expected 16 connectors, got "+n);
       var stats = await adminRpc("quizverse_seedq_pool_stats", {});
       assert(stats.ok === true, "pool_stats not ok: "+JSON.stringify(stats).slice(0,200));
       assert(stats.pools && stats.pools.length >= 1, "pool_stats returned no pools");
-      return "13 connectors registered; "+stats.pools.length+" pools (e.g. "+stats.pools.slice(0,3).map(function(p){return p.key+":"+p.size;}).join(", ")+")";
+      return "16 connectors registered; "+stats.pools.length+" pools (e.g. "+stats.pools.slice(0,3).map(function(p){return p.key+":"+p.size;}).join(", ")+")";
+    } },
+  { id:13, name:"Canonical mode coverage", deliverable:"Mode Coverage",
+    run: async function(ctx){
+      var src = await adminRpc("quizverse_seedq_sources", {});
+      var modes = src.modes || [];
+      assert(modes.length >= 36, "expected backend/client mode union, got "+modes.length);
+      var denominator = modes.filter(function(m){ return m.seedq_required && m.kind !== "non_question"; });
+      var persona = await deviceAuth("allmodes"), staged = [], blocked = [];
+      for (var i=0; i<denominator.length; i++){
+        var m = denominator[i];
+        var r = await rpc(persona, "quizverse_seedq_get_staged", {
+          mode:m.mode, topic:m.default_topic, set_size:4, want_sets:2
+        });
+        if (r.ready_depth >= 2) staged.push(m.mode);
+        else blocked.push(m.mode+":"+((r.availability&&r.availability.reason)||r.error_code));
+        assert(r.source_route && r.source_route.route, m.mode+" omitted source_route");
+      }
+      var stats = await adminRpc("quizverse_seedq_pool_stats", {});
+      var gaps = (stats.mode_coverage||[]).filter(function(m){ return m.denominator && m.status !== "PASS"; });
+      assert(blocked.length === 0 && gaps.length === 0, "release-gating gaps: "+blocked.concat(gaps.map(function(m){return m.mode+":"+m.status;})).join(", "));
+      return modes.length+" canonical modes resolved; "+staged.length+"/"+denominator.length+" routes staged ≥2 sets; 0 WARN/BLOCKED";
+    } },
+  { id:14, name:"Geo isolation + review gate", deliverable:"Geo · Quality",
+    run: async function(ctx){
+      var topic="geo_"+ctx.runId, questions=[];
+      function add(prefix,country,n){
+        for(var i=0;i<n;i++) questions.push({
+          question:prefix+" curriculum item "+(i+1)+": choose the verified label.",
+          options:["A","B","C","D"], correct_index:0, difficulty:2+(i%3),
+          country_codes:country?[country]:[], geo_relevance:country?100:0,
+          geo_reason:country?"relevant to "+country:"global curriculum"
+        });
+      }
+      add("India","IN",30); add("United States","US",30); add("Global","",30);
+      var ing=await adminRpc("quizverse_seedq_ingest",{source:"verifier",mode:"SoloChallenge",topic:topic,questions:questions});
+      assert(ing.ok && ing.result.accepted>=90,"geo fixture ingest failed");
+      var inUser=await deviceAuth("geo-in"), usUser=await deviceAuth("geo-us");
+      var pair=await Promise.all([
+        rpc(inUser,"quizverse_seedq_get_staged",{mode:"SoloChallenge",topic:topic,country:"IN",locale:"en-IN",set_size:6,want_sets:3}),
+        rpc(usUser,"quizverse_seedq_get_staged",{mode:"SoloChallenge",topic:topic,country:"US",locale:"en-US",set_size:6,want_sets:3})
+      ]);
+      var inRes=pair[0], usRes=pair[1], inQs=[], usQs=[];
+      (inRes.sets||[]).forEach(function(s){inQs=inQs.concat(s.questions||[]);});
+      (usRes.sets||[]).forEach(function(s){usQs=usQs.concat(s.questions||[]);});
+      assert(inRes.personalization.geo.country==="IN" && usRes.personalization.geo.country==="US","country metadata incorrect");
+      assert(inQs.every(function(q){return !(q.country_codes||[]).length||q.country_codes.indexOf("IN")>=0;}),"IN received foreign content");
+      assert(usQs.every(function(q){return !(q.country_codes||[]).length||q.country_codes.indexOf("US")>=0;}),"US received foreign content");
+      assert(inQs.every(function(q){return q.quality.status==="approved"&&q.review.reviewed;}),"unreviewed geo question served");
+      var invalidUser=await deviceAuth("geo-invalid");
+      var invalid=await rpc(invalidUser,"quizverse_seedq_get_staged",{mode:"SoloChallenge",topic:topic,country:"ZZ",locale:"not-a-locale",set_size:6,want_sets:3});
+      assert(invalid.personalization.geo.country==="GLOBAL","invalid country did not fall back globally");
+      assert(inRes.cache.cache_key!==usRes.cache.cache_key,"country cache bleed");
+      return "IN "+inRes.personalization.geo.relevant_count+"/"+inRes.personalization.geo.global_count+
+        " relevant/global; US "+usRes.personalization.geo.relevant_count+"/"+usRes.personalization.geo.global_count+
+        "; invalid ZZ → global-only; all reviewed";
+    } },
+  { id:15, name:"Behavior-aware divergence", deliverable:"Behavior Ranking",
+    run: async function(ctx){
+      var topic="behavior_"+ctx.runId, questions=[];
+      ["math","history","general"].forEach(function(tag){
+        for(var i=0;i<30;i++) questions.push({
+          question:tag+" behavior fixture "+(i+1)+": choose the reviewed answer.",
+          options:["A","B","C","D"],correct_index:0,difficulty:2+(i%3),
+          country_codes:["IN"],behavior_tags:[tag],citation:"Verifier authored fixture"
+        });
+      });
+      questions.push(
+        {question:"<b>broken HTML stem</b>",options:["A","B","C","D"],correct_index:0,country_codes:["IN"]},
+        {question:"Oversized mobile option fixture?",options:["A".repeat(140),"B","C","D"],correct_index:0,country_codes:["IN"]}
+      );
+      var ing=await adminRpc("quizverse_seedq_ingest",{source:"verifier",mode:"SoloChallenge",topic:topic,questions:questions});
+      assert(ing.result.rejected>=2,"malformed visual fixtures were not rejected");
+      var mathUser=await deviceAuth("behavior-math"), historyUser=await deviceAuth("behavior-history");
+      async function submitWeakness(persona,weak,strong){
+        var qh=[];
+        for(var i=0;i<12;i++) qh.push({category:weak,correct:false,time_ms:9000});
+        for(var j=0;j<12;j++) qh.push({category:strong,correct:true,time_ms:3500});
+        await rpc(persona,"quiz_submit_result",{score:50,totalQuestions:24,correctAnswers:12,category:weak,questionHistory:qh});
+      }
+      await submitWeakness(mathUser,"math","history"); await submitWeakness(historyUser,"history","math");
+      var pair=await Promise.all([
+        rpc(mathUser,"quizverse_seedq_get_staged",{mode:"SoloChallenge",topic:topic,country:"IN",set_size:6,want_sets:3}),
+        rpc(historyUser,"quizverse_seedq_get_staged",{mode:"SoloChallenge",topic:topic,country:"IN",set_size:6,want_sets:3})
+      ]);
+      var mathRes=pair[0],historyRes=pair[1],mathIds={},historyIds=allStagedIds(historyRes);
+      allStagedIds(mathRes).forEach(function(id){mathIds[id]=true;});
+      assert(mathRes.personalization.behavior.weakest_topics[0]==="math","math weakness not detected");
+      assert(historyRes.personalization.behavior.weakest_topics[0]==="history","history weakness not detected");
+      assert(historyIds.some(function(id){return !mathIds[id];}),"distinct profiles produced identical sets");
+      var mr=0,hr=0;
+      mathRes.sets.forEach(function(s){s.questions.forEach(function(q){if(q.selection_reasons.indexOf("interest_or_learning_signal")>=0)mr++;});});
+      historyRes.sets.forEach(function(s){s.questions.forEach(function(q){if(q.selection_reasons.indexOf("interest_or_learning_signal")>=0)hr++;});});
+      assert(mr>0&&hr>0,"behavior selection reasons absent");
+      return "same country IN; math vs history weakness produced distinct sets with "+mr+"/"+hr+" behavior-ranked questions; malformed UX rejected";
     } },
 ];
 
@@ -400,7 +520,7 @@ async function runSuite(){
   $("btn-run").disabled = true;
   $("run-err").style.display = "none";
   $("overall").className = "banner run";
-  $("overall").textContent = "Running 12 checks…";
+  $("overall").textContent = "Running 15 checks…";
   $("conn-pill").className = "";
   $("conn-txt").textContent = "running @ "+base().replace(/^https?:\/\//,"");
 
@@ -459,25 +579,36 @@ $("btn-run").onclick = function(){ runSuite(); };
 // ── server-side evidence panel ───────────────────────────────────────────────
 async function loadServerLatest(){
   try{
-    var r = await fetch("verify-latest.json", { cache:"no-store" });
-    if (!r.ok) throw new Error("HTTP "+r.status);
-    var d = await r.json();
+    var fetched = await Promise.all([
+      fetch("verify-latest.json", {cache:"no-store"}),
+      fetch("edge-latest.json", {cache:"no-store"}),
+      fetch("all-mode-latest.json", {cache:"no-store"})
+    ]);
+    if (!fetched[0].ok || !fetched[1].ok || !fetched[2].ok) throw new Error("evidence artifact missing");
+    var d = await fetched[0].json(), edge = await fetched[1].json(), modes = await fetched[2].json();
     window.__serverLatest = d;
     var chips = (d.checks||[]).map(function(c){
       return '<span class="chip '+(c.pass?"ok":"bad")+'" title="'+esc(c.detail)+'">'+c.id+" "+(c.pass?"✓":"✗")+'</span>';
     }).join(" ");
+    var prod=d.production||{};
     $("server-grid").innerHTML =
-      '<div class="subcard"><h4 style="font-size:.86rem;margin-bottom:8px">🖥 '+
-      '<span class="chip '+(d.overall==="PASS"?"ok":"bad")+'">'+esc(d.overall)+'</span> server-side run</h4>'+
+      '<div class="subcard"><h4 style="font-size:.86rem;margin-bottom:8px">🖥 Baseline '+
+      '<span class="chip '+(d.overall==="PASS"?"ok":"bad")+'">'+esc(d.overall)+'</span></h4>'+
       '<div class="kv">host <b>'+esc(d.host)+'</b><br>at <b>'+esc(d.ts)+'</b><br>checks <b>'+
       (d.checks||[]).filter(function(c){return c.pass;}).length+'/'+(d.checks||[]).length+' passed</b></div>'+
       '<div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap">'+chips+'</div></div>'+
-      '<div class="subcard kv">This file is rewritten on every script run:<br><br>'+
-      '<b>node scripts/verify_deliverables.mjs</b> (one-shot)<br>'+
-      '<b>node scripts/verify_deliverables.mjs --loop 300</b> (forever)<br>'+
-      'prod: CronJob <b>seedq-verify-loop</b> (deploy/seedquestions/verify-cronjob.yaml)</div>';
+      '<div class="subcard"><h4 style="font-size:.86rem;margin-bottom:8px">🧭 All-mode coverage '+
+      '<span class="chip '+(modes.release_gate==="PASS"?"ok":"bad")+'">'+esc(modes.release_gate)+'</span></h4>'+
+      '<div class="kv">at <b>'+esc(modes.generated_at)+'</b><br>question-consuming routes <b>'+
+      esc(modes.pass)+'/'+esc(modes.denominator_modes)+'</b><br>WARN <b>'+esc(modes.warn)+'</b> · BLOCKED <b>'+esc(modes.blocked)+'</b></div></div>'+
+      '<div class="subcard"><h4 style="font-size:.86rem;margin-bottom:8px">🧪 Edge release gate '+
+      '<span class="chip '+(edge.release_gate==="PASS"?"ok":"bad")+'">'+esc(edge.release_gate)+'</span></h4>'+
+      '<div class="kv">at <b>'+esc(edge.generated_at)+'</b><br>cases <b>'+esc(edge.pass)+'/'+esc(edge.total)+'</b><br>failures <b>'+esc(edge.fail)+'</b></div></div>'+
+      '<div class="subcard kv">runtime <b>'+esc(prod.module_version||"unknown")+'</b><br>'+
+      'image <b>'+esc(prod.image_digest||"unknown")+'</b><br>'+
+      'CronJob <b>seedq-verify-loop</b> · authoritative 15-check script</div>';
   } catch(e){
-    $("server-empty").textContent = "No verify-latest.json found ("+e.message+") — run scripts/verify_deliverables.mjs to produce it.";
+    $("server-empty").textContent = "Current production evidence could not be loaded ("+e.message+").";
   }
 }
 

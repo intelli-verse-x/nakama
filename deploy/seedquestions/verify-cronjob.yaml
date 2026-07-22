@@ -1,4 +1,4 @@
-# Seed Questions × Aahaa deliverable verifier — runs the same 12-check suite as
+# Seed Questions × Aahaa deliverable verifier — runs the authoritative 15-check suite as
 # scripts/verify_deliverables.mjs against the in-cluster Nakama every 30 minutes.
 #
 # Exit code 0 = all checks PASS; non-zero triggers failedJobsHistoryLimit retention

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // verify_deliverables.mjs — Seed Questions × Aahaa deliverable verifier.
 // ─────────────────────────────────────────────────────────────────────────────
-// Runs 12 numbered checks covering every deliverable of the SeedQ/Aahaa
+// Runs 15 numbered checks covering every deliverable of the SeedQ/Aahaa
 // project (see docs/VERIFIER_LOOP.md for the check → deliverable map) against
 // a live Nakama backend. Every run mints FRESH device-auth personas, so the
 // suite is repeatable forever and never depends on prior state.
@@ -54,12 +54,14 @@ const c = (code, s) => (NO_COLOR ? s : `\x1b[${code}m${s}\x1b[0m`);
 const green = (s) => c("32;1", s), red = (s) => c("31;1", s), dim = (s) => c("2", s),
   bold = (s) => c("1", s), cyan = (s) => c("36", s), yellow = (s) => c("33", s);
 
-// ── the 17 RPC ids shipped by this project ───────────────────────────────────
+// ── the 20 RPC ids shipped by this project ───────────────────────────────────
 const RPC_IDS = [
   "quizverse_seedq_get_staged", "quizverse_seedq_consume_set", "quizverse_seedq_review",
   "quizverse_seedq_focus_tracks", "quizverse_seedq_sources", "quizverse_seedq_ingest",
   "quizverse_seedq_ingest_tick", "quizverse_seedq_pool_stats", "quizverse_seedq_asset_job",
   "quizverse_seedq_provenance",
+  "quizverse_seedq_crawl_job_submit", "quizverse_seedq_crawl_job_status",
+  "quizverse_seedq_crawl_candidate_ingest",
   "quizverse_aahaa_get", "quizverse_aahaa_react", "quizverse_aahaa_fact_pack",
   "quizverse_aahaa_profile_set", "quizverse_aahaa_generate_all", "quizverse_aahaa_validate",
   "quizverse_aahaa_catalog",
@@ -117,6 +119,51 @@ function assert(cond, msg) { if (!cond) throw new Error(msg); }
 const ids = (set) => set.question_ids || (set.questions || []).map((q) => q.id);
 const allStagedIds = (res) => (res.sets || []).flatMap(ids);
 
+function assertCacheableStagedPayload(res, expectedUserId) {
+  const cache = res.cache || {};
+  assert(Number.isInteger(cache.schema_version) && cache.schema_version >= 1,
+    `cache.schema_version missing/invalid: ${JSON.stringify(cache)}`);
+  assert(cache.self_contained === true && cache.contains_answer_keys === true,
+    `cache payload not declared self-contained with answer keys`);
+  assert(typeof cache.cache_key === "string" && cache.cache_key.startsWith(expectedUserId + "/"),
+    `cache key is not user-scoped: ${cache.cache_key}`);
+  assert(cache.expires_ms > cache.generated_ms && Date.parse(cache.expires_at) === cache.expires_ms,
+    `cache expiry metadata missing/inconsistent`);
+  assert(res.ready_depth === (res.sets || []).length, `ready_depth does not match sets.length`);
+  assert(res.ready_depth >= 2, `ready depth ${res.ready_depth} is below safety minimum 2`);
+
+  const questions = (res.sets || []).flatMap((s) => s.questions || []);
+  for (const q of questions) {
+    assert(q.id && q.question && Array.isArray(q.options) && q.options.length >= 2,
+      `question is not self-contained: ${JSON.stringify(q).slice(0, 180)}`);
+    assert(Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index < q.options.length,
+      `question ${q.id} has invalid answer index`);
+    assert(Object.prototype.hasOwnProperty.call(q, "media_url"),
+      `question ${q.id} omits media_url cache field`);
+    assert(q.quality && q.quality.status === "approved",
+      `question ${q.id} is not quality-approved`);
+    assert(q.review && q.review.reviewed === true &&
+      ["auto_qa", "agent"].includes(q.review.reviewer) &&
+      Array.isArray(q.review.checks) && q.review.version &&
+      Array.isArray(q.review.experience_checks) && q.review.experience_checks.length > 0,
+      `question ${q.id} lacks truthful review provenance`);
+  }
+
+  // Simulate an encrypted-disk cache boundary: JSON bytes are persisted and
+  // hydrated later without any server lookup. Stable IDs, media and answers
+  // must survive exactly.
+  const hydrated = JSON.parse(JSON.stringify(res));
+  assert(JSON.stringify(allStagedIds(hydrated)) === JSON.stringify(allStagedIds(res)),
+    `set/question IDs changed across cache serialization`);
+  const hydratedQs = hydrated.sets.flatMap((s) => s.questions || []);
+  assert(hydratedQs.every((q, i) =>
+    q.id === questions[i].id &&
+    q.correct_index === questions[i].correct_index &&
+    q.media_url === questions[i].media_url),
+  `IDs, media, or answer keys changed across cache serialization`);
+  return { questions: questions.length, bytes: Buffer.byteLength(JSON.stringify(res)) };
+}
+
 function mkHistory(total, correct) {
   const out = [];
   for (let i = 0; i < total; i++) {
@@ -158,12 +205,12 @@ async function runSuite() {
   console.log(dim(`host=${HOST}  run=${runId}  ${new Date().toISOString()}\n`));
 
   // 1 · RPC registration in the built bundle (skip gracefully off-repo).
-  await check(1, "RPC registration ×17", "RPC Surface", async () => {
+  await check(1, "RPC registration ×20", "RPC Surface", async () => {
     if (!existsSync(INDEX_JS)) return "index.js not present — skipped (in-cluster / off-repo run); covered by repo-local runs";
     const bundle = readFileSync(INDEX_JS, "utf8");
     const missing = RPC_IDS.filter((id) => !bundle.includes(`registerRpc("${id}"`));
     assert(missing.length === 0, "missing registerRpc in index.js: " + missing.join(", "));
-    return `all 17 RPC ids registered in data/modules/index.js`;
+    return `all ${RPC_IDS.length} RPC ids registered in data/modules/index.js`;
   });
 
   // 2 · Fresh persona staging.
@@ -175,7 +222,8 @@ async function runSuite() {
     assert((r.sets || []).length === 3, `expected 3 ready sets, got ${(r.sets || []).length}`);
     r.sets.forEach((s, i) => assert((s.questions || []).length === 6, `set ${i + 1} has ${(s.questions || []).length} questions, expected 6`));
     assert(r.adaptive && r.adaptive.basis === "default", `fresh user basis expected "default", got "${r.adaptive && r.adaptive.basis}"`);
-    return `persona ${ctx.a.username}: 3 sets × 6 questions, adaptive basis "default" (target d${r.adaptive.target_difficulty})`;
+    const cached = assertCacheableStagedPayload(r, ctx.a.userId);
+    return `persona ${ctx.a.username}: 3 sets × 6 questions; cache schema v${r.cache.schema_version}, ${cached.bytes} serialized bytes round-trip with IDs/media/answers intact`;
   });
 
   // 3 · Adaptive difficulty: high-accuracy persona targets harder than low-accuracy.
@@ -217,11 +265,15 @@ async function runSuite() {
     const consumed = new Set(ids(set1));
     const res = await rpc(ctx.a, "quizverse_seedq_consume_set", { mode: "CustomTopic", topic: "math", set_id: set1.set_id });
     assert(res.ok === true, "consume_set not ok: " + JSON.stringify(res).slice(0, 200));
+    assert(res.ready_depth === 3 && res.restaged && res.restaged.ready_sets === 3,
+      `consume did not immediately refill to depth 3: ${JSON.stringify(res.restaged)}`);
     const restaged = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode: "CustomTopic", topic: "math", set_size: 6, want_sets: 3 });
     ctx.stage1 = restaged;
     const overlap = allStagedIds(restaged).filter((id) => consumed.has(id));
     assert(overlap.length === 0, `${overlap.length} consumed ids reappeared after restage: ${overlap.slice(0, 5).join(", ")}`);
-    return `consumed ${set1.set_id} (${consumed.size} ids) → restaged ${restaged.sets.length} sets, 0 overlap with consumed ids`;
+    assert(restaged.pool.available_unseen > 0 && restaged.repeat_policy.review_count === 0,
+      `fresh pool remained but Smart Review repeats were served`);
+    return `consumed ${set1.set_id} (${consumed.size} ids) → immediate depth ${res.ready_depth}, fetched depth ${restaged.sets.length}, 0 overlap while fresh pool remained`;
   });
 
   // 7 · No-repeat production chokepoint: double request_questions is disjoint.
@@ -263,7 +315,7 @@ async function runSuite() {
 
   // 9 · Media mode: wsrv.nl-optimized URLs with provenance.
   await check(9, "Media wsrv.nl + provenance", "SeedQ Media", async () => {
-    const res = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode: "ImageGuess", topic: "space", set_size: 4, want_sets: 1 });
+    const res = await rpc(ctx.a, "quizverse_seedq_get_staged", { mode: "ImageGuess", topic: "space", set_size: 4, want_sets: 2 });
     assert(res.ok === true, "media get_staged not ok: " + JSON.stringify(res).slice(0, 200));
     const qs = (res.sets && res.sets[0] && res.sets[0].questions) || [];
     assert(qs.length > 0, "no ImageGuess/space questions staged (pool empty?)");
@@ -312,16 +364,142 @@ async function runSuite() {
     return `fabricated → pass:false (${fab.validation.violations.length} violations: ${fab.validation.violations[0]}); faithful "${faithfulText}" → pass:true`;
   });
 
-  // 12 · Sources registry (13 connectors) + pool observability.
-  await check(12, "Sources ×13 + pool stats", "Sources", async () => {
+  // 12 · Sources registry + pool observability.
+  await check(12, "Sources ×16 + pool stats", "Sources", async () => {
     const src = await adminRpc("quizverse_seedq_sources", {});
     assert(src.ok === true, "sources not ok: " + JSON.stringify(src).slice(0, 200));
     const n = (src.sources || []).length;
-    assert(n === 13, `expected 13 connectors, got ${n}`);
+    assert(n === 16, `expected 16 connectors, got ${n}`);
     const stats = await adminRpc("quizverse_seedq_pool_stats", {});
     assert(stats.ok === true, "pool_stats not ok: " + JSON.stringify(stats).slice(0, 200));
     assert(Array.isArray(stats.pools) && stats.pools.length >= 1, "pool_stats returned no pools");
-    return `13 connectors registered; ${stats.pools.length} pools (e.g. ${stats.pools.slice(0, 3).map((p) => `${p.key}:${p.size}`).join(", ")})`;
+    return `16 connectors registered; ${stats.pools.length} pools (e.g. ${stats.pools.slice(0, 3).map((p) => `${p.key}:${p.size}`).join(", ")})`;
+  });
+
+  // 13 · Every canonical mode resolves to a source or explicit safe fallback.
+  await check(13, "Canonical mode coverage", "Mode Coverage", async () => {
+    const src = await adminRpc("quizverse_seedq_sources", {});
+    const modes = src.modes || [];
+    assert(modes.length >= 34, `expected backend/client mode union, got ${modes.length}`);
+    const malformed = modes.filter((m) => !m.mode || !m.kind || !m.delivery_contract ||
+      typeof m.seedq_required !== "boolean" ||
+      (m.seedq_required && (!m.inventory_mode || !["direct", "fallback"].includes(m.support))) ||
+      (m.support === "fallback" && m.seedq_required && !m.fallback_mode));
+    assert(malformed.length === 0, `modes missing taxonomy/lineage: ${malformed.map((m) => m.mode).join(", ")}`);
+    const denominatorModes = modes.filter((m) => m.seedq_required && m.kind !== "non_question");
+    const persona = await deviceAuth("allmodes");
+    const staged = [], blocked = [];
+    for (const m of denominatorModes) {
+      const r = await rpc(persona, "quizverse_seedq_get_staged", {
+        mode: m.mode, topic: m.default_topic, set_size: 4, want_sets: 2,
+      });
+      if (r.ready_depth >= 2) staged.push(m.mode);
+      else blocked.push(`${m.mode}:${r.availability && r.availability.reason}`);
+      assert(r.source_route && r.source_route.route,
+        `${m.mode} response omitted source_route`);
+    }
+    const stats = await adminRpc("quizverse_seedq_pool_stats", {});
+    assert((stats.mode_coverage || []).length === modes.length,
+      `pool_stats mode_coverage mismatch`);
+    const releaseGaps = (stats.mode_coverage || []).filter((m) => m.denominator && m.status !== "PASS");
+    assert(releaseGaps.length === 0,
+      `release-gating coverage gaps: ${releaseGaps.map((m) => `${m.mode}:${m.status}:${m.deficit}`).join(", ")}`);
+    return `${modes.length} canonical modes resolved; ${staged.length}/${denominatorModes.length} question-consuming routes staged ≥2 sets; 0 WARN/BLOCKED`;
+  });
+
+  // 14 · Country isolation, 60/40 ranking, invalid input, and global fallback.
+  await check(14, "Geo isolation + review gate", "Geo · Quality", async () => {
+    const topic = `geo_${runId}`;
+    const questions = [];
+    const add = (prefix, country, n) => {
+      for (let i = 0; i < n; i++) questions.push({
+        question: `${prefix} curriculum item ${i + 1}: choose the verified label.`,
+        options: ["A", "B", "C", "D"], correct_index: 0, difficulty: 2 + (i % 3),
+        country_codes: country ? [country] : [], geo_relevance: country ? 100 : 0,
+        geo_reason: country ? `relevant to ${country}` : "global curriculum",
+      });
+    };
+    add("India", "IN", 30); add("United States", "US", 30); add("Global", "", 30);
+    const ing = await adminRpc("quizverse_seedq_ingest", {
+      source: "verifier", mode: "SoloChallenge", topic, questions,
+    });
+    assert(ing.ok && ing.result.accepted >= 90, `geo fixture ingest failed: ${JSON.stringify(ing).slice(0, 240)}`);
+
+    const inUser = await deviceAuth("geo-in"), usUser = await deviceAuth("geo-us");
+    const [inRes, usRes] = await Promise.all([
+      rpc(inUser, "quizverse_seedq_get_staged", { mode: "SoloChallenge", topic, country: "IN", locale: "en-IN", set_size: 6, want_sets: 3 }),
+      rpc(usUser, "quizverse_seedq_get_staged", { mode: "SoloChallenge", topic, country: "US", locale: "en-US", set_size: 6, want_sets: 3 }),
+    ]);
+    assert(inRes.personalization.geo.country === "IN" && inRes.personalization.geo.basis === "payload_country", "IN geo metadata incorrect");
+    assert(usRes.personalization.geo.country === "US" && usRes.personalization.geo.basis === "payload_country", "US geo metadata incorrect");
+    assert(inRes.cache.cache_key.endsWith("/in") && usRes.cache.cache_key.endsWith("/us"), "country missing from cache key");
+    assert(inRes.personalization.geo.relevant_count > inRes.personalization.geo.global_count, "IN relevance did not outrank global");
+    assert(usRes.personalization.geo.relevant_count > usRes.personalization.geo.global_count, "US relevance did not outrank global");
+    const inQs = inRes.sets.flatMap((s) => s.questions);
+    const usQs = usRes.sets.flatMap((s) => s.questions);
+    assert(inQs.every((q) => !(q.country_codes || []).length || q.country_codes.includes("IN")), "IN received another country's question");
+    assert(usQs.every((q) => !(q.country_codes || []).length || q.country_codes.includes("US")), "US received another country's question");
+    assert(inQs.every((q) => q.quality.status === "approved" && q.review.reviewed), "unreviewed IN question served");
+
+    const invalidUser = await deviceAuth("geo-invalid");
+    const invalid = await rpc(invalidUser, "quizverse_seedq_get_staged", {
+      mode: "SoloChallenge", topic, country: "ZZ", locale: "not-a-locale", set_size: 6, want_sets: 3,
+    });
+    assert(invalid.personalization.geo.country === "GLOBAL" && invalid.personalization.geo.basis === "global",
+      `invalid country did not fall back globally: ${JSON.stringify(invalid.personalization.geo)}`);
+    const invalidQs = invalid.sets.flatMap((s) => s.questions);
+    assert(invalidQs.length >= 12 && invalidQs.every((q) => !(q.country_codes || []).length),
+      "global fallback empty or leaked country-only content");
+    assert(inRes.cache.cache_key !== usRes.cache.cache_key, "country cache bleed");
+    return `IN ${inRes.personalization.geo.relevant_count}/${inRes.personalization.geo.global_count} relevant/global; US ${usRes.personalization.geo.relevant_count}/${usRes.personalization.geo.global_count}; invalid ZZ → global-only; all reviewed`;
+  });
+
+  // 15 · Same-country users with different persisted weakness histories.
+  await check(15, "Behavior-aware divergence", "Behavior Ranking", async () => {
+    const topic = `behavior_${runId}`;
+    const questions = [];
+    for (const tag of ["math", "history", "general"]) {
+      for (let i = 0; i < 30; i++) questions.push({
+        question: `${tag} behavior fixture ${i + 1}: choose the reviewed answer.`,
+        options: ["A", "B", "C", "D"], correct_index: 0, difficulty: 2 + (i % 3),
+        country_codes: ["IN"], behavior_tags: [tag], citation: "Verifier authored fixture",
+      });
+    }
+    questions.push(
+      { question: "<b>broken HTML stem</b>", options: ["A","B","C","D"], correct_index: 0, country_codes:["IN"] },
+      { question: "Oversized mobile option fixture?", options: ["A".repeat(140),"B","C","D"], correct_index: 0, country_codes:["IN"] },
+    );
+    const ing = await adminRpc("quizverse_seedq_ingest", {
+      source: "verifier", mode: "SoloChallenge", topic, questions,
+    });
+    assert(ing.result.rejected >= 2, `malformed visual fixtures were not rejected: ${JSON.stringify(ing.result)}`);
+
+    const mathUser = await deviceAuth("behavior-math"), historyUser = await deviceAuth("behavior-history");
+    const submitWeakness = async (persona, weak, strong) => {
+      const qh = [];
+      for (let i = 0; i < 12; i++) qh.push({ category: weak, correct: false, time_ms: 9000 });
+      for (let i = 0; i < 12; i++) qh.push({ category: strong, correct: true, time_ms: 3500 });
+      await rpc(persona, "quiz_submit_result", {
+        score: 50, totalQuestions: 24, correctAnswers: 12, category: weak, questionHistory: qh,
+      });
+    };
+    await submitWeakness(mathUser, "math", "history");
+    await submitWeakness(historyUser, "history", "math");
+    const [mathRes, historyRes] = await Promise.all([
+      rpc(mathUser, "quizverse_seedq_get_staged", { mode:"SoloChallenge", topic, country:"IN", set_size:6, want_sets:3 }),
+      rpc(historyUser, "quizverse_seedq_get_staged", { mode:"SoloChallenge", topic, country:"IN", set_size:6, want_sets:3 }),
+    ]);
+    assert(mathRes.personalization.behavior.basis === "quiz_history", "math user behavior did not use persisted history");
+    assert(historyRes.personalization.behavior.basis === "quiz_history", "history user behavior did not use persisted history");
+    assert(mathRes.personalization.behavior.weakest_topics[0] === "math", "math weakness not detected");
+    assert(historyRes.personalization.behavior.weakest_topics[0] === "history", "history weakness not detected");
+    const mathIds = new Set(allStagedIds(mathRes));
+    const historyIds = allStagedIds(historyRes);
+    assert(historyIds.some((id) => !mathIds.has(id)), "distinct behavior profiles produced identical staged IDs");
+    const mathReasons = mathRes.sets.flatMap((s) => s.questions).filter((q) => q.selection_reasons.includes("interest_or_learning_signal")).length;
+    const historyReasons = historyRes.sets.flatMap((s) => s.questions).filter((q) => q.selection_reasons.includes("interest_or_learning_signal")).length;
+    assert(mathReasons > 0 && historyReasons > 0, `behavior selection reasons absent: ${mathReasons}/${historyReasons}`);
+    return `same country IN; math vs history weakness produced distinct sets with ${mathReasons}/${historyReasons} behavior-ranked questions; malformed UX rejected`;
   });
 
   const overall = checks.every((ch) => ch.pass) ? "PASS" : "FAIL";

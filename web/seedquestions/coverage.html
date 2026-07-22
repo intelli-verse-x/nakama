@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuizVerse SeedQ Mode Coverage</title>
+<style>
+body{font:14px system-ui;background:#0b1020;color:#e6ecff;margin:0;padding:24px}main{max-width:1180px;margin:auto}
+h1{margin-bottom:6px}.muted{color:#9fb0d6}.cards{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.card,table{background:#111a30;border:1px solid #233252;border-radius:12px}
+.card{padding:14px 20px}table{width:100%;border-collapse:collapse;overflow:hidden}th,td{padding:10px;text-align:left;border-bottom:1px solid #233252}
+.PASS{color:#34d399}.WARN{color:#fbbf24}.BLOCKED{color:#f87171}.NOT_APPLICABLE{color:#9fb0d6}code{color:#c4b5fd}a{color:#22d3ee}
+</style>
+</head>
+<body><main>
+<h1>QuizVerse all-mode SeedQ coverage</h1>
+<p class="muted">Production evidence · 2026-07-13 · image commit 908833a5a. Release minimum: 50 currently approved semantic + UX + mode-media questions. WARN is a release gate.</p>
+<div class="cards"><div class="card PASS"><b>30/30 denominator PASS</b></div><div class="card PASS"><b>0 WARN · 0 BLOCKED</b></div><div class="card"><b>23 question · 7 experience · 6 non-question</b></div><div class="card PASS"><b>15/15 baseline · 23/23 edge matrix</b></div></div>
+<table><thead><tr><th>Mode</th><th>Kind</th><th>Status</th><th>Usable / inventory</th><th>Source, lineage, or contract</th></tr></thead><tbody id="rows"></tbody></table>
+<p class="muted">Live authoritative data is admin-only at <code>quizverse_seedq_pool_stats</code>; this static page intentionally contains no credentials or user data. See <a href="/unity.html">Unity contract</a>.</p>
+</main><script>
+const data=[
+["SoloChallenge","question","PASS","109 / 109","wolfram"],["SurvivalQuiz","question","PASS","106 / 106","wolfram"],["SpeedQuiz","question","PASS","110 / 110","computed STEM"],["BrainSprint","question","PASS","161 / 161","computed STEM"],
+["DailyQuiz","question","PASS","60 / 60","Gutenberg + reviewed public-domain fallback"],["WeeklyQuiz","question","PASS","60 / 60","Gutenberg + reviewed public-domain fallback"],["ViralIQ","experience","PASS","60 / DailyQuiz","45-day Daily replay wrapper"],["TrueFalseQuiz","question","PASS","60 / 60","reviewed two-option public-domain fallback"],
+["MultipleChoiceQuiz","question","PASS","60 / 60","Gutenberg"],["ImageQuiz","question","PASS","114 / 114","public-domain archive images"],["AudioQuiz","question","PASS","160 / 160","Deezer audio previews"],["VideoQuiz","question","PASS","58 / 58","reviewed embedded CSV + owned CDN MP4"],
+["GuessAnime","question","PASS","120 / 120","archive image pack"],["GuessDog","question","PASS","113 / 113","archive image pack"],["GuessDish","question","PASS","108 / 108","archive image pack"],["GuessPokemon","question","PASS","129 / 129","archive image pack"],
+["SportsQuiz","question","PASS","100 / 100","archive sports"],["SpaceTrivia","question","PASS","100 / 100","public-domain space media"],["EmojiQuiz","question","PASS","60 / 60","reviewed mode-specific emoji/title fallback"],["HealthQuiz","question","PASS","50 / 50","cited OpenStax anatomy/health catalog"],
+["FortuneQuiz","non_question","NOT_APPLICABLE","—","score-weighted personality outcome; no truthful correct index"],["PredictionQuiz","non_question","NOT_APPLICABLE","—","future-selection/outcome workflow; no truthful staged answer"],["GeoExplore","question","PASS","168 / 168","public-domain maps"],["WhosThat","question","PASS","176 / 176","public-domain portraits"],
+["AIHost","experience","PASS","295 / CustomTopic","voice host wrapper"],["AITutor","non_question","NOT_APPLICABLE","—","TutorX web experience"],["AIFortuneTeller","non_question","NOT_APPLICABLE","—","conversational reading"],["LocalBattle","experience","PASS","109 / SoloChallenge","local play wrapper"],
+["LiveArena","experience","PASS","109 / SoloChallenge","multiplayer wrapper"],["Tournament","experience","PASS","109 / SoloChallenge","competition wrapper"],["CustomTopic","question","PASS","295 / 295","topic connector matrix"],["PickATopic","experience","PASS","295 / CustomTopic","topic-selection wrapper"],
+["MediaQuiz","experience","PASS","114 / ImageQuiz","image wrapper with inherited image UX gate"],["SubjectiveQuiz","non_question","NOT_APPLICABLE","—","free-text rubric/AI grading workflow"],["NewsQuiz","question","PASS","60 / 60","current BBC publisher RSS image/headline pairs"],["FocusMode","non_question","NOT_APPLICABLE","—","ambient focus soundscape; no MCQs"]
+];
+document.getElementById("rows").innerHTML=data.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td class="${x[2]}">${x[2]}</td><td>${x[3]}</td><td>${x[4]}</td></tr>`).join("");
+</script></body></html>

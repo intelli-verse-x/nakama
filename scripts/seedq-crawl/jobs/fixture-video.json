@@ -1,0 +1,23 @@
+{
+  "mode": "VideoQuiz",
+  "topic": "video",
+  "country_codes": ["US"],
+  "locales": ["en-US"],
+  "interest_tags": ["science", "explainers", "video"],
+  "target_difficulty": 2,
+  "age_band": "13+",
+  "media_type": "video",
+  "count": 16,
+  "freshness_window_days": 365,
+  "allowed_domains": ["youtube.com", "ytimg.com"],
+  "denied_domains": [],
+  "allowed_licenses": ["api_tos_embed"],
+  "query_hints": ["embeddable educational videos"],
+  "source_strategy": "fixture",
+  "idempotency_key": "seedq-fixture-video-v1",
+  "crawl_budget": 20,
+  "max_pages": 16,
+  "max_assets": 16,
+  "timeout_ms": 10000,
+  "max_attempts": 3
+}

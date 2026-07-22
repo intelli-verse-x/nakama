@@ -22,7 +22,7 @@ table at the bottom is the sign-off sheet.
 | Aahaa engine | `data/modules/src/aahaa/aahaa_catalog.ts`, `aahaa_engine.ts`, `aahaa_facts.ts`, `aahaa_rpcs.ts`, `aahaa_validator.ts` | deducible Fact Pack, wow catalog + ranking, CTR kill switch, No-Hallucination validator |
 | No-repeat backstop | `data/modules/src/legacy/quiz.ts` | `quiz_submit_result` merges seen ids into the `qv_seen` ledger at submit time |
 | No-repeat chokepoint | `data/modules/src/games/quizverse/migration.ts` | `quizverse_request_questions` dedupes every served pack against `qv_seen` and stamps `repeat_policy` |
-| Showcase pages | `web/seedquestions/index.html`, `web/seedquestions/verify.html` | self-contained live demo + 12-check browser scoreboard (see §3) |
+| Showcase pages | `web/seedquestions/index.html`, `web/seedquestions/verify.html`, `web/seedquestions/unity.html` | self-contained live demo + 12-check browser scoreboard + shareable Unity integration guide (see §3) |
 | Verifier | `scripts/verify_deliverables.mjs` (+ `scripts/verify_deliverables.sh` wrapper) | 12-check deliverable suite — see [`docs/VERIFIER_LOOP.md`](VERIFIER_LOOP.md) |
 | Manifests | `deploy/seedquestions/ingress.yaml`, `deploy/seedquestions/showcase.yaml`, `deploy/seedquestions/cronjob.yaml`, `deploy/seedquestions/verify-cronjob.yaml`, `deploy/aahaa/cronjob.yaml` | host routing, static showcase, cron ticks, verifier loop |
 
@@ -163,6 +163,9 @@ ingress for continuity with older links.
    kubectl -n aicart create configmap seedq-showcase-html \
      --from-file=index.html=web/seedquestions/index.html \
      --from-file=verify.html=web/seedquestions/verify.html \
+     --from-file=unity.html=web/seedquestions/unity.html \
+     --from-file=top5-real-users.json=web/seedquestions/top5-real-users.json \
+     --from-file=verify-latest.json=web/seedquestions/verify-latest.json \
      --dry-run=client -o yaml | kubectl apply -f -
    ```
 5. **Apply the manifests** (showcase first — the ingress references its
@@ -174,7 +177,8 @@ ingress for continuity with older links.
 6. **Verify**: `https://seedquestions.quizverse.world/` renders the
    showcase; set the page's base URL to `https://seedquestions.quizverse.world`
    (same origin — `/v2/*` routes to Nakama on the same host) and run all
-   sections.
+   sections. Share `https://seedquestions.quizverse.world/unity.html` with the
+   Unity team for the client contract, cache rules, and acceptance checklist.
 
 ---
 
@@ -312,6 +316,34 @@ D1–D4 status + the full wow→surface integration matrix).
 3. **Validator middleware**: any LLM-narrated surface must pass its copy
    through `quizverse_aahaa_validate` (service token) before rendering —
    No-Hallucination gate.
+
+---
+
+## 8 · v1.2 all-mode production gate
+
+Do not deploy or seed from a mixed/dirty workspace. Update PR #304 from a clean
+worktree based on its `deploy/seedq-aahaa-golive` branch, carrying only
+`data/modules/src/seed-questions/`, generated bundle/declarations, SeedQ
+verifiers/docs/static pages, and any reviewed SeedQ manifests.
+
+Required order:
+
+1. Build and run `node scripts/verify_deliverables.mjs`; all 14 checks must pass.
+2. Deploy the reviewed bundle through the existing PR/workflow.
+3. Confirm health and `quizverse_seedq_sources.module_version >= 1.2.0`.
+4. Run bounded, idempotent seeding:
+   `node scripts/seedq_seed_all_modes.mjs --host "$PROD" --http-key "$HTTP_KEY" --target 50 --rounds 4`.
+   Obtain credentials from Kubernetes secrets without printing them.
+5. Query `quizverse_seedq_pool_stats`; production sign-off requires every
+   `mode_coverage[].status == "PASS"` and `deficit == 0`.
+6. Run the verifier against production with fresh IN/US/GLOBAL personas and
+   inspect Nakama logs for runtime/Goja errors.
+
+The 50-question threshold is five default ten-question sets: three staged plus
+two fresh no-repeat reserve sets. Never lower it merely to turn a finite or
+upstream-gated source green. As of the 2026-07-12 local run, production
+deployment and production seeding are pending; see `SEED_QUESTIONS_PLAN.md`
+§11 for the exact 27 PASS / 5 WARN / 4 BLOCKED inventory.
 
 ---
 

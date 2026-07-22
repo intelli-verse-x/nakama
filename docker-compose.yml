@@ -62,6 +62,7 @@ services:
           REVENUECAT_SECRET_API_KEY REVENUECAT_PROJECT_ID
           QV_DOGCEO_BREED_SAMPLE
           QV_GET_QUESTIONS_RATE_MAX
+          SEEDQ_SERVICE_TOKEN
         "
         RUNTIME_ENV_FLAGS=""
         for k in $$RUNTIME_ENV_KEYS; do
@@ -124,6 +125,7 @@ services:
       # Dashboard / admin auth
       - ADMIN_USERNAME=${ADMIN_USERNAME:-}
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
+      - SEEDQ_SERVICE_TOKEN=${SEEDQ_SERVICE_TOKEN:-}
       # Hardcoded fallback matches AA_FALLBACK_DASHBOARD_SECRET in analytics_admin.js
       - DASHBOARD_SECRET=${DASHBOARD_SECRET:-2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8}
       # Phase-2 feature flags (default ON; set to "false" to disable)

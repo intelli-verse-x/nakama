@@ -956,7 +956,7 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
 
   // ---- Seed Questions ("Staged Questions") engine ----
   // Keeps 2–3 quality-gated, never-seen, difficulty-adapted question sets
-  // staged per (user, mode, topic), fed by 13 external content-source
+  // staged per (user, mode, topic), fed by the reviewed content-source
   // connectors (archive.org, WolframAlpha, Gutenberg, everynoise/Deezer,
   // Semantic Scholar, JustWatch, YouTube→LLM, TinEye provenance, ...).
   // Public surface: seedquestions.quizverse.world (deploy/seedquestions/).
@@ -964,8 +964,22 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
   // every pooled Goja VM. See data/modules/src/seed-questions/.
   try {
     logger.info("[SeedQ] Registering quizverse_seedq_* RPCs (staged sets, review, ingest, sources, focus tracks)...");
-    SeedQuestions.register(initializer);
-    logger.info("[SeedQ] quizverse_seedq_get_staged/_consume_set/_review/_focus_tracks/_sources/_ingest/_ingest_tick/_pool_stats/_asset_job/_provenance registered");
+    // Keep these calls direct in InitModule. Nakama's AST walker does not
+    // reliably extract unique handler keys from namespace registration helpers.
+    initializer.registerRpc("quizverse_seedq_get_staged", rpcSeedqGetStaged);
+    initializer.registerRpc("quizverse_seedq_consume_set", rpcSeedqConsumeSet);
+    initializer.registerRpc("quizverse_seedq_review", rpcSeedqReview);
+    initializer.registerRpc("quizverse_seedq_focus_tracks", rpcSeedqFocusTracks);
+    initializer.registerRpc("quizverse_seedq_sources", rpcSeedqSources);
+    initializer.registerRpc("quizverse_seedq_ingest", rpcSeedqIngest);
+    initializer.registerRpc("quizverse_seedq_ingest_tick", rpcSeedqIngestTick);
+    initializer.registerRpc("quizverse_seedq_pool_stats", rpcSeedqPoolStats);
+    initializer.registerRpc("quizverse_seedq_asset_job", rpcSeedqAssetJob);
+    initializer.registerRpc("quizverse_seedq_provenance", rpcSeedqProvenance);
+    initializer.registerRpc("quizverse_seedq_crawl_job_submit", rpcSeedqCrawlJobSubmit);
+    initializer.registerRpc("quizverse_seedq_crawl_job_status", rpcSeedqCrawlJobStatus);
+    initializer.registerRpc("quizverse_seedq_crawl_candidate_ingest", rpcSeedqCrawlCandidateIngest);
+    logger.info("[SeedQ] staged/review/ingest/crawl RPCs registered");
   } catch (err: any) {
     logger.error("[SeedQ] Failed to register: " + (err && err.message ? err.message : String(err)));
   }
