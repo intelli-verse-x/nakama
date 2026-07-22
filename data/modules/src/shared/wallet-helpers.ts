@@ -30,32 +30,49 @@
       Storage.writeJson(nk, Constants.WALLETS_COLLECTION, key, wallet.userId, wallet, 1, 1);
     }
 
-    export function addCurrency(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, userId: string, gameId: string, currencyId: string, amount: number): GameWallet {
-      var wallet = getGameWallet(nk, userId, gameId);
-      if (!wallet.currencies[currencyId]) {
-        wallet.currencies[currencyId] = 0;
+    /** Map legacy "coins" to canonical "game"; keep game ↔ tokens mirrored. */
+    function resolveCurrencyId(currencyId: string): string {
+      return currencyId === "coins" ? "game" : currencyId;
+    }
+
+    function syncGameTokensMirror(wallet: GameWallet, resolvedId: string): void {
+      if (resolvedId === "game" || resolvedId === "tokens") {
+        var mirrored = wallet.currencies[resolvedId] || 0;
+        wallet.currencies.game = mirrored;
+        wallet.currencies.tokens = mirrored;
       }
-      wallet.currencies[currencyId] += amount;
+    }
+
+    export function addCurrency(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, userId: string, gameId: string, currencyId: string, amount: number): GameWallet {
+      var resolvedId = resolveCurrencyId(currencyId);
+      var wallet = getGameWallet(nk, userId, gameId);
+      if (!wallet.currencies[resolvedId]) {
+        wallet.currencies[resolvedId] = 0;
+      }
+      wallet.currencies[resolvedId] += amount;
+      syncGameTokensMirror(wallet, resolvedId);
       saveGameWallet(nk, wallet);
 
       EventBus.emit(nk, logger, ctx, EventBus.Events.CURRENCY_EARNED, {
-        userId: userId, gameId: gameId, currencyId: currencyId, amount: amount, newBalance: wallet.currencies[currencyId]
+        userId: userId, gameId: gameId, currencyId: resolvedId, amount: amount, newBalance: wallet.currencies[resolvedId]
       });
 
       return wallet;
     }
 
     export function spendCurrency(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, userId: string, gameId: string, currencyId: string, amount: number): GameWallet {
+      var resolvedId = resolveCurrencyId(currencyId);
       var wallet = getGameWallet(nk, userId, gameId);
-      var balance = wallet.currencies[currencyId] || 0;
+      var balance = wallet.currencies[resolvedId] || 0;
       if (balance < amount) {
-        throw new Error("Insufficient " + currencyId + ": have " + balance + ", need " + amount);
+        throw new Error("Insufficient " + resolvedId + ": have " + balance + ", need " + amount);
       }
-      wallet.currencies[currencyId] = balance - amount;
+      wallet.currencies[resolvedId] = balance - amount;
+      syncGameTokensMirror(wallet, resolvedId);
       saveGameWallet(nk, wallet);
 
       EventBus.emit(nk, logger, ctx, EventBus.Events.CURRENCY_SPENT, {
-        userId: userId, gameId: gameId, currencyId: currencyId, amount: amount, newBalance: wallet.currencies[currencyId]
+        userId: userId, gameId: gameId, currencyId: resolvedId, amount: amount, newBalance: wallet.currencies[resolvedId]
       });
 
       return wallet;

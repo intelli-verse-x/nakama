@@ -186,6 +186,7 @@ namespace LegacyQuiz {
       correctAnswers: correctAnswers,
       category: category,
       timestamp: ts,
+      gameId: data.gameId || data.game_id || Constants.QUIZVERSE_GAME_ID,
     });
 
     return RpcHelpers.successResponse({ result: result, stats: stats });

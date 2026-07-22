@@ -75,6 +75,18 @@ namespace QuestEventBusBridge {
   }
 
   // ── Handler for EventBus events ───────────────────────────────────────────
+  // Mirrors QuestEngine.resolveGameId — keep in sync (local to avoid namespace eval order).
+  function resolveQuestGameId(data: any): string {
+    var id =
+      (data && (data.gameId || data.game_id || data.appId || data.app_id))
+        ? String(data.gameId || data.game_id || data.appId || data.app_id)
+        : Constants.QUIZVERSE_GAME_ID;
+    if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+      return Constants.QUIZVERSE_GAME_ID;
+    }
+    return id;
+  }
+
   function handleEvent(
     nk: nkruntime.Nakama,
     logger: nkruntime.Logger,
@@ -92,8 +104,9 @@ namespace QuestEventBusBridge {
       return;
     }
 
-    // Extract common fields from event data
-    var gameId = data.gameId || data.appId || Constants.DEFAULT_GAME_ID;
+    // Extract common fields from event data — same tenant alias as quest_engine.resolveGameId
+    // (local copy avoids cross-namespace eval-order issues in the merged Goja bundle).
+    var gameId = resolveQuestGameId(data);
     var value = extractValue(eventName, data);
     var metadata = extractMetadata(eventName, data);
 
