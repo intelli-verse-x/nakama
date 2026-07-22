@@ -165,12 +165,15 @@ function getStreakData(nk, logger, userId, gameId) {
 
     if (!data) {
         // Initialize new streak
+        // currentStreak / lastOpenTimestamp = login streak (app open, once per UTC day)
+        // totalClaims / lastClaimTimestamp / claimHistory = daily reward claims (independent)
         data = {
             userId: userId,
             gameId: gameId,
             currentStreak: 0,
             bestStreak: 0,
             lastClaimTimestamp: 0,
+            lastOpenTimestamp: 0,
             totalClaims: 0,
             claimHistory: [],
             createdAt: utils.getCurrentTimestamp()
@@ -213,9 +216,14 @@ function getStreakData(nk, logger, userId, gameId) {
         }
     }
 
-    // Backfill fields for records created before QVBF_51
+    // Backfill fields for records created before QVBF_51 / app-open streak
     if (typeof data.bestStreak !== "number") data.bestStreak = data.currentStreak || 0;
     if (!data.claimHistory) data.claimHistory = [];
+    if (typeof data.lastOpenTimestamp !== "number") data.lastOpenTimestamp = 0;
+    // Migrate: older installs only tracked claims — seed open clock from last claim once.
+    if (!(data.lastOpenTimestamp > 0) && data.lastClaimTimestamp > 0) {
+        data.lastOpenTimestamp = data.lastClaimTimestamp;
+    }
 
     data = reconcileStreakLastClaim(nk, logger, userId, gameId, data);
 
@@ -279,7 +287,7 @@ function saveStreakDataVersioned(nk, logger, userId, gameId, data, version) {
 }
 
 /**
- * Check if user can claim reward today
+ * Check if user can claim reward today (claim clock — independent of login streak).
  * @param {object} streakData - Current streak data
  * @returns {object} { canClaim: boolean, reason: string }
  */
@@ -302,25 +310,95 @@ function canClaimToday(streakData) {
 }
 
 /**
- * Update streak status based on time elapsed; persist when streak breaks.
- * @param {object} nk - Nakama runtime
- * @param {object} logger - Logger instance
- * @param {string} userId - User ID
- * @param {string} gameId - Game ID (UUID)
- * @param {object} streakData - Current streak data
+ * Effective last-open unix for login streak (migrates from lastClaim when needed).
+ */
+function getEffectiveLastOpenTs(streakData) {
+    if (!streakData) return 0;
+    if (streakData.lastOpenTimestamp > 0) return streakData.lastOpenTimestamp;
+    if (streakData.lastClaimTimestamp > 0) return streakData.lastClaimTimestamp;
+    return 0;
+}
+
+/**
+ * Advance login streak once per UTC day on app open (server-authoritative).
+ * Claim must NOT call this path for reward grants — only check/status do.
+ * Idempotent within the same UTC day.
+ *
  * @returns {object} Updated streak data
+ */
+function performAppOpenStreak(nk, logger, userId, gameId) {
+    var settled = getStreakData(nk, logger, userId, gameId);
+    var today = getTodayUtcDateString();
+    var now = utils.getUnixTimestamp();
+
+    for (var attempt = 0; attempt < 2; attempt++) {
+        var raw = readStreakRawWithVersion(nk, userId, gameId);
+        var state = raw.value || settled;
+        if (typeof state.bestStreak !== "number") state.bestStreak = state.currentStreak || 0;
+        if (!state.claimHistory) state.claimHistory = [];
+        if (typeof state.lastOpenTimestamp !== "number") state.lastOpenTimestamp = 0;
+
+        var lastOpenTs = getEffectiveLastOpenTs(state);
+        if (lastOpenTs > 0) {
+            var lastDate = getUtcDateStringFromUnix(lastOpenTs);
+            if (lastDate === today) {
+                // Already counted today — persist migrated lastOpenTimestamp if missing.
+                if (!(state.lastOpenTimestamp > 0)) {
+                    state.lastOpenTimestamp = lastOpenTs;
+                    state.updatedAt = utils.getCurrentTimestamp();
+                    if (saveStreakDataVersioned(nk, logger, userId, gameId, state, raw.version)) {
+                        return state;
+                    }
+                    settled = getStreakData(nk, logger, userId, gameId);
+                    continue;
+                }
+                return state;
+            }
+
+            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
+            var todayDayStart = getUtcDayStartUnixFromDateString(today);
+            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
+            if (dayDiff === 1) {
+                state.currentStreak = Math.max(1, (state.currentStreak || 0) + 1);
+            } else {
+                // Missed one or more UTC days — restart at 1 for today's open.
+                state.currentStreak = 1;
+            }
+        } else {
+            // First recorded open: count today as day 1 (keep positive seed if any).
+            state.currentStreak = state.currentStreak > 0 ? state.currentStreak : 1;
+        }
+
+        state.lastOpenTimestamp = now;
+        state.updatedAt = utils.getCurrentTimestamp();
+        if (state.currentStreak > (state.bestStreak || 0)) {
+            state.bestStreak = state.currentStreak;
+        }
+
+        if (saveStreakDataVersioned(nk, logger, userId, gameId, state, raw.version)) {
+            utils.logInfo(logger, "[DailyRewards] App-open streak for " + userId +
+                ": currentStreak=" + state.currentStreak);
+            return state;
+        }
+        settled = getStreakData(nk, logger, userId, gameId);
+    }
+
+    return settled;
+}
+
+/**
+ * Passive break check for login streak when a caller does not advance on open.
+ * Uses lastOpenTimestamp (not lastClaim) so skipping a claim cannot wipe a login streak.
  */
 function updateStreakStatus(nk, logger, userId, gameId, streakData) {
     var now = utils.getUnixTimestamp();
-    var lastClaim = streakData.lastClaimTimestamp;
+    var lastOpen = getEffectiveLastOpenTs(streakData);
 
-    // First claim
-    if (lastClaim === 0) {
+    if (lastOpen === 0) {
         return streakData;
     }
 
-    // Check if more than 48 hours passed (streak broken)
-    if (!utils.isWithinHours(lastClaim, now, 48)) {
+    if (!utils.isWithinHours(lastOpen, now, 48)) {
         if (streakData.currentStreak !== 0) {
             streakData.currentStreak = 0;
             saveStreakData(nk, logger, userId, gameId, streakData);
@@ -391,15 +469,14 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
         return utils.handleError(ctx, null, "User not authenticated");
     }
 
-    // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+    // Get current streak data — app open advances login streak (once per UTC day).
+    var streakData = performAppOpenStreak(nk, logger, userId, gameId);
 
     // Check if can claim
     var claimCheck = canClaimToday(streakData);
 
-    // Get next reward info
-    var nextDay = streakData.currentStreak + 1;
+    // Next reward day follows claim cycle (totalClaims), not login streak.
+    var nextDay = (streakData.totalClaims || 0) + 1;
     var nextReward = getRewardForDay(gameId, nextDay);
 
     // QVBF_166: field names must match C# DailyRewardStatus [JsonProperty] attributes.
@@ -443,10 +520,9 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
  *   { ok: false, error, reason }
  */
 function performDailyClaim(nk, logger, userId, gameId) {
-    // Get current streak data (runs migration/reconcile side-effects up front so
-    // the versioned read below sees a settled record).
+    // Login streak is advanced on app open (performAppOpenStreak), not here.
+    // Claim only grants wallet + updates claim clock / totalClaims / claimHistory.
     var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
 
     // Fast pre-check (cheap rejection before the OCC loop).
     var claimCheck = canClaimToday(streakData);
@@ -455,13 +531,6 @@ function performDailyClaim(nk, logger, userId, gameId) {
     }
 
     // ── ATOMIC CLAIM (OCC / double-claim fix) ────────────────────────────────
-    // The old path did read → check → walletUpdate → blind write. Two concurrent
-    // claims (double-tap, second device, client retry after timeout) both passed
-    // the check and BOTH granted coins. Now: re-read WITH the storage version,
-    // re-verify eligibility on that exact snapshot, mutate, and commit with a
-    // CONDITIONAL write. If a concurrent claim committed first, the write fails,
-    // we re-read, see lastClaim == today, and reject with "already claimed" —
-    // making retries idempotent and duplicate grants impossible.
     var reward = null;
     var committed = false;
     for (var attempt = 0; attempt < 2 && !committed; attempt++) {
@@ -471,39 +540,21 @@ function performDailyClaim(nk, logger, userId, gameId) {
         var claimState = raw.value || streakData;
         if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
         if (!claimState.claimHistory) claimState.claimHistory = [];
+        if (typeof claimState.lastOpenTimestamp !== "number") claimState.lastOpenTimestamp = 0;
 
         var recheck = canClaimToday(claimState);
         if (!recheck.canClaim) {
             return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
         }
 
-        // Reset streak when gap spans more than one UTC day or exceeds 48h grace
-        // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
-        var lastClaimTs = claimState.lastClaimTimestamp || 0;
-        if (lastClaimTs > 0) {
-            var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-            var today = getTodayUtcDateString();
-            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-            var todayDayStart = getUtcDayStartUnixFromDateString(today);
-            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-                claimState.currentStreak = 0;
-            }
-        }
-
-        // Update streak
-        claimState.currentStreak = (claimState.currentStreak || 0) + 1;
+        // Claim cycle day for reward table — independent of login currentStreak.
+        var nextClaimDay = (claimState.totalClaims || 0) + 1;
         claimState.lastClaimTimestamp = utils.getUnixTimestamp();
-        claimState.totalClaims = (claimState.totalClaims || 0) + 1;
+        claimState.totalClaims = nextClaimDay;
         claimState.updatedAt = utils.getCurrentTimestamp();
-
-        // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
-        if (claimState.currentStreak > (claimState.bestStreak || 0)) {
-            claimState.bestStreak = claimState.currentStreak;
-        }
+        // Do NOT mutate currentStreak / bestStreak / lastOpenTimestamp on claim.
 
         // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
-        // Capped at 90 entries (~3 months) to keep the storage record small.
         var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
         var claimDateStr = claimDate.getUTCFullYear() + "-" +
             (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
@@ -515,7 +566,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
             }
         }
 
-        reward = getRewardForDay(gameId, claimState.currentStreak);
+        reward = getRewardForDay(gameId, nextClaimDay);
 
         if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
             committed = true;
@@ -535,18 +586,17 @@ function performDailyClaim(nk, logger, userId, gameId) {
         userId: userId,
         gameId: gameId,
         type: "daily_reward_claim",
-        day: streakData.currentStreak,
+        day: streakData.totalClaims,
+        loginStreak: streakData.currentStreak,
         reward: reward,
         timestamp: utils.getCurrentTimestamp()
     };
     utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, transactionData);
 
-    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
+    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.totalClaims +
+        " reward (loginStreak=" + streakData.currentStreak + ") for game " + gameId);
 
     // Credit the storage game wallet (currencies.game + tokens mirror) and global XP.
-    // HUD / wallet_get_balances read storage wallets — NOT Nakama's built-in nk.walletUpdate.
-    // Grant only after OCC streak commit (no double grant on conflict). Hard-fail on save failure
-    // so clients never see success:true with a silent empty wallet credit.
     var grant = reward.game || 0;
     var xpGrant = reward.xp || 0;
     var walletGranted = { game: grant, xp: xpGrant };
@@ -637,178 +687,22 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
         });
     }
 
-    /**
-     * DAILY PROGRESSION PLATFORM — single claim core.
-     *
-     * This is the ONLY implementation of "claim today's daily reward" in the entire
-     * backend. Every claim RPC (canonical `daily_rewards_claim`, the consolidated
-     * `daily_progress_claim`, and the legacy Arcade `quizverse_claim_daily_reward`)
-     * MUST delegate here. Do not fork this logic.
-     *
-     * Returns:
-     *   { ok: true,  streakData, reward, walletGranted }
-     *   { ok: false, error, reason, deadLetterKey? }
-     */
-    function performDailyClaim(nk, logger, userId, gameId) {
-        // Get current streak data (runs migration/reconcile side-effects up front so
-        // the versioned read below sees a settled record).
-        var streakData = getStreakData(nk, logger, userId, gameId);
-        streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-
-        // Resume incomplete claims BEFORE treating today as a fresh claim.
-        // pendingGrant = OCC committed but wallet not finalized (claim-in-progress lock).
-        var claimCheck = canClaimToday(streakData);
-        if (claimCheck.reason === "pending_grant_resume") {
-            return resumePendingDailyGrant(nk, logger, userId, gameId, streakData);
-        }
-        if (!claimCheck.canClaim) {
-            return { ok: false, error: "Cannot claim reward: " + claimCheck.reason, reason: claimCheck.reason };
-        }
-
-        // ── ATOMIC CLAIM (OCC + pendingGrant lock) ───────────────────────────────
-        // Commit streak WITH pendingGrant so concurrent callers see claim-in-progress
-        // and resume (idempotent grant lock) instead of already_claimed_today.
-        var reward = null;
-        var committed = false;
-        var preClaimSnapshot = null;
-        var claimDateStr = null;
-        for (var attempt = 0; attempt < 2 && !committed; attempt++) {
-            var raw = readStreakRawWithVersion(nk, userId, gameId);
-            var claimState = raw.value || streakData;
-            if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
-            if (!claimState.claimHistory) claimState.claimHistory = [];
-
-            var recheck = canClaimToday(claimState);
-            if (recheck.reason === "pending_grant_resume") {
-                return resumePendingDailyGrant(nk, logger, userId, gameId, claimState);
-            }
-            if (!recheck.canClaim) {
-                return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
-            }
-
-            var snapshotBeforeClaim = JSON.parse(JSON.stringify(claimState));
-            if (snapshotBeforeClaim.pendingGrant) delete snapshotBeforeClaim.pendingGrant;
-
-            var lastClaimTs = claimState.lastClaimTimestamp || 0;
-            if (lastClaimTs > 0) {
-                var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-                var today = getTodayUtcDateString();
-                var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-                var todayDayStart = getUtcDayStartUnixFromDateString(today);
-                var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-                if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-                    claimState.currentStreak = 0;
-                }
-            }
-
-            claimState.currentStreak = (claimState.currentStreak || 0) + 1;
-            claimState.lastClaimTimestamp = utils.getUnixTimestamp();
-            claimState.totalClaims = (claimState.totalClaims || 0) + 1;
-            claimState.updatedAt = utils.getCurrentTimestamp();
-
-            if (claimState.currentStreak > (claimState.bestStreak || 0)) {
-                claimState.bestStreak = claimState.currentStreak;
-            }
-
-            var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
-            claimDateStr = claimDate.getUTCFullYear() + "-" +
-                (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
-                (claimDate.getUTCDate() < 10 ? "0" : "") + claimDate.getUTCDate();
-            if (claimState.claimHistory[claimState.claimHistory.length - 1] !== claimDateStr) {
-                claimState.claimHistory.push(claimDateStr);
-                while (claimState.claimHistory.length > 90) {
-                    claimState.claimHistory.shift();
-                }
-            }
-
-            reward = getRewardForDay(gameId, claimState.currentStreak);
-
-            // Claim-in-progress lock: concurrent claims resume this instead of rejecting.
-            claimState.pendingGrant = {
-                status: "pending_wallet",
-                game: reward.game || 0,
-                xp: reward.xp || 0,
-                claimDate: claimDateStr,
-                reward: reward,
-                preClaimSnapshot: snapshotBeforeClaim,
-                startedAt: utils.getUnixTimestamp()
-            };
-
-            if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
-                committed = true;
-                streakData = claimState;
-                preClaimSnapshot = snapshotBeforeClaim;
-            }
-        }
-
-        if (!committed) {
-            return { ok: false, error: "Failed to save streak data (concurrent update)", reason: "concurrent_update" };
-        }
-
-        utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
-
-        // ACTIVE PATH: storage wallets via grant lock (idempotent). Never nk.walletUpdate.
-        // Prefer `game` (canonical coin grant). Fall back to `tokens` only for
-        // legacy reward rows that omit `game` — never grant 0 when a reward exists.
-        var grant = (reward && (reward.game || reward.tokens)) || 0;
-        var xpGrant = (reward && reward.xp) || 0;
-        var walletGranted = { game: grant, xp: xpGrant };
-        try {
-            if (grant > 0 || xpGrant > 0) {
-                var applied = applyStorageWalletGrant(nk, logger, userId, gameId, grant, xpGrant, claimDateStr);
-                walletGranted = applied.walletGranted;
-                logger.info("[DailyRewards] Granted storage wallet: " + JSON.stringify(walletGranted) + " to " + userId);
-            }
-            finalizePendingGrantOnStreak(nk, logger, userId, gameId, streakData, claimDateStr);
-        } catch (walletErr) {
-            var grantMsg = (walletErr && walletErr.message) ? walletErr.message : String(walletErr);
-            if (grantMsg === "claim_in_progress") {
-                return { ok: false, error: "Claim wallet grant already in progress", reason: "claim_in_progress" };
-            }
-            logger.error("[DailyRewards] Wallet grant failed after claim commit: " + grantMsg);
-            return rollbackFailedGrant(nk, logger, userId, gameId, streakData, preClaimSnapshot, reward, grantMsg);
-        }
-
-        // Transaction log only after successful finalize (avoid false claim history).
-        var transactionKey = "transaction_log_" + userId + "_" + utils.getUnixTimestamp();
-        utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, {
-            userId: userId,
-            gameId: gameId,
-            type: "daily_reward_claim",
-            day: streakData.currentStreak,
-            reward: reward,
-            timestamp: utils.getCurrentTimestamp()
-        });
-
-        return { ok: true, streakData: streakData, reward: reward, walletGranted: walletGranted };
-    }
-
-    var data = parsed.data;
-    var validation = utils.validatePayload(data, ['gameId']);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-    }
-
-    var gameId = data.gameId;
-    if (!utils.isValidUUID(gameId)) {
-        return utils.handleError(ctx, null, "Invalid gameId UUID format");
-    }
-
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-
+    var streakData = result.streakData;
     return JSON.stringify({
         success: true,
         userId: userId,
         gameId: gameId,
+        streak: streakData.currentStreak,
         currentStreak: streakData.currentStreak,
+        newStreak: streakData.currentStreak,
         bestStreak: streakData.bestStreak || 0,
-        totalClaims: streakData.totalClaims,
+        totalClaims: streakData.totalClaims || 0,
+        lastClaimTimestamp: streakData.lastClaimTimestamp || 0,
+        lastOpenTimestamp: streakData.lastOpenTimestamp || 0,
+        canClaim: false,
+        canClaimToday: false,
+        reward: result.reward,
+        walletGranted: result.walletGranted,
         claimHistory: streakData.claimHistory || [],
         timestamp: utils.getCurrentTimestamp()
     });

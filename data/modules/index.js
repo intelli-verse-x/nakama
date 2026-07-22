@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-20T08:13:58.800Z
-// RPC Count: 1318
+// Generated: 2026-07-22T05:31:43.740Z
+// RPC Count: 1319
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -187,6 +187,7 @@ var __rpc_quizverse_words_daily_seed;
 var __rpc_quizverse_words_duel_get;
 var __rpc_quizverse_words_duel_submit;
 var __rpc_quizverse_words_duel_leaderboard;
+var __rpc_quizverse_party_play_quota;
 var __rpc_quizverse_get_personalized_quests;
 var __rpc_quizverse_prewarm_tick;
 var __rpc_quizverse_warm_topic;
@@ -1332,7 +1333,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_save_player_data":true,"lasttolive_load_player_data":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_save_player_data":true,"quizverse_load_player_data":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (122 files) ---
 
@@ -35870,15 +35871,18 @@ function rpcCrossGameChallenge(ctx, logger, nk, payload) {
         crossGameSafeWrite(nk, "cross_game_challenges", "challenge:" + challengeId, data.target_user_id, challenge);
 
         try {
+            // Code 7601 is outside friend lifecycle 1–6 / 100–105.
             nk.notificationsSend([{
                 userId: data.target_user_id,
                 subject: "Cross-Game Challenge!",
                 content: {
+                    type: "cross_game_challenge",
+                    eventType: "cross_game_challenge",
                     challenge_id: challengeId,
                     challenger_id: userId,
                     games: data.game_ids
                 },
-                code: 100,
+                code: 7601,
                 persistent: true,
                 senderId: userId
             }]);
@@ -36476,20 +36480,23 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
-// login streaks, the streak dashboard, calendar, shield/freeze state, and any
-// future daily-progression feature. It exposes exactly TWO production RPCs:
+// login streaks (advanced on app open / daily_progress_check), the streak
+// dashboard, calendar, shield/freeze state, and any future daily-progression
+// feature. It exposes exactly TWO production RPCs:
 //
-//   1. daily_progress_check — one request returns EVERYTHING the client needs:
-//      streak, claim eligibility, countdown/next reset, next reward, 7-day
-//      reward table, 30-day calendar + milestones, claim history, shield state,
-//      server UTC time, and a payload version.
+//   1. daily_progress_check — advances login streak once per UTC day, then
+//      returns EVERYTHING the client needs: streak, claim eligibility,
+//      countdown/next reset, next reward, 7-day reward table, 30-day calendar
+//      + milestones, claim history, shield state, server UTC time, payload version.
 //
 //   2. daily_progress_claim — validates, performs the ATOMIC/IDEMPOTENT claim
 //      (delegating to performDailyClaim in daily_rewards.js — the single claim
-//      core), and returns the SAME full state as check so the client never
-//      needs a follow-up refresh RPC.
+//      core; does NOT bump login streak), and returns the SAME full state as
+//      check so the client never needs a follow-up refresh RPC.
 //
 // SINGLE SOURCE OF TRUTH RULES:
+//   - Login streak:        currentStreak / lastOpenTimestamp via performAppOpenStreak
+//   - Claim cycle:         totalClaims / lastClaimTimestamp / claimHistory
 //   - Streak storage:      daily_streaks / user_daily_streak (daily_rewards.js)
 //   - Claim core:          performDailyClaim (daily_rewards.js) — OCC versioned
 //   - Eligibility:         canClaimToday (daily_rewards.js) — UTC day window
@@ -36558,7 +36565,7 @@ function dpReadShield(nk, logger, userId) {
  * a local-timezone eligibility bug and hand-rolled storage keys — both gone:
  * callers now resolve state via the canonical getStreakData/canClaimToday).
  */
-function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
+function buildDailyRewardCalendarView(gameId, claimCycleDay, canClaim) {
     var config = getCalendarConfig(gameId);
     var calendar = [];
     var milestones = [];
@@ -36587,12 +36594,13 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
         totalTokens += dayConfig.tokens || 0;
         totalXp += dayConfig.xp || 0;
 
+        // Claim calendar uses totalClaims cycle — not login currentStreak.
         var status = 'locked';
-        if (day <= currentStreak) {
+        if (day <= claimCycleDay) {
             status = 'claimed';
-        } else if (day === currentStreak + 1 && canClaim) {
+        } else if (day === claimCycleDay + 1 && canClaim) {
             status = 'available';
-        } else if (day === currentStreak + 1 && !canClaim) {
+        } else if (day === claimCycleDay + 1 && !canClaim) {
             status = 'claimed_today';
         }
 
@@ -36617,7 +36625,7 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
                 day: config[m].day,
                 name: config[m].name,
                 tier: config[m].tier,
-                reached: config[m].day <= currentStreak
+                reached: config[m].day <= claimCycleDay
             });
         }
     }
@@ -36633,13 +36641,14 @@ function buildDailyRewardCalendarView(gameId, currentStreak, canClaim) {
  * deserializes this payload without change.
  */
 function buildDailyProgressState(nk, logger, userId, gameId) {
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+    // App open advances login streak once per UTC day (server-authoritative).
+    var streakData = performAppOpenStreak(nk, logger, userId, gameId);
 
     var claimCheck = canClaimToday(streakData);
-    var nextReward = getRewardForDay(gameId, streakData.currentStreak + 1);
+    var claimCycle = streakData.totalClaims || 0;
+    var nextReward = getRewardForDay(gameId, claimCycle + 1);
     var rewardTable = REWARD_CONFIGS[gameId] || REWARD_CONFIGS["default"];
-    var cal = buildDailyRewardCalendarView(gameId, streakData.currentStreak, claimCheck.canClaim);
+    var cal = buildDailyRewardCalendarView(gameId, claimCycle, claimCheck.canClaim);
     var shield = dpReadShield(nk, logger, userId);
     var reset = dpNextReset();
 
@@ -36651,12 +36660,13 @@ function buildDailyProgressState(nk, logger, userId, gameId) {
         userId: userId,
         gameId: gameId,
 
-        // ── streak (flat legacy aliases kept) ──
+        // ── login streak (app open) ──
         streak: streakData.currentStreak,
         currentStreak: streakData.currentStreak,
         bestStreak: streakData.bestStreak || 0,
-        totalClaims: streakData.totalClaims || 0,
+        totalClaims: claimCycle,
         lastClaimTimestamp: streakData.lastClaimTimestamp || 0,
+        lastOpenTimestamp: streakData.lastOpenTimestamp || 0,
 
         // ── claim eligibility ──
         canClaim: claimCheck.canClaim,
@@ -36665,7 +36675,7 @@ function buildDailyProgressState(nk, logger, userId, gameId) {
         nextResetUtc: reset.nextResetUtc,
         countdownSeconds: reset.countdownSeconds,
 
-        // ── rewards ──
+        // ── rewards (claim cycle) ──
         nextReward: nextReward,
         rewardTable: rewardTable,
 
@@ -36719,6 +36729,32 @@ function rpcDailyProgressClaim(ctx, logger, nk, payload) {
     var state = buildDailyProgressState(nk, logger, v.userId, gameId);
 
     if (!result.ok) {
+        // Idempotent double-tap / concurrent claim: streak already advanced for
+        // today's UTC day. Returning success:false here made Unity show
+        // "Claim failed" even though the first writer landed the claim.
+        if (result.reason === "already_claimed_today" &&
+            state.lastClaimTimestamp > 0 &&
+            !state.canClaim) {
+            var todayUtc = (typeof getTodayUtcDateString === "function")
+                ? getTodayUtcDateString()
+                : new Date().toISOString().slice(0, 10);
+            var lastDate = (typeof getUtcDateStringFromUnix === "function")
+                ? getUtcDateStringFromUnix(state.lastClaimTimestamp)
+                : "";
+            if (lastDate === todayUtc) {
+                state.success = true;
+                state.error = null;
+                state.idempotentReplay = true;
+                state.reward = state.reward || getRewardForDay(gameId, state.totalClaims || 1);
+                state.walletGranted = state.walletGranted || {
+                    game: (state.reward && (state.reward.game || state.reward.tokens)) || 0,
+                    xp: (state.reward && state.reward.xp) || 0
+                };
+                state.newStreak = state.currentStreak;
+                state.claimedAt = utils.getCurrentTimestamp();
+                return JSON.stringify(state);
+            }
+        }
         state.success = false;
         state.error = result.error;
         state.claimRejectedReason = result.reason;
@@ -37033,12 +37069,15 @@ function getStreakData(nk, logger, userId, gameId) {
 
     if (!data) {
         // Initialize new streak
+        // currentStreak / lastOpenTimestamp = login streak (app open, once per UTC day)
+        // totalClaims / lastClaimTimestamp / claimHistory = daily reward claims (independent)
         data = {
             userId: userId,
             gameId: gameId,
             currentStreak: 0,
             bestStreak: 0,
             lastClaimTimestamp: 0,
+            lastOpenTimestamp: 0,
             totalClaims: 0,
             claimHistory: [],
             createdAt: utils.getCurrentTimestamp()
@@ -37081,9 +37120,14 @@ function getStreakData(nk, logger, userId, gameId) {
         }
     }
 
-    // Backfill fields for records created before QVBF_51
+    // Backfill fields for records created before QVBF_51 / app-open streak
     if (typeof data.bestStreak !== "number") data.bestStreak = data.currentStreak || 0;
     if (!data.claimHistory) data.claimHistory = [];
+    if (typeof data.lastOpenTimestamp !== "number") data.lastOpenTimestamp = 0;
+    // Migrate: older installs only tracked claims — seed open clock from last claim once.
+    if (!(data.lastOpenTimestamp > 0) && data.lastClaimTimestamp > 0) {
+        data.lastOpenTimestamp = data.lastClaimTimestamp;
+    }
 
     data = reconcileStreakLastClaim(nk, logger, userId, gameId, data);
 
@@ -37147,7 +37191,7 @@ function saveStreakDataVersioned(nk, logger, userId, gameId, data, version) {
 }
 
 /**
- * Check if user can claim reward today
+ * Check if user can claim reward today (claim clock — independent of login streak).
  * @param {object} streakData - Current streak data
  * @returns {object} { canClaim: boolean, reason: string }
  */
@@ -37170,25 +37214,95 @@ function canClaimToday(streakData) {
 }
 
 /**
- * Update streak status based on time elapsed; persist when streak breaks.
- * @param {object} nk - Nakama runtime
- * @param {object} logger - Logger instance
- * @param {string} userId - User ID
- * @param {string} gameId - Game ID (UUID)
- * @param {object} streakData - Current streak data
+ * Effective last-open unix for login streak (migrates from lastClaim when needed).
+ */
+function getEffectiveLastOpenTs(streakData) {
+    if (!streakData) return 0;
+    if (streakData.lastOpenTimestamp > 0) return streakData.lastOpenTimestamp;
+    if (streakData.lastClaimTimestamp > 0) return streakData.lastClaimTimestamp;
+    return 0;
+}
+
+/**
+ * Advance login streak once per UTC day on app open (server-authoritative).
+ * Claim must NOT call this path for reward grants — only check/status do.
+ * Idempotent within the same UTC day.
+ *
  * @returns {object} Updated streak data
+ */
+function performAppOpenStreak(nk, logger, userId, gameId) {
+    var settled = getStreakData(nk, logger, userId, gameId);
+    var today = getTodayUtcDateString();
+    var now = utils.getUnixTimestamp();
+
+    for (var attempt = 0; attempt < 2; attempt++) {
+        var raw = readStreakRawWithVersion(nk, userId, gameId);
+        var state = raw.value || settled;
+        if (typeof state.bestStreak !== "number") state.bestStreak = state.currentStreak || 0;
+        if (!state.claimHistory) state.claimHistory = [];
+        if (typeof state.lastOpenTimestamp !== "number") state.lastOpenTimestamp = 0;
+
+        var lastOpenTs = getEffectiveLastOpenTs(state);
+        if (lastOpenTs > 0) {
+            var lastDate = getUtcDateStringFromUnix(lastOpenTs);
+            if (lastDate === today) {
+                // Already counted today — persist migrated lastOpenTimestamp if missing.
+                if (!(state.lastOpenTimestamp > 0)) {
+                    state.lastOpenTimestamp = lastOpenTs;
+                    state.updatedAt = utils.getCurrentTimestamp();
+                    if (saveStreakDataVersioned(nk, logger, userId, gameId, state, raw.version)) {
+                        return state;
+                    }
+                    settled = getStreakData(nk, logger, userId, gameId);
+                    continue;
+                }
+                return state;
+            }
+
+            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
+            var todayDayStart = getUtcDayStartUnixFromDateString(today);
+            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
+            if (dayDiff === 1) {
+                state.currentStreak = Math.max(1, (state.currentStreak || 0) + 1);
+            } else {
+                // Missed one or more UTC days — restart at 1 for today's open.
+                state.currentStreak = 1;
+            }
+        } else {
+            // First recorded open: count today as day 1 (keep positive seed if any).
+            state.currentStreak = state.currentStreak > 0 ? state.currentStreak : 1;
+        }
+
+        state.lastOpenTimestamp = now;
+        state.updatedAt = utils.getCurrentTimestamp();
+        if (state.currentStreak > (state.bestStreak || 0)) {
+            state.bestStreak = state.currentStreak;
+        }
+
+        if (saveStreakDataVersioned(nk, logger, userId, gameId, state, raw.version)) {
+            utils.logInfo(logger, "[DailyRewards] App-open streak for " + userId +
+                ": currentStreak=" + state.currentStreak);
+            return state;
+        }
+        settled = getStreakData(nk, logger, userId, gameId);
+    }
+
+    return settled;
+}
+
+/**
+ * Passive break check for login streak when a caller does not advance on open.
+ * Uses lastOpenTimestamp (not lastClaim) so skipping a claim cannot wipe a login streak.
  */
 function updateStreakStatus(nk, logger, userId, gameId, streakData) {
     var now = utils.getUnixTimestamp();
-    var lastClaim = streakData.lastClaimTimestamp;
+    var lastOpen = getEffectiveLastOpenTs(streakData);
 
-    // First claim
-    if (lastClaim === 0) {
+    if (lastOpen === 0) {
         return streakData;
     }
 
-    // Check if more than 48 hours passed (streak broken)
-    if (!utils.isWithinHours(lastClaim, now, 48)) {
+    if (!utils.isWithinHours(lastOpen, now, 48)) {
         if (streakData.currentStreak !== 0) {
             streakData.currentStreak = 0;
             saveStreakData(nk, logger, userId, gameId, streakData);
@@ -37259,15 +37373,14 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
         return utils.handleError(ctx, null, "User not authenticated");
     }
 
-    // Get current streak data
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
+    // Get current streak data — app open advances login streak (once per UTC day).
+    var streakData = performAppOpenStreak(nk, logger, userId, gameId);
 
     // Check if can claim
     var claimCheck = canClaimToday(streakData);
 
-    // Get next reward info
-    var nextDay = streakData.currentStreak + 1;
+    // Next reward day follows claim cycle (totalClaims), not login streak.
+    var nextDay = (streakData.totalClaims || 0) + 1;
     var nextReward = getRewardForDay(gameId, nextDay);
 
     // QVBF_166: field names must match C# DailyRewardStatus [JsonProperty] attributes.
@@ -37311,10 +37424,9 @@ function rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
  *   { ok: false, error, reason }
  */
 function performDailyClaim(nk, logger, userId, gameId) {
-    // Get current streak data (runs migration/reconcile side-effects up front so
-    // the versioned read below sees a settled record).
+    // Login streak is advanced on app open (performAppOpenStreak), not here.
+    // Claim only grants wallet + updates claim clock / totalClaims / claimHistory.
     var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
 
     // Fast pre-check (cheap rejection before the OCC loop).
     var claimCheck = canClaimToday(streakData);
@@ -37323,13 +37435,6 @@ function performDailyClaim(nk, logger, userId, gameId) {
     }
 
     // ── ATOMIC CLAIM (OCC / double-claim fix) ────────────────────────────────
-    // The old path did read → check → walletUpdate → blind write. Two concurrent
-    // claims (double-tap, second device, client retry after timeout) both passed
-    // the check and BOTH granted coins. Now: re-read WITH the storage version,
-    // re-verify eligibility on that exact snapshot, mutate, and commit with a
-    // CONDITIONAL write. If a concurrent claim committed first, the write fails,
-    // we re-read, see lastClaim == today, and reject with "already claimed" —
-    // making retries idempotent and duplicate grants impossible.
     var reward = null;
     var committed = false;
     for (var attempt = 0; attempt < 2 && !committed; attempt++) {
@@ -37339,39 +37444,21 @@ function performDailyClaim(nk, logger, userId, gameId) {
         var claimState = raw.value || streakData;
         if (typeof claimState.bestStreak !== "number") claimState.bestStreak = claimState.currentStreak || 0;
         if (!claimState.claimHistory) claimState.claimHistory = [];
+        if (typeof claimState.lastOpenTimestamp !== "number") claimState.lastOpenTimestamp = 0;
 
         var recheck = canClaimToday(claimState);
         if (!recheck.canClaim) {
             return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
         }
 
-        // Reset streak when gap spans more than one UTC day or exceeds 48h grace
-        // (matches LegacyDailyRewards dayDiff > 1 rule before increment).
-        var lastClaimTs = claimState.lastClaimTimestamp || 0;
-        if (lastClaimTs > 0) {
-            var lastDate = getUtcDateStringFromUnix(lastClaimTs);
-            var today = getTodayUtcDateString();
-            var lastDayStart = getUtcDayStartUnixFromDateString(lastDate);
-            var todayDayStart = getUtcDayStartUnixFromDateString(today);
-            var dayDiff = Math.floor((todayDayStart - lastDayStart) / 86400);
-            if (dayDiff > 1 || !utils.isWithinHours(lastClaimTs, utils.getUnixTimestamp(), 48)) {
-                claimState.currentStreak = 0;
-            }
-        }
-
-        // Update streak
-        claimState.currentStreak = (claimState.currentStreak || 0) + 1;
+        // Claim cycle day for reward table — independent of login currentStreak.
+        var nextClaimDay = (claimState.totalClaims || 0) + 1;
         claimState.lastClaimTimestamp = utils.getUnixTimestamp();
-        claimState.totalClaims = (claimState.totalClaims || 0) + 1;
+        claimState.totalClaims = nextClaimDay;
         claimState.updatedAt = utils.getCurrentTimestamp();
-
-        // QVBF_51: track lifetime best streak for the dashboard "Best Streak" card
-        if (claimState.currentStreak > (claimState.bestStreak || 0)) {
-            claimState.bestStreak = claimState.currentStreak;
-        }
+        // Do NOT mutate currentStreak / bestStreak / lastOpenTimestamp on claim.
 
         // QVBF_51: append claim date (UTC YYYY-MM-DD) for the activity heatmap.
-        // Capped at 90 entries (~3 months) to keep the storage record small.
         var claimDate = new Date(claimState.lastClaimTimestamp * 1000);
         var claimDateStr = claimDate.getUTCFullYear() + "-" +
             (claimDate.getUTCMonth() + 1 < 10 ? "0" : "") + (claimDate.getUTCMonth() + 1) + "-" +
@@ -37383,7 +37470,7 @@ function performDailyClaim(nk, logger, userId, gameId) {
             }
         }
 
-        reward = getRewardForDay(gameId, claimState.currentStreak);
+        reward = getRewardForDay(gameId, nextClaimDay);
 
         if (saveStreakDataVersioned(nk, logger, userId, gameId, claimState, raw.version)) {
             committed = true;
@@ -37403,18 +37490,17 @@ function performDailyClaim(nk, logger, userId, gameId) {
         userId: userId,
         gameId: gameId,
         type: "daily_reward_claim",
-        day: streakData.currentStreak,
+        day: streakData.totalClaims,
+        loginStreak: streakData.currentStreak,
         reward: reward,
         timestamp: utils.getCurrentTimestamp()
     };
     utils.writeStorage(nk, logger, "transaction_logs", transactionKey, userId, transactionData);
 
-    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.currentStreak + " reward for game " + gameId);
+    utils.logInfo(logger, "User " + userId + " claimed day " + streakData.totalClaims +
+        " reward (loginStreak=" + streakData.currentStreak + ") for game " + gameId);
 
     // Credit the storage game wallet (currencies.game + tokens mirror) and global XP.
-    // HUD / wallet_get_balances read storage wallets — NOT Nakama's built-in nk.walletUpdate.
-    // Grant only after OCC streak commit (no double grant on conflict). Hard-fail on save failure
-    // so clients never see success:true with a silent empty wallet credit.
     var grant = reward.game || 0;
     var xpGrant = reward.xp || 0;
     var walletGranted = { game: grant, xp: xpGrant };
@@ -37505,63 +37591,22 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
         });
     }
 
-    // QVBF_166: emit both `streak`/`newStreak` so C# DailyRewardClaim
-    // [JsonProperty("streak")] → newStreak deserializes the correct value.
+    var streakData = result.streakData;
     return JSON.stringify({
         success: true,
         userId: userId,
         gameId: gameId,
-        streak: result.streakData.currentStreak,        // canonical — C# [JsonProperty("streak")] → newStreak
-        newStreak: result.streakData.currentStreak,     // legacy alias
-        currentStreak: result.streakData.currentStreak, // extra alias for safety
-        bestStreak: result.streakData.bestStreak || 0,  // QVBF_51: lifetime best
-        totalClaims: result.streakData.totalClaims,
+        streak: streakData.currentStreak,
+        currentStreak: streakData.currentStreak,
+        newStreak: streakData.currentStreak,
+        bestStreak: streakData.bestStreak || 0,
+        totalClaims: streakData.totalClaims || 0,
+        lastClaimTimestamp: streakData.lastClaimTimestamp || 0,
+        lastOpenTimestamp: streakData.lastOpenTimestamp || 0,
+        canClaim: false,
+        canClaimToday: false,
         reward: result.reward,
         walletGranted: result.walletGranted,
-        claimedAt: utils.getCurrentTimestamp()
-    });
-}
-
-/**
- * RPC: Get claim history (QVBF_51 — feeds the Streak Dashboard activity
- * heatmap and Best Streak card).
- * @param {string} payload - JSON payload with { gameId: "uuid" }
- * @returns {string} JSON response with claimHistory (UTC YYYY-MM-DD, max 90)
- */
-function rpcDailyRewardsGetHistory(ctx, logger, nk, payload) {
-    utils.logInfo(logger, "RPC daily_rewards_get_history called");
-
-    var parsed = utils.safeJsonParse(payload);
-    if (!parsed.success) {
-        return utils.handleError(ctx, null, "Invalid JSON payload");
-    }
-
-    var data = parsed.data;
-    var validation = utils.validatePayload(data, ['gameId']);
-    if (!validation.valid) {
-        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
-    }
-
-    var gameId = data.gameId;
-    if (!utils.isValidUUID(gameId)) {
-        return utils.handleError(ctx, null, "Invalid gameId UUID format");
-    }
-
-    var userId = ctx.userId;
-    if (!userId) {
-        return utils.handleError(ctx, null, "User not authenticated");
-    }
-
-    var streakData = getStreakData(nk, logger, userId, gameId);
-    streakData = updateStreakStatus(nk, logger, userId, gameId, streakData);
-
-    return JSON.stringify({
-        success: true,
-        userId: userId,
-        gameId: gameId,
-        currentStreak: streakData.currentStreak,
-        bestStreak: streakData.bestStreak || 0,
-        totalClaims: streakData.totalClaims,
         claimHistory: streakData.claimHistory || [],
         timestamp: utils.getCurrentTimestamp()
     });
@@ -47076,14 +47121,17 @@ var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
         var result = JSON.parse(resultRaw);
 
         // If badges were unlocked, send a persistent notification
+        // Code 7501 is outside friend lifecycle 1–6 / 100–105 (never reuse code 1).
         if (result.badges_unlocked && result.badges_unlocked.length > 0) {
             result.badges_unlocked.forEach(function(b) {
                 try {
-                    nk.notificationSend(userId, "badge_unlocked", {
+                    nk.notificationSend(userId, b.title || "Badge Unlocked", {
+                        type: "badge_unlocked",
+                        eventType: "badge_unlocked",
                         badge_id: b.badge_id,
                         title: b.title,
                         category: b.category,
-                    }, 1, userId, "");
+                    }, 7501, null, true);
                 } catch (notifyErr) {
                     logger.warn("[LAP-Badges] Failed to send notification: " + notifyErr.message);
                 }
@@ -50764,13 +50812,23 @@ function rpcLeagueProcessSeason(ctx, logger, nk, payload) {
                 writeLeagueState(nk, logger, userId, gameId, userState);
 
                 // Send notification for promotion/demotion
+                // Codes 7201/7202 are outside friend lifecycle 1–6 / 100–105 so the
+                // inbox mapper won't remap these as friend_challenge*.
                 if (action === 'promoted' || action === 'demoted') {
                     try {
+                        var leagueEventType = action === 'promoted' ? 'league_promoted' : 'league_demoted';
                         nk.notificationsSend([{
                             userId: userId,
                             subject: action === 'promoted' ? 'League Promotion!' : 'League Update',
-                            content: { action: action, oldTier: tier, newTier: newTier, season: currentWeek },
-                            code: action === 'promoted' ? 100 : 101,
+                            content: {
+                                type: leagueEventType,
+                                eventType: leagueEventType,
+                                action: action,
+                                oldTier: tier,
+                                newTier: newTier,
+                                season: currentWeek
+                            },
+                            code: action === 'promoted' ? 7201 : 7202,
                             persistent: true
                         }]);
                     } catch (notifErr) {
@@ -51769,7 +51827,7 @@ function rpcLtRemindersAdd(ctx, logger, nk, payload) {
         nk.notificationsSend([{
             userId: uid,
             subject: "\u23F0 Reminder set",
-            content: { type: "reminder_set", id: rem.id, text: rem.text, time: rem.time, repeat: rem.repeat, date: rem.date },
+            content: { type: "reminder_set", eventType: "reminder_set", id: rem.id, text: rem.text, time: rem.time, repeat: rem.repeat, date: rem.date },
             code: RM_NOTIF_CODE,
             persistent: true
         }]);
@@ -52057,7 +52115,7 @@ function rpcLtReviewAdd(ctx, logger, nk, payload) {
         nk.notificationsSend([{
             userId: uid,
             subject: "\uD83E\uDDE0 Saved to review",
-            content: { type: "review_saved", id: item.id, q: item.q, exam: item.exam, due_ts: item.dueTs },
+            content: { type: "review_saved", eventType: "review_saved", id: item.id, q: item.q, exam: item.exam, due_ts: item.dueTs },
             code: RV_NOTIF_CODE,
             persistent: true
         }]);
@@ -55516,31 +55574,111 @@ function dedupeInboxNotifications(list) {
     return out;
 }
 
-function mapBuiltinNotification(n) {
-    var code = n.code || 0;
-    var eventType = NOTIFICATION_CODE_MAP[code] || 'system';
-    var content = n.content || {};
+/**
+ * True when `code` is a friend-lifecycle Nakama code (1-6 / 100-105).
+ * Code 0 / 7001 / 9001 must NOT force event_type via NOTIFICATION_CODE_MAP.
+ */
+function isFriendNotificationCode(code) {
+    return (code >= 1 && code <= 6) || (code >= 100 && code <= 105);
+}
 
-    // Extract data fields from content (Nakama stores content as an object)
+/**
+ * Subject looks like a machine id (snake_case event type), not a display name.
+ */
+function isMachineIdSubject(subject) {
+    if (!subject || typeof subject !== 'string') return false;
+    var s = subject.trim();
+    if (!s) return false;
+    // Underscore snake ids: direct_message, daily_quiz, streak_warning, …
+    if (s.indexOf('_') >= 0) return true;
+    // Known single-token machine ids (no underscore)
+    var known = {
+        motivation: true,
+        challenge: true,
+        promotion: true,
+        system: true,
+        general: true
+    };
+    return !!known[s.toLowerCase()];
+}
+
+/**
+ * Flatten content into a string map for Unity deep-link extras.
+ * Merges nested content.data object keys; never iterates a string as an object.
+ */
+function flattenNotificationContentData(content) {
     var data = {};
+    if (!content || typeof content !== 'object') return data;
+
     for (var key in content) {
-        if (content.hasOwnProperty(key)) {
-            data[key] = String(content[key]);
+        if (!content.hasOwnProperty(key)) continue;
+        if (key === 'data') continue; // merged below
+        var val = content[key];
+        if (val === null || val === undefined) continue;
+        if (typeof val === 'object') continue; // skip nested objects (avoid "[object Object]")
+        data[key] = String(val);
+    }
+
+    var nested = content.data;
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+        for (var nk in nested) {
+            if (!nested.hasOwnProperty(nk)) continue;
+            var nv = nested[nk];
+            if (nv === null || nv === undefined) continue;
+            if (typeof nv === 'object') continue;
+            data[nk] = String(nv);
         }
     }
+
+    return data;
+}
+
+/**
+ * Resolve machine-id event_type for a Nakama built-in notification.
+ * Order: content.type → eventType → event_type → friend code map → machine subject → system
+ */
+function resolveBuiltinEventType(content, code, subject) {
+    if (content) {
+        if (content.type) return String(content.type);
+        if (content.eventType) return String(content.eventType);
+        if (content.event_type) return String(content.event_type);
+    }
+    if (isFriendNotificationCode(code) && NOTIFICATION_CODE_MAP[code]) {
+        return NOTIFICATION_CODE_MAP[code];
+    }
+    if (isMachineIdSubject(subject)) {
+        return String(subject).trim();
+    }
+    return 'system';
+}
+
+function mapBuiltinNotification(n, logger) {
+    var code = n.code || 0;
+    var subject = n.subject || '';
+    var content = n.content || {};
+
+    // content may arrive as a JSON string (some send paths / storage round-trips)
+    if (typeof content === 'string') {
+        try {
+            content = JSON.parse(content);
+        } catch (parseErr) {
+            content = {};
+        }
+    }
+    if (!content || typeof content !== 'object') {
+        content = {};
+    }
+
+    var eventType = resolveBuiltinEventType(content, code, subject);
+    var data = flattenNotificationContentData(content);
 
     // Unity NotificationUI resolves inviteId — alias snake_case keys
     if (data.inviteId && !data.invite_id) data.invite_id = data.inviteId;
     if (data.fromUserId && !data.from_user_id) data.from_user_id = data.fromUserId;
 
-    // Prefer human-readable title from content; subject is a machine id
-    var title = content.title || n.subject || 'Notification';
+    // Prefer human-readable title from content; never force raw machine id when title exists
+    var title = content.title || subject || 'Notification';
     var body = content.body || content.message || '';
-
-    // content.type is the canonical machine id (friend_request, etc.)
-    if (content.type) {
-        eventType = content.type;
-    }
 
     // Parse createTime — Nakama returns RFC3339 string (e.g. "2024-01-15T10:30:00Z")
     var sentAtMs = Date.now();
@@ -55551,6 +55689,11 @@ function mapBuiltinNotification(n) {
         } catch (e) {
             sentAtMs = Date.now();
         }
+    }
+
+    if (logger && typeof logger.debug === 'function') {
+        logger.debug('[NotifInbox] mapBuiltin id=%s code=%s subject=%s → event_type=%s',
+            n.id || '', code, subject, eventType);
     }
 
     return {
@@ -55670,7 +55813,7 @@ function rpcListNotificationInbox(ctx, logger, nk, payload) {
         var builtinResult = nk.notificationsList(userId, limit, null);
         if (builtinResult && builtinResult.notifications) {
             for (var i = 0; i < builtinResult.notifications.length; i++) {
-                var mapped = mapBuiltinNotification(builtinResult.notifications[i]);
+                var mapped = mapBuiltinNotification(builtinResult.notifications[i], logger);
                 allNotifications.push(mapped);
             }
             logger.debug('[NotifInbox] Loaded ' + builtinResult.notifications.length + ' built-in notifications');
@@ -58924,14 +59067,18 @@ function rpcGiftSend(ctx, logger, nk, payload) {
         }]);
 
         // Send notification to recipient
+        // Signature: (userId, subject, content, code, senderId?, persistent?)
+        // Code 7301 is outside friend lifecycle 1–6 / 100–105.
         try {
-            nk.notificationSend(recipientId, 'You received a gift!', 100, {
+            nk.notificationSend(recipientId, 'You received a gift!', {
+                type: 'gift_received',
+                eventType: 'gift_received',
                 gift_id: giftId,
                 sender_username: ctx.username,
                 item_type: itemType,
                 quantity: quantity,
                 message: message
-            }, senderId);
+            }, 7301, senderId, true);
         } catch (notifErr) {
             logger.warn('[Gifting] Notification failed: ' + notifErr.message);
         }
@@ -59139,13 +59286,17 @@ function rpcGiftClaim(ctx, logger, nk, payload) {
         }
 
         // Notify sender that gift was claimed
+        // Signature: (userId, subject, content, code, senderId?, persistent?)
+        // Code 7302 is outside friend lifecycle 1–6 / 100–105.
         try {
-            nk.notificationSend(foundGift.sender_id, 'Your gift was claimed!', 101, {
+            nk.notificationSend(foundGift.sender_id, 'Your gift was claimed!', {
+                type: 'gift_claimed',
+                eventType: 'gift_claimed',
                 gift_id: giftId,
                 claimed_by: ctx.username || userId,
                 item_type: foundGift.item_type,
                 quantity: foundGift.quantity
-            }, userId);
+            }, 7302, userId, true);
         } catch (notifErr) {
             logger.warn('[Gifting] Claim notification failed: ' + notifErr.message);
         }
@@ -63537,12 +63688,21 @@ function rpcQuizverseKnowledgeDuel(ctx, logger, nk, payload) {
             qvdStorageWrite(nk, collection, duelId, userId, duel);
 
             try {
+                // Signature: (userId, subject, content, code, senderId?, persistent?)
+                // Code 7401 is outside friend lifecycle 1–6 / 100–105.
                 nk.notificationSend(
                     data.opponent_id,
                     "Knowledge Duel Challenge",
-                    2,
-                    { duel_id: duelId, challenger: userId, challenger_name: ctx.username || "Unknown" },
-                    userId
+                    {
+                        type: "duel_challenge",
+                        eventType: "duel_challenge",
+                        duel_id: duelId,
+                        challenger: userId,
+                        challenger_name: ctx.username || "Unknown"
+                    },
+                    7401,
+                    userId,
+                    true
                 );
             } catch (notifErr) {
                 logger.warn("Could not send duel notification: " + notifErr.message);
@@ -63616,8 +63776,20 @@ function rpcQuizverseKnowledgeDuel(ctx, logger, nk, payload) {
                 if (winner !== "draw") {
                     nk.walletUpdate(winner, { coins: 50 }, { reason: "duel_win", duel_id: subDuel.duel_id }, true);
                     try {
-                        nk.notificationSend(loserId, "Duel Result", 3, { duel_id: subDuel.duel_id, result: "lost" }, winner);
-                        nk.notificationSend(winner, "Duel Result", 3, { duel_id: subDuel.duel_id, result: "won" }, loserId);
+                        // Signature: (userId, subject, content, code, senderId?, persistent?)
+                        // Code 7402 is outside friend lifecycle 1–6 / 100–105.
+                        nk.notificationSend(loserId, "Duel Result", {
+                            type: "duel_result",
+                            eventType: "duel_result",
+                            duel_id: subDuel.duel_id,
+                            result: "lost"
+                        }, 7402, winner, true);
+                        nk.notificationSend(winner, "Duel Result", {
+                            type: "duel_result",
+                            eventType: "duel_result",
+                            duel_id: subDuel.duel_id,
+                            result: "won"
+                        }, 7402, loserId, true);
                     } catch (nErr) {
                         logger.warn("Duel result notification failed: " + nErr.message);
                     }
@@ -77295,7 +77467,7 @@ function __legacy_rpcDailyRewardsGetStatus(ctx, logger, nk, payload) {
         currentStreak: streakData.currentStreak,
         totalClaims: streakData.totalClaims,
         lastClaimTimestamp: streakData.lastClaimTimestamp,
-        __legacy_canClaimToday: claimCheck.canClaim,
+        canClaimToday: claimCheck.canClaim,
         claimReason: claimCheck.reason,
         nextReward: nextReward,
         timestamp: getCurrentTimestamp()
@@ -77357,7 +77529,7 @@ function __legacy_rpcDailyRewardsClaim(ctx, logger, nk, payload) {
         return JSON.stringify({
             success: false,
             error: "Cannot claim reward: " + claimCheck.reason,
-            __legacy_canClaimToday: false
+            canClaimToday: false
         });
     }
 
@@ -85344,7 +85516,7 @@ function __legacy_quizverseClaimDailyReward(context, logger, nk, payload) {
             return JSON.stringify({ success: false, error: result.error });
         }
 
-        var nextReward = __legacy_getRewardForDay(gameId, result.streakData.currentStreak + 1);
+        var nextReward = getRewardForDay(gameId, result.streakData.currentStreak + 1);
         logger.info("[" + gameId + "] User " + userId + " claimed daily reward via legacy arcade RPC. Streak: " + result.streakData.currentStreak);
 
         return JSON.stringify({
@@ -91476,17 +91648,24 @@ function asyncChallengeGenerateShareCode(nk) {
  */
 function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data, logger) {
     try {
-        var notifications = [{
+        // ES5 object merge — Goja rejects object-spread (...data) and would abort
+        // the calling RPC (e.g. async_challenge_create with challengedUserId).
+        // Mirror compatibilitySendNotification: pass content as an object, not JSON.stringify.
+        var merged = { message: content };
+        if (data && typeof data === 'object') {
+            for (var k in data) {
+                if (Object.prototype.hasOwnProperty.call(data, k)) {
+                    merged[k] = data[k];
+                }
+            }
+        }
+        nk.notificationsSend([{
             userId: userId,
             subject: subject,
-            content: JSON.stringify({
-                message: content,
-                ...data
-            }),
+            content: merged,
             code: 101, // Async challenge notification code
             persistent: true
-        }];
-        nk.notificationsSend(notifications);
+        }]);
         if (logger) {
             logger.debug('[AsyncChallenge] notify code=101 type=' + (data && data.type ? data.type : 'unknown') +
                 ' target=' + userId + ' session=' + (data && data.sessionId ? data.sessionId : '?'));
@@ -91590,6 +91769,56 @@ function asyncChallengeIsLoginIdName(name) {
     return false;
 }
 
+/**
+ * QVBF_304: batched profile-name lookup. Reads each user's
+ * `player_metadata/metadata` record — the same profile store every device
+ * renders its OWN player from — and returns a map of userId → human display
+ * name. Names failing asyncChallengeIsLoginIdName are omitted. Any storage
+ * error returns whatever was resolved so far (or an empty map), so name
+ * resolution can never fail an RPC.
+ */
+function asyncChallengeReadProfileNames(nk, userIds) {
+    var names = {};
+    if (!nk || !userIds || userIds.length === 0) return names;
+    try {
+        var reads = [];
+        for (var i = 0; i < userIds.length; i++) {
+            if (userIds[i]) {
+                reads.push({ collection: 'player_metadata', key: 'metadata', userId: userIds[i] });
+            }
+        }
+        if (reads.length === 0) return names;
+        var records = nk.storageRead(reads) || [];
+        for (var r = 0; r < records.length; r++) {
+            var rec = records[r];
+            if (!rec || !rec.value || !rec.userId) continue;
+            var value = typeof rec.value === 'string' ? JSON.parse(rec.value) : rec.value;
+            if (!value || value.displayName === undefined || value.displayName === null) continue;
+            var name = String(value.displayName).trim();
+            if (name.length > 0 && !asyncChallengeIsLoginIdName(name)) {
+                names[rec.userId] = name;
+            }
+        }
+    } catch (err) {
+        // Non-fatal: fall through to session/account names.
+    }
+    return names;
+}
+
+/**
+ * QVBF_304 read-time authority chain for one player slot:
+ *   1. player_metadata.displayName (what the player's own device shows) — pre-filtered human
+ *   2. stored session name (client-supplied at create/join) if human
+ *   3. Nakama account displayName/username if human
+ *   4. keep stored value, else account value (placeholder handled downstream)
+ */
+function asyncChallengeResolveReadName(profileName, storedName, accountName) {
+    if (profileName) return profileName;
+    if (storedName && !asyncChallengeIsLoginIdName(storedName)) return storedName;
+    if (accountName && !asyncChallengeIsLoginIdName(accountName)) return accountName;
+    return storedName || accountName || '';
+}
+
 function asyncChallengeGetDisplayName(nk, userId, fallback) {
     // QVBF_304: if the caller already supplied a real human name (not a
     // generic placeholder or machine-generated login ID), use it directly.
@@ -91597,6 +91826,13 @@ function asyncChallengeGetDisplayName(nk, userId, fallback) {
     // or auto-generated, so the client-supplied name is the more reliable source.
     if (fallback && !asyncChallengeIsLoginIdName(fallback)) {
         return fallback;
+    }
+
+    // QVBF_304: prefer the profile store (player_metadata.displayName) — the
+    // name the player's own device renders — over the Nakama account name.
+    var profileNames = asyncChallengeReadProfileNames(nk, [userId]);
+    if (profileNames[userId]) {
+        return profileNames[userId];
     }
 
     // Fallback is absent or looks machine-generated — try the Nakama account.
@@ -91648,35 +91884,40 @@ function asyncChallengeSessionToUnityFormat(session, nk) {
     // QVBF_154: re-resolve player names at read time so a renamed player is
     // never shown with the name snapshotted into the session at create/join.
     // Lookup failure (deleted account, transient error) keeps stored names.
-    // QVBF_304: re-resolve player names at read time, but only override the
-    // stored name if the Nakama account name looks like a real human name.
-    // Machine-generated names (UUIDs, emails, autogenerated usernames) must not
-    // clobber the correct client-supplied name that was stored at create/join.
+    // QVBF_304: authority chain per player — profile store (player_metadata,
+    // what each player's own device shows) → stored session name → Nakama
+    // account name → stored value/placeholder. The account name is demoted so
+    // it can never clobber the profile name and cause cross-device mismatch.
     if (nk) {
         try {
             var freshIds = [];
             if (session.creatorId) freshIds.push(session.creatorId);
             if (session.opponentId) freshIds.push(session.opponentId);
             if (freshIds.length > 0) {
-                var freshUsers = nk.usersGetId(freshIds) || [];
-                for (var fu = 0; fu < freshUsers.length; fu++) {
-                    var freshName = freshUsers[fu].displayName || freshUsers[fu].username || '';
-                    if (!freshName) continue;
-                    // Only apply if it's a human-readable name (not a login ID).
-                    var freshIsReal = !asyncChallengeIsLoginIdName(freshName);
-                    if (freshUsers[fu].userId === session.creatorId) {
-                        if (freshIsReal) session.creatorName = freshName;
-                        // If stored name is also bad, use whatever we have.
-                        else if (!session.creatorName || asyncChallengeIsLoginIdName(session.creatorName)) {
-                            session.creatorName = freshName;
-                        }
+                var profileNames = asyncChallengeReadProfileNames(nk, freshIds);
+                var accountNames = {};
+                try {
+                    var freshUsers = nk.usersGetId(freshIds) || [];
+                    for (var fu = 0; fu < freshUsers.length; fu++) {
+                        accountNames[freshUsers[fu].userId] =
+                            freshUsers[fu].displayName || freshUsers[fu].username || '';
                     }
-                    if (freshUsers[fu].userId === session.opponentId) {
-                        if (freshIsReal) session.opponentName = freshName;
-                        else if (!session.opponentName || asyncChallengeIsLoginIdName(session.opponentName)) {
-                            session.opponentName = freshName;
-                        }
-                    }
+                } catch (acctErr) {
+                    // non-fatal: resolve without account names
+                }
+                if (session.creatorId) {
+                    var creatorResolved = asyncChallengeResolveReadName(
+                        profileNames[session.creatorId],
+                        session.creatorName,
+                        accountNames[session.creatorId]);
+                    if (creatorResolved) session.creatorName = creatorResolved;
+                }
+                if (session.opponentId) {
+                    var opponentResolved = asyncChallengeResolveReadName(
+                        profileNames[session.opponentId],
+                        session.opponentName,
+                        accountNames[session.opponentId]);
+                    if (opponentResolved) session.opponentName = opponentResolved;
                 }
             }
         } catch (freshErr) {
@@ -97033,6 +97274,8 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
     // Register Daily Rewards RPCs
     try {
         logger.info('[DailyRewards] Initializing Daily Rewards Module...');
+        // Prefer module handlers (data/modules/daily_rewards/). These legacy
+        // stubs stay registered only as __rpc_ fallbacks via postbuild guards.
         __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (__legacy_rpcDailyRewardsGetStatus);
         logger.info('[DailyRewards] Registered RPC: daily_rewards_get_status');
         __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (__legacy_rpcDailyRewardsClaim);
@@ -98569,6 +98812,14 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
     }
     catch (err) {
         logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
+    // ---- Party & Trivia server-authoritative daily play quota (QVBF_345) ----
+    try {
+        QvPartyPlayQuota.register(initializer);
+        logger.info("[QvPartyPlayQuota] quizverse_party_play_quota registered");
+    }
+    catch (err) {
+        logger.error("[QvPartyPlayQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
     }
     // ---- RevenueCat admin dashboard proxy (IAP revenue charts) ----
     try {
@@ -110104,7 +110355,12 @@ var CompatibilityQuiz;
             return;
         try {
             // Inbox fallback (ES5-safe — never use object spread).
-            var content = { message: vars && vars.message ? vars.message : eventType, type: eventType };
+            // Code 7701 is outside friend lifecycle 1–6 / 100–105.
+            var content = {
+                message: vars && vars.message ? vars.message : eventType,
+                type: eventType,
+                eventType: eventType
+            };
             if (data) {
                 for (var k in data) {
                     if (Object.prototype.hasOwnProperty.call(data, k))
@@ -110115,14 +110371,15 @@ var CompatibilityQuiz;
                     userId: userId,
                     subject: vars && vars.subject ? vars.subject : eventType,
                     content: content,
-                    code: 100,
+                    code: 7701,
                     persistent: true
                 }]);
         }
         catch (_) { }
         try {
             if (typeof LegacyPush !== "undefined" && LegacyPush.sendLocalizedPushToUser && ctx) {
-                LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {}, { skipQuietHours: true, data: data || {} });
+                // skipInAppNotification: inbox copy already written above — avoid duplicate.
+                LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId, eventType, titleKey, bodyKey, vars || {}, { skipQuietHours: true, skipInAppNotification: true, data: data || {} });
             }
         }
         catch (e) {
@@ -115922,6 +116179,195 @@ var QuizVersePackStore;
     }
     QuizVersePackStore.writePack = writePack;
 })(QuizVersePackStore || (QuizVersePackStore = {}));
+// ---------------------------------------------------------------------------
+// party-play-quota.ts — server-authoritative Party & Trivia daily play quota.
+//
+// QVBF_345: the free-play limit used to live only in device-local PlayerPrefs,
+// so the same account could bypass it by logging into another device (or
+// reinstalling). This RPC is the single source of truth, keyed by userId.
+//
+// Free: 1 play per UTC day. Pro / Pro+ / Plus subscription, VIP allow-list,
+// or the one-time Party Mode pack (qv_entitlements one_time.partyMode):
+// unlimited. Reset boundary: 00:00 UTC.
+//
+// Contract (mirrors lap-note-quota.ts):
+//   payload  {"action":"status"}  → never writes
+//   payload  {"action":"consume"} → increments used, OCC conditional write;
+//                                   at limit → allowed:false (HTTP 200, never throw)
+//   response {"success":true,"data":{allowed,tier,limit,unlimited,used,
+//             remaining,date,resetAt}}  (limit/remaining null when unlimited)
+// ---------------------------------------------------------------------------
+var QvPartyPlayQuota;
+(function (QvPartyPlayQuota) {
+    var COLLECTION = "qv_party_daily_quota";
+    var KEY_PREFIX = "plays_";
+    var OCC_MAX_RETRIES = 4;
+    var PARTY_FREE_PLAYS_PER_DAY = 1;
+    function utcDate(now) {
+        return now.toISOString().slice(0, 10);
+    }
+    function nextUtcReset(now) {
+        return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0)).toISOString();
+    }
+    function quotaKey(date) {
+        return KEY_PREFIX + date;
+    }
+    // Local copy of the lap-note-quota tier resolver (each quota module owns
+    // its own policy), extended with the one-time Party Mode pack check.
+    function subscriptionTier(nk, userId, nowMs) {
+        // VIP Layer 0 — unlimited plays for hard-coded QA allow-list.
+        if (QvVipOverride.isVipUserId(userId))
+            return "pro_plus";
+        var rows = nk.storageRead([{
+                collection: "qv_entitlements",
+                key: "subscriptions",
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0 || !rows[0].value)
+            return "free";
+        var subs = rows[0].value;
+        var tier = String(subs.tier || "").toLowerCase();
+        var status = String(subs.status || "active").toLowerCase();
+        if (!tier || status === "expired" || status === "revoked" || status === "inactive") {
+            return "free";
+        }
+        if (subs.expiresAt) {
+            var expiryMs = new Date(subs.expiresAt).getTime();
+            if (!isNaN(expiryMs) && expiryMs <= nowMs)
+                return "free";
+        }
+        return tier;
+    }
+    function hasPartyModePack(nk, userId) {
+        var rows = nk.storageRead([{
+                collection: "qv_entitlements",
+                key: "one_time",
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0 || !rows[0].value)
+            return false;
+        var oneTime = rows[0].value;
+        return oneTime.partyMode === true;
+    }
+    // -1 = unlimited.
+    function limitForTier(tier) {
+        if (tier === "pro_plus" || tier === "pro" || tier === "plus")
+            return -1;
+        return PARTY_FREE_PLAYS_PER_DAY;
+    }
+    function readQuota(nk, userId, date) {
+        var rows = nk.storageRead([{
+                collection: COLLECTION,
+                key: quotaKey(date),
+                userId: userId
+            }]);
+        if (!rows || rows.length === 0) {
+            return {
+                value: { date: date, used: 0, updatedAt: new Date().toISOString() },
+                version: "*",
+                exists: false
+            };
+        }
+        var value = rows[0].value || {};
+        return {
+            value: {
+                date: date,
+                used: Math.max(0, Number(value.used) || 0),
+                updatedAt: String(value.updatedAt || "")
+            },
+            version: rows[0].version || "",
+            exists: true
+        };
+    }
+    function writeQuota(nk, userId, stored) {
+        stored.value.updatedAt = new Date().toISOString();
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: quotaKey(stored.value.date),
+                userId: userId,
+                value: stored.value,
+                version: stored.exists ? stored.version : "*",
+                permissionRead: 1,
+                permissionWrite: 0
+            }]);
+    }
+    function response(state, tier, limit, resetAt, allowed) {
+        return RpcHelpers.successResponse({
+            allowed: allowed !== false,
+            tier: tier,
+            limit: limit < 0 ? null : limit,
+            unlimited: limit < 0,
+            used: state.used,
+            remaining: limit < 0 ? null : Math.max(0, limit - state.used),
+            date: state.date,
+            resetAt: resetAt
+        });
+    }
+    function rpcPartyPlayQuota(ctx, logger, nk, payload) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var data = RpcHelpers.parseRpcPayload(payload) || {};
+        var action = String(data.action || "status").toLowerCase();
+        if (action !== "status" && action !== "consume") {
+            return RpcHelpers.errorResponse("action must be status or consume");
+        }
+        var now = new Date();
+        var date = utcDate(now);
+        var tier = subscriptionTier(nk, userId, now.getTime());
+        var limit = limitForTier(tier);
+        if (limit >= 0 && hasPartyModePack(nk, userId)) {
+            limit = -1;
+        }
+        var resetAt = nextUtcReset(now);
+        if (limit < 0) {
+            // Unlimited access — never consume, storage untouched.
+            return response(readQuota(nk, userId, date).value, tier, limit, resetAt, true);
+        }
+        if (action === "status") {
+            // allowed must reflect whether a play is still available today —
+            // otherwise the client's non-consuming pre-check always passes.
+            var current = readQuota(nk, userId, date).value;
+            return response(current, tier, limit, resetAt, current.used < limit);
+        }
+        // consume — OCC loop: two devices racing for the last slot serialize on
+        // the storage version; exactly one write wins per version.
+        var lastError = null;
+        for (var attempt = 0; attempt < OCC_MAX_RETRIES; attempt++) {
+            var stored = readQuota(nk, userId, date);
+            var state = stored.value;
+            if (state.used >= limit) {
+                // Business denial, not an error — HTTP 200 with allowed:false.
+                return response(state, tier, limit, resetAt, false);
+            }
+            state.used += 1;
+            try {
+                writeQuota(nk, userId, stored);
+                return response(state, tier, limit, resetAt, true);
+            }
+            catch (err) {
+                lastError = err;
+            }
+        }
+        logger.error("[QvPartyPlayQuota] OCC exhausted user=" + userId);
+        throw lastError || new Error("party_play_quota_contention");
+    }
+    function register(initializer) {
+        function auth(fn) {
+            var wrapped = null;
+            return function (ctx, logger, nk, payload) {
+                if (!wrapped) {
+                    var strictFn = fn;
+                    wrapped = (typeof RpcHelpers !== "undefined" && RpcHelpers.withCleanAuthError)
+                        ? RpcHelpers.withCleanAuthError(strictFn)
+                        : strictFn;
+                }
+                return wrapped(ctx, logger, nk, payload);
+            };
+        }
+        __rpc_quizverse_party_play_quota = auth(rpcPartyPlayQuota);
+    }
+    QvPartyPlayQuota.register = register;
+    register();
+})(QvPartyPlayQuota || (QvPartyPlayQuota = {}));
 // Personalized Quest Engine — wires Player DNA to the Quest config pool.
 //
 // Single RPC:  quizverse_get_personalized_quests
@@ -122826,7 +123272,14 @@ var Hermes;
             nk.notificationsSend([{
                     userId: userId,
                     subject: brief.headline,
-                    content: { focus: brief.focus, deeplink: brief.cta.deeplink, kind: "hermes_brief", date: brief.date },
+                    content: {
+                        type: "hermes_brief",
+                        eventType: "hermes_brief",
+                        focus: brief.focus,
+                        deeplink: brief.cta.deeplink,
+                        kind: "hermes_brief",
+                        date: brief.date
+                    },
                     code: 1101,
                     persistent: true,
                 }]);
@@ -124292,14 +124745,24 @@ var AdminConsole;
         if (!data.collection || !data.key)
             return RpcHelpers.errorResponse("collection and key required");
         var userId = data.userId || Constants.SYSTEM_USER_ID;
+        // Paid/unlimited authority must never become owner-writable, even via admin.
+        // Default permissionWrite for other collections stays 1; entitlements force 0.
+        var permRead = data.permissionRead !== undefined ? data.permissionRead : 2;
+        var permWrite = data.permissionWrite !== undefined ? data.permissionWrite : 1;
+        if (data.collection === "qv_entitlements") {
+            permWrite = 0;
+            if (data.permissionWrite !== undefined && data.permissionWrite !== 0) {
+                logger.warn("[Admin] Forced permissionWrite:0 for qv_entitlements (requested=%s) key=%s userId=%s", String(data.permissionWrite), data.key, userId);
+            }
+        }
         var acks = nk.storageWrite([{
                 collection: data.collection,
                 key: data.key,
                 userId: userId,
                 value: data.value || {},
                 version: data.version || "*",
-                permissionRead: data.permissionRead !== undefined ? data.permissionRead : 2,
-                permissionWrite: data.permissionWrite !== undefined ? data.permissionWrite : 1
+                permissionRead: permRead,
+                permissionWrite: permWrite
             }]);
         logAdminAudit(nk, ctx, "admin_storage_write", { userId: userId, collection: data.collection, key: data.key });
         return RpcHelpers.successResponse({
@@ -129016,6 +129479,11 @@ var QvEntitlements;
     var KEY_SUBS = "subscriptions";
     var KEY_CONS = "consumables";
     var KEY_ONE = "one_time";
+    // Server-authoritative: clients must never be able to overwrite paid/unlimited
+    // state via Nakama storageWrite / storage_write RPC. Always permissionWrite: 0.
+    function writeEntitlement(nk, key, userId, value) {
+        Storage.writeJson(nk, COLLECTION, key, userId, value, 1, 0);
+    }
     // Dedup ledger for RevenueCat webhook revenue recording — RC explicitly
     // documents that webhook retries reuse the same `event.id` + timestamp
     // (https://www.revenuecat.com/docs/integrations/webhooks/event-types-and-fields).
@@ -129120,7 +129588,7 @@ var QvEntitlements;
                         " expiresAt=" + subs.expiresAt + " for user=" + userId);
                     subs = { tier: null, status: "expired", productId: subs.productId, store: subs.store,
                         expiresAt: subs.expiresAt, updatedAt: new Date().toISOString() };
-                    Storage.writeJson(nk, COLLECTION, KEY_SUBS, userId, subs);
+                    writeEntitlement(nk, KEY_SUBS, userId, subs);
                 }
             }
             return RpcHelpers.successResponse({
@@ -129429,7 +129897,7 @@ var QvEntitlements;
                 var prev = Number(existing.aiVoiceCredits) || 0;
                 existing.aiVoiceCredits = prev + quantity;
                 existing.updatedAt = new Date().toISOString();
-                Storage.writeJson(nk, COLLECTION, KEY_CONS, targetUserId, existing);
+                writeEntitlement(nk, KEY_CONS, targetUserId, existing);
                 logger.info("[QvEntitlements] rc_sync: aiVoiceCredits+" + quantity + " for user=" + targetUserId + " (prev=" + prev + " now=" + existing.aiVoiceCredits + ")");
                 return RpcHelpers.successResponse({ aiVoiceCredits: existing.aiVoiceCredits, granted: quantity });
             }
@@ -129499,7 +129967,7 @@ var QvEntitlements;
                 eventType === "TEMPORARY_ENTITLEMENT_GRANT";
             var isCancellationNotice = eventType === "CANCELLATION";
             if (isImmediateRevoke) {
-                Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, {
+                writeEntitlement(nk, KEY_SUBS, targetUserId, {
                     tier: null,
                     status: "expired",
                     productId: productId,
@@ -129514,7 +129982,7 @@ var QvEntitlements;
                 // (and the expiry-enforcement safety net in rpcGetEntitlements) correctly cut
                 // access at the real period end instead of right now.
                 var cancelExpiresAt = resolveExpiry(event);
-                Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, {
+                writeEntitlement(nk, KEY_SUBS, targetUserId, {
                     tier: tier,
                     status: "cancelled",
                     productId: productId,
@@ -129544,12 +130012,12 @@ var QvEntitlements;
                 expiresAt: expiresAt,
                 updatedAt: new Date().toISOString()
             };
-            Storage.writeJson(nk, COLLECTION, KEY_SUBS, targetUserId, subRecord);
+            writeEntitlement(nk, KEY_SUBS, targetUserId, subRecord);
             // For Pro+ tier, also grant Link & Play Pro+ automatically (per sign-off doc §3)
             if (tier === "pro_plus") {
                 var existing = Storage.readJson(nk, COLLECTION, KEY_ONE, targetUserId) || {};
                 existing.linkplayProPlus = true;
-                Storage.writeJson(nk, COLLECTION, KEY_ONE, targetUserId, existing);
+                writeEntitlement(nk, KEY_ONE, targetUserId, existing);
             }
             logger.info("[QvEntitlements] rc_sync: subscription " + (isTrial ? "trial-granted" : "granted") + " for user=" + targetUserId + " tier=" + tier + " expiresAt=" + (expiresAt || "lifetime"));
             return RpcHelpers.successResponse({ tier: tier, status: isTrial ? "trialing" : "active", expiresAt: expiresAt });
@@ -129576,12 +130044,12 @@ var QvEntitlements;
             expiresAt: expiresAt,
             updatedAt: new Date().toISOString()
         };
-        Storage.writeJson(nk, COLLECTION, KEY_SUBS, userId, subRecord);
+        writeEntitlement(nk, KEY_SUBS, userId, subRecord);
         // Pro+ also includes L&P Pro+
         if (tier === "pro_plus") {
             var existing = Storage.readJson(nk, COLLECTION, KEY_ONE, userId) || {};
             existing.linkplayProPlus = true;
-            Storage.writeJson(nk, COLLECTION, KEY_ONE, userId, existing);
+            writeEntitlement(nk, KEY_ONE, userId, existing);
         }
         logger.info("[QvEntitlements] grantSubscription: user=" + userId + " tier=" + tier + " expiresAt=" + (expiresAt || "lifetime"));
     }
@@ -129614,7 +130082,7 @@ var QvEntitlements;
                 // here for server-side audit / duplicate prevention.
                 existing.starterPackGrantCount = (existing.starterPackGrantCount || 0) + 1;
             }
-            Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, existing);
+            writeEntitlement(nk, KEY_CONS, userId, existing);
         }
         catch (e) {
             logger.warn("[QvEntitlements] grantConsumable error: " + (e && e.message ? e.message : String(e)));
@@ -129648,7 +130116,7 @@ var QvEntitlements;
                 if (existing.examPacks.indexOf(examCode) === -1)
                     existing.examPacks.push(examCode);
             }
-            Storage.writeJson(nk, COLLECTION, KEY_ONE, userId, existing);
+            writeEntitlement(nk, KEY_ONE, userId, existing);
         }
         catch (e) {
             logger.warn("[QvEntitlements] grantOneTime error: " + (e && e.message ? e.message : String(e)));
@@ -129691,7 +130159,8 @@ var QvExplainerVideos;
     }
     function writeCons(nk, userId, cons) {
         cons.updatedAt = new Date().toISOString();
-        Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, cons);
+        // Server-authoritative paid credits — never owner-writable.
+        Storage.writeJson(nk, COLLECTION, KEY_CONS, userId, cons, 1, 0);
     }
     function unitsForProductId(productId) {
         if (!productId)
@@ -137131,7 +137600,13 @@ var LegacyChat;
                     // Delivered to recipient's connected socket without requiring channel join,
                     // enabling real-time Social Zone badge/toast updates when chat screen is closed.
                     try {
-                        nk.notificationSend(targetUserId, senderName, { screen: "chat", fromUserId: senderId, preview: buildPreview(content) }, 9001, senderId, false);
+                        nk.notificationSend(targetUserId, senderName, {
+                            type: "direct_message",
+                            eventType: "direct_message",
+                            screen: "chat",
+                            fromUserId: senderId,
+                            preview: buildPreview(content)
+                        }, 9001, senderId, false);
                     }
                     catch (_) { }
                 }
@@ -137235,7 +137710,13 @@ var LegacyChat;
             // Ephemeral in-app socket notification — delivered to recipient's connected socket
             // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
             try {
-                nk.notificationSend(targetUserId, senderName, { screen: "chat", fromUserId: userId, preview: buildPreview(content) }, 9001, userId, false);
+                nk.notificationSend(targetUserId, senderName, {
+                    type: "direct_message",
+                    eventType: "direct_message",
+                    screen: "chat",
+                    fromUserId: userId,
+                    preview: buildPreview(content)
+                }, 9001, userId, false);
             }
             catch (_) { }
             return RpcHelpers.successResponse({ messageId: ack.messageId });
@@ -141442,6 +141923,11 @@ var LegacyPush;
                 body: data.body || "",
                 data: data.data || {}
             };
+            // Canonical machine id on both type + eventType so inbox mapper / Unity
+            // ResolveEventType never fall through to system / general.
+            var resolvedEventType = data.eventType || content.eventType || content.type || subject;
+            content.type = resolvedEventType;
+            content.eventType = resolvedEventType;
             var code = Number(data.code || DEFAULT_PUSH_NOTIFICATION_CODE);
             if (!targetUserId) {
                 logger.warn("[Push] push_send_event rejected: no targetUserId in payload.");
@@ -142476,7 +142962,13 @@ var LegacyPush;
             try {
                 nk.notificationsSend([{
                         userId: userId, subject: eventType,
-                        content: { eventType: eventType, title: title, body: body, data: mergedData },
+                        content: {
+                            type: eventType,
+                            eventType: eventType,
+                            title: title,
+                            body: body,
+                            data: mergedData
+                        },
                         code: DEFAULT_PUSH_NOTIFICATION_CODE, persistent: true
                     }]);
             }
@@ -145561,7 +146053,14 @@ var LibraryCountdownPlugin;
                     var ms = MILESTONES[m];
                     var lastEmitted = v.last_emitted || {};
                     if (wantSet[ms.id] && daysTo === ms.offset && !lastEmitted[ms.id]) {
-                        nk.notificationSend(r.userId, "Exam countdown — " + v.exam_id, { milestone: ms.id, exam_id: v.exam_id, exam_date: v.exam_date, days_to: daysTo }, 1001, "", false);
+                        nk.notificationSend(r.userId, "Exam countdown — " + v.exam_id, {
+                            type: "exam_countdown",
+                            eventType: "exam_countdown",
+                            milestone: ms.id,
+                            exam_id: v.exam_id,
+                            exam_date: v.exam_date,
+                            days_to: daysTo
+                        }, 1001, "", false);
                         v.last_emitted = lastEmitted;
                         v.last_emitted[ms.id] = now;
                         nk.storageWrite([{
@@ -150157,7 +150656,13 @@ var MpKernelAsyncTurn;
             // Notify next actor offline if they aren't online here.
             if (!ks.ended && ks.current_actor && !ks.online[ks.current_actor]) {
                 try {
-                    nk.notificationSend(ks.current_actor, "Your move", { game_id: ks.game_id, last_move_by: sender, async_match_id: matchId }, 1001, // app-defined notification code
+                    nk.notificationSend(ks.current_actor, "Your move", {
+                        type: "async_turn",
+                        eventType: "async_turn",
+                        game_id: ks.game_id,
+                        last_move_by: sender,
+                        async_match_id: matchId
+                    }, 1001, // app-defined notification code (outside friend 1–6 / 100–105)
                     "", true);
                 }
                 catch (_e) { /* swallow */ }
@@ -158087,6 +158592,7 @@ var QuestEngine;
                     subject: subject,
                     content: {
                         type: "quest_new",
+                        eventType: "quest_new",
                         gameId: gameId,
                         body: body,
                         questIds: questIds,
@@ -158786,6 +159292,8 @@ var RewardDelivery;
             : ("You earned " + (summaryParts.join(", ") || "a reward") + "!");
         try {
             nk.notificationSend(userId, subject, {
+                type: "quest_reward",
+                eventType: "quest_reward",
                 questId: questId, questName: questName, body: body,
                 rewards: summaryParts, assetUrl: (richEntry && richEntry.assetUrl) || ""
             }, NOTIFICATION_CODE_REWARD, null, true);
@@ -167033,9 +167541,17 @@ var SatoriCreatorEvents;
             return writes;
         for (var i = 0; i < writes.length; i++) {
             var w = writes[i];
-            if (w && w.collection === "event_answers") {
+            if (!w)
+                continue;
+            // Blocks native Storage Write API (/v2/storage) — storage_write RPC denylist
+            // alone is not enough; clients can bypass it via WriteStorageObjects.
+            if (w.collection === "event_answers") {
                 logger.warn("[CreatorEvent] Blocked client storage write to event_answers user=%s key=%s", ctx.userId || "", w.key || "");
                 throw new Error("event_answers is server-authoritative; use creator_event_submit.");
+            }
+            if (w.collection === "qv_entitlements") {
+                logger.warn("[QvEntitlements] Blocked client storage write to qv_entitlements user=%s key=%s", ctx.userId || "", w.key || "");
+                throw new Error("qv_entitlements is server-authoritative; client writes denied.");
             }
         }
         return writes;
@@ -169309,11 +169825,16 @@ var SatoriMessages;
         // Bridge to Nakama built-in notifications so the message surfaces in the
         // game clients' Notification Center (Unity reads list_notification_inbox /
         // the realtime socket, neither of which sees satori_messages storage).
-        // Code 110 is unmapped in the client NOTIFICATION_CODE_MAP, so it renders
-        // as event_type "system". Best-effort: the satori inbox write above is
-        // the source of truth.
+        // Code 110 is outside friend lifecycle 1–6 / 100–105; content.type drives routing.
         try {
-            nk.notificationSend(userId, messageDef.title, { title: messageDef.title, body: messageDef.body || "", messageDefId: messageDef.id, hasReward: !!messageDef.reward }, 110, "", true);
+            nk.notificationSend(userId, messageDef.title, {
+                type: "satori_message",
+                eventType: "satori_message",
+                title: messageDef.title,
+                body: messageDef.body || "",
+                messageDefId: messageDef.id,
+                hasReward: !!messageDef.reward
+            }, 110, "", true);
         }
         catch (_e) { /* notification is a best-effort mirror */ }
     }
@@ -174821,6 +175342,10 @@ var Storage;
         if (data.collection === "event_answers") {
             return RpcHelpers.errorResponse("event_answers is server-authoritative; use creator_event_submit.");
         }
+        // Paid/unlimited authority — only server RPCs (rc_sync, IAP grant) may write.
+        if (data.collection === "qv_entitlements") {
+            return RpcHelpers.errorResponse("qv_entitlements is server-authoritative; client writes denied.");
+        }
         var targetUserId = data.user_id || userId;
         var value = typeof data.value === "string" ? JSON.parse(data.value) : (data.value || {});
         var permRead = (data.permission_read !== undefined ? data.permission_read : 1);
@@ -175324,6 +175849,7 @@ var DuoQuests;
     function notifyDuo(nk, logger, targetId, senderId, subject, content) {
         try {
             content.type = subject;
+            content.eventType = subject;
             content.code = NOTIF_CODE_DUO;
             nk.notificationsSend([{
                     userId: targetId, subject: subject, content: content,
@@ -176869,7 +177395,9 @@ var SocialGroupLinks;
                             userId: row.createdBy,
                             subject: "group_member_joined",
                             content: {
-                                type: "group_member_joined", code: 22,
+                                type: "group_member_joined",
+                                eventType: "group_member_joined",
+                                code: 22,
                                 groupId: row.groupId, groupName: group.name || "",
                                 joinedUserId: userId, joinedName: joinerName,
                                 viaInviteCode: code
@@ -179293,16 +179821,21 @@ var TournamentCrons;
         var span = isoToUnix(cfg.end_iso) - isoToUnix(cfg.open_start_iso);
         return span > 0 && span <= 25 * 3600;
     }
-    function rollDailyForward(nk, cfg, meta) {
+    function rollDailyForward(nk, logger, cfg, meta) {
         var now = nowSec();
         var anyMeta = meta;
         var prevWindowEnd = isoToUnix(anyMeta.window_end_iso || cfg.end_iso);
+        var prevEndIso = anyMeta.window_end_iso || cfg.end_iso;
         var daySec = 24 * 3600;
         // Catch up if cron lagged for many days (one settle must land a live window).
+        // Hard cap at 400 (~13 months) so a system-clock jump cannot spin forever.
         var rolls = 0;
         while (prevWindowEnd <= now && rolls < 400) {
             prevWindowEnd += daySec;
             rolls++;
+        }
+        if (rolls >= 400) {
+            logger.error("[Tournaments] rollDailyForward capped at 400 rolls for slug=%s prevEnd=%s nowUnix=%s — check system clock / cron health", cfg.slug, String(prevEndIso), String(now));
         }
         if (rolls === 0) {
             // Still advance one day from the settled window (normal path).
@@ -179485,7 +180018,7 @@ var TournamentCrons;
                 if (isDailyTournament(cfg)) {
                     var reloaded = TournamentsStorage.readMeta(nk, cfg.slug);
                     if (reloaded && reloaded.status === "SETTLED") {
-                        var rolled = rollDailyForward(nk, cfg, reloaded);
+                        var rolled = rollDailyForward(nk, logger, cfg, reloaded);
                         actions.push({
                             slug: cfg.slug,
                             action: "daily_rolled_forward",
@@ -179499,7 +180032,7 @@ var TournamentCrons;
             }
             // Recover dailies stuck SETTLED with a stale window (cron missed rolls).
             if (isDailyTournament(cfg) && meta.status === "SETTLED" && now >= isoToUnix(effectiveEndIso)) {
-                var recovered = rollDailyForward(nk, cfg, meta);
+                var recovered = rollDailyForward(nk, logger, cfg, meta);
                 actions.push({
                     slug: cfg.slug,
                     action: "daily_recovered_from_settled",
@@ -179872,11 +180405,17 @@ var TournamentRealtime;
         if (!userIds || userIds.length === 0)
             return;
         var batch = [];
+        var payload = content || {};
+        // Ensure machine-id type for inbox/FCM routing (subject is already snake_case).
+        if (!payload.type)
+            payload.type = subject;
+        if (!payload.eventType)
+            payload.eventType = payload.type;
         for (var i = 0; i < userIds.length; i++) {
             batch.push({
                 userId: userIds[i],
                 subject: subject,
-                content: content,
+                content: payload,
                 code: code,
                 persistent: persistent,
                 senderId: Constants.SYSTEM_USER_ID,
@@ -188250,6 +188789,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("quizverse_words_duel_get", __rpc_quizverse_words_duel_get); } catch(e) {}
   try { initializer.registerRpc("quizverse_words_duel_submit", __rpc_quizverse_words_duel_submit); } catch(e) {}
   try { initializer.registerRpc("quizverse_words_duel_leaderboard", __rpc_quizverse_words_duel_leaderboard); } catch(e) {}
+  try { initializer.registerRpc("quizverse_party_play_quota", __rpc_quizverse_party_play_quota); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_personalized_quests", __rpc_quizverse_get_personalized_quests); } catch(e) {}
   try { initializer.registerRpc("quizverse_prewarm_tick", __rpc_quizverse_prewarm_tick); } catch(e) {}
   try { initializer.registerRpc("quizverse_warm_topic", __rpc_quizverse_warm_topic); } catch(e) {}
@@ -189545,5 +190085,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1318 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
+  logger.info("[Postbuild] Registered " + 1319 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
 }
