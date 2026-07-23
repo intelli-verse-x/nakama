@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-22T13:35:04.639Z
+// Generated: 2026-07-23T06:54:38.805Z
 // RPC Count: 1319
 // ============================================================
 
@@ -108886,9 +108886,10 @@ var BlogEmbed;
     // Anti-farm: distinct blog quizzes a single account can be rewarded for / day.
     var BLOG_QUIZ_MAX_PER_DAY = 10;
     // Generation guardrails.
+    // Keep MAX_QUESTIONS in sync with /tools/pdf-to-quiz UI options: [5, 8, 10, 15].
     var MIN_CONTENT_CHARS = 200;
     var MAX_CONTENT_CHARS = 12000;
-    var MAX_QUESTIONS = 8;
+    var MAX_QUESTIONS = 15;
     var DEFAULT_QUESTIONS = 5;
     var OPTIONS_PER_Q = 4;
     // ── small helpers ─────────────────────────────────────────────────────────

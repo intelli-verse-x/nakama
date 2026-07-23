@@ -55,9 +55,10 @@ namespace BlogEmbed {
   // Anti-farm: distinct blog quizzes a single account can be rewarded for / day.
   var BLOG_QUIZ_MAX_PER_DAY = 10;
   // Generation guardrails.
+  // Keep MAX_QUESTIONS in sync with /tools/pdf-to-quiz UI options: [5, 8, 10, 15].
   var MIN_CONTENT_CHARS  = 200;
   var MAX_CONTENT_CHARS  = 12000;
-  var MAX_QUESTIONS       = 8;
+  var MAX_QUESTIONS       = 15;
   var DEFAULT_QUESTIONS   = 5;
   var OPTIONS_PER_Q       = 4;
 
