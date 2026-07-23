@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-23T06:54:38.805Z
+// Generated: 2026-07-23T07:21:26.570Z
 // RPC Count: 1319
 // ============================================================
 
@@ -108943,10 +108943,13 @@ var BlogEmbed;
     // back to qwen3 so blog-quiz generation works on the self-hosted stack.
     var QWEN3_DEFAULT_BASE_URL = "http://vllm-coder-pro.content-factory.svc.cluster.local:8000";
     var QWEN3_DEFAULT_MODEL = "Qwen/Qwen3-7B-Instruct";
-    function callLlm(ctx, logger, nk, system, user) {
+    function callLlm(ctx, logger, nk, system, user, maxTokens) {
         var anthropic = envStr(ctx, "ANTHROPIC_API_KEY");
         var openai = envStr(ctx, "OPENAI_API_KEY");
-        var maxTokens = 2000;
+        // 2000 was enough for the old 8-question cap; 10–15 MCQs with options +
+        // insights routinely need 3–5k completion tokens or the JSON truncates
+        // mid-array and normalizeQuestions only keeps the complete prefix (~8).
+        var tokenBudget = typeof maxTokens === "number" && maxTokens > 0 ? maxTokens : 4000;
         // Build the attempt order: preferred provider first, then qwen3 (keyless,
         // self-hosted), then any keyed cloud provider that happens to be set.
         var preferred = ("" + ((ctx.env && ctx.env["LLM_PROVIDER"]) || "qwen3")).toLowerCase();
@@ -108983,7 +108986,7 @@ var BlogEmbed;
                         qHeaders["Authorization"] = "Bearer " + qKey;
                     var rq = nk.httpRequest(qBase + "/v1/chat/completions", "post", qHeaders, JSON.stringify({
                         model: qModel,
-                        max_tokens: maxTokens,
+                        max_tokens: tokenBudget,
                         messages: [
                             { role: "system", content: system },
                             { role: "user", content: user }
@@ -109010,7 +109013,7 @@ var BlogEmbed;
                         "anthropic-version": "2023-06-01"
                     }, JSON.stringify({
                         model: "claude-sonnet-4-20250514",
-                        max_tokens: maxTokens,
+                        max_tokens: tokenBudget,
                         system: system,
                         messages: [{ role: "user", content: user }]
                     }), 20000);
@@ -109030,7 +109033,7 @@ var BlogEmbed;
                         "Authorization": "Bearer " + openai
                     }, JSON.stringify({
                         model: "gpt-4o-mini",
-                        max_tokens: maxTokens,
+                        max_tokens: tokenBudget,
                         messages: [
                             { role: "system", content: system },
                             { role: "user", content: user }
@@ -109106,14 +109109,22 @@ var BlogEmbed;
         return out;
     }
     function generateQuiz(ctx, logger, nk, content, title, locale, want) {
-        var system = "You are a quiz generator for QuizVerse. Given article content, write " + want +
+        var system = "You are a quiz generator for QuizVerse. Given article content, write EXACTLY " + want +
             " engaging multiple-choice questions that test comprehension of the article. " +
+            "Do not write fewer than " + want + " questions. " +
             "Each question must have exactly " + OPTIONS_PER_Q + " options and one correct answer. " +
             "Write in locale '" + locale + "'. Respond ONLY with a JSON array; each item: " +
             '{"prompt": string, "options": [string x' + OPTIONS_PER_Q + '], "correctIndex": number (0-based), "insight": short explanation}.';
         var user = "ARTICLE TITLE: " + (title || "(untitled)") + "\n\nARTICLE CONTENT:\n" + content.slice(0, MAX_CONTENT_CHARS);
-        var text = callLlm(ctx, logger, nk, system, user);
-        return normalizeQuestions(parseQuestionsJson(text), want);
+        // ~350–400 completion tokens per MCQ (prompt + 4 options + insight) + JSON overhead.
+        // Old hard cap of 2000 silently truncated past ~8 questions.
+        var tokenBudget = Math.min(8000, Math.max(2500, want * 400 + 500));
+        var text = callLlm(ctx, logger, nk, system, user, tokenBudget);
+        var questions = normalizeQuestions(parseQuestionsJson(text), want);
+        if (questions.length < want) {
+            logger.warn("[BlogEmbed] generated " + questions.length + "/" + want + " questions (possible truncation)");
+        }
+        return questions;
     }
     // ── RPC: quizverse_blog_embed_create ────────────────────────────────────────
     // Auth: any Nakama session (ghost ok — the generator page is open/no-login,
@@ -109131,14 +109142,15 @@ var BlogEmbed;
             return RpcHelpers.errorResponse("content too short — need at least " + MIN_CONTENT_CHARS + " characters of blog text", 400);
         }
         // Dedup: same source URL → return the existing embed (idempotent, saves LLM
-        // spend and keeps one stable backlink target per blog post).
+        // spend and keeps one stable backlink target per blog post). Skip reuse when
+        // the cached quiz has a different question count than requested.
         if (url) {
             try {
                 var idxKey = "src_" + hashStr(url.toLowerCase());
                 var existing = Storage.readSystemJson(nk, COLLECTION_EMBEDS, idxKey);
                 if (existing && existing.embed_id) {
                     var prev = Storage.readSystemJson(nk, COLLECTION_EMBEDS, existing.embed_id);
-                    if (prev && prev.questions && prev.questions.length > 0) {
+                    if (prev && prev.questions && prev.questions.length > 0 && prev.questions.length === want) {
                         return RpcHelpers.successResponse({ embed_id: prev.embed_id, title: prev.title, quiz: prev, reused: true });
                     }
                 }
