@@ -166,6 +166,50 @@ namespace TournamentLevers {
     return Math.round((db - da) / 86400000);
   }
 
+  // ── L7.c — streak-gated tournament entry ───────────────────────────────────
+  // Tournament entry is gated on the player's LIVE daily streak instead of a
+  // coin fee. The required streak length derives from the legacy `entry_fee_bc`
+  // tier so higher-stakes tournaments demand a longer commitment. The streak is
+  // a GATE — it is read, never consumed. This mirrors the client rule in
+  // web/lib/tournaments/entry-rule.ts (and the SPA copy in
+  // web/public/quizverse-tournaments.html); keep all three in sync.
+  export var STREAK_ENTRY_TIERS = [
+    { maxFeeBc: 0, days: 0 },
+    { maxFeeBc: 50, days: 3 },
+    { maxFeeBc: 75, days: 5 },
+    { maxFeeBc: Infinity, days: 7 },
+  ];
+  export var MAX_REQUIRED_STREAK_DAYS = 7;
+
+  export function requiredStreakForEntry(entryFeeBc: number): number {
+    var fee = Math.max(0, Math.floor(Number(entryFeeBc) || 0));
+    for (var i = 0; i < STREAK_ENTRY_TIERS.length; i++) {
+      if (fee <= STREAK_ENTRY_TIERS[i].maxFeeBc) {
+        return Math.min(STREAK_ENTRY_TIERS[i].days, MAX_REQUIRED_STREAK_DAYS);
+      }
+    }
+    return MAX_REQUIRED_STREAK_DAYS;
+  }
+
+  // Effective current streak, discounting a stale/broken streak that the ledger
+  // has not yet reset (the row is only rewritten on the next check-in). A streak
+  // is alive if the last check-in was today or yesterday, or within the grace
+  // window. Otherwise the effective streak is 0 so a lapsed streak cannot be
+  // replayed to unlock entry.
+  export function effectiveStreakDays(nk: nkruntime.Nakama, userId: string, timezoneOffsetMin: number): number {
+    var row: StreakRow | null = null;
+    try {
+      var rows = nk.storageRead([{ collection: COL_STREAKS, key: "row", userId: userId }]);
+      if (rows && rows.length > 0) row = rows[0].value as StreakRow;
+    } catch (_) { }
+    if (!row || !row.last_calendar_day) return 0;
+    var today = todayKey(timezoneOffsetMin || 0);
+    var diff = dayDiff(row.last_calendar_day, today);
+    if (diff <= 1) return row.current_days || 0;
+    if (diff === 2 && (row.grace_days_used || 0) < TournamentEconomyV2.STREAK_GRACE_DAYS) return row.current_days || 0;
+    return 0;
+  }
+
   export function recordCheckin(nk: nkruntime.Nakama, userId: string, timezoneOffsetMin: number): { row: StreakRow; reward: any | null; new_unlock: boolean } {
     var today = todayKey(timezoneOffsetMin || 0);
     var existing: StreakRow | null = null;
