@@ -39049,20 +39049,24 @@ var LegacyChat;
             var channelId = nk.channelIdBuild(userId, targetUserId, 2);
             // Store as {"text":"..."} so Unity ChatMessageTextParser shows it (same as socket path).
             var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
-            var senderName = resolveSenderName(nk, userId, username);
-            pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
-            // Ephemeral in-app socket notification — delivered to recipient's connected socket
-            // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
-            try {
-                nk.notificationSend(targetUserId, senderName, {
-                    type: "direct_message",
-                    eventType: "direct_message",
-                    screen: "chat",
-                    fromUserId: userId,
-                    preview: buildPreview(content)
-                }, 9001, userId, false);
+            // Persist always; skip generic DM push + 9001 for machine-readable challenge
+            // payloads ([ASYNC_CHALLENGE] etc.) — those already have dedicated notifs.
+            if (!isSystemPayloadMessage(content)) {
+                var senderName = resolveSenderName(nk, userId, username);
+                pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
+                // Ephemeral in-app socket notification — delivered to recipient's connected socket
+                // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
+                try {
+                    nk.notificationSend(targetUserId, senderName, {
+                        type: "direct_message",
+                        eventType: "direct_message",
+                        screen: "chat",
+                        fromUserId: userId,
+                        preview: buildPreview(content)
+                    }, 9001, userId, false);
+                }
+                catch (_) { }
             }
-            catch (_) { }
             return RpcHelpers.successResponse({ messageId: ack.messageId });
         }
         catch (e) {

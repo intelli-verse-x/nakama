@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-22T13:35:04.639Z
+// Generated: 2026-07-24T10:44:35.331Z
 // RPC Count: 1319
 // ============================================================
 
@@ -40553,7 +40553,7 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
         if (typeof sendChallengePushNotification === 'function') {
             sendChallengePushNotification(nk, logger, targetUserId, gameId, senderName,
                 (rawData.modeName || rawData.quizModeName || 'Quiz'), challengeId,
-                challenge.roomCode, isAsync);
+                challenge.roomCode, isAsync, senderId);
         }
     } catch (e) {
         logger.warn('[FriendChallenges] push notification failed: ' + e.message);
@@ -42592,10 +42592,11 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 //
 //   sendChallengePushNotification(nk, logger, targetUserId, gameId,
 //                                 challengerName, quizModeName,
-//                                 challengeId, roomCode, isAsync)
+//                                 challengeId, roomCode, isAsync, fromUserId)
 //      → fans out a push notification via the PUSH_SEND_URL Lambda
 //        endpoint to every push_endpoints row owned by `targetUserId`
 //        for the given `gameId`. Used by send_friend_challenge.
+//        fromUserId is the challenger's userId (flat FCM key for OpenChat).
 //
 //   sendChallengeChatMessage(nk, logger, senderId, receiverId,
 //                            senderName, challengeData)
@@ -42634,8 +42635,9 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
  * @param {string} challengeId    - Server-authoritative challenge id (echoed in data)
  * @param {string} roomCode       - Room/share code (echoed in data)
  * @param {boolean} isAsync       - True for async challenges, false for live
+ * @param {string} [fromUserId]   - Challenger userId (flat FCM key for OpenChat peer resolve)
  */
-function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync) {
+function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync, fromUserId) {
     var LAMBDA_PUSH_URL = (typeof process!=="undefined"&&process.env?process.env.PUSH_SEND_URL:undefined) || "https://your-lambda-url.lambda-url.region.on.aws/send-push";
 
     var endpoints = [];
@@ -42664,18 +42666,26 @@ function sendChallengePushNotification(nk, logger, targetUserId, gameId, challen
     for (var j = 0; j < endpoints.length; j++) {
         var endpoint = endpoints[j];
 
+        var pushData = {
+            type:            "friend_challenge",
+            challengeId:     challengeId,
+            roomCode:        roomCode,
+            isAsync:         isAsync,
+            click_action:    "OPEN_CHALLENGE",
+            fromDisplayName: challengerName || "",
+            senderName:      challengerName || ""
+        };
+        // Omit when empty — Unity OpenChat falls back to aliases / Friends tab.
+        if (fromUserId) {
+            pushData.fromUserId = String(fromUserId);
+        }
+
         var pushPayload = {
             endpointArn: endpoint.endpointArn,
             platform:    endpoint.platform,
             title:       title,
             body:        body,
-            data: {
-                type:         "friend_challenge",
-                challengeId:  challengeId,
-                roomCode:     roomCode,
-                isAsync:      isAsync,
-                click_action: "OPEN_CHALLENGE"
-            },
+            data:        pushData,
             gameId:    gameId,
             eventType: "friend_challenge"
         };
@@ -43462,6 +43472,13 @@ function friendNotifDataFromPayload(payload, senderId) {
     if (p.session_id) data.session_id = String(p.session_id);
     if (p.sessionId) data.sessionId = String(p.sessionId);
     if (senderId) data.senderId = String(senderId);
+    // Challenge / legacy payloads often ship challengerId or senderId without
+    // the canonical chat peer key — promote so OpenChat can resolve the DM.
+    if (!data.fromUserId) {
+        if (p.challengerId) data.fromUserId = String(p.challengerId);
+        else if (p.senderId) data.fromUserId = String(p.senderId);
+        else if (senderId) data.fromUserId = String(senderId);
+    }
     data.screen = data.screen || 'friends';
     return data;
 }
@@ -91703,7 +91720,14 @@ function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data,
             pushData.shareCode = String(data.shareCode);
             pushData.deepLink  = 'quizverse://challenge/join/' + String(data.shareCode);
         }
+        // Peer identity for Unity OpenChat (challenge payloads use challengerId/opponentId,
+        // not the generic fromUserId chat keys — omit when empty so client can fall back).
+        var peerId = data.challengerId || data.opponentId || '';
+        if (peerId) {
+            pushData.fromUserId = String(peerId);
+        }
         var who = data.challengerName || data.opponentName || data.name || 'Someone';
+        pushData.fromDisplayName = String(who);
         if (t === 'challenge_received' || t === 'rematch_requested') {
             LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
                 'async_challenge_received',
@@ -137727,20 +137751,24 @@ var LegacyChat;
             var channelId = nk.channelIdBuild(userId, targetUserId, 2);
             // Store as {"text":"..."} so Unity ChatMessageTextParser shows it (same as socket path).
             var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
-            var senderName = resolveSenderName(nk, userId, username);
-            pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
-            // Ephemeral in-app socket notification — delivered to recipient's connected socket
-            // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
-            try {
-                nk.notificationSend(targetUserId, senderName, {
-                    type: "direct_message",
-                    eventType: "direct_message",
-                    screen: "chat",
-                    fromUserId: userId,
-                    preview: buildPreview(content)
-                }, 9001, userId, false);
+            // Persist always; skip generic DM push + 9001 for machine-readable challenge
+            // payloads ([ASYNC_CHALLENGE] etc.) — those already have dedicated notifs.
+            if (!isSystemPayloadMessage(content)) {
+                var senderName = resolveSenderName(nk, userId, username);
+                pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
+                // Ephemeral in-app socket notification — delivered to recipient's connected socket
+                // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
+                try {
+                    nk.notificationSend(targetUserId, senderName, {
+                        type: "direct_message",
+                        eventType: "direct_message",
+                        screen: "chat",
+                        fromUserId: userId,
+                        preview: buildPreview(content)
+                    }, 9001, userId, false);
+                }
+                catch (_) { }
             }
-            catch (_) { }
             return RpcHelpers.successResponse({ messageId: ack.messageId });
         }
         catch (e) {

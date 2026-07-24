@@ -508,7 +508,7 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
         if (typeof sendChallengePushNotification === 'function') {
             sendChallengePushNotification(nk, logger, targetUserId, gameId, senderName,
                 (rawData.modeName || rawData.quizModeName || 'Quiz'), challengeId,
-                challenge.roomCode, isAsync);
+                challenge.roomCode, isAsync, senderId);
         }
     } catch (e) {
         logger.warn('[FriendChallenges] push notification failed: ' + e.message);

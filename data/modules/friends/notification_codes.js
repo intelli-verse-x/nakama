@@ -137,6 +137,13 @@ function friendNotifDataFromPayload(payload, senderId) {
     if (p.session_id) data.session_id = String(p.session_id);
     if (p.sessionId) data.sessionId = String(p.sessionId);
     if (senderId) data.senderId = String(senderId);
+    // Challenge / legacy payloads often ship challengerId or senderId without
+    // the canonical chat peer key — promote so OpenChat can resolve the DM.
+    if (!data.fromUserId) {
+        if (p.challengerId) data.fromUserId = String(p.challengerId);
+        else if (p.senderId) data.fromUserId = String(p.senderId);
+        else if (senderId) data.fromUserId = String(senderId);
+    }
     data.screen = data.screen || 'friends';
     return data;
 }

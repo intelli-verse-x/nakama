@@ -19123,7 +19123,14 @@ function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data,
             pushData.shareCode = String(data.shareCode);
             pushData.deepLink  = 'quizverse://challenge/join/' + String(data.shareCode);
         }
+        // Peer identity for Unity OpenChat (challenge payloads use challengerId/opponentId,
+        // not the generic fromUserId chat keys — omit when empty so client can fall back).
+        var peerId = data.challengerId || data.opponentId || '';
+        if (peerId) {
+            pushData.fromUserId = String(peerId);
+        }
         var who = data.challengerName || data.opponentName || data.name || 'Someone';
+        pushData.fromDisplayName = String(who);
         if (t === 'challenge_received' || t === 'rematch_requested') {
             LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
                 'async_challenge_received',
