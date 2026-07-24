@@ -38131,9 +38131,9 @@ var PerExamConfig;
             method: 'section-percentile-to-oa',
             phase: 'B',
             countryDefault: 'IN',
-            scoreRange: [0, 204],
+            scoreRange: [0, 198],
             sections: [
-                { id: 'varc', max: 72 },
+                { id: 'varc', max: 66 },
                 { id: 'dilr', max: 66 },
                 { id: 'qa', max: 66 },
             ],
@@ -38147,8 +38147,6 @@ var PerExamConfig;
             method: 'gate-score-formula',
             phase: 'B',
             countryDefault: 'IN',
-            // Raw marks are /100; the official normalised GATE score on the
-            // scorecard is /1000. Predictor output uses the normalised scale.
             scoreRange: [0, 1000],
             sections: [
                 { id: 'general_aptitude', max: 15 },
@@ -38180,13 +38178,13 @@ var PerExamConfig;
             method: 'marks-to-nlu-rank',
             phase: 'B',
             countryDefault: 'IN',
-            scoreRange: [0, 120],
+            scoreRange: [0, 150],
             sections: [
-                { id: 'english', max: 24 },
-                { id: 'gk_current_affairs', max: 30 },
-                { id: 'legal_reasoning', max: 30 },
-                { id: 'logical_reasoning', max: 24 },
-                { id: 'quantitative_techniques', max: 12 },
+                { id: 'english', max: 30 },
+                { id: 'gk_current_affairs', max: 38 },
+                { id: 'legal_reasoning', max: 38 },
+                { id: 'logical_reasoning', max: 28 },
+                { id: 'quantitative_techniques', max: 16 },
             ],
             citations: [
                 'https://law.careers360.com/clat-college-predictor',
@@ -38198,14 +38196,12 @@ var PerExamConfig;
             method: 'nta-percentile-multisubject',
             phase: 'B',
             countryDefault: 'IN',
-            // CUET-UG 2026: each paper 50×5=250; up to 5 subjects → 1250
-            scoreRange: [0, 1250],
+            scoreRange: [0, 800],
             sections: [
-                { id: 'language', max: 250 },
-                { id: 'domain_1', max: 250 },
-                { id: 'domain_2', max: 250 },
-                { id: 'domain_3', max: 250 },
-                { id: 'general_test', max: 250 },
+                { id: 'language', max: 200 },
+                { id: 'domain_1', max: 200 },
+                { id: 'domain_2', max: 200 },
+                { id: 'general_test', max: 200 },
             ],
             citations: [
                 'https://collegedunia.com/articles/e-1361-cuet-2026-rank-predictor',
@@ -38231,12 +38227,11 @@ var PerExamConfig;
             method: 'tier-1-2-composite',
             phase: 'C',
             countryDefault: 'IN',
-            // Form / mock entry uses Tier-1 (100 Q × 2 = 200). Tier-2 Paper-I is separate.
-            scoreRange: [0, 200],
+            scoreRange: [0, 800],
             sections: [
                 { id: 'tier_1', max: 200 },
-                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English (+ DEST)
-                { id: 'tier_2_paper_2', max: 200 }, // Statistics (post-specific)
+                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English
+                { id: 'tier_2_paper_2', max: 150 }, // Statistics (optional post-group)
             ],
             citations: [
                 'https://testbook.com/ssc-cgl-exam/rank-predictor',
