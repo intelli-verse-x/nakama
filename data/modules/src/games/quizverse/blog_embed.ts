@@ -236,18 +236,61 @@ namespace BlogEmbed {
   }
 
   // Extract the first JSON array from a model response (handles ```json fences).
+  // Truncated completions often lack a closing "]" — salvage complete objects
+  // so we keep the prefix (~8+) instead of discarding the whole array.
+  function salvageJsonObjects(fragment: string): any[] {
+    var out: any[] = [];
+    var i = 0;
+    var n = fragment.length;
+    while (i < n) {
+      while (i < n && fragment.charAt(i) !== "{") i++;
+      if (i >= n) break;
+      var start = i;
+      var depth = 0;
+      var inStr = false;
+      var esc = false;
+      for (; i < n; i++) {
+        var ch = fragment.charAt(i);
+        if (inStr) {
+          if (esc) { esc = false; continue; }
+          if (ch === "\\") { esc = true; continue; }
+          if (ch === "\"") inStr = false;
+          continue;
+        }
+        if (ch === "\"") { inStr = true; continue; }
+        if (ch === "{") depth++;
+        else if (ch === "}") {
+          depth--;
+          if (depth === 0) {
+            try {
+              var obj = JSON.parse(fragment.slice(start, i + 1));
+              if (obj && typeof obj === "object") out.push(obj);
+            } catch (_e) { /* skip malformed */ }
+            i++;
+            break;
+          }
+        }
+      }
+      if (depth !== 0) break;
+    }
+    return out;
+  }
+
   function parseQuestionsJson(text: string): any[] {
     if (!text) return [];
     var t = "" + text;
     var fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
     if (fence && fence[1]) t = fence[1];
     var start = t.indexOf("[");
+    if (start < 0) return [];
     var end = t.lastIndexOf("]");
-    if (start < 0 || end <= start) return [];
-    try {
-      var arr = JSON.parse(t.slice(start, end + 1));
-      return (arr && arr.length) ? arr : [];
-    } catch (_e) { return []; }
+    if (end > start) {
+      try {
+        var arr = JSON.parse(t.slice(start, end + 1));
+        if (arr && arr.length) return arr;
+      } catch (_e) { /* fall through to salvage */ }
+    }
+    return salvageJsonObjects(t.slice(start + 1));
   }
 
   // Coerce + validate raw model questions into safe EmbedQuestion records.
@@ -278,7 +321,7 @@ namespace BlogEmbed {
     return out;
   }
 
-  function generateQuiz(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, content: string, title: string, locale: string, want: number): EmbedQuestion[] {
+  function generateQuizOnce(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, content: string, title: string, locale: string, want: number, tokenBudget: number): EmbedQuestion[] {
     var system =
       "You are a quiz generator for QuizVerse. Given article content, write EXACTLY " + want +
       " engaging multiple-choice questions that test comprehension of the article. " +
@@ -287,13 +330,42 @@ namespace BlogEmbed {
       "Write in locale '" + locale + "'. Respond ONLY with a JSON array; each item: " +
       '{"prompt": string, "options": [string x' + OPTIONS_PER_Q + '], "correctIndex": number (0-based), "insight": short explanation}.';
     var user = "ARTICLE TITLE: " + (title || "(untitled)") + "\n\nARTICLE CONTENT:\n" + content.slice(0, MAX_CONTENT_CHARS);
+    var text = callLlm(ctx, logger, nk, system, user, tokenBudget);
+    return normalizeQuestions(parseQuestionsJson(text), want);
+  }
+
+  function generateQuiz(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, content: string, title: string, locale: string, want: number): EmbedQuestion[] {
     // ~350–400 completion tokens per MCQ (prompt + 4 options + insight) + JSON overhead.
     // Old hard cap of 2000 silently truncated past ~8 questions.
     var tokenBudget = Math.min(8000, Math.max(2500, want * 400 + 500));
-    var text = callLlm(ctx, logger, nk, system, user, tokenBudget);
-    var questions = normalizeQuestions(parseQuestionsJson(text), want);
+    var questions = generateQuizOnce(ctx, logger, nk, content, title, locale, want, tokenBudget);
     if (questions.length < want) {
-      logger.warn("[BlogEmbed] generated " + questions.length + "/" + want + " questions (possible truncation)");
+      logger.warn("[BlogEmbed] generated " + questions.length + "/" + want + " questions — retrying with higher token budget");
+      var retryBudget = Math.min(8000, tokenBudget + 2500);
+      var retry = generateQuizOnce(ctx, logger, nk, content, title, locale, want, retryBudget);
+      if (retry.length > questions.length) questions = retry;
+    }
+    // Top-up: if still short, ask only for the missing count and append.
+    if (questions.length > 0 && questions.length < want) {
+      var need = want - questions.length;
+      logger.warn("[BlogEmbed] topping up " + need + " missing question(s)");
+      var extra = generateQuizOnce(ctx, logger, nk, content, title, locale, need, Math.min(8000, Math.max(2500, need * 400 + 500)));
+      var seen: { [k: string]: boolean } = {};
+      for (var si = 0; si < questions.length; si++) seen[questions[si].prompt] = true;
+      for (var ei = 0; ei < extra.length && questions.length < want; ei++) {
+        if (seen[extra[ei].prompt]) continue;
+        seen[extra[ei].prompt] = true;
+        questions.push({
+          id: "beq-" + (questions.length + 1),
+          prompt: extra[ei].prompt,
+          options: extra[ei].options,
+          correctIndex: extra[ei].correctIndex,
+          insight: extra[ei].insight
+        });
+      }
+    }
+    if (questions.length < want) {
+      logger.warn("[BlogEmbed] final count " + questions.length + "/" + want + " questions");
     }
     return questions;
   }
