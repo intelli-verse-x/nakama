@@ -24410,10 +24410,10 @@ var quizverseClaimDailyReward = function(ctx, logger, nk, payload) {
 //     return JSON.stringify({ error: 'quizverseFindFriends not implemented', success: false });
 // };
 // Stub: quizverseSavePlayerData - TODO: implement actual function
-var quizverseLegacySavePlayerData = function(ctx, logger, nk, payload) {
-    logger.debug('quizverseSavePlayerData called but not implemented (stub)');
-    return JSON.stringify({ error: 'quizverseSavePlayerData not implemented', success: false });
-};
+// var quizverseLegacySavePlayerData = function(ctx, logger, nk, payload) {
+//     logger.debug('quizverseSavePlayerData called but not implemented (stub)');
+//     return JSON.stringify({ error: 'quizverseSavePlayerData not implemented', success: false });
+// };
 // Stub: quizverseLoadPlayerData - TODO: implement actual function
 var quizverseLegacyLoadPlayerData = function(ctx, logger, nk, payload) {
     logger.debug('quizverseLoadPlayerData called but not implemented (stub)');
