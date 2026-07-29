@@ -454,7 +454,11 @@ namespace TournamentRpcs {
     var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
     var slug = "" + (data.slug || "");
-    var paidVia = "" + (data.paid_via || "balance"); // balance | amoe
+    // Entry method. The streak gate is the current mechanism; `balance`/`amoe`
+    // are retained for reversibility and older clients that pass paid_via.
+    var entryMethod = "" + (data.entry_method || data.paid_via || "streak"); // streak | balance | amoe
+    var tzOffsetMin = parseInt("" + (data.tz_offset_min || 0), 10);
+    if (isNaN(tzOffsetMin)) tzOffsetMin = 0;
     var idempotencyKey = "" + (data.idempotency_key || "");
     if (!slug) return RpcHelpers.errorResponse("slug required", 400);
     if (!idempotencyKey) return RpcHelpers.errorResponse("idempotency_key required", 400);
@@ -491,7 +495,19 @@ namespace TournamentRpcs {
 
     // Pay path
     var bcCharged = 0;
-    if (paidVia === "amoe") {
+    if (entryMethod === "streak") {
+      // Streak gate (authoritative, server-side — cannot be bypassed by the
+      // client). Required streak derives from the tournament's fee tier; the
+      // streak is read, never consumed, and no coins are charged.
+      var requiredDays = TournamentLevers.requiredStreakForEntry(cfg.entry_fee_bc);
+      var currentDays = TournamentLevers.effectiveStreakDays(nk, userId, tzOffsetMin);
+      if (currentDays < requiredDays) {
+        return RpcHelpers.errorResponse(
+          "streak too short (required=" + requiredDays + ", current=" + currentDays + ", days_remaining=" + (requiredDays - currentDays) + ")",
+          403
+        );
+      }
+    } else if (entryMethod === "amoe") {
       // Verify AMOE eligibility (caller has watched 6/6 Learning Series videos).
       var amoeOk = LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, cfg.amoe.learning_series_required_videos);
       if (!amoeOk) return RpcHelpers.errorResponse("AMOE not unlocked — complete 6/6 Learning Series videos first", 403);
@@ -518,7 +534,7 @@ namespace TournamentRpcs {
       entry_id: "ent_" + nowSec() + "_" + Math.random().toString(36).slice(2, 10),
       tournament_slug: slug,
       user_id: userId,
-      paid_via: paidVia as any,
+      paid_via: entryMethod as any,
       bc_charged: bcCharged,
       founder_member: isFounder,
       enrolled_at: nowSec(),
@@ -544,7 +560,7 @@ namespace TournamentRpcs {
     // Ensure leaderboard
     TournamentLeaderboard.ensureLeaderboard(nk, slug, null, 0);
 
-    logger.info("[Tournaments] enter user=" + userId + " slug=" + slug + " paid=" + paidVia + " bc=" + bcCharged + " founder=" + isFounder);
+    logger.info("[Tournaments] enter user=" + userId + " slug=" + slug + " method=" + entryMethod + " bc=" + bcCharged + " founder=" + isFounder);
     return RpcHelpers.successResponse({ entry: entry, founder_member: isFounder, idempotent: false });
   }
 

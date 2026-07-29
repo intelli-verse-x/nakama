@@ -55,9 +55,10 @@ namespace BlogEmbed {
   // Anti-farm: distinct blog quizzes a single account can be rewarded for / day.
   var BLOG_QUIZ_MAX_PER_DAY = 10;
   // Generation guardrails.
+  // Keep MAX_QUESTIONS in sync with /tools/pdf-to-quiz UI options: [5, 8, 10, 15].
   var MIN_CONTENT_CHARS  = 200;
   var MAX_CONTENT_CHARS  = 12000;
-  var MAX_QUESTIONS       = 8;
+  var MAX_QUESTIONS       = 15;
   var DEFAULT_QUESTIONS   = 5;
   var OPTIONS_PER_Q       = 4;
 
@@ -128,10 +129,13 @@ namespace BlogEmbed {
   var QWEN3_DEFAULT_BASE_URL = "http://vllm-coder-pro.content-factory.svc.cluster.local:8000";
   var QWEN3_DEFAULT_MODEL    = "Qwen/Qwen3-7B-Instruct";
 
-  function callLlm(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, system: string, user: string): string {
+  function callLlm(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, system: string, user: string, maxTokens?: number): string {
     var anthropic = envStr(ctx, "ANTHROPIC_API_KEY");
     var openai = envStr(ctx, "OPENAI_API_KEY");
-    var maxTokens = 2000;
+    // 2000 was enough for the old 8-question cap; 10–15 MCQs with options +
+    // insights routinely need 3–5k completion tokens or the JSON truncates
+    // mid-array and normalizeQuestions only keeps the complete prefix (~8).
+    var tokenBudget = typeof maxTokens === "number" && maxTokens > 0 ? maxTokens : 4000;
 
     // Build the attempt order: preferred provider first, then qwen3 (keyless,
     // self-hosted), then any keyed cloud provider that happens to be set.
@@ -165,7 +169,7 @@ namespace BlogEmbed {
           if (qKey) qHeaders["Authorization"] = "Bearer " + qKey;
           var rq = nk.httpRequest(qBase + "/v1/chat/completions", "post", qHeaders, JSON.stringify({
             model: qModel,
-            max_tokens: maxTokens,
+            max_tokens: tokenBudget,
             messages: [
               { role: "system", content: system },
               { role: "user", content: user }
@@ -190,7 +194,7 @@ namespace BlogEmbed {
           "anthropic-version": "2023-06-01"
         }, JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: maxTokens,
+          max_tokens: tokenBudget,
           system: system,
           messages: [{ role: "user", content: user }]
         }), 20000);
@@ -209,7 +213,7 @@ namespace BlogEmbed {
           "Authorization": "Bearer " + openai
         }, JSON.stringify({
           model: "gpt-4o-mini",
-          max_tokens: maxTokens,
+          max_tokens: tokenBudget,
           messages: [
             { role: "system", content: system },
             { role: "user", content: user }
@@ -232,18 +236,61 @@ namespace BlogEmbed {
   }
 
   // Extract the first JSON array from a model response (handles ```json fences).
+  // Truncated completions often lack a closing "]" — salvage complete objects
+  // so we keep the prefix (~8+) instead of discarding the whole array.
+  function salvageJsonObjects(fragment: string): any[] {
+    var out: any[] = [];
+    var i = 0;
+    var n = fragment.length;
+    while (i < n) {
+      while (i < n && fragment.charAt(i) !== "{") i++;
+      if (i >= n) break;
+      var start = i;
+      var depth = 0;
+      var inStr = false;
+      var esc = false;
+      for (; i < n; i++) {
+        var ch = fragment.charAt(i);
+        if (inStr) {
+          if (esc) { esc = false; continue; }
+          if (ch === "\\") { esc = true; continue; }
+          if (ch === "\"") inStr = false;
+          continue;
+        }
+        if (ch === "\"") { inStr = true; continue; }
+        if (ch === "{") depth++;
+        else if (ch === "}") {
+          depth--;
+          if (depth === 0) {
+            try {
+              var obj = JSON.parse(fragment.slice(start, i + 1));
+              if (obj && typeof obj === "object") out.push(obj);
+            } catch (_e) { /* skip malformed */ }
+            i++;
+            break;
+          }
+        }
+      }
+      if (depth !== 0) break;
+    }
+    return out;
+  }
+
   function parseQuestionsJson(text: string): any[] {
     if (!text) return [];
     var t = "" + text;
     var fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
     if (fence && fence[1]) t = fence[1];
     var start = t.indexOf("[");
+    if (start < 0) return [];
     var end = t.lastIndexOf("]");
-    if (start < 0 || end <= start) return [];
-    try {
-      var arr = JSON.parse(t.slice(start, end + 1));
-      return (arr && arr.length) ? arr : [];
-    } catch (_e) { return []; }
+    if (end > start) {
+      try {
+        var arr = JSON.parse(t.slice(start, end + 1));
+        if (arr && arr.length) return arr;
+      } catch (_e) { /* fall through to salvage */ }
+    }
+    return salvageJsonObjects(t.slice(start + 1));
   }
 
   // Coerce + validate raw model questions into safe EmbedQuestion records.
@@ -274,16 +321,53 @@ namespace BlogEmbed {
     return out;
   }
 
-  function generateQuiz(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, content: string, title: string, locale: string, want: number): EmbedQuestion[] {
+  function generateQuizOnce(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, content: string, title: string, locale: string, want: number, tokenBudget: number): EmbedQuestion[] {
     var system =
-      "You are a quiz generator for QuizVerse. Given article content, write " + want +
+      "You are a quiz generator for QuizVerse. Given article content, write EXACTLY " + want +
       " engaging multiple-choice questions that test comprehension of the article. " +
+      "Do not write fewer than " + want + " questions. " +
       "Each question must have exactly " + OPTIONS_PER_Q + " options and one correct answer. " +
       "Write in locale '" + locale + "'. Respond ONLY with a JSON array; each item: " +
       '{"prompt": string, "options": [string x' + OPTIONS_PER_Q + '], "correctIndex": number (0-based), "insight": short explanation}.';
     var user = "ARTICLE TITLE: " + (title || "(untitled)") + "\n\nARTICLE CONTENT:\n" + content.slice(0, MAX_CONTENT_CHARS);
-    var text = callLlm(ctx, logger, nk, system, user);
+    var text = callLlm(ctx, logger, nk, system, user, tokenBudget);
     return normalizeQuestions(parseQuestionsJson(text), want);
+  }
+
+  function generateQuiz(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, content: string, title: string, locale: string, want: number): EmbedQuestion[] {
+    // ~350–400 completion tokens per MCQ (prompt + 4 options + insight) + JSON overhead.
+    // Old hard cap of 2000 silently truncated past ~8 questions.
+    var tokenBudget = Math.min(8000, Math.max(2500, want * 400 + 500));
+    var questions = generateQuizOnce(ctx, logger, nk, content, title, locale, want, tokenBudget);
+    if (questions.length < want) {
+      logger.warn("[BlogEmbed] generated " + questions.length + "/" + want + " questions — retrying with higher token budget");
+      var retryBudget = Math.min(8000, tokenBudget + 2500);
+      var retry = generateQuizOnce(ctx, logger, nk, content, title, locale, want, retryBudget);
+      if (retry.length > questions.length) questions = retry;
+    }
+    // Top-up: if still short, ask only for the missing count and append.
+    if (questions.length > 0 && questions.length < want) {
+      var need = want - questions.length;
+      logger.warn("[BlogEmbed] topping up " + need + " missing question(s)");
+      var extra = generateQuizOnce(ctx, logger, nk, content, title, locale, need, Math.min(8000, Math.max(2500, need * 400 + 500)));
+      var seen: { [k: string]: boolean } = {};
+      for (var si = 0; si < questions.length; si++) seen[questions[si].prompt] = true;
+      for (var ei = 0; ei < extra.length && questions.length < want; ei++) {
+        if (seen[extra[ei].prompt]) continue;
+        seen[extra[ei].prompt] = true;
+        questions.push({
+          id: "beq-" + (questions.length + 1),
+          prompt: extra[ei].prompt,
+          options: extra[ei].options,
+          correctIndex: extra[ei].correctIndex,
+          insight: extra[ei].insight
+        });
+      }
+    }
+    if (questions.length < want) {
+      logger.warn("[BlogEmbed] final count " + questions.length + "/" + want + " questions");
+    }
+    return questions;
   }
 
   // ── RPC: quizverse_blog_embed_create ────────────────────────────────────────
@@ -305,14 +389,15 @@ namespace BlogEmbed {
     }
 
     // Dedup: same source URL → return the existing embed (idempotent, saves LLM
-    // spend and keeps one stable backlink target per blog post).
+    // spend and keeps one stable backlink target per blog post). Skip reuse when
+    // the cached quiz has a different question count than requested.
     if (url) {
       try {
         var idxKey = "src_" + hashStr(url.toLowerCase());
         var existing = Storage.readSystemJson<any>(nk, COLLECTION_EMBEDS, idxKey);
         if (existing && existing.embed_id) {
           var prev = Storage.readSystemJson<EmbedQuiz>(nk, COLLECTION_EMBEDS, existing.embed_id);
-          if (prev && prev.questions && prev.questions.length > 0) {
+          if (prev && prev.questions && prev.questions.length > 0 && prev.questions.length === want) {
             return RpcHelpers.successResponse({ embed_id: prev.embed_id, title: prev.title, quiz: prev, reused: true });
           }
         }
