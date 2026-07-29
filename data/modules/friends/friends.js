@@ -36,10 +36,11 @@
 //
 //   sendChallengePushNotification(nk, logger, targetUserId, gameId,
 //                                 challengerName, quizModeName,
-//                                 challengeId, roomCode, isAsync)
+//                                 challengeId, roomCode, isAsync, fromUserId)
 //      → fans out a push notification via the PUSH_SEND_URL Lambda
 //        endpoint to every push_endpoints row owned by `targetUserId`
 //        for the given `gameId`. Used by send_friend_challenge.
+//        fromUserId is the challenger's userId (flat FCM key for OpenChat).
 //
 //   sendChallengeChatMessage(nk, logger, senderId, receiverId,
 //                            senderName, challengeData)
@@ -78,8 +79,9 @@
  * @param {string} challengeId    - Server-authoritative challenge id (echoed in data)
  * @param {string} roomCode       - Room/share code (echoed in data)
  * @param {boolean} isAsync       - True for async challenges, false for live
+ * @param {string} [fromUserId]   - Challenger userId (flat FCM key for OpenChat peer resolve)
  */
-function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync) {
+function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync, fromUserId) {
     var LAMBDA_PUSH_URL = process.env.PUSH_SEND_URL || "https://your-lambda-url.lambda-url.region.on.aws/send-push";
 
     var endpoints = [];
@@ -108,18 +110,26 @@ function sendChallengePushNotification(nk, logger, targetUserId, gameId, challen
     for (var j = 0; j < endpoints.length; j++) {
         var endpoint = endpoints[j];
 
+        var pushData = {
+            type:            "friend_challenge",
+            challengeId:     challengeId,
+            roomCode:        roomCode,
+            isAsync:         isAsync,
+            click_action:    "OPEN_CHALLENGE",
+            fromDisplayName: challengerName || "",
+            senderName:      challengerName || ""
+        };
+        // Omit when empty — Unity OpenChat falls back to aliases / Friends tab.
+        if (fromUserId) {
+            pushData.fromUserId = String(fromUserId);
+        }
+
         var pushPayload = {
             endpointArn: endpoint.endpointArn,
             platform:    endpoint.platform,
             title:       title,
             body:        body,
-            data: {
-                type:         "friend_challenge",
-                challengeId:  challengeId,
-                roomCode:     roomCode,
-                isAsync:      isAsync,
-                click_action: "OPEN_CHALLENGE"
-            },
+            data:        pushData,
             gameId:    gameId,
             eventType: "friend_challenge"
         };

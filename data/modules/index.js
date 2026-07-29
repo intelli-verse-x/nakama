@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-07-24T04:41:21.974Z
+// Generated: 2026-07-24T10:44:35.331Z
 // RPC Count: 1319
 // ============================================================
 
@@ -40553,7 +40553,7 @@ function rpcSendFriendChallenge(ctx, logger, nk, payload) {
         if (typeof sendChallengePushNotification === 'function') {
             sendChallengePushNotification(nk, logger, targetUserId, gameId, senderName,
                 (rawData.modeName || rawData.quizModeName || 'Quiz'), challengeId,
-                challenge.roomCode, isAsync);
+                challenge.roomCode, isAsync, senderId);
         }
     } catch (e) {
         logger.warn('[FriendChallenges] push notification failed: ' + e.message);
@@ -42592,10 +42592,11 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 //
 //   sendChallengePushNotification(nk, logger, targetUserId, gameId,
 //                                 challengerName, quizModeName,
-//                                 challengeId, roomCode, isAsync)
+//                                 challengeId, roomCode, isAsync, fromUserId)
 //      → fans out a push notification via the PUSH_SEND_URL Lambda
 //        endpoint to every push_endpoints row owned by `targetUserId`
 //        for the given `gameId`. Used by send_friend_challenge.
+//        fromUserId is the challenger's userId (flat FCM key for OpenChat).
 //
 //   sendChallengeChatMessage(nk, logger, senderId, receiverId,
 //                            senderName, challengeData)
@@ -42634,8 +42635,9 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
  * @param {string} challengeId    - Server-authoritative challenge id (echoed in data)
  * @param {string} roomCode       - Room/share code (echoed in data)
  * @param {boolean} isAsync       - True for async challenges, false for live
+ * @param {string} [fromUserId]   - Challenger userId (flat FCM key for OpenChat peer resolve)
  */
-function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync) {
+function sendChallengePushNotification(nk, logger, targetUserId, gameId, challengerName, quizModeName, challengeId, roomCode, isAsync, fromUserId) {
     var LAMBDA_PUSH_URL = (typeof process!=="undefined"&&process.env?process.env.PUSH_SEND_URL:undefined) || "https://your-lambda-url.lambda-url.region.on.aws/send-push";
 
     var endpoints = [];
@@ -42664,18 +42666,26 @@ function sendChallengePushNotification(nk, logger, targetUserId, gameId, challen
     for (var j = 0; j < endpoints.length; j++) {
         var endpoint = endpoints[j];
 
+        var pushData = {
+            type:            "friend_challenge",
+            challengeId:     challengeId,
+            roomCode:        roomCode,
+            isAsync:         isAsync,
+            click_action:    "OPEN_CHALLENGE",
+            fromDisplayName: challengerName || "",
+            senderName:      challengerName || ""
+        };
+        // Omit when empty — Unity OpenChat falls back to aliases / Friends tab.
+        if (fromUserId) {
+            pushData.fromUserId = String(fromUserId);
+        }
+
         var pushPayload = {
             endpointArn: endpoint.endpointArn,
             platform:    endpoint.platform,
             title:       title,
             body:        body,
-            data: {
-                type:         "friend_challenge",
-                challengeId:  challengeId,
-                roomCode:     roomCode,
-                isAsync:      isAsync,
-                click_action: "OPEN_CHALLENGE"
-            },
+            data:        pushData,
             gameId:    gameId,
             eventType: "friend_challenge"
         };
@@ -43462,6 +43472,13 @@ function friendNotifDataFromPayload(payload, senderId) {
     if (p.session_id) data.session_id = String(p.session_id);
     if (p.sessionId) data.sessionId = String(p.sessionId);
     if (senderId) data.senderId = String(senderId);
+    // Challenge / legacy payloads often ship challengerId or senderId without
+    // the canonical chat peer key — promote so OpenChat can resolve the DM.
+    if (!data.fromUserId) {
+        if (p.challengerId) data.fromUserId = String(p.challengerId);
+        else if (p.senderId) data.fromUserId = String(p.senderId);
+        else if (senderId) data.fromUserId = String(senderId);
+    }
     data.screen = data.screen || 'friends';
     return data;
 }
@@ -91703,7 +91720,14 @@ function asyncChallengeSendNotification(ctx, nk, userId, subject, content, data,
             pushData.shareCode = String(data.shareCode);
             pushData.deepLink  = 'quizverse://challenge/join/' + String(data.shareCode);
         }
+        // Peer identity for Unity OpenChat (challenge payloads use challengerId/opponentId,
+        // not the generic fromUserId chat keys — omit when empty so client can fall back).
+        var peerId = data.challengerId || data.opponentId || '';
+        if (peerId) {
+            pushData.fromUserId = String(peerId);
+        }
         var who = data.challengerName || data.opponentName || data.name || 'Someone';
+        pushData.fromDisplayName = String(who);
         if (t === 'challenge_received' || t === 'rematch_requested') {
             LegacyPush.sendLocalizedPushToUser(ctx, logger, nk, userId,
                 'async_challenge_received',
@@ -108886,10 +108910,9 @@ var BlogEmbed;
     // Anti-farm: distinct blog quizzes a single account can be rewarded for / day.
     var BLOG_QUIZ_MAX_PER_DAY = 10;
     // Generation guardrails.
-    // Keep MAX_QUESTIONS in sync with /tools/pdf-to-quiz UI options: [5, 8, 10, 15].
     var MIN_CONTENT_CHARS = 200;
     var MAX_CONTENT_CHARS = 12000;
-    var MAX_QUESTIONS = 15;
+    var MAX_QUESTIONS = 8;
     var DEFAULT_QUESTIONS = 5;
     var OPTIONS_PER_Q = 4;
     // ── small helpers ─────────────────────────────────────────────────────────
@@ -108943,13 +108966,10 @@ var BlogEmbed;
     // back to qwen3 so blog-quiz generation works on the self-hosted stack.
     var QWEN3_DEFAULT_BASE_URL = "http://vllm-coder-pro.content-factory.svc.cluster.local:8000";
     var QWEN3_DEFAULT_MODEL = "Qwen/Qwen3-7B-Instruct";
-    function callLlm(ctx, logger, nk, system, user, maxTokens) {
+    function callLlm(ctx, logger, nk, system, user) {
         var anthropic = envStr(ctx, "ANTHROPIC_API_KEY");
         var openai = envStr(ctx, "OPENAI_API_KEY");
-        // 2000 was enough for the old 8-question cap; 10–15 MCQs with options +
-        // insights routinely need 3–5k completion tokens or the JSON truncates
-        // mid-array and normalizeQuestions only keeps the complete prefix (~8).
-        var tokenBudget = typeof maxTokens === "number" && maxTokens > 0 ? maxTokens : 4000;
+        var maxTokens = 2000;
         // Build the attempt order: preferred provider first, then qwen3 (keyless,
         // self-hosted), then any keyed cloud provider that happens to be set.
         var preferred = ("" + ((ctx.env && ctx.env["LLM_PROVIDER"]) || "qwen3")).toLowerCase();
@@ -108986,7 +109006,7 @@ var BlogEmbed;
                         qHeaders["Authorization"] = "Bearer " + qKey;
                     var rq = nk.httpRequest(qBase + "/v1/chat/completions", "post", qHeaders, JSON.stringify({
                         model: qModel,
-                        max_tokens: tokenBudget,
+                        max_tokens: maxTokens,
                         messages: [
                             { role: "system", content: system },
                             { role: "user", content: user }
@@ -109013,7 +109033,7 @@ var BlogEmbed;
                         "anthropic-version": "2023-06-01"
                     }, JSON.stringify({
                         model: "claude-sonnet-4-20250514",
-                        max_tokens: tokenBudget,
+                        max_tokens: maxTokens,
                         system: system,
                         messages: [{ role: "user", content: user }]
                     }), 20000);
@@ -109033,7 +109053,7 @@ var BlogEmbed;
                         "Authorization": "Bearer " + openai
                     }, JSON.stringify({
                         model: "gpt-4o-mini",
-                        max_tokens: tokenBudget,
+                        max_tokens: maxTokens,
                         messages: [
                             { role: "system", content: system },
                             { role: "user", content: user }
@@ -109057,61 +109077,6 @@ var BlogEmbed;
         return "";
     }
     // Extract the first JSON array from a model response (handles ```json fences).
-    // Truncated completions often lack a closing "]" — salvage complete objects
-    // so we keep the prefix (~8+) instead of discarding the whole array.
-    function salvageJsonObjects(fragment) {
-        var out = [];
-        var i = 0;
-        var n = fragment.length;
-        while (i < n) {
-            while (i < n && fragment.charAt(i) !== "{")
-                i++;
-            if (i >= n)
-                break;
-            var start = i;
-            var depth = 0;
-            var inStr = false;
-            var esc = false;
-            for (; i < n; i++) {
-                var ch = fragment.charAt(i);
-                if (inStr) {
-                    if (esc) {
-                        esc = false;
-                        continue;
-                    }
-                    if (ch === "\\") {
-                        esc = true;
-                        continue;
-                    }
-                    if (ch === "\"")
-                        inStr = false;
-                    continue;
-                }
-                if (ch === "\"") {
-                    inStr = true;
-                    continue;
-                }
-                if (ch === "{")
-                    depth++;
-                else if (ch === "}") {
-                    depth--;
-                    if (depth === 0) {
-                        try {
-                            var obj = JSON.parse(fragment.slice(start, i + 1));
-                            if (obj && typeof obj === "object")
-                                out.push(obj);
-                        }
-                        catch (_e) { /* skip malformed */ }
-                        i++;
-                        break;
-                    }
-                }
-            }
-            if (depth !== 0)
-                break;
-        }
-        return out;
-    }
     function parseQuestionsJson(text) {
         if (!text)
             return [];
@@ -109120,18 +109085,16 @@ var BlogEmbed;
         if (fence && fence[1])
             t = fence[1];
         var start = t.indexOf("[");
-        if (start < 0)
-            return [];
         var end = t.lastIndexOf("]");
-        if (end > start) {
-            try {
-                var arr = JSON.parse(t.slice(start, end + 1));
-                if (arr && arr.length)
-                    return arr;
-            }
-            catch (_e) { /* fall through to salvage */ }
+        if (start < 0 || end <= start)
+            return [];
+        try {
+            var arr = JSON.parse(t.slice(start, end + 1));
+            return (arr && arr.length) ? arr : [];
         }
-        return salvageJsonObjects(t.slice(start + 1));
+        catch (_e) {
+            return [];
+        }
     }
     // Coerce + validate raw model questions into safe EmbedQuestion records.
     function normalizeQuestions(raw, want) {
@@ -109165,54 +109128,15 @@ var BlogEmbed;
         }
         return out;
     }
-    function generateQuizOnce(ctx, logger, nk, content, title, locale, want, tokenBudget) {
-        var system = "You are a quiz generator for QuizVerse. Given article content, write EXACTLY " + want +
+    function generateQuiz(ctx, logger, nk, content, title, locale, want) {
+        var system = "You are a quiz generator for QuizVerse. Given article content, write " + want +
             " engaging multiple-choice questions that test comprehension of the article. " +
-            "Do not write fewer than " + want + " questions. " +
             "Each question must have exactly " + OPTIONS_PER_Q + " options and one correct answer. " +
             "Write in locale '" + locale + "'. Respond ONLY with a JSON array; each item: " +
             '{"prompt": string, "options": [string x' + OPTIONS_PER_Q + '], "correctIndex": number (0-based), "insight": short explanation}.';
         var user = "ARTICLE TITLE: " + (title || "(untitled)") + "\n\nARTICLE CONTENT:\n" + content.slice(0, MAX_CONTENT_CHARS);
-        var text = callLlm(ctx, logger, nk, system, user, tokenBudget);
+        var text = callLlm(ctx, logger, nk, system, user);
         return normalizeQuestions(parseQuestionsJson(text), want);
-    }
-    function generateQuiz(ctx, logger, nk, content, title, locale, want) {
-        // ~350–400 completion tokens per MCQ (prompt + 4 options + insight) + JSON overhead.
-        // Old hard cap of 2000 silently truncated past ~8 questions.
-        var tokenBudget = Math.min(8000, Math.max(2500, want * 400 + 500));
-        var questions = generateQuizOnce(ctx, logger, nk, content, title, locale, want, tokenBudget);
-        if (questions.length < want) {
-            logger.warn("[BlogEmbed] generated " + questions.length + "/" + want + " questions — retrying with higher token budget");
-            var retryBudget = Math.min(8000, tokenBudget + 2500);
-            var retry = generateQuizOnce(ctx, logger, nk, content, title, locale, want, retryBudget);
-            if (retry.length > questions.length)
-                questions = retry;
-        }
-        // Top-up: if still short, ask only for the missing count and append.
-        if (questions.length > 0 && questions.length < want) {
-            var need = want - questions.length;
-            logger.warn("[BlogEmbed] topping up " + need + " missing question(s)");
-            var extra = generateQuizOnce(ctx, logger, nk, content, title, locale, need, Math.min(8000, Math.max(2500, need * 400 + 500)));
-            var seen = {};
-            for (var si = 0; si < questions.length; si++)
-                seen[questions[si].prompt] = true;
-            for (var ei = 0; ei < extra.length && questions.length < want; ei++) {
-                if (seen[extra[ei].prompt])
-                    continue;
-                seen[extra[ei].prompt] = true;
-                questions.push({
-                    id: "beq-" + (questions.length + 1),
-                    prompt: extra[ei].prompt,
-                    options: extra[ei].options,
-                    correctIndex: extra[ei].correctIndex,
-                    insight: extra[ei].insight
-                });
-            }
-        }
-        if (questions.length < want) {
-            logger.warn("[BlogEmbed] final count " + questions.length + "/" + want + " questions");
-        }
-        return questions;
     }
     // ── RPC: quizverse_blog_embed_create ────────────────────────────────────────
     // Auth: any Nakama session (ghost ok — the generator page is open/no-login,
@@ -109230,15 +109154,14 @@ var BlogEmbed;
             return RpcHelpers.errorResponse("content too short — need at least " + MIN_CONTENT_CHARS + " characters of blog text", 400);
         }
         // Dedup: same source URL → return the existing embed (idempotent, saves LLM
-        // spend and keeps one stable backlink target per blog post). Skip reuse when
-        // the cached quiz has a different question count than requested.
+        // spend and keeps one stable backlink target per blog post).
         if (url) {
             try {
                 var idxKey = "src_" + hashStr(url.toLowerCase());
                 var existing = Storage.readSystemJson(nk, COLLECTION_EMBEDS, idxKey);
                 if (existing && existing.embed_id) {
                     var prev = Storage.readSystemJson(nk, COLLECTION_EMBEDS, existing.embed_id);
-                    if (prev && prev.questions && prev.questions.length > 0 && prev.questions.length === want) {
+                    if (prev && prev.questions && prev.questions.length > 0) {
                         return RpcHelpers.successResponse({ embed_id: prev.embed_id, title: prev.title, quiz: prev, reused: true });
                     }
                 }
@@ -136807,9 +136730,9 @@ var PerExamConfig;
             method: 'section-percentile-to-oa',
             phase: 'B',
             countryDefault: 'IN',
-            scoreRange: [0, 204],
+            scoreRange: [0, 198],
             sections: [
-                { id: 'varc', max: 72 },
+                { id: 'varc', max: 66 },
                 { id: 'dilr', max: 66 },
                 { id: 'qa', max: 66 },
             ],
@@ -136823,8 +136746,6 @@ var PerExamConfig;
             method: 'gate-score-formula',
             phase: 'B',
             countryDefault: 'IN',
-            // Raw marks are /100; the official normalised GATE score on the
-            // scorecard is /1000. Predictor output uses the normalised scale.
             scoreRange: [0, 1000],
             sections: [
                 { id: 'general_aptitude', max: 15 },
@@ -136856,13 +136777,13 @@ var PerExamConfig;
             method: 'marks-to-nlu-rank',
             phase: 'B',
             countryDefault: 'IN',
-            scoreRange: [0, 120],
+            scoreRange: [0, 150],
             sections: [
-                { id: 'english', max: 24 },
-                { id: 'gk_current_affairs', max: 30 },
-                { id: 'legal_reasoning', max: 30 },
-                { id: 'logical_reasoning', max: 24 },
-                { id: 'quantitative_techniques', max: 12 },
+                { id: 'english', max: 30 },
+                { id: 'gk_current_affairs', max: 38 },
+                { id: 'legal_reasoning', max: 38 },
+                { id: 'logical_reasoning', max: 28 },
+                { id: 'quantitative_techniques', max: 16 },
             ],
             citations: [
                 'https://law.careers360.com/clat-college-predictor',
@@ -136874,14 +136795,12 @@ var PerExamConfig;
             method: 'nta-percentile-multisubject',
             phase: 'B',
             countryDefault: 'IN',
-            // CUET-UG 2026: each paper 50×5=250; up to 5 subjects → 1250
-            scoreRange: [0, 1250],
+            scoreRange: [0, 800],
             sections: [
-                { id: 'language', max: 250 },
-                { id: 'domain_1', max: 250 },
-                { id: 'domain_2', max: 250 },
-                { id: 'domain_3', max: 250 },
-                { id: 'general_test', max: 250 },
+                { id: 'language', max: 200 },
+                { id: 'domain_1', max: 200 },
+                { id: 'domain_2', max: 200 },
+                { id: 'general_test', max: 200 },
             ],
             citations: [
                 'https://collegedunia.com/articles/e-1361-cuet-2026-rank-predictor',
@@ -136907,12 +136826,11 @@ var PerExamConfig;
             method: 'tier-1-2-composite',
             phase: 'C',
             countryDefault: 'IN',
-            // Form / mock entry uses Tier-1 (100 Q × 2 = 200). Tier-2 Paper-I is separate.
-            scoreRange: [0, 200],
+            scoreRange: [0, 800],
             sections: [
                 { id: 'tier_1', max: 200 },
-                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English (+ DEST)
-                { id: 'tier_2_paper_2', max: 200 }, // Statistics (post-specific)
+                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English
+                { id: 'tier_2_paper_2', max: 150 }, // Statistics (optional post-group)
             ],
             citations: [
                 'https://testbook.com/ssc-cgl-exam/rank-predictor',
@@ -137833,20 +137751,24 @@ var LegacyChat;
             var channelId = nk.channelIdBuild(userId, targetUserId, 2);
             // Store as {"text":"..."} so Unity ChatMessageTextParser shows it (same as socket path).
             var ack = nk.channelMessageSend(channelId, payloadObj, userId, username, true);
-            var senderName = resolveSenderName(nk, userId, username);
-            pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
-            // Ephemeral in-app socket notification — delivered to recipient's connected socket
-            // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
-            try {
-                nk.notificationSend(targetUserId, senderName, {
-                    type: "direct_message",
-                    eventType: "direct_message",
-                    screen: "chat",
-                    fromUserId: userId,
-                    preview: buildPreview(content)
-                }, 9001, userId, false);
+            // Persist always; skip generic DM push + 9001 for machine-readable challenge
+            // payloads ([ASYNC_CHALLENGE] etc.) — those already have dedicated notifs.
+            if (!isSystemPayloadMessage(content)) {
+                var senderName = resolveSenderName(nk, userId, username);
+                pushDirectMessage(ctx, logger, nk, userId, senderName, targetUserId, content);
+                // Ephemeral in-app socket notification — delivered to recipient's connected socket
+                // without requiring them to have joined the DM channel (code 9001 = incoming_dm).
+                try {
+                    nk.notificationSend(targetUserId, senderName, {
+                        type: "direct_message",
+                        eventType: "direct_message",
+                        screen: "chat",
+                        fromUserId: userId,
+                        preview: buildPreview(content)
+                    }, 9001, userId, false);
+                }
+                catch (_) { }
             }
-            catch (_) { }
             return RpcHelpers.successResponse({ messageId: ack.messageId });
         }
         catch (e) {

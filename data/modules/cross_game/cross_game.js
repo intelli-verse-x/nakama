@@ -8,7 +8,8 @@ var KNOWN_GAMES = [
     // Arcade mini-games
     "5c68cf9d-b738-4cca-bbb0-0ce80748239e",  // Chess Puzzles
     "650636ba-7fa7-4441-9223-08ecd79677ae",  // Crystal 2048
-    "02290eb7-bdd5-4dc2-b5d3-619127eeaa99"   // Hex 2248
+    "02290eb7-bdd5-4dc2-b5d3-619127eeaa99",   // Hex 2248
+    "4d1b82a7-9f6e-4c3a-b812-7e01a6fbc902"  //Sudoku
 ];
 
 // ============================================================================

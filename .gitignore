@@ -786,3 +786,7 @@ GEMINI.md
 
 # LMS integration local dev environment (keys, LMS stacks, fixtures)
 .lms-dev/
+/docs
+data/modules/-
+/.local
+dev.ps1

@@ -888,6 +888,7 @@ declare namespace QuizVerseMigration {
     var RPC_GEO_LOOKUP: string;
     var RPC_TTS_SYNTHESIZE: string;
     var RPC_LICHESS_PUZZLE: string;
+    var RPC_SUDOKU_GENERATE: string;
     var RPC_XPROMO_GET_APPS: string;
     var RPC_WEBVIEW_TOKEN_ISSUE: string;
     var RPC_ASSET_CATALOG_GET: string;
