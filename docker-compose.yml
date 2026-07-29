@@ -53,6 +53,7 @@ services:
           AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_S3_BUCKET AWS_PRESIGNED_URL_EXPIRY S3_BASE_URL
           GNEWS_API_KEY CURRENTS_API_KEY MEDIASTACK_API_KEY NEWSAPI_API_KEY
           LASTFM_API_KEY TMDB_API_KEY NASA_API_KEY REST_COUNTRIES_API_KEY
+          API_NINJAS_API_KEY
           IVX_SYSTEM_USER_ID
           PUSH_REGISTER_URL PUSH_SEND_URL DEFAULT_FCM_PROJECT_ID
           SLACK_OPS_WEBHOOK_URL
@@ -163,6 +164,8 @@ services:
       - NASA_API_KEY=${NASA_API_KEY:-DEMO_KEY}
       # Countries / Flags (RestCountries v5). Free key at https://restcountries.com/sign-up
       - REST_COUNTRIES_API_KEY=${REST_COUNTRIES_API_KEY:-}
+      # Arcade Sudoku — API Ninjas /v1/sudokugenerate (server-only; never ship in Unity)
+      - API_NINJAS_API_KEY=${API_NINJAS_API_KEY:-cpvfOWevf99i2llPBUreOmJLmfBMKVv1rjAIEy3o}
       # S3 base URL override (defaults to intelli-verse-x-media bucket in code)
       - S3_BASE_URL=${S3_BASE_URL:-}
       # Admin gate for quizverse_admin_stats RPC (must match a real Nakama userId)

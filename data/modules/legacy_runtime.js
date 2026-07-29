@@ -24410,12 +24410,12 @@ var quizverseClaimDailyReward = function(ctx, logger, nk, payload) {
 //     return JSON.stringify({ error: 'quizverseFindFriends not implemented', success: false });
 // };
 // Stub: quizverseSavePlayerData - TODO: implement actual function
-var quizverseSavePlayerData = function(ctx, logger, nk, payload) {
+var quizverseLegacySavePlayerData = function(ctx, logger, nk, payload) {
     logger.debug('quizverseSavePlayerData called but not implemented (stub)');
     return JSON.stringify({ error: 'quizverseSavePlayerData not implemented', success: false });
 };
 // Stub: quizverseLoadPlayerData - TODO: implement actual function
-var quizverseLoadPlayerData = function(ctx, logger, nk, payload) {
+var quizverseLegacyLoadPlayerData = function(ctx, logger, nk, payload) {
     logger.debug('quizverseLoadPlayerData called but not implemented (stub)');
     return JSON.stringify({ error: 'quizverseLoadPlayerData not implemented', success: false });
 };
@@ -24550,12 +24550,12 @@ var lasttolliveFindFriends = function(ctx, logger, nk, payload) {
     return JSON.stringify({ error: 'lasttolliveFindFriends not implemented', success: false });
 };
 // Stub: lasttolliveSavePlayerData - TODO: implement actual function
-var lasttolliveSavePlayerData = function(ctx, logger, nk, payload) {
+var lasttolliveLegacySavePlayerData = function(ctx, logger, nk, payload) {
     logger.debug('lasttolliveSavePlayerData called but not implemented (stub)');
     return JSON.stringify({ error: 'lasttolliveSavePlayerData not implemented', success: false });
 };
 // Stub: lasttoliveLoadPlayerData - TODO: implement actual function
-var lasttoliveLoadPlayerData = function(ctx, logger, nk, payload) {
+var lasttoliveLegacyLoadPlayerData = function(ctx, logger, nk, payload) {
     logger.debug('lasttoliveLoadPlayerData called but not implemented (stub)');
     return JSON.stringify({ error: 'lasttoliveLoadPlayerData not implemented', success: false });
 };
@@ -24987,8 +24987,8 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
             { id: 'quizverse_claim_daily_reward', handler: quizverseClaimDailyReward },
             // DISABLED: legacy duplicate — see data/modules/friends/find_friends.js
             // { id: 'quizverse_find_friends', handler: quizverseFindFriends },
-            { id: 'quizverse_save_player_data', handler: quizverseSavePlayerData },
-            { id: 'quizverse_load_player_data', handler: quizverseLoadPlayerData },
+            // { id: 'quizverse_save_player_data', handler: quizverseLegacySavePlayerData },
+            // { id: 'quizverse_load_player_data', handler: quizverseLegacyLoadPlayerData },
 
             // QuizVerse RPCs - Catalog & Search
             { id: 'quizverse_get_item_catalog', handler: quizverseGetItemCatalog },
@@ -25028,8 +25028,8 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
             { id: 'lasttolive_claim_daily_reward', handler: lasttoliveClaimDailyReward },
             // DISABLED: alias also owned by data/modules/friends/find_friends.js
             // { id: 'lasttolive_find_friends', handler: lasttolliveFindFriends },
-            { id: 'lasttolive_save_player_data', handler: lasttolliveSavePlayerData },
-            { id: 'lasttolive_load_player_data', handler: lasttoliveLoadPlayerData },
+            // { id: 'lasttolive_save_player_data', handler: lasttolliveLegacySavePlayerData },
+            // { id: 'lasttolive_load_player_data', handler: lasttoliveLegacyLoadPlayerData },
 
             // LastToLive RPCs - Catalog & Search
             { id: 'lasttolive_get_item_catalog', handler: lasttoliveGetItemCatalog },
@@ -25075,8 +25075,8 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
         // The literal registerRpc call has been REMOVED (not commented) —
         // postbuild.js does text-based matching that re-binds even
         // commented-out registrations.
-        initializer.registerRpc('quizverse_save_player_data', quizverseSavePlayerData);
-        initializer.registerRpc('quizverse_load_player_data', quizverseLoadPlayerData);
+        // initializer.registerRpc('quizverse_save_player_data', quizverseSavePlayerData);
+        // initializer.registerRpc('quizverse_load_player_data', quizverseLoadPlayerData);
         initializer.registerRpc('quizverse_get_item_catalog', quizverseGetItemCatalog);
         initializer.registerRpc('quizverse_search_items', quizverseSearchItems);
         initializer.registerRpc('quizverse_get_quiz_categories', quizverseGetQuizCategories);
