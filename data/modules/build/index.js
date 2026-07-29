@@ -38346,9 +38346,9 @@ var PerExamConfig;
             method: 'section-percentile-to-oa',
             phase: 'B',
             countryDefault: 'IN',
-            scoreRange: [0, 204],
+            scoreRange: [0, 198],
             sections: [
-                { id: 'varc', max: 72 },
+                { id: 'varc', max: 66 },
                 { id: 'dilr', max: 66 },
                 { id: 'qa', max: 66 },
             ],
@@ -38362,8 +38362,6 @@ var PerExamConfig;
             method: 'gate-score-formula',
             phase: 'B',
             countryDefault: 'IN',
-            // Raw marks are /100; the official normalised GATE score on the
-            // scorecard is /1000. Predictor output uses the normalised scale.
             scoreRange: [0, 1000],
             sections: [
                 { id: 'general_aptitude', max: 15 },
@@ -38395,13 +38393,13 @@ var PerExamConfig;
             method: 'marks-to-nlu-rank',
             phase: 'B',
             countryDefault: 'IN',
-            scoreRange: [0, 120],
+            scoreRange: [0, 150],
             sections: [
-                { id: 'english', max: 24 },
-                { id: 'gk_current_affairs', max: 30 },
-                { id: 'legal_reasoning', max: 30 },
-                { id: 'logical_reasoning', max: 24 },
-                { id: 'quantitative_techniques', max: 12 },
+                { id: 'english', max: 30 },
+                { id: 'gk_current_affairs', max: 38 },
+                { id: 'legal_reasoning', max: 38 },
+                { id: 'logical_reasoning', max: 28 },
+                { id: 'quantitative_techniques', max: 16 },
             ],
             citations: [
                 'https://law.careers360.com/clat-college-predictor',
@@ -38413,14 +38411,12 @@ var PerExamConfig;
             method: 'nta-percentile-multisubject',
             phase: 'B',
             countryDefault: 'IN',
-            // CUET-UG 2026: each paper 50×5=250; up to 5 subjects → 1250
-            scoreRange: [0, 1250],
+            scoreRange: [0, 800],
             sections: [
-                { id: 'language', max: 250 },
-                { id: 'domain_1', max: 250 },
-                { id: 'domain_2', max: 250 },
-                { id: 'domain_3', max: 250 },
-                { id: 'general_test', max: 250 },
+                { id: 'language', max: 200 },
+                { id: 'domain_1', max: 200 },
+                { id: 'domain_2', max: 200 },
+                { id: 'general_test', max: 200 },
             ],
             citations: [
                 'https://collegedunia.com/articles/e-1361-cuet-2026-rank-predictor',
@@ -38446,12 +38442,11 @@ var PerExamConfig;
             method: 'tier-1-2-composite',
             phase: 'C',
             countryDefault: 'IN',
-            // Form / mock entry uses Tier-1 (100 Q × 2 = 200). Tier-2 Paper-I is separate.
-            scoreRange: [0, 200],
+            scoreRange: [0, 800],
             sections: [
                 { id: 'tier_1', max: 200 },
-                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English (+ DEST)
-                { id: 'tier_2_paper_2', max: 200 }, // Statistics (post-specific)
+                { id: 'tier_2_paper_1', max: 450 }, // Quant + Reasoning + English
+                { id: 'tier_2_paper_2', max: 150 }, // Statistics (optional post-group)
             ],
             citations: [
                 'https://testbook.com/ssc-cgl-exam/rank-predictor',
@@ -82957,7 +82952,12 @@ var TournamentRpcs;
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var slug = "" + (data.slug || "");
-        var paidVia = "" + (data.paid_via || "balance"); // balance | amoe
+        // Entry method. The streak gate is the current mechanism; `balance`/`amoe`
+        // are retained for reversibility and older clients that pass paid_via.
+        var entryMethod = "" + (data.entry_method || data.paid_via || "streak"); // streak | balance | amoe
+        var tzOffsetMin = parseInt("" + (data.tz_offset_min || 0), 10);
+        if (isNaN(tzOffsetMin))
+            tzOffsetMin = 0;
         var idempotencyKey = "" + (data.idempotency_key || "");
         if (!slug)
             return RpcHelpers.errorResponse("slug required", 400);
@@ -82994,7 +82994,17 @@ var TournamentRpcs;
         }
         // Pay path
         var bcCharged = 0;
-        if (paidVia === "amoe") {
+        if (entryMethod === "streak") {
+            // Streak gate (authoritative, server-side — cannot be bypassed by the
+            // client). Required streak derives from the tournament's fee tier; the
+            // streak is read, never consumed, and no coins are charged.
+            var requiredDays = TournamentLevers.requiredStreakForEntry(cfg.entry_fee_bc);
+            var currentDays = TournamentLevers.effectiveStreakDays(nk, userId, tzOffsetMin);
+            if (currentDays < requiredDays) {
+                return RpcHelpers.errorResponse("streak too short (required=" + requiredDays + ", current=" + currentDays + ", days_remaining=" + (requiredDays - currentDays) + ")", 403);
+            }
+        }
+        else if (entryMethod === "amoe") {
             // Verify AMOE eligibility (caller has watched 6/6 Learning Series videos).
             var amoeOk = LearningSeries.hasUnlockedAmoe(nk, userId, cfg.topic_tag, cfg.amoe.learning_series_required_videos);
             if (!amoeOk)
@@ -83020,7 +83030,7 @@ var TournamentRpcs;
             entry_id: "ent_" + nowSec() + "_" + Math.random().toString(36).slice(2, 10),
             tournament_slug: slug,
             user_id: userId,
-            paid_via: paidVia,
+            paid_via: entryMethod,
             bc_charged: bcCharged,
             founder_member: isFounder,
             enrolled_at: nowSec(),
@@ -83046,7 +83056,7 @@ var TournamentRpcs;
         TournamentRealtime.notifyEntered(nk, slug, userId, newPot, newEntries);
         // Ensure leaderboard
         TournamentLeaderboard.ensureLeaderboard(nk, slug, null, 0);
-        logger.info("[Tournaments] enter user=" + userId + " slug=" + slug + " paid=" + paidVia + " bc=" + bcCharged + " founder=" + isFounder);
+        logger.info("[Tournaments] enter user=" + userId + " slug=" + slug + " method=" + entryMethod + " bc=" + bcCharged + " founder=" + isFounder);
         return RpcHelpers.successResponse({ entry: entry, founder_member: isFounder, idempotent: false });
     }
     // ── RPC: tournament_submit_pack_result ─────────────────────────────────────
@@ -85426,6 +85436,54 @@ var TournamentLevers;
         var db = Date.UTC(parseInt(pb[0], 10), parseInt(pb[1], 10) - 1, parseInt(pb[2], 10));
         return Math.round((db - da) / 86400000);
     }
+    // ── L7.c — streak-gated tournament entry ───────────────────────────────────
+    // Tournament entry is gated on the player's LIVE daily streak instead of a
+    // coin fee. The required streak length derives from the legacy `entry_fee_bc`
+    // tier so higher-stakes tournaments demand a longer commitment. The streak is
+    // a GATE — it is read, never consumed. This mirrors the client rule in
+    // web/lib/tournaments/entry-rule.ts (and the SPA copy in
+    // web/public/quizverse-tournaments.html); keep all three in sync.
+    TournamentLevers.STREAK_ENTRY_TIERS = [
+        { maxFeeBc: 0, days: 0 },
+        { maxFeeBc: 50, days: 3 },
+        { maxFeeBc: 75, days: 5 },
+        { maxFeeBc: Infinity, days: 7 },
+    ];
+    TournamentLevers.MAX_REQUIRED_STREAK_DAYS = 7;
+    function requiredStreakForEntry(entryFeeBc) {
+        var fee = Math.max(0, Math.floor(Number(entryFeeBc) || 0));
+        for (var i = 0; i < TournamentLevers.STREAK_ENTRY_TIERS.length; i++) {
+            if (fee <= TournamentLevers.STREAK_ENTRY_TIERS[i].maxFeeBc) {
+                return Math.min(TournamentLevers.STREAK_ENTRY_TIERS[i].days, TournamentLevers.MAX_REQUIRED_STREAK_DAYS);
+            }
+        }
+        return TournamentLevers.MAX_REQUIRED_STREAK_DAYS;
+    }
+    TournamentLevers.requiredStreakForEntry = requiredStreakForEntry;
+    // Effective current streak, discounting a stale/broken streak that the ledger
+    // has not yet reset (the row is only rewritten on the next check-in). A streak
+    // is alive if the last check-in was today or yesterday, or within the grace
+    // window. Otherwise the effective streak is 0 so a lapsed streak cannot be
+    // replayed to unlock entry.
+    function effectiveStreakDays(nk, userId, timezoneOffsetMin) {
+        var row = null;
+        try {
+            var rows = nk.storageRead([{ collection: TournamentLevers.COL_STREAKS, key: "row", userId: userId }]);
+            if (rows && rows.length > 0)
+                row = rows[0].value;
+        }
+        catch (_) { }
+        if (!row || !row.last_calendar_day)
+            return 0;
+        var today = todayKey(timezoneOffsetMin || 0);
+        var diff = dayDiff(row.last_calendar_day, today);
+        if (diff <= 1)
+            return row.current_days || 0;
+        if (diff === 2 && (row.grace_days_used || 0) < TournamentEconomyV2.STREAK_GRACE_DAYS)
+            return row.current_days || 0;
+        return 0;
+    }
+    TournamentLevers.effectiveStreakDays = effectiveStreakDays;
     function recordCheckin(nk, userId, timezoneOffsetMin) {
         var today = todayKey(timezoneOffsetMin || 0);
         var existing = null;

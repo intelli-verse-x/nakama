@@ -5193,6 +5193,13 @@ declare namespace TournamentLevers {
         longest_ever: number;
     }
     function todayKey(timezoneOffsetMin: number): string;
+    var STREAK_ENTRY_TIERS: {
+        maxFeeBc: number;
+        days: number;
+    }[];
+    var MAX_REQUIRED_STREAK_DAYS: number;
+    function requiredStreakForEntry(entryFeeBc: number): number;
+    function effectiveStreakDays(nk: nkruntime.Nakama, userId: string, timezoneOffsetMin: number): number;
     function recordCheckin(nk: nkruntime.Nakama, userId: string, timezoneOffsetMin: number): {
         row: StreakRow;
         reward: any | null;
