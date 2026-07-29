@@ -197,16 +197,7 @@ namespace LegacyMultiGame {
     return { success: true, data: { results: results, query: query, count: results.length, searcherId: userId } };
   }
 
-  function savePlayerData(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
-    if (!data.data) throw new Error("data required");
-    Storage.writeJson(nk, "player_data", gId + "_save", userId, data.data);
-    return { success: true };
-  }
 
-  function loadPlayerData(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
-    var saved = Storage.readJson<any>(nk, "player_data", gId + "_save", userId);
-    return { data: saved || {} };
-  }
 
   function getItemCatalog(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, data: any, userId: string, gId: string): any {
     var catalog = Storage.readSystemJson<any>(nk, "game_catalogs", gId + "_catalog");
@@ -572,8 +563,7 @@ namespace LegacyMultiGame {
     //   re-emit `quizverse_find_friends` and `lasttolive_find_friends`
     //   into the bundle. See git blame for the original line.
     // ────────────────────────────────────────────────────────────────────
-    initializer.registerRpc(prefix + "save_player_data", gameRpcHandler(gameId, savePlayerData));
-    initializer.registerRpc(prefix + "load_player_data", gameRpcHandler(gameId, loadPlayerData));
+
     initializer.registerRpc(prefix + "get_item_catalog", gameRpcHandler(gameId, getItemCatalog));
     initializer.registerRpc(prefix + "search_items", gameRpcHandler(gameId, searchItems));
     initializer.registerRpc(prefix + "refresh_server_cache", gameRpcHandler(gameId, refreshServerCache));

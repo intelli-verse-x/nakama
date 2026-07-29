@@ -1388,3 +1388,13 @@ function registerMultiGameRPCs(initializer, logger) {
     logger.info('[MultiGameRPCs] Registration complete: ' + registered + ' registered, ' + skipped + ' skipped');
     logger.info('[MultiGameRPCs] Total RPCs available: ' + rpcs.length);
 }
+
+
+// Explicit registrations for RPCs that were commented out in legacy_runtime.js
+// ---------------------------------------------------------------------
+initializer.registerRpc("quizverse_save_player_data", quizverseSavePlayerData);
+initializer.registerRpc("quizverse_load_player_data", quizverseLoadPlayerData);
+
+// Note: Using 'lasttollive' to match the actual typo in the function name above
+initializer.registerRpc("lasttolive_save_player_data", lasttolliveSavePlayerData);
+initializer.registerRpc("lasttolive_load_player_data", lasttoliveLoadPlayerData);

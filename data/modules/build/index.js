@@ -16696,11 +16696,6 @@ var QuizVerseMigration;
         var height = 3;
         var env = ctx.env || {};
         var apiKey = env.API_NINJAS_API_KEY ? String(env.API_NINJAS_API_KEY).trim() : "";
-        // Never log the API key value — only presence + length.
-        logger.info("[Migration/Sudoku] env apiKeyPresent=" + (apiKey.length > 0)
-            + " apiKeyLen=" + apiKey.length
-            + " difficulty=" + difficulty
-            + " seed=" + (req.seed !== undefined && req.seed !== null ? String(req.seed) : "none"));
         if (!apiKey) {
             logger.warn("[Migration/Sudoku] api_key_missing — set API_NINJAS_API_KEY in RUNTIME_ENV_KEYS/.env");
             return JSON.stringify({ ok: false, error: "api_key_missing" });
@@ -41514,16 +41509,6 @@ var LegacyMultiGame;
         });
         return { success: true, data: { results: results, query: query, count: results.length, searcherId: userId } };
     }
-    function savePlayerData(ctx, logger, nk, data, userId, gId) {
-        if (!data.data)
-            throw new Error("data required");
-        Storage.writeJson(nk, "player_data", gId + "_save", userId, data.data);
-        return { success: true };
-    }
-    function loadPlayerData(ctx, logger, nk, data, userId, gId) {
-        var saved = Storage.readJson(nk, "player_data", gId + "_save", userId);
-        return { data: saved || {} };
-    }
     function getItemCatalog(ctx, logger, nk, data, userId, gId) {
         var catalog = Storage.readSystemJson(nk, "game_catalogs", gId + "_catalog");
         return catalog || { items: [] };
@@ -41849,8 +41834,6 @@ var LegacyMultiGame;
         //   re-emit `quizverse_find_friends` and `lasttolive_find_friends`
         //   into the bundle. See git blame for the original line.
         // ────────────────────────────────────────────────────────────────────
-        initializer.registerRpc(prefix + "save_player_data", gameRpcHandler(gameId, savePlayerData));
-        initializer.registerRpc(prefix + "load_player_data", gameRpcHandler(gameId, loadPlayerData));
         initializer.registerRpc(prefix + "get_item_catalog", gameRpcHandler(gameId, getItemCatalog));
         initializer.registerRpc(prefix + "search_items", gameRpcHandler(gameId, searchItems));
         initializer.registerRpc(prefix + "refresh_server_cache", gameRpcHandler(gameId, refreshServerCache));

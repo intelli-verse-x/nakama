@@ -1380,11 +1380,6 @@ namespace QuizVerseMigration {
 
     var env: any = ctx.env || {};
     var apiKey = env.API_NINJAS_API_KEY ? String(env.API_NINJAS_API_KEY).trim() : "";
-    // Never log the API key value — only presence + length.
-    logger.info("[Migration/Sudoku] env apiKeyPresent=" + (apiKey.length > 0)
-      + " apiKeyLen=" + apiKey.length
-      + " difficulty=" + difficulty
-      + " seed=" + (req.seed !== undefined && req.seed !== null ? String(req.seed) : "none"));
     if (!apiKey) {
       logger.warn("[Migration/Sudoku] api_key_missing — set API_NINJAS_API_KEY in RUNTIME_ENV_KEYS/.env");
       return JSON.stringify({ ok: false, error: "api_key_missing" });
