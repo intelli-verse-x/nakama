@@ -13206,7 +13206,7 @@ function quizverseLegacySavePlayerData(context, logger, nk, payload) {
  * RPC: lasttolive_save_player_data
  */
 function lasttolliveLegacySavePlayerData(context, logger, nk, payload) {
-    return quizverseSavePlayerData(context, logger, nk, payload);
+    return quizverseLegacySavePlayerData(context, logger, nk, payload);
 }
 
 /**
@@ -13265,7 +13265,7 @@ function quizverseLegacyLoadPlayerData(context, logger, nk, payload) {
  * RPC: lasttolive_load_player_data
  */
 function lasttoliveLegacyLoadPlayerData(context, logger, nk, payload) {
-    return quizverseLoadPlayerData(context, logger, nk, payload);
+    return quizverseLegacyLoadPlayerData(context, logger, nk, payload);
 }
 
 // ============================================================================
