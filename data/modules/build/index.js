@@ -15398,6 +15398,7 @@ var QuizVerseMigration;
     QuizVerseMigration.RPC_GEO_LOOKUP = "quizverse_geo_lookup"; // P7
     QuizVerseMigration.RPC_TTS_SYNTHESIZE = "quizverse_tts_synthesize"; // P7
     QuizVerseMigration.RPC_LICHESS_PUZZLE = "quizverse_fetch_lichess_puzzle"; // P7
+    QuizVerseMigration.RPC_SUDOKU_GENERATE = "quizverse_sudoku_generate"; // P7 Arcade Sudoku
     QuizVerseMigration.RPC_XPROMO_GET_APPS = "xpromo_get_apps"; // P7
     QuizVerseMigration.RPC_WEBVIEW_TOKEN_ISSUE = "webview_token_issue"; // P7
     QuizVerseMigration.RPC_ASSET_CATALOG_GET = "asset_catalog_get"; // P7
@@ -16497,6 +16498,219 @@ var QuizVerseMigration;
             return JSON.stringify({ ok: false, error: "transport_error", fallback_to_client: true });
         }
     }
+    // Arcade Sudoku — proxy API Ninjas /v1/sudokugenerate so the Unity client
+    // never holds X-Api-Key. Returns flat length-81 int arrays (null → 0) for
+    // JsonUtility. No storage / wallet / leaderboard side-effects.
+    //
+    // Goja note: nk.httpRequest may return resp.body already decoded by Go.
+    // Those nested slices often fail Array.isArray(), which previously caused
+    // flattenSudokuGrid → malformed_upstream even on a valid API Ninjas payload.
+    // Always rehydrate via JSON.parse(JSON.stringify(...)) before flatten, and
+    // treat array-like objects (length + numeric index) as arrays.
+    function isSudokuArrayLike(v) {
+        return v != null
+            && typeof v === "object"
+            && typeof v.length === "number"
+            && isFinite(v.length)
+            && v.length >= 0
+            && Math.floor(v.length) === v.length;
+    }
+    function flattenSudokuGrid(grid) {
+        if (!isSudokuArrayLike(grid))
+            return null;
+        // Already flat length-81 (defensive — some proxies may pre-flatten).
+        if (grid.length === 81) {
+            var flatOut = [];
+            for (var i = 0; i < 81; i++) {
+                var flatCell = grid[i];
+                if (flatCell === null || flatCell === undefined || flatCell === "") {
+                    flatOut.push(0);
+                }
+                else {
+                    var flatN = Number(flatCell);
+                    if (!isFinite(flatN) || flatN < 0 || flatN > 9 || Math.floor(flatN) !== flatN)
+                        return null;
+                    flatOut.push(flatN);
+                }
+            }
+            return flatOut;
+        }
+        if (grid.length !== 9)
+            return null;
+        var out = [];
+        for (var r = 0; r < 9; r++) {
+            var row = grid[r];
+            if (!isSudokuArrayLike(row) || row.length !== 9)
+                return null;
+            for (var c = 0; c < 9; c++) {
+                var cell = row[c];
+                if (cell === null || cell === undefined || cell === "") {
+                    out.push(0);
+                }
+                else {
+                    var n = Number(cell);
+                    if (!isFinite(n) || n < 0 || n > 9 || Math.floor(n) !== n)
+                        return null;
+                    out.push(n);
+                }
+            }
+        }
+        return out.length === 81 ? out : null;
+    }
+    /** Force a true Goja JSON object/array tree (fixes Go-decoded httpRequest bodies). */
+    function rehydrateSudokuJson(value) {
+        if (value == null)
+            return null;
+        if (typeof value === "string") {
+            return JSON.parse(value || "{}");
+        }
+        return JSON.parse(JSON.stringify(value));
+    }
+    function rpcSudokuGenerate(ctx, logger, nk, payload) {
+        var userId = "";
+        // Auth expired → stable ok:false for Unity (no SYSTEM_USER stats path).
+        try {
+            userId = requireAuth(ctx);
+        }
+        catch (_) {
+            logger.warn("[Migration/Sudoku] auth_expired payloadLen=" + (payload ? String(payload).length : 0));
+            return JSON.stringify({ ok: false, error: "auth_expired" });
+        }
+        logger.info("[Migration/Sudoku] generate start user=" + userId
+            + " payloadLen=" + (payload ? String(payload).length : 0)
+            + " payloadPreview=" + String(payload || "").substring(0, 120));
+        var req = {};
+        try {
+            req = parseJson(payload);
+        }
+        catch (_) {
+            logger.warn("[Migration/Sudoku] invalid request JSON");
+            return JSON.stringify({ ok: false, error: "malformed_upstream" });
+        }
+        var difficulty = String(req.difficulty || "medium").toLowerCase();
+        if (difficulty !== "easy" && difficulty !== "medium" && difficulty !== "hard") {
+            difficulty = "medium";
+        }
+        var width = 3;
+        var height = 3;
+        var env = ctx.env || {};
+        var apiKey = env.API_NINJAS_API_KEY ? String(env.API_NINJAS_API_KEY).trim() : "";
+        // Never log the API key value — only presence + length.
+        logger.info("[Migration/Sudoku] env apiKeyPresent=" + (apiKey.length > 0)
+            + " apiKeyLen=" + apiKey.length
+            + " difficulty=" + difficulty
+            + " seed=" + (req.seed !== undefined && req.seed !== null ? String(req.seed) : "none"));
+        if (!apiKey) {
+            logger.warn("[Migration/Sudoku] api_key_missing — set API_NINJAS_API_KEY in RUNTIME_ENV_KEYS/.env");
+            return JSON.stringify({ ok: false, error: "api_key_missing" });
+        }
+        var url = "https://api.api-ninjas.com/v1/sudokugenerate"
+            + "?difficulty=" + encodeURIComponent(difficulty)
+            + "&width=" + width
+            + "&height=" + height;
+        if (req.seed !== undefined && req.seed !== null && req.seed !== "") {
+            var seedNum = Number(req.seed) === 0 ? Math.floor(Math.random() * 1000000) + 1 : Number(req.seed);
+            if (isFinite(seedNum)) {
+                url = url + "&seed=" + encodeURIComponent(String(Math.floor(seedNum)));
+            }
+        }
+        logger.info("[Migration/Sudoku] upstream GET " + url);
+        try {
+            var headers = {
+                "Accept": "application/json",
+                "X-Api-Key": apiKey
+            };
+            var resp = nk.httpRequest(url, "get", headers, "");
+            var bodyType = typeof resp.body;
+            var bodyLen = 0;
+            var bodyPreview = "";
+            if (bodyType === "string") {
+                bodyLen = (resp.body || "").length;
+                bodyPreview = String(resp.body || "").substring(0, 160);
+            }
+            else if (resp.body != null) {
+                try {
+                    var rawPreview = JSON.stringify(resp.body);
+                    bodyLen = rawPreview.length;
+                    bodyPreview = rawPreview.substring(0, 160);
+                }
+                catch (_) {
+                    bodyPreview = "[unstringifiable]";
+                }
+            }
+            logger.info("[Migration/Sudoku] upstream resp code=" + resp.code
+                + " bodyType=" + bodyType
+                + " bodyLen=" + bodyLen
+                + " preview=" + bodyPreview);
+            if (resp.code < 200 || resp.code >= 300) {
+                logger.warn("[Migration/Sudoku] upstream HTTP " + resp.code);
+                return JSON.stringify({ ok: false, error: "upstream_http_" + resp.code });
+            }
+            // nk.httpRequest body may already be a Go-decoded object. Rehydrate so
+            // nested grids are real JS arrays (Array.isArray / indexing safe in Goja).
+            var body;
+            try {
+                body = rehydrateSudokuJson(resp.body);
+            }
+            catch (_) {
+                logger.warn("[Migration/Sudoku] upstream body JSON rehydrate failed bodyType=" + bodyType);
+                return JSON.stringify({ ok: false, error: "malformed_upstream" });
+            }
+            if (!body || typeof body !== "object") {
+                logger.warn("[Migration/Sudoku] upstream body not an object type=" + typeof body);
+                return JSON.stringify({ ok: false, error: "malformed_upstream" });
+            }
+            var puzzleLike = isSudokuArrayLike(body.puzzle);
+            var solutionLike = isSudokuArrayLike(body.solution);
+            var puzzleRows = puzzleLike ? body.puzzle.length : -1;
+            var solutionRows = solutionLike ? body.solution.length : -1;
+            var puzzleRow0Len = (puzzleLike && isSudokuArrayLike(body.puzzle[0])) ? body.puzzle[0].length : -1;
+            logger.info("[Migration/Sudoku] shape puzzleLike=" + puzzleLike
+                + " puzzleRows=" + puzzleRows
+                + " puzzleRow0Len=" + puzzleRow0Len
+                + " solutionLike=" + solutionLike
+                + " solutionRows=" + solutionRows
+                + " bodyKeys=" + Object.keys(body).join(","));
+            var puzzleFlat = flattenSudokuGrid(body.puzzle);
+            var solutionFlat = flattenSudokuGrid(body.solution);
+            if (!puzzleFlat || !solutionFlat) {
+                logger.warn("[Migration/Sudoku] flatten failed puzzleOk=" + !!puzzleFlat
+                    + " solutionOk=" + !!solutionFlat
+                    + " puzzleLike=" + puzzleLike
+                    + " solutionLike=" + solutionLike
+                    + " puzzleRows=" + puzzleRows
+                    + " solutionRows=" + solutionRows);
+                return JSON.stringify({ ok: false, error: "malformed_upstream" });
+            }
+            logger.info("[Migration/Sudoku] generate ok user=" + userId
+                + " difficulty=" + difficulty
+                + " puzzleLen=" + puzzleFlat.length
+                + " solutionLen=" + solutionFlat.length
+                + " filled=" + countSudokuFilled(puzzleFlat));
+            return JSON.stringify({
+                ok: true,
+                difficulty: difficulty,
+                width: width,
+                height: height,
+                puzzle: puzzleFlat,
+                solution: solutionFlat,
+                source: "api-ninjas"
+            });
+        }
+        catch (err) {
+            // Never log the API key value.
+            logger.warn("[Migration/Sudoku] threw: " + (err && err.message ? err.message : String(err)));
+            return JSON.stringify({ ok: false, error: "transport_error" });
+        }
+    }
+    function countSudokuFilled(grid) {
+        var n = 0;
+        for (var i = 0; i < grid.length; i++) {
+            if (grid[i] > 0)
+                n++;
+        }
+        return n;
+    }
     function rpcXpromoGetApps(ctx, logger, nk, _payload) {
         var userId = requireAuth(ctx);
         var env = ctx.env || {};
@@ -17443,6 +17657,7 @@ var QuizVerseMigration;
         initializer.registerRpc("quizverse_geo_lookup", rpcGeoLookup);
         initializer.registerRpc("quizverse_tts_synthesize", rpcTtsSynthesize);
         initializer.registerRpc("quizverse_fetch_lichess_puzzle", rpcLichessPuzzle);
+        initializer.registerRpc("quizverse_sudoku_generate", rpcSudokuGenerate);
         initializer.registerRpc("xpromo_get_apps", rpcXpromoGetApps);
         initializer.registerRpc("webview_token_issue", rpcWebviewTokenIssue);
         initializer.registerRpc("asset_catalog_get", rpcAssetCatalogGet);
