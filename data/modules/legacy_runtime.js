@@ -12011,6 +12011,9 @@ function rpcMarkDirectMessagesRead(ctx, logger, nk, payload) {
 /**
  * Parse and validate payload with gameID
  */
+/**
+ * Parse and validate payload with gameID
+ */
 function parseAndValidateGamePayload(payload, requiredFields) {
     var data = {};
     try {
@@ -12019,9 +12022,24 @@ function parseAndValidateGamePayload(payload, requiredFields) {
         throw Error("Invalid JSON payload");
     }
 
-    var gameID = data.gameID;
-    if (!gameID || !["quizverse", "lasttolive"].includes(gameID)) {
-        throw Error("Unsupported gameID: " + gameID);
+    // Support both gameID (legacy) and gameUUID (new)
+    var gameIdentifier = data.gameID || data.gameUUID;
+    
+    if (!gameIdentifier) {
+        throw Error("Missing game identifier: provide either 'gameID' or 'gameUUID'");
+    }
+    
+    // Normalize to gameID field for backward compatibility
+    if (!data.gameID && data.gameUUID) {
+        data.gameID = data.gameUUID;
+    }
+    
+    // Validation for built-in games vs custom UUID games
+    var isLegacyGame = ["quizverse", "lasttolive"].includes(data.gameID);
+    var isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(data.gameID);
+    
+    if (!isLegacyGame && !isUUID) {
+        throw Error("Invalid game identifier. Must be 'quizverse', 'lasttolive', or a valid UUID");
     }
 
     // Validate required fields
@@ -12034,30 +12052,29 @@ function parseAndValidateGamePayload(payload, requiredFields) {
 
     return data;
 }
+// /**
+//  * Get user ID from data or context
+//  */
+// function getUserId(data, ctx) {
+//     return data.userID || ctx.userId;
+// }
 
-/**
- * Get user ID from data or context
- */
-function getUserId(data, ctx) {
-    return data.userID || ctx.userId;
-}
+// /**
+//  * Create namespaced collection name
+//  */
+// function getCollection(gameID, type) {
+//     return gameID + "_" + type;
+// }
 
-/**
- * Create namespaced collection name
- */
-function getCollection(gameID, type) {
-    return gameID + "_" + type;
-}
-
-/**
- * Get leaderboard ID for game
- */
-function getLeaderboardId(gameID, type) {
-    if (type === "weekly" || !type) {
-        return gameID + "_weekly";
-    }
-    return gameID + "_" + type;
-}
+// /**
+//  * Get leaderboard ID for game
+//  */
+// function getLeaderboardId(gameID, type) {
+//     if (type === "weekly" || !type) {
+//         return gameID + "_weekly";
+//     }
+//     return gameID + "_" + type;
+// }
 
 // ============================================================================
 // AUTHENTICATION & PROFILE
@@ -13143,7 +13160,7 @@ function lasttolliveFindFriends(context, logger, nk, payload) {
  * RPC: quizverse_save_player_data
  * Save player data to storage
  */
-function quizverseSavePlayerData(context, logger, nk, payload) {
+function quizverseLegacySavePlayerData(context, logger, nk, payload) {
     try {
         var data = parseAndValidateGamePayload(payload, ["gameID", "key", "value"]);
         var userId = getUserId(data, context);
@@ -13188,15 +13205,15 @@ function quizverseSavePlayerData(context, logger, nk, payload) {
 /**
  * RPC: lasttolive_save_player_data
  */
-function lasttolliveSavePlayerData(context, logger, nk, payload) {
-    return quizverseSavePlayerData(context, logger, nk, payload);
+function lasttolliveLegacySavePlayerData(context, logger, nk, payload) {
+    return quizverseLegacySavePlayerData(context, logger, nk, payload);
 }
 
 /**
  * RPC: quizverse_load_player_data
  * Load player data from storage
  */
-function quizverseLoadPlayerData(context, logger, nk, payload) {
+function quizverseLegacyLoadPlayerData(context, logger, nk, payload) {
     try {
         var data = parseAndValidateGamePayload(payload, ["gameID", "key"]);
         var userId = getUserId(data, context);
@@ -13247,8 +13264,8 @@ function quizverseLoadPlayerData(context, logger, nk, payload) {
 /**
  * RPC: lasttolive_load_player_data
  */
-function lasttoliveLoadPlayerData(context, logger, nk, payload) {
-    return quizverseLoadPlayerData(context, logger, nk, payload);
+function lasttoliveLegacyLoadPlayerData(context, logger, nk, payload) {
+    return quizverseLegacyLoadPlayerData(context, logger, nk, payload);
 }
 
 // ============================================================================
@@ -25106,8 +25123,8 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
         //   data/modules/friends/find_friends.js
         // The literal registerRpc call has been REMOVED to prevent
         // postbuild's text-based scan from re-binding the legacy handler.
-        initializer.registerRpc('lasttolive_save_player_data', lasttolliveSavePlayerData);
-        initializer.registerRpc('lasttolive_load_player_data', lasttoliveLoadPlayerData);
+        //initializer.registerRpc('lasttolive_save_player_data', lasttolliveSavePlayerData);
+        //initializer.registerRpc('lasttolive_load_player_data', lasttoliveLoadPlayerData);
         initializer.registerRpc('lasttolive_get_item_catalog', lasttoliveGetItemCatalog);
         initializer.registerRpc('lasttolive_search_items', lasttoliveSearchItems);
         initializer.registerRpc('lasttolive_get_weapon_stats', lasttoliveGetWeaponStats);
