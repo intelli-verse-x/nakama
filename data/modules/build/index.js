@@ -72988,6 +72988,253 @@ var SeedQ;
     SeedQ.CONSUMED_SET_TTL_MS = 7 * 86400 * 1000;
     SeedQ.SEEN_SCOPE = "seedq"; // qv_seen scope for this engine
     SeedQ.HISTORY_READ_CAP = 200; // newest history entries for adaptive calc
+    // Global NSFW blocklist applied to ALL topics before per-topic nsfw_block.
+    SeedQ.GLOBAL_NSFW_TERMS = [
+        "18+", "nsfw", "hentai", "porn", "xxx", "erotic", "nude", "naked",
+        "gore", "dismember", "torture", "snuff", "slaughter", "corpse",
+        "racial slur", "white power", "hate speech", "extremist",
+        "child abuse", "exploitation", "pedophil"
+    ];
+    SeedQ.DEFAULT_TOPIC_CONFIG = {
+        query_boost: "",
+        negative_filter: ["scam", "spam", "advertisement", "broken link", "test upload"],
+        wikipedia_list_page: "",
+        franchise_creators: [],
+        nsfw_block: [],
+        min_title_words: 2,
+        question_templates: [
+            "What is shown in this image?",
+            "Can you identify what this image shows?",
+            "Name what you see in this picture."
+        ]
+    };
+    SeedQ.TOPIC_CONFIGS = {
+        "anime": {
+            query_boost: 'AND (subject:("animation" OR "manga" OR "japanese animation"))',
+            negative_filter: ["convention", "cosplay", "expo", "gathering", "newsletter", "program guide",
+                "retail", "store display", "gamescom", "psx", "playstation", "xbox",
+                "game trade", "magazine", "sell sheet", "central park media",
+                "personal photo", "selfie", "graduation", "receipt"],
+            wikipedia_list_page: "List_of_anime_series",
+            franchise_creators: [],
+            nsfw_block: ["hentai", "ecchi", "eroge", "visual novel 18", "doujin"],
+            min_title_words: 2,
+            question_templates: [
+                "Which anime is shown in this image?",
+                "Can you identify this anime?",
+                "Name the anime shown here.",
+                "What anime does this image belong to?"
+            ]
+        },
+        "dog": {
+            query_boost: 'AND (subject:("dogs" OR "canine" OR "dog breed" OR "puppy"))',
+            negative_filter: ["collar ad", "leash ad", "pet store", "retail", "graduation",
+                "thunderstorm", "restaurant", "hot dog", "certificate", "newsletter",
+                "clipart", "line art", "coloring page"],
+            wikipedia_list_page: "List_of_dog_breeds",
+            franchise_creators: [],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "What breed of dog is shown?",
+                "Can you identify this dog breed?",
+                "Name the dog breed in this image.",
+                "What kind of dog is this?"
+            ]
+        },
+        "cat": {
+            query_boost: 'AND (subject:("cats" OR "feline" OR "cat breed" OR "kitten"))',
+            negative_filter: ["caterpillar", "catalog", "category", "pet store", "retail",
+                "clipart", "coloring page", "line art"],
+            wikipedia_list_page: "List_of_cat_breeds",
+            franchise_creators: [],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "What breed of cat is shown?",
+                "Can you identify this cat breed?",
+                "Name the cat breed in this image.",
+                "What kind of cat is this?"
+            ]
+        },
+        "ghibli": {
+            query_boost: 'AND (subject:("studio ghibli" OR "hayao miyazaki" OR "isao takahata"))',
+            negative_filter: ["mr beast", "mrbeast", "personal photo", "selfie", "convention",
+                "cosplay", "merchandise", "bootleg", "fan art"],
+            wikipedia_list_page: "Studio_Ghibli_filmography",
+            franchise_creators: ["Studio Ghibli", "Hayao Miyazaki", "Isao Takahata"],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "Which Studio Ghibli film is this from?",
+                "Name the Ghibli movie shown here.",
+                "Identify this Studio Ghibli scene.",
+                "What Ghibli film does this belong to?"
+            ]
+        },
+        "disney": {
+            query_boost: 'AND (subject:("walt disney" OR "disney animation" OR "disney pixar"))',
+            negative_filter: ["personal photo", "selfie", "vacation", "family photo",
+                "theme park", "disneyland line", "merchandise", "bootleg"],
+            wikipedia_list_page: "List_of_Walt_Disney_Animation_Studios_films",
+            franchise_creators: ["Walt Disney", "Disney", "Pixar"],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "Which Disney film is this from?",
+                "Name the Disney movie shown here.",
+                "Identify this Disney character or scene.",
+                "What Disney production is this?"
+            ]
+        },
+        "marvel": {
+            query_boost: 'AND (subject:("marvel" OR "avengers" OR "marvel comics"))',
+            negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+                "merchandise", "toy", "action figure", "bootleg"],
+            wikipedia_list_page: "List_of_Marvel_Cinematic_Universe_films",
+            franchise_creators: ["Marvel", "Marvel Studios", "Marvel Comics"],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "Which Marvel movie or character is this?",
+                "Name the Marvel character shown.",
+                "Identify this Marvel scene.",
+                "What Marvel property is this from?"
+            ]
+        },
+        "pokemon": {
+            query_boost: 'AND (subject:("pokemon" OR "pokémon" OR "pocket monsters"))',
+            negative_filter: ["personal photo", "selfie", "bootleg", "knockoff",
+                "rom hack", "fan game", "merchandise"],
+            wikipedia_list_page: "List_of_Pokémon",
+            franchise_creators: ["Nintendo", "Game Freak", "The Pokémon Company"],
+            nsfw_block: [],
+            min_title_words: 1,
+            question_templates: [
+                "Which Pokémon is shown here?",
+                "Name this Pokémon.",
+                "Can you identify this Pokémon?",
+                "What Pokémon is in this image?"
+            ]
+        },
+        "naruto": {
+            query_boost: 'AND (subject:("naruto" OR "naruto shippuden" OR "boruto"))',
+            negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+                "merchandise", "bootleg", "fan art"],
+            wikipedia_list_page: "List_of_Naruto_characters",
+            franchise_creators: ["Masashi Kishimoto", "Studio Pierrot"],
+            nsfw_block: [],
+            min_title_words: 1,
+            question_templates: [
+                "Which Naruto character is shown?",
+                "Name this Naruto character.",
+                "Identify this scene from Naruto.",
+                "Who is this Naruto character?"
+            ]
+        },
+        "one_piece": {
+            query_boost: 'AND (subject:("one piece" OR "eiichiro oda"))',
+            negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+                "merchandise", "bootleg", "fan art", "one piece swimsuit"],
+            wikipedia_list_page: "List_of_One_Piece_characters",
+            franchise_creators: ["Eiichiro Oda", "Toei Animation"],
+            nsfw_block: [],
+            min_title_words: 1,
+            question_templates: [
+                "Which One Piece character is shown?",
+                "Name this One Piece character.",
+                "Identify this scene from One Piece.",
+                "Who is this One Piece character?"
+            ]
+        },
+        "dragon_ball": {
+            query_boost: 'AND (subject:("dragon ball" OR "akira toriyama" OR "dragon ball z"))',
+            negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+                "merchandise", "bootleg", "fan art"],
+            wikipedia_list_page: "List_of_Dragon_Ball_characters",
+            franchise_creators: ["Akira Toriyama", "Toei Animation"],
+            nsfw_block: [],
+            min_title_words: 1,
+            question_templates: [
+                "Which Dragon Ball character is shown?",
+                "Name this Dragon Ball character.",
+                "Identify this Dragon Ball scene.",
+                "Who is this Dragon Ball character?"
+            ]
+        },
+        "harry_potter": {
+            query_boost: 'AND (subject:("harry potter" OR "wizarding world" OR "hogwarts"))',
+            negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+                "merchandise", "bootleg", "theme park", "universal studios"],
+            wikipedia_list_page: "Harry_Potter",
+            franchise_creators: ["Warner Bros", "J. K. Rowling"],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "Which Harry Potter character or scene is this?",
+                "Name the Harry Potter character shown.",
+                "Identify this scene from Harry Potter.",
+                "What Harry Potter movie is this from?"
+            ]
+        },
+        "history": {
+            query_boost: 'AND (subject:("history" OR "historical" OR "vintage" OR "antique"))',
+            negative_filter: ["scam", "spam", "advertisement", "test", "unknown"],
+            wikipedia_list_page: "",
+            franchise_creators: [],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "What historical subject is shown in this image?",
+                "Can you identify this historical image?",
+                "Name the historical item or event shown."
+            ]
+        },
+        "nature": {
+            query_boost: 'AND (subject:("nature" OR "wildlife" OR "landscape" OR "flora" OR "fauna"))',
+            negative_filter: ["advertisement", "product", "test", "logo"],
+            wikipedia_list_page: "",
+            franchise_creators: [],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "What natural subject is shown in this image?",
+                "Can you identify what's in this nature photo?",
+                "Name the animal or plant shown here."
+            ]
+        },
+        "science": {
+            query_boost: 'AND (subject:("science" OR "scientific" OR "physics" OR "chemistry" OR "biology"))',
+            negative_filter: ["pseudoscience", "flat earth", "anti-vax", "conspiracy"],
+            wikipedia_list_page: "",
+            franchise_creators: [],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "What scientific concept or discovery is shown?",
+                "Can you identify this scientific image?",
+                "Name the scientific subject in this image."
+            ]
+        },
+        "geography": {
+            query_boost: 'AND (subject:("geography" OR "countries" OR "landmarks" OR "maps"))',
+            negative_filter: ["advertisement", "product", "test", "logo"],
+            wikipedia_list_page: "",
+            franchise_creators: [],
+            nsfw_block: [],
+            min_title_words: 2,
+            question_templates: [
+                "What place or landmark is shown in this image?",
+                "Can you identify this location?",
+                "Name the country or landmark shown here."
+            ]
+        }
+    };
+    /** Resolve a topic string to its curated config, falling back to defaults. */
+    function topicConfig(topic) {
+        return SeedQ.TOPIC_CONFIGS[slugify(topic)] || SeedQ.DEFAULT_TOPIC_CONFIG;
+    }
+    SeedQ.topicConfig = topicConfig;
     // ── Small helpers ───────────────────────────────────────────────────────────
     function nowMs() {
         return Date.now();
@@ -73206,8 +73453,9 @@ var SeedQ;
     SeedQ.isPublicHttpsUrl = isPublicHttpsUrl;
     // Rewrites media URLs through the wsrv.nl image proxy (already used by the
     // Unity client's MediaProxyUtility) so every staged image ships resized +
-    // webp-compressed — smaller loads, faster D1 quiz starts, no WASM needed
-    // server-side.
+    // JPG-compressed — Unity's Texture2D.LoadImage reliably decodes JPEG/PNG but
+    // NOT WebP in production builds. 1024px width at quality 85 is crisp on
+    // modern 1080p+ mobile screens while keeping file sizes reasonable.
     function optimizeMediaUrl(url) {
         if (!url || url.indexOf("http") !== 0)
             return url || "";
@@ -73218,7 +73466,7 @@ var SeedQ;
         var isAudioVideo = /\.(mp3|m4a|ogg|wav|mp4|webm|mov)(\?|$)/.test(lower);
         if (isAudioVideo)
             return url;
-        return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=720&q=72&output=webp";
+        return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=1024&q=85&output=jpg";
     }
     SeedQ.optimizeMediaUrl = optimizeMediaUrl;
     // ── HTTP helper with system-storage cache ───────────────────────────────────
@@ -73370,7 +73618,21 @@ var SeedQEngine;
     // unseen pool drops below this, we queue a priority ingest combo so the next
     // cron tick replenishes THIS (mode, topic) first.
     var LOW_WATERMARK = 20;
-    var NEXT_REFRESH_ETA_SEC = 900; // seedq ingest cron cadence (15 min)
+    var NEXT_REFRESH_ETA_SEC = 300; // seedq ingest cron cadence (5 min, was 15 min)
+    // ── Source selector for inline ingest ─────────────────────────────────
+    function bestSourceForMode(mode, topic) {
+        if (mode === "ImageGuess" || mode === "WhosThat" || mode === "GeoExplore")
+            return "archive_org";
+        if (mode === "MediaQuiz" && (topic === "music" || topic === "audio"))
+            return "music_tv";
+        if (mode === "ViralIQ")
+            return "justwatch";
+        if (mode === "CustomTopic" || mode === "BrainSprint")
+            return "wolfram";
+        if (mode === "AudioQuiz")
+            return "music_tv";
+        return "archive_org";
+    }
     // Queues a (mode, topic) combo at the FRONT of the ingest rotation. The next
     // ingestTick drains priority entries before resuming the round-robin cursor —
     // this is the Nakama-side equivalent of the `topic_exhaustion_warning` →
@@ -73428,16 +73690,50 @@ var SeedQEngine;
         // user gets zero sets until the consumed-set TTL expires.
         var ready = [];
         var stagedIds = {};
+        // Track media URLs to prevent same-image-different-question repeats
+        var stagedMediaUrls = {};
         for (var r = 0; r < doc.sets.length; r++) {
             var st = doc.sets[r];
             if (st.status !== "ready")
                 continue;
             for (var qi = 0; qi < st.question_ids.length; qi++)
                 stagedIds[st.question_ids[qi]] = true;
+            // Collect media URLs from ready sets for dedup
+            if (st.questions) {
+                for (var mi = 0; mi < st.questions.length; mi++) {
+                    if (st.questions[mi].media_url) {
+                        var baseUrl = st.questions[mi].media_url.split("?")[0]; // strip proxy params
+                        stagedMediaUrls[baseUrl] = true;
+                    }
+                }
+            }
             ready.push(st);
         }
         var adaptive = SeedQ.computeAdaptiveProfile(nk, userId, topic);
         var pool = readPool(nk, mode, topic);
+        // ── COLD POOL INLINE FILL ────────────────────────────────────────────
+        // Don't make the player wait for the 5-min cron tick. When the pool is
+        // empty or too small to fulfill even one set, synchronously fetch and
+        // ingest from the best connector for this mode/topic. This adds 1–3s
+        // latency on the FIRST request but guarantees playable content.
+        var inlineFilled = false;
+        if (pool.questions.length < setSize * wantSets) {
+            var inlineSource = bestSourceForMode(mode, topic);
+            try {
+                var inlineFetched = SeedQSources.fetchQuestions(ctx, nk, logger, inlineSource, mode, topic, 50, {});
+                var inlineRes = ingestIntoPool(ctx, nk, logger, mode, topic, inlineFetched);
+                if (inlineRes.accepted > 0) {
+                    pool = readPool(nk, mode, topic); // re-read after fill
+                    inlineFilled = true;
+                    logger.info("[SeedQ] inline fill: " + inlineSource + " → " + mode + "/" + topic +
+                        " accepted=" + inlineRes.accepted + " pool_size=" + inlineRes.pool_size);
+                }
+            }
+            catch (e) {
+                logger.warn("[SeedQ] inline fill failed for " + mode + "/" + topic +
+                    ": " + (e && e.message ? e.message : String(e)));
+            }
+        }
         var built = 0;
         var recycled = false;
         var poolAvailable = 0;
@@ -73453,6 +73749,12 @@ var SeedQEngine;
                 continue;
             if (q.quality && q.quality.status !== "approved")
                 continue;
+            // Media URL dedup: skip if this image is already staged in a ready set
+            if (q.media_url) {
+                var qBaseUrl = q.media_url.split("?")[0];
+                if (stagedMediaUrls[qBaseUrl])
+                    continue;
+            }
             if (seenIds[q.id])
                 seenPool.push(q);
             else
@@ -73480,7 +73782,7 @@ var SeedQEngine;
                 for (var ci = 0; ci < chosen.length; ci++) {
                     chosenIds[chosen[ci].id] = true;
                     ids.push(chosen[ci].id);
-                    // Serve a copy with the media URL optimized (squoosh-equivalent).
+                    // Serve a copy with the media URL optimized.
                     var copy = JSON.parse(JSON.stringify(chosen[ci]));
                     copy.media_url = SeedQ.optimizeMediaUrl(copy.media_url);
                     // Honest-repeat disclosure (D1 §6.2): mark recycled questions so the
@@ -73492,6 +73794,11 @@ var SeedQEngine;
                     else
                         setFresh++;
                     served.push(copy);
+                    // Track media URL for cross-set dedup
+                    if (copy.media_url) {
+                        var cpBaseUrl = copy.media_url.split("?")[0];
+                        stagedMediaUrls[cpBaseUrl] = true;
+                    }
                 }
                 var nextUnseen = [];
                 for (var ui = 0; ui < unseen.length; ui++)
@@ -73556,6 +73863,22 @@ var SeedQEngine;
             // suppress the App Store rating prompt (never ask while exhausted).
             AahaaEngine.notePoolExhausted(nk, logger, userId, mode, topic);
         }
+        // ── Fulfillment status ────────────────────────────────────────────────
+        var fulfillment = "full";
+        if (ready.length === 0) {
+            fulfillment = generationQueued ? "warming" : "empty";
+        }
+        else if (ready.length < wantSets) {
+            fulfillment = "partial";
+        }
+        else {
+            for (var ff = 0; ff < ready.length; ff++) {
+                if (ready[ff].questions.length < setSize) {
+                    fulfillment = "partial";
+                    break;
+                }
+            }
+        }
         return {
             doc: doc,
             ready: ready,
@@ -73568,7 +73891,8 @@ var SeedQEngine;
             next_refresh_eta_sec: generationQueued ? NEXT_REFRESH_ETA_SEC : 0,
             fresh_count: freshTotal,
             review_count: reviewTotal,
-            adaptive: adaptive
+            adaptive: adaptive,
+            fulfillment: fulfillment
         };
     }
     SeedQEngine.ensureStaged = ensureStaged;
@@ -73603,18 +73927,39 @@ var SeedQEngine;
     // Live-ops can extend it by writing sq_ingest_state.combos.
     function defaultCombos() {
         return [
+            // ImageGuess — ALL popular topics pre-warmed
             { source: "archive_org", mode: "ImageGuess", topic: "history" },
+            { source: "archive_org", mode: "ImageGuess", topic: "anime" },
+            { source: "archive_org", mode: "ImageGuess", topic: "dog" },
+            { source: "archive_org", mode: "ImageGuess", topic: "cat" },
+            { source: "archive_org", mode: "ImageGuess", topic: "nature" },
+            { source: "archive_org", mode: "ImageGuess", topic: "science" },
+            { source: "archive_org", mode: "ImageGuess", topic: "geography" },
+            { source: "archive_org", mode: "ImageGuess", topic: "art" },
+            { source: "archive_org", mode: "ImageGuess", topic: "ghibli" },
+            { source: "archive_org", mode: "ImageGuess", topic: "disney" },
+            { source: "archive_org", mode: "ImageGuess", topic: "marvel" },
+            { source: "archive_org", mode: "ImageGuess", topic: "pokemon" },
+            { source: "archive_org", mode: "ImageGuess", topic: "naruto" },
+            { source: "archive_org", mode: "ImageGuess", topic: "one_piece" },
+            { source: "archive_org", mode: "ImageGuess", topic: "dragon_ball" },
+            { source: "archive_org", mode: "ImageGuess", topic: "harry_potter" },
+            // Other ImageGuess-adjacent modes
             { source: "archive_org", mode: "WhosThat", topic: "portraits" },
             { source: "archive_org", mode: "GeoExplore", topic: "maps" },
             { source: "archive_org", mode: "MediaQuiz", topic: "film" },
+            // STEM / text modes
             { source: "wolfram", mode: "CustomTopic", topic: "math" },
             { source: "wolfram", mode: "BrainSprint", topic: "arithmetic" },
             { source: "gutenberg", mode: "CustomTopic", topic: "literature" },
             { source: "gutenberg", mode: "PickATopic", topic: "history" },
+            // Audio / music
             { source: "music_tv", mode: "MediaQuiz", topic: "music" },
             { source: "music_tv", mode: "AudioQuiz", topic: "music" },
+            // Academic
             { source: "scholar", mode: "CustomTopic", topic: "science" },
             { source: "scholar", mode: "SubjectiveQuiz", topic: "psychology" },
+            // Trending
             { source: "justwatch", mode: "ViralIQ", topic: "trending" }
         ];
     }
@@ -73706,6 +74051,115 @@ var SeedQQuality;
     var BANNED_FRAGMENTS = [
         "as an ai", "i cannot", "lorem ipsum", "undefined", "[object object]", "null null"
     ];
+    // ── Content sanitation helpers (exported for upstream use in sq_sources.ts) ─
+    /** Detect hash-like strings: >= 16 hex chars or > 60% non-alphabetic. */
+    function isHashLike(s) {
+        var clean = ("" + (s || "")).replace(/[\s_\-\.]/g, "");
+        if (!clean || clean.length < 4)
+            return false;
+        // Pure hex string >= 16 chars
+        if (/^[a-f0-9]{16,}$/i.test(clean))
+            return true;
+        // UUID-ish pattern
+        if (/^[a-f0-9]{8}[a-f0-9\-]{20,}$/i.test(clean))
+            return true;
+        // Mostly non-alpha (> 60%) and at least 8 chars — smells like artifact
+        if (clean.length >= 8) {
+            var alphaCount = 0;
+            for (var i = 0; i < clean.length; i++) {
+                var ch = clean.charCodeAt(i);
+                if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122))
+                    alphaCount++;
+            }
+            if (alphaCount / clean.length < 0.4)
+                return true;
+        }
+        return false;
+    }
+    SeedQQuality.isHashLike = isHashLike;
+    /** Detect filename-like strings: download-1, IMG_3917, extension suffixes, etc. */
+    function isFilenameLike(s) {
+        var t = ("" + (s || "")).trim().toLowerCase();
+        if (!t)
+            return false;
+        // Common camera/upload filename patterns
+        if (/^(download|img|image|dsc|dcim|photo|pic|screenshot|new_image|untitled|inicio|scan|temp|file)([\s_\-]?\d*)$/i.test(t))
+            return true;
+        // File extension in option text
+        if (/\.(jpe?g|png|gif|webp|bmp|tiff?|pdf|svg|mp[34]|mov|avi|zip|rar)(\s|$)/i.test(t))
+            return true;
+        // Dimension patterns like "240 x 320" or "87px"
+        if (/^\d+\s*[x×]\s*\d+/.test(t) || /^\d+px\b/.test(t))
+            return true;
+        // URL paths leaked into option text
+        if (/^https?:\/\//.test(t) || /\/(\w+\/){2,}/.test(t))
+            return true;
+        return false;
+    }
+    SeedQQuality.isFilenameLike = isFilenameLike;
+    /** True when > 30% of non-whitespace chars are CJK, Cyrillic, Arabic, or Korean. */
+    function hasNonLatinMajority(s) {
+        var nonLatin = 0, total = 0;
+        for (var i = 0; i < s.length; i++) {
+            var code = s.charCodeAt(i);
+            if (code > 32)
+                total++; // count non-whitespace
+            if (code > 127) {
+                // CJK unified ideographs + CJK compatibility
+                if (code >= 0x3000 && code <= 0x9FFF)
+                    nonLatin++;
+                // Korean Hangul syllables
+                else if (code >= 0xAC00 && code <= 0xD7AF)
+                    nonLatin++;
+                // Cyrillic
+                else if (code >= 0x0400 && code <= 0x04FF)
+                    nonLatin++;
+                // Arabic
+                else if (code >= 0x0600 && code <= 0x06FF)
+                    nonLatin++;
+                // Thai
+                else if (code >= 0x0E00 && code <= 0x0E7F)
+                    nonLatin++;
+                // Devanagari
+                else if (code >= 0x0900 && code <= 0x097F)
+                    nonLatin++;
+            }
+        }
+        return total > 0 && (nonLatin / total) > 0.3;
+    }
+    SeedQQuality.hasNonLatinMajority = hasNonLatinMajority;
+    /** Check a text blob for global + topic-specific NSFW terms. */
+    function isNsfwUnsafe(text, topicNsfw) {
+        var lower = ("" + (text || "")).toLowerCase();
+        var all = SeedQ.GLOBAL_NSFW_TERMS.concat(topicNsfw || []);
+        for (var i = 0; i < all.length; i++) {
+            if (lower.indexOf(all[i]) >= 0)
+                return true;
+        }
+        return false;
+    }
+    SeedQQuality.isNsfwUnsafe = isNsfwUnsafe;
+    /** Count readable words (tokens > 2 chars, alphabetic-majority). */
+    function countReadableWords(s) {
+        var tokens = ("" + (s || "")).split(/[\s_\-\/\\,;:!?()\[\]{}"']+/);
+        var count = 0;
+        for (var i = 0; i < tokens.length; i++) {
+            var t = tokens[i];
+            if (t.length <= 2)
+                continue;
+            // Mostly alpha chars
+            var alpha = 0;
+            for (var j = 0; j < t.length; j++) {
+                var ch = t.charCodeAt(j);
+                if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch > 127)
+                    alpha++;
+            }
+            if (alpha / t.length >= 0.6)
+                count++;
+        }
+        return count;
+    }
+    SeedQQuality.countReadableWords = countReadableWords;
     function mediaDomainSafe(url) {
         if (!url)
             return true;
@@ -73827,6 +74281,119 @@ var SeedQQuality;
                 checks.push("provenance_ok");
             else
                 score -= 30;
+        }
+        // ── NEW: Content sanitation checks (world-class edge-case handling) ──────
+        var cfg = SeedQ.topicConfig(q.topic);
+        // Check 1: No hash-like options
+        if (!fatal) {
+            for (var hi = 0; hi < opts.length; hi++) {
+                if (isHashLike("" + opts[hi])) {
+                    score -= 50;
+                    fatal = true;
+                    break;
+                }
+            }
+            if (!fatal)
+                checks.push("no_hash_options");
+        }
+        // Check 2: No filename-like options
+        if (!fatal) {
+            for (var fi = 0; fi < opts.length; fi++) {
+                if (isFilenameLike("" + opts[fi])) {
+                    score -= 50;
+                    fatal = true;
+                    break;
+                }
+            }
+            if (!fatal)
+                checks.push("no_filename_options");
+        }
+        // Check 3: No URL tokens in options
+        if (!fatal) {
+            for (var ui = 0; ui < opts.length; ui++) {
+                var optStr = "" + opts[ui];
+                if (/https?:\/\//.test(optStr) || /\.(com|org|net|jpg|png|gif|html)\b/i.test(optStr)) {
+                    score -= 40;
+                    fatal = true;
+                    break;
+                }
+            }
+            if (!fatal)
+                checks.push("no_url_tokens");
+        }
+        // Check 4: Language match — reject non-Latin-majority text when lang is "en"
+        if (!fatal && (q.lang === "en" || !q.lang)) {
+            var hasNonLatin = false;
+            for (var li = 0; li < opts.length; li++) {
+                if (hasNonLatinMajority("" + opts[li])) {
+                    hasNonLatin = true;
+                    break;
+                }
+            }
+            if (hasNonLatin || hasNonLatinMajority(text)) {
+                score -= 50;
+                fatal = true;
+            }
+            if (!fatal)
+                checks.push("language_match");
+        }
+        // Check 5: Minimum readable words — each option must have >= 1 readable word
+        if (!fatal) {
+            for (var wi = 0; wi < opts.length; wi++) {
+                if (countReadableWords("" + opts[wi]) < 1) {
+                    score -= 40;
+                    fatal = true;
+                    break;
+                }
+            }
+            if (!fatal)
+                checks.push("min_readable_words");
+        }
+        // Check 6: Option UI fit — penalize excessively long options (overflow risk
+        // on ImageGuess 4-option buttons); warning, not fatal.
+        var anyLong = false;
+        for (var uf = 0; uf < opts.length; uf++) {
+            if (("" + opts[uf]).length > 60) {
+                anyLong = true;
+                break;
+            }
+        }
+        if (anyLong) {
+            score -= 15;
+        } // non-fatal warning
+        else
+            checks.push("option_ui_fit");
+        // Check 7: Content safety — NSFW terms in question + options
+        if (!fatal) {
+            var allText = text + " " + opts.join(" ");
+            if (isNsfwUnsafe(allText, cfg.nsfw_block)) {
+                score -= 100;
+                fatal = true;
+            }
+            if (!fatal)
+                checks.push("content_safety");
+        }
+        // Check 8: Topic relevance (for media questions) — at least one option or the
+        // question text should relate to the declared topic.
+        if (!fatal && q.media_url && q.topic) {
+            var topicSlug = SeedQ.slugify(q.topic);
+            var topicWords = topicSlug.replace(/_/g, " ").split(" ");
+            var relevanceHit = false;
+            var textAndOpts = (text + " " + opts.join(" ")).toLowerCase();
+            for (var tw = 0; tw < topicWords.length; tw++) {
+                if (topicWords[tw].length >= 3 && textAndOpts.indexOf(topicWords[tw]) >= 0) {
+                    relevanceHit = true;
+                    break;
+                }
+            }
+            // For generic topics (history, nature), skip strict relevance; the archive
+            // query is broad enough. For franchise topics the check is stricter.
+            if (!relevanceHit && cfg.franchise_creators.length > 0) {
+                score -= 35;
+                fatal = true;
+            }
+            if (!fatal)
+                checks.push("topic_relevance");
         }
         if (score < 0)
             score = 0;
@@ -73984,6 +74551,7 @@ var SeedQuestions;
             topic: topic,
             sets: result.ready,
             sets_built_now: result.built,
+            fulfillment: result.fulfillment, // "full" | "partial" | "empty" | "warming"
             recycled: result.recycled,
             adaptive: result.adaptive,
             pool: { size: result.pool_size, available_unseen: result.pool_available },
@@ -74310,11 +74878,114 @@ var SeedQSources;
         SeedQ.shuffle(pool);
         return pool.slice(0, n);
     }
-    // ── #1 archive.org ──────────────────────────────────────────────────────────
+    // ── #1 archive.org (world-class rewrite) ────────────────────────────────────
+    // Now uses per-topic curated configs from SeedQ.TOPIC_CONFIGS to build precise
+    // search queries with negative filters, NSFW blocklists, and franchise
+    // validation. Upstream filters reject garbage titles before question building.
+    // Full-resolution images resolved via /metadata/{id}/files. Only ONE question
+    // per archive item (no more title+creator dual-template same-image repeats).
+    /** Resolve full-resolution image from archive.org item metadata.
+     *  Falls back to /services/img/ thumbnail when file-list resolution fails. */
+    function resolveFullResImage(nk, logger, identifier) {
+        var fallback = "https://archive.org/services/img/" + encodeURIComponent(identifier);
+        try {
+            var metaUrl = "https://archive.org/metadata/" + encodeURIComponent(identifier) + "/files";
+            var body = SeedQ.cachedHttpGet(nk, logger, metaUrl, 7 * 24 * 3600 * 1000); // 7-day cache
+            if (!body)
+                return fallback;
+            var parsed = JSON.parse(body);
+            var files = parsed.result || parsed || [];
+            if (!Array.isArray(files))
+                return fallback;
+            // Find best image: prefer JPEG/PNG, sorted by size desc (skip tiny thumbs)
+            var bestFile = "";
+            var bestSize = 0;
+            for (var f = 0; f < files.length; f++) {
+                var name = ("" + (files[f].name || "")).toLowerCase();
+                var size = parseInt(files[f].size || "0", 10) || 0;
+                if (!/\.(jpe?g|png)$/i.test(name))
+                    continue;
+                // Skip tiny files (< 50KB are likely thumbnails/icons)
+                if (size < 50000)
+                    continue;
+                // Skip files that are clearly metadata/text
+                if (/thumb|__ia_thumb|__ia_meta/i.test(name))
+                    continue;
+                if (size > bestSize) {
+                    bestSize = size;
+                    bestFile = files[f].name;
+                }
+            }
+            if (bestFile) {
+                return "https://archive.org/download/" + encodeURIComponent(identifier) + "/" + encodeURIComponent(bestFile);
+            }
+        }
+        catch (e) { /* fallback to thumbnail */ }
+        return fallback;
+    }
+    /** Check if an archive.org doc passes upstream content filters for a topic. */
+    function passesUpstreamFilter(doc, cfg) {
+        if (!doc || !doc.title || !doc.identifier)
+            return false;
+        var title = ("" + doc.title).trim();
+        var desc = ("" + (doc.description || "")).trim();
+        var combined = (title + " " + desc).toLowerCase();
+        // Reject hash/gibberish/filename titles
+        if (SeedQQuality.isHashLike(title))
+            return false;
+        if (SeedQQuality.isFilenameLike(title))
+            return false;
+        // Minimum word count
+        var words = title.split(/\s+/).length;
+        if (words < cfg.min_title_words)
+            return false;
+        // Non-Latin rejection for English topics (anime topic allows some Japanese)
+        if (SeedQQuality.hasNonLatinMajority(title))
+            return false;
+        // Negative filter: reject if title/desc contains any blocked term
+        for (var nf = 0; nf < cfg.negative_filter.length; nf++) {
+            if (combined.indexOf(cfg.negative_filter[nf].toLowerCase()) >= 0)
+                return false;
+        }
+        // NSFW check (global + topic-specific)
+        if (SeedQQuality.isNsfwUnsafe(combined, cfg.nsfw_block))
+            return false;
+        // Franchise creator check: if franchise_creators is set, at least one must
+        // appear in creator/subject metadata (prevents off-franchise content)
+        if (cfg.franchise_creators.length > 0) {
+            var creator = ("" + (typeof doc.creator === "string" ? doc.creator : (doc.creator && doc.creator[0]) || "")).toLowerCase();
+            var subject = ("" + (Array.isArray(doc.subject) ? doc.subject.join(" ") : (doc.subject || ""))).toLowerCase();
+            var creatorSubject = creator + " " + subject;
+            var franchiseHit = false;
+            for (var fc = 0; fc < cfg.franchise_creators.length; fc++) {
+                if (creatorSubject.indexOf(cfg.franchise_creators[fc].toLowerCase()) >= 0) {
+                    franchiseHit = true;
+                    break;
+                }
+            }
+            if (!franchiseHit)
+                return false;
+        }
+        return true;
+    }
     function fetchArchiveOrg(ctx, nk, logger, mode, topic, count) {
-        var query = 'mediatype:image AND subject:("' + topic.replace(/"/g, "") + '")';
+        var cfg = SeedQ.topicConfig(topic);
+        var topicClean = topic.replace(/"/g, "");
+        // Build precise query with topic boost + negative filters
+        var negatives = "";
+        if (cfg.negative_filter.length > 0) {
+            var negParts = [];
+            for (var ni = 0; ni < cfg.negative_filter.length && ni < 10; ni++) {
+                negParts.push('NOT subject:("' + cfg.negative_filter[ni] + '")');
+            }
+            negatives = " AND " + negParts.join(" AND ");
+        }
+        var query = 'mediatype:image AND subject:("' + topicClean + '") ' +
+            cfg.query_boost + negatives;
+        // Fetch 100 candidates to have enough after filtering (was 50)
         var url = "https://archive.org/advancedsearch.php?q=" + encodeURIComponent(query) +
-            "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&fl%5B%5D=creator&rows=50&page=1&output=json";
+            "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&fl%5B%5D=creator&fl%5B%5D=subject&fl%5B%5D=description" +
+            "&rows=100&page=1&sort%5B%5D=downloads+desc&output=json";
         var body = SeedQ.cachedHttpGet(nk, logger, url, 6 * 3600 * 1000);
         if (!body)
             return [];
@@ -74326,58 +74997,111 @@ var SeedQSources;
         catch (e) {
             return [];
         }
+        // Upstream filter: reject garbage docs BEFORE building any questions
+        var validDocs = [];
+        for (var d = 0; d < docs.length; d++) {
+            if (passesUpstreamFilter(docs[d], cfg))
+                validDocs.push(docs[d]);
+        }
+        logger.info("[SeedQ] archive_org topic=" + topic + " raw=" + docs.length +
+            " valid=" + validDocs.length + " (after upstream filter)");
+        // Collect all valid titles for distractor pool (only from filtered docs)
         var titles = [];
-        var creators = [];
-        for (var i = 0; i < docs.length; i++) {
-            if (docs[i] && docs[i].title)
-                titles.push("" + docs[i].title);
-            var cr = docs[i] && docs[i].creator;
-            if (cr)
-                creators.push("" + (cr.length !== undefined && typeof cr !== "string" ? cr[0] : cr));
+        for (var ti = 0; ti < validDocs.length; ti++) {
+            if (validDocs[ti].title)
+                titles.push(("" + validDocs[ti].title).substring(0, 90));
+        }
+        // Try to supplement distractor pool with Wikipedia titles for franchise topics
+        var wikiTitles = fetchWikipediaTitles(nk, logger, topic, cfg);
+        if (wikiTitles.length > 0) {
+            for (var wt = 0; wt < wikiTitles.length; wt++) {
+                titles.push(wikiTitles[wt]);
+            }
         }
         var out = [];
-        for (var d = 0; d < docs.length && out.length < count; d++) {
-            var doc = docs[d];
-            if (!doc || !doc.identifier || !doc.title)
-                continue;
-            var title = ("" + doc.title).substring(0, 110);
-            var imgUrl = "https://archive.org/services/img/" + encodeURIComponent(doc.identifier);
-            // Image identification question (ImageGuess / WhosThat / MediaQuiz / GeoExplore)
+        var usedIdentifiers = {};
+        for (var v = 0; v < validDocs.length && out.length < count; v++) {
+            var doc = validDocs[v];
+            if (usedIdentifiers[doc.identifier])
+                continue; // one question per item
+            usedIdentifiers[doc.identifier] = true;
+            var title = ("" + doc.title).substring(0, 90);
+            // Resolve full-resolution image (not thumbnail)
+            var imgUrl = resolveFullResImage(nk, logger, doc.identifier);
+            // Pick topic-specific question template
+            var templates = cfg.question_templates;
+            var qTemplate = templates[out.length % templates.length];
+            // Build distractors from the filtered title pool
             var distract = pickDistractors(titles, title, 3);
-            if (distract.length === 3) {
-                var q = baseQuestion(nk, "archive_org", mode, topic);
-                q.question = "This image comes from the public-domain archives. What is it titled?";
-                q.options = [title].concat(distract);
-                q.correct_index = 0;
-                q.question_type = "Image";
-                q.media_url = imgUrl;
-                q.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
-                q.citation = "Internet Archive — archive.org/details/" + doc.identifier;
-                q.explanation = "From the Internet Archive collection (" + doc.identifier + ").";
-                q.difficulty = 3;
-                out.push(finalize(nk, q));
-            }
-            // Creator question (WhosThat flavor) when we know the creator.
-            var creator = doc.creator ? ("" + (typeof doc.creator === "string" ? doc.creator : doc.creator[0])) : "";
-            if (creator && out.length < count) {
-                var cDistract = pickDistractors(creators, creator, 3);
-                if (cDistract.length === 3) {
-                    var q2 = baseQuestion(nk, "archive_org", mode, topic);
-                    q2.question = "Who created '" + title + "'?";
-                    q2.options = [creator].concat(cDistract);
-                    q2.correct_index = 0;
-                    q2.question_type = "Image";
-                    q2.media_url = imgUrl;
-                    q2.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
-                    q2.citation = "Internet Archive — archive.org/details/" + doc.identifier;
-                    q2.difficulty = 4;
-                    out.push(finalize(nk, q2));
-                }
-            }
+            if (distract.length < 3)
+                continue; // not enough unique distractors
+            var q = baseQuestion(nk, "archive_org", mode, topic);
+            q.question = qTemplate;
+            q.options = [title].concat(distract);
+            q.correct_index = 0;
+            q.question_type = "Image";
+            q.media_url = imgUrl;
+            q.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
+            q.citation = "Internet Archive — archive.org/details/" + doc.identifier;
+            q.explanation = "From the Internet Archive collection (" + doc.identifier + ").";
+            q.difficulty = 3;
+            out.push(finalize(nk, q));
         }
+        logger.info("[SeedQ] archive_org built " + out.length + " questions for " + mode + "/" + topic);
         return out;
     }
     SeedQSources.fetchArchiveOrg = fetchArchiveOrg;
+    // ── Wikipedia web-scraping (franchise topic title lists) ────────────────────
+    // For topics like "ghibli", "disney", "dog", etc., Wikipedia's list articles
+    // provide curated, accurate title/name lists that are far more reliable than
+    // archive.org metadata. Used for:
+    //   1. Enriching the distractor pool (more plausible wrong answers)
+    //   2. Future: sourcing Wikimedia Commons images for franchise content
+    /** Fetch curated titles from a Wikipedia list article.
+     *  Uses the MediaWiki API to parse section titles and list items.
+     *  Results cached for 7 days since list articles rarely change. */
+    function fetchWikipediaTitles(nk, logger, topic, cfg) {
+        if (!cfg.wikipedia_list_page)
+            return [];
+        var url = "https://en.wikipedia.org/w/api.php?action=parse&page=" +
+            encodeURIComponent(cfg.wikipedia_list_page) +
+            "&prop=wikitext&format=json&redirects=1";
+        var body = SeedQ.cachedHttpGet(nk, logger, url, 7 * 24 * 3600 * 1000);
+        if (!body)
+            return [];
+        var titles = [];
+        try {
+            var parsed = JSON.parse(body);
+            var wikitext = (parsed && parsed.parse && parsed.parse.wikitext && parsed.parse.wikitext["*"]) || "";
+            // Extract titles from wikitext list items and link targets.
+            // Pattern 1: [[Title]] or [[Title|Display]]
+            var linkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+            var match;
+            var seen = {};
+            while ((match = linkRegex.exec(wikitext)) !== null) {
+                var linkTarget = ("" + (match[2] || match[1])).trim();
+                // Skip section/category/file links
+                if (/^(File|Category|Image|Wikipedia|Template|Help|Portal|Special):/i.test(linkTarget))
+                    continue;
+                if (linkTarget.length < 2 || linkTarget.length > 80)
+                    continue;
+                // Skip non-Latin titles for English context
+                if (SeedQQuality.hasNonLatinMajority(linkTarget))
+                    continue;
+                var lower = linkTarget.toLowerCase();
+                if (!seen[lower]) {
+                    seen[lower] = true;
+                    titles.push(linkTarget);
+                }
+            }
+            logger.info("[SeedQ] wikipedia scraped " + titles.length + " titles from " + cfg.wikipedia_list_page);
+        }
+        catch (e) {
+            logger.warn("[SeedQ] wikipedia parse failed for " + cfg.wikipedia_list_page);
+        }
+        return titles;
+    }
+    SeedQSources.fetchWikipediaTitles = fetchWikipediaTitles;
     // ── #2 wolframalpha.com ─────────────────────────────────────────────────────
     // Math/STEM questions are generated from templates with locally computed
     // answers, then (when WOLFRAM_APP_ID is set) cross-verified against the

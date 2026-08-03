@@ -37,6 +37,95 @@ namespace SeedQQuality {
     "as an ai", "i cannot", "lorem ipsum", "undefined", "[object object]", "null null"
   ];
 
+  // ── Content sanitation helpers (exported for upstream use in sq_sources.ts) ─
+
+  /** Detect hash-like strings: >= 16 hex chars or > 60% non-alphabetic. */
+  export function isHashLike(s: string): boolean {
+    var clean = ("" + (s || "")).replace(/[\s_\-\.]/g, "");
+    if (!clean || clean.length < 4) return false;
+    // Pure hex string >= 16 chars
+    if (/^[a-f0-9]{16,}$/i.test(clean)) return true;
+    // UUID-ish pattern
+    if (/^[a-f0-9]{8}[a-f0-9\-]{20,}$/i.test(clean)) return true;
+    // Mostly non-alpha (> 60%) and at least 8 chars — smells like artifact
+    if (clean.length >= 8) {
+      var alphaCount = 0;
+      for (var i = 0; i < clean.length; i++) {
+        var ch = clean.charCodeAt(i);
+        if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122)) alphaCount++;
+      }
+      if (alphaCount / clean.length < 0.4) return true;
+    }
+    return false;
+  }
+
+  /** Detect filename-like strings: download-1, IMG_3917, extension suffixes, etc. */
+  export function isFilenameLike(s: string): boolean {
+    var t = ("" + (s || "")).trim().toLowerCase();
+    if (!t) return false;
+    // Common camera/upload filename patterns
+    if (/^(download|img|image|dsc|dcim|photo|pic|screenshot|new_image|untitled|inicio|scan|temp|file)([\s_\-]?\d*)$/i.test(t)) return true;
+    // File extension in option text
+    if (/\.(jpe?g|png|gif|webp|bmp|tiff?|pdf|svg|mp[34]|mov|avi|zip|rar)(\s|$)/i.test(t)) return true;
+    // Dimension patterns like "240 x 320" or "87px"
+    if (/^\d+\s*[x×]\s*\d+/.test(t) || /^\d+px\b/.test(t)) return true;
+    // URL paths leaked into option text
+    if (/^https?:\/\//.test(t) || /\/(\w+\/){2,}/.test(t)) return true;
+    return false;
+  }
+
+  /** True when > 30% of non-whitespace chars are CJK, Cyrillic, Arabic, or Korean. */
+  export function hasNonLatinMajority(s: string): boolean {
+    var nonLatin = 0, total = 0;
+    for (var i = 0; i < s.length; i++) {
+      var code = s.charCodeAt(i);
+      if (code > 32) total++; // count non-whitespace
+      if (code > 127) {
+        // CJK unified ideographs + CJK compatibility
+        if (code >= 0x3000 && code <= 0x9FFF) nonLatin++;
+        // Korean Hangul syllables
+        else if (code >= 0xAC00 && code <= 0xD7AF) nonLatin++;
+        // Cyrillic
+        else if (code >= 0x0400 && code <= 0x04FF) nonLatin++;
+        // Arabic
+        else if (code >= 0x0600 && code <= 0x06FF) nonLatin++;
+        // Thai
+        else if (code >= 0x0E00 && code <= 0x0E7F) nonLatin++;
+        // Devanagari
+        else if (code >= 0x0900 && code <= 0x097F) nonLatin++;
+      }
+    }
+    return total > 0 && (nonLatin / total) > 0.3;
+  }
+
+  /** Check a text blob for global + topic-specific NSFW terms. */
+  export function isNsfwUnsafe(text: string, topicNsfw: string[]): boolean {
+    var lower = ("" + (text || "")).toLowerCase();
+    var all = SeedQ.GLOBAL_NSFW_TERMS.concat(topicNsfw || []);
+    for (var i = 0; i < all.length; i++) {
+      if (lower.indexOf(all[i]) >= 0) return true;
+    }
+    return false;
+  }
+
+  /** Count readable words (tokens > 2 chars, alphabetic-majority). */
+  export function countReadableWords(s: string): number {
+    var tokens = ("" + (s || "")).split(/[\s_\-\/\\,;:!?()\[\]{}"']+/);
+    var count = 0;
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (t.length <= 2) continue;
+      // Mostly alpha chars
+      var alpha = 0;
+      for (var j = 0; j < t.length; j++) {
+        var ch = t.charCodeAt(j);
+        if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch > 127) alpha++;
+      }
+      if (alpha / t.length >= 0.6) count++;
+    }
+    return count;
+  }
+
   export function mediaDomainSafe(url: string): boolean {
     if (!url) return true;
     var m = /^https?:\/\/([^\/\?#]+)/i.exec(url);
@@ -145,6 +234,96 @@ namespace SeedQQuality {
       if (prov && prov.checked && prov.license !== "unknown") checks.push("provenance_ok");
       else if (mediaDomainSafe(q.media_url)) checks.push("provenance_ok");
       else score -= 30;
+    }
+
+    // ── NEW: Content sanitation checks (world-class edge-case handling) ──────
+    var cfg = SeedQ.topicConfig(q.topic);
+
+    // Check 1: No hash-like options
+    if (!fatal) {
+      for (var hi = 0; hi < opts.length; hi++) {
+        if (isHashLike("" + opts[hi])) { score -= 50; fatal = true; break; }
+      }
+      if (!fatal) checks.push("no_hash_options");
+    }
+
+    // Check 2: No filename-like options
+    if (!fatal) {
+      for (var fi = 0; fi < opts.length; fi++) {
+        if (isFilenameLike("" + opts[fi])) { score -= 50; fatal = true; break; }
+      }
+      if (!fatal) checks.push("no_filename_options");
+    }
+
+    // Check 3: No URL tokens in options
+    if (!fatal) {
+      for (var ui = 0; ui < opts.length; ui++) {
+        var optStr = "" + opts[ui];
+        if (/https?:\/\//.test(optStr) || /\.(com|org|net|jpg|png|gif|html)\b/i.test(optStr)) {
+          score -= 40; fatal = true; break;
+        }
+      }
+      if (!fatal) checks.push("no_url_tokens");
+    }
+
+    // Check 4: Language match — reject non-Latin-majority text when lang is "en"
+    if (!fatal && (q.lang === "en" || !q.lang)) {
+      var hasNonLatin = false;
+      for (var li = 0; li < opts.length; li++) {
+        if (hasNonLatinMajority("" + opts[li])) { hasNonLatin = true; break; }
+      }
+      if (hasNonLatin || hasNonLatinMajority(text)) {
+        score -= 50; fatal = true;
+      }
+      if (!fatal) checks.push("language_match");
+    }
+
+    // Check 5: Minimum readable words — each option must have >= 1 readable word
+    if (!fatal) {
+      for (var wi = 0; wi < opts.length; wi++) {
+        if (countReadableWords("" + opts[wi]) < 1) {
+          score -= 40; fatal = true; break;
+        }
+      }
+      if (!fatal) checks.push("min_readable_words");
+    }
+
+    // Check 6: Option UI fit — penalize excessively long options (overflow risk
+    // on ImageGuess 4-option buttons); warning, not fatal.
+    var anyLong = false;
+    for (var uf = 0; uf < opts.length; uf++) {
+      if (("" + opts[uf]).length > 60) { anyLong = true; break; }
+    }
+    if (anyLong) { score -= 15; } // non-fatal warning
+    else checks.push("option_ui_fit");
+
+    // Check 7: Content safety — NSFW terms in question + options
+    if (!fatal) {
+      var allText = text + " " + opts.join(" ");
+      if (isNsfwUnsafe(allText, cfg.nsfw_block)) {
+        score -= 100; fatal = true;
+      }
+      if (!fatal) checks.push("content_safety");
+    }
+
+    // Check 8: Topic relevance (for media questions) — at least one option or the
+    // question text should relate to the declared topic.
+    if (!fatal && q.media_url && q.topic) {
+      var topicSlug = SeedQ.slugify(q.topic);
+      var topicWords = topicSlug.replace(/_/g, " ").split(" ");
+      var relevanceHit = false;
+      var textAndOpts = (text + " " + opts.join(" ")).toLowerCase();
+      for (var tw = 0; tw < topicWords.length; tw++) {
+        if (topicWords[tw].length >= 3 && textAndOpts.indexOf(topicWords[tw]) >= 0) {
+          relevanceHit = true; break;
+        }
+      }
+      // For generic topics (history, nature), skip strict relevance; the archive
+      // query is broad enough. For franchise topics the check is stricter.
+      if (!relevanceHit && cfg.franchise_creators.length > 0) {
+        score -= 35; fatal = true;
+      }
+      if (!fatal) checks.push("topic_relevance");
     }
 
     if (score < 0) score = 0;

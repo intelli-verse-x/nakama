@@ -112,7 +112,7 @@ namespace SeedQEngine {
   // unseen pool drops below this, we queue a priority ingest combo so the next
   // cron tick replenishes THIS (mode, topic) first.
   var LOW_WATERMARK = 20;
-  var NEXT_REFRESH_ETA_SEC = 900; // seedq ingest cron cadence (15 min)
+  var NEXT_REFRESH_ETA_SEC = 300; // seedq ingest cron cadence (5 min, was 15 min)
 
   export interface StageResult {
     doc: any;
@@ -127,6 +127,17 @@ namespace SeedQEngine {
     fresh_count: number;
     review_count: number;
     adaptive: SeedQ.AdaptiveProfile;
+    fulfillment: string;  // "full" | "partial" | "empty" | "warming"
+  }
+
+  // ── Source selector for inline ingest ─────────────────────────────────
+  function bestSourceForMode(mode: string, topic: string): string {
+    if (mode === "ImageGuess" || mode === "WhosThat" || mode === "GeoExplore") return "archive_org";
+    if (mode === "MediaQuiz" && (topic === "music" || topic === "audio")) return "music_tv";
+    if (mode === "ViralIQ") return "justwatch";
+    if (mode === "CustomTopic" || mode === "BrainSprint") return "wolfram";
+    if (mode === "AudioQuiz") return "music_tv";
+    return "archive_org";
   }
 
   // Queues a (mode, topic) combo at the FRONT of the ingest rotation. The next
@@ -187,15 +198,50 @@ namespace SeedQEngine {
     // user gets zero sets until the consumed-set TTL expires.
     var ready: SeedQ.StagedSet[] = [];
     var stagedIds: { [id: string]: boolean } = {};
+    // Track media URLs to prevent same-image-different-question repeats
+    var stagedMediaUrls: { [url: string]: boolean } = {};
     for (var r = 0; r < doc.sets.length; r++) {
       var st = doc.sets[r];
       if (st.status !== "ready") continue;
       for (var qi = 0; qi < st.question_ids.length; qi++) stagedIds[st.question_ids[qi]] = true;
+      // Collect media URLs from ready sets for dedup
+      if (st.questions) {
+        for (var mi = 0; mi < st.questions.length; mi++) {
+          if (st.questions[mi].media_url) {
+            var baseUrl = st.questions[mi].media_url.split("?")[0]; // strip proxy params
+            stagedMediaUrls[baseUrl] = true;
+          }
+        }
+      }
       ready.push(st);
     }
 
     var adaptive = SeedQ.computeAdaptiveProfile(nk, userId, topic);
     var pool = readPool(nk, mode, topic);
+
+    // ── COLD POOL INLINE FILL ────────────────────────────────────────────
+    // Don't make the player wait for the 5-min cron tick. When the pool is
+    // empty or too small to fulfill even one set, synchronously fetch and
+    // ingest from the best connector for this mode/topic. This adds 1–3s
+    // latency on the FIRST request but guarantees playable content.
+    var inlineFilled = false;
+    if (pool.questions.length < setSize * wantSets) {
+      var inlineSource = bestSourceForMode(mode, topic);
+      try {
+        var inlineFetched = SeedQSources.fetchQuestions(ctx, nk, logger, inlineSource, mode, topic, 50, {});
+        var inlineRes = ingestIntoPool(ctx, nk, logger, mode, topic, inlineFetched);
+        if (inlineRes.accepted > 0) {
+          pool = readPool(nk, mode, topic); // re-read after fill
+          inlineFilled = true;
+          logger.info("[SeedQ] inline fill: " + inlineSource + " → " + mode + "/" + topic +
+            " accepted=" + inlineRes.accepted + " pool_size=" + inlineRes.pool_size);
+        }
+      } catch (e: any) {
+        logger.warn("[SeedQ] inline fill failed for " + mode + "/" + topic +
+          ": " + (e && e.message ? e.message : String(e)));
+      }
+    }
+
     var built = 0;
     var recycled = false;
     var poolAvailable = 0;
@@ -210,6 +256,11 @@ namespace SeedQEngine {
       var q = pool.questions[p];
       if (!q || quarantined[q.id] || stagedIds[q.id]) continue;
       if (q.quality && q.quality.status !== "approved") continue;
+      // Media URL dedup: skip if this image is already staged in a ready set
+      if (q.media_url) {
+        var qBaseUrl = q.media_url.split("?")[0];
+        if (stagedMediaUrls[qBaseUrl]) continue;
+      }
       if (seenIds[q.id]) seenPool.push(q);
       else unseen.push(q);
     }
@@ -236,7 +287,7 @@ namespace SeedQEngine {
         for (var ci = 0; ci < chosen.length; ci++) {
           chosenIds[chosen[ci].id] = true;
           ids.push(chosen[ci].id);
-          // Serve a copy with the media URL optimized (squoosh-equivalent).
+          // Serve a copy with the media URL optimized.
           var copy = JSON.parse(JSON.stringify(chosen[ci]));
           copy.media_url = SeedQ.optimizeMediaUrl(copy.media_url);
           // Honest-repeat disclosure (D1 §6.2): mark recycled questions so the
@@ -244,6 +295,11 @@ namespace SeedQEngine {
           if (seenIds[copy.id]) { copy.recycled = true; setReview++; }
           else setFresh++;
           served.push(copy);
+          // Track media URL for cross-set dedup
+          if (copy.media_url) {
+            var cpBaseUrl = copy.media_url.split("?")[0];
+            stagedMediaUrls[cpBaseUrl] = true;
+          }
         }
         var nextUnseen: SeedQ.SeedQuestion[] = [];
         for (var ui = 0; ui < unseen.length; ui++) if (!chosenIds[unseen[ui].id]) nextUnseen.push(unseen[ui]);
@@ -304,6 +360,18 @@ namespace SeedQEngine {
       AahaaEngine.notePoolExhausted(nk, logger, userId, mode, topic);
     }
 
+    // ── Fulfillment status ────────────────────────────────────────────────
+    var fulfillment = "full";
+    if (ready.length === 0) {
+      fulfillment = generationQueued ? "warming" : "empty";
+    } else if (ready.length < wantSets) {
+      fulfillment = "partial";
+    } else {
+      for (var ff = 0; ff < ready.length; ff++) {
+        if (ready[ff].questions.length < setSize) { fulfillment = "partial"; break; }
+      }
+    }
+
     return {
       doc: doc,
       ready: ready,
@@ -316,7 +384,8 @@ namespace SeedQEngine {
       next_refresh_eta_sec: generationQueued ? NEXT_REFRESH_ETA_SEC : 0,
       fresh_count: freshTotal,
       review_count: reviewTotal,
-      adaptive: adaptive
+      adaptive: adaptive,
+      fulfillment: fulfillment
     };
   }
 
@@ -357,18 +426,39 @@ namespace SeedQEngine {
   // Live-ops can extend it by writing sq_ingest_state.combos.
   export function defaultCombos(): any[] {
     return [
+      // ImageGuess — ALL popular topics pre-warmed
       { source: "archive_org", mode: "ImageGuess", topic: "history" },
+      { source: "archive_org", mode: "ImageGuess", topic: "anime" },
+      { source: "archive_org", mode: "ImageGuess", topic: "dog" },
+      { source: "archive_org", mode: "ImageGuess", topic: "cat" },
+      { source: "archive_org", mode: "ImageGuess", topic: "nature" },
+      { source: "archive_org", mode: "ImageGuess", topic: "science" },
+      { source: "archive_org", mode: "ImageGuess", topic: "geography" },
+      { source: "archive_org", mode: "ImageGuess", topic: "art" },
+      { source: "archive_org", mode: "ImageGuess", topic: "ghibli" },
+      { source: "archive_org", mode: "ImageGuess", topic: "disney" },
+      { source: "archive_org", mode: "ImageGuess", topic: "marvel" },
+      { source: "archive_org", mode: "ImageGuess", topic: "pokemon" },
+      { source: "archive_org", mode: "ImageGuess", topic: "naruto" },
+      { source: "archive_org", mode: "ImageGuess", topic: "one_piece" },
+      { source: "archive_org", mode: "ImageGuess", topic: "dragon_ball" },
+      { source: "archive_org", mode: "ImageGuess", topic: "harry_potter" },
+      // Other ImageGuess-adjacent modes
       { source: "archive_org", mode: "WhosThat", topic: "portraits" },
       { source: "archive_org", mode: "GeoExplore", topic: "maps" },
       { source: "archive_org", mode: "MediaQuiz", topic: "film" },
+      // STEM / text modes
       { source: "wolfram", mode: "CustomTopic", topic: "math" },
       { source: "wolfram", mode: "BrainSprint", topic: "arithmetic" },
       { source: "gutenberg", mode: "CustomTopic", topic: "literature" },
       { source: "gutenberg", mode: "PickATopic", topic: "history" },
+      // Audio / music
       { source: "music_tv", mode: "MediaQuiz", topic: "music" },
       { source: "music_tv", mode: "AudioQuiz", topic: "music" },
+      // Academic
       { source: "scholar", mode: "CustomTopic", topic: "science" },
       { source: "scholar", mode: "SubjectiveQuiz", topic: "psychology" },
+      // Trending
       { source: "justwatch", mode: "ViralIQ", topic: "trending" }
     ];
   }

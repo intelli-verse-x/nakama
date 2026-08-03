@@ -63,6 +63,270 @@ namespace SeedQ {
   export var SEEN_SCOPE = "seedq";     // qv_seen scope for this engine
   export var HISTORY_READ_CAP = 200;   // newest history entries for adaptive calc
 
+  // ── Per-Topic Configuration ─────────────────────────────────────────────────
+  // Curated search strategies per topic — replaces the one-size-fits-all keyword
+  // search in archive.org. Controls query boosting, negative filters, NSFW
+  // blocklists, Wikipedia web-scraping fallback, and question templates.
+  export interface TopicConfig {
+    query_boost: string;           // appended to archive.org search query
+    negative_filter: string[];     // reject items matching these in title/subject
+    wikipedia_list_page: string;   // Wikipedia list article for web-scraping titles
+    franchise_creators: string[];  // required creator/subject values for franchise topics
+    nsfw_block: string[];          // extra NSFW terms to reject for this topic
+    min_title_words: number;       // minimum readable words in item title
+    question_templates: string[];  // per-topic question text variations
+  }
+
+  // Global NSFW blocklist applied to ALL topics before per-topic nsfw_block.
+  export var GLOBAL_NSFW_TERMS: string[] = [
+    "18+", "nsfw", "hentai", "porn", "xxx", "erotic", "nude", "naked",
+    "gore", "dismember", "torture", "snuff", "slaughter", "corpse",
+    "racial slur", "white power", "hate speech", "extremist",
+    "child abuse", "exploitation", "pedophil"
+  ];
+
+  export var DEFAULT_TOPIC_CONFIG: TopicConfig = {
+    query_boost: "",
+    negative_filter: ["scam", "spam", "advertisement", "broken link", "test upload"],
+    wikipedia_list_page: "",
+    franchise_creators: [],
+    nsfw_block: [],
+    min_title_words: 2,
+    question_templates: [
+      "What is shown in this image?",
+      "Can you identify what this image shows?",
+      "Name what you see in this picture."
+    ]
+  };
+
+  export var TOPIC_CONFIGS: { [slug: string]: TopicConfig } = {
+    "anime": {
+      query_boost: 'AND (subject:("animation" OR "manga" OR "japanese animation"))',
+      negative_filter: ["convention", "cosplay", "expo", "gathering", "newsletter", "program guide",
+        "retail", "store display", "gamescom", "psx", "playstation", "xbox",
+        "game trade", "magazine", "sell sheet", "central park media",
+        "personal photo", "selfie", "graduation", "receipt"],
+      wikipedia_list_page: "List_of_anime_series",
+      franchise_creators: [],
+      nsfw_block: ["hentai", "ecchi", "eroge", "visual novel 18", "doujin"],
+      min_title_words: 2,
+      question_templates: [
+        "Which anime is shown in this image?",
+        "Can you identify this anime?",
+        "Name the anime shown here.",
+        "What anime does this image belong to?"
+      ]
+    },
+    "dog": {
+      query_boost: 'AND (subject:("dogs" OR "canine" OR "dog breed" OR "puppy"))',
+      negative_filter: ["collar ad", "leash ad", "pet store", "retail", "graduation",
+        "thunderstorm", "restaurant", "hot dog", "certificate", "newsletter",
+        "clipart", "line art", "coloring page"],
+      wikipedia_list_page: "List_of_dog_breeds",
+      franchise_creators: [],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "What breed of dog is shown?",
+        "Can you identify this dog breed?",
+        "Name the dog breed in this image.",
+        "What kind of dog is this?"
+      ]
+    },
+    "cat": {
+      query_boost: 'AND (subject:("cats" OR "feline" OR "cat breed" OR "kitten"))',
+      negative_filter: ["caterpillar", "catalog", "category", "pet store", "retail",
+        "clipart", "coloring page", "line art"],
+      wikipedia_list_page: "List_of_cat_breeds",
+      franchise_creators: [],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "What breed of cat is shown?",
+        "Can you identify this cat breed?",
+        "Name the cat breed in this image.",
+        "What kind of cat is this?"
+      ]
+    },
+    "ghibli": {
+      query_boost: 'AND (subject:("studio ghibli" OR "hayao miyazaki" OR "isao takahata"))',
+      negative_filter: ["mr beast", "mrbeast", "personal photo", "selfie", "convention",
+        "cosplay", "merchandise", "bootleg", "fan art"],
+      wikipedia_list_page: "Studio_Ghibli_filmography",
+      franchise_creators: ["Studio Ghibli", "Hayao Miyazaki", "Isao Takahata"],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "Which Studio Ghibli film is this from?",
+        "Name the Ghibli movie shown here.",
+        "Identify this Studio Ghibli scene.",
+        "What Ghibli film does this belong to?"
+      ]
+    },
+    "disney": {
+      query_boost: 'AND (subject:("walt disney" OR "disney animation" OR "disney pixar"))',
+      negative_filter: ["personal photo", "selfie", "vacation", "family photo",
+        "theme park", "disneyland line", "merchandise", "bootleg"],
+      wikipedia_list_page: "List_of_Walt_Disney_Animation_Studios_films",
+      franchise_creators: ["Walt Disney", "Disney", "Pixar"],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "Which Disney film is this from?",
+        "Name the Disney movie shown here.",
+        "Identify this Disney character or scene.",
+        "What Disney production is this?"
+      ]
+    },
+    "marvel": {
+      query_boost: 'AND (subject:("marvel" OR "avengers" OR "marvel comics"))',
+      negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+        "merchandise", "toy", "action figure", "bootleg"],
+      wikipedia_list_page: "List_of_Marvel_Cinematic_Universe_films",
+      franchise_creators: ["Marvel", "Marvel Studios", "Marvel Comics"],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "Which Marvel movie or character is this?",
+        "Name the Marvel character shown.",
+        "Identify this Marvel scene.",
+        "What Marvel property is this from?"
+      ]
+    },
+    "pokemon": {
+      query_boost: 'AND (subject:("pokemon" OR "pokémon" OR "pocket monsters"))',
+      negative_filter: ["personal photo", "selfie", "bootleg", "knockoff",
+        "rom hack", "fan game", "merchandise"],
+      wikipedia_list_page: "List_of_Pokémon",
+      franchise_creators: ["Nintendo", "Game Freak", "The Pokémon Company"],
+      nsfw_block: [],
+      min_title_words: 1,
+      question_templates: [
+        "Which Pokémon is shown here?",
+        "Name this Pokémon.",
+        "Can you identify this Pokémon?",
+        "What Pokémon is in this image?"
+      ]
+    },
+    "naruto": {
+      query_boost: 'AND (subject:("naruto" OR "naruto shippuden" OR "boruto"))',
+      negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+        "merchandise", "bootleg", "fan art"],
+      wikipedia_list_page: "List_of_Naruto_characters",
+      franchise_creators: ["Masashi Kishimoto", "Studio Pierrot"],
+      nsfw_block: [],
+      min_title_words: 1,
+      question_templates: [
+        "Which Naruto character is shown?",
+        "Name this Naruto character.",
+        "Identify this scene from Naruto.",
+        "Who is this Naruto character?"
+      ]
+    },
+    "one_piece": {
+      query_boost: 'AND (subject:("one piece" OR "eiichiro oda"))',
+      negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+        "merchandise", "bootleg", "fan art", "one piece swimsuit"],
+      wikipedia_list_page: "List_of_One_Piece_characters",
+      franchise_creators: ["Eiichiro Oda", "Toei Animation"],
+      nsfw_block: [],
+      min_title_words: 1,
+      question_templates: [
+        "Which One Piece character is shown?",
+        "Name this One Piece character.",
+        "Identify this scene from One Piece.",
+        "Who is this One Piece character?"
+      ]
+    },
+    "dragon_ball": {
+      query_boost: 'AND (subject:("dragon ball" OR "akira toriyama" OR "dragon ball z"))',
+      negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+        "merchandise", "bootleg", "fan art"],
+      wikipedia_list_page: "List_of_Dragon_Ball_characters",
+      franchise_creators: ["Akira Toriyama", "Toei Animation"],
+      nsfw_block: [],
+      min_title_words: 1,
+      question_templates: [
+        "Which Dragon Ball character is shown?",
+        "Name this Dragon Ball character.",
+        "Identify this Dragon Ball scene.",
+        "Who is this Dragon Ball character?"
+      ]
+    },
+    "harry_potter": {
+      query_boost: 'AND (subject:("harry potter" OR "wizarding world" OR "hogwarts"))',
+      negative_filter: ["personal photo", "selfie", "cosplay", "convention",
+        "merchandise", "bootleg", "theme park", "universal studios"],
+      wikipedia_list_page: "Harry_Potter",
+      franchise_creators: ["Warner Bros", "J. K. Rowling"],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "Which Harry Potter character or scene is this?",
+        "Name the Harry Potter character shown.",
+        "Identify this scene from Harry Potter.",
+        "What Harry Potter movie is this from?"
+      ]
+    },
+    "history": {
+      query_boost: 'AND (subject:("history" OR "historical" OR "vintage" OR "antique"))',
+      negative_filter: ["scam", "spam", "advertisement", "test", "unknown"],
+      wikipedia_list_page: "",
+      franchise_creators: [],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "What historical subject is shown in this image?",
+        "Can you identify this historical image?",
+        "Name the historical item or event shown."
+      ]
+    },
+    "nature": {
+      query_boost: 'AND (subject:("nature" OR "wildlife" OR "landscape" OR "flora" OR "fauna"))',
+      negative_filter: ["advertisement", "product", "test", "logo"],
+      wikipedia_list_page: "",
+      franchise_creators: [],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "What natural subject is shown in this image?",
+        "Can you identify what's in this nature photo?",
+        "Name the animal or plant shown here."
+      ]
+    },
+    "science": {
+      query_boost: 'AND (subject:("science" OR "scientific" OR "physics" OR "chemistry" OR "biology"))',
+      negative_filter: ["pseudoscience", "flat earth", "anti-vax", "conspiracy"],
+      wikipedia_list_page: "",
+      franchise_creators: [],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "What scientific concept or discovery is shown?",
+        "Can you identify this scientific image?",
+        "Name the scientific subject in this image."
+      ]
+    },
+    "geography": {
+      query_boost: 'AND (subject:("geography" OR "countries" OR "landmarks" OR "maps"))',
+      negative_filter: ["advertisement", "product", "test", "logo"],
+      wikipedia_list_page: "",
+      franchise_creators: [],
+      nsfw_block: [],
+      min_title_words: 2,
+      question_templates: [
+        "What place or landmark is shown in this image?",
+        "Can you identify this location?",
+        "Name the country or landmark shown here."
+      ]
+    }
+  };
+
+  /** Resolve a topic string to its curated config, falling back to defaults. */
+  export function topicConfig(topic: string): TopicConfig {
+    return TOPIC_CONFIGS[slugify(topic)] || DEFAULT_TOPIC_CONFIG;
+  }
+
   // ── Types ───────────────────────────────────────────────────────────────────
   export interface Provenance {
     source_domain: string;
@@ -306,8 +570,9 @@ namespace SeedQ {
 
   // Rewrites media URLs through the wsrv.nl image proxy (already used by the
   // Unity client's MediaProxyUtility) so every staged image ships resized +
-  // webp-compressed — smaller loads, faster D1 quiz starts, no WASM needed
-  // server-side.
+  // JPG-compressed — Unity's Texture2D.LoadImage reliably decodes JPEG/PNG but
+  // NOT WebP in production builds. 1024px width at quality 85 is crisp on
+  // modern 1080p+ mobile screens while keeping file sizes reasonable.
   export function optimizeMediaUrl(url: string): string {
     if (!url || url.indexOf("http") !== 0) return url || "";
     if (url.indexOf("wsrv.nl") >= 0) return url;
@@ -315,7 +580,7 @@ namespace SeedQ {
     var lower = url.toLowerCase();
     var isAudioVideo = /\.(mp3|m4a|ogg|wav|mp4|webm|mov)(\?|$)/.test(lower);
     if (isAudioVideo) return url;
-    return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=720&q=72&output=webp";
+    return "https://wsrv.nl/?url=" + encodeURIComponent(url) + "&w=1024&q=85&output=jpg";
   }
 
   // ── HTTP helper with system-storage cache ───────────────────────────────────

@@ -78,6 +78,7 @@ namespace SeedQuestions {
       topic: topic,
       sets: result.ready,
       sets_built_now: result.built,
+      fulfillment: result.fulfillment,  // "full" | "partial" | "empty" | "warming"
       recycled: result.recycled,
       adaptive: result.adaptive,
       pool: { size: result.pool_size, available_unseen: result.pool_available },

@@ -4237,6 +4237,22 @@ declare namespace SeedQ {
     var CONSUMED_SET_TTL_MS: number;
     var SEEN_SCOPE: string;
     var HISTORY_READ_CAP: number;
+    interface TopicConfig {
+        query_boost: string;
+        negative_filter: string[];
+        wikipedia_list_page: string;
+        franchise_creators: string[];
+        nsfw_block: string[];
+        min_title_words: number;
+        question_templates: string[];
+    }
+    var GLOBAL_NSFW_TERMS: string[];
+    var DEFAULT_TOPIC_CONFIG: TopicConfig;
+    var TOPIC_CONFIGS: {
+        [slug: string]: TopicConfig;
+    };
+    /** Resolve a topic string to its curated config, falling back to defaults. */
+    function topicConfig(topic: string): TopicConfig;
     interface Provenance {
         source_domain: string;
         license: string;
@@ -4331,6 +4347,7 @@ declare namespace SeedQEngine {
         fresh_count: number;
         review_count: number;
         adaptive: SeedQ.AdaptiveProfile;
+        fulfillment: string;
     }
     function queuePriorityCombo(nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string): void;
     function ensureStaged(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string, mode: string, topic: string, wantSets: number, setSize: number): StageResult;
@@ -4343,6 +4360,16 @@ declare namespace SeedQEngine {
 }
 declare namespace SeedQQuality {
     var SAFE_MEDIA_DOMAINS: string[];
+    /** Detect hash-like strings: >= 16 hex chars or > 60% non-alphabetic. */
+    function isHashLike(s: string): boolean;
+    /** Detect filename-like strings: download-1, IMG_3917, extension suffixes, etc. */
+    function isFilenameLike(s: string): boolean;
+    /** True when > 30% of non-whitespace chars are CJK, Cyrillic, Arabic, or Korean. */
+    function hasNonLatinMajority(s: string): boolean;
+    /** Check a text blob for global + topic-specific NSFW terms. */
+    function isNsfwUnsafe(text: string, topicNsfw: string[]): boolean;
+    /** Count readable words (tokens > 2 chars, alphabetic-majority). */
+    function countReadableWords(s: string): number;
     function mediaDomainSafe(url: string): boolean;
     function checkProvenance(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, url: string): SeedQ.Provenance;
     function autoQa(q: SeedQ.SeedQuestion): SeedQ.QualityInfo;
@@ -4375,6 +4402,10 @@ declare namespace SeedQSources {
     }
     function registry(): SourceMeta[];
     function fetchArchiveOrg(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
+    /** Fetch curated titles from a Wikipedia list article.
+     *  Uses the MediaWiki API to parse section titles and list items.
+     *  Results cached for 7 days since list articles rarely change. */
+    function fetchWikipediaTitles(nk: nkruntime.Nakama, logger: nkruntime.Logger, topic: string, cfg: SeedQ.TopicConfig): string[];
     function fetchWolfram(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
     function fetchGutenberg(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];
     function fetchMusicTv(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[];

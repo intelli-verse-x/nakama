@@ -128,11 +128,112 @@ namespace SeedQSources {
     return pool.slice(0, n);
   }
 
-  // ── #1 archive.org ──────────────────────────────────────────────────────────
+  // ── #1 archive.org (world-class rewrite) ────────────────────────────────────
+  // Now uses per-topic curated configs from SeedQ.TOPIC_CONFIGS to build precise
+  // search queries with negative filters, NSFW blocklists, and franchise
+  // validation. Upstream filters reject garbage titles before question building.
+  // Full-resolution images resolved via /metadata/{id}/files. Only ONE question
+  // per archive item (no more title+creator dual-template same-image repeats).
+
+  /** Resolve full-resolution image from archive.org item metadata.
+   *  Falls back to /services/img/ thumbnail when file-list resolution fails. */
+  function resolveFullResImage(nk: nkruntime.Nakama, logger: nkruntime.Logger, identifier: string): string {
+    var fallback = "https://archive.org/services/img/" + encodeURIComponent(identifier);
+    try {
+      var metaUrl = "https://archive.org/metadata/" + encodeURIComponent(identifier) + "/files";
+      var body = SeedQ.cachedHttpGet(nk, logger, metaUrl, 7 * 24 * 3600 * 1000); // 7-day cache
+      if (!body) return fallback;
+      var parsed = JSON.parse(body);
+      var files: any[] = parsed.result || parsed || [];
+      if (!Array.isArray(files)) return fallback;
+
+      // Find best image: prefer JPEG/PNG, sorted by size desc (skip tiny thumbs)
+      var bestFile = "";
+      var bestSize = 0;
+      for (var f = 0; f < files.length; f++) {
+        var name = ("" + (files[f].name || "")).toLowerCase();
+        var size = parseInt(files[f].size || "0", 10) || 0;
+        if (!/\.(jpe?g|png)$/i.test(name)) continue;
+        // Skip tiny files (< 50KB are likely thumbnails/icons)
+        if (size < 50000) continue;
+        // Skip files that are clearly metadata/text
+        if (/thumb|__ia_thumb|__ia_meta/i.test(name)) continue;
+        if (size > bestSize) {
+          bestSize = size;
+          bestFile = files[f].name;
+        }
+      }
+      if (bestFile) {
+        return "https://archive.org/download/" + encodeURIComponent(identifier) + "/" + encodeURIComponent(bestFile);
+      }
+    } catch (e) { /* fallback to thumbnail */ }
+    return fallback;
+  }
+
+  /** Check if an archive.org doc passes upstream content filters for a topic. */
+  function passesUpstreamFilter(doc: any, cfg: SeedQ.TopicConfig): boolean {
+    if (!doc || !doc.title || !doc.identifier) return false;
+    var title = ("" + doc.title).trim();
+    var desc = ("" + (doc.description || "")).trim();
+    var combined = (title + " " + desc).toLowerCase();
+
+    // Reject hash/gibberish/filename titles
+    if (SeedQQuality.isHashLike(title)) return false;
+    if (SeedQQuality.isFilenameLike(title)) return false;
+
+    // Minimum word count
+    var words = title.split(/\s+/).length;
+    if (words < cfg.min_title_words) return false;
+
+    // Non-Latin rejection for English topics (anime topic allows some Japanese)
+    if (SeedQQuality.hasNonLatinMajority(title)) return false;
+
+    // Negative filter: reject if title/desc contains any blocked term
+    for (var nf = 0; nf < cfg.negative_filter.length; nf++) {
+      if (combined.indexOf(cfg.negative_filter[nf].toLowerCase()) >= 0) return false;
+    }
+
+    // NSFW check (global + topic-specific)
+    if (SeedQQuality.isNsfwUnsafe(combined, cfg.nsfw_block)) return false;
+
+    // Franchise creator check: if franchise_creators is set, at least one must
+    // appear in creator/subject metadata (prevents off-franchise content)
+    if (cfg.franchise_creators.length > 0) {
+      var creator = ("" + (typeof doc.creator === "string" ? doc.creator : (doc.creator && doc.creator[0]) || "")).toLowerCase();
+      var subject = ("" + (Array.isArray(doc.subject) ? doc.subject.join(" ") : (doc.subject || ""))).toLowerCase();
+      var creatorSubject = creator + " " + subject;
+      var franchiseHit = false;
+      for (var fc = 0; fc < cfg.franchise_creators.length; fc++) {
+        if (creatorSubject.indexOf(cfg.franchise_creators[fc].toLowerCase()) >= 0) {
+          franchiseHit = true; break;
+        }
+      }
+      if (!franchiseHit) return false;
+    }
+
+    return true;
+  }
+
   export function fetchArchiveOrg(ctx: nkruntime.Context, nk: nkruntime.Nakama, logger: nkruntime.Logger, mode: string, topic: string, count: number): SeedQ.SeedQuestion[] {
-    var query = 'mediatype:image AND subject:("' + topic.replace(/"/g, "") + '")';
+    var cfg = SeedQ.topicConfig(topic);
+    var topicClean = topic.replace(/"/g, "");
+
+    // Build precise query with topic boost + negative filters
+    var negatives = "";
+    if (cfg.negative_filter.length > 0) {
+      var negParts: string[] = [];
+      for (var ni = 0; ni < cfg.negative_filter.length && ni < 10; ni++) {
+        negParts.push('NOT subject:("' + cfg.negative_filter[ni] + '")');
+      }
+      negatives = " AND " + negParts.join(" AND ");
+    }
+    var query = 'mediatype:image AND subject:("' + topicClean + '") ' +
+      cfg.query_boost + negatives;
+
+    // Fetch 100 candidates to have enough after filtering (was 50)
     var url = "https://archive.org/advancedsearch.php?q=" + encodeURIComponent(query) +
-      "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&fl%5B%5D=creator&rows=50&page=1&output=json";
+      "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year&fl%5B%5D=creator&fl%5B%5D=subject&fl%5B%5D=description" +
+      "&rows=100&page=1&sort%5B%5D=downloads+desc&output=json";
     var body = SeedQ.cachedHttpGet(nk, logger, url, 6 * 3600 * 1000);
     if (!body) return [];
 
@@ -142,56 +243,116 @@ namespace SeedQSources {
       docs = (parsed && parsed.response && parsed.response.docs) || [];
     } catch (e) { return []; }
 
+    // Upstream filter: reject garbage docs BEFORE building any questions
+    var validDocs: any[] = [];
+    for (var d = 0; d < docs.length; d++) {
+      if (passesUpstreamFilter(docs[d], cfg)) validDocs.push(docs[d]);
+    }
+
+    logger.info("[SeedQ] archive_org topic=" + topic + " raw=" + docs.length +
+      " valid=" + validDocs.length + " (after upstream filter)");
+
+    // Collect all valid titles for distractor pool (only from filtered docs)
     var titles: string[] = [];
-    var creators: string[] = [];
-    for (var i = 0; i < docs.length; i++) {
-      if (docs[i] && docs[i].title) titles.push("" + docs[i].title);
-      var cr = docs[i] && docs[i].creator;
-      if (cr) creators.push("" + (cr.length !== undefined && typeof cr !== "string" ? cr[0] : cr));
+    for (var ti = 0; ti < validDocs.length; ti++) {
+      if (validDocs[ti].title) titles.push(("" + validDocs[ti].title).substring(0, 90));
+    }
+
+    // Try to supplement distractor pool with Wikipedia titles for franchise topics
+    var wikiTitles = fetchWikipediaTitles(nk, logger, topic, cfg);
+    if (wikiTitles.length > 0) {
+      for (var wt = 0; wt < wikiTitles.length; wt++) {
+        titles.push(wikiTitles[wt]);
+      }
     }
 
     var out: SeedQ.SeedQuestion[] = [];
-    for (var d = 0; d < docs.length && out.length < count; d++) {
-      var doc = docs[d];
-      if (!doc || !doc.identifier || !doc.title) continue;
-      var title = ("" + doc.title).substring(0, 110);
-      var imgUrl = "https://archive.org/services/img/" + encodeURIComponent(doc.identifier);
+    var usedIdentifiers: { [id: string]: boolean } = {};
 
-      // Image identification question (ImageGuess / WhosThat / MediaQuiz / GeoExplore)
+    for (var v = 0; v < validDocs.length && out.length < count; v++) {
+      var doc = validDocs[v];
+      if (usedIdentifiers[doc.identifier]) continue; // one question per item
+      usedIdentifiers[doc.identifier] = true;
+
+      var title = ("" + doc.title).substring(0, 90);
+
+      // Resolve full-resolution image (not thumbnail)
+      var imgUrl = resolveFullResImage(nk, logger, doc.identifier);
+
+      // Pick topic-specific question template
+      var templates = cfg.question_templates;
+      var qTemplate = templates[out.length % templates.length];
+
+      // Build distractors from the filtered title pool
       var distract = pickDistractors(titles, title, 3);
-      if (distract.length === 3) {
-        var q = baseQuestion(nk, "archive_org", mode, topic);
-        q.question = "This image comes from the public-domain archives. What is it titled?";
-        q.options = [title].concat(distract);
-        q.correct_index = 0;
-        q.question_type = "Image";
-        q.media_url = imgUrl;
-        q.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
-        q.citation = "Internet Archive — archive.org/details/" + doc.identifier;
-        q.explanation = "From the Internet Archive collection (" + doc.identifier + ").";
-        q.difficulty = 3;
-        out.push(finalize(nk, q));
-      }
+      if (distract.length < 3) continue; // not enough unique distractors
 
-      // Creator question (WhosThat flavor) when we know the creator.
-      var creator = doc.creator ? ("" + (typeof doc.creator === "string" ? doc.creator : doc.creator[0])) : "";
-      if (creator && out.length < count) {
-        var cDistract = pickDistractors(creators, creator, 3);
-        if (cDistract.length === 3) {
-          var q2 = baseQuestion(nk, "archive_org", mode, topic);
-          q2.question = "Who created '" + title + "'?";
-          q2.options = [creator].concat(cDistract);
-          q2.correct_index = 0;
-          q2.question_type = "Image";
-          q2.media_url = imgUrl;
-          q2.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
-          q2.citation = "Internet Archive — archive.org/details/" + doc.identifier;
-          q2.difficulty = 4;
-          out.push(finalize(nk, q2));
+      var q = baseQuestion(nk, "archive_org", mode, topic);
+      q.question = qTemplate;
+      q.options = [title].concat(distract);
+      q.correct_index = 0;
+      q.question_type = "Image";
+      q.media_url = imgUrl;
+      q.media_provenance = { source_domain: "archive.org", license: "public_domain", checked: true, method: "domain_whitelist" };
+      q.citation = "Internet Archive — archive.org/details/" + doc.identifier;
+      q.explanation = "From the Internet Archive collection (" + doc.identifier + ").";
+      q.difficulty = 3;
+      out.push(finalize(nk, q));
+    }
+
+    logger.info("[SeedQ] archive_org built " + out.length + " questions for " + mode + "/" + topic);
+    return out;
+  }
+
+  // ── Wikipedia web-scraping (franchise topic title lists) ────────────────────
+  // For topics like "ghibli", "disney", "dog", etc., Wikipedia's list articles
+  // provide curated, accurate title/name lists that are far more reliable than
+  // archive.org metadata. Used for:
+  //   1. Enriching the distractor pool (more plausible wrong answers)
+  //   2. Future: sourcing Wikimedia Commons images for franchise content
+
+  /** Fetch curated titles from a Wikipedia list article.
+   *  Uses the MediaWiki API to parse section titles and list items.
+   *  Results cached for 7 days since list articles rarely change. */
+  export function fetchWikipediaTitles(nk: nkruntime.Nakama, logger: nkruntime.Logger, topic: string, cfg: SeedQ.TopicConfig): string[] {
+    if (!cfg.wikipedia_list_page) return [];
+
+    var url = "https://en.wikipedia.org/w/api.php?action=parse&page=" +
+      encodeURIComponent(cfg.wikipedia_list_page) +
+      "&prop=wikitext&format=json&redirects=1";
+    var body = SeedQ.cachedHttpGet(nk, logger, url, 7 * 24 * 3600 * 1000);
+    if (!body) return [];
+
+    var titles: string[] = [];
+    try {
+      var parsed = JSON.parse(body);
+      var wikitext = (parsed && parsed.parse && parsed.parse.wikitext && parsed.parse.wikitext["*"]) || "";
+
+      // Extract titles from wikitext list items and link targets.
+      // Pattern 1: [[Title]] or [[Title|Display]]
+      var linkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+      var match: any;
+      var seen: { [k: string]: boolean } = {};
+      while ((match = linkRegex.exec(wikitext)) !== null) {
+        var linkTarget = ("" + (match[2] || match[1])).trim();
+        // Skip section/category/file links
+        if (/^(File|Category|Image|Wikipedia|Template|Help|Portal|Special):/i.test(linkTarget)) continue;
+        if (linkTarget.length < 2 || linkTarget.length > 80) continue;
+        // Skip non-Latin titles for English context
+        if (SeedQQuality.hasNonLatinMajority(linkTarget)) continue;
+        var lower = linkTarget.toLowerCase();
+        if (!seen[lower]) {
+          seen[lower] = true;
+          titles.push(linkTarget);
         }
       }
+
+      logger.info("[SeedQ] wikipedia scraped " + titles.length + " titles from " + cfg.wikipedia_list_page);
+    } catch (e) {
+      logger.warn("[SeedQ] wikipedia parse failed for " + cfg.wikipedia_list_page);
     }
-    return out;
+
+    return titles;
   }
 
   // ── #2 wolframalpha.com ─────────────────────────────────────────────────────
