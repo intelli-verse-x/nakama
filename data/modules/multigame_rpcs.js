@@ -1265,6 +1265,7 @@ function quizverseLoadPlayerData(context, logger, nk, payload) {
         // Collection fallback: check legacy "player_data" first, then "{gameID}_player_data"
         var collectionsToTry = ["player_data", getCollection(data.gameID, "player_data")];
         var playerData = null;
+        var recordRead = null;
         
         for (var i = 0; i < collectionsToTry.length; i++) {
             try {
@@ -1274,6 +1275,7 @@ function quizverseLoadPlayerData(context, logger, nk, payload) {
                     userId: userId
                 }]);
                 if (records && records.length > 0 && records[0].value) {
+                    recordRead = records[0];
                     playerData = records[0].value;
                     break;
                 }
@@ -1284,12 +1286,25 @@ function quizverseLoadPlayerData(context, logger, nk, payload) {
             return JSON.stringify({ success: false, data: {}, error: "Player data not found" });
         }
         
-        // Unwrap value if wrapped in { value: ... } format, preserving root data format for clients
-        var finalValue = playerData.value !== undefined ? playerData.value : playerData;
+        var val = playerData.value !== undefined ? playerData.value : playerData;
+
+        // If client passed an explicit key, return the multi-game structured object { key, value, updatedAt }
+        if (data.key) {
+            var updatedIso = recordRead && recordRead.updateTime ? new Date(recordRead.updateTime * 1000).toISOString() : new Date().toISOString();
+            return JSON.stringify({
+                success: true,
+                data: {
+                    key: storageKey,
+                    value: val,
+                    updatedAt: updatedIso
+                }
+            });
+        }
         
+        // Legacy fallback (no key specified): return raw saved data object
         return JSON.stringify({
             success: true,
-            data: finalValue
+            data: val
         });
     } catch (err) {
         logger.error("quizverse_load_player_data error: " + err.message);
