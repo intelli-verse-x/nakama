@@ -1207,23 +1207,19 @@ function lasttolliveFindFriends(context, logger, nk, payload) {
  */
 function quizverseSavePlayerData(context, logger, nk, payload) {
     try {
-        var data = parseAndValidateGamePayload(payload, ["gameID", "key", "value"]);
+        var data = parseAndValidateGamePayload(payload, ["gameID"]);
         var userId = getUserId(data, context);
         
-        var collection = getCollection(data.gameID, "player_data");
-        var storageKey = data.key;
+        // Support both legacy payload shape (data.data) and new payload shape (data.key & data.value)
+        var storageKey = data.key || (data.gameID + "_save");
+        var collection = data.key ? getCollection(data.gameID, "player_data") : "player_data";
+        var valueToWrite = data.value !== undefined ? data.value : (data.data !== undefined ? data.data : data);
         
-        var playerData = {
-            value: data.value,
-            updatedAt: new Date().toISOString()
-        };
-        
-        // Write player data
         nk.storageWrite([{
             collection: collection,
             key: storageKey,
             userId: userId,
-            value: playerData,
+            value: typeof valueToWrite === 'object' ? valueToWrite : { value: valueToWrite },
             permissionRead: 1,
             permissionWrite: 0
         }]);
@@ -1260,49 +1256,44 @@ function lasttolliveSavePlayerData(context, logger, nk, payload) {
  */
 function quizverseLoadPlayerData(context, logger, nk, payload) {
     try {
-        var data = parseAndValidateGamePayload(payload, ["gameID", "key"]);
+        var data = parseAndValidateGamePayload(payload, ["gameID"]);
         var userId = getUserId(data, context);
         
-        var collection = getCollection(data.gameID, "player_data");
-        var storageKey = data.key;
+        // Key fallback: use data.key if provided, otherwise default to legacy "{gameID}_save"
+        var storageKey = data.key || (data.gameID + "_save");
         
-        // Read player data
+        // Collection fallback: check legacy "player_data" first, then "{gameID}_player_data"
+        var collectionsToTry = ["player_data", getCollection(data.gameID, "player_data")];
         var playerData = null;
-        try {
-            var records = nk.storageRead([{
-                collection: collection,
-                key: storageKey,
-                userId: userId
-            }]);
-            if (records && records.length > 0 && records[0].value) {
-                playerData = records[0].value;
-            }
-        } catch (err) {
-            logger.debug("No player data found for key: " + storageKey);
+        
+        for (var i = 0; i < collectionsToTry.length; i++) {
+            try {
+                var records = nk.storageRead([{
+                    collection: collectionsToTry[i],
+                    key: storageKey,
+                    userId: userId
+                }]);
+                if (records && records.length > 0 && records[0].value) {
+                    playerData = records[0].value;
+                    break;
+                }
+            } catch (_) {}
         }
         
         if (!playerData) {
-            return JSON.stringify({
-                success: false,
-                error: "Player data not found"
-            });
+            return JSON.stringify({ success: false, data: {}, error: "Player data not found" });
         }
+        
+        // Unwrap value if wrapped in { value: ... } format, preserving root data format for clients
+        var finalValue = playerData.value !== undefined ? playerData.value : playerData;
         
         return JSON.stringify({
             success: true,
-            data: {
-                key: storageKey,
-                value: playerData.value,
-                updatedAt: playerData.updatedAt
-            }
+            data: finalValue
         });
-        
     } catch (err) {
         logger.error("quizverse_load_player_data error: " + err.message);
-        return JSON.stringify({
-            success: false,
-            error: err.message
-        });
+        return JSON.stringify({ success: false, error: err.message });
     }
 }
 
