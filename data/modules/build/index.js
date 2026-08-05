@@ -12108,6 +12108,325 @@ var CompatibilityQuiz;
         }
     }
     CompatibilityQuiz.rpcGetSession = rpcGetSession;
+    // =========================================================
+    // ROBUST COMPATIBILITY ALGORITHM (Ported from Legacy)
+    // =========================================================
+    function calculateTraitSimilarity(traits1, traits2, relevantTraits) {
+        var similarity = 0;
+        var count = 0;
+        for (var i = 0; i < relevantTraits.length; i++) {
+            var trait = relevantTraits[i];
+            var score1 = Number(traits1[trait]) || 0;
+            var score2 = Number(traits2[trait]) || 0;
+            var norm1 = Math.min(score1 / 5, 1);
+            var norm2 = Math.min(score2 / 5, 1);
+            var diff = Math.abs(norm1 - norm2);
+            similarity += (1 - diff);
+            count++;
+        }
+        return count > 0 ? similarity / count : 0.5;
+    }
+    function countMatchingAnswers(answers1, answers2) {
+        var matches = 0;
+        var minLen = Math.min(answers1.length, answers2.length);
+        for (var i = 0; i < minLen; i++) {
+            var a1 = answers1[i];
+            var a2 = answers2[i];
+            if (a1 && a2 && a1.selectedOptionId === a2.selectedOptionId) {
+                matches++;
+            }
+        }
+        return matches;
+    }
+    function computeCompatibilityScore(creatorTraits, partnerTraits, creatorAnswers, partnerAnswers) {
+        var totalScore = 0;
+        var categoryCount = 0;
+        var breakdown = {};
+        // 1. Communication Style
+        var commScore = calculateTraitSimilarity(creatorTraits, partnerTraits, ['mbti:E', 'mbti:I', 'mbti:J', 'mbti:P']);
+        breakdown.communicationStyle = Math.round(commScore * 100);
+        totalScore += commScore;
+        categoryCount++;
+        // 2. Emotional Connection
+        var emotionalScore = calculateTraitSimilarity(creatorTraits, partnerTraits, ['mbti:F', 'mbti:T', 'big_five:high_agreeableness', 'big_five:high_openness']);
+        breakdown.emotionalConnection = Math.round(emotionalScore * 100);
+        totalScore += emotionalScore;
+        categoryCount++;
+        // 3. Shared Values
+        var valuesScore = calculateTraitSimilarity(creatorTraits, partnerTraits, ['mbti:N', 'mbti:S', 'big_five:high_conscientiousness']);
+        breakdown.sharedValues = Math.round(valuesScore * 100);
+        totalScore += valuesScore;
+        categoryCount++;
+        // 4. Direct answer matching bonus
+        var matchingAnswers = countMatchingAnswers(creatorAnswers, partnerAnswers);
+        var maxLen = Math.max(creatorAnswers.length, partnerAnswers.length, 1);
+        var matchRatio = matchingAnswers / maxLen;
+        breakdown.answerAlignment = Math.round(matchRatio * 100);
+        totalScore += matchRatio * 0.5;
+        categoryCount += 0.5;
+        var finalScore = (totalScore / categoryCount) * 100;
+        var message;
+        var emoji;
+        if (finalScore >= 90) {
+            message = "You're a perfect match! Your connection is extraordinary!";
+            emoji = "heart";
+        }
+        else if (finalScore >= 75) {
+            message = "Highly compatible! You complement each other wonderfully!";
+            emoji = "hearts";
+        }
+        else if (finalScore >= 60) {
+            message = "Good compatibility! You share many common values!";
+            emoji = "heart_pink";
+        }
+        else if (finalScore >= 45) {
+            message = "Moderate compatibility! Opposites can attract!";
+            emoji = "heart_yellow";
+        }
+        else {
+            message = "Different perspectives! Diversity makes life interesting!";
+            emoji = "star";
+        }
+        var level;
+        if (finalScore >= 90)
+            level = "Perfect Match";
+        else if (finalScore >= 75)
+            level = "Highly Compatible";
+        else if (finalScore >= 60)
+            level = "Good Match";
+        else if (finalScore >= 45)
+            level = "Moderate";
+        else
+            level = "Different Perspectives";
+        var matchingTraits = [];
+        var differentTraits = [];
+        if (breakdown.communicationStyle >= 70)
+            matchingTraits.push("Communication Style");
+        else if (breakdown.communicationStyle < 40)
+            differentTraits.push("Communication Style");
+        if (breakdown.emotionalConnection >= 70)
+            matchingTraits.push("Emotional Connection");
+        else if (breakdown.emotionalConnection < 40)
+            differentTraits.push("Emotional Connection");
+        if (breakdown.sharedValues >= 70)
+            matchingTraits.push("Shared Values");
+        else if (breakdown.sharedValues < 40)
+            differentTraits.push("Shared Values");
+        if (breakdown.answerAlignment >= 60)
+            matchingTraits.push("Similar Thinking");
+        else if (breakdown.answerAlignment < 30)
+            differentTraits.push("Different Viewpoints");
+        if (creatorTraits['mbti:E'] && partnerTraits['mbti:E'] && creatorTraits['mbti:E'] > 2 && partnerTraits['mbti:E'] > 2)
+            matchingTraits.push("Both Outgoing");
+        if (creatorTraits['mbti:I'] && partnerTraits['mbti:I'] && creatorTraits['mbti:I'] > 2 && partnerTraits['mbti:I'] > 2)
+            matchingTraits.push("Both Thoughtful");
+        if (creatorTraits['big_five:high_openness'] && partnerTraits['big_five:high_openness'] && creatorTraits['big_five:high_openness'] > 2 && partnerTraits['big_five:high_openness'] > 2)
+            matchingTraits.push("Creative Minds");
+        if (creatorTraits['big_five:high_agreeableness'] && partnerTraits['big_five:high_agreeableness'] && creatorTraits['big_five:high_agreeableness'] > 2 && partnerTraits['big_five:high_agreeableness'] > 2)
+            matchingTraits.push("Caring Hearts");
+        if (matchingTraits.length === 0 && finalScore >= 50)
+            matchingTraits.push("Open to Growth");
+        if (differentTraits.length === 0 && finalScore < 50)
+            differentTraits.push("Unique Perspectives");
+        var categoryScores = {
+            "Communication": breakdown.communicationStyle || 0,
+            "Emotional": breakdown.emotionalConnection || 0,
+            "Values": breakdown.sharedValues || 0,
+            "Lifestyle": Math.round((breakdown.answerAlignment || 0) * 0.8),
+            "Interest": Math.round(finalScore * 0.9),
+            communication: breakdown.communicationStyle || 0,
+            emotional: breakdown.emotionalConnection || 0,
+            values: breakdown.sharedValues || 0,
+            lifestyle: Math.round((breakdown.answerAlignment || 0) * 0.8),
+            interests: Math.round(finalScore * 0.9)
+        };
+        var growthAreas = [];
+        if (categoryScores.communication < 50)
+            growthAreas.push("Communication Skills");
+        if (categoryScores.emotional < 50)
+            growthAreas.push("Emotional Understanding");
+        if (categoryScores.values < 50)
+            growthAreas.push("Aligning Core Values");
+        if (categoryScores.lifestyle < 50)
+            growthAreas.push("Lifestyle Balance");
+        if (categoryScores.interests < 50)
+            growthAreas.push("Discovering Shared Interests");
+        if (growthAreas.length === 0)
+            growthAreas.push("Keep Growing Together");
+        var relationshipAdvice;
+        if (finalScore >= 85)
+            relationshipAdvice = "Your connection is truly special! Keep nurturing this beautiful bond. 💕";
+        else if (finalScore >= 70)
+            relationshipAdvice = "You have great potential together. Communication is your superpower! 💖";
+        else if (finalScore >= 55)
+            relationshipAdvice = "Embrace your differences - they make your relationship unique! 💗";
+        else if (finalScore >= 40)
+            relationshipAdvice = "Every relationship is a journey of discovery. Keep exploring together! 💛";
+        else
+            relationshipAdvice = "Your different perspectives can lead to amazing growth. Stay curious! 🌟";
+        return {
+            overallScore: finalScore,
+            score: finalScore,
+            compatibilityLevel: level,
+            level: level,
+            breakdown: breakdown,
+            categoryScores: categoryScores,
+            message: message,
+            relationshipAdvice: relationshipAdvice,
+            compatibilityInsight: message,
+            emoji: emoji,
+            matchingTraits: matchingTraits,
+            complementaryTraits: differentTraits,
+            differentTraits: differentTraits,
+            growthAreas: growthAreas,
+            matchingAnswers: matchingAnswers,
+            totalQuestions: maxLen
+        };
+    }
+    // =========================================================
+    // SUBMIT & CALCULATE RPCs (Overrides Legacy)
+    // =========================================================
+    function rpcSubmitAnswers(ctx, logger, nk, payload) {
+        var request = {};
+        try {
+            request = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return fail("Invalid JSON payload");
+        }
+        var userId = resolveUserId(ctx, request);
+        if (!userId)
+            return fail("Auth required");
+        var sessionId = request.sessionId;
+        if (!sessionId)
+            return fail("sessionId required");
+        var creatorId = userId;
+        var sessionResults = nk.storageRead([{ collection: COLLECTION, key: sessionId, userId: creatorId }]);
+        if (!sessionResults || sessionResults.length === 0) {
+            try {
+                var rows = nk.sqlQuery("SELECT user_id FROM storage WHERE collection = $1 AND key = $2", [COLLECTION, sessionId]);
+                if (rows && rows.length > 0) {
+                    var uid = rows[0].user_id != null ? rows[0].user_id : (rows[0].length > 0 ? rows[0][0] : null);
+                    if (uid)
+                        creatorId = String(uid);
+                }
+            }
+            catch (e) { }
+            sessionResults = nk.storageRead([{ collection: COLLECTION, key: sessionId, userId: creatorId }]);
+        }
+        if (!sessionResults || sessionResults.length === 0)
+            return fail("Session not found");
+        var session = sessionResults[0].value;
+        var isCreator = session.creatorId === userId;
+        var isPartner = session.partnerId === userId;
+        if (!isCreator && !isPartner)
+            return fail("Not authorized");
+        var answers = request.answers || [];
+        var traitScores = request.traitScores || {};
+        if (isCreator) {
+            session.creatorAnswers = answers;
+            session.creatorTraitScores = traitScores;
+            session.creatorCompleted = true;
+            session.creatorCompletedAt = Date.now();
+            session.creatorResultId = request.resultId || "";
+            session.creatorPersonalityTitle = request.personalityTitle || "";
+            session.creatorPersonalityEmoji = request.personalityEmoji || "";
+        }
+        else {
+            session.partnerAnswers = answers;
+            session.partnerTraitScores = traitScores;
+            session.partnerCompleted = true;
+            session.partnerCompletedAt = Date.now();
+            session.partnerResultId = request.resultId || "";
+            session.partnerPersonalityTitle = request.personalityTitle || "";
+            session.partnerPersonalityEmoji = request.personalityEmoji || "";
+        }
+        var justCompletedBoth = false;
+        if (session.creatorCompleted && session.partnerCompleted && session.status !== 2) {
+            session.status = 2; // both_completed
+            justCompletedBoth = true;
+        }
+        else if (session.status === 0) {
+            session.status = 1; // partner_joined (or one finished)
+        }
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: sessionId,
+                userId: creatorId,
+                value: session,
+                permissionRead: 2,
+                permissionWrite: 1
+            }]);
+        if (justCompletedBoth) {
+            notify(ctx, logger, nk, session.creatorId, "results_ready", "compatibility_results_ready_title", "compatibility_results_ready_body", { name: session.partnerName }, { type: "results_ready", sessionId: sessionId, screen: "compatibility" });
+            notify(ctx, logger, nk, session.partnerId, "results_ready", "compatibility_results_ready_title", "compatibility_results_ready_body", { name: session.creatorName }, { type: "results_ready", sessionId: sessionId, screen: "compatibility" });
+        }
+        else if (isPartner && session.partnerCompleted) {
+            notify(ctx, logger, nk, session.creatorId, "partner_completed", "compatibility_partner_finished_title", "compatibility_partner_finished_body", { name: session.partnerName }, { type: "partner_completed", sessionId: sessionId, screen: "compatibility" });
+        }
+        else if (isCreator && session.creatorCompleted && session.partnerId) {
+            notify(ctx, logger, nk, session.partnerId, "partner_completed", "compatibility_partner_finished_title", "compatibility_partner_finished_body", { name: session.creatorName }, { type: "partner_completed", sessionId: sessionId, screen: "compatibility" });
+        }
+        return ok("Answers submitted", sessionToUnity(session));
+    }
+    CompatibilityQuiz.rpcSubmitAnswers = rpcSubmitAnswers;
+    function rpcCalculateCompatibility(ctx, logger, nk, payload) {
+        var request = {};
+        try {
+            request = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return fail("Invalid JSON payload");
+        }
+        var userId = resolveUserId(ctx, request);
+        var sessionId = request.sessionId;
+        if (!sessionId)
+            return fail("sessionId required");
+        var creatorId = userId;
+        var sessionResults = nk.storageRead([{ collection: COLLECTION, key: sessionId, userId: creatorId }]);
+        if (!sessionResults || sessionResults.length === 0) {
+            try {
+                var rows = nk.sqlQuery("SELECT user_id FROM storage WHERE collection = $1 AND key = $2", [COLLECTION, sessionId]);
+                if (rows && rows.length > 0) {
+                    var uid = rows[0].user_id != null ? rows[0].user_id : (rows[0].length > 0 ? rows[0][0] : null);
+                    if (uid)
+                        creatorId = String(uid);
+                }
+            }
+            catch (e) { }
+            sessionResults = nk.storageRead([{ collection: COLLECTION, key: sessionId, userId: creatorId }]);
+        }
+        if (!sessionResults || sessionResults.length === 0)
+            return fail("Session not found");
+        var session = sessionResults[0].value;
+        if (!session.creatorCompleted || !session.partnerCompleted) {
+            return fail("Both players must complete the quiz first");
+        }
+        if (session.compatibilityResult) {
+            session.status = 2; // BothCompleted
+            session.compatibilityResult.sessionId = sessionId;
+            return ok("Calculated", session.compatibilityResult);
+        }
+        var creatorTraits = session.creatorTraitScores || {};
+        var partnerTraits = session.partnerTraitScores || {};
+        var creatorAnswers = session.creatorAnswers || [];
+        var partnerAnswers = session.partnerAnswers || [];
+        // Calculate Using Legacy Logic
+        var result = computeCompatibilityScore(creatorTraits, partnerTraits, creatorAnswers, partnerAnswers);
+        session.compatibilityResult = result;
+        session.status = 2; // BothCompleted
+        nk.storageWrite([{
+                collection: COLLECTION,
+                key: sessionId,
+                userId: creatorId,
+                value: session,
+                permissionRead: 2,
+                permissionWrite: 1
+            }]);
+        result.sessionId = sessionId;
+        return ok("Calculated", result);
+    }
+    CompatibilityQuiz.rpcCalculateCompatibility = rpcCalculateCompatibility;
 })(CompatibilityQuiz || (CompatibilityQuiz = {}));
 // Unique global names so legacy_runtime.js `rpcCompatibilityCreateSession`
 // does not overwrite these before postbuild's first-wins `__rpc_*` assignment.
@@ -12120,6 +12439,12 @@ function rpcCompatibilityJoinSessionQVBF421(ctx, logger, nk, payload) {
 function rpcCompatibilityGetSessionQVBF421(ctx, logger, nk, payload) {
     return CompatibilityQuiz.rpcGetSession(ctx, logger, nk, payload);
 }
+function rpcCompatibilitySubmitAnswersQVBF421(ctx, logger, nk, payload) {
+    return CompatibilityQuiz.rpcSubmitAnswers(ctx, logger, nk, payload);
+}
+function rpcCompatibilityCalculateQVBF421(ctx, logger, nk, payload) {
+    return CompatibilityQuiz.rpcCalculateCompatibility(ctx, logger, nk, payload);
+}
 // Registration — postbuild autoInvokeRegister + NOOP at load (same pattern as remote_config.ts).
 // Must NOT declare InitModule here — src/main.ts already owns the sole InitModule.
 var CompatibilityQuizRegister;
@@ -12128,6 +12453,8 @@ var CompatibilityQuizRegister;
         initializer.registerRpc("compatibility_create_session", rpcCompatibilityCreateSessionQVBF421);
         initializer.registerRpc("compatibility_join_session", rpcCompatibilityJoinSessionQVBF421);
         initializer.registerRpc("compatibility_get_session", rpcCompatibilityGetSessionQVBF421);
+        initializer.registerRpc("compatibility_submit_answers", rpcCompatibilitySubmitAnswersQVBF421);
+        initializer.registerRpc("compatibility_calculate", rpcCompatibilityCalculateQVBF421);
     }
     CompatibilityQuizRegister.register = register;
     var _NOOP = { registerRpc: function () { } };

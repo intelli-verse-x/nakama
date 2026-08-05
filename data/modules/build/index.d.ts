@@ -821,10 +821,14 @@ declare namespace CompatibilityQuiz {
     function rpcCreateSession(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcJoinSession(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcGetSession(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcSubmitAnswers(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcCalculateCompatibility(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
 }
 declare function rpcCompatibilityCreateSessionQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
 declare function rpcCompatibilityJoinSessionQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
 declare function rpcCompatibilityGetSessionQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcCompatibilitySubmitAnswersQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+declare function rpcCompatibilityCalculateQVBF421(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
 declare namespace CompatibilityQuizRegister {
     function register(initializer: nkruntime.Initializer): void;
 }
