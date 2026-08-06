@@ -18394,7 +18394,7 @@ function rpcCompatibilityGetSession(ctx, logger, nk, payload) {
  * RPC: Submit quiz answers
  * Payload: { sessionId, answers[], traitScores{} }
  */
-function rpcCompatibilitySubmitAnswers(ctx, logger, nk, payload) {
+/*function rpcCompatibilitySubmitAnswers(ctx, logger, nk, payload) {
     logger.debug('[CompatibilityQuiz] User ' + ctx.userId + ' submitting answers');
 
     var request;
@@ -18546,13 +18546,13 @@ function rpcCompatibilitySubmitAnswers(ctx, logger, nk, payload) {
         logger.error('[CompatibilityQuiz] Submit answers error: ' + err.message);
         return JSON.stringify({ success: false, message: err.message, data: null });
     }
-}
+}*/
 
 /**
  * RPC: Calculate compatibility between two players
  * Payload: { sessionId: string }
  */
-function rpcCompatibilityCalculate(ctx, logger, nk, payload) {
+/*function rpcCompatibilityCalculate(ctx, logger, nk, payload) {
     logger.debug('[CompatibilityQuiz] Calculating compatibility for user ' + ctx.userId);
 
     var request;
@@ -18677,7 +18677,7 @@ function rpcCompatibilityCalculate(ctx, logger, nk, payload) {
         logger.error('[CompatibilityQuiz] Calculate error: ' + err.message);
         return JSON.stringify({ success: false, message: err.message, data: null });
     }
-}
+}*/
 
 /**
  * RPC: List user's compatibility sessions
@@ -25399,18 +25399,18 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
     // ============================================================================
 
     // Register Compatibility Quiz RPCs
-    try {
-        logger.info('[CompatibilityQuiz] Initializing Compatibility Quiz Module...');
-        initializer.registerRpc('compatibility_create_session', rpcCompatibilityCreateSession);
-        logger.info('[CompatibilityQuiz] Registered RPC: compatibility_create_session');
-        initializer.registerRpc('compatibility_join_session', rpcCompatibilityJoinSession);
-        logger.info('[CompatibilityQuiz] Registered RPC: compatibility_join_session');
-        initializer.registerRpc('compatibility_get_session', rpcCompatibilityGetSession);
-        logger.info('[CompatibilityQuiz] Registered RPC: compatibility_get_session');
-        initializer.registerRpc('compatibility_submit_answers', rpcCompatibilitySubmitAnswers);
-        logger.info('[CompatibilityQuiz] Registered RPC: compatibility_submit_answers');
-        initializer.registerRpc('compatibility_calculate', rpcCompatibilityCalculate);
-        logger.info('[CompatibilityQuiz] Registered RPC: compatibility_calculate');
+     try {
+    //     logger.info('[CompatibilityQuiz] Initializing Compatibility Quiz Module...');
+    //     initializer.registerRpc('compatibility_create_session', rpcCompatibilityCreateSession);
+    //     logger.info('[CompatibilityQuiz] Registered RPC: compatibility_create_session');
+    //     initializer.registerRpc('compatibility_join_session', rpcCompatibilityJoinSession);
+    //     logger.info('[CompatibilityQuiz] Registered RPC: compatibility_join_session');
+    //     initializer.registerRpc('compatibility_get_session', rpcCompatibilityGetSession);
+    //     logger.info('[CompatibilityQuiz] Registered RPC: compatibility_get_session');
+    //     initializer.registerRpc('compatibility_submit_answers', rpcCompatibilitySubmitAnswers);
+    //     logger.info('[CompatibilityQuiz] Registered RPC: compatibility_submit_answers');
+    //     initializer.registerRpc('compatibility_calculate', rpcCompatibilityCalculate);
+    //     logger.info('[CompatibilityQuiz] Registered RPC: compatibility_calculate');
         initializer.registerRpc('compatibility_list_sessions', rpcCompatibilityListSessions);
         logger.info('[CompatibilityQuiz] Registered RPC: compatibility_list_sessions');
         logger.info('[CompatibilityQuiz] Successfully registered 6 Compatibility Quiz RPCs');
@@ -25816,19 +25816,19 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
     // ============================================================================
     try {
         // ---------- compatibility_create_session ----------
-        initializer.registerRpc('compatibility_create_session', rpcCompatibilityCreateSessionV30);
+        // initializer.registerRpc('compatibility_create_session', rpcCompatibilityCreateSessionV30);
 
-        // ---------- compatibility_join_session ----------
-        initializer.registerRpc('compatibility_join_session', rpcCompatibilityJoinSessionV30);
+        // // ---------- compatibility_join_session ----------
+        // initializer.registerRpc('compatibility_join_session', rpcCompatibilityJoinSessionV30);
 
-        // ---------- compatibility_submit_answers ----------
-        initializer.registerRpc('compatibility_submit_answers', rpcCompatibilitySubmitAnswersV30);
+        // // ---------- compatibility_submit_answers ----------
+        // initializer.registerRpc('compatibility_submit_answers', rpcCompatibilitySubmitAnswersV30);
 
-        // ---------- compatibility_get_session ----------
-        initializer.registerRpc('compatibility_get_session', rpcCompatibilityGetSessionV30);
+        // // ---------- compatibility_get_session ----------
+        // initializer.registerRpc('compatibility_get_session', rpcCompatibilityGetSessionV30);
 
-        // ---------- compatibility_calculate ----------
-        initializer.registerRpc('compatibility_calculate', rpcCompatibilityCalculateV30);
+        // // ---------- compatibility_calculate ----------
+        // initializer.registerRpc('compatibility_calculate', rpcCompatibilityCalculateV30);
 
         logger.info('[Compatibility] Successfully registered 5 Compatibility Quiz RPCs');
     } catch (err) { logger.error('[Compatibility] Failed to initialize: ' + err.message); }
@@ -25861,19 +25861,19 @@ function LegacyInitModule(ctx, logger, nk, initializer) {
 
     try {
         // 1. Create compatibility session
-        initializer.registerRpc('compatibility_create_session', rpcCompatibilityCreateSessionV31);
+        // initializer.registerRpc('compatibility_create_session', rpcCompatibilityCreateSessionV31);
 
-        // 2. Join compatibility session
-        initializer.registerRpc('compatibility_join_session', rpcCompatibilityJoinSessionV31);
+        // // 2. Join compatibility session
+        // initializer.registerRpc('compatibility_join_session', rpcCompatibilityJoinSessionV31);
 
-        // 3. Submit answers
-        initializer.registerRpc('compatibility_submit_answers', rpcCompatibilitySubmitAnswersV31);
+        // // 3. Submit answers
+        // initializer.registerRpc('compatibility_submit_answers', rpcCompatibilitySubmitAnswersV31);
 
-        // 4. Get session status
-        initializer.registerRpc('compatibility_get_session', rpcCompatibilityGetSessionV31);
+        // // 4. Get session status
+        // initializer.registerRpc('compatibility_get_session', rpc CompatibilityGetSessionV31);
 
-        // 5. Calculate compatibility score
-        initializer.registerRpc('compatibility_calculate', rpcCompatibilityCalculateV31);
+        // // 5. Calculate compatibility score
+        // initializer.registerRpc('compatibility_calculate', rpcCompatibilityCalculateV31);
 
         logger.info('[Compatibility] Registered 5 Compatibility Quiz RPCs');
     } catch (err) { logger.error('[Compatibility] Failed: ' + err.message); }
