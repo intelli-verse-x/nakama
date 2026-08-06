@@ -165,7 +165,8 @@ services:
       # Countries / Flags (RestCountries v5). Free key at https://restcountries.com/sign-up
       - REST_COUNTRIES_API_KEY=${REST_COUNTRIES_API_KEY:-}
       # Arcade Sudoku — API Ninjas /v1/sudokugenerate (server-only; never ship in Unity)
-      - API_NINJAS_API_KEY=${API_NINJAS_API_KEY:-cpvfOWevf99i2llPBUreOmJLmfBMKVv1rjAIEy3o}
+      # Set in .env — do not commit the key. Prod: SSM /nakama/API_NINJAS_API_KEY + runtime.env
+      - API_NINJAS_API_KEY=${API_NINJAS_API_KEY:-}
       # S3 base URL override (defaults to intelli-verse-x-media bucket in code)
       - S3_BASE_URL=${S3_BASE_URL:-}
       # Admin gate for quizverse_admin_stats RPC (must match a real Nakama userId)

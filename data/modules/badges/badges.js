@@ -37,6 +37,89 @@ var RARITY = {
 };
 
 // ============================================================================
+// CANONICAL GAME ID (BUG FIX 2026-08-06 — "nothing ever unlocks")
+// ----------------------------------------------------------------------------
+// ROOT CAUSE: definitions are seeded under key "definitions_quizverse", but
+// clients send game_id = the QuizVerse UUID ("126bf539-..."). Every badge/
+// collectable RPC built its storage keys straight from the raw payload, so
+// definition reads ALWAYS missed and check_event silently returned success
+// with zero updates. Progress docs were also fragmented per raw game_id.
+//
+// FIX: one canonical badge-space per game. Definitions are ALWAYS read via
+// the canonical id. Player docs (progress/inventory) are read canonical-first
+// with an automatic legacy-key fallback + migrate-on-write, so existing
+// player data under UUID keys is preserved and converges over time.
+// ============================================================================
+var QUIZVERSE_GAME_UUID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+var BADGE_CANONICAL_GAME_ID = "quizverse";
+
+function badgeCanonicalGameId(gameId) {
+    if (!gameId) return BADGE_CANONICAL_GAME_ID;
+    var g = String(gameId);
+    if (g === QUIZVERSE_GAME_UUID || g === "quizverse" ||
+        g === "quiz-verse" || g === "QuizVerse") {
+        return BADGE_CANONICAL_GAME_ID;
+    }
+    return g;
+}
+
+/**
+ * Read a per-user doc (badge progress / collectable inventory).
+ * Canonical key first; falls back to the legacy raw-gameId key and returns
+ * the canonical write key so the next save migrates the doc forward.
+ * @returns {{value: (Object|null), key: string, migrated: boolean}}
+ */
+function badgeReadUserDoc(nk, logger, collection, prefix, userId, canonGameId, rawGameId) {
+    var canonKey = prefix + userId + "_" + canonGameId;
+    try {
+        var recs = nk.storageRead([{ collection: collection, key: canonKey, userId: userId }]);
+        if (recs && recs.length > 0 && recs[0].value) {
+            return { value: recs[0].value, key: canonKey, migrated: false };
+        }
+    } catch (e) { /* fall through to legacy */ }
+
+    if (rawGameId && String(rawGameId) !== canonGameId) {
+        var legacyKey = prefix + userId + "_" + rawGameId;
+        try {
+            var lrecs = nk.storageRead([{ collection: collection, key: legacyKey, userId: userId }]);
+            if (lrecs && lrecs.length > 0 && lrecs[0].value) {
+                logger.info("[Badges] Migrating legacy doc " + legacyKey + " -> " + canonKey);
+                return { value: lrecs[0].value, key: canonKey, migrated: true };
+            }
+        } catch (e2) { /* no legacy doc */ }
+    }
+    return { value: null, key: canonKey, migrated: false };
+}
+
+/**
+ * Server-side badge -> character chain (BUG FIX 2026-08-06).
+ * Previously character unlocks depended on the Unity client noticing a badge
+ * unlock and calling character_unlock itself — so server-side-only events
+ * (and every failed client call) silently dropped character unlocks.
+ * Now: whenever badges unlock server-side, matching characters auto-unlock
+ * in the same call. Defensive: no-op if the characters module is absent.
+ * @returns {Array} characters unlocked (may be empty)
+ */
+function badgesNotifyCharacterUnlocks(nk, logger, userId, rawGameId, unlockedBadges) {
+    if (!unlockedBadges || unlockedBadges.length === 0) return [];
+    try {
+        var g = (typeof globalThis !== 'undefined') ? globalThis : this;
+        if (typeof g.quizverseCharactersAutoUnlock === 'function') {
+            var ids = [];
+            for (var i = 0; i < unlockedBadges.length; i++) {
+                if (unlockedBadges[i] && unlockedBadges[i].badge_id) {
+                    ids.push(unlockedBadges[i].badge_id);
+                }
+            }
+            return g.quizverseCharactersAutoUnlock(nk, logger, userId, rawGameId, ids) || [];
+        }
+    } catch (e) {
+        logger.warn("[Badges] Character auto-unlock hook failed: " + e.message);
+    }
+    return [];
+}
+
+// ============================================================================
 // BADGE RPCs
 // ============================================================================
 
@@ -63,11 +146,12 @@ var rpcBadgesGetAll = function(ctx, logger, nk, payload) {
         
         var userId = ctx.userId;
         var gameId = data.game_id;
+        var canonGameId = badgeCanonicalGameId(gameId);
         
-        logger.info("[Badges] Getting all badges for game: " + gameId + ", user: " + userId);
+        logger.info("[Badges] Getting all badges for game: " + gameId + " (canonical: " + canonGameId + "), user: " + userId);
         
-        // Get badge definitions
-        var definitionsKey = "definitions_" + gameId;
+        // Get badge definitions — ALWAYS via the canonical badge-space.
+        var definitionsKey = "definitions_" + canonGameId;
         var definitions = [];
         
         try {
@@ -84,23 +168,10 @@ var rpcBadgesGetAll = function(ctx, logger, nk, payload) {
             logger.warn("[Badges] No definitions found for game: " + gameId);
         }
         
-        // Get player progress
-        var progressKey = "progress_" + userId + "_" + gameId;
-        var progress = {};
-        
-        try {
-            var progRecords = nk.storageRead([{
-                collection: BADGE_PROGRESS_COLLECTION,
-                key: progressKey,
-                userId: userId
-            }]);
-            
-            if (progRecords && progRecords.length > 0 && progRecords[0].value) {
-                progress = progRecords[0].value;
-            }
-        } catch (err) {
-            logger.debug("[Badges] No progress found for user: " + userId);
-        }
+        // Get player progress (canonical-first, legacy fallback + migrate-on-write)
+        var progDoc = badgeReadUserDoc(nk, logger, BADGE_PROGRESS_COLLECTION,
+            "progress_", userId, canonGameId, gameId);
+        var progress = progDoc.value || {};
         
         // Merge definitions with progress
         var badges = [];
@@ -210,14 +281,15 @@ var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
         
         var userId = ctx.userId;
         var gameId = data.game_id;
+        var canonGameId = badgeCanonicalGameId(gameId);
         var badgeId = data.badge_id;
         var newProgress = data.progress;
         var increment = data.increment || false;
         
         logger.info("[Badges] Updating progress for " + badgeId + ": " + newProgress);
         
-        // Get badge definition
-        var definitionsKey = "definitions_" + gameId;
+        // Get badge definition — canonical badge-space (BUG FIX 2026-08-06)
+        var definitionsKey = "definitions_" + canonGameId;
         var badge = null;
         
         var defRecords = nk.storageRead([{
@@ -240,23 +312,11 @@ var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
             throw Error("Badge not found: " + badgeId);
         }
         
-        // Get or create progress record
-        var progressKey = "progress_" + userId + "_" + gameId;
-        var progressData = {};
-        
-        try {
-            var progRecords = nk.storageRead([{
-                collection: BADGE_PROGRESS_COLLECTION,
-                key: progressKey,
-                userId: userId
-            }]);
-            
-            if (progRecords && progRecords.length > 0 && progRecords[0].value) {
-                progressData = progRecords[0].value;
-            }
-        } catch (err) {
-            logger.debug("[Badges] Creating new progress record");
-        }
+        // Get or create progress record (canonical-first, legacy migrate-on-write)
+        var progDoc = badgeReadUserDoc(nk, logger, BADGE_PROGRESS_COLLECTION,
+            "progress_", userId, canonGameId, gameId);
+        var progressKey = progDoc.key;
+        var progressData = progDoc.value || {};
         
         // Initialize badge progress if doesn't exist
         if (!progressData[badgeId]) {
@@ -336,8 +396,13 @@ var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
         // Grant rewards if unlocked
         var rewardsGranted = null;
         if (justUnlocked && badge.rewards) {
-            rewardsGranted = grantBadgeRewards(nk, logger, userId, gameId, badge.rewards);
+            rewardsGranted = grantBadgeRewards(nk, logger, userId, canonGameId, badge.rewards);
         }
+        
+        // Server-side badge -> character chain (BUG FIX 2026-08-06)
+        var charactersUnlocked = justUnlocked
+            ? badgesNotifyCharacterUnlocks(nk, logger, userId, gameId, [{ badge_id: badgeId }])
+            : [];
         
         return JSON.stringify({
             success: true,
@@ -350,7 +415,8 @@ var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
                 just_unlocked: justUnlocked,
                 unlock_date: badgeProgress.unlock_date
             },
-            rewards_granted: rewardsGranted
+            rewards_granted: rewardsGranted,
+            characters_unlocked: charactersUnlocked
         });
         
     } catch (err) {
@@ -369,10 +435,174 @@ var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
  * @param {Object} payload - { game_id, event_type, event_data }
  * @returns {Object} - { success, badges_updated[], badges_unlocked[] }
  */
+/**
+ * Core badge-event engine (BUG FIX 2026-08-06).
+ * Shared by the badges_check_event RPC, the server-side fanout
+ * (quizverseBadgesFanout), and any module that needs badge progression
+ * without a client round-trip.
+ *
+ * Fixes baked in here:
+ *  1. Definitions + progress use the canonical badge-space (UUID clients
+ *     previously always missed the seeded "definitions_quizverse" doc).
+ *  2. Topic-scoped criteria (unlock_criteria.topic) are actually matched —
+ *     previously ANY topic_quiz_complete progressed ALL 60+ topic badges.
+ *  3. Every unlock triggers the server-side badge -> character chain.
+ *
+ * @returns {Object} - { badges_updated[], badges_unlocked[], characters_unlocked[] }
+ */
+function badgesCheckEventCore(ctx, logger, nk, rawGameId, eventType, eventData) {
+    var emptyResult = { badges_updated: [], badges_unlocked: [], characters_unlocked: [] };
+    var userId = ctx.userId;
+    var canonGameId = badgeCanonicalGameId(rawGameId);
+    eventData = eventData || {};
+
+    // Get all badge definitions — canonical badge-space
+    var definitionsKey = "definitions_" + canonGameId;
+    var definitions = [];
+
+    var defRecords = nk.storageRead([{
+        collection: BADGE_COLLECTION,
+        key: definitionsKey,
+        userId: SYSTEM_USER_ID
+    }]);
+
+    if (defRecords && defRecords.length > 0 && defRecords[0].value) {
+        definitions = defRecords[0].value.badges || [];
+    }
+    if (definitions.length === 0) {
+        logger.warn("[Badges] No definitions found for canonical game: " + canonGameId);
+        return emptyResult;
+    }
+
+    // Get player progress (canonical-first, legacy migrate-on-write)
+    var progDoc = badgeReadUserDoc(nk, logger, BADGE_PROGRESS_COLLECTION,
+        "progress_", userId, canonGameId, rawGameId);
+    var progressKey = progDoc.key;
+    var progressData = progDoc.value || {};
+
+    var badgesUpdated = [];
+    var badgesUnlocked = [];
+    var eventTopic = eventData.topic ? String(eventData.topic).toLowerCase() : null;
+
+    // Check each badge that matches this event
+    for (var i = 0; i < definitions.length; i++) {
+        var badge = definitions[i];
+
+        // Skip if already unlocked
+        if (progressData[badge.badge_id] && progressData[badge.badge_id].unlocked) {
+            continue;
+        }
+
+        // Check if this badge matches the event
+        if (!(badge.unlock_criteria && badge.unlock_criteria.event === eventType)) {
+            continue;
+        }
+
+        // Topic-scoped badges only progress on their own topic
+        if (badge.unlock_criteria.topic) {
+            if (!eventTopic ||
+                eventTopic !== String(badge.unlock_criteria.topic).toLowerCase()) {
+                continue;
+            }
+        }
+
+        // Initialize progress if needed
+        if (!progressData[badge.badge_id]) {
+            progressData[badge.badge_id] = {
+                progress: 0,
+                unlocked: false,
+                unlock_date: null,
+                displayed: false
+            };
+        }
+
+        var prog = progressData[badge.badge_id];
+
+        // Increment progress based on event
+        var increment = eventData.count || 1;
+        prog.progress += increment;
+
+        badgesUpdated.push({
+            badge_id: badge.badge_id,
+            title: badge.title,
+            progress: prog.progress,
+            target: badge.target
+        });
+
+        // Check if unlocked
+        if (prog.progress >= badge.target) {
+            prog.unlocked = true;
+            prog.unlock_date = new Date().toISOString();
+
+            badgesUnlocked.push({
+                badge_id: badge.badge_id,
+                title: badge.title,
+                icon_url: badge.icon_url,
+                rarity: badge.rarity,
+                rewards: badge.rewards
+            });
+
+            // Grant rewards
+            if (badge.rewards) {
+                grantBadgeRewards(nk, logger, userId, canonGameId, badge.rewards);
+            }
+
+            // Send notification
+            try {
+                nk.notificationsSend([{
+                    userId: userId,
+                    subject: "Badge Unlocked: " + badge.title,
+                    content: {
+                        type: "badge_unlocked",
+                        badge_id: badge.badge_id,
+                        title: badge.title,
+                        icon_url: badge.icon_url,
+                        rarity: badge.rarity
+                    },
+                    code: 100,
+                    persistent: true
+                }]);
+            } catch (notifErr) {
+                logger.warn("[Badges] Notification error: " + notifErr.message);
+            }
+        }
+
+        progressData[badge.badge_id] = prog;
+    }
+
+    // Save updated progress (to the canonical key — migrates legacy docs)
+    if (badgesUpdated.length > 0 || progDoc.migrated) {
+        nk.storageWrite([{
+            collection: BADGE_PROGRESS_COLLECTION,
+            key: progressKey,
+            userId: userId,
+            value: progressData,
+            permissionRead: 1,
+            permissionWrite: 0
+        }]);
+    }
+
+    // Server-side badge -> character chain
+    var charactersUnlocked = badgesNotifyCharacterUnlocks(nk, logger, userId, rawGameId, badgesUnlocked);
+
+    return {
+        badges_updated: badgesUpdated,
+        badges_unlocked: badgesUnlocked,
+        characters_unlocked: charactersUnlocked
+    };
+}
+
+/**
+ * RPC: badges_check_event
+ * Thin wrapper over badgesCheckEventCore.
+ *
+ * @param {Object} payload - { game_id, event_type, event_data }
+ * @returns {Object} - { success, badges_updated[], badges_unlocked[], characters_unlocked[] }
+ */
 var rpcBadgesCheckEvent = function(ctx, logger, nk, payload) {
     try {
         var data = JSON.parse(payload || '{}');
-        
+
         if (!data.game_id || !data.event_type) {
             var __callerId = (ctx && ctx.userId) ? ctx.userId : "anonymous";
             logger.warn("[Badges] Check event missing required fields (caller=" + __callerId + " game_id=" + (data.game_id || "<missing>") + " event_type=" + (data.event_type || "<missing>") + ")");
@@ -381,152 +611,19 @@ var rpcBadgesCheckEvent = function(ctx, logger, nk, payload) {
                 error: "game_id and event_type are required"
             });
         }
-        
-        var userId = ctx.userId;
-        var gameId = data.game_id;
-        var eventType = data.event_type;
-        var eventData = data.event_data || {};
-        
-        logger.info("[Badges] Checking event: " + eventType + " for game: " + gameId);
-        
-        // Get all badge definitions
-        var definitionsKey = "definitions_" + gameId;
-        var definitions = [];
-        
-        try {
-            var defRecords = nk.storageRead([{
-                collection: BADGE_COLLECTION,
-                key: definitionsKey,
-                userId: SYSTEM_USER_ID
-            }]);
-            
-            if (defRecords && defRecords.length > 0 && defRecords[0].value) {
-                definitions = defRecords[0].value.badges || [];
-            }
-        } catch (err) {
-            return JSON.stringify({
-                success: true,
-                badges_updated: [],
-                badges_unlocked: [],
-                message: "No badges configured"
-            });
-        }
-        
-        // Get player progress
-        var progressKey = "progress_" + userId + "_" + gameId;
-        var progressData = {};
-        
-        try {
-            var progRecords = nk.storageRead([{
-                collection: BADGE_PROGRESS_COLLECTION,
-                key: progressKey,
-                userId: userId
-            }]);
-            
-            if (progRecords && progRecords.length > 0 && progRecords[0].value) {
-                progressData = progRecords[0].value;
-            }
-        } catch (err) {
-            // New player, no progress yet
-        }
-        
-        var badgesUpdated = [];
-        var badgesUnlocked = [];
-        
-        // Check each badge that matches this event
-        for (var i = 0; i < definitions.length; i++) {
-            var badge = definitions[i];
-            
-            // Skip if already unlocked
-            if (progressData[badge.badge_id] && progressData[badge.badge_id].unlocked) {
-                continue;
-            }
-            
-            // Check if this badge matches the event
-            if (badge.unlock_criteria && badge.unlock_criteria.event === eventType) {
-                // Initialize progress if needed
-                if (!progressData[badge.badge_id]) {
-                    progressData[badge.badge_id] = {
-                        progress: 0,
-                        unlocked: false,
-                        unlock_date: null,
-                        displayed: false
-                    };
-                }
-                
-                var prog = progressData[badge.badge_id];
-                
-                // Increment progress based on event
-                var increment = eventData.count || 1;
-                prog.progress += increment;
-                
-                badgesUpdated.push({
-                    badge_id: badge.badge_id,
-                    title: badge.title,
-                    progress: prog.progress,
-                    target: badge.target
-                });
-                
-                // Check if unlocked
-                if (prog.progress >= badge.target) {
-                    prog.unlocked = true;
-                    prog.unlock_date = new Date().toISOString();
-                    
-                    badgesUnlocked.push({
-                        badge_id: badge.badge_id,
-                        title: badge.title,
-                        icon_url: badge.icon_url,
-                        rarity: badge.rarity,
-                        rewards: badge.rewards
-                    });
-                    
-                    // Grant rewards
-                    if (badge.rewards) {
-                        grantBadgeRewards(nk, logger, userId, gameId, badge.rewards);
-                    }
-                    
-                    // Send notification
-                    try {
-                        nk.notificationsSend([{
-                            userId: userId,
-                            subject: "Badge Unlocked: " + badge.title,
-                            content: {
-                                type: "badge_unlocked",
-                                badge_id: badge.badge_id,
-                                title: badge.title,
-                                icon_url: badge.icon_url,
-                                rarity: badge.rarity
-                            },
-                            code: 100,
-                            persistent: true
-                        }]);
-                    } catch (notifErr) {
-                        logger.warn("[Badges] Notification error: " + notifErr.message);
-                    }
-                }
-                
-                progressData[badge.badge_id] = prog;
-            }
-        }
-        
-        // Save updated progress
-        if (badgesUpdated.length > 0) {
-            nk.storageWrite([{
-                collection: BADGE_PROGRESS_COLLECTION,
-                key: progressKey,
-                userId: userId,
-                value: progressData,
-                permissionRead: 1,
-                permissionWrite: 0
-            }]);
-        }
-        
+
+        logger.info("[Badges] Checking event: " + data.event_type + " for game: " + data.game_id);
+
+        var result = badgesCheckEventCore(ctx, logger, nk,
+            data.game_id, data.event_type, data.event_data || {});
+
         return JSON.stringify({
             success: true,
-            badges_updated: badgesUpdated,
-            badges_unlocked: badgesUnlocked
+            badges_updated: result.badges_updated,
+            badges_unlocked: result.badges_unlocked,
+            characters_unlocked: result.characters_unlocked
         });
-        
+
     } catch (err) {
         logger.error("[Badges] Check event error: " + err.message);
         return JSON.stringify({
@@ -552,21 +649,14 @@ var rpcBadgesSetDisplayed = function(ctx, logger, nk, payload) {
         
         var userId = ctx.userId;
         var gameId = data.game_id;
+        var canonGameId = badgeCanonicalGameId(gameId);
         var badgeId = data.badge_id;
         
-        // Get progress
-        var progressKey = "progress_" + userId + "_" + gameId;
-        var progressData = {};
-        
-        var progRecords = nk.storageRead([{
-            collection: BADGE_PROGRESS_COLLECTION,
-            key: progressKey,
-            userId: userId
-        }]);
-        
-        if (progRecords && progRecords.length > 0 && progRecords[0].value) {
-            progressData = progRecords[0].value;
-        }
+        // Get progress (canonical-first, legacy migrate-on-write)
+        var progDoc = badgeReadUserDoc(nk, logger, BADGE_PROGRESS_COLLECTION,
+            "progress_", userId, canonGameId, gameId);
+        var progressKey = progDoc.key;
+        var progressData = progDoc.value || {};
         
         // Check if badge is unlocked
         if (!progressData[badgeId] || !progressData[badgeId].unlocked) {
@@ -637,11 +727,12 @@ var rpcCollectablesGetAll = function(ctx, logger, nk, payload) {
         }
         
         var userId = ctx.userId;
+        var canonGameId = badgeCanonicalGameId(gameId);
         
-        logger.info("[Collectables] Getting all for game: " + gameId + ", user: " + userId);
+        logger.info("[Collectables] Getting all for game: " + gameId + " (canonical: " + canonGameId + "), user: " + userId);
         
-        // Get collectable definitions
-        var definitionsKey = "definitions_" + gameId;
+        // Get collectable definitions — canonical badge-space
+        var definitionsKey = "definitions_" + canonGameId;
         var definitions = [];
         
         try {
@@ -658,23 +749,10 @@ var rpcCollectablesGetAll = function(ctx, logger, nk, payload) {
             logger.warn("[Collectables] No definitions found for game: " + gameId);
         }
         
-        // Get player inventory
-        var inventoryKey = "inventory_" + userId + "_" + gameId;
-        var inventory = {};
-        
-        try {
-            var invRecords = nk.storageRead([{
-                collection: COLLECTABLE_INVENTORY_COLLECTION,
-                key: inventoryKey,
-                userId: userId
-            }]);
-            
-            if (invRecords && invRecords.length > 0 && invRecords[0].value) {
-                inventory = invRecords[0].value;
-            }
-        } catch (err) {
-            logger.debug("[Collectables] No inventory found for user: " + userId);
-        }
+        // Get player inventory (canonical-first, legacy migrate-on-write)
+        var invDoc = badgeReadUserDoc(nk, logger, COLLECTABLE_INVENTORY_COLLECTION,
+            "inventory_", userId, canonGameId, gameId);
+        var inventory = invDoc.value || {};
         
         // Merge definitions with inventory
         var collectables = [];
@@ -757,14 +835,15 @@ var rpcCollectablesGrant = function(ctx, logger, nk, payload) {
         
         var userId = data.user_id || ctx.userId;
         var gameId = data.game_id;
+        var canonGameId = badgeCanonicalGameId(gameId);
         var collectableId = data.collectable_id;
         var quantity = data.quantity || 1;
         var source = data.source || "system";
         
         logger.info("[Collectables] Granting " + collectableId + " (x" + quantity + ") to user: " + userId);
         
-        // Verify collectable exists
-        var definitionsKey = "definitions_" + gameId;
+        // Verify collectable exists — canonical badge-space
+        var definitionsKey = "definitions_" + canonGameId;
         var collectable = null;
         
         var defRecords = nk.storageRead([{
@@ -787,23 +866,11 @@ var rpcCollectablesGrant = function(ctx, logger, nk, payload) {
             throw Error("Collectable not found: " + collectableId);
         }
         
-        // Get or create inventory
-        var inventoryKey = "inventory_" + userId + "_" + gameId;
-        var inventory = {};
-        
-        try {
-            var invRecords = nk.storageRead([{
-                collection: COLLECTABLE_INVENTORY_COLLECTION,
-                key: inventoryKey,
-                userId: userId
-            }]);
-            
-            if (invRecords && invRecords.length > 0 && invRecords[0].value) {
-                inventory = invRecords[0].value;
-            }
-        } catch (err) {
-            // New inventory
-        }
+        // Get or create inventory (canonical-first, legacy migrate-on-write)
+        var invDoc = badgeReadUserDoc(nk, logger, COLLECTABLE_INVENTORY_COLLECTION,
+            "inventory_", userId, canonGameId, gameId);
+        var inventoryKey = invDoc.key;
+        var inventory = invDoc.value || {};
         
         // Initialize if needed
         if (!inventory[collectableId]) {
@@ -911,30 +978,23 @@ var rpcCollectablesEquip = function(ctx, logger, nk, payload) {
         
         var userId = ctx.userId;
         var gameId = data.game_id;
+        var canonGameId = badgeCanonicalGameId(gameId);
         var collectableId = data.collectable_id;
         var slot = data.slot || "default";
         
-        // Get inventory
-        var inventoryKey = "inventory_" + userId + "_" + gameId;
-        var inventory = {};
-        
-        var invRecords = nk.storageRead([{
-            collection: COLLECTABLE_INVENTORY_COLLECTION,
-            key: inventoryKey,
-            userId: userId
-        }]);
-        
-        if (invRecords && invRecords.length > 0 && invRecords[0].value) {
-            inventory = invRecords[0].value;
-        }
+        // Get inventory (canonical-first, legacy migrate-on-write)
+        var invDoc = badgeReadUserDoc(nk, logger, COLLECTABLE_INVENTORY_COLLECTION,
+            "inventory_", userId, canonGameId, gameId);
+        var inventoryKey = invDoc.key;
+        var inventory = invDoc.value || {};
         
         // Check if owned
         if (!inventory[collectableId] || inventory[collectableId].quantity <= 0) {
             throw Error("Collectable not owned");
         }
         
-        // Get collectable definition for category
-        var definitionsKey = "definitions_" + gameId;
+        // Get collectable definition for category — canonical badge-space
+        var definitionsKey = "definitions_" + canonGameId;
         var collectable = null;
         
         var defRecords = nk.storageRead([{
@@ -1272,6 +1332,7 @@ function grantBadgeRewards(nk, logger, userId, gameId, rewards) {
         xp: 0,
         items: []
     };
+    var canonGameId = badgeCanonicalGameId(gameId);
     
     try {
         // Grant coins via wallet
@@ -1313,7 +1374,7 @@ function grantBadgeRewards(nk, logger, userId, gameId, rewards) {
         
         // Grant collectables — write directly to collectable_inventory storage
         if (rewards.collectables && rewards.collectables.length > 0) {
-            var inventoryKey = "inventory_" + userId + "_" + gameId;
+            var inventoryKey = "inventory_" + userId + "_" + canonGameId;
             var inventory = {};
             try {
                 var invRecords = nk.storageRead([{
@@ -1435,6 +1496,99 @@ function InitModule(ctx, logger, nk, initializer) {
     seedBadgesOnStartup(nk, logger);
     logger.info("[Badges] Badge module initialized — definitions seeded");
 }
+
+// ============================================================================
+// SERVER-SIDE FANOUT (BUG FIX 2026-08-06)
+// ----------------------------------------------------------------------------
+// One gameplay event implies MANY badge families. Previously the client had
+// to know and send every event type — Unity only ever sent "quiz_complete"
+// and "perfect_round", so ~150 of 216 badges (topic, accuracy, correct-
+// answer, daily) could literally never progress.
+//
+// quizverseBadgesFanout expands a single base event into every derived event
+// the catalog listens for, runs them through badgesCheckEventCore, and rolls
+// up badge + character unlocks. Called server-side from
+// quizverse_submit_result (TS) via globalThis — no client round-trip needed.
+//
+// @param {Object} req - { game_id, event_type, event_data{topic?, correct?,
+//                        total?, is_perfect?, source?} }
+// @returns {Object} - { badges_updated[], badges_unlocked[], characters_unlocked[] }
+// ============================================================================
+function quizverseBadgesFanout(ctx, logger, nk, req) {
+    var emptyFanout = { badges_updated: [], badges_unlocked: [], characters_unlocked: [] };
+    try {
+        var gameId = (req && req.game_id) || BADGE_CANONICAL_GAME_ID;
+        var eventType = req && req.event_type;
+        var eventData = (req && req.event_data) || {};
+        if (!eventType) return emptyFanout;
+
+        // Base event + derived events
+        var events = [{ type: eventType, data: eventData }];
+        if (eventType === "quiz_complete") {
+            var correct = eventData.correct || 0;
+            var total = eventData.total || 0;
+
+            if (eventData.topic) {
+                events.push({ type: "topic_quiz_complete",
+                    data: { count: 1, topic: eventData.topic } });
+            }
+            if (eventData.is_perfect) {
+                events.push({ type: "perfect_round", data: { count: 1 } });
+            }
+            if (correct > 0) {
+                events.push({ type: "correct_answer", data: { count: correct } });
+            }
+            if (total > 0) {
+                var accuracy = correct / total;
+                if (accuracy >= 0.8) {
+                    events.push({ type: "accuracy_quiz", data: { count: 1 } });
+                }
+                if (accuracy >= 0.95) {
+                    events.push({ type: "high_accuracy_quiz", data: { count: 1 } });
+                }
+            }
+            if (eventData.source === "daily" || eventData.source === "daily_quiz") {
+                events.push({ type: "daily_quiz_played", data: { count: 1 } });
+            }
+        }
+
+        var updated = [], unlocked = [], characters = [];
+        for (var i = 0; i < events.length; i++) {
+            var r = badgesCheckEventCore(ctx, logger, nk, gameId, events[i].type, events[i].data);
+            updated = updated.concat(r.badges_updated);
+            unlocked = unlocked.concat(r.badges_unlocked);
+            characters = characters.concat(r.characters_unlocked || []);
+        }
+
+        // badge_unlocked is itself an event family (e.g. badge_hunter).
+        // Feed it back once — bounded, no recursion.
+        if (unlocked.length > 0) {
+            var meta = badgesCheckEventCore(ctx, logger, nk, gameId,
+                "badge_unlocked", { count: unlocked.length });
+            updated = updated.concat(meta.badges_updated);
+            unlocked = unlocked.concat(meta.badges_unlocked);
+            characters = characters.concat(meta.characters_unlocked || []);
+        }
+
+        return {
+            badges_updated: updated,
+            badges_unlocked: unlocked,
+            characters_unlocked: characters
+        };
+    } catch (err) {
+        logger.error("[Badges] Fanout error: " + err.message);
+        return emptyFanout;
+    }
+}
+
+// Publish server-to-server entry points on the global object so TS modules
+// (e.g. quizverse_submit_result) and other legacy modules can reach them
+// without a client round-trip. Defensive — goja global scope.
+(function(g) {
+    g.quizverseBadgesFanout = quizverseBadgesFanout;
+    g.badgesCheckEventCore = badgesCheckEventCore;
+    g.badgeCanonicalGameId = badgeCanonicalGameId;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
 
 // ============================================================================
 // MODULE EXPORTS / REGISTRATION

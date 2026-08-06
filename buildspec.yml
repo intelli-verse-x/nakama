@@ -49,6 +49,8 @@ env:
     MEDIASTACK_API_KEY:  /nakama/MEDIASTACK_API_KEY
     NEWSAPI_API_KEY:     /nakama/NEWSAPI_API_KEY
     NASA_API_KEY:        /nakama/NASA_API_KEY
+    # Arcade Sudoku — API Ninjas sudokugenerate (server-only; ctx.env via runtime.env)
+    API_NINJAS_API_KEY:  /nakama/API_NINJAS_API_KEY
 
 phases:
   install:
@@ -255,6 +257,7 @@ phases:
         if [ -n "$MEDIASTACK_API_KEY" ]; then INJECT_ARGS="$INJECT_ARGS MEDIASTACK_API_KEY=$MEDIASTACK_API_KEY"; echo "  ✓ MEDIASTACK_API_KEY injected"; else echo "  ⚠ MEDIASTACK_API_KEY not set"; fi
         if [ -n "$NEWSAPI_API_KEY" ];    then INJECT_ARGS="$INJECT_ARGS NEWSAPI_API_KEY=$NEWSAPI_API_KEY";     echo "  ✓ NEWSAPI_API_KEY injected";    else echo "  ⚠ NEWSAPI_API_KEY not set"; fi
         if [ -n "$NASA_API_KEY" ];       then INJECT_ARGS="$INJECT_ARGS NASA_API_KEY=$NASA_API_KEY";           echo "  ✓ NASA_API_KEY injected";       else echo "  ⚠ NASA_API_KEY not set (using DEMO_KEY)"; fi
+        if [ -n "$API_NINJAS_API_KEY" ]; then INJECT_ARGS="$INJECT_ARGS API_NINJAS_API_KEY=$API_NINJAS_API_KEY"; echo "  ✓ API_NINJAS_API_KEY injected"; else echo "  ⚠ API_NINJAS_API_KEY not set (Sudoku returns api_key_missing)"; fi
         # Analytics env vars — always injected so the JS runtime sees them
         # regardless of what the base Deployment YAML contains. These drive
         # the dashboard auth (DASHBOARD_SECRET), rollup pipeline

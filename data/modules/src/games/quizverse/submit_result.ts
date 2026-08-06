@@ -815,6 +815,45 @@ namespace QvSubmitResult {
       scoreToken = ScoreSigning.sign(ctx, nk, userId, totalScore, packId);
     } catch (_) { /* token absent = feature dark, never fatal */ }
 
+    // ── Badge & character fan-out (server-authoritative, 2026-08-06) ────
+    // Previously badge progression depended on the client calling
+    // badges_check_event AFTER submit — any client that didn't (Flutter,
+    // web, failed calls) silently lost every badge and character unlock.
+    // Now the server fans out quiz_complete into every implied badge event
+    // (topic/perfect/correct/accuracy/daily) atomically with the submit,
+    // and badge unlocks auto-unlock matching characters in the same call.
+    // Non-fatal by design: a badge failure must never break a quiz submit.
+    var badgesUnlocked: any[] = [];
+    var charactersUnlocked: any[] = [];
+    try {
+      var badgesFanout: any = (globalThis as any).quizverseBadgesFanout;
+      if (typeof badgesFanout === "function") {
+        var fanoutResult = badgesFanout(ctx, logger, nk, {
+          game_id: "quizverse",
+          event_type: "quiz_complete",
+          event_data: {
+            topic:      slugify(topic),
+            correct:    correct,
+            total:      total,
+            is_perfect: isPerfect,
+            is_won:     true,
+            source:     "submit_result"
+          }
+        });
+        if (fanoutResult) {
+          badgesUnlocked     = fanoutResult.badges_unlocked     || [];
+          charactersUnlocked = fanoutResult.characters_unlocked || [];
+          if (badgesUnlocked.length > 0) {
+            logger.info("[QvSubmit] badge fan-out userId=" + userId +
+              " badges=" + badgesUnlocked.length +
+              " characters=" + charactersUnlocked.length);
+          }
+        }
+      }
+    } catch (_badgeErr: any) {
+      logger.warn("[QvSubmit] badge fan-out failed (non-fatal): " + (_badgeErr && _badgeErr.message));
+    }
+
     // ── Response ──────────────────────────────────────────────────────────
     return JSON.stringify({
       ok:              true,
@@ -831,7 +870,9 @@ namespace QvSubmitResult {
       is_perfect:      isPerfect,
       graded_answers:  gradedAnswers,
       reward_events:   variableRewards.events,
-      personalization: personalization
+      personalization: personalization,
+      badges_unlocked:      badgesUnlocked,
+      characters_unlocked:  charactersUnlocked
     });
   }
 
