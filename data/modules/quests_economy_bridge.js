@@ -77,6 +77,37 @@ function signRequest(nk, body) {
     return nk.hmacSha256Hash(WEBHOOK_SECRET, body);
 }
 
+// ── F2 SECURITY: admin/server-caller gate ─────────────────────────
+// Mirrors the semantics of the TS bundle's RpcHelpers.requireAdmin():
+//   - no ctx.userId          → http_key server-to-server call → trusted
+//   - username "admin:<x>"   → dashboard admin with admin_users profile
+//   - account metadata.admin → flagged admin account
+// Everything else (ordinary authenticated clients) is rejected.
+function _isAdminOrServerCaller(ctx, nk) {
+    if (!ctx || !ctx.userId) return true; // http_key S2S — trusted
+    if (ctx.username && ctx.username.indexOf('admin:') === 0) {
+        try {
+            var rows = nk.storageRead([{
+                collection: 'admin_users',
+                key: 'profile',
+                userId: ctx.userId,
+            }]);
+            if (rows && rows.length > 0 && rows[0].value && rows[0].value.isAdmin) return true;
+        } catch (_) { /* fall through */ }
+    }
+    try {
+        var accounts = nk.accountsGetId([ctx.userId]);
+        if (accounts && accounts.length > 0 && accounts[0].user) {
+            var md = accounts[0].user.metadata;
+            if (typeof md === 'string') {
+                try { md = JSON.parse(md); } catch (_) { md = null; }
+            }
+            if (md && md.admin === true) return true;
+        }
+    } catch (_) { /* fall through */ }
+    return false;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  NATIVE WALLET RPCs (Nakama single source of truth)
 // ═══════════════════════════════════════════════════════════════════
@@ -119,19 +150,14 @@ function rpcQuestsWalletBalance(ctx, logger, nk, payload) {
 }
 
 /**
- * RPC: quests_wallet_earn
- * Credits currency to the user's Nakama native wallet.
- * Payload: { amount, currency?, sourceType?, sourceId?, description? }
+ * Internal earn implementation — credits currency to a user's Nakama native
+ * wallet (with the NOVA 1:1 auto-credit loyalty hook). Kept as a standalone
+ * function so legit server flows can reuse it; the RPC surface below is
+ * gated (F2) and is the only client-reachable path.
  */
-function rpcQuestsWalletEarn(ctx, logger, nk, payload) {
-    var userId = ctx.userId;
-    if (!userId) {
-        return JSON.stringify({ error: 'User not authenticated' });
-    }
-
-    var parsed = JSON.parse(payload || '{}');
-    var amount = parsed.amount;
-    if (!amount || amount <= 0) {
+function _questsWalletEarnInternal(nk, logger, userId, parsed) {
+    var amount = Number(parsed.amount);
+    if (!isFinite(amount) || amount <= 0) {
         return JSON.stringify({ success: false, error: 'amount must be > 0' });
     }
 
@@ -179,6 +205,35 @@ function rpcQuestsWalletEarn(ctx, logger, nk, payload) {
         logger.error('[QuestsBridge] quests_wallet_earn failed: ' + err.message);
         return JSON.stringify({ success: false, error: err.message });
     }
+}
+
+/**
+ * RPC: quests_wallet_earn (also aliased as global_wallet_earn)
+ * Credits currency to the user's Nakama native wallet.
+ * Payload: { amount, currency?, sourceType?, sourceId?, description? }
+ *
+ * F2 SECURITY: this endpoint credits ARBITRARY client-supplied amounts of any
+ * currency (incl. premium). It is now admin/server-key only: ordinary client
+ * sessions are rejected. Server (http_key) callers carry no ctx.userId and
+ * must pass the target user explicitly via payload.userId.
+ */
+function rpcQuestsWalletEarn(ctx, logger, nk, payload) {
+    var parsed = JSON.parse(payload || '{}');
+
+    // F2: admin / server-caller gate — kills client self-mint.
+    if (!_isAdminOrServerCaller(ctx, nk)) {
+        logger.warn('[QuestsBridge] quests_wallet_earn rejected for non-admin user ' + (ctx && ctx.userId));
+        return JSON.stringify({ success: false, error: 'admin only' });
+    }
+
+    // S2S (http_key) callers name the target user; session (admin) callers
+    // default to themselves but may also name a target.
+    var userId = (ctx && ctx.userId) || parsed.userId || parsed.user_id;
+    if (!userId) {
+        return JSON.stringify({ success: false, error: 'userId required' });
+    }
+
+    return _questsWalletEarnInternal(nk, logger, userId, parsed);
 }
 
 /**

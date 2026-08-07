@@ -709,6 +709,89 @@ namespace QuestEngine {
   // ─── RPC: quest_engine_claim_reward ──────────────────────────────────────
   // Manually claims reward for a completed quest (deferred-claim UI pattern).
 
+  // F14: bounded OCC retry count (same shape as QvSubmit.mergeSeenOcc).
+  var CLAIM_OCC_MAX_RETRIES = 3;
+
+  // F14: persist claimedAt under an OCC version CAS. Returns:
+  //   "claimed"       — marker durably written by this call
+  //   "already"       — marker already present (concurrent/duplicate claim)
+  //   "not_completed" — quest has not completed yet
+  //   "conflict"      — OCC retries exhausted (a concurrent writer won; the
+  //                     safe response is to treat the claim as not ours)
+  function markQuestClaimedOcc(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger,
+    userId: string, gameId: string, questId: string, now: number
+  ): string {
+    for (var attempt = 0; attempt < CLAIM_OCC_MAX_RETRIES; attempt++) {
+      try {
+        var rows = nk.storageRead([{
+          collection: QUEST_ENGINE_COLLECTION,
+          key: stateKey(gameId, userId),
+          userId: userId
+        }]);
+        var rec = (rows && rows.length > 0) ? rows[0] : null;
+        var ver: string = (rec && rec.version) ? rec.version : "";
+        var state: UserQuestState = (rec && rec.value) ? (rec.value as UserQuestState) : { quests: {} };
+        var progress = state.quests[questId];
+        if (!progress || !progress.completedAt) return "not_completed";
+        if (progress.claimedAt) return "already";
+        progress.claimedAt = now;
+        var writeObj: nkruntime.StorageWriteRequest = {
+          collection: QUEST_ENGINE_COLLECTION,
+          key: stateKey(gameId, userId),
+          userId: userId,
+          value: state,
+          permissionRead: 1 as nkruntime.ReadPermissionValues,
+          permissionWrite: 0 as nkruntime.WritePermissionValues
+        };
+        if (ver) (writeObj as any).version = ver; // OCC guard (omit on first write)
+        nk.storageWrite([writeObj]);
+        return "claimed";
+      } catch (e: any) {
+        // Version conflict or transient storage error → re-read and retry.
+      }
+    }
+    logger.warn("[QuestEngine] claim marker OCC exhausted: quest=%s user=%s", questId, userId);
+    return "conflict";
+  }
+
+  // F14: best-effort clear of claimedAt (used to roll back when the reward
+  // grant fails after the marker was persisted, so the player can retry).
+  function clearQuestClaimedOcc(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger,
+    userId: string, gameId: string, questId: string
+  ): boolean {
+    for (var attempt = 0; attempt < CLAIM_OCC_MAX_RETRIES; attempt++) {
+      try {
+        var rows = nk.storageRead([{
+          collection: QUEST_ENGINE_COLLECTION,
+          key: stateKey(gameId, userId),
+          userId: userId
+        }]);
+        var rec = (rows && rows.length > 0) ? rows[0] : null;
+        var ver: string = (rec && rec.version) ? rec.version : "";
+        var state: UserQuestState = (rec && rec.value) ? (rec.value as UserQuestState) : { quests: {} };
+        var progress = state.quests[questId];
+        if (!progress || !progress.claimedAt) return true; // nothing to clear
+        progress.claimedAt = null;
+        var writeObj: nkruntime.StorageWriteRequest = {
+          collection: QUEST_ENGINE_COLLECTION,
+          key: stateKey(gameId, userId),
+          userId: userId,
+          value: state,
+          permissionRead: 1 as nkruntime.ReadPermissionValues,
+          permissionWrite: 0 as nkruntime.WritePermissionValues
+        };
+        if (ver) (writeObj as any).version = ver;
+        nk.storageWrite([writeObj]);
+        return true;
+      } catch (e: any) {
+        // retry
+      }
+    }
+    return false;
+  }
+
   function rpcQuestEngineClaimReward(
     ctx: nkruntime.Context, logger: nkruntime.Logger,
     nk: nkruntime.Nakama, payload: string
@@ -724,19 +807,46 @@ namespace QuestEngine {
     var qConfig = config.quests[questId];
     if (!qConfig) return RpcHelpers.errorResponse("Unknown quest: " + questId);
 
-    var state = loadUserState(nk, userId, gameId);
-    var progress = state.quests[questId];
+    // Fast-path checks for clean error messages — the authoritative guard is
+    // the OCC-guarded marker write below.
+    var peek = loadUserState(nk, userId, gameId);
+    var peekProgress = peek.quests[questId];
 
-    if (!progress || !progress.completedAt) return RpcHelpers.errorResponse("Quest not completed");
-    if (progress.claimedAt) return RpcHelpers.errorResponse("Quest reward already claimed");
+    if (!peekProgress || !peekProgress.completedAt) return RpcHelpers.errorResponse("Quest not completed");
+    if (peekProgress.claimedAt) return RpcHelpers.errorResponse("Quest reward already claimed");
     if (!qConfig.reward) return RpcHelpers.successResponse({ reward: null });
 
     var now = Math.floor(Date.now() / 1000);
-    var resolved = RewardEngine.resolveReward(nk, qConfig.reward);
-    RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
-    progress.claimedAt = now;
 
-    saveUserState(nk, userId, gameId, state);
+    // F14 SECURITY: persist claimedAt FIRST with an OCC version CAS, before
+    // granting anything. Previously the reward was granted BEFORE the marker
+    // write (and the state write carried no OCC version), so a retry or
+    // concurrent claim between grant and save double-granted the reward.
+    var mark = markQuestClaimedOcc(nk, logger, userId, gameId, questId, now);
+    if (mark === "already" || mark === "conflict") {
+      return RpcHelpers.errorResponse("Quest reward already claimed");
+    }
+    if (mark === "not_completed") {
+      return RpcHelpers.errorResponse("Quest not completed");
+    }
+
+    // Marker is durable — only now resolve and grant the reward.
+    var resolved: Hiro.ResolvedReward;
+    try {
+      resolved = RewardEngine.resolveReward(nk, qConfig.reward);
+      RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
+    } catch (grantErr: any) {
+      // Grant failed after the claim marker was persisted. Best-effort
+      // rollback so the player can retry; if the rollback fails the marker
+      // stays (a double grant is still impossible) and we log loudly.
+      logger.error("[QuestEngine] Reward grant failed after claim marker persisted (quest=%s user=%s) — attempting rollback: %s",
+        questId, userId, (grantErr && grantErr.message ? grantErr.message : String(grantErr)));
+      var rolledBack = clearQuestClaimedOcc(nk, logger, userId, gameId, questId);
+      if (!rolledBack) {
+        logger.error("[QuestEngine] CRITICAL: claim rollback failed (quest=%s user=%s) — manual reconciliation required", questId, userId);
+      }
+      return RpcHelpers.errorResponse("Reward grant failed — please retry");
+    }
     logger.info("[QuestEngine] Reward claimed manually: quest=%s user=%s", questId, userId);
 
     // Same server-driven fulfilment path as auto-grant (catalog + notification).

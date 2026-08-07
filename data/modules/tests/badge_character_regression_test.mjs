@@ -45,10 +45,17 @@ var nk = {
   notificationSend: function () {},
   walletUpdate: function () {},
   accountGetId: function () { return { user: { metadata: "{}" } }; },
-  accountUpdateId: function () {}
+  accountUpdateId: function () {},
+  accountsGetId: function (ids) {
+    // Admin identity for the authz-gated RPCs (SECURITY FIX 2026-08-07):
+    // only "admin-user-1" carries metadata.admin === true.
+    if (ids && ids[0] === "admin-user-1") return [{ user: { metadata: { admin: true } } }];
+    return [{ user: { metadata: {} } }];
+  }
 };
 var logger = { info: function(){}, warn: function(){}, error: function(){}, debug: function(){} };
 var ctx = { userId: "user-test-1" };
+var adminCtx = { userId: "admin-user-1" };
 var UUID = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
 var failures = [];
 function check(name, cond) {
@@ -98,8 +105,12 @@ var okDefault = JSON.parse(rpcCharacterUnlock(ctx, logger, nk, JSON.stringify({ 
 check("T7 default character reports already_unlocked",
   okDefault.success === false && okDefault.error === "already_unlocked");
 
-// 8. The public RPC path works with the UUID too
-var res2 = JSON.parse(rpcBadgesCheckEvent(ctx, logger, nk,
+// 8. The public RPC path works with the UUID too.
+//    (SECURITY FIX 2026-08-07, F5: badges_check_event is now admin/server-only
+//    — the player path is quizverseBadgesFanout → badgesCheckEventCore, covered
+//    by T2/T9. This check drives the RPC as an admin caller; non-admin
+//    rejection is covered by tests/authz_security_regression_test.mjs.)
+var res2 = JSON.parse(rpcBadgesCheckEvent(adminCtx, logger, nk,
   JSON.stringify({ game_id: UUID, event_type: "quiz_complete", event_data: { count: 1 } })));
 check("T8 badges_check_event(UUID) progresses quiz_warrior",
   res2.badges_updated.some(function(b){ return b.badge_id === "quiz_warrior"; }));

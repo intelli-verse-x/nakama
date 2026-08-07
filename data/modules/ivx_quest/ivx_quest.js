@@ -106,7 +106,10 @@ function _writeUserState(nk, userId, state) {
         userId: userId,
         value: state,
         permissionRead: 1,
-        permissionWrite: 1
+        // F6 SECURITY: was permissionWrite:1, which let any client overwrite
+        // their quest state (progress/completed/totalEarned) directly via the
+        // plain storage API. 0 = server-only writes.
+        permissionWrite: 0
     }]);
 }
 
@@ -206,6 +209,16 @@ function rpcIvxQuestProgress(ctx, logger, nk, payload) {
         var quest = _findQuestInCatalog(catalog, questId);
         if (!quest) return JSON.stringify({ success: false, error: "unknown_quest_id" });
 
+        // F6 SECURITY: clamp the client-supplied amount to the quest's
+        // configured step size. Count-style quests (session_count,
+        // daily_open_count, …) advance 1 unit per call; accumulation quests
+        // (score_total) may report larger deltas but never more than the
+        // quest target per call unless the catalog sets an explicit stepSize.
+        // No server-side event flow feeds these quests (verified: no in-repo
+        // callers), so the RPC stays — clamped — for SDK compatibility.
+        var maxStep = quest.stepSize || (quest.type === "score_total" ? quest.target : 1);
+        if (amount > maxStep) amount = maxStep;
+
         var state = _readUserState(nk, ctx.userId);
         var nowSec = Math.floor(Date.now() / 1000);
         var entry = _ensureActive(state, quest, nowSec);
@@ -284,7 +297,52 @@ function rpcIvxQuestClaim(ctx, logger, nk, payload) {
         state.totalEarned.xp = (state.totalEarned.xp || 0) + (rewards.xp || 0);
         delete state.active[questId];
 
+        // Z-08: persist the claimed marker FIRST — it is the idempotency
+        // record that guarantees the wallet payout below can only happen
+        // once per quest per user (the completed-flag check above rejects
+        // any second attempt before money moves).
         _writeUserState(nk, ctx.userId, state);
+
+        // Z-08 FIX: actually pay the reward into the player's Nakama native
+        // wallet. Previously claim only bumped the totalEarned counter and
+        // never moved any currency (updateLedger=true keeps an audit trail).
+        // NOTE: this makes IVX quest rewards start paying out for real —
+        // product-visible change.
+        var changeset = {};
+        if ((rewards.coins || 0) > 0) changeset.coins = rewards.coins;
+        if ((rewards.xp || 0) > 0) changeset.xp = rewards.xp;
+        if (Object.keys(changeset).length > 0) {
+            try {
+                nk.walletUpdate(ctx.userId, changeset, {
+                    type: "quest_reward",
+                    source: "ivx_quest",
+                    sourceId: questId,
+                    description: "IVX quest reward: " + (quest.name || questId)
+                }, true);
+            } catch (wErr) {
+                // Payout failed AFTER the claimed marker was persisted.
+                // Roll the marker back so the player can retry (a stuck
+                // "claimed but unpaid" state would be a silent money loss —
+                // the original Z-08 bug in spirit). If the rollback itself
+                // fails, log loudly: manual reconciliation required.
+                logger.error("[ivx_quest_claim] wallet payout failed for user " + ctx.userId + " quest " + questId + " — rolling back claim marker: " + (wErr && wErr.message ? wErr.message : String(wErr)));
+                try {
+                    for (var ri = state.completed.length - 1; ri >= 0; ri--) {
+                        if (state.completed[ri].qid === questId && state.completed[ri].completedAt === nowSec) {
+                            state.completed.splice(ri, 1);
+                        }
+                    }
+                    state.totalEarned.coins = Math.max(0, (state.totalEarned.coins || 0) - (rewards.coins || 0));
+                    state.totalEarned.xp = Math.max(0, (state.totalEarned.xp || 0) - (rewards.xp || 0));
+                    var restored = { progress: entry.target, target: entry.target, startedAt: entry.startedAt, expiresAt: entry.expiresAt };
+                    state.active[questId] = restored;
+                    _writeUserState(nk, ctx.userId, state);
+                } catch (rbErr) {
+                    logger.error("[ivx_quest_claim] CRITICAL: claim rollback FAILED for user " + ctx.userId + " quest " + questId + " — manual reconciliation required: " + (rbErr && rbErr.message ? rbErr.message : String(rbErr)));
+                }
+                return JSON.stringify({ success: false, error: "reward_payout_failed" });
+            }
+        }
 
         return JSON.stringify({
             success: true,

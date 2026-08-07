@@ -1412,6 +1412,9 @@ declare namespace AccountMerge {
 declare namespace IdentityResolver {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QuizverseMerge {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QvKbUserDump {
     function register(initializer: nkruntime.Initializer): void;
 }

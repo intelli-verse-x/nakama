@@ -708,6 +708,19 @@ function InitModule(ctx, logger, nk, initializer) {
         catch (err) {
             logger.error("[AccountMerge] failed to register: " + (err && err.message ? err.message : String(err)));
         }
+        // QuizVerse guest→registered merge (Flutter W2-5, design doc 40). The
+        // MOBILE companion to account_merge: user-callable with the ghost's own
+        // device session (caller must BE the ghost), ports QuizVerse game state
+        // (wallets sum-merged + capped, hiro progression/streaks/stats/inventory/
+        // achievements, daily_rewards, qv_seen, qv_quests, badges, characters).
+        logger.info("[QuizverseMerge] Registering quizverse_merge_guest_to_account RPC...");
+        try {
+            QuizverseMerge.register(initializer);
+            logger.info("[QuizverseMerge] quizverse_merge_guest_to_account registered");
+        }
+        catch (err) {
+            logger.error("[QuizverseMerge] failed to register: " + (err && err.message ? err.message : String(err)));
+        }
         logger.info("[OnboardingAnalytics] Registering web onboarding event ingest + funnel RPCs...");
         try {
             OnboardingAnalytics.register(initializer);
@@ -13826,6 +13839,14 @@ var QvGetQuestions;
             count = Math.min(MAX_COUNT, Math.max(MIN_COUNT, Math.floor(req.count)));
         }
         var lang = (typeof req.lang === "string" && req.lang) ? req.lang.toLowerCase().trim() : "en";
+        // F9 (2026-08-07): junk lang values fragment cache keys and analytics —
+        // accept only BCP-47-ish short codes ("en", "hi", "pt-br"), else fall back.
+        if (!/^[a-z]{2}(-[a-z0-9]{2,4})?$/.test(lang))
+            lang = "en";
+        // F7 (2026-08-07): secure_v2 clients (Flutter) never receive answer keys —
+        // they call quizverse_answer_reveal after each answer instead. Absent flag
+        // = legacy contract = Unity unaffected.
+        var secureV2 = req.secure_v2 === true;
         var requireMedia = req.has_media === true;
         var excludeMedia = req.exclude_media === true;
         var reqMediaType = (typeof req.media_type === "string" && req.media_type)
@@ -13858,7 +13879,7 @@ var QvGetQuestions;
         // ── country_code: req → Nakama profile location → "US" (yel2) ──────────
         var countryCode = "US";
         var reqCC = (typeof req.country_code === "string") ? req.country_code.trim().toUpperCase() : "";
-        if (reqCC.length === 2) {
+        if (/^[A-Z]{2}$/.test(reqCC)) {
             countryCode = reqCC;
         }
         else {
@@ -13871,7 +13892,13 @@ var QvGetQuestions;
             catch (_e2) { }
         }
         // ── mode: "standard" | "personalized" (org3) ──────────────────────────
+        // F9 (2026-08-07): normalize unknown modes to standard instead of letting
+        // free-text values fragment cache keys.
         var mode = (typeof req.mode === "string" && req.mode) ? req.mode : "standard";
+        if (mode !== "standard" && mode !== "personalized") {
+            logger.warn("[QvGetQ] unknown mode '" + mode + "' — falling back to standard");
+            mode = "standard";
+        }
         var requestedTopic = topic;
         var requestedCount = count;
         logger.info("[QvGetQ][REQ] traceId=" + traceId +
@@ -13963,18 +13990,21 @@ var QvGetQuestions;
                 var rqClientQs = [];
                 for (var rqi = 0; rqi < rqServed.length; rqi++) {
                     var rqq = rqServed[rqi];
-                    rqClientQs.push({
+                    var rqQ = {
                         id: rqq.id,
                         topic: rqq.topic,
                         question_text: rqq.question_text,
                         question_type: rqq.question_type,
                         options: rqq.options,
-                        correct_option_ids: rqq.correct_option_ids,
                         has_media: rqq.has_media,
                         media: rqq.media,
                         explanation: rqq.explanation,
                         difficulty: rqq.difficulty
-                    });
+                    };
+                    // F7: answer key only for legacy clients; secure_v2 uses quizverse_answer_reveal
+                    if (!secureV2)
+                        rqQ.correct_option_ids = rqq.correct_option_ids;
+                    rqClientQs.push(rqQ);
                 }
                 var rqResp = {
                     ok: true,
@@ -14326,18 +14356,21 @@ var QvGetQuestions;
         var clientQs = [];
         for (var ci = 0; ci < picked.length; ci++) {
             var q = picked[ci];
-            clientQs.push({
+            var cq = {
                 id: q.id,
                 topic: q.topic,
                 question_text: q.question_text,
                 question_type: q.question_type,
                 options: q.options,
-                correct_option_ids: q.correct_option_ids,
                 has_media: q.has_media,
                 media: q.media,
                 explanation: q.explanation,
                 difficulty: q.difficulty
-            });
+            };
+            // F7: answer key only for legacy clients; secure_v2 uses quizverse_answer_reveal
+            if (!secureV2)
+                cq.correct_option_ids = q.correct_option_ids;
+            clientQs.push(cq);
         }
         var resp = {
             ok: true,
@@ -14418,9 +14451,61 @@ var QvGetQuestions;
         return JSON.stringify({ ok: true, abandoned: abandoned, skipped: skipped, details: details });
     }
     // ── Registration ───────────────────────────────────────────────────────────
+    // F7 (2026-08-07): per-answer reveal for secure_v2 clients.
+    // The client taps an option, THEN calls this to learn correctness — zero
+    // cheating value (the answer is already locked in), and the bulk question
+    // payload never carries the key. Grading for rewards stays in submit_result;
+    // this RPC changes no state.
+    function rpcAnswerReveal(ctx, logger, nk, payload) {
+        var req = parseJson(payload);
+        var userId = ctx.userId;
+        if (!userId)
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        var packId = (typeof req.pack_id === "string" && req.pack_id) ? req.pack_id : "";
+        var qid = (typeof req.question_id === "string" && req.question_id) ? req.question_id : "";
+        var selId = (typeof req.selected_option_id === "string") ? req.selected_option_id : "";
+        if (!packId)
+            throw nakamaError("pack_id is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        if (!qid)
+            throw nakamaError("question_id is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+        if (!rows || rows.length === 0 || !rows[0].value) {
+            throw nakamaError("pack not found: " + packId, 5 /* nkruntime.Codes.NOT_FOUND */);
+        }
+        var pack = rows[0].value;
+        var questions = Array.isArray(pack.questions) ? pack.questions : [];
+        var found = null;
+        for (var i = 0; i < questions.length; i++) {
+            if (questions[i] && questions[i].id === qid) {
+                found = questions[i];
+                break;
+            }
+        }
+        if (!found) {
+            throw nakamaError("question not in pack: " + qid, 5 /* nkruntime.Codes.NOT_FOUND */);
+        }
+        var correctIds = Array.isArray(found.correct_option_ids) ? found.correct_option_ids : [];
+        var isCorrect = false;
+        for (var ci2 = 0; ci2 < correctIds.length; ci2++) {
+            if (correctIds[ci2] === selId) {
+                isCorrect = true;
+                break;
+            }
+        }
+        return JSON.stringify({
+            ok: true,
+            pack_id: packId,
+            question_id: qid,
+            selected_option_id: selId,
+            is_correct: isCorrect,
+            correct_option_ids: correctIds,
+            explanation: found.explanation || null
+        });
+    }
     function register(initializer) {
         initializer.registerRpc("quizverse_get_questions", rpcGetQuestions);
         initializer.registerRpc("quizverse_abandon_pack", rpcAbandonPack);
+        initializer.registerRpc("quizverse_answer_reveal", rpcAnswerReveal);
     }
     QvGetQuestions.register = register;
     // IIFE NOOP — required by postbuild.js to hoist __rpc_ assignments at
@@ -24398,20 +24483,18 @@ var QvSubmitResult;
         }
     }
     // ── Task 2.4 — wallet update ──────────────────────────────────────────────
-    function updateWallet(nk, logger, userId, topic, coins, xp) {
+    // F12 (2026-08-07): wallet grant is on the money path — failures must
+    // PROPAGATE so the caller can roll back the pack claim and let the client
+    // retry, instead of showing "+coins" that never arrived (was: catch+swallow).
+    function updateWallet(nk, logger, userId, topic, coins, xp, packId) {
         if (coins <= 0 && xp <= 0)
             return;
-        try {
-            var changeset = {};
-            if (coins > 0)
-                changeset["coins"] = coins;
-            if (xp > 0)
-                changeset["xp"] = xp;
-            nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic }, true);
-        }
-        catch (e) {
-            logger.warn("[QvSubmit] walletUpdate failed: " + (e && e.message));
-        }
+        var changeset = {};
+        if (coins > 0)
+            changeset["coins"] = coins;
+        if (xp > 0)
+            changeset["xp"] = xp;
+        nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic, pack_id: packId }, true);
     }
     // ── Task 2.4 — leaderboard ────────────────────────────────────────────────
     function submitLeaderboard(nk, logger, userId, username, gameId, topic, score) {
@@ -24628,11 +24711,15 @@ var QvSubmitResult;
         var username = rctx.username;
         var packId = (typeof req.pack_id === "string" && req.pack_id) ? req.pack_id : "";
         var answers = Array.isArray(req.answers) ? req.answers : [];
-        var durationMs = typeof req.duration_ms === "number" ? req.duration_ms : 0;
+        // F8 (2026-08-07): clamp duration to non-negative finite; cap answers array.
+        var durationMs = (typeof req.duration_ms === "number" && isFinite(req.duration_ms) && req.duration_ms >= 0)
+            ? req.duration_ms : 0;
         if (!packId)
             throw nakamaError("pack_id is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         if (answers.length === 0)
             throw nakamaError("answers are required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        if (answers.length > 200)
+            throw nakamaError("answers exceeds maximum of 200", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         // ── Task 2.1 — load pack ──────────────────────────────────────────────
         var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
         if (!rows || rows.length === 0 || !rows[0].value) {
@@ -24705,19 +24792,23 @@ var QvSubmitResult;
             " correct=" + correct + "/" + total +
             " score=" + totalScore + " bonus=" + scored.timeBonus +
             " coins=" + coinsEarned + " xp=" + xpEarned);
-        // ── Task 2.2 — write graded result back into pack doc ─────────────────
+        // ── Task 2.2 — CLAIM the pack (COMMIT POINT, F12 2026-08-07) ───────────
+        // The submitted-flag OCC write is the atomic claim: exactly one submit
+        // wins. A loser (OCC conflict) replays the winner's stored result instead
+        // of continuing to the wallet fan-out — this kills the double-grant race
+        // (was: write failure swallowed as "non-fatal", both submits paid out).
+        pack.submitted = true;
+        pack.submitted_at_ms = nowMs();
+        pack.correct = correct;
+        pack.total = total;
+        pack.accuracy_pct = accuracyPct;
+        pack.score = totalScore;
+        pack.time_bonus = scored.timeBonus;
+        pack.coins_earned = coinsEarned;
+        pack.xp_earned = xpEarned;
+        pack.graded_answers = gradedAnswers;
+        pack.duration_ms = durationMs;
         try {
-            pack.submitted = true;
-            pack.submitted_at_ms = nowMs();
-            pack.correct = correct;
-            pack.total = total;
-            pack.accuracy_pct = accuracyPct;
-            pack.score = totalScore;
-            pack.time_bonus = scored.timeBonus;
-            pack.coins_earned = coinsEarned;
-            pack.xp_earned = xpEarned;
-            pack.graded_answers = gradedAnswers;
-            pack.duration_ms = durationMs;
             var packWrite = {
                 collection: COL_PACKS, key: packId, userId: userId,
                 value: pack,
@@ -24728,7 +24819,68 @@ var QvSubmitResult;
             nk.storageWrite([packWrite]);
         }
         catch (e) {
-            logger.warn("[QvSubmit] pack write-back failed (non-fatal): " + (e && e.message));
+            logger.warn("[QvSubmit] pack claim failed (OCC/transient): " + (e && e.message) + " — checking for a winning submit");
+            try {
+                var claimRows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+                var cur = (claimRows && claimRows.length > 0) ? claimRows[0].value : null;
+                if (cur && cur.submitted === true) {
+                    // Another submit won the race — replay its stored result, grant nothing.
+                    return JSON.stringify({
+                        ok: true,
+                        replay: true,
+                        pack_id: packId,
+                        topic: cur.topic || topic,
+                        correct: cur.correct || 0,
+                        total: cur.total || 0,
+                        accuracy_pct: cur.accuracy_pct || 0,
+                        score: cur.score || 0,
+                        time_bonus: cur.time_bonus || 0,
+                        coins_earned: cur.coins_earned || 0,
+                        xp_earned: cur.xp_earned || 0,
+                        is_perfect: (cur.correct || 0) === (cur.total || 0) && (cur.total || 0) > 0,
+                        graded_answers: cur.graded_answers || [],
+                        reward_events: [],
+                        personalization: null,
+                        badges_unlocked: [],
+                        characters_unlocked: []
+                    });
+                }
+            }
+            catch (_re) { /* fall through to conflict error */ }
+            return JSON.stringify({
+                ok: false,
+                error: "submit_conflict",
+                pack_id: packId,
+                message: "Submit conflicted with another in-flight submit — please retry."
+            });
+        }
+        // ── Task 2.4 — wallet grant (F12: STRICT, before side effects) ──────────
+        // We hold the claim, so if the wallet write fails we ROLL BACK the claim
+        // (submitted=false) and return an explicit error — the client retries the
+        // whole submit and the pack grades+grants cleanly. No more "coins shown
+        // but never granted, retry blocked by already_submitted" (B-02).
+        try {
+            updateWallet(nk, logger, userId, topic, coinsEarned, xpEarned, packId);
+        }
+        catch (we) {
+            logger.error("[QvSubmit] wallet grant FAILED after claim — rolling back claim: pack=" + packId + " err=" + (we && we.message));
+            try {
+                pack.submitted = false;
+                nk.storageWrite([{
+                        collection: COL_PACKS, key: packId, userId: userId,
+                        value: pack,
+                        permissionRead: 1, permissionWrite: 0
+                    }]);
+            }
+            catch (rb) {
+                logger.error("[QvSubmit][CRITICAL] claim rollback failed — pack " + packId + " is claimed but UNPAID; needs manual reconcile: " + (rb && rb.message));
+            }
+            return JSON.stringify({
+                ok: false,
+                error: "wallet_grant_failed",
+                pack_id: packId,
+                message: "Reward grant failed — your result was NOT lost. Please retry the submit."
+            });
         }
         // ── Task 2.3 — delete inflight entry ──────────────────────────────────
         try {
@@ -24737,8 +24889,7 @@ var QvSubmitResult;
         catch (e) {
             logger.warn("[QvSubmit] inflight delete failed: " + (e && e.message));
         }
-        // ── Task 2.4 — wallet + leaderboard (non-critical) ────────────────────
-        updateWallet(nk, logger, userId, topic, coinsEarned, xpEarned);
+        // ── Task 2.4 — leaderboard (non-critical) ─────────────────────────────
         submitLeaderboard(nk, logger, userId, username, gameId, topic, totalScore);
         // ── Task 2.5 — KB performance write (non-critical) ────────────────────
         updateKbOcc(nk, logger, userId, topic, correct, total, totalScore);
@@ -24846,7 +24997,7 @@ var QvSubmitResult;
                     bonusChangeset["coins"] = variableRewards.bonusCoins;
                 if (variableRewards.bonusXp > 0)
                     bonusChangeset["xp"] = variableRewards.bonusXp;
-                nk.walletUpdate(userId, bonusChangeset, { source: "variable_reward" }, false);
+                nk.walletUpdate(userId, bonusChangeset, { source: "variable_reward", pack_id: packId }, true);
                 logger.info("[QvSubmit] variable rewards userId=" + userId +
                     " events=" + variableRewards.events.length +
                     " bonus_coins=" + variableRewards.bonusCoins +
@@ -34025,6 +34176,283 @@ var IdentityResolver;
     }
     IdentityResolver.register = register;
 })(IdentityResolver || (IdentityResolver = {}));
+// =============================================================================
+// quizverse_merge.ts — QuizVerse guest (device account) → registered merge
+//
+// Companion to account_merge.ts (which is service-only + tournament-scoped).
+// This RPC is the MOBILE path (Flutter W2-5, design: quiz-verse-flutter
+// docs/engineering/40): the app has no server-side signup callback, so the
+// client calls this RPC directly — with the GHOST's device session.
+//
+// Auth model (safe user-callable):
+//   - Caller must BE the ghost: ctx.userId === payload.ghost_user_id. Only the
+//     device holding the ghost session can merge that ghost away.
+//   - OR a platform service token (web cognito-callback parity).
+//   - Destination must exist and differ from the ghost.
+//
+// What moves (the QuizVerse game state account_merge.ts does NOT cover):
+//   - wallets (sum-merge currencies+items, per-currency fraud cap, zero ghost)
+//   - hiro_progression / hiro_streaks / hiro_stats / hiro_inventory /
+//     hiro_achievements (copy-if-absent — destination keeps its own state)
+//   - daily_rewards, qv_seen, qv_quests, badges, characters (copy-if-absent)
+// Leaderboard records are owner-immutable → NOT ported (accepted, logged).
+//
+// Idempotency: merge_idem_{ghost}_{cognito} (same pattern as account_merge).
+// Sentinel: ghost account metadata { merged_to } blocks reuse (E6).
+// =============================================================================
+var QuizverseMerge;
+(function (QuizverseMerge) {
+    var MERGE_LOG_COLLECTION = "account_merge_log";
+    // Fraud cap (WC/Phase-3 hardening baked in): a single merge can move at most
+    // this much of any one currency. Genuine guests never approach it.
+    var MAX_MERGE_PER_CURRENCY = 100000;
+    // Copy-if-absent collections (destination's own state always wins).
+    var PORT_COLLECTIONS = [
+        Constants.HIRO_PROGRESSION_COLLECTION,
+        Constants.HIRO_STREAKS_COLLECTION,
+        Constants.HIRO_STATS_COLLECTION,
+        Constants.HIRO_INVENTORY_COLLECTION,
+        Constants.HIRO_ACHIEVEMENTS_COLLECTION,
+        Constants.DAILY_REWARDS_COLLECTION,
+        "qv_seen",
+        "qv_quests",
+        "badges",
+        "characters",
+    ];
+    function isServiceCaller(ctx, payload) {
+        var token = payload && payload.service_token;
+        if (!token)
+            return false;
+        var e = ctx.env || {};
+        var candidates = [
+            "" + (e["ACCOUNT_MERGE_SERVICE_TOKEN"] || ""),
+            "" + (e["BRAIN_COINS_SERVICE_TOKEN"] || ""),
+            "" + (e["TOURNAMENT_SERVICE_TOKEN"] || ""),
+        ];
+        for (var i = 0; i < candidates.length; i++) {
+            if (candidates[i].length > 0 && token === candidates[i])
+                return true;
+        }
+        return false;
+    }
+    function nowSec() { return Math.floor(Date.now() / 1000); }
+    function readWallet(nk, userId, key) {
+        try {
+            var rows = nk.storageRead([{ collection: Constants.WALLETS_COLLECTION, key: key, userId: userId }]);
+            if (rows && rows.length > 0) {
+                var v = rows[0].value;
+                return {
+                    userId: userId,
+                    currencies: v.currencies || {},
+                    items: v.items || {},
+                };
+            }
+        }
+        catch (_) { }
+        return { userId: userId, currencies: {}, items: {} };
+    }
+    function writeWallet(nk, userId, key, w) {
+        nk.storageWrite([{
+                collection: Constants.WALLETS_COLLECTION,
+                key: key,
+                userId: userId,
+                value: w,
+                permissionRead: 1,
+                permissionWrite: 0,
+            }]);
+    }
+    // Sum-merge every wallet doc (global + per-game) ghost → destination.
+    // Per-currency cap, source zeroed (double-merge can't double-credit).
+    function mergeWallets(nk, fromUserId, toUserId) {
+        var moved = {};
+        var cursor = "";
+        var safety = 0;
+        while (safety < 20) {
+            safety++;
+            var page = nk.storageList(fromUserId, Constants.WALLETS_COLLECTION, 100, cursor);
+            if (!page || !page.objects)
+                break;
+            for (var i = 0; i < page.objects.length; i++) {
+                var o = page.objects[i];
+                try {
+                    // Wallet doc keys embed the owner (global_{userId} etc.) — translate
+                    // the key suffix to the destination user, or the merge would write a
+                    // ghost-keyed doc under the destination instead of merging balances
+                    // (caught by quizverse_merge_regression_test B1).
+                    var destKey = o.key;
+                    var suffix = "_" + fromUserId;
+                    if (destKey.length > suffix.length &&
+                        destKey.lastIndexOf(suffix) === destKey.length - suffix.length) {
+                        destKey = destKey.slice(0, destKey.length - suffix.length) + toUserId;
+                    }
+                    var src = readWallet(nk, fromUserId, o.key);
+                    var dst = readWallet(nk, toUserId, destKey);
+                    var currencies = dst.currencies;
+                    var srcKeys = Object.keys(src.currencies);
+                    for (var c = 0; c < srcKeys.length; c++) {
+                        var cur = srcKeys[c];
+                        var amt = src.currencies[cur] | 0;
+                        if (amt <= 0)
+                            continue;
+                        if (amt > MAX_MERGE_PER_CURRENCY)
+                            amt = MAX_MERGE_PER_CURRENCY;
+                        currencies[cur] = ((currencies[cur] | 0) + amt);
+                        moved[cur] = (moved[cur] | 0) + amt;
+                    }
+                    var itemKeys = Object.keys(src.items);
+                    for (var it = 0; it < itemKeys.length; it++) {
+                        var ik = itemKeys[it];
+                        dst.items[ik] = ((dst.items[ik] | 0) + (src.items[ik] | 0));
+                    }
+                    writeWallet(nk, toUserId, destKey, dst);
+                    // Zero the ghost doc (keep shape; audit sentinel).
+                    writeWallet(nk, fromUserId, o.key, {
+                        userId: fromUserId,
+                        currencies: { merged_to: 0 },
+                        items: {},
+                    });
+                }
+                catch (_) { /* best-effort per doc */ }
+            }
+            if (!page.cursor)
+                break;
+            cursor = page.cursor;
+        }
+        return moved;
+    }
+    // Copy-if-absent port (account_merge.ts pattern): destination never
+    // overwritten; retry-safe because existing rows are skipped.
+    function portCollection(nk, collection, fromUserId, toUserId) {
+        var ported = 0;
+        var cursor = "";
+        var safety = 0;
+        while (safety < 20) {
+            safety++;
+            var page;
+            try {
+                page = nk.storageList(fromUserId, collection, 100, cursor);
+            }
+            catch (_) {
+                break; // collection may not exist for this game — not an error
+            }
+            if (!page || !page.objects)
+                break;
+            for (var i = 0; i < page.objects.length; i++) {
+                var o = page.objects[i];
+                try {
+                    var existing = nk.storageRead([{ collection: collection, key: o.key, userId: toUserId }]);
+                    if (existing && existing.length > 0)
+                        continue;
+                    nk.storageWrite([{
+                            collection: collection,
+                            key: o.key,
+                            userId: toUserId,
+                            value: o.value,
+                            permissionRead: 1,
+                            permissionWrite: 0,
+                        }]);
+                    ported++;
+                }
+                catch (_) { /* best-effort */ }
+            }
+            if (!page.cursor)
+                break;
+            cursor = page.cursor;
+        }
+        return ported;
+    }
+    // ── RPC: quizverse_merge_guest_to_account ─────────────────────────────────
+    function rpcMerge(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var ghostUserId = "" + (data.ghost_user_id || "");
+            var cognitoUserId = "" + (data.cognito_user_id || "");
+            if (!ghostUserId || !cognitoUserId) {
+                return RpcHelpers.errorResponse("ghost_user_id + cognito_user_id required", 400);
+            }
+            if (ghostUserId === cognitoUserId) {
+                return RpcHelpers.errorResponse("ghost and cognito user_id are identical — nothing to merge", 400);
+            }
+            // AUTH: caller must BE the ghost (mobile path) or a platform service
+            // (web path). Never trust a client-supplied ghost id from another session.
+            var service = isServiceCaller(ctx, data);
+            if (!service) {
+                if (!ctx.userId) {
+                    return RpcHelpers.errorResponse("not authorised — login required", 401);
+                }
+                if (ctx.userId !== ghostUserId) {
+                    logger.warn("[QvMerge] REJECTED: caller " + ctx.userId + " tried to merge ghost " + ghostUserId);
+                    return RpcHelpers.errorResponse("not authorised — you can only merge your own guest account", 403);
+                }
+            }
+            // Destination must exist.
+            try {
+                nk.accountGetId(cognitoUserId);
+            }
+            catch (_) {
+                return RpcHelpers.errorResponse("destination account not found", 404);
+            }
+            // Idempotency: merged pair returns the cached result.
+            var idemKey = "merge_idem_" + ghostUserId + "_" + cognitoUserId;
+            try {
+                var prior = nk.storageRead([{ collection: MERGE_LOG_COLLECTION, key: idemKey, userId: Constants.SYSTEM_USER_ID }]);
+                if (prior && prior.length > 0) {
+                    return RpcHelpers.successResponse({ ok: true, idempotent: true, prior_merge: prior[0].value });
+                }
+            }
+            catch (_) { }
+            // Ghost sentinel: an already-merged ghost refuses a second merge (E6).
+            try {
+                var ghostAcc = nk.accountGetId(ghostUserId);
+                var meta = (ghostAcc && ghostAcc.user && ghostAcc.user.metadata) || {};
+                if (meta.merged_to) {
+                    return RpcHelpers.errorResponse("guest account already merged", 409);
+                }
+            }
+            catch (_) { }
+            // Execute: wallets sum-merged (capped), game state copy-if-absent.
+            var movedCurrencies = mergeWallets(nk, ghostUserId, cognitoUserId);
+            var ported = {};
+            for (var i = 0; i < PORT_COLLECTIONS.length; i++) {
+                ported[PORT_COLLECTIONS[i]] = portCollection(nk, PORT_COLLECTIONS[i], ghostUserId, cognitoUserId);
+            }
+            var summary = {
+                ghost_user_id: ghostUserId,
+                cognito_user_id: cognitoUserId,
+                merged_at: nowSec(),
+                caller: service ? "service" : "ghost_session",
+                transferred: { currencies: movedCurrencies, collections: ported },
+                leaderboard_records: "not_ported_owner_immutable",
+            };
+            nk.storageWrite([{
+                    collection: MERGE_LOG_COLLECTION,
+                    key: idemKey,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: summary,
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+            try {
+                nk.accountUpdateId(ghostUserId, undefined, undefined, undefined, undefined, undefined, undefined, { is_ghost: true, merged_to: cognitoUserId, merged_at: nowSec() });
+            }
+            catch (e) {
+                logger.warn("[QvMerge] could not update ghost metadata: " + e.message);
+            }
+            logger.info("[QvMerge] merged ghost " + ghostUserId + " → " + cognitoUserId);
+            return RpcHelpers.successResponse({ ok: true, idempotent: false, transferred: summary.transferred });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[QvMerge] failed: " + msg);
+            RpcHelpers.logRpcError(nk, logger, "quizverse_merge_guest_to_account", msg);
+            return RpcHelpers.errorResponse("merge failed: " + msg, 500);
+        }
+    }
+    function register(initializer) {
+        initializer.registerRpc("quizverse_merge_guest_to_account", rpcMerge);
+    }
+    QuizverseMerge.register = register;
+})(QuizverseMerge || (QuizverseMerge = {}));
 // qv_kb_user_dump.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // QuizVerse — User KB inspection RPCs (Nakama wrapper around the BFF dump route)
@@ -47082,7 +47510,15 @@ var LegacyWallet;
     function rpcGetUserWallet(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
-            var userId = ctx.userId || data.userId || data.sub;
+            // F11 SECURITY: a session user may only ever read their OWN wallet
+            // registry. The payload userId/sub fallback let any caller read (and
+            // lazily create!) another user's registry; it is now honored solely for
+            // server (http_key) callers, which carry no session userId.
+            var userId = ctx.userId;
+            if (!userId) {
+                RpcHelpers.requireAdmin(ctx, nk);
+                userId = data.userId || data.sub;
+            }
             var username = ctx.username || data.username || userId;
             if (!userId)
                 return RpcHelpers.errorResponse("User ID required");
@@ -47190,27 +47626,45 @@ var LegacyWallet;
         }
     }
     LegacyWallet.rpcWalletGetAll = rpcWalletGetAll;
+    // F1: currencies this RPC may touch on the GLOBAL wallet (allowlist).
+    var GLOBAL_WALLET_CURRENCIES = { global: true, xut: true, xp: true };
     function rpcWalletUpdateGlobal(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
             var v = RpcHelpers.validatePayload(data, ["currency", "amount", "operation"]);
             if (!v.valid)
                 return RpcHelpers.errorResponse("Missing: " + v.missing.join(", "));
-            var userId = RpcHelpers.requireUserId(ctx);
+            // F1 SECURITY: this RPC mutates real balances. It stays registered for
+            // server-side callers, but an authenticated client must never self-mint —
+            // admin session or http_key server caller only (throws otherwise).
+            RpcHelpers.requireAdmin(ctx, nk);
+            // Server (http_key) callers carry no session user and must name the
+            // target explicitly; session users can only touch their own wallet.
+            var userId = ctx.userId || data.userId;
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID required");
+            // F1: allowlist currencies so arbitrary keys cannot be minted.
+            if (!GLOBAL_WALLET_CURRENCIES[data.currency]) {
+                return RpcHelpers.errorResponse("Unsupported currency: " + data.currency);
+            }
+            var op = data.operation;
+            var amt = Number(data.amount);
+            // F1: reject NaN/Infinity (poisons the stored balance) and negatives
+            // (a negative "subtract" used to ADD funds).
+            if (!isFinite(amt) || amt < 0)
+                return RpcHelpers.errorResponse("Invalid amount");
+            if (op !== "add" && op !== "subtract")
+                return RpcHelpers.errorResponse("Invalid operation");
             var wallet = getGlobalWallet(nk, userId);
             if (!wallet.currencies[data.currency])
                 wallet.currencies[data.currency] = 0;
-            var op = data.operation;
-            var amt = Number(data.amount);
             if (op === "add")
                 wallet.currencies[data.currency] += amt;
-            else if (op === "subtract") {
+            else {
                 wallet.currencies[data.currency] -= amt;
                 if (wallet.currencies[data.currency] < 0)
                     wallet.currencies[data.currency] = 0;
             }
-            else
-                return RpcHelpers.errorResponse("Invalid operation");
             saveGlobalWallet(nk, userId, wallet);
             return RpcHelpers.successResponse({
                 userId: userId,
@@ -47460,16 +47914,9 @@ var LegacyWallet;
                 return RpcHelpers.errorResponse("Insufficient game balance");
             var globalEarned = Math.floor(amt / ratio);
             var coinsBurned = globalEarned * ratio;
-            var keys = ["game", "tokens"];
-            for (var i = 0; i < keys.length; i++) {
-                var k = keys[i];
-                if (wallet.currencies[k] !== undefined) {
-                    wallet.currencies[k] -= coinsBurned;
-                    if (wallet.currencies[k] < 0)
-                        wallet.currencies[k] = 0;
-                }
-            }
-            WalletHelpers.saveGameWallet(nk, wallet);
+            // F13 SECURITY: credit the global (upstream) wallet FIRST. Previously the
+            // game wallet was debited first and an upstream credit failure was
+            // silently ignored — burning the player's coins with no credit.
             var newGlobal = null;
             try {
                 var res = proxyGlobalApi(nk, logger, userId, "earn", {
@@ -47480,7 +47927,43 @@ var LegacyWallet;
                 }, data.gameId);
                 newGlobal = res && res.newBalance != null ? res.newBalance : null;
             }
-            catch (_) { /* non-critical */ }
+            catch (earnErr) {
+                // Upstream failed — explicit error, NO local debit happened.
+                logger.error("[LegacyWallet] convert_to_global upstream credit failed for user " + userId + ": " + (earnErr && earnErr.message ? earnErr.message : String(earnErr)));
+                return RpcHelpers.errorResponse("Global wallet credit failed — no game coins were debited. Please retry.");
+            }
+            // Upstream credit succeeded — only now debit the game wallet.
+            var keys = ["game", "tokens"];
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                if (wallet.currencies[k] !== undefined) {
+                    wallet.currencies[k] -= coinsBurned;
+                    if (wallet.currencies[k] < 0)
+                        wallet.currencies[k] = 0;
+                }
+            }
+            try {
+                WalletHelpers.saveGameWallet(nk, wallet);
+            }
+            catch (debitErr) {
+                // Global credit landed but the local debit failed — attempt a
+                // compensating upstream refund so value does not appear from thin air,
+                // and log loudly either way for reconciliation.
+                logger.error("[LegacyWallet] CRITICAL: convert_to_global local debit failed after upstream credit (user " + userId + ", amount " + globalEarned + ") — attempting compensating refund: " + (debitErr && debitErr.message ? debitErr.message : String(debitErr)));
+                try {
+                    proxyGlobalApi(nk, logger, userId, "spend", {
+                        amount: globalEarned,
+                        sourceType: "game_to_global_conversion_reversal",
+                        sourceId: data.gameId,
+                        description: "Reversal of game_to_global_conversion — local game-wallet debit failed"
+                    }, data.gameId);
+                    logger.error("[LegacyWallet] Compensating refund succeeded (user " + userId + ", amount " + globalEarned + ")");
+                }
+                catch (refundErr) {
+                    logger.error("[LegacyWallet] CRITICAL: compensating refund FAILED (user " + userId + ", amount " + globalEarned + ") — manual reconciliation required: " + (refundErr && refundErr.message ? refundErr.message : String(refundErr)));
+                }
+                return RpcHelpers.errorResponse("Conversion failed while debiting game wallet. Please retry or contact support.");
+            }
             return RpcHelpers.successResponse({
                 userId: userId,
                 gameId: data.gameId,
@@ -47528,22 +48011,67 @@ var LegacyWallet;
                 return RpcHelpers.errorResponse("gameId required");
             if (amt <= 0)
                 return RpcHelpers.errorResponse("amount must be > 0");
+            // A-04: per-request idempotency key. Previously sourceId was a CONSTANT
+            // derived only from the gameId, so upstream spend dedupe could never
+            // engage and client retries double-spent global points.
+            var conversionId = nk.uuidv4();
             proxyGlobalApi(nk, logger, userId, "spend", {
                 amount: amt,
                 sourceType: "global_to_game_convert",
-                sourceId: "game:" + gameId,
+                sourceId: "g2g:" + conversionId,
+                idempotencyKey: conversionId,
                 description: "Convert " + amt + " global points to game currency"
             }, gameId);
             var ratios = getConversionRatios(nk);
             var ratio = ratios[gameId] || 100;
             var gameCurrency = amt * ratio;
-            var wallet = WalletHelpers.getGameWallet(nk, userId, gameId);
             var cur = data.currency || "game";
+            // A-04: record the conversion state BEFORE the local credit, so a
+            // storage failure leaves a recoverable "pending_credit" record (keyed
+            // by conversionId) instead of vanishing the spent value.
+            var convKey = "g2g_conversion_" + conversionId;
+            var convRec = {
+                id: conversionId,
+                userId: userId,
+                gameId: gameId,
+                currency: cur,
+                globalSpent: amt,
+                gameCurrencyEarned: gameCurrency,
+                ratio: ratio,
+                state: "pending_credit",
+                createdAt: new Date().toISOString()
+            };
+            try {
+                Storage.writeJson(nk, Constants.WALLETS_COLLECTION, convKey, userId, convRec, 1, 0);
+            }
+            catch (pendErr) {
+                logger.warn("[LegacyWallet] g2g pending-record write failed for " + conversionId + ": " + (pendErr && pendErr.message ? pendErr.message : String(pendErr)));
+            }
+            var wallet = WalletHelpers.getGameWallet(nk, userId, gameId);
             wallet.currencies[cur] = (wallet.currencies[cur] || 0) + gameCurrency;
-            WalletHelpers.saveGameWallet(nk, wallet);
+            try {
+                WalletHelpers.saveGameWallet(nk, wallet);
+            }
+            catch (creditErr) {
+                // Global points are spent but the game credit failed. The pending
+                // record above carries everything needed to re-run the credit —
+                // log loudly and surface the reference id.
+                logger.error("[LegacyWallet] CRITICAL: g2g local credit failed after global spend; pending record " + convKey + " (user " + userId + "): " + (creditErr && creditErr.message ? creditErr.message : String(creditErr)));
+                return RpcHelpers.errorResponse("Conversion pending — global points were spent and the game credit will be reconciled. Reference: " + conversionId);
+            }
+            // Mark the conversion credited (best-effort audit trail).
+            convRec.state = "credited";
+            convRec.creditedAt = new Date().toISOString();
+            try {
+                Storage.writeJson(nk, Constants.WALLETS_COLLECTION, convKey, userId, convRec, 1, 0);
+            }
+            catch (finErr) {
+                logger.warn("[LegacyWallet] g2g completion-record write failed for " + conversionId + ": " + (finErr && finErr.message ? finErr.message : String(finErr)));
+            }
             return RpcHelpers.successResponse({
                 userId: userId,
                 gameId: gameId,
+                conversionId: conversionId,
                 globalPointsSpent: amt,
                 gameCurrencyEarned: gameCurrency,
                 conversionRatio: ratio,
@@ -47568,12 +48096,21 @@ var LegacyWallet;
     LegacyWallet.rpcGlobalWalletBalance = rpcGlobalWalletBalance;
     function rpcGlobalWalletEarn(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
-            if (!data.amount || data.amount <= 0)
+            // F2 SECURITY: this credits arbitrary amounts (incl. premium currency)
+            // to the global wallet. Client self-mint is not allowed — admin session
+            // or http_key server caller only (throws otherwise).
+            RpcHelpers.requireAdmin(ctx, nk);
+            // Server (http_key) callers carry no session user and name the target
+            // in the payload; session (admin) users default to themselves.
+            var userId = ctx.userId || data.userId;
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID required");
+            var amt = Number(data.amount);
+            if (!isFinite(amt) || amt <= 0)
                 return RpcHelpers.errorResponse("amount required and must be > 0");
             var body = {
-                amount: data.amount,
+                amount: amt,
                 sourceType: data.sourceType || "nakama_rpc",
                 sourceId: data.sourceId || ("rpc:" + userId),
                 description: data.description || "Earn via Nakama RPC"
@@ -47626,7 +48163,17 @@ var LegacyWallet;
             var gameId = data.game_id || data.gameId;
             if (!deviceId || !gameId)
                 return RpcHelpers.errorResponse("device_id and game_id required");
-            var userId = ctx.userId || deviceId;
+            // F11 SECURITY: never key wallet creation off a client-supplied deviceId
+            // when a session exists — that created/wrote wallets for arbitrary users.
+            // The deviceId-as-userId legacy guest path is retained for server
+            // (http_key) callers only.
+            var userId = ctx.userId;
+            if (!userId) {
+                RpcHelpers.requireAdmin(ctx, nk);
+                userId = deviceId;
+            }
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID required");
             var gameWallet = WalletHelpers.getGameWallet(nk, userId, gameId);
             var globalWallet = getGlobalWallet(nk, userId);
             var key = "registry_" + userId;
@@ -60991,6 +61538,87 @@ var QuestEngine;
     QuestEngine.processEvent = processEvent;
     // ─── RPC: quest_engine_claim_reward ──────────────────────────────────────
     // Manually claims reward for a completed quest (deferred-claim UI pattern).
+    // F14: bounded OCC retry count (same shape as QvSubmit.mergeSeenOcc).
+    var CLAIM_OCC_MAX_RETRIES = 3;
+    // F14: persist claimedAt under an OCC version CAS. Returns:
+    //   "claimed"       — marker durably written by this call
+    //   "already"       — marker already present (concurrent/duplicate claim)
+    //   "not_completed" — quest has not completed yet
+    //   "conflict"      — OCC retries exhausted (a concurrent writer won; the
+    //                     safe response is to treat the claim as not ours)
+    function markQuestClaimedOcc(nk, logger, userId, gameId, questId, now) {
+        for (var attempt = 0; attempt < CLAIM_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: QUEST_ENGINE_COLLECTION,
+                        key: stateKey(gameId, userId),
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var state = (rec && rec.value) ? rec.value : { quests: {} };
+                var progress = state.quests[questId];
+                if (!progress || !progress.completedAt)
+                    return "not_completed";
+                if (progress.claimedAt)
+                    return "already";
+                progress.claimedAt = now;
+                var writeObj = {
+                    collection: QUEST_ENGINE_COLLECTION,
+                    key: stateKey(gameId, userId),
+                    userId: userId,
+                    value: state,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver; // OCC guard (omit on first write)
+                nk.storageWrite([writeObj]);
+                return "claimed";
+            }
+            catch (e) {
+                // Version conflict or transient storage error → re-read and retry.
+            }
+        }
+        logger.warn("[QuestEngine] claim marker OCC exhausted: quest=%s user=%s", questId, userId);
+        return "conflict";
+    }
+    // F14: best-effort clear of claimedAt (used to roll back when the reward
+    // grant fails after the marker was persisted, so the player can retry).
+    function clearQuestClaimedOcc(nk, logger, userId, gameId, questId) {
+        for (var attempt = 0; attempt < CLAIM_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: QUEST_ENGINE_COLLECTION,
+                        key: stateKey(gameId, userId),
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var state = (rec && rec.value) ? rec.value : { quests: {} };
+                var progress = state.quests[questId];
+                if (!progress || !progress.claimedAt)
+                    return true; // nothing to clear
+                progress.claimedAt = null;
+                var writeObj = {
+                    collection: QUEST_ENGINE_COLLECTION,
+                    key: stateKey(gameId, userId),
+                    userId: userId,
+                    value: state,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return true;
+            }
+            catch (e) {
+                // retry
+            }
+        }
+        return false;
+    }
     function rpcQuestEngineClaimReward(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -61002,19 +61630,45 @@ var QuestEngine;
         var qConfig = config.quests[questId];
         if (!qConfig)
             return RpcHelpers.errorResponse("Unknown quest: " + questId);
-        var state = loadUserState(nk, userId, gameId);
-        var progress = state.quests[questId];
-        if (!progress || !progress.completedAt)
+        // Fast-path checks for clean error messages — the authoritative guard is
+        // the OCC-guarded marker write below.
+        var peek = loadUserState(nk, userId, gameId);
+        var peekProgress = peek.quests[questId];
+        if (!peekProgress || !peekProgress.completedAt)
             return RpcHelpers.errorResponse("Quest not completed");
-        if (progress.claimedAt)
+        if (peekProgress.claimedAt)
             return RpcHelpers.errorResponse("Quest reward already claimed");
         if (!qConfig.reward)
             return RpcHelpers.successResponse({ reward: null });
         var now = Math.floor(Date.now() / 1000);
-        var resolved = RewardEngine.resolveReward(nk, qConfig.reward);
-        RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
-        progress.claimedAt = now;
-        saveUserState(nk, userId, gameId, state);
+        // F14 SECURITY: persist claimedAt FIRST with an OCC version CAS, before
+        // granting anything. Previously the reward was granted BEFORE the marker
+        // write (and the state write carried no OCC version), so a retry or
+        // concurrent claim between grant and save double-granted the reward.
+        var mark = markQuestClaimedOcc(nk, logger, userId, gameId, questId, now);
+        if (mark === "already" || mark === "conflict") {
+            return RpcHelpers.errorResponse("Quest reward already claimed");
+        }
+        if (mark === "not_completed") {
+            return RpcHelpers.errorResponse("Quest not completed");
+        }
+        // Marker is durable — only now resolve and grant the reward.
+        var resolved;
+        try {
+            resolved = RewardEngine.resolveReward(nk, qConfig.reward);
+            RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
+        }
+        catch (grantErr) {
+            // Grant failed after the claim marker was persisted. Best-effort
+            // rollback so the player can retry; if the rollback fails the marker
+            // stays (a double grant is still impossible) and we log loudly.
+            logger.error("[QuestEngine] Reward grant failed after claim marker persisted (quest=%s user=%s) — attempting rollback: %s", questId, userId, (grantErr && grantErr.message ? grantErr.message : String(grantErr)));
+            var rolledBack = clearQuestClaimedOcc(nk, logger, userId, gameId, questId);
+            if (!rolledBack) {
+                logger.error("[QuestEngine] CRITICAL: claim rollback failed (quest=%s user=%s) — manual reconciliation required", questId, userId);
+            }
+            return RpcHelpers.errorResponse("Reward grant failed — please retry");
+        }
         logger.info("[QuestEngine] Reward claimed manually: quest=%s user=%s", questId, userId);
         // Same server-driven fulfilment path as auto-grant (catalog + notification).
         try {

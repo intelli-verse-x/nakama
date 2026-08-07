@@ -64,6 +64,38 @@ function badgeCanonicalGameId(gameId) {
 }
 
 /**
+ * Admin gate for badge mutation RPCs (SECURITY FIX 2026-08-07 — F3/F4/F5).
+ * badges_update_progress / badges_check_event / badges_bulk_create were
+ * callable by ANY authenticated user, allowing arbitrary badge progress
+ * (wallet-reward harvesting) and attacker-written badge definitions with
+ * arbitrary rewards. The legit player path is the server-side fanout
+ * (quizverse_submit_result → quizverseBadgesFanout → badgesCheckEventCore),
+ * which never touches these RPC handlers.
+ *
+ * Prefers the bundle-wide RpcHelpers.requireAdmin (admin: custom_id sessions
+ * + account metadata.admin). Standalone fallback (vm-loaded tests, partial
+ * bundles) checks account metadata directly and FAILS CLOSED on lookup
+ * errors. Server-to-server callers (no ctx.userId — http_key) are trusted,
+ * matching RpcHelpers.requireAdmin semantics.
+ */
+function badgeRequireAdmin(ctx, nk) {
+    if (typeof RpcHelpers !== 'undefined' && RpcHelpers && RpcHelpers.requireAdmin) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        return;
+    }
+    if (!ctx || !ctx.userId) return; // server-to-server (http_key) — trusted
+    var isAdmin = false;
+    try {
+        var accts = nk.accountsGetId([ctx.userId]);
+        if (accts && accts.length > 0) {
+            var meta = accts[0].user && accts[0].user.metadata;
+            if (meta && meta.admin === true) isAdmin = true;
+        }
+    } catch (e) { /* lookup failure — deny */ }
+    if (!isAdmin) throw Error("Admin access required");
+}
+
+/**
  * Read a per-user doc (badge progress / collectable inventory).
  * Canonical key first; falls back to the legacy raw-gameId key and returns
  * the canonical write key so the next save migrates the doc forward.
@@ -265,14 +297,22 @@ var rpcBadgesGetAll = function(ctx, logger, nk, payload) {
 };
 
 /**
- * RPC: badges_update_progress
- * Update progress towards a badge (called when game events happen)
- * 
+ * RPC: badges_update_progress (ADMIN / SERVER-ONLY — SECURITY FIX 2026-08-07, F3)
+ * Update progress towards a badge.
+ *
+ * Previously any authenticated user could set arbitrary progress and harvest
+ * wallet rewards. Player progression now flows exclusively through the
+ * server-side fanout (quizverse_submit_result → quizverseBadgesFanout →
+ * badgesCheckEventCore); this RPC is gated to admin / server-to-server
+ * callers. Verified 2026-08-07: no client (Flutter quiz-verse) calls it.
+ *
  * @param {Object} payload - { game_id, badge_id, progress, increment? }
  * @returns {Object} - { success, badge, just_unlocked, rewards_granted }
  */
 var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
     try {
+        badgeRequireAdmin(ctx, nk);
+
         var data = JSON.parse(payload || '{}');
         
         if (!data.game_id || !data.badge_id || data.progress === undefined) {
@@ -593,14 +633,24 @@ function badgesCheckEventCore(ctx, logger, nk, rawGameId, eventType, eventData) 
 }
 
 /**
- * RPC: badges_check_event
+ * RPC: badges_check_event (ADMIN / SERVER-ONLY — SECURITY FIX 2026-08-07, F5)
  * Thin wrapper over badgesCheckEventCore.
+ *
+ * Previously any authenticated user could fire arbitrary event_type/count
+ * pairs and unlock reward badges without gameplay. Player progression flows
+ * through the server-side fanout (quizverse_submit_result →
+ * quizverseBadgesFanout → badgesCheckEventCore); the LAP web bridge
+ * (quizverse_lap_badge_event) calls badgesCheckEventCore directly with a
+ * lap_* whitelist + count clamp. This raw RPC is gated to admin /
+ * server-to-server callers.
  *
  * @param {Object} payload - { game_id, event_type, event_data }
  * @returns {Object} - { success, badges_updated[], badges_unlocked[], characters_unlocked[] }
  */
 var rpcBadgesCheckEvent = function(ctx, logger, nk, payload) {
     try {
+        badgeRequireAdmin(ctx, nk);
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.event_type) {
@@ -1079,13 +1129,19 @@ var rpcCollectablesEquip = function(ctx, logger, nk, payload) {
 // ============================================================================
 
 /**
- * RPC: badges_bulk_create (Admin only)
- * Create multiple badge definitions for a game
- * 
+ * RPC: badges_bulk_create (Admin only — NOW ENFORCED, SECURITY FIX 2026-08-07, F4)
+ * Create multiple badge definitions for a game.
+ *
+ * Previously ungated: any authenticated user could write badge definitions
+ * with arbitrary rewards (default {coins:100}) into the system-owned
+ * definitions doc, then trigger them for wallet grants.
+ *
  * @param {Object} payload - { game_id, badges[] }
  */
 var rpcBadgesBulkCreate = function(ctx, logger, nk, payload) {
     try {
+        badgeRequireAdmin(ctx, nk);
+
         var data = JSON.parse(payload || '{}');
         
         if (!data.game_id || !data.badges || !Array.isArray(data.badges)) {

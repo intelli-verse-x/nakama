@@ -779,6 +779,19 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
       logger.error("[AccountMerge] failed to register: " + (err && err.message ? err.message : String(err)));
     }
 
+    // QuizVerse guest→registered merge (Flutter W2-5, design doc 40). The
+    // MOBILE companion to account_merge: user-callable with the ghost's own
+    // device session (caller must BE the ghost), ports QuizVerse game state
+    // (wallets sum-merged + capped, hiro progression/streaks/stats/inventory/
+    // achievements, daily_rewards, qv_seen, qv_quests, badges, characters).
+    logger.info("[QuizverseMerge] Registering quizverse_merge_guest_to_account RPC...");
+    try {
+      QuizverseMerge.register(initializer);
+      logger.info("[QuizverseMerge] quizverse_merge_guest_to_account registered");
+    } catch (err: any) {
+      logger.error("[QuizverseMerge] failed to register: " + (err && err.message ? err.message : String(err)));
+    }
+
     logger.info("[OnboardingAnalytics] Registering web onboarding event ingest + funnel RPCs...");
     try {
       OnboardingAnalytics.register(initializer);

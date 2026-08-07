@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-08-07T09:59:34.304Z
-// RPC Count: 1320
+// Generated: 2026-08-07T13:25:11.184Z
+// RPC Count: 1322
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -152,6 +152,7 @@ var __rpc_compatibility_submit_answers;
 var __rpc_compatibility_calculate;
 var __rpc_quizverse_get_questions;
 var __rpc_quizverse_abandon_pack;
+var __rpc_quizverse_answer_reveal;
 var __rpc_quizverse_get_review;
 var __rpc_quizverse_growth_snapshot;
 var __rpc_quizverse_create_match;
@@ -395,6 +396,7 @@ var __rpc_identity_resolve_or_ghost_create;
 var __rpc_identity_link;
 var __rpc_identity_unlink;
 var __rpc_identity_list_mine;
+var __rpc_quizverse_merge_guest_to_account;
 var __rpc_qv_kb_user_dump;
 var __rpc_qv_kb_user_summary;
 var __rpc_qv_kb_user_kind;
@@ -1334,7 +1336,7 @@ var __rpc_visual_path_get_schedule;
 var __rpc_visual_path_skip_day_with_ad;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (122 files) ---
 
@@ -2770,29 +2772,14 @@ var AA_ADMIN_USERS_COLLECTION = "admin_users";
 var AA_SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
 var AA_SESSION_TTL_SEC = 12 * 60 * 60; // 12 hours
 
-// ─── Hardcoded fallbacks (rotated 2026-05-10) ─────────────────────────
-// When ctx.env doesn't carry these values (i.e. when the prod k8s Secret
-// hasn't been patched), aaEnv() falls back to the constants below. This
-// lets the dashboard work end-to-end without any DevOps cluster changes —
-// just `git push` and CodeBuild rolls out a working image. See
-// docs/SATORI_INTEGRATION.md for the trade-off discussion.
-//
-// Both the bcrypt hash AND the plaintext password are baked in. Login
-// matches against either (the verification ladder in rpcAdminLogin tries
-// bcrypt first, then sha256, then plaintext). Hardcoding both means:
-//   • If you have the plaintext, type it.
-//   • If you've lost the plaintext but want to log in via curl using
-//     `dashboard_secret`, that still works.
-//   • Bcrypt verification is the canonical path; plaintext is the safety
-//     net so the dashboard never gets locked out.
-//
-// Rotate by re-running scripts/generate-admin-creds.mjs and pasting the
-// new values here, then `git push`. Or patch the k8s Secret with the same
-// keys (env wins over the hardcoded constants for any single key).
-var AA_FALLBACK_ADMIN_USERNAME      = "ivx-admin";
-var AA_FALLBACK_ADMIN_PASSWORD      = "e200d2640355cdb433f72e9c4e034ee0b2c13bae";
-var AA_FALLBACK_ADMIN_PASSWORD_HASH = "$2b$12$ovKoUnhPwGIo2YFlkW.sSuYz0UimEGkLhd7Msz6RyyUUyZBJDPdOC";
-var AA_FALLBACK_DASHBOARD_SECRET    = "2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8";
+// ─── Admin credential configuration (SECURITY FIX 2026-08-07, F10) ─────
+// Admin credentials come ONLY from the runtime env (docker-compose / k8s
+// Secret → ctx.env). The previous hardcoded fallback credential constants
+// shipped a working admin username, plaintext password, bcrypt hash, and
+// dashboard secret in source control — anyone with repo (or bundle) access
+// had production admin. They are deleted. When the env is absent this module
+// FAILS CLOSED: admin_login and admin_session_bootstrap return 503, and the
+// dashboard_secret bypass in aaRequireAdmin stays disabled.
 
 // Slug→UUID alias for legacy ingestion ("quizverse" → "126bf539-...").
 // Delegates to the bundled global resolveGameIdAlias when available so the
@@ -2842,21 +2829,9 @@ function aaErr(msg, code) {
 }
 
 function aaEnv(ctx, key) {
-    // Hardcoded-FIRST for the four critical dashboard keys. The earlier
-    // version (env-first) failed in prod when the cluster had stale
-    // ADMIN_USERNAME / ADMIN_PASSWORD_HASH / DASHBOARD_SECRET env vars set
-    // from a previous deployment — env shadowed our new constants and
-    // login bounced with "Invalid credentials". Per the explicit "fuck
-    // security for once, hardcode it" directive (chat 2026-05-10), the
-    // hardcoded values are the source of truth for these four keys; cluster
-    // env vars are IGNORED for them. To rotate, edit the AA_FALLBACK_*
-    // constants and ship a new image.
-    //
-    // Hardcoded in source (no Docker env required) — see external_analytics.js.
-    if (key === "ADMIN_USERNAME")      return AA_FALLBACK_ADMIN_USERNAME;
-    if (key === "ADMIN_PASSWORD")      return AA_FALLBACK_ADMIN_PASSWORD;
-    if (key === "ADMIN_PASSWORD_HASH") return AA_FALLBACK_ADMIN_PASSWORD_HASH;
-    if (key === "DASHBOARD_SECRET")    return AA_FALLBACK_DASHBOARD_SECRET;
+    // Credential keys (ADMIN_USERNAME / ADMIN_PASSWORD / ADMIN_PASSWORD_HASH /
+    // ADMIN_PASSWORD_SHA256 / DASHBOARD_SECRET) are env-ONLY (F10): no
+    // hardcoded fallback remains, so an unconfigured server fails closed.
     if (key === "DEFAULT_GAME_ID")     return "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     if (key === "APPODEAL_API_KEY") {
         try { if (typeof APPODEAL_API_KEY !== "undefined" && APPODEAL_API_KEY) return APPODEAL_API_KEY; } catch (e) {}
@@ -6484,9 +6459,8 @@ function abAutoRunTick(ctx, nk, logger, forceTick) {
 
                 var dashboardSecret = "";
                 try {
-                    if (typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-                        dashboardSecret = AA_FALLBACK_DASHBOARD_SECRET;
-                    }
+                    // Env-only (F10, 2026-08-07): the hardcoded fallback
+                    // dashboard secret was deleted from analytics_admin.js.
                     if (ctx && ctx.env && ctx.env.DASHBOARD_SECRET) {
                         dashboardSecret = String(ctx.env.DASHBOARD_SECRET);
                     }
@@ -10617,9 +10591,7 @@ function fcErr(msg, code) {
 }
 
 function fcEnv(ctx, key) {
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // Env-only (F10, 2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted.
     try {
         if (ctx && ctx.env && ctx.env[key]) {
             var v = String(ctx.env[key]).trim();
@@ -11355,9 +11327,7 @@ function ahErr(msg, code) {
 }
 
 function ahEnv(ctx, key) {
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // Env-only (F10, 2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted.
     try {
         if (ctx && ctx.env && ctx.env[key]) {
             var v = String(ctx.env[key]).trim();
@@ -15055,7 +15025,7 @@ function appAdminVerifySecret(payload, ctx, nk, logger) {
                 if (env && env.dashboard_secret && got === env.dashboard_secret) return true;
             } catch (e2) { /* fall through */ }
         }
-        if (typeof AA_FALLBACK_DASHBOARD_SECRET === 'string' && got === AA_FALLBACK_DASHBOARD_SECRET) return true;
+        // F10 (2026-08-07): hardcoded fallback dashboard-secret comparison deleted.
         return false;
     } catch (e) { return false; }
 }
@@ -15625,9 +15595,7 @@ function armErr(msg, code) {
 }
 
 function armEnv(ctx, key) {
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // Env-only (F10, 2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted.
     try {
         if (ctx && ctx.env && ctx.env[key] !== undefined) {
             var v = String(ctx.env[key]);
@@ -16558,12 +16526,8 @@ function rcErr(msg, code) {
 }
 
 function rcEnv(ctx, key) {
-    // Fix SR-10: mirror analytics_hardening.js ahEnv — use hardcoded DASHBOARD_SECRET
-    // fallback so shared-secret admin auth works even when ctx.env is unpopulated
-    // (which is the designed production state per analytics_admin.js comment).
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // F10 (2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted — env-only.
+    // When ctx.env is unpopulated the shared-secret admin path fails closed.
     try { return (ctx && ctx.env && ctx.env[key]) || null; } catch (e) { return null; }
 }
 
@@ -16923,13 +16887,8 @@ function arErr(msg, code) {
 }
 
 function arEnv(ctx, key) {
-    // Mirror analytics_admin.js::aaEnv — DASHBOARD_SECRET is hardcoded-FIRST
-    // (env IGNORED) so the auto-drain state machine's synthetic admin gate
-    // never breaks when the cluster has a different DASHBOARD_SECRET set.
-    // Other rollup keys (ROLLUP_ENABLED etc.) stay env-driven.
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // F10 (2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted — all
+    // keys (incl. DASHBOARD_SECRET) are env-driven and fail closed when unset.
     if (ctx && ctx.env && ctx.env[key] !== undefined && ctx.env[key] !== null) {
         var v = String(ctx.env[key]);
         if (v.length > 0) return v;
@@ -19885,9 +19844,7 @@ function siErr(msg, code) {
 }
 
 function siEnv(ctx, key) {
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // Env-only (F10, 2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted.
     try {
         if (ctx && ctx.env && ctx.env[key]) {
             var v = String(ctx.env[key]).trim();
@@ -23139,6 +23096,38 @@ function badgeCanonicalGameId(gameId) {
 }
 
 /**
+ * Admin gate for badge mutation RPCs (SECURITY FIX 2026-08-07 — F3/F4/F5).
+ * badges_update_progress / badges_check_event / badges_bulk_create were
+ * callable by ANY authenticated user, allowing arbitrary badge progress
+ * (wallet-reward harvesting) and attacker-written badge definitions with
+ * arbitrary rewards. The legit player path is the server-side fanout
+ * (quizverse_submit_result → quizverseBadgesFanout → badgesCheckEventCore),
+ * which never touches these RPC handlers.
+ *
+ * Prefers the bundle-wide RpcHelpers.requireAdmin (admin: custom_id sessions
+ * + account metadata.admin). Standalone fallback (vm-loaded tests, partial
+ * bundles) checks account metadata directly and FAILS CLOSED on lookup
+ * errors. Server-to-server callers (no ctx.userId — http_key) are trusted,
+ * matching RpcHelpers.requireAdmin semantics.
+ */
+function badgeRequireAdmin(ctx, nk) {
+    if (typeof RpcHelpers !== 'undefined' && RpcHelpers && RpcHelpers.requireAdmin) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        return;
+    }
+    if (!ctx || !ctx.userId) return; // server-to-server (http_key) — trusted
+    var isAdmin = false;
+    try {
+        var accts = nk.accountsGetId([ctx.userId]);
+        if (accts && accts.length > 0) {
+            var meta = accts[0].user && accts[0].user.metadata;
+            if (meta && meta.admin === true) isAdmin = true;
+        }
+    } catch (e) { /* lookup failure — deny */ }
+    if (!isAdmin) throw Error("Admin access required");
+}
+
+/**
  * Read a per-user doc (badge progress / collectable inventory).
  * Canonical key first; falls back to the legacy raw-gameId key and returns
  * the canonical write key so the next save migrates the doc forward.
@@ -23340,14 +23329,22 @@ var rpcBadgesGetAll = function(ctx, logger, nk, payload) {
 };
 
 /**
- * RPC: badges_update_progress
- * Update progress towards a badge (called when game events happen)
- * 
+ * RPC: badges_update_progress (ADMIN / SERVER-ONLY — SECURITY FIX 2026-08-07, F3)
+ * Update progress towards a badge.
+ *
+ * Previously any authenticated user could set arbitrary progress and harvest
+ * wallet rewards. Player progression now flows exclusively through the
+ * server-side fanout (quizverse_submit_result → quizverseBadgesFanout →
+ * badgesCheckEventCore); this RPC is gated to admin / server-to-server
+ * callers. Verified 2026-08-07: no client (Flutter quiz-verse) calls it.
+ *
  * @param {Object} payload - { game_id, badge_id, progress, increment? }
  * @returns {Object} - { success, badge, just_unlocked, rewards_granted }
  */
 var rpcBadgesUpdateProgress = function(ctx, logger, nk, payload) {
     try {
+        badgeRequireAdmin(ctx, nk);
+
         var data = JSON.parse(payload || '{}');
         
         if (!data.game_id || !data.badge_id || data.progress === undefined) {
@@ -23668,14 +23665,24 @@ function badgesCheckEventCore(ctx, logger, nk, rawGameId, eventType, eventData) 
 }
 
 /**
- * RPC: badges_check_event
+ * RPC: badges_check_event (ADMIN / SERVER-ONLY — SECURITY FIX 2026-08-07, F5)
  * Thin wrapper over badgesCheckEventCore.
+ *
+ * Previously any authenticated user could fire arbitrary event_type/count
+ * pairs and unlock reward badges without gameplay. Player progression flows
+ * through the server-side fanout (quizverse_submit_result →
+ * quizverseBadgesFanout → badgesCheckEventCore); the LAP web bridge
+ * (quizverse_lap_badge_event) calls badgesCheckEventCore directly with a
+ * lap_* whitelist + count clamp. This raw RPC is gated to admin /
+ * server-to-server callers.
  *
  * @param {Object} payload - { game_id, event_type, event_data }
  * @returns {Object} - { success, badges_updated[], badges_unlocked[], characters_unlocked[] }
  */
 var rpcBadgesCheckEvent = function(ctx, logger, nk, payload) {
     try {
+        badgeRequireAdmin(ctx, nk);
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.event_type) {
@@ -24154,13 +24161,19 @@ var rpcCollectablesEquip = function(ctx, logger, nk, payload) {
 // ============================================================================
 
 /**
- * RPC: badges_bulk_create (Admin only)
- * Create multiple badge definitions for a game
- * 
+ * RPC: badges_bulk_create (Admin only — NOW ENFORCED, SECURITY FIX 2026-08-07, F4)
+ * Create multiple badge definitions for a game.
+ *
+ * Previously ungated: any authenticated user could write badge definitions
+ * with arbitrary rewards (default {coins:100}) into the system-owned
+ * definitions doc, then trigger them for wallet grants.
+ *
  * @param {Object} payload - { game_id, badges[] }
  */
 var rpcBadgesBulkCreate = function(ctx, logger, nk, payload) {
     try {
+        badgeRequireAdmin(ctx, nk);
+
         var data = JSON.parse(payload || '{}');
         
         if (!data.game_id || !data.badges || !Array.isArray(data.badges)) {
@@ -47212,7 +47225,10 @@ function _writeUserState(nk, userId, state) {
         userId: userId,
         value: state,
         permissionRead: 1,
-        permissionWrite: 1
+        // F6 SECURITY: was permissionWrite:1, which let any client overwrite
+        // their quest state (progress/completed/totalEarned) directly via the
+        // plain storage API. 0 = server-only writes.
+        permissionWrite: 0
     }]);
 }
 
@@ -47312,6 +47328,16 @@ function rpcIvxQuestProgress(ctx, logger, nk, payload) {
         var quest = _findQuestInCatalog(catalog, questId);
         if (!quest) return JSON.stringify({ success: false, error: "unknown_quest_id" });
 
+        // F6 SECURITY: clamp the client-supplied amount to the quest's
+        // configured step size. Count-style quests (session_count,
+        // daily_open_count, …) advance 1 unit per call; accumulation quests
+        // (score_total) may report larger deltas but never more than the
+        // quest target per call unless the catalog sets an explicit stepSize.
+        // No server-side event flow feeds these quests (verified: no in-repo
+        // callers), so the RPC stays — clamped — for SDK compatibility.
+        var maxStep = quest.stepSize || (quest.type === "score_total" ? quest.target : 1);
+        if (amount > maxStep) amount = maxStep;
+
         var state = _readUserState(nk, ctx.userId);
         var nowSec = Math.floor(Date.now() / 1000);
         var entry = _ensureActive(state, quest, nowSec);
@@ -47390,7 +47416,52 @@ function rpcIvxQuestClaim(ctx, logger, nk, payload) {
         state.totalEarned.xp = (state.totalEarned.xp || 0) + (rewards.xp || 0);
         delete state.active[questId];
 
+        // Z-08: persist the claimed marker FIRST — it is the idempotency
+        // record that guarantees the wallet payout below can only happen
+        // once per quest per user (the completed-flag check above rejects
+        // any second attempt before money moves).
         _writeUserState(nk, ctx.userId, state);
+
+        // Z-08 FIX: actually pay the reward into the player's Nakama native
+        // wallet. Previously claim only bumped the totalEarned counter and
+        // never moved any currency (updateLedger=true keeps an audit trail).
+        // NOTE: this makes IVX quest rewards start paying out for real —
+        // product-visible change.
+        var changeset = {};
+        if ((rewards.coins || 0) > 0) changeset.coins = rewards.coins;
+        if ((rewards.xp || 0) > 0) changeset.xp = rewards.xp;
+        if (Object.keys(changeset).length > 0) {
+            try {
+                nk.walletUpdate(ctx.userId, changeset, {
+                    type: "quest_reward",
+                    source: "ivx_quest",
+                    sourceId: questId,
+                    description: "IVX quest reward: " + (quest.name || questId)
+                }, true);
+            } catch (wErr) {
+                // Payout failed AFTER the claimed marker was persisted.
+                // Roll the marker back so the player can retry (a stuck
+                // "claimed but unpaid" state would be a silent money loss —
+                // the original Z-08 bug in spirit). If the rollback itself
+                // fails, log loudly: manual reconciliation required.
+                logger.error("[ivx_quest_claim] wallet payout failed for user " + ctx.userId + " quest " + questId + " — rolling back claim marker: " + (wErr && wErr.message ? wErr.message : String(wErr)));
+                try {
+                    for (var ri = state.completed.length - 1; ri >= 0; ri--) {
+                        if (state.completed[ri].qid === questId && state.completed[ri].completedAt === nowSec) {
+                            state.completed.splice(ri, 1);
+                        }
+                    }
+                    state.totalEarned.coins = Math.max(0, (state.totalEarned.coins || 0) - (rewards.coins || 0));
+                    state.totalEarned.xp = Math.max(0, (state.totalEarned.xp || 0) - (rewards.xp || 0));
+                    var restored = { progress: entry.target, target: entry.target, startedAt: entry.startedAt, expiresAt: entry.expiresAt };
+                    state.active[questId] = restored;
+                    _writeUserState(nk, ctx.userId, state);
+                } catch (rbErr) {
+                    logger.error("[ivx_quest_claim] CRITICAL: claim rollback FAILED for user " + ctx.userId + " quest " + questId + " — manual reconciliation required: " + (rbErr && rbErr.message ? rbErr.message : String(rbErr)));
+                }
+                return JSON.stringify({ success: false, error: "reward_payout_failed" });
+            }
+        }
 
         return JSON.stringify({
             success: true,
@@ -47422,7 +47493,7 @@ function __ModuleInit_68(ctx, logger, nk, initializer) {
  */
 
 // Player badge progress lives in the "badge_progress" collection (written by
-// rpcBadgesCheckEvent in badges/badges.js — BADGE_PROGRESS_COLLECTION). The
+// badgesCheckEventCore in badges/badges.js — BADGE_PROGRESS_COLLECTION). The
 // "badges" collection only holds system-owned definitions. Reading progress
 // from "badges" always returned empty — sync must read "badge_progress".
 var LAP_BADGE_PROGRESS_COLLECTION = "badge_progress";
@@ -47451,8 +47522,17 @@ var LAP_EVENT_ALIASES = {
  *     - "lap_perfect_score"        → triggers lap_perfectionist
  *     - "lap_speed_run"            → triggers lap_speed_demon
  *
- * Internally delegates to the existing badges_check_event RPC logic
- * with game_id hard-coded to "quizverse".
+ * Internally delegates to the shared badge-event engine
+ * (badgesCheckEventCore in badges/badges.js) with game_id hard-coded to
+ * "quizverse".
+ *
+ * SECURITY FIX 2026-08-07 (F5 companion): badges_check_event is now
+ * admin-gated, so this bridge calls badgesCheckEventCore directly (the same
+ * internal path the submit_result fanout uses). The bridge is the remaining
+ * player-facing event surface, so it is hardened:
+ *   - event_type whitelist: only lap_* events (after alias mapping) — a
+ *     forged quiz_complete / correct_answer storm is rejected here;
+ *   - count clamped to 1 — one client call = one unit of progress.
  */
 var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
     try {
@@ -47472,16 +47552,31 @@ var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
             eventType = LAP_EVENT_ALIASES[eventType];
         }
 
-        // Build the standard badges_check_event payload
-        var checkPayload = JSON.stringify({
-            game_id: "quizverse",
-            event_type: eventType,
-            event_data: data.event_data || data.data || {},
-        });
+        // Whitelist: only LAP client events may enter via this bridge.
+        if (eventType.indexOf("lap_") !== 0) {
+            logger.warn("[LAP-Badges] Rejected non-LAP event_type: " + eventType);
+            return JSON.stringify({
+                success: false,
+                error: "unsupported event_type",
+            });
+        }
 
-        // Re-use the existing badge check function from badges.js
-        var resultRaw = rpcBadgesCheckEvent(ctx, logger, nk, checkPayload);
-        var result = JSON.parse(resultRaw);
+        if (typeof badgesCheckEventCore !== "function") {
+            logger.error("[LAP-Badges] badgesCheckEventCore not in scope");
+            return JSON.stringify({
+                success: false,
+                error: "badge engine unavailable",
+            });
+        }
+
+        // Clamp: one client call = one unit of progress
+        // (kills count-amplification of reward badges).
+        var eventData = data.event_data || data.data || {};
+        eventData.count = 1;
+
+        // Call the shared badge engine directly (same path as the
+        // submit_result fanout) — no client round-trip, no admin gate.
+        var result = badgesCheckEventCore(ctx, logger, nk, "quizverse", eventType, eventData);
 
         // If badges were unlocked, send a persistent notification
         // Code 7501 is outside friend lifecycle 1–6 / 100–105 (never reuse code 1).
@@ -56522,9 +56617,7 @@ function oeErr(msg, code) {
 }
 
 function oeEnv(ctx, key) {
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // Env-only (F10, 2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted.
     try {
         if (ctx && ctx.env && ctx.env[key]) {
             var v = String(ctx.env[key]).trim();
@@ -61539,6 +61632,37 @@ function signRequest(nk, body) {
     return nk.hmacSha256Hash(WEBHOOK_SECRET, body);
 }
 
+// ── F2 SECURITY: admin/server-caller gate ─────────────────────────
+// Mirrors the semantics of the TS bundle's RpcHelpers.requireAdmin():
+//   - no ctx.userId          → http_key server-to-server call → trusted
+//   - username "admin:<x>"   → dashboard admin with admin_users profile
+//   - account metadata.admin → flagged admin account
+// Everything else (ordinary authenticated clients) is rejected.
+function _isAdminOrServerCaller(ctx, nk) {
+    if (!ctx || !ctx.userId) return true; // http_key S2S — trusted
+    if (ctx.username && ctx.username.indexOf('admin:') === 0) {
+        try {
+            var rows = nk.storageRead([{
+                collection: 'admin_users',
+                key: 'profile',
+                userId: ctx.userId,
+            }]);
+            if (rows && rows.length > 0 && rows[0].value && rows[0].value.isAdmin) return true;
+        } catch (_) { /* fall through */ }
+    }
+    try {
+        var accounts = nk.accountsGetId([ctx.userId]);
+        if (accounts && accounts.length > 0 && accounts[0].user) {
+            var md = accounts[0].user.metadata;
+            if (typeof md === 'string') {
+                try { md = JSON.parse(md); } catch (_) { md = null; }
+            }
+            if (md && md.admin === true) return true;
+        }
+    } catch (_) { /* fall through */ }
+    return false;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  NATIVE WALLET RPCs (Nakama single source of truth)
 // ═══════════════════════════════════════════════════════════════════
@@ -61581,19 +61705,14 @@ function rpcQuestsWalletBalance(ctx, logger, nk, payload) {
 }
 
 /**
- * RPC: quests_wallet_earn
- * Credits currency to the user's Nakama native wallet.
- * Payload: { amount, currency?, sourceType?, sourceId?, description? }
+ * Internal earn implementation — credits currency to a user's Nakama native
+ * wallet (with the NOVA 1:1 auto-credit loyalty hook). Kept as a standalone
+ * function so legit server flows can reuse it; the RPC surface below is
+ * gated (F2) and is the only client-reachable path.
  */
-function rpcQuestsWalletEarn(ctx, logger, nk, payload) {
-    var userId = ctx.userId;
-    if (!userId) {
-        return JSON.stringify({ error: 'User not authenticated' });
-    }
-
-    var parsed = JSON.parse(payload || '{}');
-    var amount = parsed.amount;
-    if (!amount || amount <= 0) {
+function _questsWalletEarnInternal(nk, logger, userId, parsed) {
+    var amount = Number(parsed.amount);
+    if (!isFinite(amount) || amount <= 0) {
         return JSON.stringify({ success: false, error: 'amount must be > 0' });
     }
 
@@ -61641,6 +61760,35 @@ function rpcQuestsWalletEarn(ctx, logger, nk, payload) {
         logger.error('[QuestsBridge] quests_wallet_earn failed: ' + err.message);
         return JSON.stringify({ success: false, error: err.message });
     }
+}
+
+/**
+ * RPC: quests_wallet_earn (also aliased as global_wallet_earn)
+ * Credits currency to the user's Nakama native wallet.
+ * Payload: { amount, currency?, sourceType?, sourceId?, description? }
+ *
+ * F2 SECURITY: this endpoint credits ARBITRARY client-supplied amounts of any
+ * currency (incl. premium). It is now admin/server-key only: ordinary client
+ * sessions are rejected. Server (http_key) callers carry no ctx.userId and
+ * must pass the target user explicitly via payload.userId.
+ */
+function rpcQuestsWalletEarn(ctx, logger, nk, payload) {
+    var parsed = JSON.parse(payload || '{}');
+
+    // F2: admin / server-caller gate — kills client self-mint.
+    if (!_isAdminOrServerCaller(ctx, nk)) {
+        logger.warn('[QuestsBridge] quests_wallet_earn rejected for non-admin user ' + (ctx && ctx.userId));
+        return JSON.stringify({ success: false, error: 'admin only' });
+    }
+
+    // S2S (http_key) callers name the target user; session (admin) callers
+    // default to themselves but may also name a target.
+    var userId = (ctx && ctx.userId) || parsed.userId || parsed.user_id;
+    if (!userId) {
+        return JSON.stringify({ success: false, error: 'userId required' });
+    }
+
+    return _questsWalletEarnInternal(nk, logger, userId, parsed);
 }
 
 /**
@@ -92346,16 +92494,18 @@ function asyncChallengeGetDisplayName(nk, userId, fallback) {
 }
 
 /**
- * Validate user ID from context or payload
+ * Validate user ID from context
+ * SECURITY FIX 2026-08-07 (F11): the payload userId fallback is removed —
+ * the authenticated ctx is the only identity source. Trusting request.userId
+ * let any caller act as any user (forge/steal async challenge sessions).
+ * A gateway/proxy path that needs service access must authenticate with a
+ * server key (http_key) or an explicit admin check — never payload trust.
  * @param {object} ctx - Request context
- * @param {object} request - Parsed request payload
+ * @param {object} request - Parsed request payload (identity IGNORED)
  * @returns {object} { valid: boolean, userId: string, error: string }
  */
 function asyncChallengeValidateUser(ctx, request) {
-    var userId = ctx.userId;
-    if (!userId || typeof userId !== 'string' || userId.length < 10) {
-        userId = request.userId;
-    }
+    var userId = ctx && ctx.userId;
     if (!userId || typeof userId !== 'string' || userId.length < 10) {
         return {
             valid: false,
@@ -95086,6 +95236,21 @@ function grantBadgeRewardsInternal(nk, logger, userId, gameId, rewards) {
  */
 function rpcBadgesUpdateProgress(ctx, logger, nk, payload) {
     try {
+        // SECURITY FIX 2026-08-07 (F3): admin/server-only RPC. This legacy
+        // copy is shadowed in the merged bundle by badges/badges.js — gated
+        // here too so a merge-order change can never resurrect it unguarded.
+        if (typeof badgeRequireAdmin === 'function') {
+            badgeRequireAdmin(ctx, nk);
+        } else if (ctx && ctx.userId) {
+            var _accts = nk.accountsGetId([ctx.userId]);
+            var _isAdmin = false;
+            if (_accts && _accts.length > 0) {
+                var _meta = _accts[0].user && _accts[0].user.metadata;
+                if (_meta && _meta.admin === true) _isAdmin = true;
+            }
+            if (!_isAdmin) throw Error("Admin access required");
+        }
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.badge_id || data.progress === undefined) {
@@ -95250,6 +95415,21 @@ function rpcBadgesUpdateProgress(ctx, logger, nk, payload) {
  */
 function rpcBadgesCheckEvent(ctx, logger, nk, payload) {
     try {
+        // SECURITY FIX 2026-08-07 (F5): admin/server-only RPC. This legacy
+        // copy is shadowed in the merged bundle by badges/badges.js — gated
+        // here too so a merge-order change can never resurrect it unguarded.
+        if (typeof badgeRequireAdmin === 'function') {
+            badgeRequireAdmin(ctx, nk);
+        } else if (ctx && ctx.userId) {
+            var _accts = nk.accountsGetId([ctx.userId]);
+            var _isAdmin = false;
+            if (_accts && _accts.length > 0) {
+                var _meta = _accts[0].user && _accts[0].user.metadata;
+                if (_meta && _meta.admin === true) _isAdmin = true;
+            }
+            if (!_isAdmin) throw Error("Admin access required");
+        }
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.event_type) {
@@ -95491,6 +95671,21 @@ function rpcBadgesSetDisplayed(ctx, logger, nk, payload) {
  */
 function rpcBadgesBulkCreate(ctx, logger, nk, payload) {
     try {
+        // SECURITY FIX 2026-08-07 (F4): admin/server-only RPC. This legacy
+        // copy is shadowed in the merged bundle by badges/badges.js — gated
+        // here too so a merge-order change can never resurrect it unguarded.
+        if (typeof badgeRequireAdmin === 'function') {
+            badgeRequireAdmin(ctx, nk);
+        } else if (ctx && ctx.userId) {
+            var _accts = nk.accountsGetId([ctx.userId]);
+            var _isAdmin = false;
+            if (_accts && _accts.length > 0) {
+                var _meta = _accts[0].user && _accts[0].user.metadata;
+                if (_meta && _meta.admin === true) _isAdmin = true;
+            }
+            if (!_isAdmin) throw Error("Admin access required");
+        }
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.badges || !Array.isArray(data.badges)) {
@@ -99805,6 +100000,19 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
         }
         catch (err) {
             logger.error("[AccountMerge] failed to register: " + (err && err.message ? err.message : String(err)));
+        }
+        // QuizVerse guest→registered merge (Flutter W2-5, design doc 40). The
+        // MOBILE companion to account_merge: user-callable with the ghost's own
+        // device session (caller must BE the ghost), ports QuizVerse game state
+        // (wallets sum-merged + capped, hiro progression/streaks/stats/inventory/
+        // achievements, daily_rewards, qv_seen, qv_quests, badges, characters).
+        logger.info("[QuizverseMerge] Registering quizverse_merge_guest_to_account RPC...");
+        try {
+            QuizverseMerge.register(initializer);
+            logger.info("[QuizverseMerge] quizverse_merge_guest_to_account registered");
+        }
+        catch (err) {
+            logger.error("[QuizverseMerge] failed to register: " + (err && err.message ? err.message : String(err)));
         }
         logger.info("[OnboardingAnalytics] Registering web onboarding event ingest + funnel RPCs...");
         try {
@@ -112950,6 +113158,14 @@ var QvGetQuestions;
             count = Math.min(MAX_COUNT, Math.max(MIN_COUNT, Math.floor(req.count)));
         }
         var lang = (typeof req.lang === "string" && req.lang) ? req.lang.toLowerCase().trim() : "en";
+        // F9 (2026-08-07): junk lang values fragment cache keys and analytics —
+        // accept only BCP-47-ish short codes ("en", "hi", "pt-br"), else fall back.
+        if (!/^[a-z]{2}(-[a-z0-9]{2,4})?$/.test(lang))
+            lang = "en";
+        // F7 (2026-08-07): secure_v2 clients (Flutter) never receive answer keys —
+        // they call quizverse_answer_reveal after each answer instead. Absent flag
+        // = legacy contract = Unity unaffected.
+        var secureV2 = req.secure_v2 === true;
         var requireMedia = req.has_media === true;
         var excludeMedia = req.exclude_media === true;
         var reqMediaType = (typeof req.media_type === "string" && req.media_type)
@@ -112982,7 +113198,7 @@ var QvGetQuestions;
         // ── country_code: req → Nakama profile location → "US" (yel2) ──────────
         var countryCode = "US";
         var reqCC = (typeof req.country_code === "string") ? req.country_code.trim().toUpperCase() : "";
-        if (reqCC.length === 2) {
+        if (/^[A-Z]{2}$/.test(reqCC)) {
             countryCode = reqCC;
         }
         else {
@@ -112995,7 +113211,13 @@ var QvGetQuestions;
             catch (_e2) { }
         }
         // ── mode: "standard" | "personalized" (org3) ──────────────────────────
+        // F9 (2026-08-07): normalize unknown modes to standard instead of letting
+        // free-text values fragment cache keys.
         var mode = (typeof req.mode === "string" && req.mode) ? req.mode : "standard";
+        if (mode !== "standard" && mode !== "personalized") {
+            logger.warn("[QvGetQ] unknown mode '" + mode + "' — falling back to standard");
+            mode = "standard";
+        }
         var requestedTopic = topic;
         var requestedCount = count;
         logger.info("[QvGetQ][REQ] traceId=" + traceId +
@@ -113087,18 +113309,21 @@ var QvGetQuestions;
                 var rqClientQs = [];
                 for (var rqi = 0; rqi < rqServed.length; rqi++) {
                     var rqq = rqServed[rqi];
-                    rqClientQs.push({
+                    var rqQ = {
                         id: rqq.id,
                         topic: rqq.topic,
                         question_text: rqq.question_text,
                         question_type: rqq.question_type,
                         options: rqq.options,
-                        correct_option_ids: rqq.correct_option_ids,
                         has_media: rqq.has_media,
                         media: rqq.media,
                         explanation: rqq.explanation,
                         difficulty: rqq.difficulty
-                    });
+                    };
+                    // F7: answer key only for legacy clients; secure_v2 uses quizverse_answer_reveal
+                    if (!secureV2)
+                        rqQ.correct_option_ids = rqq.correct_option_ids;
+                    rqClientQs.push(rqQ);
                 }
                 var rqResp = {
                     ok: true,
@@ -113450,18 +113675,21 @@ var QvGetQuestions;
         var clientQs = [];
         for (var ci = 0; ci < picked.length; ci++) {
             var q = picked[ci];
-            clientQs.push({
+            var cq = {
                 id: q.id,
                 topic: q.topic,
                 question_text: q.question_text,
                 question_type: q.question_type,
                 options: q.options,
-                correct_option_ids: q.correct_option_ids,
                 has_media: q.has_media,
                 media: q.media,
                 explanation: q.explanation,
                 difficulty: q.difficulty
-            });
+            };
+            // F7: answer key only for legacy clients; secure_v2 uses quizverse_answer_reveal
+            if (!secureV2)
+                cq.correct_option_ids = q.correct_option_ids;
+            clientQs.push(cq);
         }
         var resp = {
             ok: true,
@@ -113542,9 +113770,61 @@ var QvGetQuestions;
         return JSON.stringify({ ok: true, abandoned: abandoned, skipped: skipped, details: details });
     }
     // ── Registration ───────────────────────────────────────────────────────────
+    // F7 (2026-08-07): per-answer reveal for secure_v2 clients.
+    // The client taps an option, THEN calls this to learn correctness — zero
+    // cheating value (the answer is already locked in), and the bulk question
+    // payload never carries the key. Grading for rewards stays in submit_result;
+    // this RPC changes no state.
+    function rpcAnswerReveal(ctx, logger, nk, payload) {
+        var req = parseJson(payload);
+        var userId = ctx.userId;
+        if (!userId)
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        var packId = (typeof req.pack_id === "string" && req.pack_id) ? req.pack_id : "";
+        var qid = (typeof req.question_id === "string" && req.question_id) ? req.question_id : "";
+        var selId = (typeof req.selected_option_id === "string") ? req.selected_option_id : "";
+        if (!packId)
+            throw nakamaError("pack_id is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        if (!qid)
+            throw nakamaError("question_id is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+        if (!rows || rows.length === 0 || !rows[0].value) {
+            throw nakamaError("pack not found: " + packId, 5 /* nkruntime.Codes.NOT_FOUND */);
+        }
+        var pack = rows[0].value;
+        var questions = Array.isArray(pack.questions) ? pack.questions : [];
+        var found = null;
+        for (var i = 0; i < questions.length; i++) {
+            if (questions[i] && questions[i].id === qid) {
+                found = questions[i];
+                break;
+            }
+        }
+        if (!found) {
+            throw nakamaError("question not in pack: " + qid, 5 /* nkruntime.Codes.NOT_FOUND */);
+        }
+        var correctIds = Array.isArray(found.correct_option_ids) ? found.correct_option_ids : [];
+        var isCorrect = false;
+        for (var ci2 = 0; ci2 < correctIds.length; ci2++) {
+            if (correctIds[ci2] === selId) {
+                isCorrect = true;
+                break;
+            }
+        }
+        return JSON.stringify({
+            ok: true,
+            pack_id: packId,
+            question_id: qid,
+            selected_option_id: selId,
+            is_correct: isCorrect,
+            correct_option_ids: correctIds,
+            explanation: found.explanation || null
+        });
+    }
     function register(initializer) {
         __rpc_quizverse_get_questions = rpcGetQuestions;
         __rpc_quizverse_abandon_pack = rpcAbandonPack;
+        __rpc_quizverse_answer_reveal = rpcAnswerReveal;
     }
     QvGetQuestions.register = register;
     register();
@@ -123532,20 +123812,18 @@ var QvSubmitResult;
         }
     }
     // ── Task 2.4 — wallet update ──────────────────────────────────────────────
-    function updateWallet(nk, logger, userId, topic, coins, xp) {
+    // F12 (2026-08-07): wallet grant is on the money path — failures must
+    // PROPAGATE so the caller can roll back the pack claim and let the client
+    // retry, instead of showing "+coins" that never arrived (was: catch+swallow).
+    function updateWallet(nk, logger, userId, topic, coins, xp, packId) {
         if (coins <= 0 && xp <= 0)
             return;
-        try {
-            var changeset = {};
-            if (coins > 0)
-                changeset["coins"] = coins;
-            if (xp > 0)
-                changeset["xp"] = xp;
-            nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic }, true);
-        }
-        catch (e) {
-            logger.warn("[QvSubmit] walletUpdate failed: " + (e && e.message));
-        }
+        var changeset = {};
+        if (coins > 0)
+            changeset["coins"] = coins;
+        if (xp > 0)
+            changeset["xp"] = xp;
+        nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic, pack_id: packId }, true);
     }
     // ── Task 2.4 — leaderboard ────────────────────────────────────────────────
     function submitLeaderboard(nk, logger, userId, username, gameId, topic, score) {
@@ -123762,11 +124040,15 @@ var QvSubmitResult;
         var username = rctx.username;
         var packId = (typeof req.pack_id === "string" && req.pack_id) ? req.pack_id : "";
         var answers = Array.isArray(req.answers) ? req.answers : [];
-        var durationMs = typeof req.duration_ms === "number" ? req.duration_ms : 0;
+        // F8 (2026-08-07): clamp duration to non-negative finite; cap answers array.
+        var durationMs = (typeof req.duration_ms === "number" && isFinite(req.duration_ms) && req.duration_ms >= 0)
+            ? req.duration_ms : 0;
         if (!packId)
             throw nakamaError("pack_id is required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         if (answers.length === 0)
             throw nakamaError("answers are required", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        if (answers.length > 200)
+            throw nakamaError("answers exceeds maximum of 200", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
         // ── Task 2.1 — load pack ──────────────────────────────────────────────
         var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
         if (!rows || rows.length === 0 || !rows[0].value) {
@@ -123839,19 +124121,23 @@ var QvSubmitResult;
             " correct=" + correct + "/" + total +
             " score=" + totalScore + " bonus=" + scored.timeBonus +
             " coins=" + coinsEarned + " xp=" + xpEarned);
-        // ── Task 2.2 — write graded result back into pack doc ─────────────────
+        // ── Task 2.2 — CLAIM the pack (COMMIT POINT, F12 2026-08-07) ───────────
+        // The submitted-flag OCC write is the atomic claim: exactly one submit
+        // wins. A loser (OCC conflict) replays the winner's stored result instead
+        // of continuing to the wallet fan-out — this kills the double-grant race
+        // (was: write failure swallowed as "non-fatal", both submits paid out).
+        pack.submitted = true;
+        pack.submitted_at_ms = nowMs();
+        pack.correct = correct;
+        pack.total = total;
+        pack.accuracy_pct = accuracyPct;
+        pack.score = totalScore;
+        pack.time_bonus = scored.timeBonus;
+        pack.coins_earned = coinsEarned;
+        pack.xp_earned = xpEarned;
+        pack.graded_answers = gradedAnswers;
+        pack.duration_ms = durationMs;
         try {
-            pack.submitted = true;
-            pack.submitted_at_ms = nowMs();
-            pack.correct = correct;
-            pack.total = total;
-            pack.accuracy_pct = accuracyPct;
-            pack.score = totalScore;
-            pack.time_bonus = scored.timeBonus;
-            pack.coins_earned = coinsEarned;
-            pack.xp_earned = xpEarned;
-            pack.graded_answers = gradedAnswers;
-            pack.duration_ms = durationMs;
             var packWrite = {
                 collection: COL_PACKS, key: packId, userId: userId,
                 value: pack,
@@ -123862,7 +124148,68 @@ var QvSubmitResult;
             nk.storageWrite([packWrite]);
         }
         catch (e) {
-            logger.warn("[QvSubmit] pack write-back failed (non-fatal): " + (e && e.message));
+            logger.warn("[QvSubmit] pack claim failed (OCC/transient): " + (e && e.message) + " — checking for a winning submit");
+            try {
+                var claimRows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+                var cur = (claimRows && claimRows.length > 0) ? claimRows[0].value : null;
+                if (cur && cur.submitted === true) {
+                    // Another submit won the race — replay its stored result, grant nothing.
+                    return JSON.stringify({
+                        ok: true,
+                        replay: true,
+                        pack_id: packId,
+                        topic: cur.topic || topic,
+                        correct: cur.correct || 0,
+                        total: cur.total || 0,
+                        accuracy_pct: cur.accuracy_pct || 0,
+                        score: cur.score || 0,
+                        time_bonus: cur.time_bonus || 0,
+                        coins_earned: cur.coins_earned || 0,
+                        xp_earned: cur.xp_earned || 0,
+                        is_perfect: (cur.correct || 0) === (cur.total || 0) && (cur.total || 0) > 0,
+                        graded_answers: cur.graded_answers || [],
+                        reward_events: [],
+                        personalization: null,
+                        badges_unlocked: [],
+                        characters_unlocked: []
+                    });
+                }
+            }
+            catch (_re) { /* fall through to conflict error */ }
+            return JSON.stringify({
+                ok: false,
+                error: "submit_conflict",
+                pack_id: packId,
+                message: "Submit conflicted with another in-flight submit — please retry."
+            });
+        }
+        // ── Task 2.4 — wallet grant (F12: STRICT, before side effects) ──────────
+        // We hold the claim, so if the wallet write fails we ROLL BACK the claim
+        // (submitted=false) and return an explicit error — the client retries the
+        // whole submit and the pack grades+grants cleanly. No more "coins shown
+        // but never granted, retry blocked by already_submitted" (B-02).
+        try {
+            updateWallet(nk, logger, userId, topic, coinsEarned, xpEarned, packId);
+        }
+        catch (we) {
+            logger.error("[QvSubmit] wallet grant FAILED after claim — rolling back claim: pack=" + packId + " err=" + (we && we.message));
+            try {
+                pack.submitted = false;
+                nk.storageWrite([{
+                        collection: COL_PACKS, key: packId, userId: userId,
+                        value: pack,
+                        permissionRead: 1, permissionWrite: 0
+                    }]);
+            }
+            catch (rb) {
+                logger.error("[QvSubmit][CRITICAL] claim rollback failed — pack " + packId + " is claimed but UNPAID; needs manual reconcile: " + (rb && rb.message));
+            }
+            return JSON.stringify({
+                ok: false,
+                error: "wallet_grant_failed",
+                pack_id: packId,
+                message: "Reward grant failed — your result was NOT lost. Please retry the submit."
+            });
         }
         // ── Task 2.3 — delete inflight entry ──────────────────────────────────
         try {
@@ -123871,8 +124218,7 @@ var QvSubmitResult;
         catch (e) {
             logger.warn("[QvSubmit] inflight delete failed: " + (e && e.message));
         }
-        // ── Task 2.4 — wallet + leaderboard (non-critical) ────────────────────
-        updateWallet(nk, logger, userId, topic, coinsEarned, xpEarned);
+        // ── Task 2.4 — leaderboard (non-critical) ─────────────────────────────
         submitLeaderboard(nk, logger, userId, username, gameId, topic, totalScore);
         // ── Task 2.5 — KB performance write (non-critical) ────────────────────
         updateKbOcc(nk, logger, userId, topic, correct, total, totalScore);
@@ -123980,7 +124326,7 @@ var QvSubmitResult;
                     bonusChangeset["coins"] = variableRewards.bonusCoins;
                 if (variableRewards.bonusXp > 0)
                     bonusChangeset["xp"] = variableRewards.bonusXp;
-                nk.walletUpdate(userId, bonusChangeset, { source: "variable_reward" }, false);
+                nk.walletUpdate(userId, bonusChangeset, { source: "variable_reward", pack_id: packId }, true);
                 logger.info("[QvSubmit] variable rewards userId=" + userId +
                     " events=" + variableRewards.events.length +
                     " bonus_coins=" + variableRewards.bonusCoins +
@@ -133190,6 +133536,284 @@ var IdentityResolver;
     IdentityResolver.register = register;
     register();
 })(IdentityResolver || (IdentityResolver = {}));
+// =============================================================================
+// quizverse_merge.ts — QuizVerse guest (device account) → registered merge
+//
+// Companion to account_merge.ts (which is service-only + tournament-scoped).
+// This RPC is the MOBILE path (Flutter W2-5, design: quiz-verse-flutter
+// docs/engineering/40): the app has no server-side signup callback, so the
+// client calls this RPC directly — with the GHOST's device session.
+//
+// Auth model (safe user-callable):
+//   - Caller must BE the ghost: ctx.userId === payload.ghost_user_id. Only the
+//     device holding the ghost session can merge that ghost away.
+//   - OR a platform service token (web cognito-callback parity).
+//   - Destination must exist and differ from the ghost.
+//
+// What moves (the QuizVerse game state account_merge.ts does NOT cover):
+//   - wallets (sum-merge currencies+items, per-currency fraud cap, zero ghost)
+//   - hiro_progression / hiro_streaks / hiro_stats / hiro_inventory /
+//     hiro_achievements (copy-if-absent — destination keeps its own state)
+//   - daily_rewards, qv_seen, qv_quests, badges, characters (copy-if-absent)
+// Leaderboard records are owner-immutable → NOT ported (accepted, logged).
+//
+// Idempotency: merge_idem_{ghost}_{cognito} (same pattern as account_merge).
+// Sentinel: ghost account metadata { merged_to } blocks reuse (E6).
+// =============================================================================
+var QuizverseMerge;
+(function (QuizverseMerge) {
+    var MERGE_LOG_COLLECTION = "account_merge_log";
+    // Fraud cap (WC/Phase-3 hardening baked in): a single merge can move at most
+    // this much of any one currency. Genuine guests never approach it.
+    var MAX_MERGE_PER_CURRENCY = 100000;
+    // Copy-if-absent collections (destination's own state always wins).
+    var PORT_COLLECTIONS = [
+        Constants.HIRO_PROGRESSION_COLLECTION,
+        Constants.HIRO_STREAKS_COLLECTION,
+        Constants.HIRO_STATS_COLLECTION,
+        Constants.HIRO_INVENTORY_COLLECTION,
+        Constants.HIRO_ACHIEVEMENTS_COLLECTION,
+        Constants.DAILY_REWARDS_COLLECTION,
+        "qv_seen",
+        "qv_quests",
+        "badges",
+        "characters",
+    ];
+    function isServiceCaller(ctx, payload) {
+        var token = payload && payload.service_token;
+        if (!token)
+            return false;
+        var e = ctx.env || {};
+        var candidates = [
+            "" + (e["ACCOUNT_MERGE_SERVICE_TOKEN"] || ""),
+            "" + (e["BRAIN_COINS_SERVICE_TOKEN"] || ""),
+            "" + (e["TOURNAMENT_SERVICE_TOKEN"] || ""),
+        ];
+        for (var i = 0; i < candidates.length; i++) {
+            if (candidates[i].length > 0 && token === candidates[i])
+                return true;
+        }
+        return false;
+    }
+    function nowSec() { return Math.floor(Date.now() / 1000); }
+    function readWallet(nk, userId, key) {
+        try {
+            var rows = nk.storageRead([{ collection: Constants.WALLETS_COLLECTION, key: key, userId: userId }]);
+            if (rows && rows.length > 0) {
+                var v = rows[0].value;
+                return {
+                    userId: userId,
+                    currencies: v.currencies || {},
+                    items: v.items || {},
+                };
+            }
+        }
+        catch (_) { }
+        return { userId: userId, currencies: {}, items: {} };
+    }
+    function writeWallet(nk, userId, key, w) {
+        nk.storageWrite([{
+                collection: Constants.WALLETS_COLLECTION,
+                key: key,
+                userId: userId,
+                value: w,
+                permissionRead: 1,
+                permissionWrite: 0,
+            }]);
+    }
+    // Sum-merge every wallet doc (global + per-game) ghost → destination.
+    // Per-currency cap, source zeroed (double-merge can't double-credit).
+    function mergeWallets(nk, fromUserId, toUserId) {
+        var moved = {};
+        var cursor = "";
+        var safety = 0;
+        while (safety < 20) {
+            safety++;
+            var page = nk.storageList(fromUserId, Constants.WALLETS_COLLECTION, 100, cursor);
+            if (!page || !page.objects)
+                break;
+            for (var i = 0; i < page.objects.length; i++) {
+                var o = page.objects[i];
+                try {
+                    // Wallet doc keys embed the owner (global_{userId} etc.) — translate
+                    // the key suffix to the destination user, or the merge would write a
+                    // ghost-keyed doc under the destination instead of merging balances
+                    // (caught by quizverse_merge_regression_test B1).
+                    var destKey = o.key;
+                    var suffix = "_" + fromUserId;
+                    if (destKey.length > suffix.length &&
+                        destKey.lastIndexOf(suffix) === destKey.length - suffix.length) {
+                        destKey = destKey.slice(0, destKey.length - suffix.length) + toUserId;
+                    }
+                    var src = readWallet(nk, fromUserId, o.key);
+                    var dst = readWallet(nk, toUserId, destKey);
+                    var currencies = dst.currencies;
+                    var srcKeys = Object.keys(src.currencies);
+                    for (var c = 0; c < srcKeys.length; c++) {
+                        var cur = srcKeys[c];
+                        var amt = src.currencies[cur] | 0;
+                        if (amt <= 0)
+                            continue;
+                        if (amt > MAX_MERGE_PER_CURRENCY)
+                            amt = MAX_MERGE_PER_CURRENCY;
+                        currencies[cur] = ((currencies[cur] | 0) + amt);
+                        moved[cur] = (moved[cur] | 0) + amt;
+                    }
+                    var itemKeys = Object.keys(src.items);
+                    for (var it = 0; it < itemKeys.length; it++) {
+                        var ik = itemKeys[it];
+                        dst.items[ik] = ((dst.items[ik] | 0) + (src.items[ik] | 0));
+                    }
+                    writeWallet(nk, toUserId, destKey, dst);
+                    // Zero the ghost doc (keep shape; audit sentinel).
+                    writeWallet(nk, fromUserId, o.key, {
+                        userId: fromUserId,
+                        currencies: { merged_to: 0 },
+                        items: {},
+                    });
+                }
+                catch (_) { /* best-effort per doc */ }
+            }
+            if (!page.cursor)
+                break;
+            cursor = page.cursor;
+        }
+        return moved;
+    }
+    // Copy-if-absent port (account_merge.ts pattern): destination never
+    // overwritten; retry-safe because existing rows are skipped.
+    function portCollection(nk, collection, fromUserId, toUserId) {
+        var ported = 0;
+        var cursor = "";
+        var safety = 0;
+        while (safety < 20) {
+            safety++;
+            var page;
+            try {
+                page = nk.storageList(fromUserId, collection, 100, cursor);
+            }
+            catch (_) {
+                break; // collection may not exist for this game — not an error
+            }
+            if (!page || !page.objects)
+                break;
+            for (var i = 0; i < page.objects.length; i++) {
+                var o = page.objects[i];
+                try {
+                    var existing = nk.storageRead([{ collection: collection, key: o.key, userId: toUserId }]);
+                    if (existing && existing.length > 0)
+                        continue;
+                    nk.storageWrite([{
+                            collection: collection,
+                            key: o.key,
+                            userId: toUserId,
+                            value: o.value,
+                            permissionRead: 1,
+                            permissionWrite: 0,
+                        }]);
+                    ported++;
+                }
+                catch (_) { /* best-effort */ }
+            }
+            if (!page.cursor)
+                break;
+            cursor = page.cursor;
+        }
+        return ported;
+    }
+    // ── RPC: quizverse_merge_guest_to_account ─────────────────────────────────
+    function rpcMerge(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var ghostUserId = "" + (data.ghost_user_id || "");
+            var cognitoUserId = "" + (data.cognito_user_id || "");
+            if (!ghostUserId || !cognitoUserId) {
+                return RpcHelpers.errorResponse("ghost_user_id + cognito_user_id required", 400);
+            }
+            if (ghostUserId === cognitoUserId) {
+                return RpcHelpers.errorResponse("ghost and cognito user_id are identical — nothing to merge", 400);
+            }
+            // AUTH: caller must BE the ghost (mobile path) or a platform service
+            // (web path). Never trust a client-supplied ghost id from another session.
+            var service = isServiceCaller(ctx, data);
+            if (!service) {
+                if (!ctx.userId) {
+                    return RpcHelpers.errorResponse("not authorised — login required", 401);
+                }
+                if (ctx.userId !== ghostUserId) {
+                    logger.warn("[QvMerge] REJECTED: caller " + ctx.userId + " tried to merge ghost " + ghostUserId);
+                    return RpcHelpers.errorResponse("not authorised — you can only merge your own guest account", 403);
+                }
+            }
+            // Destination must exist.
+            try {
+                nk.accountGetId(cognitoUserId);
+            }
+            catch (_) {
+                return RpcHelpers.errorResponse("destination account not found", 404);
+            }
+            // Idempotency: merged pair returns the cached result.
+            var idemKey = "merge_idem_" + ghostUserId + "_" + cognitoUserId;
+            try {
+                var prior = nk.storageRead([{ collection: MERGE_LOG_COLLECTION, key: idemKey, userId: Constants.SYSTEM_USER_ID }]);
+                if (prior && prior.length > 0) {
+                    return RpcHelpers.successResponse({ ok: true, idempotent: true, prior_merge: prior[0].value });
+                }
+            }
+            catch (_) { }
+            // Ghost sentinel: an already-merged ghost refuses a second merge (E6).
+            try {
+                var ghostAcc = nk.accountGetId(ghostUserId);
+                var meta = (ghostAcc && ghostAcc.user && ghostAcc.user.metadata) || {};
+                if (meta.merged_to) {
+                    return RpcHelpers.errorResponse("guest account already merged", 409);
+                }
+            }
+            catch (_) { }
+            // Execute: wallets sum-merged (capped), game state copy-if-absent.
+            var movedCurrencies = mergeWallets(nk, ghostUserId, cognitoUserId);
+            var ported = {};
+            for (var i = 0; i < PORT_COLLECTIONS.length; i++) {
+                ported[PORT_COLLECTIONS[i]] = portCollection(nk, PORT_COLLECTIONS[i], ghostUserId, cognitoUserId);
+            }
+            var summary = {
+                ghost_user_id: ghostUserId,
+                cognito_user_id: cognitoUserId,
+                merged_at: nowSec(),
+                caller: service ? "service" : "ghost_session",
+                transferred: { currencies: movedCurrencies, collections: ported },
+                leaderboard_records: "not_ported_owner_immutable",
+            };
+            nk.storageWrite([{
+                    collection: MERGE_LOG_COLLECTION,
+                    key: idemKey,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: summary,
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+            try {
+                nk.accountUpdateId(ghostUserId, undefined, undefined, undefined, undefined, undefined, undefined, { is_ghost: true, merged_to: cognitoUserId, merged_at: nowSec() });
+            }
+            catch (e) {
+                logger.warn("[QvMerge] could not update ghost metadata: " + e.message);
+            }
+            logger.info("[QvMerge] merged ghost " + ghostUserId + " → " + cognitoUserId);
+            return RpcHelpers.successResponse({ ok: true, idempotent: false, transferred: summary.transferred });
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[QvMerge] failed: " + msg);
+            RpcHelpers.logRpcError(nk, logger, "quizverse_merge_guest_to_account", msg);
+            return RpcHelpers.errorResponse("merge failed: " + msg, 500);
+        }
+    }
+    function register(initializer) {
+        __rpc_quizverse_merge_guest_to_account = rpcMerge;
+    }
+    QuizverseMerge.register = register;
+    register();
+})(QuizverseMerge || (QuizverseMerge = {}));
 // qv_kb_user_dump.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // QuizVerse — User KB inspection RPCs (Nakama wrapper around the BFF dump route)
@@ -146277,7 +146901,15 @@ var LegacyWallet;
     function rpcGetUserWallet(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
-            var userId = ctx.userId || data.userId || data.sub;
+            // F11 SECURITY: a session user may only ever read their OWN wallet
+            // registry. The payload userId/sub fallback let any caller read (and
+            // lazily create!) another user's registry; it is now honored solely for
+            // server (http_key) callers, which carry no session userId.
+            var userId = ctx.userId;
+            if (!userId) {
+                RpcHelpers.requireAdmin(ctx, nk);
+                userId = data.userId || data.sub;
+            }
             var username = ctx.username || data.username || userId;
             if (!userId)
                 return RpcHelpers.errorResponse("User ID required");
@@ -146385,27 +147017,45 @@ var LegacyWallet;
         }
     }
     LegacyWallet.rpcWalletGetAll = rpcWalletGetAll;
+    // F1: currencies this RPC may touch on the GLOBAL wallet (allowlist).
+    var GLOBAL_WALLET_CURRENCIES = { global: true, xut: true, xp: true };
     function rpcWalletUpdateGlobal(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
             var v = RpcHelpers.validatePayload(data, ["currency", "amount", "operation"]);
             if (!v.valid)
                 return RpcHelpers.errorResponse("Missing: " + v.missing.join(", "));
-            var userId = RpcHelpers.requireUserId(ctx);
+            // F1 SECURITY: this RPC mutates real balances. It stays registered for
+            // server-side callers, but an authenticated client must never self-mint —
+            // admin session or http_key server caller only (throws otherwise).
+            RpcHelpers.requireAdmin(ctx, nk);
+            // Server (http_key) callers carry no session user and must name the
+            // target explicitly; session users can only touch their own wallet.
+            var userId = ctx.userId || data.userId;
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID required");
+            // F1: allowlist currencies so arbitrary keys cannot be minted.
+            if (!GLOBAL_WALLET_CURRENCIES[data.currency]) {
+                return RpcHelpers.errorResponse("Unsupported currency: " + data.currency);
+            }
+            var op = data.operation;
+            var amt = Number(data.amount);
+            // F1: reject NaN/Infinity (poisons the stored balance) and negatives
+            // (a negative "subtract" used to ADD funds).
+            if (!isFinite(amt) || amt < 0)
+                return RpcHelpers.errorResponse("Invalid amount");
+            if (op !== "add" && op !== "subtract")
+                return RpcHelpers.errorResponse("Invalid operation");
             var wallet = getGlobalWallet(nk, userId);
             if (!wallet.currencies[data.currency])
                 wallet.currencies[data.currency] = 0;
-            var op = data.operation;
-            var amt = Number(data.amount);
             if (op === "add")
                 wallet.currencies[data.currency] += amt;
-            else if (op === "subtract") {
+            else {
                 wallet.currencies[data.currency] -= amt;
                 if (wallet.currencies[data.currency] < 0)
                     wallet.currencies[data.currency] = 0;
             }
-            else
-                return RpcHelpers.errorResponse("Invalid operation");
             saveGlobalWallet(nk, userId, wallet);
             return RpcHelpers.successResponse({
                 userId: userId,
@@ -146655,16 +147305,9 @@ var LegacyWallet;
                 return RpcHelpers.errorResponse("Insufficient game balance");
             var globalEarned = Math.floor(amt / ratio);
             var coinsBurned = globalEarned * ratio;
-            var keys = ["game", "tokens"];
-            for (var i = 0; i < keys.length; i++) {
-                var k = keys[i];
-                if (wallet.currencies[k] !== undefined) {
-                    wallet.currencies[k] -= coinsBurned;
-                    if (wallet.currencies[k] < 0)
-                        wallet.currencies[k] = 0;
-                }
-            }
-            WalletHelpers.saveGameWallet(nk, wallet);
+            // F13 SECURITY: credit the global (upstream) wallet FIRST. Previously the
+            // game wallet was debited first and an upstream credit failure was
+            // silently ignored — burning the player's coins with no credit.
             var newGlobal = null;
             try {
                 var res = proxyGlobalApi(nk, logger, userId, "earn", {
@@ -146675,7 +147318,43 @@ var LegacyWallet;
                 }, data.gameId);
                 newGlobal = res && res.newBalance != null ? res.newBalance : null;
             }
-            catch (_) { /* non-critical */ }
+            catch (earnErr) {
+                // Upstream failed — explicit error, NO local debit happened.
+                logger.error("[LegacyWallet] convert_to_global upstream credit failed for user " + userId + ": " + (earnErr && earnErr.message ? earnErr.message : String(earnErr)));
+                return RpcHelpers.errorResponse("Global wallet credit failed — no game coins were debited. Please retry.");
+            }
+            // Upstream credit succeeded — only now debit the game wallet.
+            var keys = ["game", "tokens"];
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                if (wallet.currencies[k] !== undefined) {
+                    wallet.currencies[k] -= coinsBurned;
+                    if (wallet.currencies[k] < 0)
+                        wallet.currencies[k] = 0;
+                }
+            }
+            try {
+                WalletHelpers.saveGameWallet(nk, wallet);
+            }
+            catch (debitErr) {
+                // Global credit landed but the local debit failed — attempt a
+                // compensating upstream refund so value does not appear from thin air,
+                // and log loudly either way for reconciliation.
+                logger.error("[LegacyWallet] CRITICAL: convert_to_global local debit failed after upstream credit (user " + userId + ", amount " + globalEarned + ") — attempting compensating refund: " + (debitErr && debitErr.message ? debitErr.message : String(debitErr)));
+                try {
+                    proxyGlobalApi(nk, logger, userId, "spend", {
+                        amount: globalEarned,
+                        sourceType: "game_to_global_conversion_reversal",
+                        sourceId: data.gameId,
+                        description: "Reversal of game_to_global_conversion — local game-wallet debit failed"
+                    }, data.gameId);
+                    logger.error("[LegacyWallet] Compensating refund succeeded (user " + userId + ", amount " + globalEarned + ")");
+                }
+                catch (refundErr) {
+                    logger.error("[LegacyWallet] CRITICAL: compensating refund FAILED (user " + userId + ", amount " + globalEarned + ") — manual reconciliation required: " + (refundErr && refundErr.message ? refundErr.message : String(refundErr)));
+                }
+                return RpcHelpers.errorResponse("Conversion failed while debiting game wallet. Please retry or contact support.");
+            }
             return RpcHelpers.successResponse({
                 userId: userId,
                 gameId: data.gameId,
@@ -146723,22 +147402,67 @@ var LegacyWallet;
                 return RpcHelpers.errorResponse("gameId required");
             if (amt <= 0)
                 return RpcHelpers.errorResponse("amount must be > 0");
+            // A-04: per-request idempotency key. Previously sourceId was a CONSTANT
+            // derived only from the gameId, so upstream spend dedupe could never
+            // engage and client retries double-spent global points.
+            var conversionId = nk.uuidv4();
             proxyGlobalApi(nk, logger, userId, "spend", {
                 amount: amt,
                 sourceType: "global_to_game_convert",
-                sourceId: "game:" + gameId,
+                sourceId: "g2g:" + conversionId,
+                idempotencyKey: conversionId,
                 description: "Convert " + amt + " global points to game currency"
             }, gameId);
             var ratios = getConversionRatios(nk);
             var ratio = ratios[gameId] || 100;
             var gameCurrency = amt * ratio;
-            var wallet = WalletHelpers.getGameWallet(nk, userId, gameId);
             var cur = data.currency || "game";
+            // A-04: record the conversion state BEFORE the local credit, so a
+            // storage failure leaves a recoverable "pending_credit" record (keyed
+            // by conversionId) instead of vanishing the spent value.
+            var convKey = "g2g_conversion_" + conversionId;
+            var convRec = {
+                id: conversionId,
+                userId: userId,
+                gameId: gameId,
+                currency: cur,
+                globalSpent: amt,
+                gameCurrencyEarned: gameCurrency,
+                ratio: ratio,
+                state: "pending_credit",
+                createdAt: new Date().toISOString()
+            };
+            try {
+                Storage.writeJson(nk, Constants.WALLETS_COLLECTION, convKey, userId, convRec, 1, 0);
+            }
+            catch (pendErr) {
+                logger.warn("[LegacyWallet] g2g pending-record write failed for " + conversionId + ": " + (pendErr && pendErr.message ? pendErr.message : String(pendErr)));
+            }
+            var wallet = WalletHelpers.getGameWallet(nk, userId, gameId);
             wallet.currencies[cur] = (wallet.currencies[cur] || 0) + gameCurrency;
-            WalletHelpers.saveGameWallet(nk, wallet);
+            try {
+                WalletHelpers.saveGameWallet(nk, wallet);
+            }
+            catch (creditErr) {
+                // Global points are spent but the game credit failed. The pending
+                // record above carries everything needed to re-run the credit —
+                // log loudly and surface the reference id.
+                logger.error("[LegacyWallet] CRITICAL: g2g local credit failed after global spend; pending record " + convKey + " (user " + userId + "): " + (creditErr && creditErr.message ? creditErr.message : String(creditErr)));
+                return RpcHelpers.errorResponse("Conversion pending — global points were spent and the game credit will be reconciled. Reference: " + conversionId);
+            }
+            // Mark the conversion credited (best-effort audit trail).
+            convRec.state = "credited";
+            convRec.creditedAt = new Date().toISOString();
+            try {
+                Storage.writeJson(nk, Constants.WALLETS_COLLECTION, convKey, userId, convRec, 1, 0);
+            }
+            catch (finErr) {
+                logger.warn("[LegacyWallet] g2g completion-record write failed for " + conversionId + ": " + (finErr && finErr.message ? finErr.message : String(finErr)));
+            }
             return RpcHelpers.successResponse({
                 userId: userId,
                 gameId: gameId,
+                conversionId: conversionId,
                 globalPointsSpent: amt,
                 gameCurrencyEarned: gameCurrency,
                 conversionRatio: ratio,
@@ -146763,12 +147487,21 @@ var LegacyWallet;
     LegacyWallet.rpcGlobalWalletBalance = rpcGlobalWalletBalance;
     function rpcGlobalWalletEarn(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
-            if (!data.amount || data.amount <= 0)
+            // F2 SECURITY: this credits arbitrary amounts (incl. premium currency)
+            // to the global wallet. Client self-mint is not allowed — admin session
+            // or http_key server caller only (throws otherwise).
+            RpcHelpers.requireAdmin(ctx, nk);
+            // Server (http_key) callers carry no session user and name the target
+            // in the payload; session (admin) users default to themselves.
+            var userId = ctx.userId || data.userId;
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID required");
+            var amt = Number(data.amount);
+            if (!isFinite(amt) || amt <= 0)
                 return RpcHelpers.errorResponse("amount required and must be > 0");
             var body = {
-                amount: data.amount,
+                amount: amt,
                 sourceType: data.sourceType || "nakama_rpc",
                 sourceId: data.sourceId || ("rpc:" + userId),
                 description: data.description || "Earn via Nakama RPC"
@@ -146821,7 +147554,17 @@ var LegacyWallet;
             var gameId = data.game_id || data.gameId;
             if (!deviceId || !gameId)
                 return RpcHelpers.errorResponse("device_id and game_id required");
-            var userId = ctx.userId || deviceId;
+            // F11 SECURITY: never key wallet creation off a client-supplied deviceId
+            // when a session exists — that created/wrote wallets for arbitrary users.
+            // The deviceId-as-userId legacy guest path is retained for server
+            // (http_key) callers only.
+            var userId = ctx.userId;
+            if (!userId) {
+                RpcHelpers.requireAdmin(ctx, nk);
+                userId = deviceId;
+            }
+            if (!userId)
+                return RpcHelpers.errorResponse("User ID required");
             var gameWallet = WalletHelpers.getGameWallet(nk, userId, gameId);
             var globalWallet = getGlobalWallet(nk, userId);
             var key = "registry_" + userId;
@@ -160193,6 +160936,87 @@ var QuestEngine;
     QuestEngine.processEvent = processEvent;
     // ─── RPC: quest_engine_claim_reward ──────────────────────────────────────
     // Manually claims reward for a completed quest (deferred-claim UI pattern).
+    // F14: bounded OCC retry count (same shape as QvSubmit.mergeSeenOcc).
+    var CLAIM_OCC_MAX_RETRIES = 3;
+    // F14: persist claimedAt under an OCC version CAS. Returns:
+    //   "claimed"       — marker durably written by this call
+    //   "already"       — marker already present (concurrent/duplicate claim)
+    //   "not_completed" — quest has not completed yet
+    //   "conflict"      — OCC retries exhausted (a concurrent writer won; the
+    //                     safe response is to treat the claim as not ours)
+    function markQuestClaimedOcc(nk, logger, userId, gameId, questId, now) {
+        for (var attempt = 0; attempt < CLAIM_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: QUEST_ENGINE_COLLECTION,
+                        key: stateKey(gameId, userId),
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var state = (rec && rec.value) ? rec.value : { quests: {} };
+                var progress = state.quests[questId];
+                if (!progress || !progress.completedAt)
+                    return "not_completed";
+                if (progress.claimedAt)
+                    return "already";
+                progress.claimedAt = now;
+                var writeObj = {
+                    collection: QUEST_ENGINE_COLLECTION,
+                    key: stateKey(gameId, userId),
+                    userId: userId,
+                    value: state,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver; // OCC guard (omit on first write)
+                nk.storageWrite([writeObj]);
+                return "claimed";
+            }
+            catch (e) {
+                // Version conflict or transient storage error → re-read and retry.
+            }
+        }
+        logger.warn("[QuestEngine] claim marker OCC exhausted: quest=%s user=%s", questId, userId);
+        return "conflict";
+    }
+    // F14: best-effort clear of claimedAt (used to roll back when the reward
+    // grant fails after the marker was persisted, so the player can retry).
+    function clearQuestClaimedOcc(nk, logger, userId, gameId, questId) {
+        for (var attempt = 0; attempt < CLAIM_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: QUEST_ENGINE_COLLECTION,
+                        key: stateKey(gameId, userId),
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var state = (rec && rec.value) ? rec.value : { quests: {} };
+                var progress = state.quests[questId];
+                if (!progress || !progress.claimedAt)
+                    return true; // nothing to clear
+                progress.claimedAt = null;
+                var writeObj = {
+                    collection: QUEST_ENGINE_COLLECTION,
+                    key: stateKey(gameId, userId),
+                    userId: userId,
+                    value: state,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return true;
+            }
+            catch (e) {
+                // retry
+            }
+        }
+        return false;
+    }
     function rpcQuestEngineClaimReward(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -160204,19 +161028,45 @@ var QuestEngine;
         var qConfig = config.quests[questId];
         if (!qConfig)
             return RpcHelpers.errorResponse("Unknown quest: " + questId);
-        var state = loadUserState(nk, userId, gameId);
-        var progress = state.quests[questId];
-        if (!progress || !progress.completedAt)
+        // Fast-path checks for clean error messages — the authoritative guard is
+        // the OCC-guarded marker write below.
+        var peek = loadUserState(nk, userId, gameId);
+        var peekProgress = peek.quests[questId];
+        if (!peekProgress || !peekProgress.completedAt)
             return RpcHelpers.errorResponse("Quest not completed");
-        if (progress.claimedAt)
+        if (peekProgress.claimedAt)
             return RpcHelpers.errorResponse("Quest reward already claimed");
         if (!qConfig.reward)
             return RpcHelpers.successResponse({ reward: null });
         var now = Math.floor(Date.now() / 1000);
-        var resolved = RewardEngine.resolveReward(nk, qConfig.reward);
-        RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
-        progress.claimedAt = now;
-        saveUserState(nk, userId, gameId, state);
+        // F14 SECURITY: persist claimedAt FIRST with an OCC version CAS, before
+        // granting anything. Previously the reward was granted BEFORE the marker
+        // write (and the state write carried no OCC version), so a retry or
+        // concurrent claim between grant and save double-granted the reward.
+        var mark = markQuestClaimedOcc(nk, logger, userId, gameId, questId, now);
+        if (mark === "already" || mark === "conflict") {
+            return RpcHelpers.errorResponse("Quest reward already claimed");
+        }
+        if (mark === "not_completed") {
+            return RpcHelpers.errorResponse("Quest not completed");
+        }
+        // Marker is durable — only now resolve and grant the reward.
+        var resolved;
+        try {
+            resolved = RewardEngine.resolveReward(nk, qConfig.reward);
+            RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
+        }
+        catch (grantErr) {
+            // Grant failed after the claim marker was persisted. Best-effort
+            // rollback so the player can retry; if the rollback fails the marker
+            // stays (a double grant is still impossible) and we log loudly.
+            logger.error("[QuestEngine] Reward grant failed after claim marker persisted (quest=%s user=%s) — attempting rollback: %s", questId, userId, (grantErr && grantErr.message ? grantErr.message : String(grantErr)));
+            var rolledBack = clearQuestClaimedOcc(nk, logger, userId, gameId, questId);
+            if (!rolledBack) {
+                logger.error("[QuestEngine] CRITICAL: claim rollback failed (quest=%s user=%s) — manual reconciliation required", questId, userId);
+            }
+            return RpcHelpers.errorResponse("Reward grant failed — please retry");
+        }
         logger.info("[QuestEngine] Reward claimed manually: quest=%s user=%s", questId, userId);
         // Same server-driven fulfilment path as auto-grant (catalog + notification).
         try {
@@ -190818,6 +191668,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("compatibility_calculate", __rpc_compatibility_calculate); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_questions", __rpc_quizverse_get_questions); } catch(e) {}
   try { initializer.registerRpc("quizverse_abandon_pack", __rpc_quizverse_abandon_pack); } catch(e) {}
+  try { initializer.registerRpc("quizverse_answer_reveal", __rpc_quizverse_answer_reveal); } catch(e) {}
   try { initializer.registerRpc("quizverse_get_review", __rpc_quizverse_get_review); } catch(e) {}
   try { initializer.registerRpc("quizverse_growth_snapshot", __rpc_quizverse_growth_snapshot); } catch(e) {}
   try { initializer.registerRpc("quizverse_create_match", __rpc_quizverse_create_match); } catch(e) {}
@@ -191061,6 +191912,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("identity_link", __rpc_identity_link); } catch(e) {}
   try { initializer.registerRpc("identity_unlink", __rpc_identity_unlink); } catch(e) {}
   try { initializer.registerRpc("identity_list_mine", __rpc_identity_list_mine); } catch(e) {}
+  try { initializer.registerRpc("quizverse_merge_guest_to_account", __rpc_quizverse_merge_guest_to_account); } catch(e) {}
   try { initializer.registerRpc("qv_kb_user_dump", __rpc_qv_kb_user_dump); } catch(e) {}
   try { initializer.registerRpc("qv_kb_user_summary", __rpc_qv_kb_user_summary); } catch(e) {}
   try { initializer.registerRpc("qv_kb_user_kind", __rpc_qv_kb_user_kind); } catch(e) {}
@@ -192150,5 +193002,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1320 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
+  logger.info("[Postbuild] Registered " + 1322 + " RPCs via AST-compatible wrapper (2 aliases applied, 9 match handlers)");
 }

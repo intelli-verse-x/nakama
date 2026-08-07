@@ -75,9 +75,7 @@ function armErr(msg, code) {
 }
 
 function armEnv(ctx, key) {
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // Env-only (F10, 2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted.
     try {
         if (ctx && ctx.env && ctx.env[key] !== undefined) {
             var v = String(ctx.env[key]);

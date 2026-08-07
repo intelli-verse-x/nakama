@@ -947,9 +947,8 @@ function abAutoRunTick(ctx, nk, logger, forceTick) {
 
                 var dashboardSecret = "";
                 try {
-                    if (typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-                        dashboardSecret = AA_FALLBACK_DASHBOARD_SECRET;
-                    }
+                    // Env-only (F10, 2026-08-07): the hardcoded fallback
+                    // dashboard secret was deleted from analytics_admin.js.
                     if (ctx && ctx.env && ctx.env.DASHBOARD_SECRET) {
                         dashboardSecret = String(ctx.env.DASHBOARD_SECRET);
                     }

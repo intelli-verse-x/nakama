@@ -168,13 +168,8 @@ function arErr(msg, code) {
 }
 
 function arEnv(ctx, key) {
-    // Mirror analytics_admin.js::aaEnv — DASHBOARD_SECRET is hardcoded-FIRST
-    // (env IGNORED) so the auto-drain state machine's synthetic admin gate
-    // never breaks when the cluster has a different DASHBOARD_SECRET set.
-    // Other rollup keys (ROLLUP_ENABLED etc.) stay env-driven.
-    if (key === "DASHBOARD_SECRET" && typeof AA_FALLBACK_DASHBOARD_SECRET === "string") {
-        return AA_FALLBACK_DASHBOARD_SECRET;
-    }
+    // F10 (2026-08-07): hardcoded DASHBOARD_SECRET fallback deleted — all
+    // keys (incl. DASHBOARD_SECRET) are env-driven and fail closed when unset.
     if (ctx && ctx.env && ctx.env[key] !== undefined && ctx.env[key] !== null) {
         var v = String(ctx.env[key]);
         if (v.length > 0) return v;

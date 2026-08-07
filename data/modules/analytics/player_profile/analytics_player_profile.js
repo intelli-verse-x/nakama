@@ -294,7 +294,7 @@ function appAdminVerifySecret(payload, ctx, nk, logger) {
                 if (env && env.dashboard_secret && got === env.dashboard_secret) return true;
             } catch (e2) { /* fall through */ }
         }
-        if (typeof AA_FALLBACK_DASHBOARD_SECRET === 'string' && got === AA_FALLBACK_DASHBOARD_SECRET) return true;
+        // F10 (2026-08-07): hardcoded fallback dashboard-secret comparison deleted.
         return false;
     } catch (e) { return false; }
 }

@@ -6,7 +6,7 @@
  */
 
 // Player badge progress lives in the "badge_progress" collection (written by
-// rpcBadgesCheckEvent in badges/badges.js — BADGE_PROGRESS_COLLECTION). The
+// badgesCheckEventCore in badges/badges.js — BADGE_PROGRESS_COLLECTION). The
 // "badges" collection only holds system-owned definitions. Reading progress
 // from "badges" always returned empty — sync must read "badge_progress".
 var LAP_BADGE_PROGRESS_COLLECTION = "badge_progress";
@@ -35,8 +35,17 @@ var LAP_EVENT_ALIASES = {
  *     - "lap_perfect_score"        → triggers lap_perfectionist
  *     - "lap_speed_run"            → triggers lap_speed_demon
  *
- * Internally delegates to the existing badges_check_event RPC logic
- * with game_id hard-coded to "quizverse".
+ * Internally delegates to the shared badge-event engine
+ * (badgesCheckEventCore in badges/badges.js) with game_id hard-coded to
+ * "quizverse".
+ *
+ * SECURITY FIX 2026-08-07 (F5 companion): badges_check_event is now
+ * admin-gated, so this bridge calls badgesCheckEventCore directly (the same
+ * internal path the submit_result fanout uses). The bridge is the remaining
+ * player-facing event surface, so it is hardened:
+ *   - event_type whitelist: only lap_* events (after alias mapping) — a
+ *     forged quiz_complete / correct_answer storm is rejected here;
+ *   - count clamped to 1 — one client call = one unit of progress.
  */
 var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
     try {
@@ -56,16 +65,31 @@ var rpcQuizverseLapBadgeEvent = function(ctx, logger, nk, payload) {
             eventType = LAP_EVENT_ALIASES[eventType];
         }
 
-        // Build the standard badges_check_event payload
-        var checkPayload = JSON.stringify({
-            game_id: "quizverse",
-            event_type: eventType,
-            event_data: data.event_data || data.data || {},
-        });
+        // Whitelist: only LAP client events may enter via this bridge.
+        if (eventType.indexOf("lap_") !== 0) {
+            logger.warn("[LAP-Badges] Rejected non-LAP event_type: " + eventType);
+            return JSON.stringify({
+                success: false,
+                error: "unsupported event_type",
+            });
+        }
 
-        // Re-use the existing badge check function from badges.js
-        var resultRaw = rpcBadgesCheckEvent(ctx, logger, nk, checkPayload);
-        var result = JSON.parse(resultRaw);
+        if (typeof badgesCheckEventCore !== "function") {
+            logger.error("[LAP-Badges] badgesCheckEventCore not in scope");
+            return JSON.stringify({
+                success: false,
+                error: "badge engine unavailable",
+            });
+        }
+
+        // Clamp: one client call = one unit of progress
+        // (kills count-amplification of reward badges).
+        var eventData = data.event_data || data.data || {};
+        eventData.count = 1;
+
+        // Call the shared badge engine directly (same path as the
+        // submit_result fanout) — no client round-trip, no admin gate.
+        var result = badgesCheckEventCore(ctx, logger, nk, "quizverse", eventType, eventData);
 
         // If badges were unlocked, send a persistent notification
         // Code 7501 is outside friend lifecycle 1–6 / 100–105 (never reuse code 1).

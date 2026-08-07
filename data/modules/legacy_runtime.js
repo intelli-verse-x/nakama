@@ -19299,16 +19299,18 @@ function asyncChallengeGetDisplayName(nk, userId, fallback) {
 }
 
 /**
- * Validate user ID from context or payload
+ * Validate user ID from context
+ * SECURITY FIX 2026-08-07 (F11): the payload userId fallback is removed —
+ * the authenticated ctx is the only identity source. Trusting request.userId
+ * let any caller act as any user (forge/steal async challenge sessions).
+ * A gateway/proxy path that needs service access must authenticate with a
+ * server key (http_key) or an explicit admin check — never payload trust.
  * @param {object} ctx - Request context
- * @param {object} request - Parsed request payload
+ * @param {object} request - Parsed request payload (identity IGNORED)
  * @returns {object} { valid: boolean, userId: string, error: string }
  */
 function asyncChallengeValidateUser(ctx, request) {
-    var userId = ctx.userId;
-    if (!userId || typeof userId !== 'string' || userId.length < 10) {
-        userId = request.userId;
-    }
+    var userId = ctx && ctx.userId;
     if (!userId || typeof userId !== 'string' || userId.length < 10) {
         return {
             valid: false,
@@ -22039,6 +22041,21 @@ function grantBadgeRewardsInternal(nk, logger, userId, gameId, rewards) {
  */
 function rpcBadgesUpdateProgress(ctx, logger, nk, payload) {
     try {
+        // SECURITY FIX 2026-08-07 (F3): admin/server-only RPC. This legacy
+        // copy is shadowed in the merged bundle by badges/badges.js — gated
+        // here too so a merge-order change can never resurrect it unguarded.
+        if (typeof badgeRequireAdmin === 'function') {
+            badgeRequireAdmin(ctx, nk);
+        } else if (ctx && ctx.userId) {
+            var _accts = nk.accountsGetId([ctx.userId]);
+            var _isAdmin = false;
+            if (_accts && _accts.length > 0) {
+                var _meta = _accts[0].user && _accts[0].user.metadata;
+                if (_meta && _meta.admin === true) _isAdmin = true;
+            }
+            if (!_isAdmin) throw Error("Admin access required");
+        }
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.badge_id || data.progress === undefined) {
@@ -22203,6 +22220,21 @@ function rpcBadgesUpdateProgress(ctx, logger, nk, payload) {
  */
 function rpcBadgesCheckEvent(ctx, logger, nk, payload) {
     try {
+        // SECURITY FIX 2026-08-07 (F5): admin/server-only RPC. This legacy
+        // copy is shadowed in the merged bundle by badges/badges.js — gated
+        // here too so a merge-order change can never resurrect it unguarded.
+        if (typeof badgeRequireAdmin === 'function') {
+            badgeRequireAdmin(ctx, nk);
+        } else if (ctx && ctx.userId) {
+            var _accts = nk.accountsGetId([ctx.userId]);
+            var _isAdmin = false;
+            if (_accts && _accts.length > 0) {
+                var _meta = _accts[0].user && _accts[0].user.metadata;
+                if (_meta && _meta.admin === true) _isAdmin = true;
+            }
+            if (!_isAdmin) throw Error("Admin access required");
+        }
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.event_type) {
@@ -22444,6 +22476,21 @@ function rpcBadgesSetDisplayed(ctx, logger, nk, payload) {
  */
 function rpcBadgesBulkCreate(ctx, logger, nk, payload) {
     try {
+        // SECURITY FIX 2026-08-07 (F4): admin/server-only RPC. This legacy
+        // copy is shadowed in the merged bundle by badges/badges.js — gated
+        // here too so a merge-order change can never resurrect it unguarded.
+        if (typeof badgeRequireAdmin === 'function') {
+            badgeRequireAdmin(ctx, nk);
+        } else if (ctx && ctx.userId) {
+            var _accts = nk.accountsGetId([ctx.userId]);
+            var _isAdmin = false;
+            if (_accts && _accts.length > 0) {
+                var _meta = _accts[0].user && _accts[0].user.metadata;
+                if (_meta && _meta.admin === true) _isAdmin = true;
+            }
+            if (!_isAdmin) throw Error("Admin access required");
+        }
+
         var data = JSON.parse(payload || '{}');
 
         if (!data.game_id || !data.badges || !Array.isArray(data.badges)) {

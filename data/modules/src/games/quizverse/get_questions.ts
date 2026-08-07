@@ -1207,6 +1207,14 @@ namespace QvGetQuestions {
     }
 
     var lang = (typeof req.lang === "string" && req.lang) ? req.lang.toLowerCase().trim() : "en";
+    // F9 (2026-08-07): junk lang values fragment cache keys and analytics —
+    // accept only BCP-47-ish short codes ("en", "hi", "pt-br"), else fall back.
+    if (!/^[a-z]{2}(-[a-z0-9]{2,4})?$/.test(lang)) lang = "en";
+
+    // F7 (2026-08-07): secure_v2 clients (Flutter) never receive answer keys —
+    // they call quizverse_answer_reveal after each answer instead. Absent flag
+    // = legacy contract = Unity unaffected.
+    var secureV2 = req.secure_v2 === true;
 
     var requireMedia = req.has_media === true;
     var excludeMedia = req.exclude_media === true;
@@ -1238,7 +1246,7 @@ namespace QvGetQuestions {
     // ── country_code: req → Nakama profile location → "US" (yel2) ──────────
     var countryCode = "US";
     var reqCC = (typeof req.country_code === "string") ? req.country_code.trim().toUpperCase() : "";
-    if (reqCC.length === 2) {
+    if (/^[A-Z]{2}$/.test(reqCC)) {
       countryCode = reqCC;
     } else {
       try {
@@ -1250,7 +1258,13 @@ namespace QvGetQuestions {
     }
 
     // ── mode: "standard" | "personalized" (org3) ──────────────────────────
+    // F9 (2026-08-07): normalize unknown modes to standard instead of letting
+    // free-text values fragment cache keys.
     var mode = (typeof req.mode === "string" && req.mode) ? req.mode : "standard";
+    if (mode !== "standard" && mode !== "personalized") {
+      logger.warn("[QvGetQ] unknown mode '" + mode + "' — falling back to standard");
+      mode = "standard";
+    }
 
     var requestedTopic = topic;
     var requestedCount = count;
@@ -1352,18 +1366,20 @@ namespace QvGetQuestions {
         var rqClientQs: any[] = [];
         for (var rqi = 0; rqi < rqServed.length; rqi++) {
           var rqq = rqServed[rqi];
-          rqClientQs.push({
+          var rqQ: any = {
             id:                 rqq.id,
             topic:              rqq.topic,
             question_text:      rqq.question_text,
             question_type:      rqq.question_type,
             options:            rqq.options,
-            correct_option_ids: rqq.correct_option_ids,
             has_media:          rqq.has_media,
             media:              rqq.media,
             explanation:        rqq.explanation,
             difficulty:         rqq.difficulty
-          });
+          };
+          // F7: answer key only for legacy clients; secure_v2 uses quizverse_answer_reveal
+          if (!secureV2) rqQ.correct_option_ids = rqq.correct_option_ids;
+          rqClientQs.push(rqQ);
         }
         var rqResp: any = {
           ok:              true,
@@ -1723,18 +1739,20 @@ namespace QvGetQuestions {
     var clientQs: any[] = [];
     for (var ci = 0; ci < picked.length; ci++) {
       var q = picked[ci];
-      clientQs.push({
+      var cq: any = {
         id:                 q.id,
         topic:              q.topic,
         question_text:      q.question_text,
         question_type:      q.question_type,
         options:            q.options,
-        correct_option_ids: q.correct_option_ids,
         has_media:          q.has_media,
         media:              q.media,
         explanation:        q.explanation,
         difficulty:         q.difficulty
-      });
+      };
+      // F7: answer key only for legacy clients; secure_v2 uses quizverse_answer_reveal
+      if (!secureV2) cq.correct_option_ids = q.correct_option_ids;
+      clientQs.push(cq);
     }
 
     var resp: any = {
@@ -1829,9 +1847,62 @@ namespace QvGetQuestions {
 
   // ── Registration ───────────────────────────────────────────────────────────
 
+  // F7 (2026-08-07): per-answer reveal for secure_v2 clients.
+  // The client taps an option, THEN calls this to learn correctness — zero
+  // cheating value (the answer is already locked in), and the bulk question
+  // payload never carries the key. Grading for rewards stays in submit_result;
+  // this RPC changes no state.
+  function rpcAnswerReveal(
+    ctx:     nkruntime.Context,
+    logger:  nkruntime.Logger,
+    nk:      nkruntime.Nakama,
+    payload: string
+  ): string {
+    var req: any = parseJson(payload);
+    var userId = ctx.userId;
+    if (!userId) throw nakamaError("not authenticated", nkruntime.Codes.UNAUTHENTICATED);
+
+    var packId = (typeof req.pack_id === "string" && req.pack_id) ? req.pack_id : "";
+    var qid    = (typeof req.question_id === "string" && req.question_id) ? req.question_id : "";
+    var selId  = (typeof req.selected_option_id === "string") ? req.selected_option_id : "";
+    if (!packId) throw nakamaError("pack_id is required", nkruntime.Codes.INVALID_ARGUMENT);
+    if (!qid)    throw nakamaError("question_id is required", nkruntime.Codes.INVALID_ARGUMENT);
+
+    var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+    if (!rows || rows.length === 0 || !rows[0].value) {
+      throw nakamaError("pack not found: " + packId, nkruntime.Codes.NOT_FOUND);
+    }
+    var pack: any = rows[0].value;
+    var questions: any[] = Array.isArray(pack.questions) ? pack.questions : [];
+    var found: any = null;
+    for (var i = 0; i < questions.length; i++) {
+      if (questions[i] && questions[i].id === qid) { found = questions[i]; break; }
+    }
+    if (!found) {
+      throw nakamaError("question not in pack: " + qid, nkruntime.Codes.NOT_FOUND);
+    }
+
+    var correctIds: string[] = Array.isArray(found.correct_option_ids) ? found.correct_option_ids : [];
+    var isCorrect = false;
+    for (var ci2 = 0; ci2 < correctIds.length; ci2++) {
+      if (correctIds[ci2] === selId) { isCorrect = true; break; }
+    }
+
+    return JSON.stringify({
+      ok:                 true,
+      pack_id:            packId,
+      question_id:        qid,
+      selected_option_id: selId,
+      is_correct:         isCorrect,
+      correct_option_ids: correctIds,
+      explanation:        found.explanation || null
+    });
+  }
+
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("quizverse_get_questions", rpcGetQuestions);
     initializer.registerRpc("quizverse_abandon_pack", rpcAbandonPack);
+    initializer.registerRpc("quizverse_answer_reveal", rpcAnswerReveal);
   }
 
   // IIFE NOOP — required by postbuild.js to hoist __rpc_ assignments at

@@ -24,29 +24,14 @@ var AA_ADMIN_USERS_COLLECTION = "admin_users";
 var AA_SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
 var AA_SESSION_TTL_SEC = 12 * 60 * 60; // 12 hours
 
-// ─── Hardcoded fallbacks (rotated 2026-05-10) ─────────────────────────
-// When ctx.env doesn't carry these values (i.e. when the prod k8s Secret
-// hasn't been patched), aaEnv() falls back to the constants below. This
-// lets the dashboard work end-to-end without any DevOps cluster changes —
-// just `git push` and CodeBuild rolls out a working image. See
-// docs/SATORI_INTEGRATION.md for the trade-off discussion.
-//
-// Both the bcrypt hash AND the plaintext password are baked in. Login
-// matches against either (the verification ladder in rpcAdminLogin tries
-// bcrypt first, then sha256, then plaintext). Hardcoding both means:
-//   • If you have the plaintext, type it.
-//   • If you've lost the plaintext but want to log in via curl using
-//     `dashboard_secret`, that still works.
-//   • Bcrypt verification is the canonical path; plaintext is the safety
-//     net so the dashboard never gets locked out.
-//
-// Rotate by re-running scripts/generate-admin-creds.mjs and pasting the
-// new values here, then `git push`. Or patch the k8s Secret with the same
-// keys (env wins over the hardcoded constants for any single key).
-var AA_FALLBACK_ADMIN_USERNAME      = "ivx-admin";
-var AA_FALLBACK_ADMIN_PASSWORD      = "e200d2640355cdb433f72e9c4e034ee0b2c13bae";
-var AA_FALLBACK_ADMIN_PASSWORD_HASH = "$2b$12$ovKoUnhPwGIo2YFlkW.sSuYz0UimEGkLhd7Msz6RyyUUyZBJDPdOC";
-var AA_FALLBACK_DASHBOARD_SECRET    = "2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8";
+// ─── Admin credential configuration (SECURITY FIX 2026-08-07, F10) ─────
+// Admin credentials come ONLY from the runtime env (docker-compose / k8s
+// Secret → ctx.env). The previous hardcoded fallback credential constants
+// shipped a working admin username, plaintext password, bcrypt hash, and
+// dashboard secret in source control — anyone with repo (or bundle) access
+// had production admin. They are deleted. When the env is absent this module
+// FAILS CLOSED: admin_login and admin_session_bootstrap return 503, and the
+// dashboard_secret bypass in aaRequireAdmin stays disabled.
 
 // Slug→UUID alias for legacy ingestion ("quizverse" → "126bf539-...").
 // Delegates to the bundled global resolveGameIdAlias when available so the
@@ -96,21 +81,9 @@ function aaErr(msg, code) {
 }
 
 function aaEnv(ctx, key) {
-    // Hardcoded-FIRST for the four critical dashboard keys. The earlier
-    // version (env-first) failed in prod when the cluster had stale
-    // ADMIN_USERNAME / ADMIN_PASSWORD_HASH / DASHBOARD_SECRET env vars set
-    // from a previous deployment — env shadowed our new constants and
-    // login bounced with "Invalid credentials". Per the explicit "fuck
-    // security for once, hardcode it" directive (chat 2026-05-10), the
-    // hardcoded values are the source of truth for these four keys; cluster
-    // env vars are IGNORED for them. To rotate, edit the AA_FALLBACK_*
-    // constants and ship a new image.
-    //
-    // Hardcoded in source (no Docker env required) — see external_analytics.js.
-    if (key === "ADMIN_USERNAME")      return AA_FALLBACK_ADMIN_USERNAME;
-    if (key === "ADMIN_PASSWORD")      return AA_FALLBACK_ADMIN_PASSWORD;
-    if (key === "ADMIN_PASSWORD_HASH") return AA_FALLBACK_ADMIN_PASSWORD_HASH;
-    if (key === "DASHBOARD_SECRET")    return AA_FALLBACK_DASHBOARD_SECRET;
+    // Credential keys (ADMIN_USERNAME / ADMIN_PASSWORD / ADMIN_PASSWORD_HASH /
+    // ADMIN_PASSWORD_SHA256 / DASHBOARD_SECRET) are env-ONLY (F10): no
+    // hardcoded fallback remains, so an unconfigured server fails closed.
     if (key === "DEFAULT_GAME_ID")     return "126bf539-dae2-4bcf-964d-316c0fa1f92b";
     if (key === "APPODEAL_API_KEY") {
         try { if (typeof APPODEAL_API_KEY !== "undefined" && APPODEAL_API_KEY) return APPODEAL_API_KEY; } catch (e) {}

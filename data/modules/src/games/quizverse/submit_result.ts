@@ -229,23 +229,23 @@ namespace QvSubmitResult {
 
   // ── Task 2.4 — wallet update ──────────────────────────────────────────────
 
+  // F12 (2026-08-07): wallet grant is on the money path — failures must
+  // PROPAGATE so the caller can roll back the pack claim and let the client
+  // retry, instead of showing "+coins" that never arrived (was: catch+swallow).
   function updateWallet(
     nk:         nkruntime.Nakama,
     logger:     nkruntime.Logger,
     userId:     string,
     topic:      string,
     coins:      number,
-    xp:         number
+    xp:         number,
+    packId:     string
   ): void {
     if (coins <= 0 && xp <= 0) return;
-    try {
-      var changeset: { [k: string]: number } = {};
-      if (coins > 0) changeset["coins"] = coins;
-      if (xp    > 0) changeset["xp"]    = xp;
-      nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic }, true);
-    } catch (e: any) {
-      logger.warn("[QvSubmit] walletUpdate failed: " + (e && e.message));
-    }
+    var changeset: { [k: string]: number } = {};
+    if (coins > 0) changeset["coins"] = coins;
+    if (xp    > 0) changeset["xp"]    = xp;
+    nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic, pack_id: packId }, true);
   }
 
   // ── Task 2.4 — leaderboard ────────────────────────────────────────────────
@@ -494,10 +494,13 @@ namespace QvSubmitResult {
     var username  = rctx.username;
     var packId    = (typeof req.pack_id === "string" && req.pack_id) ? req.pack_id : "";
     var answers   = Array.isArray(req.answers) ? req.answers : [];
-    var durationMs = typeof req.duration_ms === "number" ? req.duration_ms : 0;
+    // F8 (2026-08-07): clamp duration to non-negative finite; cap answers array.
+    var durationMs = (typeof req.duration_ms === "number" && isFinite(req.duration_ms) && req.duration_ms >= 0)
+      ? req.duration_ms : 0;
 
     if (!packId)          throw nakamaError("pack_id is required",  nkruntime.Codes.INVALID_ARGUMENT);
     if (answers.length === 0) throw nakamaError("answers are required", nkruntime.Codes.INVALID_ARGUMENT);
+    if (answers.length > 200) throw nakamaError("answers exceeds maximum of 200", nkruntime.Codes.INVALID_ARGUMENT);
 
     // ── Task 2.1 — load pack ──────────────────────────────────────────────
     var rows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
@@ -585,20 +588,24 @@ namespace QvSubmitResult {
       " score=" + totalScore + " bonus=" + scored.timeBonus +
       " coins=" + coinsEarned + " xp=" + xpEarned);
 
-    // ── Task 2.2 — write graded result back into pack doc ─────────────────
-    try {
-      pack.submitted       = true;
-      pack.submitted_at_ms = nowMs();
-      pack.correct         = correct;
-      pack.total           = total;
-      pack.accuracy_pct    = accuracyPct;
-      pack.score           = totalScore;
-      pack.time_bonus      = scored.timeBonus;
-      pack.coins_earned    = coinsEarned;
-      pack.xp_earned       = xpEarned;
-      pack.graded_answers  = gradedAnswers;
-      pack.duration_ms     = durationMs;
+    // ── Task 2.2 — CLAIM the pack (COMMIT POINT, F12 2026-08-07) ───────────
+    // The submitted-flag OCC write is the atomic claim: exactly one submit
+    // wins. A loser (OCC conflict) replays the winner's stored result instead
+    // of continuing to the wallet fan-out — this kills the double-grant race
+    // (was: write failure swallowed as "non-fatal", both submits paid out).
+    pack.submitted       = true;
+    pack.submitted_at_ms = nowMs();
+    pack.correct         = correct;
+    pack.total           = total;
+    pack.accuracy_pct    = accuracyPct;
+    pack.score           = totalScore;
+    pack.time_bonus      = scored.timeBonus;
+    pack.coins_earned    = coinsEarned;
+    pack.xp_earned       = xpEarned;
+    pack.graded_answers  = gradedAnswers;
+    pack.duration_ms     = durationMs;
 
+    try {
       var packWrite: nkruntime.StorageWriteRequest = {
         collection: COL_PACKS, key: packId, userId: userId,
         value: pack,
@@ -607,7 +614,66 @@ namespace QvSubmitResult {
       if (packVersion) (packWrite as any).version = packVersion; // OCC on pack doc
       nk.storageWrite([packWrite]);
     } catch (e: any) {
-      logger.warn("[QvSubmit] pack write-back failed (non-fatal): " + (e && e.message));
+      logger.warn("[QvSubmit] pack claim failed (OCC/transient): " + (e && e.message) + " — checking for a winning submit");
+      try {
+        var claimRows = nk.storageRead([{ collection: COL_PACKS, key: packId, userId: userId }]);
+        var cur: any = (claimRows && claimRows.length > 0) ? claimRows[0].value : null;
+        if (cur && cur.submitted === true) {
+          // Another submit won the race — replay its stored result, grant nothing.
+          return JSON.stringify({
+            ok:              true,
+            replay:          true,
+            pack_id:         packId,
+            topic:           cur.topic || topic,
+            correct:         cur.correct || 0,
+            total:           cur.total || 0,
+            accuracy_pct:    cur.accuracy_pct || 0,
+            score:           cur.score || 0,
+            time_bonus:      cur.time_bonus || 0,
+            coins_earned:    cur.coins_earned || 0,
+            xp_earned:       cur.xp_earned || 0,
+            is_perfect:      (cur.correct || 0) === (cur.total || 0) && (cur.total || 0) > 0,
+            graded_answers:  cur.graded_answers || [],
+            reward_events:   [],
+            personalization: null,
+            badges_unlocked:     [],
+            characters_unlocked: []
+          });
+        }
+      } catch (_re: any) { /* fall through to conflict error */ }
+      return JSON.stringify({
+        ok:      false,
+        error:   "submit_conflict",
+        pack_id: packId,
+        message: "Submit conflicted with another in-flight submit — please retry."
+      });
+    }
+
+    // ── Task 2.4 — wallet grant (F12: STRICT, before side effects) ──────────
+    // We hold the claim, so if the wallet write fails we ROLL BACK the claim
+    // (submitted=false) and return an explicit error — the client retries the
+    // whole submit and the pack grades+grants cleanly. No more "coins shown
+    // but never granted, retry blocked by already_submitted" (B-02).
+    try {
+      updateWallet(nk, logger, userId, topic, coinsEarned, xpEarned, packId);
+    } catch (we: any) {
+      logger.error("[QvSubmit] wallet grant FAILED after claim — rolling back claim: pack=" + packId + " err=" + (we && we.message));
+      try {
+        pack.submitted = false;
+        nk.storageWrite([{
+          collection: COL_PACKS, key: packId, userId: userId,
+          value: pack,
+          permissionRead: 1, permissionWrite: 0
+        }]);
+      } catch (rb: any) {
+        logger.error("[QvSubmit][CRITICAL] claim rollback failed — pack " + packId + " is claimed but UNPAID; needs manual reconcile: " + (rb && rb.message));
+      }
+      return JSON.stringify({
+        ok:      false,
+        error:   "wallet_grant_failed",
+        pack_id: packId,
+        message: "Reward grant failed — your result was NOT lost. Please retry the submit."
+      });
     }
 
     // ── Task 2.3 — delete inflight entry ──────────────────────────────────
@@ -617,8 +683,7 @@ namespace QvSubmitResult {
       logger.warn("[QvSubmit] inflight delete failed: " + (e && e.message));
     }
 
-    // ── Task 2.4 — wallet + leaderboard (non-critical) ────────────────────
-    updateWallet(nk, logger, userId, topic, coinsEarned, xpEarned);
+    // ── Task 2.4 — leaderboard (non-critical) ─────────────────────────────
     submitLeaderboard(nk, logger, userId, username, gameId, topic, totalScore);
 
     // ── Task 2.5 — KB performance write (non-critical) ────────────────────
@@ -726,7 +791,7 @@ namespace QvSubmitResult {
         var bonusChangeset: { [w: string]: number } = {};
         if (variableRewards.bonusCoins > 0) bonusChangeset["coins"] = variableRewards.bonusCoins;
         if (variableRewards.bonusXp    > 0) bonusChangeset["xp"]    = variableRewards.bonusXp;
-        nk.walletUpdate(userId, bonusChangeset, { source: "variable_reward" }, false);
+        nk.walletUpdate(userId, bonusChangeset, { source: "variable_reward", pack_id: packId }, true);
         logger.info("[QvSubmit] variable rewards userId=" + userId +
           " events=" + variableRewards.events.length +
           " bonus_coins=" + variableRewards.bonusCoins +

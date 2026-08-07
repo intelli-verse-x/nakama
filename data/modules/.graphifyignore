@@ -1,0 +1,6 @@
+# Graphify ignore — Nakama modules
+# index.js = 191k-line build bundle of the folder sources (dupes every node)
+index.js
+build/
+_wiki_gen.js
+graphify-out/cache/

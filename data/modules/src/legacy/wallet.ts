@@ -107,7 +107,15 @@ namespace LegacyWallet {
   export function rpcGetUserWallet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var data = RpcHelpers.parseRpcPayload(payload);
-      var userId = ctx.userId || data.userId || data.sub;
+      // F11 SECURITY: a session user may only ever read their OWN wallet
+      // registry. The payload userId/sub fallback let any caller read (and
+      // lazily create!) another user's registry; it is now honored solely for
+      // server (http_key) callers, which carry no session userId.
+      var userId = ctx.userId;
+      if (!userId) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        userId = data.userId || data.sub;
+      }
       var username = ctx.username || data.username || userId;
       if (!userId) return RpcHelpers.errorResponse("User ID required");
       var key = "registry_" + userId;
@@ -207,21 +215,39 @@ namespace LegacyWallet {
     }
   }
 
+  // F1: currencies this RPC may touch on the GLOBAL wallet (allowlist).
+  var GLOBAL_WALLET_CURRENCIES: { [key: string]: boolean } = { global: true, xut: true, xp: true };
+
   export function rpcWalletUpdateGlobal(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var data = RpcHelpers.parseRpcPayload(payload);
       var v = RpcHelpers.validatePayload(data, ["currency", "amount", "operation"]);
       if (!v.valid) return RpcHelpers.errorResponse("Missing: " + v.missing.join(", "));
-      var userId = RpcHelpers.requireUserId(ctx);
-      var wallet = getGlobalWallet(nk, userId);
-      if (!wallet.currencies[data.currency]) wallet.currencies[data.currency] = 0;
+      // F1 SECURITY: this RPC mutates real balances. It stays registered for
+      // server-side callers, but an authenticated client must never self-mint —
+      // admin session or http_key server caller only (throws otherwise).
+      RpcHelpers.requireAdmin(ctx, nk);
+      // Server (http_key) callers carry no session user and must name the
+      // target explicitly; session users can only touch their own wallet.
+      var userId = ctx.userId || data.userId;
+      if (!userId) return RpcHelpers.errorResponse("User ID required");
+      // F1: allowlist currencies so arbitrary keys cannot be minted.
+      if (!GLOBAL_WALLET_CURRENCIES[data.currency]) {
+        return RpcHelpers.errorResponse("Unsupported currency: " + data.currency);
+      }
       var op = data.operation;
       var amt = Number(data.amount);
+      // F1: reject NaN/Infinity (poisons the stored balance) and negatives
+      // (a negative "subtract" used to ADD funds).
+      if (!isFinite(amt) || amt < 0) return RpcHelpers.errorResponse("Invalid amount");
+      if (op !== "add" && op !== "subtract") return RpcHelpers.errorResponse("Invalid operation");
+      var wallet = getGlobalWallet(nk, userId);
+      if (!wallet.currencies[data.currency]) wallet.currencies[data.currency] = 0;
       if (op === "add") wallet.currencies[data.currency] += amt;
-      else if (op === "subtract") {
+      else {
         wallet.currencies[data.currency] -= amt;
         if (wallet.currencies[data.currency] < 0) wallet.currencies[data.currency] = 0;
-      } else return RpcHelpers.errorResponse("Invalid operation");
+      }
       saveGlobalWallet(nk, userId, wallet);
       return RpcHelpers.successResponse({
         userId: userId,
@@ -447,15 +473,10 @@ namespace LegacyWallet {
       if (gameBal < amt) return RpcHelpers.errorResponse("Insufficient game balance");
       var globalEarned = Math.floor(amt / ratio);
       var coinsBurned = globalEarned * ratio;
-      var keys = ["game", "tokens"];
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        if (wallet.currencies[k] !== undefined) {
-          wallet.currencies[k] -= coinsBurned;
-          if (wallet.currencies[k] < 0) wallet.currencies[k] = 0;
-        }
-      }
-      WalletHelpers.saveGameWallet(nk, wallet);
+
+      // F13 SECURITY: credit the global (upstream) wallet FIRST. Previously the
+      // game wallet was debited first and an upstream credit failure was
+      // silently ignored — burning the player's coins with no credit.
       var newGlobal: number | null = null;
       try {
         var res = proxyGlobalApi(nk, logger, userId, "earn", {
@@ -465,7 +486,41 @@ namespace LegacyWallet {
           description: "Converted " + coinsBurned + " game coins -> " + globalEarned + " global points"
         }, data.gameId);
         newGlobal = res && res.newBalance != null ? res.newBalance : null;
-      } catch (_) { /* non-critical */ }
+      } catch (earnErr: any) {
+        // Upstream failed — explicit error, NO local debit happened.
+        logger.error("[LegacyWallet] convert_to_global upstream credit failed for user " + userId + ": " + (earnErr && earnErr.message ? earnErr.message : String(earnErr)));
+        return RpcHelpers.errorResponse("Global wallet credit failed — no game coins were debited. Please retry.");
+      }
+
+      // Upstream credit succeeded — only now debit the game wallet.
+      var keys = ["game", "tokens"];
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (wallet.currencies[k] !== undefined) {
+          wallet.currencies[k] -= coinsBurned;
+          if (wallet.currencies[k] < 0) wallet.currencies[k] = 0;
+        }
+      }
+      try {
+        WalletHelpers.saveGameWallet(nk, wallet);
+      } catch (debitErr: any) {
+        // Global credit landed but the local debit failed — attempt a
+        // compensating upstream refund so value does not appear from thin air,
+        // and log loudly either way for reconciliation.
+        logger.error("[LegacyWallet] CRITICAL: convert_to_global local debit failed after upstream credit (user " + userId + ", amount " + globalEarned + ") — attempting compensating refund: " + (debitErr && debitErr.message ? debitErr.message : String(debitErr)));
+        try {
+          proxyGlobalApi(nk, logger, userId, "spend", {
+            amount: globalEarned,
+            sourceType: "game_to_global_conversion_reversal",
+            sourceId: data.gameId,
+            description: "Reversal of game_to_global_conversion — local game-wallet debit failed"
+          }, data.gameId);
+          logger.error("[LegacyWallet] Compensating refund succeeded (user " + userId + ", amount " + globalEarned + ")");
+        } catch (refundErr: any) {
+          logger.error("[LegacyWallet] CRITICAL: compensating refund FAILED (user " + userId + ", amount " + globalEarned + ") — manual reconciliation required: " + (refundErr && refundErr.message ? refundErr.message : String(refundErr)));
+        }
+        return RpcHelpers.errorResponse("Conversion failed while debiting game wallet. Please retry or contact support.");
+      }
       return RpcHelpers.successResponse({
         userId: userId,
         gameId: data.gameId,
@@ -509,22 +564,67 @@ namespace LegacyWallet {
       var amt = parseInt(String(data.amount), 10) || 0;
       if (!gameId) return RpcHelpers.errorResponse("gameId required");
       if (amt <= 0) return RpcHelpers.errorResponse("amount must be > 0");
+      // A-04: per-request idempotency key. Previously sourceId was a CONSTANT
+      // derived only from the gameId, so upstream spend dedupe could never
+      // engage and client retries double-spent global points.
+      var conversionId = nk.uuidv4();
       proxyGlobalApi(nk, logger, userId, "spend", {
         amount: amt,
         sourceType: "global_to_game_convert",
-        sourceId: "game:" + gameId,
+        sourceId: "g2g:" + conversionId,
+        idempotencyKey: conversionId,
         description: "Convert " + amt + " global points to game currency"
       }, gameId);
       var ratios = getConversionRatios(nk);
       var ratio = ratios[gameId] || 100;
       var gameCurrency = amt * ratio;
-      var wallet = WalletHelpers.getGameWallet(nk, userId, gameId);
       var cur = data.currency || "game";
+
+      // A-04: record the conversion state BEFORE the local credit, so a
+      // storage failure leaves a recoverable "pending_credit" record (keyed
+      // by conversionId) instead of vanishing the spent value.
+      var convKey = "g2g_conversion_" + conversionId;
+      var convRec: any = {
+        id: conversionId,
+        userId: userId,
+        gameId: gameId,
+        currency: cur,
+        globalSpent: amt,
+        gameCurrencyEarned: gameCurrency,
+        ratio: ratio,
+        state: "pending_credit",
+        createdAt: new Date().toISOString()
+      };
+      try {
+        Storage.writeJson(nk, Constants.WALLETS_COLLECTION, convKey, userId, convRec, 1, 0);
+      } catch (pendErr: any) {
+        logger.warn("[LegacyWallet] g2g pending-record write failed for " + conversionId + ": " + (pendErr && pendErr.message ? pendErr.message : String(pendErr)));
+      }
+
+      var wallet = WalletHelpers.getGameWallet(nk, userId, gameId);
       wallet.currencies[cur] = (wallet.currencies[cur] || 0) + gameCurrency;
-      WalletHelpers.saveGameWallet(nk, wallet);
+      try {
+        WalletHelpers.saveGameWallet(nk, wallet);
+      } catch (creditErr: any) {
+        // Global points are spent but the game credit failed. The pending
+        // record above carries everything needed to re-run the credit —
+        // log loudly and surface the reference id.
+        logger.error("[LegacyWallet] CRITICAL: g2g local credit failed after global spend; pending record " + convKey + " (user " + userId + "): " + (creditErr && creditErr.message ? creditErr.message : String(creditErr)));
+        return RpcHelpers.errorResponse("Conversion pending — global points were spent and the game credit will be reconciled. Reference: " + conversionId);
+      }
+
+      // Mark the conversion credited (best-effort audit trail).
+      convRec.state = "credited";
+      convRec.creditedAt = new Date().toISOString();
+      try {
+        Storage.writeJson(nk, Constants.WALLETS_COLLECTION, convKey, userId, convRec, 1, 0);
+      } catch (finErr: any) {
+        logger.warn("[LegacyWallet] g2g completion-record write failed for " + conversionId + ": " + (finErr && finErr.message ? finErr.message : String(finErr)));
+      }
       return RpcHelpers.successResponse({
         userId: userId,
         gameId: gameId,
+        conversionId: conversionId,
         globalPointsSpent: amt,
         gameCurrencyEarned: gameCurrency,
         conversionRatio: ratio,
@@ -547,11 +647,19 @@ namespace LegacyWallet {
 
   export function rpcGlobalWalletEarn(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
-      var userId = RpcHelpers.requireUserId(ctx);
       var data = RpcHelpers.parseRpcPayload(payload);
-      if (!data.amount || data.amount <= 0) return RpcHelpers.errorResponse("amount required and must be > 0");
+      // F2 SECURITY: this credits arbitrary amounts (incl. premium currency)
+      // to the global wallet. Client self-mint is not allowed — admin session
+      // or http_key server caller only (throws otherwise).
+      RpcHelpers.requireAdmin(ctx, nk);
+      // Server (http_key) callers carry no session user and name the target
+      // in the payload; session (admin) users default to themselves.
+      var userId = ctx.userId || data.userId;
+      if (!userId) return RpcHelpers.errorResponse("User ID required");
+      var amt = Number(data.amount);
+      if (!isFinite(amt) || amt <= 0) return RpcHelpers.errorResponse("amount required and must be > 0");
       var body = {
-        amount: data.amount,
+        amount: amt,
         sourceType: data.sourceType || "nakama_rpc",
         sourceId: data.sourceId || ("rpc:" + userId),
         description: data.description || "Earn via Nakama RPC"
@@ -599,7 +707,16 @@ namespace LegacyWallet {
       var deviceId = data.device_id || data.deviceId;
       var gameId = data.game_id || data.gameId;
       if (!deviceId || !gameId) return RpcHelpers.errorResponse("device_id and game_id required");
-      var userId = ctx.userId || deviceId;
+      // F11 SECURITY: never key wallet creation off a client-supplied deviceId
+      // when a session exists — that created/wrote wallets for arbitrary users.
+      // The deviceId-as-userId legacy guest path is retained for server
+      // (http_key) callers only.
+      var userId = ctx.userId;
+      if (!userId) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        userId = deviceId;
+      }
+      if (!userId) return RpcHelpers.errorResponse("User ID required");
       var gameWallet = WalletHelpers.getGameWallet(nk, userId, gameId);
       var globalWallet = getGlobalWallet(nk, userId);
       var key = "registry_" + userId;
