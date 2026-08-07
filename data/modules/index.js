@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-08-06T21:55:45.953Z
+// Generated: 2026-08-07T09:59:34.304Z
 // RPC Count: 1320
 // ============================================================
 
@@ -65536,7 +65536,62 @@ function streakStorageKey(userId, gameId) {
     return userId + '_' + gameId;
 }
 
+// ─── LIVE STREAK SEED (BUG FIX 2026-08-07) ──────────────────────────────────
+// Root cause: nothing in the backend ever wrote the V2 `streak_data` store,
+// so streak_wager / streak_repair dead-ended on "No streak data found" for
+// EVERY player (and the win check could never pass — currentDay stayed 0).
+// The authoritative login streak lives in the daily_progress module
+// (collection "daily_streaks", key "user_daily_streak_{userId}_{gameId}",
+// written by daily_progress_check) and quiz-played-today is recorded in
+// "daily_play_log/{userId}_{YYYYMMDD}" by the quiz pipeline. readStreakData
+// now merges those live fields on every read; wager/repair state still
+// persists in the V2 store. Canonical+legacy game-id fallback mirrors the
+// 2026-08-06 badge/character fix.
+var QUIZVERSE_CANONICAL_GAME_ID = 'quizverse';
+var QUIZVERSE_LEGACY_GAME_ID = '126bf539-dae2-4bcf-964d-316c0fa1f92b';
+
+function seedGameIds(gameId) {
+    return gameId === QUIZVERSE_CANONICAL_GAME_ID
+        ? [QUIZVERSE_CANONICAL_GAME_ID, QUIZVERSE_LEGACY_GAME_ID]
+        : [gameId, QUIZVERSE_CANONICAL_GAME_ID];
+}
+
+function readDailyLoginStreak(nk, logger, userId, gameId) {
+    var ids = seedGameIds(gameId);
+    for (var i = 0; i < ids.length; i++) {
+        try {
+            var records = nk.storageRead([{
+                collection: 'daily_streaks',
+                key: 'user_daily_streak_' + userId + '_' + ids[i],
+                userId: userId
+            }]);
+            if (records && records.length > 0 && records[0].value) {
+                return records[0].value;
+            }
+        } catch (err) {
+            logger.warn('[StreakV2] daily-streak seed read failed: ' + err.message);
+        }
+    }
+    return null;
+}
+
+function hasPlayedQuizToday(nk, logger, userId) {
+    try {
+        var todayKey = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        var records = nk.storageRead([{
+            collection: 'daily_play_log',
+            key: userId + '_' + todayKey,
+            userId: userId
+        }]);
+        return !!(records && records.length > 0 && records[0].value);
+    } catch (err) {
+        logger.warn('[StreakV2] play-log read failed: ' + err.message);
+        return false;
+    }
+}
+
 function readStreakData(nk, logger, userId, gameId) {
+    var data = null;
     try {
         var records = nk.storageRead([{
             collection: STREAK_STORAGE_COLLECTION,
@@ -65544,16 +65599,49 @@ function readStreakData(nk, logger, userId, gameId) {
             userId: userId
         }]);
         if (records && records.length > 0 && records[0].value) {
-            return records[0].value;
+            data = records[0].value;
         }
     } catch (err) {
         logger.warn('[StreakV2] Storage read failed: ' + err.message);
     }
-    return null;
+
+    // Merge the live fields from the authoritative stores (see seed note).
+    // Both empty = brand-new player → keep the original "play first" error.
+    var daily = readDailyLoginStreak(nk, logger, userId, gameId);
+    if (!data && !daily) return null;
+    data = data || {};
+    if (daily) {
+        data.currentDay = daily.currentStreak || 0;
+        // Login streak resets silently on a gap — derive the V2 'broken'
+        // flag from the last activity (unix seconds). Break moment = start
+        // of the UTC day AFTER the day the player had to play by, i.e.
+        // a full missed UTC day. The 24h repair window runs from there.
+        var lastActivityMs = Math.max(
+            (daily.lastOpenTimestamp || 0) * 1000,
+            (daily.lastClaimTimestamp || 0) * 1000
+        );
+        if (lastActivityMs > 0) {
+            var dayMs = 86400000;
+            var utcDayStart = Math.floor(lastActivityMs / dayMs) * dayMs;
+            var brokenAtMs = utcDayStart + 2 * dayMs;
+            data.isBroken = Date.now() >= brokenAtMs;
+            data.brokenAt = data.isBroken
+                ? new Date(brokenAtMs).toISOString()
+                : null;
+        }
+    }
+    if (hasPlayedQuizToday(nk, logger, userId)) {
+        data.lastQuizCompletedAt = new Date().toISOString();
+    }
+    return data;
 }
 
 function writeStreakData(nk, logger, userId, gameId, data) {
     try {
+        // lastQuizCompletedAt is a transient read-time field (merged live
+        // from daily_play_log) — persisting it would let a stale "played
+        // today" leak into future days and break the resolve gate.
+        if (data) delete data.lastQuizCompletedAt;
         nk.storageWrite([{
             collection: STREAK_STORAGE_COLLECTION,
             key: streakStorageKey(userId, gameId),
