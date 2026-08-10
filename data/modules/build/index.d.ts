@@ -3924,6 +3924,7 @@ declare namespace RouterWallet {
     var WALLETS_COLLECTION: string;
     var LEDGER_COLLECTION: string;
     var CREDIT_REFS_COLLECTION: string;
+    var DEBIT_REFS_COLLECTION: string;
     var MAX_OCC_RETRIES: number;
     var CREDIT_KINDS: string[];
     interface WalletHold {
@@ -3958,6 +3959,17 @@ declare namespace RouterWallet {
     function rpcDebit(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcHold(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcSettle(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    /**
+     * Move credits between two app wallets owned by the same customer
+     * (credit-system.md §5: monthly grants land in the user's PRIMARY app
+     * wallet; transfers let users re-shard credits across their apps).
+     *
+     * Not a distributed transaction: debit-then-credit with a compensating
+     * re-credit if the destination write fails. Ref idempotency is claimed on
+     * the DESTINATION app ("xfer_<ref>") before any mutation, same convention
+     * as rpcCredit, so replays never double-move.
+     */
+    function rpcTransfer(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcHistory(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function register(initializer: nkruntime.Initializer): void;
 }
