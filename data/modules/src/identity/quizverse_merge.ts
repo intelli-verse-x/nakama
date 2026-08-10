@@ -32,18 +32,25 @@ namespace QuizverseMerge {
   const MAX_MERGE_PER_CURRENCY = 100000;
 
   // Copy-if-absent collections (destination's own state always wins).
-  const PORT_COLLECTIONS = [
-    Constants.HIRO_PROGRESSION_COLLECTION,
-    Constants.HIRO_STREAKS_COLLECTION,
-    Constants.HIRO_STATS_COLLECTION,
-    Constants.HIRO_INVENTORY_COLLECTION,
-    Constants.HIRO_ACHIEVEMENTS_COLLECTION,
-    Constants.DAILY_REWARDS_COLLECTION,
-    "qv_seen",
-    "qv_quests",
-    "badges",
-    "characters",
-  ];
+  // Lazy on purpose: must NOT read Constants.* at module load time. In the
+  // Goja runtime bundle, QuizverseMerge's IIFE currently evaluates before the
+  // Constants namespace is initialized — a top-level array of Constants.FOO
+  // throws "Cannot read property 'HIRO_PROGRESSION_COLLECTION' of undefined"
+  // and kills the entire JS runtime (nakama_js_health 404 / deploy smoke fail).
+  function portCollections(): string[] {
+    return [
+      Constants.HIRO_PROGRESSION_COLLECTION,
+      Constants.HIRO_STREAKS_COLLECTION,
+      Constants.HIRO_STATS_COLLECTION,
+      Constants.HIRO_INVENTORY_COLLECTION,
+      Constants.HIRO_ACHIEVEMENTS_COLLECTION,
+      Constants.DAILY_REWARDS_COLLECTION,
+      "qv_seen",
+      "qv_quests",
+      "badges",
+      "characters",
+    ];
+  }
 
   function isServiceCaller(ctx: nkruntime.Context, payload: any): boolean {
     var token = payload && payload.service_token;
@@ -243,8 +250,9 @@ namespace QuizverseMerge {
       // Execute: wallets sum-merged (capped), game state copy-if-absent.
       var movedCurrencies = mergeWallets(nk, ghostUserId, cognitoUserId);
       var ported: { [k: string]: number } = {};
-      for (var i = 0; i < PORT_COLLECTIONS.length; i++) {
-        ported[PORT_COLLECTIONS[i]] = portCollection(nk, PORT_COLLECTIONS[i], ghostUserId, cognitoUserId);
+      var collections = portCollections();
+      for (var i = 0; i < collections.length; i++) {
+        ported[collections[i]] = portCollection(nk, collections[i], ghostUserId, cognitoUserId);
       }
 
       var summary = {
