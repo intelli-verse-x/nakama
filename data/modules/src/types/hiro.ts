@@ -111,6 +111,7 @@ namespace Hiro {
     stackable: boolean;
     consumable: boolean;
     durableSec?: number;
+    giftable?: boolean;  // default true if not specified
     additionalProperties?: { [key: string]: string };
   }
 

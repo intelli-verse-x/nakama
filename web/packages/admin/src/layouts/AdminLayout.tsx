@@ -38,6 +38,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  Swords,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminStore } from "@/stores/admin-store";
@@ -92,7 +93,8 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Hiro Config", to: "/hiro-config", icon: Puzzle },
       { label: "Satori Config", to: "/satori-config", icon: Sparkles },
       { label: "Offers", to: "/offers", icon: Tag },
-      { label: "Quests Config", to: "/quests-config", icon: ScrollText },
+      { label: "Quests Config (Legacy)", to: "/quests-config", icon: ScrollText },
+      { label: "Quest Engine", to: "/quest-engine-config", icon: Swords },
       { label: "Battle Pass Config", to: "/battlepass-config", icon: Award },
       { label: "Achievements", to: "/achievements", icon: Medal },
       { label: "Leaderboards Config", to: "/leaderboards-config", icon: Trophy },

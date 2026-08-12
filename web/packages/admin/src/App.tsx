@@ -25,6 +25,7 @@ const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const AccountsPage = lazy(() => import("./pages/AccountsPage"));
 const OffersPage = lazy(() => import("./pages/OffersPage"));
 const QuestsConfigPage = lazy(() => import("./pages/QuestsConfigPage"));
+const QuestEngineConfigPage = lazy(() => import("./pages/QuestEngineConfigPage"));
 const BattlepassConfigPage = lazy(() => import("./pages/BattlepassConfigPage"));
 const AchievementsPage = lazy(() => import("./pages/AchievementsPage"));
 const LeaderboardsConfigPage = lazy(() => import("./pages/LeaderboardsConfigPage"));
@@ -84,6 +85,7 @@ function ProtectedRoutes() {
         <Route path="accounts" element={<AccountsPage />} />
         <Route path="offers" element={<OffersPage />} />
         <Route path="quests-config" element={<QuestsConfigPage />} />
+        <Route path="quest-engine-config" element={<QuestEngineConfigPage />} />
         <Route path="battlepass-config" element={<BattlepassConfigPage />} />
         <Route path="achievements" element={<AchievementsPage />} />
         <Route path="leaderboards-config" element={<LeaderboardsConfigPage />} />

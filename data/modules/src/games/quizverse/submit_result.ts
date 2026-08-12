@@ -776,12 +776,20 @@ namespace QvSubmitResult {
     // Compute bonus events BEFORE the response so correct streak is available.
     // correctStreak from scored block (or re-derive from gradedAnswers).
     var currentStreak = 0;
-    for (var csi = gradedAnswers.length - 1; csi >= 0; csi--) {
-      if (gradedAnswers[csi] && gradedAnswers[csi].is_correct) currentStreak++;
-      else break;
-    }
-    var variableRewards = computeVariableRewards(ctx, correct, total, gradedAnswers,
-      coinsEarned, xpEarned, currentStreak);
+        for (var csi = gradedAnswers.length - 1; csi >= 0; csi--) {
+          if (gradedAnswers[csi] && gradedAnswers[csi].is_correct) currentStreak++;
+          else break;
+        }
+
+        // ── Streak-based reward tier boost ───────────────────────────────────────
+        // If user is on a streak, upgrade their reward tier by one level
+        // streak >= 3: quote -> advice, advice -> joke, joke -> yoda (viral)
+        var rewardTierBoost = 0;
+        if (currentStreak >= 5)      rewardTierBoost = 2; // jump two tiers
+        else if (currentStreak >= 3) rewardTierBoost = 1; // jump one tier
+    
+        var variableRewards = computeVariableRewards(ctx, correct, total, gradedAnswers,
+          coinsEarned, xpEarned, currentStreak);
     var totalCoins = coinsEarned + variableRewards.bonusCoins;
     var totalXp    = xpEarned    + variableRewards.bonusXp;
 
@@ -919,26 +927,174 @@ namespace QvSubmitResult {
       logger.warn("[QvSubmit] badge fan-out failed (non-fatal): " + (_badgeErr && _badgeErr.message));
     }
 
-    // ── Response ──────────────────────────────────────────────────────────
-    return JSON.stringify({
-      ok:              true,
-      score_token:     scoreToken,
-      pack_id:         packId,
-      topic:           topic,
-      correct:         correct,
-      total:           total,
-      accuracy_pct:    accuracyPct,
-      score:           totalScore,
-      time_bonus:      scored.timeBonus,
-      coins_earned:    totalCoins,
-      xp_earned:       totalXp,
-      is_perfect:      isPerfect,
-      graded_answers:  gradedAnswers,
-      reward_events:   variableRewards.events,
-      personalization: personalization,
-      badges_unlocked:      badgesUnlocked,
-      characters_unlocked:  charactersUnlocked
-    });
+    // ── Post-Quiz Reward (based on accuracy) ─────────────────────────────────
+        // Fetch a small text reward from external APIs — completely non-blocking,
+        // on any failure we simply omit the reward field from the response.
+        var reward: any = null;
+                try {
+                  // Base reward type from accuracy
+                  var rewardType: string;
+                  if (accuracyPct >= 80)       rewardType = "yoda";     // viral share card
+                  else if (accuracyPct >= 60)  rewardType = "joke";     // dad joke
+                  else if (accuracyPct >= 40)  rewardType = "advice";   // encouraging advice
+                  else                         rewardType = "quote";    // inspirational quote
+
+                  // Apply streak-based tier boost
+                  // streak >= 3: quote -> advice, advice -> joke, joke -> yoda
+                  // streak >= 5: jump two tiers
+                  if (rewardTierBoost > 0) {
+                    if (rewardTierBoost >= 2) {
+                      // Jump two tiers
+                      if (rewardType === "quote")      rewardType = "joke";
+                      else if (rewardType === "advice") rewardType = "yoda";
+                      else if (rewardType === "joke")   rewardType = "yoda";
+                    } else {
+                      // Jump one tier
+                      if (rewardType === "quote")      rewardType = "advice";
+                      else if (rewardType === "advice") rewardType = "joke";
+                      else if (rewardType === "joke")   rewardType = "yoda";
+                    }
+                  }
+
+                  // Synchronous inline fetch — these are fast (<200ms) and fire-and-forget
+          // on the server side; if any upstream API is slow or fails we just skip
+          // the reward for this session (client falls back gracefully).
+          var rewardResp: string;
+          if (rewardType === "yoda") {
+            var apiKey = (ctx.env && ctx.env["FUNTRANSLATIONS_API_KEY"]) || "";
+            var phrases = [
+              "You are the quiz champion!",
+              "May the knowledge be with you",
+              "Victory achieved, young padawan",
+              "The force is strong with this one"
+            ];
+            var phrase = phrases[Math.floor(Math.random() * phrases.length)];
+            if (apiKey) {
+              var resp = nk.httpRequest(
+                "https://api.funtranslations.com/translate/yodish.json?text=" + encodeURIComponent(phrase),
+                "get",
+                { "X-Funtranslations-Api-Secret": apiKey },
+                "",
+                800);
+              if (resp && resp.code === 200 && resp.body) {
+                var data = JSON.parse(resp.body);
+                if (data.contents && data.contents.translated) {
+                  reward = {
+                    type: "viral",
+                    text: data.contents.translated,
+                    original: phrase,
+                    explanation: "Share this Yoda wisdom with friends! 🌟",
+                    meta: { shareable: true, translator: "yodish" }
+                  };
+                }
+              }
+            }
+            if (!reward) {
+              reward = {
+                type: "viral",
+                text: "Quiz master, you have become! 🌟",
+                original: phrase,
+                explanation: "Share this Yoda wisdom with friends! 🌟",
+                meta: { fallback: true }
+              };
+            }
+          } else if (rewardType === "joke") {
+            var resp = nk.httpRequest("https://icanhazdadjoke.com/", "get",
+              { "Accept": "application/json", "User-Agent": "QuizVerse/1.0" }, "", 800);
+            if (resp && resp.code === 200 && resp.body) {
+              var data = JSON.parse(resp.body);
+              if (data.joke) {
+                reward = {
+                  type: "joke",
+                  text: data.joke,
+                  explanation: "A dad joke to brighten your day! 😄",
+                  meta: { joke_id: data.id }
+                };
+              }
+            }
+            if (!reward) {
+              reward = {
+                type: "joke",
+                text: "Why don't scientists trust atoms? Because they make up everything!",
+                explanation: "A dad joke to brighten your day! 😄",
+                meta: { fallback: true }
+              };
+            }
+          } else if (rewardType === "advice") {
+            var resp = nk.httpRequest("https://api.adviceslip.com/advice", "get", {}, "", 600);
+            if (resp && resp.code === 200 && resp.body) {
+              var data = JSON.parse(resp.body);
+              if (data.slip && data.slip.advice) {
+                reward = {
+                  type: "advice",
+                  text: data.slip.advice,
+                  explanation: "Wisdom for your journey! 💡",
+                  meta: { slip_id: data.slip.slip_id }
+                };
+              }
+            }
+            if (!reward) {
+              reward = {
+                type: "advice",
+                text: "The best time to plant a tree was 20 years ago. The second best time is now.",
+                explanation: "Wisdom for your journey! 💡",
+                meta: { fallback: true }
+              };
+            }
+          } else { // quote
+            var resp = nk.httpRequest("https://api.quotable.io/random", "get",
+              { "Accept": "application/json" }, "", 800);
+            if (resp && resp.code === 200 && resp.body) {
+              var data = JSON.parse(resp.body);
+              if (data.content && data.author) {
+                reward = {
+                  type: "quote",
+                  text: "\"" + data.content + "\"",
+                  attribution: "— " + data.author,
+                  explanation: "Daily inspiration from " + data.author + " ✨",
+                  meta: { author: data.author, tags: data.tags }
+                };
+              }
+            }
+            if (!reward) {
+              reward = {
+                type: "quote",
+                text: "\"Believe you can and you're halfway there.\"",
+                attribution: "— Theodore Roosevelt",
+                explanation: "Daily inspiration! ✨",
+                meta: { fallback: true }
+              };
+            }
+          }
+        } catch (_rewardErr: any) {
+          logger.debug("[QvSubmit] reward fetch failed (non-fatal): " + (_rewardErr && _rewardErr.message));
+          reward = null;
+        }
+
+        // ── Response ──────────────────────────────────────────────────────────
+        var response: any = {
+          ok:              true,
+                    score_token:     scoreToken,
+                    pack_id:         packId,
+                    topic:           topic,
+                    correct:         correct,
+                    total:           total,
+                    accuracy_pct:    accuracyPct,
+                    score:           totalScore,
+                    time_bonus:      scored.timeBonus,
+                    coins_earned:    totalCoins,
+                    xp_earned:       totalXp,
+                    is_perfect:      isPerfect,
+                    graded_answers:  gradedAnswers,
+                    reward_events:   variableRewards.events,
+                    personalization: personalization,
+                    badges_unlocked:      badgesUnlocked,
+                    characters_unlocked:  charactersUnlocked,
+                    current_streak:       currentStreak,
+                    reward_tier_boost:    rewardTierBoost
+                  };
+                  if (reward) response.reward = reward;
+                  return JSON.stringify(response);
   }
 
   // ── Registration ───────────────────────────────────────────────────────────

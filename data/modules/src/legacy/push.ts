@@ -1,5 +1,9 @@
 namespace LegacyPush {
 
+  function nakamaError(msg: string, code: number): nkruntime.Error {
+    return { message: msg, code: code };
+  }
+
   interface PushTokenData {
     tokens: {
       token: string;
@@ -2600,6 +2604,135 @@ namespace LegacyPush {
     return RpcHelpers.successResponse({ sent: sent, gated: gated, users_scanned: usersScanned, dedupedDevices: runDedupStats.skippedDevices });
   }
 
+  // ── NEW: Chess Daily Puzzle Cron (09:00–13:00 local, daily) ───────────────────
+  function rpcNotifCronChessDailyPuzzle(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    if (ctx.userId) return RpcHelpers.errorResponse("Admin only");
+    var todayKey = todayDateKey();
+    var sent = 0, gated = 0, scanned = 0;
+    var runDedupArns: { [arn: string]: boolean } = {};
+    var runDedupStats = { skippedDevices: 0 };
+    var batch = 100, offset = 0;
+    while (true) {
+      var users = listOptedInUsers(nk, batch, offset);
+      if (!users || users.length === 0) break;
+      for (var i = 0; i < users.length; i++) {
+        scanned++;
+        var u = users[i];
+        if (hasMarker(nk, u, "chess_daily_puzzle", todayKey)) { gated++; continue; }
+        var h = getUserLocalHour(nk, u);
+        if (h < 9 || h >= 13) { gated++; continue; }  // morning window only
+        var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "chess_daily_puzzle",
+          "chess_daily_puzzle_title", "chess_daily_puzzle_body", { topic: "chess" },
+          { data: { screen: "quiz", mode: "topic_chess" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
+        if (ok) { recordMarker(nk, u, "chess_daily_puzzle", todayKey); sent++; } else { gated++; }
+      }
+      offset += batch;
+      if (users.length < batch) break;
+    }
+    if (sent > 0 || runDedupStats.skippedDevices > 0) {
+      PushAlerts.postCronReport(nk, logger, {
+        cronName: "chess_daily_puzzle", dateKey: todayKey, scanned: scanned, sent: sent,
+        gated: gated, byLocale: {}, dedupedDevices: runDedupStats.skippedDevices
+      });
+    }
+    return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dedupedDevices: runDedupStats.skippedDevices });
+  }
+
+  // ── NEW: Holiday Event Cron (10:00–18:00 local, only on days with holidays) ─────
+  function rpcNotifCronHolidayEvent(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    if (ctx.userId) return RpcHelpers.errorResponse("Admin only");
+    var todayKey = todayDateKey();
+    var sent = 0, gated = 0, scanned = 0;
+    var runDedupArns: { [arn: string]: boolean } = {};
+    var runDedupStats = { skippedDevices: 0 };
+    var batch = 100, offset = 0;
+    // Check if there are holidays today (quick fetch)
+    var hasHolidays = false;
+    try {
+      var testResp: any = nk.httpRequest("https://date.nager.at/api/v3/PublicHolidays/" + new Date().getFullYear() + "/US", "get", {}, "", 10000);
+      if (testResp && testResp.code >= 200 && testResp.code < 300) {
+        var arr: any = testResp.body ? JSON.parse(testResp.body) : null;
+        if (Array.isArray(arr)) {
+          var today = new Date();
+          var month = today.getMonth() + 1;
+          var day = today.getDate();
+          for (var ti = 0; ti < arr.length; ti++) {
+            var hol = arr[ti];
+            if (hol.date) {
+              var hDate = hol.date.split("-");
+              if (parseInt(hDate[1]) === month && parseInt(hDate[2]) === day) { hasHolidays = true; break; }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    if (!hasHolidays) {
+      return RpcHelpers.successResponse({ sent: 0, gated: 0, scanned: 0, skipped: "no_holidays_today" });
+    }
+    while (true) {
+      var users = listOptedInUsers(nk, batch, offset);
+      if (!users || users.length === 0) break;
+      for (var i = 0; i < users.length; i++) {
+        scanned++;
+        var u = users[i];
+        if (hasMarker(nk, u, "holiday_event", todayKey)) { gated++; continue; }
+        var userHour = getUserLocalHour(nk, u);
+        if (userHour < 10 || userHour >= 18) { gated++; continue; }  // daytime window
+        var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "holiday_event",
+          "holiday_event_title", "holiday_event_body", { },
+          { data: { screen: "quiz", mode: "topic_holiday" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
+        if (ok) { recordMarker(nk, u, "holiday_event", todayKey); sent++; } else { gated++; }
+      }
+      offset += batch;
+      if (users.length < batch) break;
+    }
+    if (sent > 0 || runDedupStats.skippedDevices > 0) {
+      PushAlerts.postCronReport(nk, logger, {
+        cronName: "holiday_event", dateKey: todayKey, scanned: scanned, sent: sent,
+        gated: gated, byLocale: {}, dedupedDevices: runDedupStats.skippedDevices
+      });
+    }
+    return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dedupedDevices: runDedupStats.skippedDevices });
+  }
+
+  // ── NEW: Board Game Weekly Cron (14:00–20:00 local, weekly on Mondays) ──────────
+  function rpcNotifCronBoardGameWeekly(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    if (ctx.userId) return RpcHelpers.errorResponse("Admin only");
+    var todayKey = todayDateKey();
+    var today = new Date();
+    if (today.getDay() !== 1) { // Monday only (0=Sun, 1=Mon)
+      return RpcHelpers.successResponse({ sent: 0, gated: 0, scanned: 0, skipped: "not_monday" });
+    }
+    var sent = 0, gated = 0, scanned = 0;
+    var runDedupArns: { [arn: string]: boolean } = {};
+    var runDedupStats = { skippedDevices: 0 };
+    var batch = 100, offset = 0;
+    while (true) {
+      var users = listOptedInUsers(nk, batch, offset);
+      if (!users || users.length === 0) break;
+      for (var i = 0; i < users.length; i++) {
+        scanned++;
+        var u = users[i];
+        if (hasMarker(nk, u, "boardgame_weekly", todayKey)) { gated++; continue; }
+        var h = getUserLocalHour(nk, u);
+        if (h < 14 || h >= 20) { gated++; continue; }  // afternoon/evening window
+        var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "boardgame_weekly",
+          "boardgame_weekly_title", "boardgame_weekly_body", { },
+          { data: { screen: "quiz", mode: "topic_boardgame" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
+        if (ok) { recordMarker(nk, u, "boardgame_weekly", todayKey); sent++; } else { gated++; }
+      }
+      offset += batch;
+      if (users.length < batch) break;
+    }
+    if (sent > 0 || runDedupStats.skippedDevices > 0) {
+      PushAlerts.postCronReport(nk, logger, {
+        cronName: "boardgame_weekly", dateKey: todayKey, scanned: scanned, sent: sent,
+        gated: gated, byLocale: {}, dedupedDevices: runDedupStats.skippedDevices
+      });
+    }
+    return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dedupedDevices: runDedupStats.skippedDevices });
+  }
+
   // Internal aliases so the in-process scheduler match can invoke each cron
   // handler directly without an HTTP round-trip. The RPC versions remain
   // registered for ops use (manual fire / external trigger / curl).
@@ -2610,6 +2743,10 @@ namespace LegacyPush {
   export var runMotivationCron    = rpcNotifCronMotivation;
   export var runRemindersCron     = rpcNotifCronReminders;
   export var runReviewCron        = rpcNotifCronReview;
+  // NEW: Chess, Holiday, Board Game crons
+  export var runChessDailyPuzzleCron = rpcNotifCronChessDailyPuzzle;
+  export var runHolidayEventCron     = rpcNotifCronHolidayEvent;
+  export var runBoardGameWeeklyCron  = rpcNotifCronBoardGameWeekly;
 
   // ─── Pending-registration flush ──────────────────────────────────────────
   // Called by the scheduler (LegacyNotifScheduler.matchLoop) every 30 min
@@ -2779,6 +2916,173 @@ namespace LegacyPush {
     return JSON.stringify({ success: true });
   }
 
+  // ── Post-Quiz Reward RPCs (client-called after quiz) ───────────────────────
+  // All return a small JSON payload with a text reward; they never throw — on
+  // any upstream failure a local fallback is returned so the client always gets
+  // something to show. No admin check; any authenticated user may call them.
+
+  function rpcRewardJoke(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    _payload: string
+  ): string {
+    if (!ctx.userId) throw nakamaError("not authenticated", nkruntime.Codes.UNAUTHENTICATED);
+    try {
+      var resp = nk.httpRequest("https://icanhazdadjoke.com/", "get",
+        { "Accept": "application/json", "User-Agent": "QuizVerse/1.0 (intelli-verse-x.ai)" }, "", 5000);
+      if (resp && resp.code === 200 && resp.body) {
+        var data = JSON.parse(resp.body);
+        if (data.joke) {
+          return JSON.stringify({
+            ok: true,
+            type: "joke",
+            text: data.joke,
+            explanation: "A dad joke to brighten your day! 😄",
+            meta: { joke_id: data.id }
+          });
+        }
+      }
+    } catch (e: any) {
+      logger.warn("[Reward/joke] fetch failed: " + (e && e.message));
+    }
+    // Local fallback
+    return JSON.stringify({
+      ok: true,
+      type: "joke",
+      text: "Why don't scientists trust atoms? Because they make up everything!",
+      explanation: "A dad joke to brighten your day! 😄",
+      meta: { fallback: true }
+    });
+  }
+
+  function rpcRewardYoda(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    _payload: string
+  ): string {
+    if (!ctx.userId) throw nakamaError("not authenticated", nkruntime.Codes.UNAUTHENTICATED);
+    var apiKey = (ctx.env && ctx.env["FUNTRANSLATIONS_API_KEY"]) || "";
+    var phrases = [
+      "You are the quiz champion!",
+      "May the knowledge be with you",
+      "Victory achieved, young padawan",
+      "The force is strong with this one"
+    ];
+    var phrase = phrases[Math.floor(Math.random() * phrases.length)];
+    if (!apiKey) {
+      return JSON.stringify({
+        ok: true,
+        type: "viral",
+        text: "Quiz master, you have become! 🌟",
+        original: phrase,
+        explanation: "Share this Yoda wisdom with friends! 🌟",
+        meta: { fallback: true, translator: "yodish" }
+      });
+    }
+    try {
+      var resp = nk.httpRequest(
+        "https://api.funtranslations.com/translate/yodish.json?text=" + encodeURIComponent(phrase),
+        "get",
+        { "X-Funtranslations-Api-Secret": apiKey },
+        "",
+        5000);
+      if (resp && resp.code === 200 && resp.body) {
+        var data = JSON.parse(resp.body);
+        if (data.contents && data.contents.translated) {
+          return JSON.stringify({
+            ok: true,
+            type: "viral",
+            text: data.contents.translated,
+            original: phrase,
+            explanation: "Share this Yoda wisdom with friends! 🌟",
+            meta: { shareable: true, translator: "yodish" }
+          });
+        }
+      }
+    } catch (e: any) {
+      logger.warn("[Reward/yoda] fetch failed: " + (e && e.message));
+    }
+    return JSON.stringify({
+      ok: true,
+      type: "viral",
+      text: "Quiz master, you have become! 🌟",
+      original: phrase,
+      explanation: "Share this Yoda wisdom with friends! 🌟",
+      meta: { fallback: true }
+    });
+  }
+
+  function rpcRewardAdvice(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    _payload: string
+  ): string {
+    if (!ctx.userId) throw nakamaError("not authenticated", nkruntime.Codes.UNAUTHENTICATED);
+    try {
+      var resp = nk.httpRequest("https://api.adviceslip.com/advice", "get", {}, "", 3000);
+      if (resp && resp.code === 200 && resp.body) {
+        var data = JSON.parse(resp.body);
+        if (data.slip && data.slip.advice) {
+          return JSON.stringify({
+            ok: true,
+            type: "advice",
+            text: data.slip.advice,
+            explanation: "Wisdom for your journey! 💡",
+            meta: { slip_id: data.slip.slip_id }
+          });
+        }
+      }
+    } catch (e: any) {
+      logger.warn("[Reward/advice] fetch failed: " + (e && e.message));
+    }
+    return JSON.stringify({
+      ok: true,
+      type: "advice",
+      text: "The best time to plant a tree was 20 years ago. The second best time is now.",
+      explanation: "Wisdom for your journey! 💡",
+      meta: { fallback: true }
+    });
+  }
+
+  function rpcRewardQuote(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    _payload: string
+  ): string {
+    if (!ctx.userId) throw nakamaError("not authenticated", nkruntime.Codes.UNAUTHENTICATED);
+    try {
+      var resp = nk.httpRequest("https://api.quotable.io/random", "get",
+        { "Accept": "application/json" }, "", 5000);
+      if (resp && resp.code === 200 && resp.body) {
+        var data = JSON.parse(resp.body);
+        if (data.content && data.author) {
+          return JSON.stringify({
+            ok: true,
+            type: "quote",
+            text: "\"" + data.content + "\"",
+            attribution: "— " + data.author,
+            explanation: "Daily inspiration from " + data.author + " ✨",
+            meta: { author: data.author, tags: data.tags }
+          });
+        }
+      }
+    } catch (e: any) {
+      logger.warn("[Reward/quote] fetch failed: " + (e && e.message));
+    }
+    return JSON.stringify({
+      ok: true,
+      type: "quote",
+      text: "\"Believe you can and you're halfway there.\"",
+      attribution: "— Theodore Roosevelt",
+      explanation: "Daily inspiration! ✨",
+      meta: { fallback: true }
+    });
+  }
+
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("push_register_token", rpcPushRegisterToken);
     initializer.registerRpc("push_send_event", rpcPushSendEvent);
@@ -2794,6 +3098,15 @@ namespace LegacyPush {
     initializer.registerRpc("notif_cron_motivation", rpcNotifCronMotivation);
     initializer.registerRpc("notif_cron_reminders", rpcNotifCronReminders);
     initializer.registerRpc("notif_cron_review", rpcNotifCronReview);
+    // NEW: Chess, Holiday, Board Game crons
+    initializer.registerRpc("notif_cron_chess_daily_puzzle", rpcNotifCronChessDailyPuzzle);
+    initializer.registerRpc("notif_cron_holiday_event", rpcNotifCronHolidayEvent);
+    initializer.registerRpc("notif_cron_boardgame_weekly", rpcNotifCronBoardGameWeekly);
+    // Post-quiz reward RPCs
+    initializer.registerRpc("reward_joke", rpcRewardJoke);
+    initializer.registerRpc("reward_yoda", rpcRewardYoda);
+    initializer.registerRpc("reward_advice", rpcRewardAdvice);
+    initializer.registerRpc("reward_quote", rpcRewardQuote);
     initializer.registerRpc("notif_friend_request_sent", rpcNotifFriendRequestSent);
     initializer.registerRpc("notif_friend_challenge", rpcNotifFriendChallenge);
   }

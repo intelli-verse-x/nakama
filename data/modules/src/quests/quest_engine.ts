@@ -28,6 +28,14 @@ namespace QuestEngine {
     // once completed it is revealed in quest_engine_get (with hidden: true)
     // so the client can explain where the reward came from.
     hidden?: boolean;
+    // Soft-disable: keeps the quest in config but hides it from players.
+    enabled?: boolean;
+    // Bucket-specific: how many bucket quests a player may have active at once.
+    // Only meaningful when category === "bucket".
+    maxConcurrent?: number;
+    // Whether the player must explicitly opt-in to this quest before it progresses.
+    // Useful for "choose your own quest" bucket systems.
+    requiresOptIn?: boolean;
     additionalProperties?: { [key: string]: string };
   }
 
@@ -62,6 +70,7 @@ namespace QuestEngine {
   var QUEST_CONFIG_COLLECTION = "qv_quest_config";
   // Players who called quest_engine_get for an App-ID — fan-out target for new quests
   var QUEST_SUBSCRIBERS_COLLECTION = "qv_quest_subscribers";
+  var QUEST_CONFIG_AUDIT_COLLECTION = "qv_quest_config_audit";
   var DEFAULT_QUESTS_CONFIG: QuestsConfig = { quests: {} };
   // In-app inbox code for "new quest published" (reward deliveries use 9101)
   var NOTIFICATION_CODE_NEW_QUEST = 9102;
@@ -161,6 +170,33 @@ namespace QuestEngine {
       permissionRead:  2 as nkruntime.ReadPermissionValues,
       permissionWrite: 0 as nkruntime.WritePermissionValues
     }]);
+  }
+
+  function auditConfigChange(
+    nk: nkruntime.Nakama, ctx: nkruntime.Context, logger: nkruntime.Logger,
+    gameId: string, config: QuestsConfig, newQuestIds: string[]
+  ): void {
+    try {
+      var actor = ctx.userId || "server-key";
+      var remote = ctx.clientIp || "";
+      nk.storageWrite([{
+        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+        key: gameId + "_" + Math.floor(Date.now() / 1000),
+        userId: Constants.SYSTEM_USER_ID,
+        value: {
+          gameId: gameId,
+          actor: actor,
+          remote: remote,
+          questCount: Object.keys(config.quests).length,
+          newQuestIds: newQuestIds,
+          timestamp: Math.floor(Date.now() / 1000)
+        },
+        permissionRead: 2,
+        permissionWrite: 0
+      }]);
+    } catch (e: any) {
+      logger.warn("[QuestEngine] auditConfigChange failed: " + (e && e.message ? e.message : String(e)));
+    }
   }
 
   function loadSubscribers(nk: nkruntime.Nakama, gameId: string): string[] {
@@ -349,6 +385,113 @@ namespace QuestEngine {
     return !!(config.expiresAt && now > config.expiresAt);
   }
 
+  function isQuestEnabled(config: QuestConfig): boolean {
+    return config.enabled !== false; // default true when omitted
+  }
+
+  function isQuestVisible(config: QuestConfig, progress: QuestProgress): boolean {
+    if (!isQuestEnabled(config)) return false;
+    if (config.hidden && !progress.completedAt) return false;
+    return true;
+  }
+
+  function validateQuestConfig(q: QuestConfig): string | null {
+    if (!q || typeof q !== "object") return "Quest must be an object";
+    if (!q.id || typeof q.id !== "string" || q.id.length === 0) return "Quest id is required and must be a non-empty string";
+    if (!q.name || typeof q.name !== "string" || q.name.length === 0) return "Quest name is required";
+    if (!Array.isArray(q.steps) || q.steps.length === 0) return "Quest must have at least one step";
+
+    var stepIds: { [id: string]: boolean } = {};
+    for (var i = 0; i < q.steps.length; i++) {
+      var s = q.steps[i];
+      if (!s.id || typeof s.id !== "string") return "Step " + i + " missing id";
+      if (stepIds[s.id]) return "Duplicate step id: " + s.id;
+      stepIds[s.id] = true;
+      if (!s.eventType || typeof s.eventType !== "string") return "Step " + s.id + " missing eventType";
+      if (typeof s.requiredCount !== "number" || s.requiredCount < 1) return "Step " + s.id + " requiredCount must be >= 1";
+      if (s.filterField && !s.filterValue) return "Step " + s.id + " has filterField but no filterValue";
+    }
+
+    if (q.reward) {
+      var err = validateReward(q.reward);
+      if (err) return err;
+    }
+
+    if (q.expiresAt !== undefined && typeof q.expiresAt !== "number") return "expiresAt must be a unix timestamp number";
+    if (q.resetIntervalSec !== undefined && typeof q.resetIntervalSec !== "number") return "resetIntervalSec must be a number";
+    if (q.repeatable !== undefined && typeof q.repeatable !== "boolean") return "repeatable must be boolean";
+    if (q.hidden !== undefined && typeof q.hidden !== "boolean") return "hidden must be boolean";
+    if (q.enabled !== undefined && typeof q.enabled !== "boolean") return "enabled must be boolean";
+    if (q.requiresOptIn !== undefined && typeof q.requiresOptIn !== "boolean") return "requiresOptIn must be boolean";
+    if (q.maxConcurrent !== undefined && (typeof q.maxConcurrent !== "number" || q.maxConcurrent < 1)) return "maxConcurrent must be >= 1";
+
+    if (q.prerequisiteIds) {
+      if (!Array.isArray(q.prerequisiteIds)) return "prerequisiteIds must be an array";
+      for (var p = 0; p < q.prerequisiteIds.length; p++) {
+        if (typeof q.prerequisiteIds[p] !== "string") return "prerequisiteIds[" + p + "] must be a string";
+      }
+    }
+
+    return null;
+  }
+
+  function validateReward(r: Hiro.Reward): string | null {
+    if (!r || typeof r !== "object") return "Reward must be an object";
+    if (r.guaranteed) {
+      var gErr = validateRewardGrant(r.guaranteed, "guaranteed");
+      if (gErr) return gErr;
+    }
+    if (r.weighted) {
+      if (!Array.isArray(r.weighted)) return "weighted must be an array";
+      var totalWeight = 0;
+      for (var w = 0; w < r.weighted.length; w++) {
+        var entry = r.weighted[w];
+        if (typeof entry.weight !== "number" || entry.weight <= 0) return "weighted[" + w + "] weight must be > 0";
+        totalWeight += entry.weight;
+        var wErr = validateRewardGrant(entry, "weighted[" + w + "]");
+        if (wErr) return wErr;
+      }
+      if (totalWeight <= 0) return "weighted total weight must be > 0";
+    }
+    if (r.maxRolls !== undefined && (typeof r.maxRolls !== "number" || r.maxRolls < 1)) return "maxRolls must be >= 1";
+    return null;
+  }
+
+  function validateRewardGrant(g: Hiro.RewardGrant, path: string): string | null {
+    if (!g || typeof g !== "object") return path + " must be an object";
+    if (g.currencies) {
+      for (var cid in g.currencies) {
+        if (typeof g.currencies[cid] !== "number" || g.currencies[cid] < 0) return path + ".currencies[" + cid + "] must be >= 0";
+      }
+    }
+    if (g.items) {
+      for (var iid in g.items) {
+        var itemDef = g.items[iid];
+        if (!itemDef || typeof itemDef !== "object") return path + ".items[" + iid + "] invalid";
+        if (typeof itemDef.min !== "number" || itemDef.min < 0) return path + ".items[" + iid + "].min must be >= 0";
+        if (itemDef.max !== undefined && (typeof itemDef.max !== "number" || itemDef.max < itemDef.min)) return path + ".items[" + iid + "].max must be >= min";
+      }
+    }
+    if (g.energies) {
+      for (var eid in g.energies) {
+        if (typeof g.energies[eid] !== "number" || g.energies[eid] < 0) return path + ".energies[" + eid + "] must be >= 0";
+      }
+    }
+    if (g.gifts) {
+      if (!Array.isArray(g.gifts)) return path + ".gifts must be an array";
+      for (var gi = 0; gi < g.gifts.length; gi++) {
+        var gift = g.gifts[gi];
+        if (!gift || typeof gift !== "object") return path + ".gifts[" + gi + "] invalid";
+        if (!gift.id || typeof gift.id !== "string") return path + ".gifts[" + gi + "] id required";
+        if (!gift.name || typeof gift.name !== "string") return path + ".gifts[" + gi + "] name required";
+        if (!gift.type || ["physical", "voucher", "experience", "digital", "merch"].indexOf(gift.type) < 0) {
+          return path + ".gifts[" + gi + "] type must be physical/voucher/experience/digital/merch";
+        }
+      }
+    }
+    return null;
+  }
+
   function shouldResetQuest(config: QuestConfig, progress: QuestProgress, now: number): boolean {
     if (!config.repeatable || !progress.completedAt) return false;
     // resetIntervalSec takes priority (custom interval).
@@ -445,9 +588,7 @@ namespace QuestEngine {
         stateModified = true;
       }
 
-      // Hidden (surprise) quests stay invisible until the player completes
-      // them organically — after that they're revealed as a completed entry.
-      if (qConfig.hidden && !progress.completedAt) continue;
+      if (!isQuestVisible(qConfig, progress)) continue;
 
       var unlocked = isQuestUnlocked(qConfig, state);
 
@@ -901,6 +1042,18 @@ namespace QuestEngine {
 
     var questCount = Object.keys(config.quests).length;
 
+    // Validate every quest before persisting.
+    var validationErrors: string[] = [];
+    var questKeys = Object.keys(config.quests);
+    for (var vi = 0; vi < questKeys.length; vi++) {
+      var vq = config.quests[questKeys[vi]];
+      var verr = validateQuestConfig(vq);
+      if (verr) validationErrors.push(vq.id + ": " + verr);
+    }
+    if (validationErrors.length > 0) {
+      return RpcHelpers.errorResponse("Invalid quest config: " + validationErrors.join("; "));
+    }
+
     // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
     // silent: true  → skip fan-out (use for bulk reseed)
     // notifyUserIds → extra targets (optional)
@@ -918,6 +1071,11 @@ namespace QuestEngine {
 
     saveConfig(nk, gameId, config);
     logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+
+    // Audit log (best-effort)
+    var newIds: string[] = [];
+    for (var ai = 0; ai < newlyAdded.length; ai++) newIds.push(newlyAdded[ai].id);
+    auditConfigChange(nk, ctx, logger, gameId, config, newIds);
 
     var notified = 0;
     var silent = data.silent === true || data.notifyNewQuests === false;

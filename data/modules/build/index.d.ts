@@ -1800,6 +1800,9 @@ declare namespace LegacyPush {
     function rpcNotifCronMotivation(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcNotifCronReminders(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcNotifCronReview(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcNotifCronChessDailyPuzzle(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcNotifCronHolidayEvent(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcNotifCronBoardGameWeekly(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     export var runDailyQuizCron: typeof rpcNotifCronDailyQuiz;
     export var runWeeklyQuizCron: typeof rpcNotifCronWeeklyQuiz;
     export var runIdleWinbackCron: typeof rpcNotifCronIdleWinback;
@@ -1807,6 +1810,9 @@ declare namespace LegacyPush {
     export var runMotivationCron: typeof rpcNotifCronMotivation;
     export var runRemindersCron: typeof rpcNotifCronReminders;
     export var runReviewCron: typeof rpcNotifCronReview;
+    export var runChessDailyPuzzleCron: typeof rpcNotifCronChessDailyPuzzle;
+    export var runHolidayEventCron: typeof rpcNotifCronHolidayEvent;
+    export var runBoardGameWeeklyCron: typeof rpcNotifCronBoardGameWeekly;
     export function flushPendingRegistrations(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): void;
     export function register(initializer: nkruntime.Initializer): void;
     export {};
@@ -4840,6 +4846,12 @@ declare namespace SocialFriendsFeed {
     }): void;
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace SocialGifting {
+    function rpcGiftCurrency(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcGiftItem(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcGiftHistory(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace SocialGroupLimits {
     const MAX_JOINED_GROUPS = 10;
     function registerHooks(initializer: nkruntime.Initializer): void;
@@ -5544,6 +5556,7 @@ declare namespace Hiro {
         stackable: boolean;
         consumable: boolean;
         durableSec?: number;
+        giftable?: boolean;
         additionalProperties?: {
             [key: string]: string;
         };

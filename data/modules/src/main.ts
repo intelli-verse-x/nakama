@@ -450,6 +450,7 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     SocialGroupLinks.register(initializer);
     SocialGroupSearch.register(initializer);
     SocialFriendsFeed.register(initializer);
+    SocialGifting.register(initializer);
 
     // ── Multi-app registry + engagement systems (doc §19.3, G-020, Q-06, G-017) ──
     logger.info("[SocialV2] Registering app registry, pressure summary, duo quests, fanout queue...");

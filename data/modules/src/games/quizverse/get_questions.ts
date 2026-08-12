@@ -80,7 +80,11 @@ namespace QvGetQuestions {
     // New topics (2026-07): infinite-content providers, all free/no-key
     math: true,    // OpenTDB Mathematics (cat 19) + Computers (cat 18)
     art: true,     // Art Institute of Chicago API — CC0 artwork images
-    history: true  // OpenTDB History (cat 23) + jService Jeopardy archive
+    history: true,  // OpenTDB History (cat 23) + jService Jeopardy archive
+    // NEW: Chess, Board Game & Holiday APIs (2026-08)
+    chess: true,      // Chess.com + Lichess daily puzzle
+    boardgame: true,  // Board Game Geek — board game trivia
+    holiday: true,    // Nager.Date / Calendarific — public holidays worldwide
   };
 
   // Media-pool topics the AI-driven image/media quiz modes (Who's That, Brain Sprint,
@@ -119,6 +123,9 @@ namespace QvGetQuestions {
     if (topic.indexOf("math") !== -1 || topic.indexOf("maths") !== -1 || topic.indexOf("comput") !== -1) return "math";
     if (topic.indexOf("art") !== -1 || topic.indexOf("paint") !== -1 || topic.indexOf("museum") !== -1) return "art";
     if (topic.indexOf("histor") !== -1 || topic.indexOf("jeopardy") !== -1) return "history";
+    // NEW: Board Game & Holiday aliases (2026-08)
+    if (topic.indexOf("boardgame") !== -1 || topic.indexOf("board_game") !== -1 || topic.indexOf("bgg") !== -1) return "boardgame";
+    if (topic.indexOf("holiday") !== -1 || topic.indexOf("calendar") !== -1 || topic.indexOf("festival") !== -1) return "holiday";
 
     // No recognizable topic keyword — likely a bare "<mode> — random mix" label.
     // Deterministically pick a media topic from a hash of the caller-supplied label
@@ -215,7 +222,9 @@ namespace QvGetQuestions {
       space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
       music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
       video_quiz: "catalog", ai: "claude",
-      math: "opentdb", art: "artic", history: "opentdb+jservice"
+      math: "opentdb", art: "artic", history: "opentdb+jservice",
+      // NEW: Board Game & Holiday (2026-08)
+      boardgame: "bgg", holiday: "nager.date+calendarific"
     };
     return map[topic] || topic;
   }

@@ -41,6 +41,7 @@ import {
   type QuestEngineConfig,
 } from "@nakama/shared";
 import { cn } from "@/lib/utils";
+import { RewardBuilder, type RewardBuilderReward } from "@/components/RewardBuilder";
 
 const GLOBAL_CONFIG_SCOPE = "global";
 // Quest Engine stores config under a concrete gameId. Global scope maps to the
@@ -59,9 +60,32 @@ function rpcGameId(scope: string) {
 
 interface QuestReward {
   currencies?: Record<string, number>;
-  items?: Array<{ id: string; count: number }>;
+  items?: Record<string, number>;
   energies?: Record<string, number>;
   xp?: number;
+  gifts?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    type: "physical" | "voucher" | "experience" | "digital" | "merch";
+    value?: string;
+    quantity?: number;
+    assetUrl?: string;
+    ctaLabel?: string;
+    deliverEmail?: boolean;
+  }>;
+  energyModifiers?: Array<{
+    id: string;
+    operator: "add" | "multiply";
+    value: number;
+    durationSec: number;
+  }>;
+  rewardModifiers?: Array<{
+    id: string;
+    operator: "add" | "multiply";
+    value: number;
+    durationSec: number;
+  }>;
 }
 
 interface QuestDef {
@@ -184,12 +208,21 @@ function formatReward(r?: QuestReward): string[] {
     for (const [k, v] of Object.entries(r.currencies)) parts.push(`${v} ${k}`);
   }
   if (r.items) {
-    for (const item of r.items) parts.push(`${item.count}x ${item.id}`);
+    for (const [itemId, count] of Object.entries(r.items)) parts.push(`${count}x ${itemId}`);
   }
   if (r.energies) {
     for (const [k, v] of Object.entries(r.energies)) parts.push(`${v} ${k} energy`);
   }
   if (r.xp) parts.push(`${r.xp} XP`);
+  if (r.gifts && r.gifts.length > 0) {
+    for (const gift of r.gifts) parts.push(`🎁 ${gift.name} (${gift.type})`);
+  }
+  if (r.energyModifiers && r.energyModifiers.length > 0) {
+    for (const mod of r.energyModifiers) parts.push(`⚡ ${mod.id}: ${mod.operator} ${mod.value}x for ${mod.durationSec}s`);
+  }
+  if (r.rewardModifiers && r.rewardModifiers.length > 0) {
+    for (const mod of r.rewardModifiers) parts.push(`✨ ${mod.id}: ${mod.operator} ${mod.value}x for ${mod.durationSec}s`);
+  }
   return parts;
 }
 
@@ -262,11 +295,25 @@ function QuestForm({ initial, audiences, onSubmit, onCancel, isPending, existing
   const [linkedMode, setLinkedMode] = useState<string>(
     (initial?.metadata?.linked_mode as string) ?? "",
   );
-  const [rewardJson, setRewardJson] = useState(
-    initial?.reward
-      ? JSON.stringify(initial.reward, null, 2)
-      : '{\n  "currencies": { "game": 100 },\n  "xp": 25\n}',
+  
+  // Parse initial reward into RewardBuilderReward format
+  const parseInitialReward = (reward: any): RewardBuilderReward => {
+    if (!reward) return {};
+    const result: RewardBuilderReward = {};
+    if (reward.currencies) result.currencies = reward.currencies;
+    if (reward.items) result.items = reward.items;
+    if (reward.energies) result.energies = reward.energies;
+    if (reward.xp) result.xp = reward.xp;
+    if (reward.gifts) result.gifts = reward.gifts;
+    if (reward.energyModifiers) result.energyModifiers = reward.energyModifiers;
+    if (reward.rewardModifiers) result.rewardModifiers = reward.rewardModifiers;
+    return result;
+  };
+  
+  const [reward, setReward] = useState<RewardBuilderReward>(
+    initial?.reward ? parseInitialReward(initial.reward) : { currencies: { game: 100 }, xp: 25 }
   );
+  
   const [startTime, setStartTime] = useState(toDatetimeLocal(initial?.start_time_sec));
   const [endTime, setEndTime] = useState(toDatetimeLocal(initial?.end_time_sec));
   const [resetTimeSec, setResetTimeSec] = useState(initial?.reset_time_sec?.toString() ?? "");
@@ -279,19 +326,20 @@ function QuestForm({ initial, audiences, onSubmit, onCancel, isPending, existing
 
   const idConflict = !initial && existingIds.includes(id.trim());
 
-  function parseSafe<T>(json: string, setErr: (e: string) => void): T | null {
-    try {
-      setErr("");
-      return JSON.parse(json);
-    } catch (e) {
-      setErr((e as Error).message);
-      return null;
-    }
+  function rewardToQuestReward(r: RewardBuilderReward): QuestReward | undefined {
+    const result: QuestReward = {};
+    let hasAny = false;
+    if (r.currencies && Object.keys(r.currencies).length > 0) { result.currencies = r.currencies; hasAny = true; }
+    if (r.items && Object.keys(r.items).length > 0) { result.items = r.items; hasAny = true; }
+    if (r.energies && Object.keys(r.energies).length > 0) { result.energies = r.energies; hasAny = true; }
+    if (r.xp) { result.xp = r.xp; hasAny = true; }
+    if (r.gifts && r.gifts.length > 0) { result.gifts = r.gifts as any; hasAny = true; }
+    if (r.energyModifiers && r.energyModifiers.length > 0) { result.energyModifiers = r.energyModifiers as any; hasAny = true; }
+    if (r.rewardModifiers && r.rewardModifiers.length > 0) { result.rewardModifiers = r.rewardModifiers as any; hasAny = true; }
+    return hasAny ? result : undefined;
   }
 
   const previewQuest = useMemo((): QuestDef | null => {
-    const reward = parseSafe<QuestReward>(rewardJson, setRewardError);
-    if (reward === null) return null;
     const mc = parseInt(maxCount, 10);
     if (isNaN(mc) || mc < 1) return null;
 
@@ -310,7 +358,7 @@ function QuestForm({ initial, audiences, onSubmit, onCancel, isPending, existing
       description: description.trim() || undefined,
       category: category || undefined,
       max_count: mc,
-      reward: reward ?? undefined,
+      reward: rewardToQuestReward(reward),
       start_time_sec: fromDatetimeLocal(startTime),
       end_time_sec: fromDatetimeLocal(endTime),
       reset_time_sec: resetTimeSec ? parseInt(resetTimeSec, 10) : undefined,
@@ -320,7 +368,7 @@ function QuestForm({ initial, audiences, onSubmit, onCancel, isPending, existing
       sort_order: sortOrder ? parseInt(sortOrder, 10) : undefined,
       metadata: Object.keys(meta).length > 0 ? meta : undefined,
     };
-  }, [id, name, description, category, maxCount, objectiveType, linkedMode, rewardJson, startTime, endTime, resetTimeSec, preconditions, disabled, selectedAudiences, sortOrder, initial?.metadata]);
+  }, [id, name, description, category, maxCount, objectiveType, linkedMode, reward, startTime, endTime, resetTimeSec, preconditions, disabled, selectedAudiences, sortOrder, initial?.metadata]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -490,22 +538,13 @@ function QuestForm({ initial, audiences, onSubmit, onCancel, isPending, existing
         </p>
       </div>
 
-      {/* Rewards JSON */}
+      {/* Rewards - Visual Builder */}
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
           <Gift className="h-3 w-3" />
-          Reward (JSON)
+          Reward Configuration
         </label>
-        <textarea
-          value={rewardJson}
-          onChange={(e) => setRewardJson(e.target.value)}
-          rows={5}
-          className={cn(
-            "w-full rounded-md border bg-background px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none",
-            rewardError ? "border-destructive" : "border-border",
-          )}
-        />
-        {rewardError && <p className="text-xs text-destructive">Invalid JSON: {rewardError}</p>}
+        <RewardBuilder value={reward} onChange={setReward} readOnly={isPending} />
       </div>
 
       {/* Time Windows */}

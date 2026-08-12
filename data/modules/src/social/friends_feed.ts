@@ -43,7 +43,8 @@ namespace SocialFriendsFeed {
   var EVENT_TYPES: { [t: string]: boolean } = {
     "quiz_completed": true, "challenge_won": true, "streak_milestone": true,
     "group_joined": true, "group_level_up": true, "badge_earned": true,
-    "friend_joined": true, "challenge_sent": true
+    "friend_joined": true, "challenge_sent": true,
+    "gift_sent": true, "gift_received": true
   };
 
   // Which privacy toggle gates each event type.
@@ -55,7 +56,9 @@ namespace SocialFriendsFeed {
     "badge_earned":     "shareBadges",
     "group_joined":     "shareFeedEvents",
     "group_level_up":   "shareFeedEvents",
-    "friend_joined":    "shareFeedEvents"
+    "friend_joined":    "shareFeedEvents",
+    "gift_sent":        "shareFeedEvents",
+    "gift_received":    "shareFeedEvents"
   };
 
   var DEFAULT_PRIVACY = {
@@ -123,6 +126,10 @@ namespace SocialFriendsFeed {
         return name + " earned the " + (d.badgeName || "a") + " badge 🏅";
       case "friend_joined":
         return name + " just joined QuizVerse";
+      case "gift_sent":
+        return name + " sent " + (d.currency ? d.amount + " " + d.currency : "a " + d.itemId) + " to a friend 🎁";
+      case "gift_received":
+        return name + " received a gift from a friend 🎁";
       default:
         return name + " did something awesome";
     }

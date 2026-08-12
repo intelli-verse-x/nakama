@@ -58,23 +58,23 @@ namespace QvRemoteConfig {
   var S3_ICONS_BASE = "https://intelli-verse-x-media.s3.us-east-1.amazonaws.com/quiz-verse/topic-icons/";
 
   // ── Domain constants ──────────────────────────────────────────────────────
-  // Shared by both RPCs. MUST stay in sync with question_cache.ts when it ships.
-  var KNOWN_TOPICS = [
-    "anime", "pokemon", "movies",   "sports", "countries", "flags",
-    "space", "music",   "disney",   "ghibli", "starwars",  "food",
-    "cocktail", "dog",  "news",     "opentdb","speed_quiz","true_false",
-    "video_quiz", "ai", "daily", "weekly"
-  ];
+    // Shared by both RPCs. MUST stay in sync with question_cache.ts when it ships.
+    var KNOWN_TOPICS = [
+      "anime", "pokemon", "movies",   "sports", "countries", "flags",
+      "space", "music",   "disney",   "ghibli", "starwars",  "food",
+      "cocktail", "dog",  "news",     "opentdb","speed_quiz","true_false",
+      "video_quiz", "ai", "daily", "weekly", "rickmorty"
+    ];
 
   // Every external API provider the cache layer calls. Sync with question_cache.ts.
-  var KNOWN_PROVIDERS = [
-    "jikan",       "pokeapi",    "tmdb",       "nasa",
-    "lastfm",      "deezer",     "gnews",      "currents",
-    "mediastack",  "newsapi",    "opentdb",    "disney",
-    "ghibli",      "swapi",      "thesportsdb","cocktaildb",
-    "themealdb",   "foodfacts",  "dogceo",     "restcountries",
-    "catalog"
-  ];
+    var KNOWN_PROVIDERS = [
+      "jikan",       "pokeapi",    "tmdb",       "nasa",
+      "lastfm",      "deezer",     "gnews",      "currents",
+      "mediastack",  "newsapi",    "opentdb",    "disney",
+      "ghibli",      "swapi",      "thesportsdb","cocktaildb",
+      "themealdb",   "foodfacts",  "dogceo",     "restcountries",
+      "catalog",     "rickandmortyapi"
+    ];
 
   // Cache is considered "near expiry" when ≤ 10 min remain.
   // Ops gets a warning window before questions run dry.
@@ -84,18 +84,18 @@ namespace QvRemoteConfig {
   var REFRESH_GATE_MS = 30 * 1000;
 
   // Topic → primary provider — sync with question_cache.ts topicProvider().
-  function topicProvider(topic: string): string {
-    var map: { [t: string]: string } = {
-      opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
-      cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
-      ghibli: "ghibli", disney: "disney", starwars: "swapi",
-      countries: "restcountries", flags: "restcountries",
-      space: "nasa", movies: "tmdb", sports: "thesportsdb",
-      music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
-      video_quiz: "catalog", ai: "claude"
-    };
-    return map[topic] || topic;
-  }
+    function topicProvider(topic: string): string {
+      var map: { [t: string]: string } = {
+        opentdb: "opentdb", speed_quiz: "opentdb", true_false: "opentdb", anime: "jikan", pokemon: "pokeapi",
+        cocktail: "cocktaildb", food: "themealdb", dog: "dogceo",
+        ghibli: "ghibli", disney: "disney", starwars: "swapi",
+        countries: "restcountries", flags: "restcountries",
+        space: "nasa", movies: "tmdb", sports: "thesportsdb",
+        music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
+        video_quiz: "catalog", ai: "claude", rickmorty: "rickandmortyapi"
+      };
+      return map[topic] || topic;
+    }
 
   function cacheActionHint(topic: string): string {
     return "POST quizverse_cache_refresh_tick { \"mode\": \"topic\", \"topic\": \"" + topic + "\" }";
@@ -170,7 +170,8 @@ namespace QvRemoteConfig {
       { id: "disney",    label: "Disney",         icon_url: S3_ICONS_BASE + "disney.png",    has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 9,  max_count: 30 },
       { id: "ghibli",    label: "Studio Ghibli",  icon_url: S3_ICONS_BASE + "ghibli.png",    has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 10, max_count: 50 },
       { id: "starwars",  label: "Star Wars",      icon_url: S3_ICONS_BASE + "starwars.png",  has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 11, max_count: 30 },
-      { id: "food",      label: "Food",           icon_url: S3_ICONS_BASE + "food.png",      has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 12, max_count: 30 },
+            { id: "rickmorty",  label: "Rick & Morty",    icon_url: S3_ICONS_BASE + "rickmorty.png",  has_media: true,  media_type: "image", enabled: true,  is_new: true, badge: "NEW", sort_order: 12, max_count: 30 },
+            { id: "food",      label: "Food",           icon_url: S3_ICONS_BASE + "food.png",      has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 13, max_count: 30 },
       { id: "cocktail",  label: "Cocktails",      icon_url: S3_ICONS_BASE + "cocktail.png",  has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 13, max_count: 30 },
       { id: "dog",       label: "Dogs",           icon_url: S3_ICONS_BASE + "dog.png",       has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 14, max_count: 30 },
       { id: "news",      label: "News",           icon_url: S3_ICONS_BASE + "news.png",      has_media: true,  media_type: "image", enabled: true,  is_new: false, badge: null, sort_order: 15, max_count: 30 },
@@ -197,7 +198,8 @@ namespace QvRemoteConfig {
       disney:    ["en"],
       ghibli:    ["en"],
       starwars:  ["en"],
-      food:      ["en"],
+            rickmorty: ["en"],
+            food:      ["en"],
       cocktail:  ["en"],
       dog:       ["en"],
       news:      ["en", "es", "fr", "de", "pt", "it"],

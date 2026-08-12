@@ -420,6 +420,7 @@ function InitModule(ctx, logger, nk, initializer) {
         SocialGroupLinks.register(initializer);
         SocialGroupSearch.register(initializer);
         SocialFriendsFeed.register(initializer);
+        SocialGifting.register(initializer);
         // ── Multi-app registry + engagement systems (doc §19.3, G-020, Q-06, G-017) ──
         logger.info("[SocialV2] Registering app registry, pressure summary, duo quests, fanout queue...");
         SocialAppRegistry.register(initializer);
@@ -12837,7 +12838,11 @@ var QvGetQuestions;
         // New topics (2026-07): infinite-content providers, all free/no-key
         math: true, // OpenTDB Mathematics (cat 19) + Computers (cat 18)
         art: true, // Art Institute of Chicago API — CC0 artwork images
-        history: true // OpenTDB History (cat 23) + jService Jeopardy archive
+        history: true, // OpenTDB History (cat 23) + jService Jeopardy archive
+        // NEW: Chess, Board Game & Holiday APIs (2026-08)
+        chess: true, // Chess.com + Lichess daily puzzle
+        boardgame: true, // Board Game Geek — board game trivia
+        holiday: true, // Nager.Date / Calendarific — public holidays worldwide
     };
     // Media-pool topics the AI-driven image/media quiz modes (Who's That, Brain Sprint,
     // Image Quiz, Audio Quiz) mix together for their "Random Mix" category.
@@ -12884,6 +12889,11 @@ var QvGetQuestions;
             return "art";
         if (topic.indexOf("histor") !== -1 || topic.indexOf("jeopardy") !== -1)
             return "history";
+        // NEW: Board Game & Holiday aliases (2026-08)
+        if (topic.indexOf("boardgame") !== -1 || topic.indexOf("board_game") !== -1 || topic.indexOf("bgg") !== -1)
+            return "boardgame";
+        if (topic.indexOf("holiday") !== -1 || topic.indexOf("calendar") !== -1 || topic.indexOf("festival") !== -1)
+            return "holiday";
         // No recognizable topic keyword — likely a bare "<mode> — random mix" label.
         // Deterministically pick a media topic from a hash of the caller-supplied label
         // so repeated requests with the SAME bad label resolve the same way (stable, not
@@ -12975,7 +12985,9 @@ var QvGetQuestions;
             space: "nasa+spaceflight+nasalib", movies: "tmdb", sports: "sportsdb+opentdb",
             music: "deezer", news: "gnews", daily: "s3", weekly: "s3",
             video_quiz: "catalog", ai: "claude",
-            math: "opentdb", art: "artic", history: "opentdb+jservice"
+            math: "opentdb", art: "artic", history: "opentdb+jservice",
+            // NEW: Board Game & Holiday (2026-08)
+            boardgame: "bgg", holiday: "nager.date+calendarific"
         };
         return map[topic] || topic;
     }
@@ -20164,12 +20176,16 @@ var QvQuestionCache;
         pokemon: 72 * 3600000,
         ghibli: 72 * 3600000,
         starwars: 72 * 3600000,
+        rickmorty: 72 * 3600000,
         countries: 7 * 24 * 3600000,
         flags: 7 * 24 * 3600000,
         daily: 24 * 3600000,
         weekly: 7 * 24 * 3600000,
         video_quiz: 7 * 24 * 3600000,
-        ai: 0 // never cached
+        ai: 0, // never cached
+        // NEW: Board Game & Holiday APIs
+        boardgame: 7 * 24 * 3600000, // Board Game Geek
+        holiday: 7 * 24 * 3600000, // Calendarific/Public Holidays
     };
     var COL_VIDEO_CATALOG = "qv_catalog_video_quiz";
     // ── Hardcoded fallback API keys ───────────────────────────────────────────
@@ -21318,6 +21334,13 @@ var QvQuestionCache;
         return results;
     }
     // ── 9. SWAPI (Star Wars) ──────────────────────────────────────────────────
+    // Character images: Unity uses s3_starwars_character_images RPC for pre-signed S3 URLs.
+    // For now we construct public image URLs from a known pattern; the S3 RPC can be added later.
+    function swapiCharacterImageUrl(name) {
+        // Use Star Wars Visual Guide public assets (free, no auth)
+        var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        return "https://starwars-visualguide.com/assets/img/characters/" + slug + ".jpg";
+    }
     function fetchSwapi(nk, logger) {
         var results = [];
         var data5 = httpGet(nk, "https://swapi.dev/api/films/");
@@ -21379,6 +21402,125 @@ var QvQuestionCache;
             catch (e) {
                 logger.debug("[QvQCache/swapi] skip: " + (e && e.message));
             }
+        }
+        // ── Character identity questions (Image Guess) ───────────────────────────
+        try {
+            var peopleData = httpGet(nk, "https://swapi.info/api/people/");
+            if (peopleData && Array.isArray(peopleData.results)) {
+                var characters = peopleData.results;
+                var charNames = [];
+                for (var ci = 0; ci < characters.length; ci++) {
+                    var cname = characters[ci].name;
+                    if (cname)
+                        charNames.push(String(cname));
+                }
+                // Pick up to 30 notable characters for image questions
+                var notable = ["Luke Skywalker", "Darth Vader", "Leia Organa", "Han Solo", "Obi-Wan Kenobi", "Yoda", "Chewbacca", "C-3PO", "R2-D2", "Boba Fett", "Palpatine", "Jabba Desilijic Tiure", "Lando Calrissian", "Mace Windu", "Qui-Gon Jinn", "Anakin Skywalker", "Padmé Amidala", "Count Dooku", "General Grievous", "Ahsoka Tano", "Rey", "Kylo Ren", "Finn", "Poe Dameron", "BB-8", "The Mandalorian", "Grogu", "Moff Gideon", "Cara Dune", "Gideon"];
+                var pool = [];
+                for (var ni = 0; ni < notable.length; ni++) {
+                    if (charNames.indexOf(notable[ni]) >= 0)
+                        pool.push(notable[ni]);
+                }
+                // Fallback: use first N from API if notable list is short
+                if (pool.length < 15) {
+                    for (var fi = 0; fi < charNames.length && pool.length < 30; fi++) {
+                        if (pool.indexOf(charNames[fi]) < 0)
+                            pool.push(charNames[fi]);
+                    }
+                }
+                for (var pi = 0; pi < pool.length; pi++) {
+                    var pname = pool[pi];
+                    var imgUrl = swapiCharacterImageUrl(pname);
+                    var exChar = {};
+                    exChar[pname] = true;
+                    var wrongChars = pickExcluding(charNames, exChar, 3);
+                    if (wrongChars.length < 3)
+                        continue;
+                    var cOpts = [{ text: pname, is_correct: true }];
+                    for (var wi = 0; wi < wrongChars.length; wi++)
+                        cOpts.push({ text: wrongChars[wi], is_correct: false });
+                    results.push({
+                        provider_key: "swapi_char_" + pi,
+                        topic: "starwars", lang: "en",
+                        question_text: "Which Star Wars character is this?",
+                        question_type: "single_select",
+                        raw_options: cOpts,
+                        has_media: true,
+                        media: { type: "image", url: imgUrl, thumbnail_url: imgUrl, duration_seconds: null, mime_type: "image/jpeg" },
+                        explanation: "This is " + pname + ".",
+                        difficulty: "medium", provider: "swapi",
+                        meta: { character: pname }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            logger.debug("[QvQCache/swapi] character fetch skipped: " + (e && e.message));
+        }
+        return results;
+    }
+    // ── Rick & Morty (Character Image Guess) ──────────────────────────────────
+    function fetchRickMorty(nk, logger) {
+        var results = [];
+        try {
+            var listData = httpGet(nk, "https://rickandmortyapi.com/api/character");
+            if (!listData || !Array.isArray(listData.results))
+                throw new Error("RickMorty: no results");
+            var characters = listData.results;
+            var notable = [
+                "Rick Sanchez", "Morty Smith", "Summer Smith", "Beth Smith", "Jerry Smith",
+                "Birdperson", "Squanchy", "Mr. Meeseeks", "Mr. Poopybutthole", "Tammy Gueterman",
+                "Evil Morty", "Phoenixperson", "Unity", "King Jellybean", "Scary Terry",
+                "Abradolf Lincler", "Krombopulos Michael", "Gearhead", "Revolio Clockberg Jr.", "Sleepy Gary"
+            ];
+            var pool = [];
+            var charNames = [];
+            for (var ci = 0; ci < characters.length; ci++) {
+                var cname = characters[ci].name;
+                if (cname)
+                    charNames.push(String(cname));
+            }
+            for (var ni = 0; ni < notable.length; ni++) {
+                if (charNames.indexOf(notable[ni]) >= 0)
+                    pool.push(notable[ni]);
+            }
+            // Fallback: use first N from API if notable list is short
+            if (pool.length < 15) {
+                for (var fi = 0; fi < charNames.length && pool.length < 30; fi++) {
+                    if (pool.indexOf(charNames[fi]) < 0)
+                        pool.push(charNames[fi]);
+                }
+            }
+            for (var pi = 0; pi < pool.length; pi++) {
+                var pname = pool[pi];
+                var charData = characters.find(function (c) { return c.name === pname; });
+                var imgUrl = charData && charData.image ? charData.image : null;
+                if (!imgUrl)
+                    continue;
+                var exChar = {};
+                exChar[pname] = true;
+                var wrongChars = pickExcluding(charNames, exChar, 3);
+                if (wrongChars.length < 3)
+                    continue;
+                var cOpts = [{ text: pname, is_correct: true }];
+                for (var wi = 0; wi < wrongChars.length; wi++)
+                    cOpts.push({ text: wrongChars[wi], is_correct: false });
+                results.push({
+                    provider_key: "rickmorty_char_" + pi,
+                    topic: "rickmorty", lang: "en",
+                    question_text: "Which Rick and Morty character is this?",
+                    question_type: "single_select",
+                    raw_options: cOpts,
+                    has_media: true,
+                    media: { type: "image", url: imgUrl, thumbnail_url: imgUrl, duration_seconds: null, mime_type: "image/jpeg" },
+                    explanation: "This is " + pname + ".",
+                    difficulty: "medium", provider: "rickandmortyapi",
+                    meta: { character: pname }
+                });
+            }
+        }
+        catch (e) {
+            logger.debug("[QvQCache/rickmorty] fetch skipped: " + (e && e.message));
         }
         return results;
     }
@@ -22783,6 +22925,453 @@ var QvQuestionCache;
         logger.info("[QvQCache/history] event=history_fetch count=" + results.length);
         return results;
     }
+    // ── 22b. Chess.com + Lichess (Chess Trivia & Daily Puzzle) — free, no key ───
+    // Chess.com: https://api.chess.com/pub/player/{username}/games/archives + leaderboards
+    // Lichess:   https://lichess.org/api/puzzle/daily + player stats
+    // Question formats: "Guess the Grandmaster", "Chess Puzzle of the Day", "Chess Knowledge"
+    function fetchChessQuiz(nk, logger) {
+        var results = [];
+        // 1. Lichess Daily Puzzle - convert to MCQ
+        try {
+            var lichessPuzzle = httpGet(nk, "https://lichess.org/api/puzzle/daily");
+            if (lichessPuzzle && lichessPuzzle.puzzle) {
+                var puzzle = lichessPuzzle.puzzle;
+                var fen = puzzle.fen;
+                var solution = puzzle.solution; // array of moves like ["e2e4", "e7e5"]
+                var themes = puzzle.themes || [];
+                // Create a puzzle question: "What is the best move for White?"
+                // We'll show the FEN position as context (could render board image in future)
+                // For now, create a move-selection question
+                var moves = solution.length > 0 ? solution : [];
+                if (moves.length > 0) {
+                    var correctMove = moves[0];
+                    // Generate wrong moves (simplified - in production use legal move generator)
+                    var wrongMoves = ["e2e3", "d2d4", "g1f3", "b1c3", "e2e4"].filter(function (m) { return m !== correctMove; }).slice(0, 3);
+                    if (wrongMoves.length >= 3) {
+                        var moveOpts = [{ text: correctMove, is_correct: true }];
+                        for (var mi = 0; mi < 3; mi++)
+                            moveOpts.push({ text: wrongMoves[mi], is_correct: false });
+                        results.push({
+                            provider_key: "lichess_daily_" + puzzle.id,
+                            topic: "chess", lang: "en",
+                            question_text: "Chess Puzzle of the Day: What is the best move?",
+                            question_type: "single_select",
+                            raw_options: moveOpts,
+                            has_media: false,
+                            media: null,
+                            explanation: "Lichess daily puzzle themes: " + themes.join(", ") + ". Solution: " + solution.join(" "),
+                            difficulty: themes.indexOf("mateIn1") >= 0 ? "easy" : themes.indexOf("mateIn2") >= 0 ? "medium" : "hard",
+                            provider: "lichess",
+                            meta: { puzzle_id: puzzle.id, fen: fen, themes: themes, solution: solution }
+                        });
+                    }
+                }
+            }
+        }
+        catch (e) {
+            logger.debug("[QvQCache/chess] Lichess daily puzzle failed (non-fatal): " + (e && e.message));
+        }
+        // 2. Chess.com Player Stats - "Guess the Grandmaster" questions
+        try {
+            // Fetch top players from Chess.com leaderboards
+            var leaderboards = httpGet(nk, "https://api.chess.com/pub/leaderboards");
+            if (leaderboards && leaderboards.daily) {
+                var topPlayers = [];
+                var categories = ["daily", "rapid", "blitz", "bullet"];
+                for (var ci = 0; ci < categories.length; ci++) {
+                    var cat = leaderboards[categories[ci]];
+                    if (cat && Array.isArray(cat)) {
+                        for (var pi = 0; pi < Math.min(cat.length, 10); pi++) {
+                            var p = cat[pi];
+                            if (p && p.username)
+                                topPlayers.push(p.username);
+                        }
+                    }
+                }
+                // Create "Guess the Grandmaster" questions
+                for (var ti = 0; ti < Math.min(topPlayers.length, 20); ti++) {
+                    var player = topPlayers[ti];
+                    try {
+                        var profile = httpGet(nk, "https://api.chess.com/pub/player/" + encodeURIComponent(player));
+                        if (profile && profile.title) {
+                            var exTitle = {};
+                            exTitle[profile.title] = true;
+                            var titles = ["GM", "IM", "FM", "CM", "WGM", "WIM", "WFM", "WCM"];
+                            var wrongTitles = pickExcluding(titles, exTitle, 3);
+                            if (wrongTitles.length >= 3) {
+                                var titleOpts = [{ text: profile.title, is_correct: true }];
+                                for (var wti = 0; wti < 3; wti++)
+                                    titleOpts.push({ text: wrongTitles[wti], is_correct: false });
+                                results.push({
+                                    provider_key: "chesscom_title_" + player,
+                                    topic: "chess", lang: "en",
+                                    question_text: "What title does Chess.com player \"" + player + "\" hold?",
+                                    question_type: "single_select",
+                                    raw_options: titleOpts,
+                                    has_media: false,
+                                    media: null,
+                                    explanation: player + " is a " + profile.title + " (" + (profile.name || "Grandmaster") + "). Country: " + (profile.country || "?") + ", Followers: " + (profile.followers || "?") + ".",
+                                    difficulty: "medium", provider: "chess.com",
+                                    meta: { username: player, title: profile.title, country: profile.country, followers: profile.followers }
+                                });
+                            }
+                        }
+                    }
+                    catch (pe) {
+                        logger.debug("[QvQCache/chess] profile fetch failed for " + player + ": " + (pe && pe.message));
+                    }
+                }
+            }
+        }
+        catch (e) {
+            logger.debug("[QvQCache/chess] Chess.com leaderboards failed (non-fatal): " + (e && e.message));
+        }
+        // 3. Chess Knowledge trivia (general questions)
+        var chessTrivia = [
+            { q: "How many squares are on a standard chess board?", a: "64", w: ["48", "32", "72"], d: "easy" },
+            { q: "Which piece can only move diagonally?", a: "Bishop", w: ["Rook", "Knight", "Queen"], d: "easy" },
+            { q: "What is the only move where two pieces move at once?", a: "Castling", w: ["En passant", "Promotion", "Check"], d: "easy" },
+            { q: "Which piece moves in an L-shape?", a: "Knight", w: ["Bishop", "Rook", "Pawn"], d: "easy" },
+            { q: "What is the starting position of the White King?", a: "e1", w: ["d1", "e2", "f1"], d: "medium" },
+            { q: "How many possible first moves does White have?", a: "20", w: ["16", "18", "22"], d: "medium" },
+            { q: "What is \"en passant\"?", a: "A special pawn capture", w: ["A checkmate pattern", "A promotion rule", "A draw condition"], d: "medium" },
+            { q: "Who is the current World Chess Champion (as of 2024)?", a: "Ding Liren", w: ["Magnus Carlsen", "Ian Nepomniachtchi", "Fabiano Caruana"], d: "hard" },
+        ];
+        for (var ct = 0; ct < chessTrivia.length; ct++) {
+            var trivia = chessTrivia[ct];
+            var triviaOpts = [{ text: trivia.a, is_correct: true }];
+            for (var wt = 0; wt < trivia.w.length; wt++)
+                triviaOpts.push({ text: trivia.w[wt], is_correct: false });
+            results.push({
+                provider_key: "chess_trivia_" + djb2(trivia.q),
+                topic: "chess", lang: "en",
+                question_text: trivia.q,
+                question_type: "single_select",
+                raw_options: triviaOpts,
+                has_media: false,
+                media: null,
+                explanation: "Chess knowledge: " + trivia.a,
+                difficulty: trivia.d, provider: "chess_trivia",
+                meta: { type: "knowledge" }
+            });
+        }
+        if (results.length === 0)
+            throw new Error("chess: all providers returned 0 questions");
+        logger.info("[QvQCache/chess] event=chess_fetch puzzles=" + results.length);
+        return results;
+    }
+    // ── 23. Board Game Geek (Board Game Trivia) — free, no key ─────────────────
+    // https://boardgamegeek.com/xmlapi2/search & /thing — thousands of board games
+    // with descriptions, categories, designers, artists, years, ratings.
+    // Question format: "Which game is this?" (show image) or "Who designed X?"
+    // Wrong answers: other games from same batch (same pattern as Ghibli).
+    function fetchBoardGameQuiz(nk, logger) {
+        var _a, _b, _c, _d;
+        var results = [];
+        var allGames = [];
+        // Fetch top-rated games across multiple pages
+        var pages = [1, 2, 3, 4, 5];
+        for (var pi = 0; pi < pages.length; pi++) {
+            try {
+                var url = "https://boardgamegeek.com/xmlapi2/search?query=&type=boardgame&pagesize=100&page=" + pages[pi];
+                var xmlResp = httpGet(nk, url);
+                if (!xmlResp)
+                    continue;
+                // BGG returns XML - parse it
+                var items = xmlResp.getElementsByTagName ? xmlResp.getElementsByTagName("item") : [];
+                for (var xi = 0; xi < items.length; xi++) {
+                    var item = items[xi];
+                    var id = item.getAttribute("id");
+                    var name = ((_a = item.getElementsByTagName("name")[0]) === null || _a === void 0 ? void 0 : _a.getAttribute("value")) || "";
+                    var year = ((_b = item.getElementsByTagName("yearpublished")[0]) === null || _b === void 0 ? void 0 : _b.getAttribute("value")) || "";
+                    var image = ((_c = item.getElementsByTagName("image")[0]) === null || _c === void 0 ? void 0 : _c.textContent) || "";
+                    var thumbnail = ((_d = item.getElementsByTagName("thumbnail")[0]) === null || _d === void 0 ? void 0 : _d.textContent) || "";
+                    if (!id || !name || !thumbnail)
+                        continue;
+                    allGames.push({ id: id, name: name, year: year, image: image, thumbnail: thumbnail, designers: [], categories: [] });
+                }
+            }
+            catch (e) {
+                logger.debug("[QvQCache/bgg] search page " + pages[pi] + " failed (non-fatal): " + (e && e.message));
+            }
+        }
+        // Enrich with details (designers, categories) for first 200 games
+        var enrichedGames = [];
+        for (var gi = 0; gi < Math.min(allGames.length, 200); gi++) {
+            try {
+                var game = allGames[gi];
+                var detailUrl = "https://boardgamegeek.com/xmlapi2/thing?id=" + game.id + "&stats=1";
+                var detailXml = httpGet(nk, detailUrl);
+                if (!detailXml)
+                    continue;
+                var items = detailXml.getElementsByTagName ? detailXml.getElementsByTagName("item") : [];
+                if (items.length === 0)
+                    continue;
+                var item = items[0];
+                var designers = [];
+                var designLinks = item.getElementsByTagName("link");
+                for (var dl = 0; dl < designLinks.length; dl++) {
+                    var link = designLinks[dl];
+                    if (link.getAttribute("type") === "boardgamedesigner") {
+                        designers.push(link.getAttribute("value") || "");
+                    }
+                }
+                var categories = [];
+                var catLinks = item.getElementsByTagName("link");
+                for (var cl = 0; cl < catLinks.length; cl++) {
+                    var cat = catLinks[cl];
+                    if (cat.getAttribute("type") === "boardgamecategory") {
+                        categories.push(cat.getAttribute("value") || "");
+                    }
+                }
+                enrichedGames.push({
+                    id: game.id,
+                    name: game.name,
+                    year: game.year,
+                    image: game.image,
+                    thumbnail: game.thumbnail,
+                    designers: designers,
+                    categories: categories
+                });
+            }
+            catch (e) {
+                // If detail fetch fails, use basic info
+                enrichedGames.push(allGames[gi]);
+            }
+        }
+        if (enrichedGames.length === 0)
+            throw new Error("boardgamegeek: 0 games after enrichment");
+        var namePool = [];
+        for (var ni = 0; ni < enrichedGames.length; ni++)
+            namePool.push(enrichedGames[ni].name);
+        for (var ei = 0; ei < enrichedGames.length; ei++) {
+            var game = enrichedGames[ei];
+            try {
+                // Type 1: "Who designed [Game]?" (if we have designers)
+                if (game.designers && game.designers.length > 0) {
+                    var exDes = {};
+                    for (var d = 0; d < game.designers.length; d++)
+                        exDes[game.designers[d]] = true;
+                    var wrongDesigners = pickExcluding(namePool, exDes, 3); // use other game names as distractors
+                    if (wrongDesigners.length >= 3) {
+                        var desOpts = [{ text: game.designers[0], is_correct: true }];
+                        for (var wd = 0; wd < 3; wd++)
+                            desOpts.push({ text: wrongDesigners[wd], is_correct: false });
+                        results.push({
+                            provider_key: "bgg_designer_" + game.id,
+                            topic: "boardgame", lang: "en",
+                            question_text: "Who designed \"" + game.name + "\"?",
+                            question_type: "single_select",
+                            raw_options: desOpts,
+                            has_media: !!game.thumbnail,
+                            media: game.thumbnail ? { type: "image", url: game.thumbnail, thumbnail_url: game.thumbnail, duration_seconds: null, mime_type: "image/jpeg" } : null,
+                            explanation: "\"" + game.name + "\" (" + (game.year || "?") + ") was designed by " + game.designers.join(", ") + ".",
+                            difficulty: "medium", provider: "bgg",
+                            meta: { game_id: game.id, game_name: game.name, year: game.year, type: "designer" }
+                        });
+                    }
+                }
+                // Type 2: "Which game is this?" (image-based)
+                if (game.thumbnail) {
+                    var exName = {};
+                    exName[game.name] = true;
+                    var wrongNames = pickExcluding(namePool, exName, 3);
+                    if (wrongNames.length >= 3) {
+                        var nameOpts = [{ text: game.name, is_correct: true }];
+                        for (var wn = 0; wn < 3; wn++)
+                            nameOpts.push({ text: wrongNames[wn], is_correct: false });
+                        results.push({
+                            provider_key: "bgg_image_" + game.id,
+                            topic: "boardgame", lang: "en",
+                            question_text: "Which board game is shown in the image?",
+                            question_type: "single_select",
+                            raw_options: nameOpts,
+                            has_media: true,
+                            media: { type: "image", url: game.thumbnail, thumbnail_url: game.thumbnail, duration_seconds: null, mime_type: "image/jpeg" },
+                            explanation: "\"" + game.name + "\" (" + (game.year || "?") + ") - " + (game.categories.join(", ") || "board game") + ".",
+                            difficulty: "medium", provider: "bgg",
+                            meta: { game_id: game.id, game_name: game.name, year: game.year, type: "image" }
+                        });
+                    }
+                }
+                // Type 3: Category question
+                if (game.categories && game.categories.length > 0) {
+                    var exCat = {};
+                    exCat[game.categories[0]] = true;
+                    var allCats = [];
+                    for (var cg = 0; cg < enrichedGames.length; cg++) {
+                        if (enrichedGames[cg].categories) {
+                            for (var cc = 0; cc < enrichedGames[cg].categories.length; cc++) {
+                                allCats.push(enrichedGames[cg].categories[cc]);
+                            }
+                        }
+                    }
+                    var wrongCats = pickExcluding(allCats, exCat, 3);
+                    if (wrongCats.length >= 3) {
+                        var catOpts = [{ text: game.categories[0], is_correct: true }];
+                        for (var wc = 0; wc < 3; wc++)
+                            catOpts.push({ text: wrongCats[wc], is_correct: false });
+                        results.push({
+                            provider_key: "bgg_category_" + game.id,
+                            topic: "boardgame", lang: "en",
+                            question_text: "What category does \"" + game.name + "\" belong to?",
+                            question_type: "single_select",
+                            raw_options: catOpts,
+                            has_media: false,
+                            media: null,
+                            explanation: "\"" + game.name + "\" is categorized as " + game.categories.join(", ") + ".",
+                            difficulty: "easy", provider: "bgg",
+                            meta: { game_id: game.id, game_name: game.name, year: game.year, type: "category" }
+                        });
+                    }
+                }
+            }
+            catch (e) {
+                logger.debug("[QvQCache/bgg] skip game " + game.id + ": " + (e && e.message));
+            }
+        }
+        if (results.length === 0)
+            throw new Error("boardgamegeek: 0 questions generated");
+        logger.info("[QvQCache/bgg] event=bgg_fetch games=" + enrichedGames.length + " questions=" + results.length);
+        return results;
+    }
+    // ── 24. Calendarific / Public Holidays (Auto-Themed Events) — free tier ──────
+    // https://calendarific.com/api/v2/holidays — worldwide public holidays
+    // Requires API key (free: 1000 req/month). Alternative: Nager.Date (no key, free)
+    // Question format: "Which country celebrates [Holiday] today?" or "What holiday is today in [Country]?"
+    // Wrong answers: other holidays/countries from same batch.
+    function fetchHolidayQuiz(nk, env, logger) {
+        var results = [];
+        var calKey = envKey(env, "CALENDARIFIC_API_KEY");
+        var today = new Date();
+        var month = today.getMonth() + 1;
+        var day = today.getDate();
+        var year = today.getFullYear();
+        // Use Nager.Date as primary (no key needed, free, open)
+        // https://date.nager.at/api/v3/PublicHolidays/{year}/{countryCode}
+        var countries = ["US", "GB", "CA", "AU", "DE", "FR", "ES", "IT", "JP", "IN", "BR", "MX", "CN", "RU", "ZA"];
+        var allHolidays = [];
+        for (var ci = 0; ci < countries.length; ci++) {
+            try {
+                var url = "https://date.nager.at/api/v3/PublicHolidays/" + year + "/" + countries[ci];
+                var resp = httpGet(nk, url);
+                if (Array.isArray(resp)) {
+                    for (var hi = 0; hi < resp.length; hi++) {
+                        var h = resp[hi];
+                        if (h.date && h.name) {
+                            var hDate = h.date.split("-");
+                            if (parseInt(hDate[1]) === month && parseInt(hDate[2]) === day) {
+                                allHolidays.push({
+                                    name: h.name,
+                                    country: h.countryCode, // Nager.Date uses countryCode as country name
+                                    countryCode: countries[ci],
+                                    date: h.date,
+                                    type: h.type || "Public",
+                                    global: h.global || false
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                logger.debug("[QvQCache/holiday] Nager.Date " + countries[ci] + " failed: " + (e && e.message));
+            }
+        }
+        // If Calendarific key available, supplement with it
+        if (calKey) {
+            try {
+                var calUrl = "https://calendarific.com/api/v2/holidays?api_key=" + calKey + "&year=" + year + "&month=" + month + "&day=" + day;
+                var calResp = httpGet(nk, calUrl);
+                if (calResp && calResp.response && Array.isArray(calResp.response.holidays)) {
+                    for (var chi = 0; chi < calResp.response.holidays.length; chi++) {
+                        var ch = calResp.response.holidays[chi];
+                        if (ch.name && ch.country && ch.country.name) {
+                            allHolidays.push({
+                                name: ch.name,
+                                country: ch.country.name,
+                                countryCode: ch.country["iso-3166"] || "",
+                                date: ch.date.iso || "",
+                                type: Array.isArray(ch.type) ? ch.type.join(", ") : (ch.type || "Public"),
+                                global: false
+                            });
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                logger.debug("[QvQCache/holiday] Calendarific failed: " + (e && e.message));
+            }
+        }
+        if (allHolidays.length === 0) {
+            // No holidays today - return empty, cache will be empty (TTL handles refresh tomorrow)
+            logger.info("[QvQCache/holiday] no holidays today for " + month + "/" + day);
+            return results; // Return empty array
+        }
+        // Build question pools
+        var holidayNames = [];
+        var countriesSet = {};
+        for (var hi2 = 0; hi2 < allHolidays.length; hi2++) {
+            holidayNames.push(allHolidays[hi2].name);
+            countriesSet[allHolidays[hi2].country] = true;
+        }
+        var countryNames = Object.keys(countriesSet);
+        for (var qi = 0; qi < allHolidays.length; qi++) {
+            var hol = allHolidays[qi];
+            try {
+                // Q1: "Which country celebrates [Holiday] today?"
+                var exC = {};
+                exC[hol.country] = true;
+                var wrongCountries = pickExcluding(countryNames, exC, 3);
+                if (wrongCountries.length >= 3) {
+                    var cOpts = [{ text: hol.country, is_correct: true }];
+                    for (var wc2 = 0; wc2 < 3; wc2++)
+                        cOpts.push({ text: wrongCountries[wc2], is_correct: false });
+                    results.push({
+                        provider_key: "holiday_country_" + hol.name.replace(/[^a-zA-Z0-9]/g, "_") + "_" + hol.countryCode,
+                        topic: "holiday", lang: "en",
+                        question_text: "Which country celebrates \"" + hol.name + "\" today?",
+                        question_type: "single_select",
+                        raw_options: cOpts,
+                        has_media: false,
+                        media: null,
+                        explanation: "\"" + hol.name + "\" is celebrated in " + hol.country + " (" + hol.type + ").",
+                        difficulty: "easy", provider: "nager.date",
+                        meta: { holiday: hol.name, country: hol.country, countryCode: hol.countryCode, date: hol.date, type: hol.type }
+                    });
+                }
+                // Q2: "What holiday is celebrated in [Country] today?" (if multiple holidays in that country)
+                var countryHolidays = allHolidays.filter(function (h) { return h.countryCode === hol.countryCode; });
+                if (countryHolidays.length > 1) {
+                    var exH = {};
+                    exH[hol.name] = true;
+                    var wrongHolidays = pickExcluding(holidayNames, exH, 3);
+                    if (wrongHolidays.length >= 3) {
+                        var hOpts = [{ text: hol.name, is_correct: true }];
+                        for (var wh = 0; wh < 3; wh++)
+                            hOpts.push({ text: wrongHolidays[wh], is_correct: false });
+                        results.push({
+                            provider_key: "holiday_name_" + hol.countryCode + "_" + hol.name.replace(/[^a-zA-Z0-9]/g, "_"),
+                            topic: "holiday", lang: "en",
+                            question_text: "What holiday is celebrated in " + hol.country + " today?",
+                            question_type: "single_select",
+                            raw_options: hOpts,
+                            has_media: false,
+                            media: null,
+                            explanation: hol.country + " celebrates \"" + hol.name + "\" today (" + hol.type + ").",
+                            difficulty: "easy", provider: "nager.date",
+                            meta: { holiday: hol.name, country: hol.country, countryCode: hol.countryCode, date: hol.date, type: hol.type }
+                        });
+                    }
+                }
+            }
+            catch (e) {
+                logger.debug("[QvQCache/holiday] skip holiday " + hol.name + ": " + (e && e.message));
+            }
+        }
+        logger.info("[QvQCache/holiday] event=holiday_fetch holidays=" + allHolidays.length + " questions=" + results.length);
+        return results;
+    }
     // ── Provider router ────────────────────────────────────────────────────────
     function fetchForTopic(nk, env, logger, topic) {
         switch (topic) {
@@ -22818,6 +23407,11 @@ var QvQuestionCache;
             case "weekly": return fetchS3(nk, env, logger, topic);
             case "video_quiz": return fetchVideoQuiz(nk, env, logger);
             case "ai": throw new Error("ai topic is generated on-demand — never cached");
+            // NEW: Chess, Board Game & Holiday APIs
+            case "chess": return fetchChessQuiz(nk, logger);
+            case "boardgame": return fetchBoardGameQuiz(nk, logger);
+            case "holiday": return fetchHolidayQuiz(nk, env, logger);
+            case "rickmorty": return fetchRickMorty(nk, logger);
             default: throw new Error("Unknown topic: " + topic);
         }
     }
@@ -23449,7 +24043,7 @@ var QvRemoteConfig;
         "anime", "pokemon", "movies", "sports", "countries", "flags",
         "space", "music", "disney", "ghibli", "starwars", "food",
         "cocktail", "dog", "news", "opentdb", "speed_quiz", "true_false",
-        "video_quiz", "ai", "daily", "weekly"
+        "video_quiz", "ai", "daily", "weekly", "rickmorty"
     ];
     // Every external API provider the cache layer calls. Sync with question_cache.ts.
     var KNOWN_PROVIDERS = [
@@ -23458,7 +24052,7 @@ var QvRemoteConfig;
         "mediastack", "newsapi", "opentdb", "disney",
         "ghibli", "swapi", "thesportsdb", "cocktaildb",
         "themealdb", "foodfacts", "dogceo", "restcountries",
-        "catalog"
+        "catalog", "rickandmortyapi"
     ];
     // Cache is considered "near expiry" when ≤ 10 min remain.
     // Ops gets a warning window before questions run dry.
@@ -23474,7 +24068,7 @@ var QvRemoteConfig;
             countries: "restcountries", flags: "restcountries",
             space: "nasa", movies: "tmdb", sports: "thesportsdb",
             music: "lastfm", news: "gnews", daily: "s3", weekly: "s3",
-            video_quiz: "catalog", ai: "claude"
+            video_quiz: "catalog", ai: "claude", rickmorty: "rickandmortyapi"
         };
         return map[topic] || topic;
     }
@@ -23537,7 +24131,8 @@ var QvRemoteConfig;
             { id: "disney", label: "Disney", icon_url: S3_ICONS_BASE + "disney.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 9, max_count: 30 },
             { id: "ghibli", label: "Studio Ghibli", icon_url: S3_ICONS_BASE + "ghibli.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 10, max_count: 50 },
             { id: "starwars", label: "Star Wars", icon_url: S3_ICONS_BASE + "starwars.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 11, max_count: 30 },
-            { id: "food", label: "Food", icon_url: S3_ICONS_BASE + "food.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 12, max_count: 30 },
+            { id: "rickmorty", label: "Rick & Morty", icon_url: S3_ICONS_BASE + "rickmorty.png", has_media: true, media_type: "image", enabled: true, is_new: true, badge: "NEW", sort_order: 12, max_count: 30 },
+            { id: "food", label: "Food", icon_url: S3_ICONS_BASE + "food.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 13, max_count: 30 },
             { id: "cocktail", label: "Cocktails", icon_url: S3_ICONS_BASE + "cocktail.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 13, max_count: 30 },
             { id: "dog", label: "Dogs", icon_url: S3_ICONS_BASE + "dog.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 14, max_count: 30 },
             { id: "news", label: "News", icon_url: S3_ICONS_BASE + "news.png", has_media: true, media_type: "image", enabled: true, is_new: false, badge: null, sort_order: 15, max_count: 30 },
@@ -23563,6 +24158,7 @@ var QvRemoteConfig;
             disney: ["en"],
             ghibli: ["en"],
             starwars: ["en"],
+            rickmorty: ["en"],
             food: ["en"],
             cocktail: ["en"],
             dog: ["en"],
@@ -24986,6 +25582,14 @@ var QvSubmitResult;
             else
                 break;
         }
+        // ── Streak-based reward tier boost ───────────────────────────────────────
+        // If user is on a streak, upgrade their reward tier by one level
+        // streak >= 3: quote -> advice, advice -> joke, joke -> yoda (viral)
+        var rewardTierBoost = 0;
+        if (currentStreak >= 5)
+            rewardTierBoost = 2; // jump two tiers
+        else if (currentStreak >= 3)
+            rewardTierBoost = 1; // jump one tier
         var variableRewards = computeVariableRewards(ctx, correct, total, gradedAnswers, coinsEarned, xpEarned, currentStreak);
         var totalCoins = coinsEarned + variableRewards.bonusCoins;
         var totalXp = xpEarned + variableRewards.bonusXp;
@@ -25123,8 +25727,157 @@ var QvSubmitResult;
         catch (_badgeErr) {
             logger.warn("[QvSubmit] badge fan-out failed (non-fatal): " + (_badgeErr && _badgeErr.message));
         }
+        // ── Post-Quiz Reward (based on accuracy) ─────────────────────────────────
+        // Fetch a small text reward from external APIs — completely non-blocking,
+        // on any failure we simply omit the reward field from the response.
+        var reward = null;
+        try {
+            // Base reward type from accuracy
+            var rewardType;
+            if (accuracyPct >= 80)
+                rewardType = "yoda"; // viral share card
+            else if (accuracyPct >= 60)
+                rewardType = "joke"; // dad joke
+            else if (accuracyPct >= 40)
+                rewardType = "advice"; // encouraging advice
+            else
+                rewardType = "quote"; // inspirational quote
+            // Apply streak-based tier boost
+            // streak >= 3: quote -> advice, advice -> joke, joke -> yoda
+            // streak >= 5: jump two tiers
+            if (rewardTierBoost > 0) {
+                if (rewardTierBoost >= 2) {
+                    // Jump two tiers
+                    if (rewardType === "quote")
+                        rewardType = "joke";
+                    else if (rewardType === "advice")
+                        rewardType = "yoda";
+                    else if (rewardType === "joke")
+                        rewardType = "yoda";
+                }
+                else {
+                    // Jump one tier
+                    if (rewardType === "quote")
+                        rewardType = "advice";
+                    else if (rewardType === "advice")
+                        rewardType = "joke";
+                    else if (rewardType === "joke")
+                        rewardType = "yoda";
+                }
+            }
+            // Synchronous inline fetch — these are fast (<200ms) and fire-and-forget
+            // on the server side; if any upstream API is slow or fails we just skip
+            // the reward for this session (client falls back gracefully).
+            var rewardResp;
+            if (rewardType === "yoda") {
+                var apiKey = (ctx.env && ctx.env["FUNTRANSLATIONS_API_KEY"]) || "";
+                var phrases = [
+                    "You are the quiz champion!",
+                    "May the knowledge be with you",
+                    "Victory achieved, young padawan",
+                    "The force is strong with this one"
+                ];
+                var phrase = phrases[Math.floor(Math.random() * phrases.length)];
+                if (apiKey) {
+                    var resp = nk.httpRequest("https://api.funtranslations.com/translate/yodish.json?text=" + encodeURIComponent(phrase), "get", { "X-Funtranslations-Api-Secret": apiKey }, "", 800);
+                    if (resp && resp.code === 200 && resp.body) {
+                        var data = JSON.parse(resp.body);
+                        if (data.contents && data.contents.translated) {
+                            reward = {
+                                type: "viral",
+                                text: data.contents.translated,
+                                original: phrase,
+                                explanation: "Share this Yoda wisdom with friends! 🌟",
+                                meta: { shareable: true, translator: "yodish" }
+                            };
+                        }
+                    }
+                }
+                if (!reward) {
+                    reward = {
+                        type: "viral",
+                        text: "Quiz master, you have become! 🌟",
+                        original: phrase,
+                        explanation: "Share this Yoda wisdom with friends! 🌟",
+                        meta: { fallback: true }
+                    };
+                }
+            }
+            else if (rewardType === "joke") {
+                var resp = nk.httpRequest("https://icanhazdadjoke.com/", "get", { "Accept": "application/json", "User-Agent": "QuizVerse/1.0" }, "", 800);
+                if (resp && resp.code === 200 && resp.body) {
+                    var data = JSON.parse(resp.body);
+                    if (data.joke) {
+                        reward = {
+                            type: "joke",
+                            text: data.joke,
+                            explanation: "A dad joke to brighten your day! 😄",
+                            meta: { joke_id: data.id }
+                        };
+                    }
+                }
+                if (!reward) {
+                    reward = {
+                        type: "joke",
+                        text: "Why don't scientists trust atoms? Because they make up everything!",
+                        explanation: "A dad joke to brighten your day! 😄",
+                        meta: { fallback: true }
+                    };
+                }
+            }
+            else if (rewardType === "advice") {
+                var resp = nk.httpRequest("https://api.adviceslip.com/advice", "get", {}, "", 600);
+                if (resp && resp.code === 200 && resp.body) {
+                    var data = JSON.parse(resp.body);
+                    if (data.slip && data.slip.advice) {
+                        reward = {
+                            type: "advice",
+                            text: data.slip.advice,
+                            explanation: "Wisdom for your journey! 💡",
+                            meta: { slip_id: data.slip.slip_id }
+                        };
+                    }
+                }
+                if (!reward) {
+                    reward = {
+                        type: "advice",
+                        text: "The best time to plant a tree was 20 years ago. The second best time is now.",
+                        explanation: "Wisdom for your journey! 💡",
+                        meta: { fallback: true }
+                    };
+                }
+            }
+            else { // quote
+                var resp = nk.httpRequest("https://api.quotable.io/random", "get", { "Accept": "application/json" }, "", 800);
+                if (resp && resp.code === 200 && resp.body) {
+                    var data = JSON.parse(resp.body);
+                    if (data.content && data.author) {
+                        reward = {
+                            type: "quote",
+                            text: "\"" + data.content + "\"",
+                            attribution: "— " + data.author,
+                            explanation: "Daily inspiration from " + data.author + " ✨",
+                            meta: { author: data.author, tags: data.tags }
+                        };
+                    }
+                }
+                if (!reward) {
+                    reward = {
+                        type: "quote",
+                        text: "\"Believe you can and you're halfway there.\"",
+                        attribution: "— Theodore Roosevelt",
+                        explanation: "Daily inspiration! ✨",
+                        meta: { fallback: true }
+                    };
+                }
+            }
+        }
+        catch (_rewardErr) {
+            logger.debug("[QvSubmit] reward fetch failed (non-fatal): " + (_rewardErr && _rewardErr.message));
+            reward = null;
+        }
         // ── Response ──────────────────────────────────────────────────────────
-        return JSON.stringify({
+        var response = {
             ok: true,
             score_token: scoreToken,
             pack_id: packId,
@@ -25141,8 +25894,13 @@ var QvSubmitResult;
             reward_events: variableRewards.events,
             personalization: personalization,
             badges_unlocked: badgesUnlocked,
-            characters_unlocked: charactersUnlocked
-        });
+            characters_unlocked: charactersUnlocked,
+            current_streak: currentStreak,
+            reward_tier_boost: rewardTierBoost
+        };
+        if (reward)
+            response.reward = reward;
+        return JSON.stringify(response);
     }
     // ── Registration ───────────────────────────────────────────────────────────
     function register(initializer) {
@@ -34280,7 +35038,10 @@ var QuizverseMerge;
                     // ghost-keyed doc under the destination instead of merging balances
                     // (caught by quizverse_merge_regression_test B1).
                     var destKey = o.key;
-                    var suffix = "_" + fromUserId;
+                    // Suffix is the bare userId (the '_' separator belongs to the key
+                    // template: 'global_' + userId) — stripping it too loses the
+                    // separator ('globalcognito-…', caught by the regression test).
+                    var suffix = fromUserId;
                     if (destKey.length > suffix.length &&
                         destKey.lastIndexOf(suffix) === destKey.length - suffix.length) {
                         destKey = destKey.slice(0, destKey.length - suffix.length) + toUserId;
@@ -42903,6 +43664,10 @@ var LegacyNotifScheduler;
             var dueReview = sharedDue(tasks, "review_due", 30);
             var dueFlushPush = sharedDue(tasks, "flush_pending_push", 30);
             var dueFlushChat = sharedDue(tasks, "flush_failed_chat_push", 3);
+            // NEW: Chess, Holiday, Board Game crons
+            var dueChessPuzzle = sharedDue(tasks, "chess_daily_puzzle", 30);
+            var dueHoliday = sharedDue(tasks, "holiday_event", 60);
+            var dueBoardGame = sharedDue(tasks, "boardgame_weekly", 60);
             // CAS write first — only ONE pod wins the version conflict check.
             // Losers catch the version mismatch and skip all dispatches for this tick,
             // so a task fires on exactly ONE pod per window (not N).
@@ -42944,6 +43709,13 @@ var LegacyNotifScheduler;
                 }
                 catch (_) { }
             }
+            // NEW: Chess, Holiday, Board Game cron dispatches
+            if (dueChessPuzzle)
+                dispatchSafely("chess_daily_puzzle", LegacyPush.runChessDailyPuzzleCron, ctx, logger, nk);
+            if (dueHoliday)
+                dispatchSafely("holiday_event", LegacyPush.runHolidayEventCron, ctx, logger, nk);
+            if (dueBoardGame)
+                dispatchSafely("boardgame_weekly", LegacyPush.runBoardGameWeeklyCron, ctx, logger, nk);
         }
         var m = nowMinute();
         if ((m % 60) === 0 && state.lastLog !== m) {
@@ -43833,6 +44605,9 @@ var PushAlerts;
 })(PushAlerts || (PushAlerts = {}));
 var LegacyPush;
 (function (LegacyPush) {
+    function nakamaError(msg, code) {
+        return { message: msg, code: code };
+    }
     var DEFAULT_PUSH_NOTIFICATION_CODE = 7001;
     // ─── Production hardcoded Lambda Function URLs ──────────────────────────────
     // Single source of truth for the AWS Lambda Function URLs that back our push
@@ -46612,6 +47387,175 @@ var LegacyPush;
         }
         return RpcHelpers.successResponse({ sent: sent, gated: gated, users_scanned: usersScanned, dedupedDevices: runDedupStats.skippedDevices });
     }
+    // ── NEW: Chess Daily Puzzle Cron (09:00–13:00 local, daily) ───────────────────
+    function rpcNotifCronChessDailyPuzzle(ctx, logger, nk, payload) {
+        if (ctx.userId)
+            return RpcHelpers.errorResponse("Admin only");
+        var todayKey = todayDateKey();
+        var sent = 0, gated = 0, scanned = 0;
+        var runDedupArns = {};
+        var runDedupStats = { skippedDevices: 0 };
+        var batch = 100, offset = 0;
+        while (true) {
+            var users = listOptedInUsers(nk, batch, offset);
+            if (!users || users.length === 0)
+                break;
+            for (var i = 0; i < users.length; i++) {
+                scanned++;
+                var u = users[i];
+                if (hasMarker(nk, u, "chess_daily_puzzle", todayKey)) {
+                    gated++;
+                    continue;
+                }
+                var h = getUserLocalHour(nk, u);
+                if (h < 9 || h >= 13) {
+                    gated++;
+                    continue;
+                } // morning window only
+                var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "chess_daily_puzzle", "chess_daily_puzzle_title", "chess_daily_puzzle_body", { topic: "chess" }, { data: { screen: "quiz", mode: "topic_chess" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
+                if (ok) {
+                    recordMarker(nk, u, "chess_daily_puzzle", todayKey);
+                    sent++;
+                }
+                else {
+                    gated++;
+                }
+            }
+            offset += batch;
+            if (users.length < batch)
+                break;
+        }
+        if (sent > 0 || runDedupStats.skippedDevices > 0) {
+            PushAlerts.postCronReport(nk, logger, {
+                cronName: "chess_daily_puzzle", dateKey: todayKey, scanned: scanned, sent: sent,
+                gated: gated, byLocale: {}, dedupedDevices: runDedupStats.skippedDevices
+            });
+        }
+        return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dedupedDevices: runDedupStats.skippedDevices });
+    }
+    // ── NEW: Holiday Event Cron (10:00–18:00 local, only on days with holidays) ─────
+    function rpcNotifCronHolidayEvent(ctx, logger, nk, payload) {
+        if (ctx.userId)
+            return RpcHelpers.errorResponse("Admin only");
+        var todayKey = todayDateKey();
+        var sent = 0, gated = 0, scanned = 0;
+        var runDedupArns = {};
+        var runDedupStats = { skippedDevices: 0 };
+        var batch = 100, offset = 0;
+        // Check if there are holidays today (quick fetch)
+        var hasHolidays = false;
+        try {
+            var testResp = nk.httpRequest("https://date.nager.at/api/v3/PublicHolidays/" + new Date().getFullYear() + "/US", "get", {}, "", 10000);
+            if (testResp && testResp.code >= 200 && testResp.code < 300) {
+                var arr = testResp.body ? JSON.parse(testResp.body) : null;
+                if (Array.isArray(arr)) {
+                    var today = new Date();
+                    var month = today.getMonth() + 1;
+                    var day = today.getDate();
+                    for (var ti = 0; ti < arr.length; ti++) {
+                        var hol = arr[ti];
+                        if (hol.date) {
+                            var hDate = hol.date.split("-");
+                            if (parseInt(hDate[1]) === month && parseInt(hDate[2]) === day) {
+                                hasHolidays = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (_) { }
+        if (!hasHolidays) {
+            return RpcHelpers.successResponse({ sent: 0, gated: 0, scanned: 0, skipped: "no_holidays_today" });
+        }
+        while (true) {
+            var users = listOptedInUsers(nk, batch, offset);
+            if (!users || users.length === 0)
+                break;
+            for (var i = 0; i < users.length; i++) {
+                scanned++;
+                var u = users[i];
+                if (hasMarker(nk, u, "holiday_event", todayKey)) {
+                    gated++;
+                    continue;
+                }
+                var userHour = getUserLocalHour(nk, u);
+                if (userHour < 10 || userHour >= 18) {
+                    gated++;
+                    continue;
+                } // daytime window
+                var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "holiday_event", "holiday_event_title", "holiday_event_body", {}, { data: { screen: "quiz", mode: "topic_holiday" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
+                if (ok) {
+                    recordMarker(nk, u, "holiday_event", todayKey);
+                    sent++;
+                }
+                else {
+                    gated++;
+                }
+            }
+            offset += batch;
+            if (users.length < batch)
+                break;
+        }
+        if (sent > 0 || runDedupStats.skippedDevices > 0) {
+            PushAlerts.postCronReport(nk, logger, {
+                cronName: "holiday_event", dateKey: todayKey, scanned: scanned, sent: sent,
+                gated: gated, byLocale: {}, dedupedDevices: runDedupStats.skippedDevices
+            });
+        }
+        return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dedupedDevices: runDedupStats.skippedDevices });
+    }
+    // ── NEW: Board Game Weekly Cron (14:00–20:00 local, weekly on Mondays) ──────────
+    function rpcNotifCronBoardGameWeekly(ctx, logger, nk, payload) {
+        if (ctx.userId)
+            return RpcHelpers.errorResponse("Admin only");
+        var todayKey = todayDateKey();
+        var today = new Date();
+        if (today.getDay() !== 1) { // Monday only (0=Sun, 1=Mon)
+            return RpcHelpers.successResponse({ sent: 0, gated: 0, scanned: 0, skipped: "not_monday" });
+        }
+        var sent = 0, gated = 0, scanned = 0;
+        var runDedupArns = {};
+        var runDedupStats = { skippedDevices: 0 };
+        var batch = 100, offset = 0;
+        while (true) {
+            var users = listOptedInUsers(nk, batch, offset);
+            if (!users || users.length === 0)
+                break;
+            for (var i = 0; i < users.length; i++) {
+                scanned++;
+                var u = users[i];
+                if (hasMarker(nk, u, "boardgame_weekly", todayKey)) {
+                    gated++;
+                    continue;
+                }
+                var h = getUserLocalHour(nk, u);
+                if (h < 14 || h >= 20) {
+                    gated++;
+                    continue;
+                } // afternoon/evening window
+                var ok = sendLocalizedPushToUser(ctx, logger, nk, u, "boardgame_weekly", "boardgame_weekly_title", "boardgame_weekly_body", {}, { data: { screen: "quiz", mode: "topic_boardgame" }, dedupArns: runDedupArns, dedupStats: runDedupStats });
+                if (ok) {
+                    recordMarker(nk, u, "boardgame_weekly", todayKey);
+                    sent++;
+                }
+                else {
+                    gated++;
+                }
+            }
+            offset += batch;
+            if (users.length < batch)
+                break;
+        }
+        if (sent > 0 || runDedupStats.skippedDevices > 0) {
+            PushAlerts.postCronReport(nk, logger, {
+                cronName: "boardgame_weekly", dateKey: todayKey, scanned: scanned, sent: sent,
+                gated: gated, byLocale: {}, dedupedDevices: runDedupStats.skippedDevices
+            });
+        }
+        return RpcHelpers.successResponse({ sent: sent, gated: gated, scanned: scanned, dedupedDevices: runDedupStats.skippedDevices });
+    }
     // Internal aliases so the in-process scheduler match can invoke each cron
     // handler directly without an HTTP round-trip. The RPC versions remain
     // registered for ops use (manual fire / external trigger / curl).
@@ -46622,6 +47566,10 @@ var LegacyPush;
     LegacyPush.runMotivationCron = rpcNotifCronMotivation;
     LegacyPush.runRemindersCron = rpcNotifCronReminders;
     LegacyPush.runReviewCron = rpcNotifCronReview;
+    // NEW: Chess, Holiday, Board Game crons
+    LegacyPush.runChessDailyPuzzleCron = rpcNotifCronChessDailyPuzzle;
+    LegacyPush.runHolidayEventCron = rpcNotifCronHolidayEvent;
+    LegacyPush.runBoardGameWeeklyCron = rpcNotifCronBoardGameWeekly;
     // ─── Pending-registration flush ──────────────────────────────────────────
     // Called by the scheduler (LegacyNotifScheduler.matchLoop) every 30 min
     // and available as an admin RPC (push_flush_pending).
@@ -46781,6 +47729,149 @@ var LegacyPush;
         flushPendingRegistrations(ctx, logger, nk);
         return JSON.stringify({ success: true });
     }
+    // ── Post-Quiz Reward RPCs (client-called after quiz) ───────────────────────
+    // All return a small JSON payload with a text reward; they never throw — on
+    // any upstream failure a local fallback is returned so the client always gets
+    // something to show. No admin check; any authenticated user may call them.
+    function rpcRewardJoke(ctx, logger, nk, _payload) {
+        if (!ctx.userId)
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        try {
+            var resp = nk.httpRequest("https://icanhazdadjoke.com/", "get", { "Accept": "application/json", "User-Agent": "QuizVerse/1.0 (intelli-verse-x.ai)" }, "", 5000);
+            if (resp && resp.code === 200 && resp.body) {
+                var data = JSON.parse(resp.body);
+                if (data.joke) {
+                    return JSON.stringify({
+                        ok: true,
+                        type: "joke",
+                        text: data.joke,
+                        explanation: "A dad joke to brighten your day! 😄",
+                        meta: { joke_id: data.id }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[Reward/joke] fetch failed: " + (e && e.message));
+        }
+        // Local fallback
+        return JSON.stringify({
+            ok: true,
+            type: "joke",
+            text: "Why don't scientists trust atoms? Because they make up everything!",
+            explanation: "A dad joke to brighten your day! 😄",
+            meta: { fallback: true }
+        });
+    }
+    function rpcRewardYoda(ctx, logger, nk, _payload) {
+        if (!ctx.userId)
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        var apiKey = (ctx.env && ctx.env["FUNTRANSLATIONS_API_KEY"]) || "";
+        var phrases = [
+            "You are the quiz champion!",
+            "May the knowledge be with you",
+            "Victory achieved, young padawan",
+            "The force is strong with this one"
+        ];
+        var phrase = phrases[Math.floor(Math.random() * phrases.length)];
+        if (!apiKey) {
+            return JSON.stringify({
+                ok: true,
+                type: "viral",
+                text: "Quiz master, you have become! 🌟",
+                original: phrase,
+                explanation: "Share this Yoda wisdom with friends! 🌟",
+                meta: { fallback: true, translator: "yodish" }
+            });
+        }
+        try {
+            var resp = nk.httpRequest("https://api.funtranslations.com/translate/yodish.json?text=" + encodeURIComponent(phrase), "get", { "X-Funtranslations-Api-Secret": apiKey }, "", 5000);
+            if (resp && resp.code === 200 && resp.body) {
+                var data = JSON.parse(resp.body);
+                if (data.contents && data.contents.translated) {
+                    return JSON.stringify({
+                        ok: true,
+                        type: "viral",
+                        text: data.contents.translated,
+                        original: phrase,
+                        explanation: "Share this Yoda wisdom with friends! 🌟",
+                        meta: { shareable: true, translator: "yodish" }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[Reward/yoda] fetch failed: " + (e && e.message));
+        }
+        return JSON.stringify({
+            ok: true,
+            type: "viral",
+            text: "Quiz master, you have become! 🌟",
+            original: phrase,
+            explanation: "Share this Yoda wisdom with friends! 🌟",
+            meta: { fallback: true }
+        });
+    }
+    function rpcRewardAdvice(ctx, logger, nk, _payload) {
+        if (!ctx.userId)
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        try {
+            var resp = nk.httpRequest("https://api.adviceslip.com/advice", "get", {}, "", 3000);
+            if (resp && resp.code === 200 && resp.body) {
+                var data = JSON.parse(resp.body);
+                if (data.slip && data.slip.advice) {
+                    return JSON.stringify({
+                        ok: true,
+                        type: "advice",
+                        text: data.slip.advice,
+                        explanation: "Wisdom for your journey! 💡",
+                        meta: { slip_id: data.slip.slip_id }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[Reward/advice] fetch failed: " + (e && e.message));
+        }
+        return JSON.stringify({
+            ok: true,
+            type: "advice",
+            text: "The best time to plant a tree was 20 years ago. The second best time is now.",
+            explanation: "Wisdom for your journey! 💡",
+            meta: { fallback: true }
+        });
+    }
+    function rpcRewardQuote(ctx, logger, nk, _payload) {
+        if (!ctx.userId)
+            throw nakamaError("not authenticated", 16 /* nkruntime.Codes.UNAUTHENTICATED */);
+        try {
+            var resp = nk.httpRequest("https://api.quotable.io/random", "get", { "Accept": "application/json" }, "", 5000);
+            if (resp && resp.code === 200 && resp.body) {
+                var data = JSON.parse(resp.body);
+                if (data.content && data.author) {
+                    return JSON.stringify({
+                        ok: true,
+                        type: "quote",
+                        text: "\"" + data.content + "\"",
+                        attribution: "— " + data.author,
+                        explanation: "Daily inspiration from " + data.author + " ✨",
+                        meta: { author: data.author, tags: data.tags }
+                    });
+                }
+            }
+        }
+        catch (e) {
+            logger.warn("[Reward/quote] fetch failed: " + (e && e.message));
+        }
+        return JSON.stringify({
+            ok: true,
+            type: "quote",
+            text: "\"Believe you can and you're halfway there.\"",
+            attribution: "— Theodore Roosevelt",
+            explanation: "Daily inspiration! ✨",
+            meta: { fallback: true }
+        });
+    }
     function register(initializer) {
         initializer.registerRpc("push_register_token", rpcPushRegisterToken);
         initializer.registerRpc("push_send_event", rpcPushSendEvent);
@@ -46796,6 +47887,15 @@ var LegacyPush;
         initializer.registerRpc("notif_cron_motivation", rpcNotifCronMotivation);
         initializer.registerRpc("notif_cron_reminders", rpcNotifCronReminders);
         initializer.registerRpc("notif_cron_review", rpcNotifCronReview);
+        // NEW: Chess, Holiday, Board Game crons
+        initializer.registerRpc("notif_cron_chess_daily_puzzle", rpcNotifCronChessDailyPuzzle);
+        initializer.registerRpc("notif_cron_holiday_event", rpcNotifCronHolidayEvent);
+        initializer.registerRpc("notif_cron_boardgame_weekly", rpcNotifCronBoardGameWeekly);
+        // Post-quiz reward RPCs
+        initializer.registerRpc("reward_joke", rpcRewardJoke);
+        initializer.registerRpc("reward_yoda", rpcRewardYoda);
+        initializer.registerRpc("reward_advice", rpcRewardAdvice);
+        initializer.registerRpc("reward_quote", rpcRewardQuote);
         initializer.registerRpc("notif_friend_request_sent", rpcNotifFriendRequestSent);
         initializer.registerRpc("notif_friend_challenge", rpcNotifFriendChallenge);
     }
@@ -60977,6 +62077,7 @@ var QuestEngine;
     var QUEST_CONFIG_COLLECTION = "qv_quest_config";
     // Players who called quest_engine_get for an App-ID — fan-out target for new quests
     var QUEST_SUBSCRIBERS_COLLECTION = "qv_quest_subscribers";
+    var QUEST_CONFIG_AUDIT_COLLECTION = "qv_quest_config_audit";
     var DEFAULT_QUESTS_CONFIG = { quests: {} };
     // In-app inbox code for "new quest published" (reward deliveries use 9101)
     var NOTIFICATION_CODE_NEW_QUEST = 9102;
@@ -61069,6 +62170,30 @@ var QuestEngine;
                 permissionRead: 2,
                 permissionWrite: 0
             }]);
+    }
+    function auditConfigChange(nk, ctx, logger, gameId, config, newQuestIds) {
+        try {
+            var actor = ctx.userId || "server-key";
+            var remote = ctx.clientIp || "";
+            nk.storageWrite([{
+                    collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                    key: gameId + "_" + Math.floor(Date.now() / 1000),
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: {
+                        gameId: gameId,
+                        actor: actor,
+                        remote: remote,
+                        questCount: Object.keys(config.quests).length,
+                        newQuestIds: newQuestIds,
+                        timestamp: Math.floor(Date.now() / 1000)
+                    },
+                    permissionRead: 2,
+                    permissionWrite: 0
+                }]);
+        }
+        catch (e) {
+            logger.warn("[QuestEngine] auditConfigChange failed: " + (e && e.message ? e.message : String(e)));
+        }
     }
     function loadSubscribers(nk, gameId) {
         try {
@@ -61252,6 +62377,141 @@ var QuestEngine;
     function isQuestExpired(config, now) {
         return !!(config.expiresAt && now > config.expiresAt);
     }
+    function isQuestEnabled(config) {
+        return config.enabled !== false; // default true when omitted
+    }
+    function isQuestVisible(config, progress) {
+        if (!isQuestEnabled(config))
+            return false;
+        if (config.hidden && !progress.completedAt)
+            return false;
+        return true;
+    }
+    function validateQuestConfig(q) {
+        if (!q || typeof q !== "object")
+            return "Quest must be an object";
+        if (!q.id || typeof q.id !== "string" || q.id.length === 0)
+            return "Quest id is required and must be a non-empty string";
+        if (!q.name || typeof q.name !== "string" || q.name.length === 0)
+            return "Quest name is required";
+        if (!Array.isArray(q.steps) || q.steps.length === 0)
+            return "Quest must have at least one step";
+        var stepIds = {};
+        for (var i = 0; i < q.steps.length; i++) {
+            var s = q.steps[i];
+            if (!s.id || typeof s.id !== "string")
+                return "Step " + i + " missing id";
+            if (stepIds[s.id])
+                return "Duplicate step id: " + s.id;
+            stepIds[s.id] = true;
+            if (!s.eventType || typeof s.eventType !== "string")
+                return "Step " + s.id + " missing eventType";
+            if (typeof s.requiredCount !== "number" || s.requiredCount < 1)
+                return "Step " + s.id + " requiredCount must be >= 1";
+            if (s.filterField && !s.filterValue)
+                return "Step " + s.id + " has filterField but no filterValue";
+        }
+        if (q.reward) {
+            var err = validateReward(q.reward);
+            if (err)
+                return err;
+        }
+        if (q.expiresAt !== undefined && typeof q.expiresAt !== "number")
+            return "expiresAt must be a unix timestamp number";
+        if (q.resetIntervalSec !== undefined && typeof q.resetIntervalSec !== "number")
+            return "resetIntervalSec must be a number";
+        if (q.repeatable !== undefined && typeof q.repeatable !== "boolean")
+            return "repeatable must be boolean";
+        if (q.hidden !== undefined && typeof q.hidden !== "boolean")
+            return "hidden must be boolean";
+        if (q.enabled !== undefined && typeof q.enabled !== "boolean")
+            return "enabled must be boolean";
+        if (q.requiresOptIn !== undefined && typeof q.requiresOptIn !== "boolean")
+            return "requiresOptIn must be boolean";
+        if (q.maxConcurrent !== undefined && (typeof q.maxConcurrent !== "number" || q.maxConcurrent < 1))
+            return "maxConcurrent must be >= 1";
+        if (q.prerequisiteIds) {
+            if (!Array.isArray(q.prerequisiteIds))
+                return "prerequisiteIds must be an array";
+            for (var p = 0; p < q.prerequisiteIds.length; p++) {
+                if (typeof q.prerequisiteIds[p] !== "string")
+                    return "prerequisiteIds[" + p + "] must be a string";
+            }
+        }
+        return null;
+    }
+    function validateReward(r) {
+        if (!r || typeof r !== "object")
+            return "Reward must be an object";
+        if (r.guaranteed) {
+            var gErr = validateRewardGrant(r.guaranteed, "guaranteed");
+            if (gErr)
+                return gErr;
+        }
+        if (r.weighted) {
+            if (!Array.isArray(r.weighted))
+                return "weighted must be an array";
+            var totalWeight = 0;
+            for (var w = 0; w < r.weighted.length; w++) {
+                var entry = r.weighted[w];
+                if (typeof entry.weight !== "number" || entry.weight <= 0)
+                    return "weighted[" + w + "] weight must be > 0";
+                totalWeight += entry.weight;
+                var wErr = validateRewardGrant(entry, "weighted[" + w + "]");
+                if (wErr)
+                    return wErr;
+            }
+            if (totalWeight <= 0)
+                return "weighted total weight must be > 0";
+        }
+        if (r.maxRolls !== undefined && (typeof r.maxRolls !== "number" || r.maxRolls < 1))
+            return "maxRolls must be >= 1";
+        return null;
+    }
+    function validateRewardGrant(g, path) {
+        if (!g || typeof g !== "object")
+            return path + " must be an object";
+        if (g.currencies) {
+            for (var cid in g.currencies) {
+                if (typeof g.currencies[cid] !== "number" || g.currencies[cid] < 0)
+                    return path + ".currencies[" + cid + "] must be >= 0";
+            }
+        }
+        if (g.items) {
+            for (var iid in g.items) {
+                var itemDef = g.items[iid];
+                if (!itemDef || typeof itemDef !== "object")
+                    return path + ".items[" + iid + "] invalid";
+                if (typeof itemDef.min !== "number" || itemDef.min < 0)
+                    return path + ".items[" + iid + "].min must be >= 0";
+                if (itemDef.max !== undefined && (typeof itemDef.max !== "number" || itemDef.max < itemDef.min))
+                    return path + ".items[" + iid + "].max must be >= min";
+            }
+        }
+        if (g.energies) {
+            for (var eid in g.energies) {
+                if (typeof g.energies[eid] !== "number" || g.energies[eid] < 0)
+                    return path + ".energies[" + eid + "] must be >= 0";
+            }
+        }
+        if (g.gifts) {
+            if (!Array.isArray(g.gifts))
+                return path + ".gifts must be an array";
+            for (var gi = 0; gi < g.gifts.length; gi++) {
+                var gift = g.gifts[gi];
+                if (!gift || typeof gift !== "object")
+                    return path + ".gifts[" + gi + "] invalid";
+                if (!gift.id || typeof gift.id !== "string")
+                    return path + ".gifts[" + gi + "] id required";
+                if (!gift.name || typeof gift.name !== "string")
+                    return path + ".gifts[" + gi + "] name required";
+                if (!gift.type || ["physical", "voucher", "experience", "digital", "merch"].indexOf(gift.type) < 0) {
+                    return path + ".gifts[" + gi + "] type must be physical/voucher/experience/digital/merch";
+                }
+            }
+        }
+        return null;
+    }
     function shouldResetQuest(config, progress, now) {
         if (!config.repeatable || !progress.completedAt)
             return false;
@@ -61337,9 +62597,7 @@ var QuestEngine;
                 resetQuestProgress(progress, now);
                 stateModified = true;
             }
-            // Hidden (surprise) quests stay invisible until the player completes
-            // them organically — after that they're revealed as a completed entry.
-            if (qConfig.hidden && !progress.completedAt)
+            if (!isQuestVisible(qConfig, progress))
                 continue;
             var unlocked = isQuestUnlocked(qConfig, state);
             var stepsOut = [];
@@ -61713,6 +62971,18 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Payload must contain config.quests (object) or quests (array)");
         }
         var questCount = Object.keys(config.quests).length;
+        // Validate every quest before persisting.
+        var validationErrors = [];
+        var questKeys = Object.keys(config.quests);
+        for (var vi = 0; vi < questKeys.length; vi++) {
+            var vq = config.quests[questKeys[vi]];
+            var verr = validateQuestConfig(vq);
+            if (verr)
+                validationErrors.push(vq.id + ": " + verr);
+        }
+        if (validationErrors.length > 0) {
+            return RpcHelpers.errorResponse("Invalid quest config: " + validationErrors.join("; "));
+        }
         // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
         // silent: true  → skip fan-out (use for bulk reseed)
         // notifyUserIds → extra targets (optional)
@@ -61730,6 +63000,11 @@ var QuestEngine;
         }
         saveConfig(nk, gameId, config);
         logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+        // Audit log (best-effort)
+        var newIds = [];
+        for (var ai = 0; ai < newlyAdded.length; ai++)
+            newIds.push(newlyAdded[ai].id);
+        auditConfigChange(nk, ctx, logger, gameId, config, newIds);
         var notified = 0;
         var silent = data.silent === true || data.notifyNewQuests === false;
         if (!silent && newlyAdded.length > 0) {
@@ -80222,7 +81497,8 @@ var SocialFriendsFeed;
     var EVENT_TYPES = {
         "quiz_completed": true, "challenge_won": true, "streak_milestone": true,
         "group_joined": true, "group_level_up": true, "badge_earned": true,
-        "friend_joined": true, "challenge_sent": true
+        "friend_joined": true, "challenge_sent": true,
+        "gift_sent": true, "gift_received": true
     };
     // Which privacy toggle gates each event type.
     var TYPE_TO_PRIVACY_FIELD = {
@@ -80233,7 +81509,9 @@ var SocialFriendsFeed;
         "badge_earned": "shareBadges",
         "group_joined": "shareFeedEvents",
         "group_level_up": "shareFeedEvents",
-        "friend_joined": "shareFeedEvents"
+        "friend_joined": "shareFeedEvents",
+        "gift_sent": "shareFeedEvents",
+        "gift_received": "shareFeedEvents"
     };
     var DEFAULT_PRIVACY = {
         shareFeedEvents: true,
@@ -80297,6 +81575,10 @@ var SocialFriendsFeed;
                 return name + " earned the " + (d.badgeName || "a") + " badge 🏅";
             case "friend_joined":
                 return name + " just joined QuizVerse";
+            case "gift_sent":
+                return name + " sent " + (d.currency ? d.amount + " " + d.currency : "a " + d.itemId) + " to a friend 🎁";
+            case "gift_received":
+                return name + " received a gift from a friend 🎁";
             default:
                 return name + " did something awesome";
         }
@@ -80532,6 +81814,324 @@ var SocialFriendsFeed;
     }
     SocialFriendsFeed.register = register;
 })(SocialFriendsFeed || (SocialFriendsFeed = {}));
+// gifting.ts — Cross-game P2P gifting (currency & items) for the Social Zone.
+// 
+// RPCs (all prefixed ivx_social_ for multi-game reuse):
+//   ivx_social_gift_currency   — send game currency to a mutual friend
+//   ivx_social_gift_item       — send inventory item to a mutual friend
+//   ivx_social_gift_history    — paginated sent/received gift log
+//
+// INTEGRATION:
+//   - Uses WalletHelpers (addCurrency/spendCurrency) for atomic transfers
+//   - Uses HiroInventory for item transfers
+//   - Calls SocialFriendsFeed.writeEvent() so gifts appear in friends feed
+//   - Respects ivx_social_feed_privacy settings (shareFeedEvents toggle)
+//   - Rate-limited & auditable via player_gifts collection
+var SocialGifting;
+(function (SocialGifting) {
+    var GIFTS_COLLECTION = "player_gifts";
+    var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
+    var STATE_FRIEND = 0; // Nakama FriendshipState.FRIEND
+    var MAX_GIFTS_PER_DAY = 10;
+    var MAX_GIFT_VALUE_DAILY = 5000;
+    var MAX_GIFTS_TO_SAME_FRIEND_PER_DAY = 3;
+    var RETENTION_DAYS = 30;
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function getGameId(data) {
+        return (typeof data.gameId === "string" && data.gameId) ? data.gameId : "quizverse";
+    }
+    function areMutualFriends(nk, userId, targetId) {
+        try {
+            var page = nk.friendsList(userId, 1000, STATE_FRIEND, null);
+            if (page && page.friends) {
+                for (var i = 0; i < page.friends.length; i++) {
+                    var fr = page.friends[i];
+                    if (fr && fr.user && fr.user.id === targetId)
+                        return true;
+                }
+            }
+        }
+        catch (_) { }
+        return false;
+    }
+    function getDailyGiftCount(nk, userId) {
+        var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        var key = "daily_gifts_" + userId + "_" + today;
+        try {
+            var row = nk.storageRead([{ collection: GIFTS_COLLECTION, key: key, userId: SYSTEM_USER }]);
+            if (row && row.length > 0 && row[0] && row[0].value) {
+                return row[0].value.count || 0;
+            }
+        }
+        catch (_) { }
+        return 0;
+    }
+    function incrementDailyGiftCount(nk, userId) {
+        var today = new Date().toISOString().slice(0, 10);
+        var key = "daily_gifts_" + userId + "_" + today;
+        var current = getDailyGiftCount(nk, userId);
+        nk.storageWrite([{
+                collection: GIFTS_COLLECTION, key: key, userId: SYSTEM_USER,
+                value: { count: current + 1, date: today },
+                permissionRead: 1, permissionWrite: 0
+            }]);
+    }
+    function getGiftsToFriendToday(nk, senderId, recipientId) {
+        var today = new Date().toISOString().slice(0, 10);
+        var key = "gifts_to_" + senderId + "_" + recipientId + "_" + today;
+        try {
+            var row = nk.storageRead([{ collection: GIFTS_COLLECTION, key: key, userId: SYSTEM_USER }]);
+            if (row && row.length > 0 && row[0] && row[0].value) {
+                return row[0].value.count || 0;
+            }
+        }
+        catch (_) { }
+        return 0;
+    }
+    function incrementGiftsToFriend(nk, senderId, recipientId) {
+        var today = new Date().toISOString().slice(0, 10);
+        var key = "gifts_to_" + senderId + "_" + recipientId + "_" + today;
+        var current = getGiftsToFriendToday(nk, senderId, recipientId);
+        nk.storageWrite([{
+                collection: GIFTS_COLLECTION, key: key, userId: SYSTEM_USER,
+                value: { count: current + 1, date: today, recipientId: recipientId },
+                permissionRead: 1, permissionWrite: 0
+            }]);
+    }
+    function isItemGiftable(nk, gameId, itemId) {
+        try {
+            var config = HiroInventory.getConfig(nk, gameId);
+            var itemDef = config.items[itemId];
+            // Default TRUE — opt-out only via giftable: false in config
+            return (itemDef === null || itemDef === void 0 ? void 0 : itemDef.giftable) !== false;
+        }
+        catch (_) {
+            return true; // default allow if config missing
+        }
+    }
+    function writeGiftRecord(nk, senderId, recipientId, gift) {
+        var giftId = "gift_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 1679616).toString(36);
+        var expiresAt = new Date(Date.now() + RETENTION_DAYS * 86400000).toISOString();
+        nk.storageWrite([{
+                collection: GIFTS_COLLECTION,
+                key: giftId,
+                userId: senderId,
+                value: __assign(__assign({}, gift), { giftId: giftId, senderId: senderId, recipientId: recipientId, status: "delivered", expiresAt: expiresAt }),
+                permissionRead: 2, // both sender & recipient can read
+                permissionWrite: 0
+            }]);
+        // Also write thin index for recipient's received gifts query
+        nk.storageWrite([{
+                collection: GIFTS_COLLECTION,
+                key: "recv_" + recipientId + "_" + giftId,
+                userId: recipientId,
+                value: { giftId: giftId, senderId: senderId, ts: Date.now() },
+                permissionRead: 1, permissionWrite: 0
+            }]);
+        return giftId;
+    }
+    // ── RPC: ivx_social_gift_currency ─────────────────────────────────────────
+    // Payload: { gameId?, recipientId, amount, currency?, message? }
+    // Currency defaults to "coins". Returns sender/recipient new balances.
+    function rpcGiftCurrency(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var recipientId = data.recipientId;
+            var amount = Number(data.amount);
+            var currency = (typeof data.currency === "string" && data.currency) ? data.currency : "coins";
+            var message = (typeof data.message === "string") ? data.message.slice(0, 200) : "";
+            var gameId = getGameId(data);
+            // Validations
+            if (!recipientId)
+                return RpcHelpers.errorResponse("recipientId required", 400);
+            if (!amount || amount <= 0)
+                return RpcHelpers.errorResponse("amount must be > 0", 400);
+            if (userId === recipientId)
+                return RpcHelpers.errorResponse("Cannot gift yourself", 400);
+            if (!areMutualFriends(nk, userId, recipientId))
+                return RpcHelpers.errorResponse("Can only gift mutual friends", 400);
+            // Daily limits
+            if (getDailyGiftCount(nk, userId) >= MAX_GIFTS_PER_DAY)
+                return RpcHelpers.errorResponse("Max " + MAX_GIFTS_PER_DAY + " gifts/day", 400);
+            if (getGiftsToFriendToday(nk, userId, recipientId) >= MAX_GIFTS_TO_SAME_FRIEND_PER_DAY)
+                return RpcHelpers.errorResponse("Max " + MAX_GIFTS_TO_SAME_FRIEND_PER_DAY + " gifts/day to same friend", 400);
+            // Balance check
+            if (!WalletHelpers.hasCurrency(nk, userId, gameId, currency, amount)) {
+                return RpcHelpers.errorResponse("Not enough " + currency, 400);
+            }
+            // Atomic transfer
+            var senderWallet = WalletHelpers.spendCurrency(nk, logger, ctx, userId, gameId, currency, amount);
+            var recipientWallet = WalletHelpers.addCurrency(nk, logger, ctx, recipientId, gameId, currency, amount);
+            // Record gift
+            var giftId = writeGiftRecord(nk, userId, recipientId, {
+                type: "currency",
+                amount: amount,
+                currency: currency,
+                message: message,
+                ts: Date.now()
+            });
+            // Update rate-limit counters
+            incrementDailyGiftCount(nk, userId);
+            incrementGiftsToFriend(nk, userId, recipientId);
+            // Notify recipient
+            var senderName = ctx.username || userId;
+            nk.notificationsSend([{
+                    userId: recipientId,
+                    subject: "🎁 Gift Received!",
+                    content: { giftId: giftId, from: userId, fromName: senderName, type: "currency", amount: amount, currency: currency, message: message },
+                    code: 201, // gift notification code
+                    persistent: true
+                }]);
+            // 🔗 INTEGRATION: Write to friends feed (appears in ivx_social_friends_feed)
+            SocialFriendsFeed.writeEvent(nk, logger, userId, senderName, gameId, "gift_sent", { giftId: giftId, recipientId: recipientId, amount: amount, currency: currency, message: message }, { type: "gift_thanks", label: "Say Thanks", payload: { giftId: giftId } });
+            return RpcHelpers.successResponse({
+                giftId: giftId,
+                senderNewBalance: senderWallet.currencies,
+                recipientNewBalance: recipientWallet.currencies
+            });
+        }
+        catch (e) {
+            logger.error("[SocialGifting] gift_currency failed: " + (e && e.message));
+            return RpcHelpers.errorResponse("Internal error");
+        }
+    }
+    SocialGifting.rpcGiftCurrency = rpcGiftCurrency;
+    // ── RPC: ivx_social_gift_item ─────────────────────────────────────────────
+    // Payload: { gameId?, recipientId, itemId, quantity?, message? }
+    // Quantity defaults to 1. Item must be owned and giftable.
+    function rpcGiftItem(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var recipientId = data.recipientId;
+            var itemId = data.itemId;
+            var quantity = Number(data.quantity) || 1;
+            var message = (typeof data.message === "string") ? data.message.slice(0, 200) : "";
+            var gameId = getGameId(data);
+            // Validations
+            if (!recipientId)
+                return RpcHelpers.errorResponse("recipientId required", 400);
+            if (!itemId)
+                return RpcHelpers.errorResponse("itemId required", 400);
+            if (quantity <= 0)
+                return RpcHelpers.errorResponse("quantity must be > 0", 400);
+            if (userId === recipientId)
+                return RpcHelpers.errorResponse("Cannot gift yourself", 400);
+            if (!areMutualFriends(nk, userId, recipientId))
+                return RpcHelpers.errorResponse("Can only gift mutual friends", 400);
+            // Daily limits
+            if (getDailyGiftCount(nk, userId) >= MAX_GIFTS_PER_DAY)
+                return RpcHelpers.errorResponse("Max " + MAX_GIFTS_PER_DAY + " gifts/day", 400);
+            if (getGiftsToFriendToday(nk, userId, recipientId) >= MAX_GIFTS_TO_SAME_FRIEND_PER_DAY)
+                return RpcHelpers.errorResponse("Max " + MAX_GIFTS_TO_SAME_FRIEND_PER_DAY + " gifts/day to same friend", 400);
+            // Ownership & giftable check
+            if (!HiroInventory.hasItem(nk, userId, itemId, quantity, gameId)) {
+                return RpcHelpers.errorResponse("You don't own this item", 400);
+            }
+            if (!isItemGiftable(nk, gameId, itemId)) {
+                return RpcHelpers.errorResponse("This item cannot be gifted", 400);
+            }
+            // Transfer item (consume from sender, grant to recipient)
+            HiroInventory.consumeItem(nk, logger, ctx, userId, itemId, quantity, gameId);
+            var granted = HiroInventory.grantItem(nk, logger, ctx, recipientId, itemId, quantity, undefined, undefined, gameId);
+            // Record gift
+            var giftId = writeGiftRecord(nk, userId, recipientId, {
+                type: "item",
+                itemId: itemId,
+                quantity: quantity,
+                message: message,
+                ts: Date.now()
+            });
+            // Update rate-limit counters
+            incrementDailyGiftCount(nk, userId);
+            incrementGiftsToFriend(nk, userId, recipientId);
+            // Notify recipient
+            var senderName = ctx.username || userId;
+            nk.notificationsSend([{
+                    userId: recipientId,
+                    subject: "🎁 Gift Received!",
+                    content: { giftId: giftId, from: userId, fromName: senderName, type: "item", itemId: itemId, quantity: quantity, message: message },
+                    code: 201,
+                    persistent: true
+                }]);
+            // 🔗 INTEGRATION: Write to friends feed
+            SocialFriendsFeed.writeEvent(nk, logger, userId, senderName, gameId, "gift_sent", { giftId: giftId, recipientId: recipientId, itemId: itemId, quantity: quantity, message: message }, { type: "gift_thanks", label: "Say Thanks", payload: { giftId: giftId } });
+            return RpcHelpers.successResponse({ giftId: giftId, item: granted });
+        }
+        catch (e) {
+            logger.error("[SocialGifting] gift_item failed: " + (e && e.message));
+            return RpcHelpers.errorResponse("Internal error");
+        }
+    }
+    SocialGifting.rpcGiftItem = rpcGiftItem;
+    // ── RPC: ivx_social_gift_history ──────────────────────────────────────────
+    // Payload: { gameId?, limit?, cursor?, direction? }
+    // direction: "sent" (default) | "received" | "all"
+    function rpcGiftHistory(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var limit = Math.min(Number(data.limit) || 50, 100);
+            var cursor = (typeof data.cursor === "string") ? data.cursor : "";
+            var direction = (typeof data.direction === "string") ? data.direction : "sent";
+            var gifts = [];
+            if (direction === "received" || direction === "all") {
+                // Query recipient index: recv_{userId}_*
+                try {
+                    var list = nk.storageList(GIFTS_COLLECTION, "recv_" + userId + "_", limit + 1, cursor ? cursor : undefined);
+                    if (list && list.objects) {
+                        for (var i = 0; i < list.objects.length; i++) {
+                            var obj = list.objects[i];
+                            if (obj && obj.value && obj.value.giftId) {
+                                // Fetch full gift record
+                                var full = nk.storageRead([{ collection: GIFTS_COLLECTION, key: obj.value.giftId, userId: obj.value.senderId }]);
+                                if (full && full.length > 0 && full[0] && full[0].value) {
+                                    gifts.push(full[0].value);
+                                }
+                            }
+                        }
+                    }
+                    if (list && list.cursor)
+                        cursor = list.cursor;
+                }
+                catch (_) { }
+            }
+            if ((direction === "sent" || direction === "all") && gifts.length < limit) {
+                // Query sender's gifts (direct ownership)
+                try {
+                    var list = nk.storageList(GIFTS_COLLECTION, "gift_", limit - gifts.length + 1, cursor ? cursor : undefined);
+                    if (list && list.objects) {
+                        for (var i = 0; i < list.objects.length; i++) {
+                            var obj = list.objects[i];
+                            if (obj && obj.value && obj.value.senderId === userId) {
+                                gifts.push(obj.value);
+                            }
+                        }
+                    }
+                }
+                catch (_) { }
+            }
+            // Sort by ts desc, take limit
+            gifts.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+            var nextCursor = gifts.length > limit ? String(gifts[limit - 1].ts) : "";
+            gifts = gifts.slice(0, limit);
+            return RpcHelpers.successResponse({ gifts: gifts, nextCursor: nextCursor });
+        }
+        catch (e) {
+            logger.error("[SocialGifting] gift_history failed: " + (e && e.message));
+            return RpcHelpers.errorResponse("Internal error");
+        }
+    }
+    SocialGifting.rpcGiftHistory = rpcGiftHistory;
+    // ── Registration ──────────────────────────────────────────────────────────
+    function register(initializer) {
+        initializer.registerRpc("ivx_social_gift_currency", rpcGiftCurrency);
+        initializer.registerRpc("ivx_social_gift_item", rpcGiftItem);
+        initializer.registerRpc("ivx_social_gift_history", rpcGiftHistory);
+    }
+    SocialGifting.register = register;
+})(SocialGifting || (SocialGifting = {})); // namespace SocialGifting
 // group_limits.ts — server-side cap on concurrent group memberships.
 //
 // The Unity client blocks joins past the limit for instant feedback

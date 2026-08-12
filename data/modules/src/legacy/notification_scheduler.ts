@@ -252,6 +252,10 @@ namespace LegacyNotifScheduler {
       var dueReview   = sharedDue(tasks, "review_due",            30);
       var dueFlushPush = sharedDue(tasks, "flush_pending_push",   30);
       var dueFlushChat = sharedDue(tasks, "flush_failed_chat_push", 3);
+      // NEW: Chess, Holiday, Board Game crons
+      var dueChessPuzzle  = sharedDue(tasks, "chess_daily_puzzle",   30);
+      var dueHoliday      = sharedDue(tasks, "holiday_event",       60);
+      var dueBoardGame    = sharedDue(tasks, "boardgame_weekly",    60);
 
       // CAS write first — only ONE pod wins the version conflict check.
       // Losers catch the version mismatch and skip all dispatches for this tick,
@@ -266,16 +270,20 @@ namespace LegacyNotifScheduler {
       }
 
       // Only the pod that won the CAS write reaches here.
-      if (dueDaily)    dispatchSafely("daily_quiz",          LegacyPush.runDailyQuizCron,          ctx, logger, nk);
-      if (duePremium)  dispatchSafely("premium_daily_quiz",  LegacyPush.runPremiumDailyQuizCron,   ctx, logger, nk);
-      if (dueWeekly)   dispatchSafely("weekly_quiz",         LegacyPush.runWeeklyQuizCron,    ctx, logger, nk);
-      if (dueWinback)  dispatchSafely("idle_winback",        LegacyPush.runIdleWinbackCron,   ctx, logger, nk);
-      if (dueStreak)   dispatchSafely("streak_warning",      LegacyPush.runStreakWarningCron, ctx, logger, nk);
-      if (dueMotiv)    dispatchSafely("motivation",          LegacyPush.runMotivationCron,    ctx, logger, nk);
-      if (dueRemind)   dispatchSafely("reminders",           LegacyPush.runRemindersCron,     ctx, logger, nk);
-      if (dueReview)   dispatchSafely("review_due",          LegacyPush.runReviewCron,        ctx, logger, nk);
-      if (dueFlushPush) { try { LegacyPush.flushPendingRegistrations(ctx, logger, nk); } catch (_) {} }
-      if (dueFlushChat) { try { LegacyChat.flushFailedChatPushes(ctx, logger, nk); } catch (_) {} }
+           if (dueDaily)    dispatchSafely("daily_quiz",          LegacyPush.runDailyQuizCron,          ctx, logger, nk);
+           if (duePremium)  dispatchSafely("premium_daily_quiz",  LegacyPush.runPremiumDailyQuizCron,   ctx, logger, nk);
+           if (dueWeekly)   dispatchSafely("weekly_quiz",         LegacyPush.runWeeklyQuizCron,         ctx, logger, nk);
+           if (dueWinback)  dispatchSafely("idle_winback",        LegacyPush.runIdleWinbackCron,        ctx, logger, nk);
+           if (dueStreak)   dispatchSafely("streak_warning",      LegacyPush.runStreakWarningCron,      ctx, logger, nk);
+           if (dueMotiv)    dispatchSafely("motivation",          LegacyPush.runMotivationCron,         ctx, logger, nk);
+           if (dueRemind)   dispatchSafely("reminders",           LegacyPush.runRemindersCron,          ctx, logger, nk);
+           if (dueReview)   dispatchSafely("review_due",          LegacyPush.runReviewCron,             ctx, logger, nk);
+           if (dueFlushPush) { try { LegacyPush.flushPendingRegistrations(ctx, logger, nk); } catch (_) {} }
+           if (dueFlushChat) { try { LegacyChat.flushFailedChatPushes(ctx, logger, nk); } catch (_) {} }
+           // NEW: Chess, Holiday, Board Game cron dispatches
+           if (dueChessPuzzle) dispatchSafely("chess_daily_puzzle", LegacyPush.runChessDailyPuzzleCron, ctx, logger, nk);
+           if (dueHoliday)     dispatchSafely("holiday_event",      LegacyPush.runHolidayEventCron,     ctx, logger, nk);
+           if (dueBoardGame)   dispatchSafely("boardgame_weekly",   LegacyPush.runBoardGameWeeklyCron,  ctx, logger, nk);
     }
 
     var m = nowMinute();
