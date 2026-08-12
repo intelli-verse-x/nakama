@@ -34965,18 +34965,25 @@ var QuizverseMerge;
     // this much of any one currency. Genuine guests never approach it.
     var MAX_MERGE_PER_CURRENCY = 100000;
     // Copy-if-absent collections (destination's own state always wins).
-    var PORT_COLLECTIONS = [
-        Constants.HIRO_PROGRESSION_COLLECTION,
-        Constants.HIRO_STREAKS_COLLECTION,
-        Constants.HIRO_STATS_COLLECTION,
-        Constants.HIRO_INVENTORY_COLLECTION,
-        Constants.HIRO_ACHIEVEMENTS_COLLECTION,
-        Constants.DAILY_REWARDS_COLLECTION,
-        "qv_seen",
-        "qv_quests",
-        "badges",
-        "characters",
-    ];
+    // Lazy on purpose: must NOT read Constants.* at module load time. In the
+    // Goja runtime bundle, QuizverseMerge's IIFE currently evaluates before the
+    // Constants namespace is initialized — a top-level array of Constants.FOO
+    // throws "Cannot read property 'HIRO_PROGRESSION_COLLECTION' of undefined"
+    // and kills the entire JS runtime (nakama_js_health 404 / deploy smoke fail).
+    function portCollections() {
+        return [
+            Constants.HIRO_PROGRESSION_COLLECTION,
+            Constants.HIRO_STREAKS_COLLECTION,
+            Constants.HIRO_STATS_COLLECTION,
+            Constants.HIRO_INVENTORY_COLLECTION,
+            Constants.HIRO_ACHIEVEMENTS_COLLECTION,
+            Constants.DAILY_REWARDS_COLLECTION,
+            "qv_seen",
+            "qv_quests",
+            "badges",
+            "characters",
+        ];
+    }
     function isServiceCaller(ctx, payload) {
         var token = payload && payload.service_token;
         if (!token)
@@ -35174,8 +35181,9 @@ var QuizverseMerge;
             // Execute: wallets sum-merged (capped), game state copy-if-absent.
             var movedCurrencies = mergeWallets(nk, ghostUserId, cognitoUserId);
             var ported = {};
-            for (var i = 0; i < PORT_COLLECTIONS.length; i++) {
-                ported[PORT_COLLECTIONS[i]] = portCollection(nk, PORT_COLLECTIONS[i], ghostUserId, cognitoUserId);
+            var collections = portCollections();
+            for (var i = 0; i < collections.length; i++) {
+                ported[collections[i]] = portCollection(nk, collections[i], ghostUserId, cognitoUserId);
             }
             var summary = {
                 ghost_user_id: ghostUserId,
@@ -65142,6 +65150,9 @@ var RouterWallet;
     // Ref index for credit idempotency: one object per (appId, ref), created
     // conditionally ("*") so replays and races can never double-credit.
     RouterWallet.CREDIT_REFS_COLLECTION = "router_wallet_credit_refs";
+    // Ref index for debit idempotency: one object per (appId, ref), so a retried
+    // meter (same requestId / Idempotency-Key) never double-charges.
+    RouterWallet.DEBIT_REFS_COLLECTION = "router_wallet_debit_refs";
     RouterWallet.MAX_OCC_RETRIES = 3;
     RouterWallet.CREDIT_KINDS = [
         // Unified currency (docs/business/credit-system.md): every SKU — LLM,
@@ -65256,16 +65267,19 @@ var RouterWallet;
     function creditRefKey(appId, ref) {
         return "ref_" + appId + "_" + ref;
     }
+    function debitRefKey(appId, ref) {
+        return "ref_" + appId + "_" + ref;
+    }
     /**
-     * Claim a credit ref via conditional create ("*"). Returns true when this
-     * call owns the ref; false when a credit with the same (appId, ref) already
-     * went through (replayed webhook, retried grant job, double-fired cron).
+     * Claim a (collection, appId, ref) marker via conditional create ("*").
+     * Returns true when this call owns the ref; false when the same key already
+     * exists (replay / race).
      */
-    function claimCreditRef(nk, appId, ref, meta) {
+    function claimRef(nk, collection, key, meta) {
         try {
             nk.storageWrite([{
-                    collection: RouterWallet.CREDIT_REFS_COLLECTION,
-                    key: creditRefKey(appId, ref),
+                    collection: collection,
+                    key: key,
                     userId: RouterWallet.SYSTEM_USER_ID,
                     value: meta,
                     version: "*",
@@ -65278,13 +65292,39 @@ var RouterWallet;
             return false; // conditional create failed: ref already claimed
         }
     }
-    function releaseCreditRef(nk, appId, ref) {
+    function releaseRef(nk, collection, key) {
         try {
-            nk.storageDelete([{ collection: RouterWallet.CREDIT_REFS_COLLECTION, key: creditRefKey(appId, ref), userId: RouterWallet.SYSTEM_USER_ID }]);
+            nk.storageDelete([{ collection: collection, key: key, userId: RouterWallet.SYSTEM_USER_ID }]);
         }
         catch (e) {
-            // best-effort rollback; a stuck marker only blocks re-crediting this ref
+            // best-effort rollback; a stuck marker only blocks replaying this ref
         }
+    }
+    /**
+     * Claim a credit ref via conditional create ("*"). Returns true when this
+     * call owns the ref; false when a credit with the same (appId, ref) already
+     * went through (replayed webhook, retried grant job, double-fired cron).
+     */
+    function claimCreditRef(nk, appId, ref, meta) {
+        return claimRef(nk, RouterWallet.CREDIT_REFS_COLLECTION, creditRefKey(appId, ref), meta);
+    }
+    function releaseCreditRef(nk, appId, ref) {
+        releaseRef(nk, RouterWallet.CREDIT_REFS_COLLECTION, creditRefKey(appId, ref));
+    }
+    function claimDebitRef(nk, appId, ref, meta) {
+        return claimRef(nk, RouterWallet.DEBIT_REFS_COLLECTION, debitRefKey(appId, ref), meta);
+    }
+    function releaseDebitRef(nk, appId, ref) {
+        releaseRef(nk, RouterWallet.DEBIT_REFS_COLLECTION, debitRefKey(appId, ref));
+    }
+    /** Optional overdraft floor (edge passes tier floor, e.g. Pro = -4500). Default 0. */
+    function parseOverdraftFloor(raw) {
+        if (raw === undefined || raw === null || raw === "")
+            return 0;
+        var n = Number(raw);
+        if (!isFinite(n))
+            throw new Error("overdraftFloor must be a finite number");
+        return n;
     }
     function ledgerKey(appId) {
         var random = Math.floor(Math.random() * 0xffffff).toString(16);
@@ -65401,20 +65441,54 @@ var RouterWallet;
                 return err("reason required");
             validateKind(data.kind);
             var amount = validateAmount(data.amount);
-            var wallet = mutateWallet(nk, data.appId, false, "", function (w) {
-                var available = availableBalance(w, data.kind);
-                if (available < amount) {
-                    throw new Error("Insufficient " + data.kind + ": available " + available + ", need " + amount);
+            var overdraftFloor = parseOverdraftFloor(data.overdraftFloor);
+            // Ref-based idempotency: edge meters with ref=requestId / Idempotency-Key.
+            // Claim BEFORE mutate so a concurrent replay loses the conditional create
+            // and returns the already-debited wallet instead of charging twice.
+            var ref = data.ref || null;
+            if (ref) {
+                var claimed = claimDebitRef(nk, data.appId, ref, {
+                    appId: data.appId,
+                    kind: data.kind,
+                    amount: amount,
+                    reason: data.reason,
+                    overdraftFloor: overdraftFloor,
+                    createdAt: new Date().toISOString()
+                });
+                if (!claimed) {
+                    var existing = readWallet(nk, data.appId);
+                    var view = walletView(existing.wallet || emptyWallet(data.appId, ""));
+                    return ok({ appId: view.appId, workspaceId: view.workspaceId, currencies: view.currencies, holds: view.holds, available: view.available, version: view.version, deduped: true });
                 }
-                w.currencies[data.kind] = (w.currencies[data.kind] || 0) - amount;
-            });
+            }
+            var wallet;
+            try {
+                wallet = mutateWallet(nk, data.appId, false, "", function (w) {
+                    var available = availableBalance(w, data.kind);
+                    var after = available - amount;
+                    // Default floor 0 preserves "never negative available". Paid tiers
+                    // pass a negative overdraftFloor so a small residual balance can still
+                    // be billed into the plan overdraft window (edge memory/LLM metering).
+                    if (after < overdraftFloor) {
+                        throw new Error("Insufficient " + data.kind + ": available " + available + ", need " + amount +
+                            (overdraftFloor !== 0 ? " (overdraft floor " + overdraftFloor + ")" : ""));
+                    }
+                    w.currencies[data.kind] = (w.currencies[data.kind] || 0) - amount;
+                });
+            }
+            catch (mutateError) {
+                // Debit never applied — release the ref so a retry can succeed.
+                if (ref)
+                    releaseDebitRef(nk, data.appId, ref);
+                throw mutateError;
+            }
             writeLedger(nk, {
                 appId: data.appId,
                 kind: data.kind,
                 delta: -amount,
                 balanceAfter: wallet.currencies[data.kind],
                 reason: data.reason,
-                ref: data.ref || null,
+                ref: ref,
                 createdAt: new Date().toISOString()
             });
             return ok(walletView(wallet));
@@ -65496,6 +65570,111 @@ var RouterWallet;
         }
     }
     RouterWallet.rpcSettle = rpcSettle;
+    /**
+     * Move credits between two app wallets owned by the same customer
+     * (credit-system.md §5: monthly grants land in the user's PRIMARY app
+     * wallet; transfers let users re-shard credits across their apps).
+     *
+     * Not a distributed transaction: debit-then-credit with a compensating
+     * re-credit if the destination write fails. Ref idempotency is claimed on
+     * the DESTINATION app ("xfer_<ref>") before any mutation, same convention
+     * as rpcCredit, so replays never double-move.
+     */
+    function rpcTransfer(ctx, logger, nk, payload) {
+        try {
+            requireServerToServer(ctx);
+            var data = parsePayload(payload);
+            if (!data.fromAppId)
+                return err("fromAppId required");
+            if (!data.toAppId)
+                return err("toAppId required");
+            if (data.fromAppId === data.toAppId)
+                return err("fromAppId and toAppId must differ");
+            if (!data.reason)
+                return err("reason required");
+            validateKind(data.kind);
+            var amount = validateAmount(data.amount);
+            var ref = data.ref || null;
+            if (ref) {
+                var claimed = claimCreditRef(nk, data.toAppId, "xfer_" + ref, {
+                    fromAppId: data.fromAppId,
+                    toAppId: data.toAppId,
+                    kind: data.kind,
+                    amount: amount,
+                    reason: data.reason,
+                    createdAt: new Date().toISOString()
+                });
+                if (!claimed) {
+                    var fromRead = readWallet(nk, data.fromAppId);
+                    var toRead = readWallet(nk, data.toAppId);
+                    return ok({
+                        deduped: true,
+                        from: walletView(fromRead.wallet || emptyWallet(data.fromAppId, "")),
+                        to: walletView(toRead.wallet || emptyWallet(data.toAppId, ""))
+                    });
+                }
+            }
+            var fromWallet;
+            try {
+                fromWallet = mutateWallet(nk, data.fromAppId, false, "", function (w) {
+                    var available = availableBalance(w, data.kind);
+                    if (available < amount) {
+                        throw new Error("Insufficient " + data.kind + ": available " + available + ", need " + amount);
+                    }
+                    w.currencies[data.kind] = (w.currencies[data.kind] || 0) - amount;
+                });
+            }
+            catch (debitError) {
+                if (ref)
+                    releaseCreditRef(nk, data.toAppId, "xfer_" + ref);
+                throw debitError;
+            }
+            var toWallet;
+            try {
+                toWallet = mutateWallet(nk, data.toAppId, true, data.workspaceId || "", function (w) {
+                    w.currencies[data.kind] = (w.currencies[data.kind] || 0) + amount;
+                });
+            }
+            catch (creditError) {
+                // Compensate the source (best-effort) so credits are never destroyed.
+                try {
+                    mutateWallet(nk, data.fromAppId, false, "", function (w) {
+                        w.currencies[data.kind] = (w.currencies[data.kind] || 0) + amount;
+                    });
+                }
+                catch (compensateError) {
+                    // Both writes failing leaves the debit applied; the ledger below is
+                    // never written, so the discrepancy is auditable from wallet history.
+                }
+                if (ref)
+                    releaseCreditRef(nk, data.toAppId, "xfer_" + ref);
+                throw creditError;
+            }
+            writeLedger(nk, {
+                appId: data.fromAppId,
+                kind: data.kind,
+                delta: -amount,
+                balanceAfter: fromWallet.currencies[data.kind],
+                reason: data.reason,
+                ref: ref,
+                createdAt: new Date().toISOString()
+            });
+            writeLedger(nk, {
+                appId: data.toAppId,
+                kind: data.kind,
+                delta: amount,
+                balanceAfter: toWallet.currencies[data.kind],
+                reason: data.reason,
+                ref: ref,
+                createdAt: new Date().toISOString()
+            });
+            return ok({ from: walletView(fromWallet), to: walletView(toWallet) });
+        }
+        catch (e) {
+            return err(e.message || "router_wallet_transfer failed");
+        }
+    }
+    RouterWallet.rpcTransfer = rpcTransfer;
     function rpcHistory(ctx, logger, nk, payload) {
         try {
             requireServerToServer(ctx);
@@ -65540,6 +65719,7 @@ var RouterWallet;
         initializer.registerRpc("router_wallet_debit", rpcDebit);
         initializer.registerRpc("router_wallet_hold", rpcHold);
         initializer.registerRpc("router_wallet_settle", rpcSettle);
+        initializer.registerRpc("router_wallet_transfer", rpcTransfer);
         initializer.registerRpc("router_wallet_history", rpcHistory);
     }
     RouterWallet.register = register;

@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuizVerse Quest System - Complete Flow Demo</title>
+  <title>QuizVerse Quest System — Interactive Flow Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; }
-    .flow-arrow { position: relative; }
-    .flow-arrow::after { content: '→'; position: absolute; right: -20px; top: 50%; transform: translateY(-50%); color: #64748b; font-weight: bold; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
     .pulse-dot { animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .step-card { transition: all 0.3s ease; }
     .step-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-    .code-block { background: #0f172a; color: #e2e8f0; font-family: 'Monaco', 'Menlo', monospace; }
+    .code-block { background: #0f172a; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
+    .code-block code { font-family: 'JetBrains Mono', monospace; }
     .badge { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
     .badge-green { @apply bg-emerald-100 text-emerald-700; }
     .badge-blue { @apply bg-sky-100 text-sky-700; }
@@ -22,13 +22,46 @@
     .badge-amber { @apply bg-amber-100 text-amber-700; }
     .badge-rose { @apply bg-rose-100 text-rose-700; }
     .badge-gray { @apply bg-gray-100 text-gray-700; }
+    
+    /* Flow simulator */
+    .flow-node { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .flow-node.active { transform: scale(1.02); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+    .flow-node.completed { border-color: #10b981; background: #ecfdf5; }
+    .flow-arrow-anim { stroke-dasharray: 8; animation: dash 1s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset: -16; } }
+    .packet { offset-path: path('M0,0 L200,0'); animation: movePacket 1.5s ease-in-out forwards; }
+    @keyframes movePacket { 0% { offset-distance: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+    
+    /* Tab system */
+    .tab-btn { @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors; }
+    .tab-btn.active { @apply bg-slate-900 text-white; }
+    .tab-btn:not(.active) { @apply text-slate-600 hover:bg-slate-100; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Interactive builder */
+    .builder-row { @apply flex items-center gap-2 mb-2; }
+    .builder-input { @apply flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none; }
+    .builder-number { @apply w-24 px-3 py-1.5 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none; }
+    
+    /* Progress bar */
+    .progress-fill { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    /* Toast */
+    .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
   </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
   <!-- Navigation -->
   <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-xl font-bold text-slate-900">Quest System Flow Demo</h1>
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-bold text-slate-900">Quest System Flow Demo</h1>
+        <span class="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full font-medium">Interactive</span>
+      </div>
       <div class="flex items-center gap-4 text-sm text-slate-600">
         <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live</span>
         <span>QuizVerse v1.0</span>
@@ -41,9 +74,9 @@
       
       <!-- Hero Section -->
       <section class="text-center py-12">
-        <h2 class="text-4xl font-bold text-slate-900 mb-4">Complete Quest System Architecture</h2>
+        <h2 class="text-4xl font-bold text-slate-900 mb-4">Interactive Quest System Architecture</h2>
         <p class="text-xl text-slate-600 max-w-3xl mx-auto">
-          End-to-end flow: Admin Config → Nakama Quest Engine → Unity Client → Reward Granting → Delivery
+          Click through the live simulator below to see exactly how Admin Config → Nakama Quest Engine → Unity Client → Reward Granting works end-to-end.
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-4 text-sm">
           <span class="badge badge-green">Quest Engine</span>
@@ -54,15 +87,298 @@
         </div>
       </section>
 
-      <!-- Complete Flow Diagram -->
+      <!-- INTERACTIVE FLOW SIMULATOR -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-200 bg-slate-50/50">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h3 class="text-2xl font-bold text-slate-900">🚀 Live Quest Flow Simulator</h3>
+              <p class="text-slate-600 mt-1">Click <strong>Next Step</strong> to watch a quest move from admin creation to player reward.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="resetSimBtn" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">Reset</button>
+              <button id="nextStepBtn" class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Next Step →</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <!-- Progress indicator -->
+          <div class="mb-8">
+            <div class="flex justify-between text-xs font-medium text-slate-500 mb-2">
+              <span id="stepLabel1">Admin Config</span>
+              <span id="stepLabel2">Client Load</span>
+              <span id="stepLabel3">Record Event</span>
+              <span id="stepLabel4">Grant Reward</span>
+              <span id="stepLabel5">Deliver</span>
+              <span id="stepLabel6">Claim</span>
+            </div>
+            <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div id="simProgress" class="progress-fill h-full bg-gradient-to-r from-blue-500 to-emerald-500 w-0"></div>
+            </div>
+          </div>
+          
+          <!-- Flow nodes -->
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8" id="flowNodes">
+            <div class="flow-node border-2 border-slate-200 rounded-xl p-4 text-center bg-white" data-step="1">
+              <div class="w-10 h-10 mx-auto rounded-full bg-emerald-100 flex items-center justify-center mb-2">
+                <span class="text-lg">📝</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-900">Admin</div>
+              <div class="text-[10px] text-slate-500 mt-1">save_config</div>
+            </div>
+            <div class="flow-node border-2 border-slate-200 rounded-xl p-4 text-center bg-white" data-step="2">
+              <div class="w-10 h-10 mx-auto rounded-full bg-sky-100 flex items-center justify-center mb-2">
+                <span class="text-lg">📱</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-900">Unity</div>
+              <div class="text-[10px] text-slate-500 mt-1">quest_engine_get</div>
+            </div>
+            <div class="flow-node border-2 border-slate-200 rounded-xl p-4 text-center bg-white" data-step="3">
+              <div class="w-10 h-10 mx-auto rounded-full bg-violet-100 flex items-center justify-center mb-2">
+                <span class="text-lg">⚡</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-900">Gameplay</div>
+              <div class="text-[10px] text-slate-500 mt-1">record_event</div>
+            </div>
+            <div class="flow-node border-2 border-slate-200 rounded-xl p-4 text-center bg-white" data-step="4">
+              <div class="w-10 h-10 mx-auto rounded-full bg-amber-100 flex items-center justify-center mb-2">
+                <span class="text-lg">🎁</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-900">Reward</div>
+              <div class="text-[10px] text-slate-500 mt-1">grantReward()</div>
+            </div>
+            <div class="flow-node border-2 border-slate-200 rounded-xl p-4 text-center bg-white" data-step="5">
+              <div class="w-10 h-10 mx-auto rounded-full bg-fuchsia-100 flex items-center justify-center mb-2">
+                <span class="text-lg">📧</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-900">Delivery</div>
+              <div class="text-[10px] text-slate-500 mt-1">notify + email</div>
+            </div>
+            <div class="flow-node border-2 border-slate-200 rounded-xl p-4 text-center bg-white" data-step="6">
+              <div class="w-10 h-10 mx-auto rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                <span class="text-lg">✅</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-900">Claim</div>
+              <div class="text-[10px] text-slate-500 mt-1">claim_reward</div>
+            </div>
+          </div>
+          
+          <!-- Live details panel -->
+          <div class="grid lg:grid-cols-2 gap-6">
+            <div class="bg-slate-900 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  Live RPC / Data Flow
+                </h4>
+                <span id="simStepBadge" class="text-xs px-2 py-1 bg-slate-700 text-slate-300 rounded">Step 0/6</span>
+              </div>
+              <pre id="simDetailCode" class="mono text-xs text-emerald-300 overflow-x-auto whitespace-pre-wrap min-h-[160px]">Click "Next Step" to begin the simulation...
+
+Scenario: "Weekly Gift Card Hunter" quest
+- Win 10 quizzes to earn 1000 coins + $25 Amazon voucher</pre>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+              <h4 class="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                Player State
+              </h4>
+              <div class="space-y-3" id="playerStatePanel">
+                <div>
+                  <div class="flex justify-between text-xs text-slate-500 mb-1"><span>Quiz Wins</span><span id="winsText">0 / 10</span></div>
+                  <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="winsBar" class="progress-fill h-full bg-blue-500 w-0"></div></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div class="bg-slate-50 rounded-lg p-3">
+                    <div class="text-xs text-slate-500">Game Coins</div>
+                    <div class="font-semibold text-slate-900" id="coinText">0</div>
+                  </div>
+                  <div class="bg-slate-50 rounded-lg p-3">
+                    <div class="text-xs text-slate-500">Gift Card</div>
+                    <div class="font-semibold text-slate-900" id="giftText">—</div>
+                  </div>
+                </div>
+                <div class="text-xs text-slate-500 bg-slate-50 rounded-lg p-3" id="statusText">Quest not started yet.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERACTIVE QUEST CONFIG BUILDER -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-200 bg-slate-50/50">
+          <h3 class="text-2xl font-bold text-slate-900">🔧 Interactive Quest Config Builder</h3>
+          <p class="text-slate-600 mt-1">Build a quest below and watch the exact admin JSON and RPC payload update live.</p>
+        </div>
+        
+        <div class="p-6 grid lg:grid-cols-2 gap-8">
+          <!-- Builder form -->
+          <div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Quest ID</label>
+                <input type="text" id="qbId" class="builder-input" value="bucket_free_skin">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                <input type="text" id="qbName" class="builder-input" value="Unlock Legendary Skin">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                  <select id="qbCategory" class="builder-input">
+                    <option value="bucket">bucket</option>
+                    <option value="daily">daily</option>
+                    <option value="weekly">weekly</option>
+                    <option value="monthly">monthly</option>
+                    <option value="friend">friend</option>
+                    <option value="onboarding">onboarding</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Required Wins</label>
+                  <input type="number" id="qbRequired" class="builder-number" value="5" min="1">
+                </div>
+              </div>
+              
+              <div class="flex flex-wrap gap-3">
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" id="qbEnabled" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                  Enabled
+                </label>
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" id="qbOptIn" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                  Requires Opt-In
+                </label>
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" id="qbRepeat" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                  Repeatable
+                </label>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Reward</label>
+                <div class="space-y-2">
+                  <div class="builder-row">
+                    <span class="text-sm text-slate-600 w-16">Coins</span>
+                    <input type="number" id="qbCoins" class="builder-number" value="500">
+                  </div>
+                  <div class="builder-row">
+                    <span class="text-sm text-slate-600 w-16">XP</span>
+                    <input type="number" id="qbXp" class="builder-number" value="250">
+                  </div>
+                  <div class="builder-row">
+                    <span class="text-sm text-slate-600 w-16">Item</span>
+                    <input type="text" id="qbItemKey" class="builder-input" value="skin_legendary_dragon" placeholder="item_id">
+                    <input type="number" id="qbItemQty" class="builder-number" value="1" min="0">
+                  </div>
+                  <div class="builder-row">
+                    <span class="text-sm text-slate-600 w-16">Gift</span>
+                    <select id="qbGiftType" class="builder-input">
+                      <option value="digital">digital</option>
+                      <option value="voucher">voucher</option>
+                      <option value="physical">physical</option>
+                      <option value="merch">merch</option>
+                    </select>
+                    <input type="text" id="qbGiftName" class="builder-input" value="Dragon Skin 3D Model" placeholder="name">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Live JSON preview -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-sm font-semibold text-slate-900">Live Admin RPC Payload</h4>
+              <button id="copyPayloadBtn" class="text-xs px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">Copy</button>
+            </div>
+            <pre id="builderJson" class="code-block text-xs p-4 rounded-xl h-[420px] overflow-auto"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUCKET QUEST DEMO -->
+      <section class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-8">
+        <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">🪣 Bucket Quest Demo: Choose Your Reward</h3>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+          <div>
+            <p class="text-slate-300 mb-4">This simulates the "quest bucket" use case: many quests available, player selects up to <strong>maxConcurrent</strong> at once.</p>
+            
+            <div class="space-y-3 mb-6" id="bucketList">
+              <div class="bucket-card bg-slate-800/50 border border-slate-600 rounded-xl p-4 cursor-pointer hover:bg-slate-700/50 transition-colors" data-quest="skin" data-progress="0" data-required="5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">🐉 Unlock Legendary Skin</div>
+                    <div class="text-xs text-slate-400 mt-1">Win 5 quizzes • Reward: 500 coins + Dragon Skin</div>
+                  </div>
+                  <button class="opt-in-btn px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 rounded-md transition-colors" onclick="toggleBucket(this)">Start Quest</button>
+                </div>
+                <div class="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="bucket-progress progress-fill h-full bg-emerald-500 w-0"></div></div>
+              </div>
+              
+              <div class="bucket-card bg-slate-800/50 border border-slate-600 rounded-xl p-4 cursor-pointer hover:bg-slate-700/50 transition-colors" data-quest="giftcard" data-progress="0" data-required="10">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">🎁 Earn $10 Gift Card</div>
+                    <div class="text-xs text-slate-400 mt-1">Win 10 quizzes • Reward: $10 Amazon voucher</div>
+                  </div>
+                  <button class="opt-in-btn px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 rounded-md transition-colors" onclick="toggleBucket(this)">Start Quest</button>
+                </div>
+                <div class="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="bucket-progress progress-fill h-full bg-emerald-500 w-0"></div></div>
+              </div>
+              
+              <div class="bucket-card bg-slate-800/50 border border-slate-600 rounded-xl p-4 cursor-pointer hover:bg-slate-700/50 transition-colors" data-quest="badge" data-progress="0" data-required="3">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold">🥈 Champion Badge</div>
+                    <div class="text-xs text-slate-400 mt-1">Win 3 perfect quizzes • Reward: Exclusive badge</div>
+                  </div>
+                  <button class="opt-in-btn px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 rounded-md transition-colors" onclick="toggleBucket(this)">Start Quest</button>
+                </div>
+                <div class="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="bucket-progress progress-fill h-full bg-emerald-500 w-0"></div></div>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <button id="playMatchBtn" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>Win a Quiz (+1 progress)</button>
+              <div class="text-sm text-slate-400"><span id="activeCount">0</span> / 2 active quests</div>
+            </div>
+          </div>
+          
+          <div>
+            <h4 class="text-lg font-semibold mb-4 text-amber-300">How the bucket works</h4>
+            <div class="space-y-3 text-sm bg-slate-800/50 rounded-xl p-4">
+              <p><strong>1. Admin creates 50+ quests</strong> in <code class="bg-slate-700 px-1 rounded">qv_quest_config</code> with category="bucket"</p>
+              <p><strong>2. Player sees available quests</strong> — <code class="bg-slate-700 px-1 rounded">quest_engine_get</code> returns unlocked bucket quests</p>
+              <p><strong>3. Player chooses up to maxConcurrent</strong> — UI shows quest cards, player taps "Start Quest" (requiresOptIn=true)</p>
+              <p><strong>4. Progress tracked server-side</strong> — <code class="bg-slate-700 px-1 rounded">RecordEvent("bucket_progress", 1, { questId: "chosen_quest" })</code></p>
+              <p><strong>5. On completion → Free Product</strong> — Gift reward with type="voucher" or type="digital"</p>
+            </div>
+            <div class="mt-4 p-4 bg-amber-900/30 rounded-xl border border-amber-800">
+              <div class="text-sm text-amber-100 font-medium mb-2">Server-side filter example:</div>
+              <pre class="code-block text-xs p-3 rounded">// Only increments if filterField matches
+if (step.filterField && step.filterValue) {
+  if (metadata[step.filterField] !== step.filterValue) return;
+}
+state.count += value;</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Complete Flow Diagram (static reference) -->
       <section>
-        <h3 class="text-2xl font-bold text-slate-900 mb-6">📋 Complete Data Flow (What → Where → How → When)</h3>
+        <h3 class="text-2xl font-bold text-slate-900 mb-6">📋 Complete Data Flow Reference</h3>
         <div class="space-y-4">
           
           <!-- Step 1: Admin Config -->
           <div class="step-card bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
             <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+              <span class="text-2xl">📝</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -70,46 +386,28 @@
                 <span class="badge badge-green">Admin Dashboard</span>
                 <span class="badge badge-blue">quest_engine_admin_save_config</span>
               </div>
-              <p class="text-slate-600 mb-3">Admin uses the new <strong>Configuration → Quest Engine</strong> page to configure quests with full reward support, validation, audit logging, and bucket opt-in.</p>
+              <p class="text-slate-600 mb-3">Admin uses <strong>Configuration → Quest Engine</strong> page. Config is validated server-side and an audit log is written.</p>
               
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">Quest Config:</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{
-  "gameId": "126bf539-dae2-4bcf-964d-316c0fa1f92b",
-  "config": {
-    "quests": {
-      "qv_weekly_giftcard": {
-        "id": "qv_weekly_giftcard",
-        "name": "Weekly Gift Card Hunter",
-        "category": "weekly",
-        "repeatable": true,
-        "steps": [{ "id": "s1", "eventType": "quiz_win", "requiredCount": 10 }],
-        "reward": {
-          "guaranteed": {
-            "currencies": { "game": 1000, "xp": 500 },
-            "items": { "badge_weekly_champion": 1 },
-            "gifts": [{ "id": "amazon_25", "type": "voucher", "value": "25", "name": "$25 Amazon" }]
-          }
-        }
-      }
-    }
-  }
-}</code></pre>
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{"gameId":"126bf539-dae2-4bcf-964d-316c0fa1f92b","config":{"quests":{"qv_weekly_giftcard":{"id":"qv_weekly_giftcard","name":"Weekly Gift Card Hunter","category":"weekly","enabled":true,"requiresOptIn":false,"maxConcurrent":1,"repeatable":true,"steps":[{"id":"s1","eventType":"quiz_win","requiredCount":10,"filterField":"","filterValue":""}],"reward":{"guaranteed":{"currencies":{"game":1000,"xp":500},"items":{"badge_weekly_champion":1},"gifts":[{"id":"amazon_25","type":"voucher","value":"25","name":"$25 Amazon","deliverEmail":true}]}}}}}}</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">RPC Called:</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>quest_engine_admin_save_config
-POST /v2/rpc/quest_engine_admin_save_config
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>POST /v2/rpc/quest_engine_admin_save_config
 Auth: Server Key (http_key)
-Payload: { gameId, config: { quests: {...} } }</code></pre>
+Body: { gameId, config }</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
-                  <strong class="text-slate-900">Storage Written:</strong>
+                  <strong class="text-slate-900">Storage + Audit:</strong>
                   <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>Collection: qv_quest_config
-Key: 126bf539-dae2-4bcf-964d-316c0fa1f92b
+Key: {gameId}
 Owner: SYSTEM_USER
-Permission: Read=Public, Write=ServerOnly</code></pre>
+
+Collection: qv_quest_config_audit
+Key: {gameId}
+{ actor, changedQuestIds[], ts }</code></pre>
                 </div>
               </div>
             </div>
@@ -118,7 +416,7 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
           <!-- Step 2: Client Loads Quests -->
           <div class="step-card bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
             <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span class="text-2xl">📱</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -126,7 +424,7 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
                 <span class="badge badge-blue">Unity Client</span>
                 <span class="badge badge-purple">quest_engine_get</span>
               </div>
-              <p class="text-slate-600 mb-3">Game starts → QuestEngineManager.LoadQuests() → fetches all active quests with progress</p>
+              <p class="text-slate-600 mb-3">Game starts → <code>QuestEngineManager.LoadQuests()</code> → fetches active quests with player progress. Disabled quests are filtered server-side.</p>
               
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-lg p-3">
@@ -135,29 +433,14 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
   var (client, session) = await IVXNManager.Instance.GetValidSessionAsync();
   var payload = JsonUtility.ToJson(new GetPayload { gameId = _gameId });
   var result = await client.RpcAsync(session, "quest_engine_get", payload);
-  var envelope = JsonUtility.FromJson<GetResponseEnvelope>(result.Payload);
-  CurrentQuests = new List<QuestData>(envelope.data.quests);
+  var envelope = JsonUtility.FromJson&lt;GetResponseEnvelope&gt;(result.Payload);
+  CurrentQuests = new List&lt;QuestData&gt;(envelope.data.quests);
   OnQuestsLoaded?.Invoke(CurrentQuests);
 }</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">RPC Response:</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{
-  "success": true,
-  "data": {
-    "quests": [{
-      "id": "qv_weekly_giftcard",
-      "name": "Weekly Gift Card Hunter",
-      "category": "weekly",
-      "unlocked": true,
-      "steps": [{ "id": "s1", "description": "Win a quiz", "requiredCount": 10, "count": 3, "completedAt": 0 }],
-      "startedAt": 1704067200,
-      "completedAt": 0,
-      "claimedAt": 0,
-      "rewardPreview": { "currencies": { "game": 1000, "xp": 500 } }
-    }]
-  }
-}</code></pre>
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{"success":true,"data":{"quests":[{"id":"qv_weekly_giftcard","name":"Weekly Gift Card Hunter","category":"weekly","unlocked":true,"steps":[{"id":"s1","description":"Win a quiz","requiredCount":10,"count":3,"completedAt":0}],"startedAt":1704067200,"completedAt":0,"claimedAt":0,"rewardPreview":{"currencies":{"game":1000,"xp":500},"items":{},"gifts":[],"xp":500}}]}}</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">Client Model:</strong>
@@ -165,9 +448,9 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
   public string id, name, category;
   public QuestStepData[] steps;
   public int startedAt, completedAt, claimedAt;
-  public QuestRewardPreview rewardPreview; // Only guaranteed currencies
+  public RewardPreviewData rewardPreview;
   public bool HasUnclaimedReward => completedAt > 0 && claimedAt == 0;
-  public int PreviewCoinAmount => rewardPreview?.currencies?.game ?? 0;
+  public string GetRewardSummary();
 }</code></pre>
                 </div>
               </div>
@@ -177,7 +460,7 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
           <!-- Step 3: Player Action & Event Recording -->
           <div class="step-card bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
             <div class="w-12 h-12 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span class="text-2xl">⚡</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -185,7 +468,7 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
                 <span class="badge badge-rose">Unity Gameplay</span>
                 <span class="badge badge-purple">quest_engine_record_event</span>
               </div>
-              <p class="text-slate-600 mb-3">After quiz ends, Unity calls RecordEvent() with eventType and metadata (topic, mode, etc.)</p>
+              <p class="text-slate-600 mb-3">After quiz ends, Unity calls <code>RecordEvent()</code> with eventType and metadata (topic, mode, questId for buckets).</p>
               
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-lg p-3">
@@ -193,37 +476,28 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
                   <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>QuestEngineManager.Instance.RecordEvent(
   "quiz_win",           // eventType matches step.eventType
   1,                    // value (increment)
-  new Dictionary<string,string> {
+  new Dictionary&lt;string,string&gt; {
     { "topic", "anime" },
     { "mode", "classic" },
-    { "difficulty", "medium" }
+    { "questId", "bucket_free_skin" }
   }
 );</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">RPC Payload:</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{
-  "gameId": "126bf539-dae2-4bcf-964d-316c0fa1f92b",
-  "eventType": "quiz_win",
-  "value": 1,
-  "metadata": {
-    "topic": "anime",
-    "mode": "classic",
-    "difficulty": "medium"
-  }
-}</code></pre>
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{"gameId":"126bf539-dae2-4bcf-964d-316c0fa1f92b","eventType":"quiz_win","value":1,"metadata":{"topic":"anime","mode":"classic","questId":"bucket_free_skin"}}</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">Server Processing:</strong>
                   <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>// QuestEngine.processEventInternal()
 1. Load config + user state
 2. For each unlocked quest:
-   - Check step.eventType == "quiz_win"
-   - Check filterField "topic" == "anime"
-   - Increment step.count (3→4)
-   - If count >= requiredCount (10): mark completed
-3. Save state (Phase 2)
-4. If completed: grant reward (Phase 3)</code></pre>
+   - Match step.eventType == "quiz_win"
+   - Apply filterField/filterValue
+   - Increment step.count
+   - If count >= requiredCount: completed
+3. Save state
+4. If completed: grant reward</code></pre>
                 </div>
               </div>
             </div>
@@ -232,7 +506,7 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
           <!-- Step 4: Reward Granting -->
           <div class="step-card bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row gap-6 bg-gradient-to-r from-amber-50 to-white">
             <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span class="text-2xl">🎁</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -240,13 +514,12 @@ Permission: Read=Public, Write=ServerOnly</code></pre>
                 <span class="badge badge-amber">Nakama Server</span>
                 <span class="badge badge-purple">RewardEngine.grantReward()</span>
               </div>
-              <p class="text-slate-600 mb-3"><strong>This is where ALL reward types are actually granted</strong> — currencies, items, energy, gifts, modifiers</p>
+              <p class="text-slate-600 mb-3"><strong>All reward types are granted here</strong> — currencies, items, energy, gifts, modifiers.</p>
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">RewardEngine Flow:</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>// build/index.js:78406-78472
-function grantReward(nk, logger, ctx, userId, gameId, resolved) {
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>function grantReward(nk, logger, ctx, userId, gameId, resolved) {
   // 1. Currencies → Wallet
   WalletHelpers.addCurrency(nk, userId, gameId, "game", 1000);
   WalletHelpers.addCurrency(nk, userId, gameId, "xp", 500);
@@ -259,7 +532,7 @@ function grantReward(nk, logger, ctx, userId, gameId, resolved) {
   
   // 4. Gifts → Pending Claims Queue
   Storage.writeJson("gift_claims", "pending_" + userId, {
-    claims: [{ claimId: "...", giftId: "amazon_25", type: "voucher", value: "25", status: "pending" }]
+    claims: [{ giftId: "amazon_25", type: "voucher", value: "25", status: "pending" }]
   });
   
   // 5. Modifiers → EventBus
@@ -285,7 +558,7 @@ function grantReward(nk, logger, ctx, userId, gameId, resolved) {
           <!-- Step 5: Delivery & Notification -->
           <div class="step-card bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
             <div class="w-12 h-12 rounded-xl bg-fuchsia-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-fuchsia-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12c0 2.485-2.015 4.5-4.5 4.5S9 14.485 9 12 11.015 7.5 13.5 7.5 18 9.515 18 12z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <span class="text-2xl">📧</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -293,29 +566,26 @@ function grantReward(nk, logger, ctx, userId, gameId, resolved) {
                 <span class="badge badge-purple">RewardDelivery</span>
                 <span class="badge badge-rose">In-App + Email</span>
               </div>
-              <p class="text-slate-600 mb-3">Automatic in-app notification + optional email (Notifuse) + delivery ledger + Discord ops alert</p>
+              <p class="text-slate-600 mb-3">In-app notification + optional email + delivery ledger + Discord ops alert.</p>
               
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">In-App Notification:</strong>
                   <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>nk.notificationSend(userId, 
   "🎁 $25 Amazon Gift Card", 
-  { type: "quest_reward", questId: "qv_weekly_giftcard", body: "Your reward is ready!", assetUrl: "..." },
-  9101,  // NOTIFICATION_CODE_REWARD
-  true   // persistent
+  { type: "quest_reward", questId: "qv_weekly_giftcard", body: "Your reward is ready!" },
+  9101, true
 );</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
-                  <strong class="text-slate-900">Email (if deliverEmail=true):</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>// Notifuse generic template: qx_reward_delivery
-notifuseSend({
+                  <strong class="text-slate-900">Email (Notifuse):</strong>
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>notifuseSend({
   notification: "qx_reward_delivery",
   contact: { email: "player@gmail.com" },
   channels: ["email"],
   data: {
     title: "$25 Amazon Gift Card",
-    message: "Your reward from Weekly Gift Card Hunter is ready!",
-    asset_url: "https://s3.amazonaws.com/.../amazon_25.html",
+    message: "Your reward is ready!",
     cta_label: "Claim Gift Card",
     quest_name: "Weekly Gift Card Hunter"
   }
@@ -324,7 +594,7 @@ notifuseSend({
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">Delivery Ledger:</strong>
                   <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>Collection: qx_reward_deliveries
-Key: 126bf539-dae2-4bcf-964d-316c0fa1f92b
+Key: {gameId}
 Owner: userId
 {
   "entries": [{
@@ -333,9 +603,7 @@ Owner: userId
     "rewardId": "amazon_25",
     "title": "🎁 $25 Amazon Gift Card",
     "status": "delivered",
-    "channel": "email",
-    "assetUrl": "https://s3.amazonaws.com/...",
-    "detail": "Emailed to player@gmail.com"
+    "channel": "email"
   }]
 }</code></pre>
                 </div>
@@ -346,7 +614,7 @@ Owner: userId
           <!-- Step 6: Client Claims & Wallet Refresh -->
           <div class="step-card bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
             <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              <span class="text-2xl">✅</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -354,17 +622,15 @@ Owner: userId
                 <span class="badge badge-rose">Unity UI</span>
                 <span class="badge badge-purple">quest_engine_claim_reward</span>
               </div>
-              <p class="text-slate-600 mb-3">QuestCompletePopupUI appears → player taps Claim → RPC call → wallet refresh</p>
+              <p class="text-slate-600 mb-3">QuestCompletePopupUI appears → player taps Claim → RPC → wallet refresh.</p>
               
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">Unity Claim Call:</strong>
                   <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>QuestEngineManager.Instance.ClaimReward("qv_weekly_giftcard", (ok) => {
   if (ok) {
-    // Optimistic UI update
     quest.claimedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     OnRewardClaimed?.Invoke(questId);
-    // Refresh wallet HUD
     QVNWalletManager.Instance.RefreshWalletAsync();
   }
 });</code></pre>
@@ -376,28 +642,21 @@ Owner: userId
 // 1. Read state with version
 // 2. Check completedAt > 0 && claimedAt == 0
 // 3. Write claimedAt with version check (retry 3x)
-// 4. Grant reward (RewardEngine.grantReward)
-// 5. RewardDelivery.onQuestReward()
-// 6. Return { reward: resolved }</code></pre>
+// 4. Grant reward
+// 5. Return { reward: resolved }</code></pre>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3">
                   <strong class="text-slate-900">Wallet Refresh:</strong>
-                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>// wallet_get_balances response
-{
-  "success": true,
-  "data": {
-    "userId": "...",
-    "gameId": "126bf539-...",
-    "game_balance": 1500,      // +1000 from quest
-    "global_balance": 250,
-    "currencies": {
-      "game": 1500,
-      "xp": 1250,              // +500 from quest
-      "global": 250,
-      "xut": 250
-    }
+                  <pre class="code-block text-xs p-2 rounded mt-1 overflow-x-auto"><code>{"success":true,"data":{
+  "userId":"...",
+  "gameId":"126bf539-...",
+  "game_balance":1500,
+  "currencies":{
+    "game":1500,
+    "xp":1250,
+    "global":250
   }
-}</code></pre>
+}}</code></pre>
                 </div>
               </div>
             </div>
@@ -406,146 +665,29 @@ Owner: userId
         </div>
       </section>
 
-      <!-- Use Case: Quest Bucket & Free Product -->
-      <section class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-8">
-        <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">🪣 Your Use Case: Quest Bucket with Free Product Rewards</h3>
-        
-        <div class="grid md:grid-cols-2 gap-8">
-          <div>
-            <h4 class="text-lg font-semibold mb-4 text-amber-300">Architecture</h4>
-            <div class="space-y-3 text-sm bg-slate-800/50 rounded-xl p-4">
-              <p><strong>1. Admin creates "Quest Bucket"</strong> — 50+ quests in qv_quest_config with category="bucket"</p>
-              <p><strong>2. Player sees available quests</strong> — quest_engine_get returns all unlocked bucket quests</p>
-              <p><strong>3. Player chooses up to maxConcurrent</strong> — UI shows quest cards, player taps "Start Quest" (requiresOptIn=true)</p>
-              <p><strong>4. Progress tracked server-side</strong> — RecordEvent("bucket_progress", 1, { questId: "chosen_quest" })</p>
-              <p><strong>5. On completion → Free Product</strong> — Gift reward with type="voucher" or type="digital" (assetUrl = product download)</p>
-            </div>
-          </div>
-          <div>
-            <h4 class="text-lg font-semibold mb-4 text-amber-300">Example Config</h4>
-            <pre class="code-block text-xs p-4 rounded overflow-x-auto"><code>{
-  "quests": {
-    "bucket_free_skin": {
-      "id": "bucket_free_skin",
-      "name": "Unlock Legendary Skin",
-      "category": "bucket",
-      "enabled": true,
-      "requiresOptIn": true,
-      "maxConcurrent": 3,
-      "repeatable": false,
-      "hidden": false,
-      "steps": [{ "id": "s1", "eventType": "bucket_progress", "requiredCount": 50, "filterField": "questId", "filterValue": "bucket_free_skin" }],
-      "reward": {
-        "guaranteed": {
-          "items": { "skin_legendary_dragon": 1 },
-          "gifts": [{ "id": "skin_dragon_download", "type": "digital", "assetUrl": "https://cdn.quizverse.com/skins/dragon.glb", "name": "Dragon Skin 3D Model", "deliverEmail": true }]
-        }
-      }
-    },
-    "bucket_giftcard": {
-      "id": "bucket_giftcard",
-      "name": "Earn $10 Gift Card",
-      "category": "bucket",
-      "repeatable": true,
-      "resetIntervalSec": 604800,
-      "steps": [{ "id": "s1", "eventType": "bucket_progress", "requiredCount": 100, "filterField": "questId", "filterValue": "bucket_giftcard" }],
-      "reward": {
-        "guaranteed": {
-          "gifts": [{ "id": "amazon_10", "type": "voucher", "value": "10", "name": "$10 Amazon", "deliverEmail": true }]
-        }
-      }
-    }
-  }
-}</code></pre>
-          </div>
-        </div>
-        
-        <div class="mt-6 p-4 bg-amber-900/30 rounded-xl border border-amber-800">
-          <h4 class="font-semibold text-amber-200 mb-2">💡 Key Implementation Notes</h4>
-          <ul class="text-sm space-y-1 text-amber-100">
-            <li>• Use <strong>filterField + filterValue</strong> on steps to isolate progress per quest in the bucket</li>
-            <li>• <strong>hidden: true</strong> for surprise quests (revealed only after completion)</li>
-            <li>• <strong>enabled: false</strong> to soft-disable a quest without deleting it</li>
-            <li>• <strong>requiresOptIn + maxConcurrent</strong> for "choose your own quest" bucket systems</li>
-            <li>• <strong>prerequisiteIds</strong> to chain quests (complete A → unlock B)</li>
-            <li>• Gift <strong>assetUrl</strong> points to S3/CDN for digital products; email template handles delivery</li>
-            <li>• <strong>repeatable + resetIntervalSec</strong> for weekly/monthly bucket quests</li>
-            <li>• Client calls <strong>RecordEvent("bucket_progress", 1, { questId: "..." })</strong> — server does the filtering</li>
-          </ul>
-        </div>
-      </section>
-
       <!-- RPC Reference Table -->
       <section>
         <h3 class="text-2xl font-bold text-slate-900 mb-6">📚 Complete RPC Reference</h3>
         <div class="overflow-x-auto">
-          <table class="w-full bg-white rounded-xl border border-slate-200">
+          <table class="w-full bg-white rounded-xl border border-slate-200 text-sm">
             <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th class="p-4 text-left text-sm font-semibold text-slate-600">RPC</th>
-                <th class="p-4 text-left text-sm font-semibold text-slate-600">Purpose</th>
-                <th class="p-4 text-left text-sm font-semibold text-slate-600">Caller</th>
-                <th class="p-4 text-left text-sm font-semibold text-slate-600">Auth</th>
-                <th class="p-4 text-left text-sm font-semibold text-slate-600">Key Payload</th>
+                <th class="p-4 text-left font-semibold text-slate-600">RPC</th>
+                <th class="p-4 text-left font-semibold text-slate-600">Purpose</th>
+                <th class="p-4 text-left font-semibold text-slate-600">Caller</th>
+                <th class="p-4 text-left font-semibold text-slate-600">Auth</th>
+                <th class="p-4 text-left font-semibold text-slate-600">Key Payload</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200 text-sm">
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-sky-600">quest_engine_get</td>
-                <td class="p-4">Fetch all quests with progress</td>
-                <td class="p-4">Unity Client</td>
-                <td class="p-4"><span class="badge badge-blue">User Session</span></td>
-                <td class="p-4"><code>{ gameId }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-sky-600">quest_engine_record_event</td>
-                <td class="p-4">Report player action (auto-progress)</td>
-                <td class="p-4">Unity Client</td>
-                <td class="p-4"><span class="badge badge-blue">User Session</span></td>
-                <td class="p-4"><code>{ gameId, eventType, value, metadata }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-sky-600">quest_engine_claim_reward</td>
-                <td class="p-4">Manually claim completed quest reward</td>
-                <td class="p-4">Unity Client</td>
-                <td class="p-4"><span class="badge badge-blue">User Session</span></td>
-                <td class="p-4"><code>{ gameId, questId }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-emerald-600">quest_engine_admin_save_config</td>
-                <td class="p-4">Save full quest catalog (create/update)</td>
-                <td class="p-4">Admin Dashboard</td>
-                <td class="p-4"><span class="badge badge-green">Server Key</span></td>
-                <td class="p-4"><code>{ gameId, config: { quests: {...} } }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-emerald-600">quest_engine_admin_get_config</td>
-                <td class="p-4">Read current quest catalog</td>
-                <td class="p-4">Admin Dashboard</td>
-                <td class="p-4"><span class="badge badge-green">Server Key</span></td>
-                <td class="p-4"><code>{ gameId }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-fuchsia-600">reward_catalog_admin_save</td>
-                <td class="p-4">Configure gift/email delivery for rewards</td>
-                <td class="p-4">Admin Dashboard</td>
-                <td class="p-4"><span class="badge badge-green">Server Key</span></td>
-                <td class="p-4"><code>{ gameId, rewards: { id: { title, assetUrl, deliver: {channel: "email"} } } }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-fuchsia-600">reward_delivery_set_email</td>
-                <td class="p-4">Player sets email for gift delivery</td>
-                <td class="p-4">Unity Client</td>
-                <td class="p-4"><span class="badge badge-blue">User Session</span></td>
-                <td class="p-4"><code>{ gameId, email }</code></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="p-4 font-mono text-fuchsia-600">reward_delivery_list_mine</td>
-                <td class="p-4">Get player's reward history ("My Rewards")</td>
-                <td class="p-4">Unity Client</td>
-                <td class="p-4"><span class="badge badge-blue">User Session</span></td>
-                <td class="p-4"><code>{ gameId }</code></td>
-              </tr>
+            <tbody class="divide-y divide-slate-200">
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-sky-600">quest_engine_get</td><td class="p-4">Fetch all quests with progress</td><td class="p-4">Unity Client</td><td class="p-4"><span class="badge badge-blue">User Session</span></td><td class="p-4"><code>{ gameId }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-sky-600">quest_engine_record_event</td><td class="p-4">Report player action (auto-progress)</td><td class="p-4">Unity Client</td><td class="p-4"><span class="badge badge-blue">User Session</span></td><td class="p-4"><code>{ gameId, eventType, value, metadata }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-sky-600">quest_engine_claim_reward</td><td class="p-4">Manually claim completed quest reward</td><td class="p-4">Unity Client</td><td class="p-4"><span class="badge badge-blue">User Session</span></td><td class="p-4"><code>{ gameId, questId }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-emerald-600">quest_engine_admin_save_config</td><td class="p-4">Save full quest catalog (create/update)</td><td class="p-4">Admin Dashboard</td><td class="p-4"><span class="badge badge-green">Server Key</span></td><td class="p-4"><code>{ gameId, config: { quests: {...} } }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-emerald-600">quest_engine_admin_get_config</td><td class="p-4">Read current quest catalog</td><td class="p-4">Admin Dashboard</td><td class="p-4"><span class="badge badge-green">Server Key</span></td><td class="p-4"><code>{ gameId }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-fuchsia-600">reward_catalog_admin_save</td><td class="p-4">Configure gift/email delivery for rewards</td><td class="p-4">Admin Dashboard</td><td class="p-4"><span class="badge badge-green">Server Key</span></td><td class="p-4"><code>{ gameId, rewards: {...} }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-fuchsia-600">reward_delivery_set_email</td><td class="p-4">Player sets email for gift delivery</td><td class="p-4">Unity Client</td><td class="p-4"><span class="badge badge-blue">User Session</span></td><td class="p-4"><code>{ gameId, email }</code></td></tr>
+              <tr class="hover:bg-slate-50"><td class="p-4 font-mono text-fuchsia-600">reward_delivery_list_mine</td><td class="p-4">Get player's reward history</td><td class="p-4">Unity Client</td><td class="p-4"><span class="badge badge-blue">User Session</span></td><td class="p-4"><code>{ gameId }</code></td></tr>
             </tbody>
           </table>
         </div>
@@ -560,9 +702,9 @@ Owner: userId
             <h4 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">1</span> Quest Design</h4>
             <ul class="text-sm text-slate-600 space-y-2">
               <li>• Use <strong>category</strong> (daily/weekly/monthly) for auto-reset</li>
-              <li>• Use <strong>resetIntervalSec</strong> for custom periods (friend quests)</li>
+              <li>• Use <strong>resetIntervalSec</strong> for custom periods</li>
               <li>• <strong>filterField/filterValue</strong> on steps for topic/mode filtering</li>
-              <li>• <strong>prerequisiteIds</strong> for quest chains</li>
+              <li>• <strong>prerequisiteQuestIds</strong> for quest chains</li>
               <li>• <strong>hidden: true</strong> for surprise rewards</li>
             </ul>
           </div>
@@ -570,8 +712,8 @@ Owner: userId
           <div class="bg-white rounded-xl border border-slate-200 p-6">
             <h4 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center text-sky-600">2</span> Reward Config</h4>
             <ul class="text-sm text-slate-600 space-y-2">
-              <li>• Always use <strong>guaranteed</strong> for predictable rewards</li>
-              <li>• Use <strong>weighted</strong> for loot-box style (maxRolls: 1)</li>
+              <li>• Use <strong>guaranteed</strong> for predictable rewards</li>
+              <li>• Use <strong>weighted</strong> for loot-box style</li>
               <li>• Gift <strong>deliverEmail: true</strong> needs Notifuse config</li>
               <li>• <strong>assetUrl</strong> must be accessible (S3/CDN)</li>
               <li>• Test with <strong>reward_catalog_admin_save</strong> first</li>
@@ -598,7 +740,6 @@ Owner: userId
               <li>• <code>score_shared</code> — social share</li>
               <li>• <code>friend_challenged</code> — sent challenge</li>
               <li>• <code>daily_quiz_complete</code> — daily quiz</li>
-              <li>• <code>guild_joined</code> — joined guild</li>
               <li>• <code>bucket_progress</code> — custom bucket quests</li>
             </ul>
           </div>
@@ -606,7 +747,7 @@ Owner: userId
           <div class="bg-white rounded-xl border border-slate-200 p-6">
             <h4 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600">5</span> Security</h4>
             <ul class="text-sm text-slate-600 space-y-2">
-              <li>• Admin RPCs require <strong>Server Key (http_key)</strong></li>
+              <li>• Admin RPCs require <strong>Server Key</strong></li>
               <li>• User state: <strong>permissionWrite: 0</strong> (server-only)</li>
               <li>• Claim uses <strong>OCC version CAS</strong> (3 retries)</li>
               <li>• Gift claims queued — <strong>no client-side minting</strong></li>
@@ -630,34 +771,278 @@ Owner: userId
 
       <!-- Footer -->
       <footer class="text-center py-8 text-slate-500 text-sm border-t border-slate-200">
-        <p>QuizVerse Quest System — Complete Flow Documentation</p>
+        <p>QuizVerse Quest System — Interactive Flow Documentation</p>
         <p class="mt-1">Built with Nakama Quest Engine + RewardEngine + RewardDelivery</p>
       </footer>
 
     </div>
   </main>
 
+  <!-- Toast container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
   <script>
-    // Smooth scroll for any anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelector(this.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    // ===== FLOW SIMULATOR =====
+    const simSteps = [
+      {
+        title: "Step 0/6 — Ready",
+        code: `Click "Next Step" to begin the simulation...\n\nScenario: "Weekly Gift Card Hunter" quest\n- Win 10 quizzes to earn 1000 coins + $25 Amazon voucher`,
+        status: "Quest not started yet."
+      },
+      {
+        title: "Step 1/6 — Admin Saves Quest",
+        code: `POST /v2/rpc/quest_engine_admin_save_config\nAuth: Server Key\nBody:\n{\n  "gameId": "126bf539-dae2-4bcf-964d-316c0fa1f92b",\n  "config": {\n    "quests": {\n      "qv_weekly_giftcard": {\n        "id": "qv_weekly_giftcard",\n        "name": "Weekly Gift Card Hunter",\n        "category": "weekly",\n        "enabled": true,\n        "steps": [{\n          "id": "s1",\n          "eventType": "quiz_win",\n          "requiredCount": 10\n        }],\n        "reward": {\n          "guaranteed": {\n            "currencies": { "game": 1000, "xp": 500 },\n            "gifts": [{\n              "id": "amazon_25",\n              "type": "voucher",\n              "value": "25",\n              "name": "$25 Amazon"\n            }]\n          }\n        }\n      }\n    }\n  }\n}\n\n✓ Server validates config\n✓ Writes qv_quest_config\n✓ Writes qv_quest_config_audit`,
+        status: "Admin created the quest. Config is live."
+      },
+      {
+        title: "Step 2/6 — Unity Loads Quests",
+        code: `Unity: QuestEngineManager.LoadQuests()\n\nRPC: quest_engine_get\nPayload: { "gameId": "126bf539-..." }\n\nResponse:\n{\n  "success": true,\n  "data": {\n    "quests": [{\n      "id": "qv_weekly_giftcard",\n      "name": "Weekly Gift Card Hunter",\n      "category": "weekly",\n      "steps": [{\n        "id": "s1",\n        "requiredCount": 10,\n        "count": 0\n      }],\n      "rewardPreview": {\n        "currencies": { "game": 1000, "xp": 500 }\n      }\n    }]\n  }\n}\n\n✓ Player sees quest in UI`,
+        status: "Quest loaded on client. Progress: 0/10."
+      },
+      {
+        title: "Step 3/6 — Player Wins Quizzes",
+        code: `Unity: QuestEngineManager.RecordEvent("quiz_win", 1)\n\nRPC: quest_engine_record_event\nPayload:\n{\n  "gameId": "126bf539-...",\n  "eventType": "quiz_win",\n  "value": 1,\n  "metadata": {\n    "topic": "anime",\n    "mode": "classic"\n  }\n}\n\nServer:\n1. Loads player quest state\n2. Finds matching step.eventType\n3. count: 0 → 10 (simulated)\n4. count >= requiredCount → QUEST COMPLETED`,
+        status: "Player won 10 quizzes. Quest completed!"
+      },
+      {
+        title: "Step 4/6 — Reward Auto-Granted",
+        code: `Server: RewardEngine.grantReward()\n\nGrants:\n✓ currencies.game += 1000\n✓ currencies.xp += 500\n✓ Gift queued: amazon_25 ($25 voucher)\n  Collection: gift_claims/pending_{userId}\n\nWallet updated via WalletHelpers.addCurrency()\nItem/badge granted via HiroInventory.grantItem()\n\n✓ Player state saved`,
+        status: "Rewards granted: 1000 coins, 500 XP, $25 Amazon voucher queued."
+      },
+      {
+        title: "Step 5/6 — Delivery & Notification",
+        code: `RewardDelivery.onQuestReward()\n\n1. In-app notification sent:\n   "🎁 $25 Amazon Gift Card"\n   code: 9101 (persistent)\n\n2. Email queued (if deliverEmail=true):\n   Template: qx_reward_delivery\n   Contact: player@gmail.com\n\n3. Delivery ledger written:\n   Collection: qx_reward_deliveries\n\n4. Discord ops alert sent`,
+        status: "Player notified. Voucher delivery pending email."
+      },
+      {
+        title: "Step 6/6 — Player Claims Reward",
+        code: `Unity: QuestCompletePopupUI → Claim button\n\nRPC: quest_engine_claim_reward\nPayload: {\n  "gameId": "126bf539-...",\n  "questId": "qv_weekly_giftcard"\n}\n\nServer (OCC protected):\n1. Read state with version\n2. Verify completedAt > 0 && claimedAt == 0\n3. CAS write claimedAt (retry 3x)\n4. Return { reward: resolved }\n\nUnity: QVNWalletManager.RefreshWalletAsync()`,
+        status: "Reward claimed! Wallet refreshed."
+      }
+    ];
+
+    let currentSimStep = 0;
+    const maxWins = 10;
+    let simWins = 0;
+    let simCoins = 0;
+    let simGift = "—";
+
+    function updateSimUI() {
+      const step = simSteps[currentSimStep];
+      document.getElementById('simStepBadge').textContent = step.title;
+      document.getElementById('simDetailCode').textContent = step.code;
+      document.getElementById('simProgress').style.width = (currentSimStep / 6 * 100) + '%';
+      document.getElementById('statusText').textContent = step.status;
+      
+      document.querySelectorAll('.flow-node').forEach(node => {
+        const ns = parseInt(node.dataset.step);
+        node.classList.remove('active', 'completed');
+        if (ns === currentSimStep) node.classList.add('active');
+        if (ns < currentSimStep) node.classList.add('completed');
       });
+      
+      document.querySelectorAll('[id^="stepLabel"]').forEach((label, idx) => {
+        label.className = idx + 1 <= currentSimStep ? 'text-emerald-600 font-semibold' : 'text-slate-500';
+      });
+      
+      // Player state progression
+      if (currentSimStep >= 2) { simWins = 0; simCoins = 0; simGift = "—"; }
+      if (currentSimStep >= 3) simWins = 10;
+      if (currentSimStep >= 4) { simCoins = 1000; simGift = "$25 Amazon"; }
+      
+      document.getElementById('winsText').textContent = `${Math.min(simWins, maxWins)} / ${maxWins}`;
+      document.getElementById('winsBar').style.width = (Math.min(simWins, maxWins) / maxWins * 100) + '%';
+      document.getElementById('coinText').textContent = simCoins;
+      document.getElementById('giftText').textContent = simGift;
+    }
+
+    document.getElementById('nextStepBtn').addEventListener('click', () => {
+      if (currentSimStep < 6) {
+        currentSimStep++;
+        updateSimUI();
+      } else {
+        showToast('Simulation complete. Click Reset to run again.');
+      }
     });
+
+    document.getElementById('resetSimBtn').addEventListener('click', () => {
+      currentSimStep = 0;
+      updateSimUI();
+    });
+
+    updateSimUI();
+
+    // ===== QUEST CONFIG BUILDER =====
+    function buildQuestJson() {
+      const id = document.getElementById('qbId').value || 'quest_id';
+      const name = document.getElementById('qbName').value || 'Quest Name';
+      const category = document.getElementById('qbCategory').value;
+      const required = parseInt(document.getElementById('qbRequired').value) || 1;
+      const enabled = document.getElementById('qbEnabled').checked;
+      const requiresOptIn = document.getElementById('qbOptIn').checked;
+      const repeatable = document.getElementById('qbRepeat').checked;
+      const coins = parseInt(document.getElementById('qbCoins').value) || 0;
+      const xp = parseInt(document.getElementById('qbXp').value) || 0;
+      const itemKey = document.getElementById('qbItemKey').value;
+      const itemQty = parseInt(document.getElementById('qbItemQty').value) || 0;
+      const giftType = document.getElementById('qbGiftType').value;
+      const giftName = document.getElementById('qbGiftName').value;
+      
+      const reward = { guaranteed: {} };
+      if (coins > 0 || xp > 0) {
+        reward.guaranteed.currencies = {};
+        if (coins > 0) reward.guaranteed.currencies.game = coins;
+        if (xp > 0) reward.guaranteed.currencies.xp = xp;
+      }
+      if (itemKey && itemQty > 0) {
+        reward.guaranteed.items = { [itemKey]: itemQty };
+      }
+      if (giftName) {
+        reward.guaranteed.gifts = [{
+          id: giftName.toLowerCase().replace(/\s+/g, '_'),
+          type: giftType,
+          name: giftName,
+          deliverEmail: true
+        }];
+      }
+      
+      const quest = {
+        id,
+        name,
+        category,
+        enabled,
+        requiresOptIn,
+        maxConcurrent: requiresOptIn ? 2 : 1,
+        repeatable,
+        hidden: false,
+        steps: [{
+          id: "s1",
+          eventType: category === "bucket" ? "bucket_progress" : "quiz_win",
+          requiredCount: required,
+          filterField: category === "bucket" ? "questId" : "",
+          filterValue: category === "bucket" ? id : ""
+        }],
+        reward
+      };
+      
+      const payload = {
+        gameId: "126bf539-dae2-4bcf-964d-316c0fa1f92b",
+        config: { quests: { [id]: quest } }
+      };
+      
+      return JSON.stringify(payload, null, 2);
+    }
+
+    function updateBuilderJson() {
+      document.getElementById('builderJson').textContent = buildQuestJson();
+    }
+
+    ['qbId','qbName','qbCategory','qbRequired','qbEnabled','qbOptIn','qbRepeat','qbCoins','qbXp','qbItemKey','qbItemQty','qbGiftType','qbGiftName'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateBuilderJson);
+      document.getElementById(id).addEventListener('change', updateBuilderJson);
+    });
+    updateBuilderJson();
+
+    document.getElementById('copyPayloadBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(buildQuestJson()).then(() => showToast('RPC payload copied to clipboard'));
+    });
+
+    // ===== BUCKET QUEST DEMO =====
+    const maxActive = 2;
+    const bucketState = { skin: { active: false, progress: 0, required: 5 }, giftcard: { active: false, progress: 0, required: 10 }, badge: { active: false, progress: 0, required: 3 } };
+
+    function updateBucketUI() {
+      const active = Object.entries(bucketState).filter(([_, s]) => s.active).length;
+      document.getElementById('activeCount').textContent = active;
+      document.getElementById('playMatchBtn').disabled = active === 0;
+      
+      document.querySelectorAll('.bucket-card').forEach(card => {
+        const quest = card.dataset.quest;
+        const state = bucketState[quest];
+        const btn = card.querySelector('.opt-in-btn');
+        const bar = card.querySelector('.bucket-progress');
+        
+        if (state.active) {
+          card.classList.add('border-emerald-500', 'bg-slate-700/70');
+          card.classList.remove('border-slate-600');
+          btn.textContent = 'Stop Quest';
+          btn.classList.replace('bg-blue-600', 'bg-rose-600');
+          btn.classList.replace('hover:bg-blue-500', 'hover:bg-rose-500');
+        } else {
+          card.classList.remove('border-emerald-500', 'bg-slate-700/70');
+          card.classList.add('border-slate-600');
+          btn.textContent = active >= maxActive ? 'Max Active' : 'Start Quest';
+          btn.disabled = active >= maxActive;
+          btn.classList.toggle('opacity-50', active >= maxActive);
+          btn.classList.replace('bg-rose-600', 'bg-blue-600');
+          btn.classList.replace('hover:bg-rose-500', 'hover:bg-blue-500');
+        }
+        
+        const pct = Math.min((state.progress / state.required) * 100, 100);
+        bar.style.width = pct + '%';
+        
+        if (state.progress >= state.required) {
+          bar.classList.replace('bg-emerald-500', 'bg-amber-400');
+          card.querySelector('.text-xs').innerHTML = `Completed! ${state.progress}/${state.required} ✓`;
+        }
+      });
+    }
+
+    window.toggleBucket = function(btn) {
+      const card = btn.closest('.bucket-card');
+      const quest = card.dataset.quest;
+      const state = bucketState[quest];
+      const active = Object.values(bucketState).filter(s => s.active).length;
+      
+      if (state.active) {
+        state.active = false;
+      } else if (active < maxActive) {
+        state.active = true;
+      }
+      updateBucketUI();
+    };
+
+    document.getElementById('playMatchBtn').addEventListener('click', () => {
+      let completed = [];
+      Object.entries(bucketState).forEach(([quest, state]) => {
+        if (state.active && state.progress < state.required) {
+          state.progress++;
+          if (state.progress >= state.required) completed.push(quest);
+        }
+      });
+      updateBucketUI();
+      if (completed.length > 0) {
+        const names = { skin: 'Dragon Skin', giftcard: '$10 Gift Card', badge: 'Champion Badge' };
+        showToast(`🎉 Quest complete! Reward: ${completed.map(q => names[q]).join(', ')}`);
+      }
+    });
+
+    updateBucketUI();
+
+    // ===== UTILITIES =====
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2';
+      toast.innerHTML = `<span>✓</span> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
 
     // Copy code blocks on click
     document.querySelectorAll('.code-block').forEach(block => {
-      block.style.cursor = 'pointer';
-      block.title = 'Click to copy';
-      block.addEventListener('click', () => {
-        const code = block.querySelector('code')?.innerText || block.innerText;
-        navigator.clipboard.writeText(code).then(() => {
-          const original = block.style.backgroundColor;
-          block.style.backgroundColor = '#059669';
-          setTimeout(() => block.style.backgroundColor = original, 300);
+      if (!block.closest('section').id?.includes('builder')) {
+        block.style.cursor = 'pointer';
+        block.title = 'Click to copy';
+        block.addEventListener('click', () => {
+          const code = block.querySelector('code')?.innerText || block.innerText;
+          navigator.clipboard.writeText(code).then(() => {
+            const original = block.style.backgroundColor;
+            block.style.backgroundColor = '#059669';
+            setTimeout(() => block.style.backgroundColor = original || '#0f172a', 300);
+          });
         });
-      });
+      }
     });
   </script>
 </body>
