@@ -22,7 +22,7 @@ version: 0.2
 #
 # Required CodeBuild env vars (set in the project, not here):
 #   AWS_DEFAULT_REGION         e.g. us-east-1
-#   AWS_ACCOUNT_ID             e.g. 970547373533
+#   AWS_ACCOUNT_ID             e.g. 803881282303
 #   EKS_CLUSTER_NAME           e.g. ai-cart-auto-cluster
 #   K8S_NAMESPACE              e.g. aicart
 #   K8S_DEPLOYMENT             e.g. intelliverse-nakama
@@ -32,7 +32,7 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: us-east-1
-    AWS_ACCOUNT_ID: "970547373533"
+    AWS_ACCOUNT_ID: "803881282303"
     EKS_CLUSTER_NAME: ai-cart-auto-cluster
     K8S_NAMESPACE: aicart
     K8S_DEPLOYMENT: intelliverse-nakama
