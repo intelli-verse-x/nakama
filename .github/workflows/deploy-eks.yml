@@ -8,7 +8,7 @@ name: Build & Deploy to EKS
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
   workflow_dispatch:
 
 concurrency:
@@ -17,8 +17,8 @@ concurrency:
 
 env:
   AWS_REGION: us-east-1
-  AWS_ACCOUNT_ID: "970547373533"
-  ECR_REGISTRY: 970547373533.dkr.ecr.us-east-1.amazonaws.com
+  AWS_ACCOUNT_ID: "803881282303"
+  ECR_REGISTRY: 803881282303.dkr.ecr.us-east-1.amazonaws.com
   ECR_REPOSITORY: intelliverse-nakama
   EKS_CLUSTER_NAME: ai-cart-auto-cluster
   K8S_NAMESPACE: aicart
