@@ -295,10 +295,40 @@ EOF
         # `set -e` is on at script scope, so we wrap rollout in `set +e`
         # to keep going on failure, then re-enable `set -e` afterwards.
         set +e
-        # 14 min: sits inside progressDeadlineSeconds=900s (15 min) so we
-        # always see the Kubernetes error message before kubectl times out.
-        kubectl rollout status "deployment/$DEPLOY" -n "$NS" --timeout=14m
-        ROLLOUT_RC=$?
+        # 14 min total, but fail fast on ImagePullBackOff of the *current*
+        # spec image. Waiting the full window while kubelet retries a digest
+        # ECR already expired is how GHA run 32869881198 burned 31 minutes
+        # and then rolled back onto that same missing digest.
+        TARGET_IMAGE=$(kubectl get deployment "$DEPLOY" -n "$NS" \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true)
+        ROLLOUT_RC=1
+        DEADLINE=$((SECONDS + 840))
+        while [ "$SECONDS" -lt "$DEADLINE" ]; do
+            kubectl rollout status "deployment/$DEPLOY" -n "$NS" --timeout=20s
+            ROLLOUT_RC=$?
+            [ "$ROLLOUT_RC" -eq 0 ] && break
+            PULL_BAD=$(kubectl get pods -n "$NS" -l "app=$DEPLOY,!job-name" \
+                --no-headers 2>/dev/null \
+                | awk '$3 ~ /ImagePullBackOff|ErrImagePull/ {print $1}' || true)
+            if [ -n "$PULL_BAD" ] && [ -n "$TARGET_IMAGE" ]; then
+                TARGET_HIT=0
+                for BAD_POD in $PULL_BAD; do
+                    BAD_IMG=$(kubectl get pod -n "$NS" "$BAD_POD" \
+                        -o jsonpath='{.spec.containers[0].image}' 2>/dev/null || true)
+                    if [ "$BAD_IMG" = "$TARGET_IMAGE" ]; then
+                        TARGET_HIT=1
+                        echo "✗ ImagePullBackOff on current spec image: $BAD_POD -> $BAD_IMG"
+                    else
+                        echo "  deleting stale ImagePullBackOff pod $BAD_POD (image $BAD_IMG, not current spec)"
+                        kubectl delete pod -n "$NS" "$BAD_POD" --wait=false >/dev/null 2>&1 || true
+                    fi
+                done
+                if [ "$TARGET_HIT" = "1" ]; then
+                    ROLLOUT_RC=1
+                    break
+                fi
+            fi
+        done
         set -e
         if [ "$ROLLOUT_RC" -ne 0 ]; then
             INFRA_ROLLOUT_BLOCKED=0

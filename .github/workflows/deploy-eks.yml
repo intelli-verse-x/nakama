@@ -69,6 +69,10 @@ jobs:
 
       - name: Configure kubectl for EKS
         run: |
+          chmod +x scripts/assert-deploy-account.sh scripts/ecr-digest.sh scripts/smoke-test-js-runtime.sh
+          # shellcheck disable=SC1091
+          . scripts/ecr-digest.sh
+          assert_aws_account "$AWS_ACCOUNT_ID" "nakama EKS deploy"
           aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER_NAME"
           kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}' || true
 
@@ -135,6 +139,8 @@ jobs:
           docker buildx build \
             --platform linux/amd64 \
             --load \
+            --provenance=false \
+            --sbom=false \
             -f Dockerfile.production \
             --build-arg IMAGE_VERSION="$IMAGE_VERSION" \
             --build-arg GIT_SHA="$GITHUB_SHA" \
@@ -152,6 +158,7 @@ jobs:
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --provenance=false \
+            --sbom=false \
             -f Dockerfile.production \
             --build-arg IMAGE_VERSION="$IMAGE_VERSION" \
             --build-arg GIT_SHA="$GITHUB_SHA" \
@@ -163,14 +170,43 @@ jobs:
       - name: Deploy (digest-pinned, env inject, auto-rollback)
         run: |
           set -euo pipefail
+          chmod +x scripts/ecr-digest.sh scripts/smoke-test-js-runtime.sh
+          # shellcheck disable=SC1091
+          . scripts/ecr-digest.sh
+          assert_aws_account "$AWS_ACCOUNT_ID" "nakama digest-pinned rollout"
+
           IMAGE_DIGEST=$(aws ecr describe-images \
+            --registry-id "$AWS_ACCOUNT_ID" \
             --repository-name "$ECR_REPOSITORY" \
             --image-ids imageTag="$IMAGE_VERSION" \
             --query 'imageDetails[0].imageDigest' --output text)
           echo "IMAGE_DIGEST=$IMAGE_DIGEST"
-          PREVIOUS_IMAGE=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+          if [ -z "$IMAGE_DIGEST" ] || [ "$IMAGE_DIGEST" = "None" ]; then
+            echo "FATAL: describe-images returned no digest for tag $IMAGE_VERSION"
+            exit 1
+          fi
+          NEW_IMAGE="${REPOSITORY_URI}@${IMAGE_DIGEST}"
+          verify_tag_serves_arm64 "${REPOSITORY_URI}:${IMAGE_VERSION}"
+          if ! ecr_has_digest "$IMAGE_DIGEST"; then
+            echo "FATAL: $NEW_IMAGE is not pullable from ECR in account $AWS_ACCOUNT_ID"
+            exit 1
+          fi
+
+          SPEC_IMAGE=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
             -o jsonpath='{.spec.template.spec.containers[0].image}')
-          echo "PREVIOUS_IMAGE=$PREVIOUS_IMAGE"
+          WORKING_IMAGE=$(working_image_from_ready_pod "$K8S_NAMESPACE" "$K8S_DEPLOYMENT")
+          echo "SPEC_IMAGE=$SPEC_IMAGE"
+          echo "WORKING_IMAGE=$WORKING_IMAGE"
+          ROLLBACK_IMAGE="$WORKING_IMAGE"
+          if [ -z "$ROLLBACK_IMAGE" ]; then
+            ROLLBACK_IMAGE="$SPEC_IMAGE"
+          fi
+          if [ -n "$ROLLBACK_IMAGE" ] && ecr_has_digest "$ROLLBACK_IMAGE"; then
+            ecr_protect_tag "$ROLLBACK_IMAGE" "prod-rollback" || true
+          elif [ -n "$ROLLBACK_IMAGE" ]; then
+            echo "WARN: rollback candidate $ROLLBACK_IMAGE is not in ECR (node-cached only)"
+          fi
+          ecr_protect_tag "$IMAGE_DIGEST" "prod-candidate" || true
 
           # Runtime keys from SSM (was CodeBuild env parameter-store block)
           getp() { aws ssm get-parameter --name "$1" --with-decryption --query Parameter.Value --output text 2>/dev/null || true; }
@@ -211,9 +247,15 @@ jobs:
           INJECT_ARGS="$INJECT_ARGS DASHBOARD_SECRET=$RUNTIME_DASHBOARD_SECRET ROLLUP_ENABLED=true DASHBOARD_PREFER_ROLLUPS=true"
           kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" $INJECT_ARGS
 
+          CURRENT_REPLICAS=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+            -o jsonpath='{.spec.replicas}')
+          pause_hpa "$K8S_NAMESPACE" intelliverse-nakama "$CURRENT_REPLICAS"
+          trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama' EXIT
+          delete_unpullable_pods "$K8S_NAMESPACE" "$K8S_DEPLOYMENT"
+
           echo "=== Rolling deployment to ${IMAGE_VERSION} (digest pinned) ==="
           kubectl set image deployment/"$K8S_DEPLOYMENT" \
-            "$K8S_CONTAINER"="${REPOSITORY_URI}@${IMAGE_DIGEST}" -n "$K8S_NAMESPACE"
+            "$K8S_CONTAINER"="$NEW_IMAGE" -n "$K8S_NAMESPACE"
 
           echo "=== Post-rollout JS runtime smoke test ==="
           set +e
@@ -221,16 +263,25 @@ jobs:
           SMOKE_RC=$?
           set -e
           if [ "$SMOKE_RC" -ne 0 ]; then
-            echo "Post-rollout smoke test FAILED - auto-rolling back to $PREVIOUS_IMAGE"
-            if [ -n "$PREVIOUS_IMAGE" ] && [ "$PREVIOUS_IMAGE" != "${REPOSITORY_URI}@${IMAGE_DIGEST}" ]; then
-              kubectl set image deployment/"$K8S_DEPLOYMENT" \
-                "$K8S_CONTAINER=$PREVIOUS_IMAGE" -n "$K8S_NAMESPACE"
-            else
-              kubectl rollout undo deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE"
+            echo "Post-rollout smoke test FAILED"
+            SAFE_ROLLBACK=""
+            if [ -n "$ROLLBACK_IMAGE" ] && [ "$ROLLBACK_IMAGE" != "$NEW_IMAGE" ]; then
+              if ecr_has_digest "$ROLLBACK_IMAGE"; then
+                SAFE_ROLLBACK="$ROLLBACK_IMAGE"
+              else
+                echo "WARN: refusing to roll back to $ROLLBACK_IMAGE — digest is not in ECR"
+              fi
             fi
-            set +e
-            kubectl rollout status deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" --timeout=12m
-            set -e
+            if [ -n "$SAFE_ROLLBACK" ]; then
+              echo "auto-rolling back to $SAFE_ROLLBACK"
+              kubectl set image deployment/"$K8S_DEPLOYMENT" \
+                "$K8S_CONTAINER=$SAFE_ROLLBACK" -n "$K8S_NAMESPACE"
+              set +e
+              kubectl rollout status deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" --timeout=12m
+              set -e
+            else
+              echo "No pullable rollback image. Leaving spec on $NEW_IMAGE rather than pinning a ghost digest."
+            fi
             if [ "$SMOKE_RC" -eq 3 ]; then
               echo "Rolled back after CNI pod-IP exhaustion - non-fatal."
             else
@@ -238,6 +289,7 @@ jobs:
               exit 1
             fi
           fi
+          ecr_protect_tag "$IMAGE_DIGEST" "prod" || true
           LIVE_IMAGE=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}')
           echo "LIVE_IMAGE=$LIVE_IMAGE"
           kubectl get pods -n "$K8S_NAMESPACE" -l app="$K8S_DEPLOYMENT" -o wide
@@ -245,40 +297,56 @@ jobs:
       - name: Deploy multiplayer tier (same digest, auto-rollback)
         run: |
           set -euo pipefail
-          # Roll the multiplayer tier to the exact digest the main tier just
-          # passed its smoke test on. Digest-pinned so an ECR tag expiry can
-          # never break scheduling again (see RCA note in env block above).
+          # shellcheck disable=SC1091
+          . scripts/ecr-digest.sh
           if ! kubectl get deployment "$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" >/dev/null 2>&1; then
             echo "INFO: $K8S_MP_DEPLOYMENT not found in $K8S_NAMESPACE - skipping."
             exit 0
           fi
           IMAGE_DIGEST=$(aws ecr describe-images \
+            --registry-id "$AWS_ACCOUNT_ID" \
             --repository-name "$ECR_REPOSITORY" \
             --image-ids imageTag="$IMAGE_VERSION" \
             --query 'imageDetails[0].imageDigest' --output text)
-          MP_PREVIOUS_IMAGE=$(kubectl get deployment "$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+          NEW_IMAGE="${REPOSITORY_URI}@${IMAGE_DIGEST}"
+          if ! ecr_has_digest "$IMAGE_DIGEST"; then
+            echo "FATAL: $NEW_IMAGE is not pullable — refusing multiplayer roll"
+            exit 1
+          fi
+          MP_SPEC=$(kubectl get deployment "$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" \
             -o jsonpath='{.spec.template.spec.containers[0].image}')
-          echo "MP_PREVIOUS_IMAGE=$MP_PREVIOUS_IMAGE"
-          if [ "$MP_PREVIOUS_IMAGE" = "${REPOSITORY_URI}@${IMAGE_DIGEST}" ]; then
+          MP_WORKING=$(working_image_from_ready_pod "$K8S_NAMESPACE" "$K8S_MP_DEPLOYMENT")
+          MP_ROLLBACK="${MP_WORKING:-$MP_SPEC}"
+          echo "MP_SPEC=$MP_SPEC"
+          echo "MP_WORKING=$MP_WORKING"
+          if [ "$MP_SPEC" = "$NEW_IMAGE" ]; then
             echo "Multiplayer tier already on ${IMAGE_DIGEST} - nothing to do."
             exit 0
           fi
+          MP_REPLICAS=$(kubectl get deployment "$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+            -o jsonpath='{.spec.replicas}')
+          pause_hpa "$K8S_NAMESPACE" intelliverse-nakama-multiplayer "$MP_REPLICAS"
+          trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama-multiplayer' EXIT
+          delete_unpullable_pods "$K8S_NAMESPACE" "$K8S_MP_DEPLOYMENT"
           echo "=== Rolling $K8S_MP_DEPLOYMENT to ${IMAGE_VERSION} (${IMAGE_DIGEST}) ==="
           kubectl set image deployment/"$K8S_MP_DEPLOYMENT" \
-            "$K8S_MP_CONTAINER"="${REPOSITORY_URI}@${IMAGE_DIGEST}" -n "$K8S_NAMESPACE"
+            "$K8S_MP_CONTAINER"="$NEW_IMAGE" -n "$K8S_NAMESPACE"
           kubectl annotate deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --overwrite \
             kubernetes.io/change-cause="deploy-eks gha${GITHUB_RUN_NUMBER}: ${IMAGE_VERSION} (digest pinned)"
-          # Multiplayer pods drain matches in preStop (up to 5 min each,
-          # maxUnavailable=0), so give the rollout a generous window.
           set +e
           kubectl rollout status deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --timeout=15m
           MP_RC=$?
           set -e
           if [ "$MP_RC" -ne 0 ]; then
-            echo "Multiplayer rollout FAILED - rolling back to $MP_PREVIOUS_IMAGE"
-            kubectl set image deployment/"$K8S_MP_DEPLOYMENT" \
-              "$K8S_MP_CONTAINER=$MP_PREVIOUS_IMAGE" -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --timeout=15m || true
+            echo "Multiplayer rollout FAILED"
+            if [ -n "$MP_ROLLBACK" ] && [ "$MP_ROLLBACK" != "$NEW_IMAGE" ] && ecr_has_digest "$MP_ROLLBACK"; then
+              echo "rolling back to $MP_ROLLBACK"
+              kubectl set image deployment/"$K8S_MP_DEPLOYMENT" \
+                "$K8S_MP_CONTAINER=$MP_ROLLBACK" -n "$K8S_NAMESPACE"
+              kubectl rollout status deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --timeout=15m || true
+            else
+              echo "WARN: refusing to roll multiplayer back onto an unpullable digest ($MP_ROLLBACK)"
+            fi
             echo "Rolled back multiplayer tier. Failing the run."
             exit 1
           fi

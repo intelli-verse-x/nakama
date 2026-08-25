@@ -207,11 +207,17 @@ function sdTimeout(ctx) {
 // src/satori/satori-direct-control.ts) — lets ops cut the paid Satori
 // mirror without a redeploy. Default (missing/unreadable config) is ON to
 // preserve existing behaviour.
-var SD_KILLSWITCH = { value: null, loadedAt: 0 };
+// Do not name a field `value` on this cache. Goja treats some host/module
+// objects' `.value` as read-only ("Cannot assign to read only property
+// 'value'"), which aborted every Satori publish on analytics_log_event.
+// Module-level cache also does not survive the Goja VM pool; the try/catch
+// around assignment is only for intra-call reuse.
+var SD_KILLSWITCH_ON = null;
+var SD_KILLSWITCH_AT = 0;
 function sdCloudEnabled(nk) {
     var now = Date.now();
-    if (SD_KILLSWITCH.value !== null && (now - SD_KILLSWITCH.loadedAt) < 60000) {
-        return SD_KILLSWITCH.value;
+    if (SD_KILLSWITCH_ON !== null && (now - SD_KILLSWITCH_AT) < 60000) {
+        return SD_KILLSWITCH_ON;
     }
     var enabled = true;
     try {
@@ -224,11 +230,12 @@ function sdCloudEnabled(nk) {
             enabled = false;
         }
     } catch (e) {
-        // Storage hiccup — keep last known value if any, else default ON.
-        if (SD_KILLSWITCH.value !== null) return SD_KILLSWITCH.value;
+        if (SD_KILLSWITCH_ON !== null) return SD_KILLSWITCH_ON;
     }
-    SD_KILLSWITCH.value = enabled;
-    SD_KILLSWITCH.loadedAt = now;
+    try {
+        SD_KILLSWITCH_ON = enabled;
+        SD_KILLSWITCH_AT = now;
+    } catch (eAssign) { /* frozen module scope — skip cache */ }
     return enabled;
 }
 
@@ -553,7 +560,14 @@ function sdEventsPublish(ctx, nk, logger, identifier, events) {
             timestamp: rfc3339
         };
         if (e.id) wire.id = String(e.id);
-        if (typeof e.value === "string" && e.value.length > 0) wire.value = e.value;
+        if (typeof e.value === "string" && e.value.length > 0) {
+            try {
+                wire.value = e.value;
+            } catch (eVal) {
+                wire = { name: name, timestamp: rfc3339, value: e.value };
+                if (e.id) wire.id = String(e.id);
+            }
+        }
         // Prefer an explicit per-event identity_id; fall back to the caller-provided one.
         var iid = e.identity_id || identifier;
         if (iid) wire.identity_id = String(iid);
