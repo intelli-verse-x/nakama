@@ -883,7 +883,19 @@ var MATCH_HANDLERS = [
   mpKernelTemplate('live-event-v1',           'mpLiveEventMatchInit'),
   mpKernelTemplate('persistent-party-v1',     'mpPersistentPartyMatchInit'),
   mpKernelTemplate('conversational-party-v1', 'mpConversationalPartyMatchInit'),
-  mpKernelTemplate('mixed-reality-anchor-v1', 'mpMrAnchorMatchInit')
+  mpKernelTemplate('mixed-reality-anchor-v1', 'mpMrAnchorMatchInit'),
+  {
+    matchName: 'kiosk-arcade-v1',
+    handlers: {
+      matchInit:        'kioskArcadeMatchInit',
+      matchJoinAttempt: 'kioskArcadeMatchJoinAttempt',
+      matchJoin:        'kioskArcadeMatchJoin',
+      matchLeave:       'kioskArcadeMatchLeave',
+      matchLoop:        'kioskArcadeMatchLoop',
+      matchSignal:      'kioskArcadeMatchSignal',
+      matchTerminate:   'kioskArcadeMatchTerminate'
+    }
+  }
 ];
 
 // ─── 5b-bis. Realtime / group after-hook registration ─────────────
