@@ -289,7 +289,19 @@ jobs:
 
           echo "=== Injecting runtime secrets into deployment env (before image update) ==="
           echo "=== Removing legacy raw OPENAI_API_KEY from deployment env (LiteLLM gateway holds vendor keys) ==="
-          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" OPENAI_API_KEY- || true
+          # --containers is scoped deliberately. `kubectl set env deployment/x KEY=VAL`
+          # with no selector writes to EVERY container in the pod template. The
+          # recorder-asr-shim sidecar (deploy/recorder-asr-shim/) lands in this
+          # same pod, and without this selector every CI run would also stamp
+          # TMDB_API_KEY, DASHBOARD_SECRET, LLM_PROVIDER and the rest onto the
+          # shim. The shim ignores unknown env, so it is harmless in itself —
+          # but it means the shim's environment is no longer only what its patch
+          # says, which is a trap for whoever debugs it next. The container name
+          # is verified: this Deployment's container is `intelliverse-nakama`
+          # (the multiplayer tier's is `nakama`), which is what K8S_CONTAINER
+          # already holds.
+          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+            --containers="$K8S_CONTAINER" OPENAI_API_KEY- || true
           INJECT_ARGS=""
           [ -n "$XAI_API_KEY" ]        && INJECT_ARGS="$INJECT_ARGS XAI_API_KEY=$XAI_API_KEY"
           [ -n "$LLM_PROVIDER" ]       && INJECT_ARGS="$INJECT_ARGS LLM_PROVIDER=$LLM_PROVIDER"
@@ -301,7 +313,11 @@ jobs:
           [ -n "$NEWSAPI_API_KEY" ]    && INJECT_ARGS="$INJECT_ARGS NEWSAPI_API_KEY=$NEWSAPI_API_KEY"
           [ -n "$NASA_API_KEY" ]       && INJECT_ARGS="$INJECT_ARGS NASA_API_KEY=$NASA_API_KEY"
           INJECT_ARGS="$INJECT_ARGS DASHBOARD_SECRET=$RUNTIME_DASHBOARD_SECRET ROLLUP_ENABLED=true DASHBOARD_PREFER_ROLLUPS=true"
-          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" $INJECT_ARGS
+          # Same reasoning as the OPENAI_API_KEY- removal above: scope this to
+          # the Nakama container so the recorder-asr-shim sidecar does not
+          # accumulate a copy of every runtime secret on each CI roll.
+          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+            --containers="$K8S_CONTAINER" $INJECT_ARGS
 
           CURRENT_REPLICAS=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
             -o jsonpath='{.spec.replicas}')

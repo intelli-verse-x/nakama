@@ -1,0 +1,27 @@
+# recorder-asr-shim — base64→multipart sidecar for the Curio recorder RPCs.
+#
+# The shim runs as a sidecar in the intelliverse-nakama pod, not as its own
+# Deployment, because it binds 127.0.0.1 on purpose (see README.md § Why
+# loopback). That means there is nothing to create here except the ConfigMap
+# carrying its source; the container itself arrives via
+# nakama-sidecar-patch.yaml, which is applied against the existing Deployment.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aicart
+
+configMapGenerator:
+  - name: recorder-asr-shim
+    files:
+      - shim.py
+    options:
+      labels:
+        app: recorder-asr-shim
+        component: asr-bridge
+
+# The sidecar patch below references this ConfigMap by a fixed name, so the
+# content hash must not be appended. Consequence: editing shim.py and applying
+# does NOT restart the pod on its own — see the README's step 5 for the
+# rollout restart that picks up a new shim.py.
+generatorOptions:
+  disableNameSuffixHash: true

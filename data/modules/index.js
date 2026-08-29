@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-08-29T21:53:18.930Z
-// RPC Count: 1334
+// Generated: 2026-08-29T22:02:41.170Z
+// RPC Count: 1339
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -594,6 +594,11 @@ var __rpc_qv_agent_global_leaderboard_top10;
 var __rpc_qv_agent_analyze_quiz_performance;
 var __rpc_qv_agent_generate_trivia;
 var __rpc_qv_agent_public_activity;
+var __rpc_recorder_asr_open;
+var __rpc_recorder_asr_push;
+var __rpc_recorder_asr_close;
+var __rpc_recorder_asr_purge;
+var __rpc_recorder_asr_gc;
 var __rpc_quizverse_research_consent;
 var __rpc_quizverse_research_assignment_get;
 var __rpc_quizverse_research_diagnostic_submit;
@@ -1348,7 +1353,7 @@ var __rpc_visual_path_skip_day_with_ad;
 var __rpc_kiosk_arcade_create;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (123 files) ---
 
@@ -100381,6 +100386,30 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[Library] Failed to register library v2.4.0 RPCs: " + (err.message || String(err)));
     }
+    // ---- Curio Recorder ASR ----
+    // recorder_asr_open / _push / _close are called by name from the QuizVerse
+    // Flutter client (lib/features/recorder/data/recorder_asr_transport.dart) to
+    // turn audio captured on the Curio wearable into text. Until these existed
+    // every such call classified as endpointUnavailable and nothing recorded on
+    // the device could become a note. _purge is the user's own right-to-erasure
+    // and _gc is the service-token sweep for a cron.
+    //
+    // Needs the recorder-asr-shim sidecar reachable at RECORDER_ASR_SHIM_URL to do
+    // anything, because this runtime cannot send a binary HTTP body and the speech
+    // engine accepts multipart only. Without it open returns ENDPOINT_UNAVAILABLE
+    // honestly rather than accepting audio it cannot transcribe — the client falls
+    // back to on-device speech only on that code, so a false "available" would
+    // hand the user silence. Single-arg register() so postbuild's autoInvokeRegister
+    // re-runs it on every pooled Goja VM. See data/modules/src/recorder/recorder_asr.ts
+    // and docs/recorder/ASR_ENDPOINTS.md.
+    try {
+        logger.info("[RecorderAsr] Registering recorder_asr_open / _push / _close / _purge / _gc RPCs...");
+        RecorderAsr.register(initializer);
+        logger.info("[RecorderAsr] registered");
+    }
+    catch (err) {
+        logger.error("[RecorderAsr] failed to register: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- Event Bus Handlers ----
     try {
         HiroAchievements.registerEventHandlers();
@@ -164211,6 +164240,2042 @@ var QvAgent;
     QvAgent.register = register;
     register();
 })(QvAgent || (QvAgent = {}));
+// =============================================================================
+// Recorder ASR — the three RPCs the QuizVerse Flutter client already calls.
+//
+//   recorder_asr_open   → start or resume a transcription session
+//   recorder_asr_push   → upload one chunk of audio, get transcript back
+//   recorder_asr_close  → end the session, get trailing transcript
+//
+// Contract source of truth
+// ------------------------
+// The client is `lib/features/recorder/data/recorder_asr_transport.dart` in the
+// quiz-verse-flutter repo, and where it disagrees with
+// `docs/device-pen/30-CLOUD-ENDPOINT-CONTRACTS.md` the client wins. Two
+// disagreements matter and are resolved here in the client's favour:
+//
+//  1. The doc puts `idempotency_key` on every request (§3.1). The ASR client
+//     sends no such field. Idempotency is therefore keyed on
+//     (`client_session_id`, `seq`) instead, which is what the client actually
+//     provides and is in fact the stronger key for a stream.
+//  2. The doc says errors arrive "in the response body, not as a transport
+//     failure" (§3.1). That is exactly right and is what we do — a failure is
+//     HTTP 200 with `{"error":{"code":…,"message":…}}` — because
+//     `nakamaRecorderRpc` distinguishes "the server said no" from "the RPC is
+//     not registered" by inspecting the body. Returning a Nakama runtime error
+//     instead would be classified from exception text, which is fragile.
+//
+// The response envelope is flat (`{"session_id":…}`), NOT the repo's usual
+// `RpcHelpers.successResponse` `{success, data}` wrapper: the client parses
+// `data['session_id']` off the top level. Matching the repo shape here would
+// silently break every call, so the client shape wins and this is the one
+// deliberate departure from house style in this module.
+//
+// Audio format on the wire
+// ------------------------
+// Read from the client, not assumed:
+//
+//  * `codec: "pcm16"` — 16 kHz mono signed 16-bit LE. This is the production
+//    path. `opus_codec` ships prebuilt libopus for Android and iOS, so
+//    `resolveDeviceAudioDecode()` returns `DeviceAudioDecode.local` on a real
+//    handset and the client decodes the pen's Opus itself before uploading.
+//  * `codec: "opus"` — bare, back-to-back Opus packets with no container and no
+//    length prefix. This is the fallback when libopus fails to load.
+//
+// Chunks are base64 in `audio_b64` and are NOT packet-aligned: the client's
+// `PenAudioChunker` packs whole BLE payloads into a ~4300-byte window, and a BLE
+// notification is not an Opus packet boundary. So the server keeps absolute byte
+// offsets and re-aligns to packet boundaries itself.
+//
+// No Opus decoding happens on the server, and none is possible: Goja has no FFI
+// and no Node APIs. It is also not needed — the ASR backend is ffmpeg-backed and
+// accepts Ogg Opus, so bare packets are *containerised*
+// (`RecorderAudio.oggOpusFromPackets`) rather than decoded.
+//
+// The upload cannot be done from this runtime — `nk.binaryToString` rejects
+// non-UTF-8 buffers, so no binary body can be built here. It goes out as base64
+// to the `recorder-asr-shim` sidecar, which forwards real multipart; see the
+// header of recorder_asr_provider.ts. When that sidecar is absent or cannot
+// reach the engine, `open` answers ENDPOINT_UNAVAILABLE and the client keeps
+// using on-device speech.
+//
+// Windowed transcription
+// ----------------------
+// The ASR engine is a batch model at ~0.38x realtime, and Nakama's HTTP write
+// timeout is 10 s by default, so "transcribe everything at close" would time out
+// on any recording over ~20 s. Instead each `push` transcribes at most one
+// WINDOW_MS window of newly-arrived audio and returns its segments, and `close`
+// transcribes the remaining tail. Cost is linear in session length and no single
+// call waits more than about a window's worth of engine time.
+//
+// Retention, and why audio does not accumulate
+// --------------------------------------------
+// Audio chunks are deleted as soon as they are behind the transcription
+// watermark, and every remaining chunk is deleted at close. The server keeps no
+// audio after a session ends, ever. Transcripts survive only long enough for a
+// retried `close` to be idempotent (RECORDER_ASR_TRANSCRIPT_TTL_SECONDS,
+// default 24 h) and are then swept. See §COPPA below.
+//
+// COPPA
+// -----
+// An under-13 user's voice is personal information under 16 CFR 312.2(8) and
+// there is no verifiable parental consent anywhere in this product. The client
+// blocks `AgeRestrictedCapability.audioCapture` before a recording can start,
+// and that remains the primary enforcement point because a self-declared age is
+// not something this endpoint can verify.
+//
+// What the server does do, rather than leaving it unaddressed:
+//
+//  * accepts an explicit `age_assertion` on open and *refuses* the session when
+//    it says `below_threshold` or `unknown` — fail closed, matching the client's
+//    own rule that an unanswered gate is not permission;
+//  * records the assertion (or its absence) on the session so there is an audit
+//    trail of what was claimed;
+//  * refuses sessions with no assertion at all when
+//    RECORDER_ASR_REQUIRE_AGE_ASSERTION=1. This defaults to 0 only because no
+//    shipped client sends the field yet; the one-line client change is written
+//    up in docs/recorder/ASR_ENDPOINTS.md and flipping this to 1 afterwards is
+//    the intended end state.
+//  * keeps no audio and short-lived transcripts, so the blast radius of a
+//    wrongly-admitted session is bounded in time.
+// =============================================================================
+var RecorderAsr;
+(function (RecorderAsr) {
+    // ── Storage layout ────────────────────────────────────────────────────────
+    /** One object per session, keyed by the server session id. */
+    var COLLECTION_SESSIONS = "recorder_asr_sessions";
+    /** One object per uploaded chunk, keyed `<sessionId>.<seq padded to 6>`. */
+    var COLLECTION_CHUNKS = "recorder_asr_chunks";
+    /** client_session_id → server session id, so a reconnect resumes. */
+    var COLLECTION_INDEX = "recorder_asr_index";
+    // ── Limits. Every one of these is a rejection, not a wobble. ──────────────
+    /** Base64 characters accepted in one push.
+     *
+     *  Must stay BELOW Nakama's own `socket.max_request_size_bytes` (default
+     *  262,144 — `server/config.go`), which covers the whole request including
+     *  the JSON envelope. Measured against a live server the effective ceiling is
+     *  ~261,900 chars, so a guard at 262,144 never fired: the request died first
+     *  as HTTP 400 "request body too large", which the client's `_classify` maps
+     *  to `internal` — retryable — and so an oversized chunk would be retried
+     *  forever instead of being dropped.
+     *
+     *  160,000 sits under the transport limit with room for the envelope and
+     *  still clears the client's largest real chunk (~91,700 chars: a 4300-byte
+     *  Opus window expanded 16x by local PCM decode) by ~1.7x. */
+    var MAX_PUSH_B64_CHARS = 160000;
+    /** Decoded audio per session. 24 MiB is ~12.5 min of 16 kHz mono PCM16. */
+    var MAX_SESSION_BYTES = 24 * 1024 * 1024;
+    var MAX_CHUNKS_PER_SESSION = 4096;
+    /**
+     * Largest jump in `seq` a single push may make.
+     *
+     * A gap is legitimate — the client's backpressure drops the oldest queued
+     * chunk while sequence numbers keep incrementing — so this cannot be "no gap
+     * at all". But `acked_seq` is set from the client's `seq` with no ceiling, and
+     * two hot paths derive a dense key range from it (`readWindowBytes` reads one
+     * chunk key per seq, `deleteChunks` deletes one per seq). That made their cost
+     * client-controlled: one push with `seq = 2_000_000_000` and every subsequent
+     * window read and every reclamation walks two billion keys.
+     *
+     * Not hypothetical. A live local session reached `acked_seq = 91736`, and the
+     * resulting 91,737-key delete took 42 s in one transaction — long enough that
+     * Nakama closed the connection at its socket write timeout and the caller saw
+     * a failure for work that had actually completed.
+     *
+     * Bounded at the chunk cap, because at most that many chunks can ever be
+     * stored: a client that has dropped more than 4,096 chunks in a row has lost
+     * ~13 minutes of audio and should open a new session rather than ask the
+     * server to address a sparse range wider than any session can hold.
+     */
+    var MAX_CHUNK_SEQ_GAP = MAX_CHUNKS_PER_SESSION;
+    /** Concurrent open sessions per account. One capture at a time is the product
+     *  reality; 3 tolerates orphans from a crashed app without letting a loop
+     *  fill storage. */
+    var MAX_OPEN_SESSIONS_PER_USER = 3;
+    /** An open session untouched for this long is abandoned and swept. */
+    var SESSION_IDLE_TTL_SECONDS = 3600;
+    /** Sessions examined per opportunistic sweep. */
+    var GC_SCAN_LIMIT = 100;
+    // ── Transcription windowing ───────────────────────────────────────────────
+    /** Audio per transcription call. 8 s at ~0.38x realtime is ~3 s of engine
+     *  time, comfortably inside Nakama's 10 s HTTP write timeout. */
+    var WINDOW_MS = 8000;
+    /** Re-fed to the engine at the head of each window so an utterance split
+     *  across a boundary is transcribed intact. Segments ending before the
+     *  previous watermark are dropped, so the overlap does not duplicate text. */
+    var OVERLAP_MS = 1200;
+    /** Hard ceiling on audio handed to the engine in a single RPC, so a large
+     *  backlog cannot push one call past the write timeout. */
+    var MAX_CALL_MS = 20000;
+    /**
+     * A segment ending within this much of the end of the engine's input is
+     * treated as unfinished and emitted as a partial (`is_final: false`) rather
+     * than committed.
+     *
+     * Why: the engine only saw audio up to the window edge, so an utterance still
+     * in progress there comes back truncated — observed live, a window boundary
+     * turned "and returns a transcript" into "and returns a transc-". The next
+     * window re-transcribes it in full (that is what OVERLAP_MS is for) and emits
+     * the complete version as final. The client already has exactly the right
+     * semantics for this: `is_final: false` replaces its volatile `partial` string,
+     * while final segments are appended
+     * (quiz-verse-flutter lib/features/recorder/application/
+     * recorder_session_controller.dart `_onSegment`).
+     */
+    var TAIL_GUARD_MS = 600;
+    // ── Codec allow-list ──────────────────────────────────────────────────────
+    var CODEC_PCM16 = "pcm16";
+    var CODEC_OPUS = "opus";
+    var LEGAL_RATES = { "8000": true, "12000": true, "16000": true, "24000": true, "48000": true };
+    var LEGAL_FRAME_MS = { "2": true, "5": true, "10": true, "20": true, "40": true, "60": true };
+    /** Packet sizes seen in the wild: 40 on the pnote pen (`setPacketSize(40)`),
+     *  80 on the RCSP sibling family. Probed in this order. */
+    var PACKET_SIZE_CANDIDATES = [40, 80];
+    // ── Error codes. These strings are `RegistrationErrorCode.fromWire` in the
+    //    client; anything else it does not recognise becomes INTERNAL. ─────────
+    var ERR_UNAUTHENTICATED = "UNAUTHENTICATED";
+    var ERR_RATE_LIMITED = "RATE_LIMITED";
+    var ERR_ENDPOINT_UNAVAILABLE = "ENDPOINT_UNAVAILABLE";
+    var ERR_INTERNAL = "INTERNAL";
+    var ERR_NOT_FOUND = "DEVICE_NOT_FOUND";
+    // ── Small helpers ─────────────────────────────────────────────────────────
+    function nowSec() { return Math.floor(Date.now() / 1000); }
+    function errorBody(code, message) {
+        return JSON.stringify({ error: { code: code, message: message } });
+    }
+    function pad6(n) {
+        var s = "" + n;
+        while (s.length < 6)
+            s = "0" + s;
+        return s;
+    }
+    function chunkKey(sessionId, seq) {
+        return sessionId + "." + pad6(seq);
+    }
+    function intOf(v, dflt) {
+        var n = parseInt("" + v, 10);
+        return isNaN(n) ? dflt : n;
+    }
+    function envInt(ctx, key, dflt) {
+        var raw = ctx.env && ctx.env[key];
+        if (raw === undefined || raw === null || raw === "")
+            return dflt;
+        var n = parseInt("" + raw, 10);
+        return isNaN(n) || n < 0 ? dflt : n;
+    }
+    function transcriptTtlSeconds(ctx) {
+        return envInt(ctx, "RECORDER_ASR_TRANSCRIPT_TTL_SECONDS", 86400);
+    }
+    function requireAgeAssertion(ctx) {
+        return "" + ((ctx.env && ctx.env["RECORDER_ASR_REQUIRE_AGE_ASSERTION"]) || "0") === "1";
+    }
+    /** Short, non-reversible fingerprint for logging/audit of a capability. */
+    function fingerprint(nk, value) {
+        if (!value || value.length === 0)
+            return "";
+        try {
+            return ("" + nk.sha256Hash(value)).substring(0, 12);
+        }
+        catch (_e) {
+            return "unhashable";
+        }
+    }
+    function readSession(nk, userId, sessionId) {
+        // Read under the caller's own userId only. Storage is partitioned by user in
+        // Nakama, so a session id belonging to somebody else simply is not here —
+        // cross-account access is structurally impossible rather than filtered.
+        var objs = nk.storageRead([{ collection: COLLECTION_SESSIONS, key: sessionId, userId: userId }]);
+        if (!objs || objs.length === 0)
+            return null;
+        return objs[0].value;
+    }
+    function writeSession(nk, userId, rec) {
+        rec.updated_at = nowSec();
+        nk.storageWrite([{
+                collection: COLLECTION_SESSIONS,
+                key: rec.session_id,
+                userId: userId,
+                value: rec,
+                // Owner may read (debug screens); only the server writes.
+                permissionRead: 1,
+                permissionWrite: 0,
+            }]);
+    }
+    /** Delete keys per `storageDelete` call. One call is one transaction, and a
+     *  transaction of thousands of keys is what turned a single reclamation into
+     *  a 42-second RPC (see `deleteChunks`). */
+    var CHUNK_DELETE_BATCH = 256;
+    /**
+     * Deletes the chunk rows for `[fromSeq, toSeq]`.
+     *
+     * The range is derived from `acked_seq`, which is **client-supplied**: a seq
+     * gap is legitimate (the client's backpressure drops the oldest queued chunk
+     * while sequence numbers keep incrementing) so `rpcPush` accepts one. That
+     * made this function's cost client-controlled — one push with a large `seq`
+     * and every later reclamation walks that whole range.
+     *
+     * Observed on a live local server: a session with `acked_seq = 91736` built a
+     * 91,737-key delete in a single transaction, which took 42 s. Nakama closed
+     * the connection at its socket write timeout, so the sweep's answer was lost
+     * even though the work completed. With a larger seq it is unbounded memory.
+     *
+     * `rpcPush` now caps the gap, so new sessions cannot reach that state. This
+     * bounds the walk anyway, because records written before that cap are still
+     * in storage and one of them must not be able to hang a sweep.
+     */
+    function deleteChunks(nk, userId, sessionId, fromSeq, toSeq) {
+        if (toSeq < fromSeq)
+            return 0;
+        // At most MAX_CHUNKS_PER_SESSION chunks can ever have been stored, so a
+        // range wider than that is mostly keys that were never written.
+        var walkTo = toSeq;
+        var capped = false;
+        if (toSeq - fromSeq >= MAX_CHUNKS_PER_SESSION) {
+            walkTo = fromSeq + MAX_CHUNKS_PER_SESSION - 1;
+            capped = true;
+        }
+        var deletes = [];
+        for (var s = fromSeq; s <= walkTo; s++) {
+            deletes.push({ collection: COLLECTION_CHUNKS, key: chunkKey(sessionId, s), userId: userId });
+        }
+        // The highest seq is the one chunk that certainly was written, so include
+        // it explicitly rather than leaving it behind when the walk was capped.
+        if (capped) {
+            deletes.push({ collection: COLLECTION_CHUNKS, key: chunkKey(sessionId, toSeq), userId: userId });
+        }
+        var attempted = 0;
+        for (var i = 0; i < deletes.length; i += CHUNK_DELETE_BATCH) {
+            var batch = deletes.slice(i, i + CHUNK_DELETE_BATCH);
+            try {
+                nk.storageDelete(batch);
+            }
+            catch (_e) {
+                // A missing chunk is the desired end state; a gap from a dropped upload
+                // makes this normal rather than exceptional.
+            }
+            attempted += batch.length;
+        }
+        return attempted;
+    }
+    // ── Duration arithmetic ───────────────────────────────────────────────────
+    /** Bytes → audio-timeline ms, per codec. Exact for PCM16; for bare Opus it
+     *  depends on the packet size, which is why an unknown packet size falls back
+     *  to the pen's documented 40 bytes rather than guessing zero. */
+    function bytesToMs(rec, bytes) {
+        if (rec.codec === CODEC_PCM16) {
+            var byteRate = rec.sample_rate_hz * rec.channels * 2;
+            return byteRate > 0 ? Math.round(bytes * 1000 / byteRate) : 0;
+        }
+        var pkt = rec.packet_bytes > 0 ? rec.packet_bytes : PACKET_SIZE_CANDIDATES[0];
+        return Math.round((bytes / pkt) * rec.frame_ms);
+    }
+    function msToBytes(rec, ms) {
+        if (rec.codec === CODEC_PCM16) {
+            return Math.round(ms * rec.sample_rate_hz * rec.channels * 2 / 1000);
+        }
+        var pkt = rec.packet_bytes > 0 ? rec.packet_bytes : PACKET_SIZE_CANDIDATES[0];
+        return rec.frame_ms > 0 ? Math.round(ms / rec.frame_ms) * pkt : 0;
+    }
+    /** Snaps a byte offset down to something the codec can start decoding at.
+     *  PCM16 needs sample alignment; bare Opus needs packet alignment, because a
+     *  slice that starts mid-packet decodes to plausible noise. */
+    function alignDown(rec, offset) {
+        if (rec.codec === CODEC_PCM16) {
+            var block = rec.channels * 2;
+            return offset - (offset % block);
+        }
+        var pkt = rec.packet_bytes > 0 ? rec.packet_bytes : PACKET_SIZE_CANDIDATES[0];
+        return offset - (offset % pkt);
+    }
+    /**
+     * How much already-consumed audio the next window re-reads.
+     *
+     * Zero in the normal case, and that is the whole point. `transcribed_bytes`
+     * is rewound to the end of the last committed utterance after every window,
+     * so the next window already starts on a clean utterance boundary and there
+     * is nothing to recover by reaching further back. Re-feeding anyway is what
+     * produced duplicated text at every seam: the engine received the tail of a
+     * committed sentence, transcribed it again as part of a longer segment, and
+     * that segment's timings straddled the watermark so the drop rule could not
+     * catch it. Measured before the fix — "…sidecar shim." committed, then
+     * "sidecar shim. 2. The audio was…" committed immediately after, with
+     * `begin_ms` moving backwards.
+     *
+     * The overlap is for the degraded path only: audio the byte watermark passed
+     * over without any text being committed for it (chunks missing, a container
+     * that would not mux, a forced flush that finalised nothing). There the
+     * boundary is arbitrary and an utterance really can be sliced in half, so the
+     * next window reaches back to pick up its start.
+     *
+     * Exported for tests: this is one branch on two integers, and the degraded
+     * path cannot be reached through the RPCs without racing storage.
+     */
+    function overlapMsFor(consumedMs, committedMs) {
+        return consumedMs > committedMs ? OVERLAP_MS : 0;
+    }
+    RecorderAsr.overlapMsFor = overlapMsFor;
+    /**
+     * Chooses the next slice of audio to transcribe.
+     *
+     * Returns null when there is not enough new audio to be worth a round trip
+     * (unless `force`, which is what `close` passes to flush the tail).
+     */
+    function planWindow(rec, force) {
+        var pending = rec.next_offset - rec.transcribed_bytes;
+        if (pending <= 0)
+            return null;
+        var pendingMs = bytesToMs(rec, pending);
+        if (!force && pendingMs < WINDOW_MS)
+            return null;
+        // Never hand the engine more than MAX_CALL_MS in one call, even on close:
+        // a backlog must cost several bounded calls, not one unbounded one.
+        var maxBytes = msToBytes(rec, MAX_CALL_MS);
+        var endOffset = pending > maxBytes ? alignDown(rec, rec.transcribed_bytes + maxBytes) : rec.next_offset;
+        if (endOffset <= rec.transcribed_bytes)
+            endOffset = rec.next_offset;
+        // Overlap only when audio was consumed WITHOUT being committed.
+        //
+        // Measured against a real engine (2026-08-28): re-feeding overlap
+        // unconditionally duplicates text. The dedup rule drops segments that end
+        // before the watermark, which was believed to make the overlap free — but
+        // the engine does not re-segment the same way twice. Given overlapping
+        // audio it returns one *merged* segment straddling the watermark, which
+        // passes the dedup test and re-emits its already-committed prefix. Observed:
+        // "…sidecar shim." committed, then "sidecar shim. 2. The audio was…"
+        // committed straight after, and a `begin_ms` that moved backwards.
+        //
+        // The overlap is redundant in that case anyway. `transcribeWindow` rewinds
+        // the byte watermark to the end of the last *committed* utterance, so the
+        // next window already starts in a pause with every uncommitted byte still
+        // ahead of it — an utterance cut by the window edge is re-transcribed in
+        // full without re-reading anything already emitted.
+        //
+        // Overlap is still needed on the degraded path, where the watermark was
+        // force-advanced past audio that never produced committed text (a window
+        // that yielded only partials, or a missing chunk). That is exactly the case
+        // where the byte watermark is ahead of the committed-text watermark, so no
+        // extra session state is needed to detect it. Text can still be duplicated
+        // there, and re-emitting beats dropping when audio has already been skipped.
+        var overlapMs = overlapMsFor(bytesToMs(rec, rec.transcribed_bytes), rec.transcribed_ms);
+        var startOffset = alignDown(rec, Math.max(0, rec.transcribed_bytes - msToBytes(rec, overlapMs)));
+        return { startOffset: startOffset, endOffset: endOffset, firstSeq: -1, lastSeq: -1 };
+    }
+    /**
+     * Reads the chunks covering [startOffset, endOffset) and returns exactly those
+     * bytes.
+     *
+     * Chunk boundaries do not line up with the requested range — the client packs
+     * BLE payloads, not codec frames — so the covering chunks are read whole and
+     * then trimmed. A chunk that was already deleted (behind the watermark, or
+     * dropped by the client's backpressure) simply shortens the window rather than
+     * failing the call.
+     */
+    function readWindowBytes(nk, userId, rec, plan) {
+        var empty = { bytes: new Uint8Array(0), chunks: [] };
+        var reads = [];
+        var seq;
+        // Bounded for the same reason as `deleteChunks`: this walks a range derived
+        // from the client-supplied `acked_seq`, and no more than
+        // MAX_CHUNKS_PER_SESSION chunks can exist, so a wider range is keys that
+        // were never written. `rpcPush` caps the gap at the source; this keeps a
+        // record written before that cap from building a multi-thousand-key read.
+        var lastSeq = rec.acked_seq;
+        if (lastSeq - rec.first_chunk_seq >= MAX_CHUNKS_PER_SESSION) {
+            lastSeq = rec.first_chunk_seq + MAX_CHUNKS_PER_SESSION - 1;
+        }
+        for (seq = rec.first_chunk_seq; seq <= lastSeq; seq++) {
+            reads.push({ collection: COLLECTION_CHUNKS, key: chunkKey(rec.session_id, seq), userId: userId });
+        }
+        if (reads.length === 0)
+            return empty;
+        var objs = nk.storageRead(reads);
+        if (!objs || objs.length === 0)
+            return empty;
+        // storageRead does not guarantee order; sort by the seq we stored.
+        var chunks = [];
+        for (var i = 0; i < objs.length; i++) {
+            var c = objs[i].value;
+            if (c && typeof c.off === "number")
+                chunks.push(c);
+        }
+        chunks.sort(function (a, b) { return a.seq - b.seq; });
+        var parts = [];
+        for (var k = 0; k < chunks.length; k++) {
+            var ch = chunks[k];
+            var chEnd = ch.off + ch.bytes;
+            if (chEnd <= plan.startOffset)
+                continue;
+            if (ch.off >= plan.endOffset)
+                break;
+            var bytes = new Uint8Array(nk.base64Decode(ch.b64));
+            var from = plan.startOffset > ch.off ? plan.startOffset - ch.off : 0;
+            var to = plan.endOffset < chEnd ? bytes.length - (chEnd - plan.endOffset) : bytes.length;
+            if (to <= from)
+                continue;
+            parts.push(bytes.subarray(from, to));
+            if (plan.firstSeq < 0)
+                plan.firstSeq = ch.seq;
+            plan.lastSeq = ch.seq;
+        }
+        return { bytes: RecorderAudio.concatBytes(parts), chunks: chunks };
+    }
+    /** Wraps raw session bytes in whatever container the engine can demux. */
+    function encodeForProvider(nk, rec, raw) {
+        if (rec.codec === CODEC_PCM16) {
+            return {
+                bytes: RecorderAudio.wavFromPcm16(raw, rec.sample_rate_hz, rec.channels),
+                contentType: "audio/wav",
+                filename: "capture.wav",
+            };
+        }
+        // Bare Opus. The client does not send the packet size, so probe it from the
+        // bitstream and remember what the bytes said — a wrong size is the one error
+        // that decodes without complaint at half the true length.
+        var guess = RecorderAudio.guessPacketSize(raw, rec.packet_bytes > 0 ? [rec.packet_bytes] : PACKET_SIZE_CANDIDATES);
+        if (guess === null || guess.packets === 0) {
+            throw new Error("bare Opus stream did not match any known packet size");
+        }
+        if (rec.packet_bytes <= 0)
+            rec.packet_bytes = guess.packetBytes;
+        var frameMicros = guess.frameMicros > 0 ? guess.frameMicros : rec.frame_ms * 1000;
+        var packets = RecorderAudio.sliceBarePackets(raw, guess.packetBytes);
+        var ogg = RecorderAudio.oggOpusFromPackets(packets, rec.sample_rate_hz, guess.channels, frameMicros, 0x51565253);
+        return { bytes: ogg.bytes, contentType: "audio/ogg", filename: "capture.opus.ogg" };
+    }
+    /**
+     * Transcribes one window and folds the result into the session.
+     *
+     * Returns the segments that are new — segments landing entirely inside the
+     * overlap have already been emitted and are dropped, which is what keeps the
+     * overlap from duplicating text.
+     *
+     * Never throws: a provider failure leaves the watermark alone so the audio is
+     * retried on the next call, and the caller still gets a valid ack.
+     */
+    function transcribeWindow(ctx, logger, nk, userId, rec, force) {
+        var cfg = RecorderAsrProvider.config(ctx);
+        // Config check only — no shim probe. `open` already answered that
+        // honestly; a failure here is absorbed and the window is retried.
+        if (!RecorderAsrProvider.isAvailable(cfg))
+            return [];
+        var plan = planWindow(rec, force);
+        if (plan === null)
+            return [];
+        var read;
+        try {
+            read = readWindowBytes(nk, userId, rec, plan);
+        }
+        catch (e) {
+            logger.warn("[RecorderAsr] window read failed: " + (e && e.message ? e.message : String(e)));
+            return [];
+        }
+        var raw = read.bytes;
+        if (raw.length === 0) {
+            // Everything in range is gone (client dropped it, or it is already behind
+            // the watermark). Advance so we do not spin on it.
+            rec.transcribed_bytes = plan.endOffset;
+            return [];
+        }
+        var encoded;
+        try {
+            encoded = encodeForProvider(nk, rec, raw);
+        }
+        catch (e) {
+            logger.error("[RecorderAsr] container mux failed: " + (e && e.message ? e.message : String(e)));
+            rec.transcribed_bytes = plan.endOffset;
+            return [];
+        }
+        var offsetMs = bytesToMs(rec, plan.startOffset);
+        var watermarkMs = rec.transcribed_ms;
+        var result;
+        try {
+            result = RecorderAsrProvider.transcribe(nk, logger, cfg, {
+                bytes: encoded.bytes,
+                contentType: encoded.contentType,
+                filename: encoded.filename,
+                locale: rec.locale,
+                offsetMs: offsetMs,
+            });
+        }
+        catch (e) {
+            // Leave transcribed_bytes untouched: the audio is still in storage and the
+            // next push (or close) retries it.
+            logger.warn("[RecorderAsr] provider failed: " + (e && e.message ? e.message : String(e)));
+            return [];
+        }
+        // Anything the previous window already committed as final is dropped: the
+        // overlap re-transcribes that audio on purpose, and re-emitting it would
+        // duplicate text the client has already appended.
+        var candidates = [];
+        for (var i = 0; i < result.segments.length; i++) {
+            if (result.segments[i].endMs > watermarkMs)
+                candidates.push(result.segments[i]);
+        }
+        if (candidates.length === 0) {
+            // The window held nothing new (silence, or all of it already emitted).
+            // Advance anyway so we do not re-read the same audio forever.
+            rec.transcribed_bytes = plan.endOffset;
+            var silentMs = bytesToMs(rec, plan.endOffset);
+            if (silentMs > rec.transcribed_ms)
+                rec.transcribed_ms = silentMs;
+            pruneChunks(nk, userId, rec, read);
+            return [];
+        }
+        // Where the engine input ran out. A segment that reaches this edge was very
+        // likely cut mid-utterance — the engine had no audio left to finish it — so
+        // it is not safe to commit.
+        var boundaryMs = bytesToMs(rec, plan.endOffset);
+        var finalCount;
+        if (force) {
+            // No more audio is coming (close, or the client's is_last), so there is
+            // nothing left to supersede a tail and everything is final.
+            //
+            // Committed unconditionally rather than by comparing against boundaryMs.
+            // Engine timestamps are not bounded by the audio length — Whisper pads its
+            // input to 30 s and can report an end past the real end — so a
+            // `endMs <= boundaryMs` test silently excluded the last utterance. Then
+            // `force` had already consumed the audio, so `close` found nothing left to
+            // transcribe and the utterance was lost. Measured: a 27.4 s recording
+            // committed text ending "…device audio has" and left "become text." as a
+            // partial that nothing ever finalised.
+            finalCount = candidates.length;
+        }
+        else {
+            var stableUntilMs = boundaryMs - TAIL_GUARD_MS;
+            finalCount = 0;
+            for (var k = 0; k < candidates.length; k++) {
+                if (candidates[k].endMs <= stableUntilMs)
+                    finalCount++;
+            }
+            // Guarantee forward progress. One utterance longer than a whole window (a
+            // continuous speaker, no pauses) would otherwise never finalise and the
+            // same audio would be re-sent on every push. Committing it costs at worst
+            // one word split across a boundary.
+            if (finalCount === 0)
+                finalCount = candidates.length;
+        }
+        var fresh = [];
+        var lastFinalEndMs = watermarkMs;
+        for (var j = 0; j < candidates.length; j++) {
+            var s = candidates[j];
+            var isFinal = j < finalCount;
+            fresh.push({
+                text: s.text,
+                begin_ms: s.beginMs,
+                end_ms: s.endMs,
+                is_final: isFinal,
+            });
+            if (isFinal) {
+                // Only committed text goes into the stored transcript. A partial is
+                // volatile by contract: the client shows it as in-progress text and
+                // replaces it, so storing it would produce duplicates on resume.
+                rec.segments.push(fresh[j]);
+                if (s.endMs > lastFinalEndMs)
+                    lastFinalEndMs = s.endMs;
+            }
+        }
+        // Resume from the end of the last committed utterance rather than from the
+        // arbitrary byte the window happened to end on. That puts the next window's
+        // seam in the pause between utterances instead of mid-word, which is what
+        // stops the overlap from producing duplicated words.
+        rec.transcribed_ms = lastFinalEndMs;
+        if (force) {
+            // Nothing further will arrive to supersede a tail, so the whole window is
+            // consumed. Rewinding to the last utterance here would make `close` spend
+            // another engine round trip on the trailing silence.
+            rec.transcribed_bytes = plan.endOffset;
+        }
+        else {
+            var finalizedOffset = alignDown(rec, msToBytes(rec, lastFinalEndMs));
+            if (finalizedOffset > rec.transcribed_bytes && finalizedOffset < plan.endOffset) {
+                rec.transcribed_bytes = finalizedOffset;
+            }
+            else if (finalizedOffset >= plan.endOffset) {
+                rec.transcribed_bytes = plan.endOffset;
+            }
+            // A window that produced only partials must still consume audio, or the
+            // next push replays it unchanged and never makes progress.
+            if (rec.transcribed_bytes <= plan.startOffset)
+                rec.transcribed_bytes = plan.endOffset;
+        }
+        pruneChunks(nk, userId, rec, read);
+        return fresh;
+    }
+    /**
+     * Deletes audio that is wholly behind the watermark, less the overlap the next
+     * window still needs. Offsets come from the chunk records just read, so the
+     * decision is exact rather than interpolated.
+     */
+    function pruneChunks(nk, userId, rec, read) {
+        var keepFrom = alignDown(rec, Math.max(0, rec.transcribed_bytes - msToBytes(rec, OVERLAP_MS)));
+        var dropTo = rec.first_chunk_seq - 1;
+        for (var c = 0; c < read.chunks.length; c++) {
+            var ch = read.chunks[c];
+            if (ch.off + ch.bytes > keepFrom)
+                break;
+            dropTo = ch.seq;
+        }
+        if (dropTo >= rec.first_chunk_seq) {
+            deleteChunks(nk, userId, rec.session_id, rec.first_chunk_seq, dropTo);
+            rec.first_chunk_seq = dropTo + 1;
+        }
+    }
+    // ── Housekeeping ──────────────────────────────────────────────────────────
+    /** Whether a session record has passed its deadline. */
+    function isExpired(rec, now) {
+        return rec.expires_at > 0
+            ? now >= rec.expires_at
+            : now - (rec.updated_at || rec.created_at || 0) >= SESSION_IDLE_TTL_SECONDS;
+    }
+    /** Deletes one expired session: its audio, its record, its resume index. */
+    function reclaimSession(nk, owner, rec) {
+        deleteChunks(nk, owner, rec.session_id, rec.first_chunk_seq, rec.acked_seq);
+        try {
+            nk.storageDelete([
+                { collection: COLLECTION_SESSIONS, key: rec.session_id, userId: owner },
+                { collection: COLLECTION_INDEX, key: rec.client_session_id, userId: owner },
+            ]);
+        }
+        catch (_e) { /* already gone */ }
+    }
+    /**
+     * One pass over the caller's OWN sessions: deletes the expired ones and counts
+     * the ones still open.
+     *
+     * This is the reclamation that runs on the request path, and it is per-user on
+     * purpose. It used to be a cross-account scan (up to 5 pages x 100 objects
+     * over every account) that any authenticated user could trigger, and it ran
+     * *before* the per-user cap check, so a user already at their cap paid for a
+     * 500-object global scan on every rejected call.
+     *
+     * Combining reclaim with the count also means `open` issues one listing where
+     * it used to issue up to six, and the listing it issues is the one the cap
+     * check needed anyway. Reclaiming the caller's own expired sessions is also
+     * the only reclamation that can free the cap slot they are asking for.
+     *
+     * Global reclamation lives in `sweep`, driven by the `recorder_asr_gc` cron.
+     */
+    function reclaimAndCountForUser(nk, logger, userId) {
+        var open = 0;
+        var removed = 0;
+        var now = nowSec();
+        var cursor = "";
+        var pages = 0;
+        // A user holds a handful of live sessions plus whatever closed records are
+        // still inside the transcript TTL. Paging (rather than reading one page of
+        // 50, as this did before) is what stops a backlog of retained records from
+        // hiding open sessions past the page boundary and defeating the cap.
+        while (pages < 5) {
+            pages++;
+            var page;
+            try {
+                page = nk.storageList(userId, COLLECTION_SESSIONS, GC_SCAN_LIMIT, cursor);
+            }
+            catch (_e) {
+                // An unreadable list must not block opening a session. Counting zero is
+                // the permissive answer, and the caps below it are still enforced.
+                break;
+            }
+            if (!page || !page.objects || page.objects.length === 0)
+                break;
+            for (var i = 0; i < page.objects.length; i++) {
+                var rec = page.objects[i].value;
+                if (!rec || !rec.session_id)
+                    continue;
+                if (isExpired(rec, now)) {
+                    reclaimSession(nk, userId, rec);
+                    removed++;
+                    continue;
+                }
+                if (rec.state === "open")
+                    open++;
+            }
+            if (!page.cursor)
+                break;
+            cursor = page.cursor;
+        }
+        if (removed > 0) {
+            logger.info("[RecorderAsr] reclaimed " + removed +
+                " expired session(s) for user=" + userId);
+        }
+        return { openSessions: open, removed: removed };
+    }
+    // ── Global sweep (cron) ───────────────────────────────────────────────────
+    /** Server-owned bookkeeping for the global sweep. Written with `userId`
+     *  omitted, which is how the JS runtime addresses server-owned storage —
+     *  passing an empty string instead throws "expects 'userId' value to be a
+     *  valid id" (`server/runtime_javascript_nakama.go`). */
+    var COLLECTION_GC_STATE = "recorder_asr_gc_state";
+    var KEY_SWEEP_CURSOR = "sweep_cursor";
+    /** Pages per sweep run. Bounded so one cron tick has predictable cost; the
+     *  persisted cursor is what makes successive ticks cover the whole keyspace. */
+    var GC_PAGES_PER_RUN = 5;
+    /**
+     * Sessions actually deleted per sweep run.
+     *
+     * Scanning is a handful of listings and cheap. Deleting is not: each
+     * reclamation walks the session's chunk range with a storage delete per
+     * sequence number. Measured on a local CockroachDB, 8 reclamations took the
+     * RPC past 25 s — and Nakama's `socket.write_timeout_ms` defaults to 10 s, so
+     * the connection was closed and the caller saw a failure even though the
+     * sweep had completed and persisted its cursor.
+     *
+     * Capping deletions per call keeps one RPC comfortably inside that window at
+     * any backlog size. Throughput comes from calling it repeatedly instead —
+     * `budget_exhausted` in the response tells the caller there is more to do,
+     * and `k8s/recorder-asr-cronjob.yaml` loops on it.
+     */
+    var GC_MAX_RECLAIMS_PER_RUN = 5;
+    // The `userId` key is omitted, not set to "". `nkruntime`'s types mark it
+    // required, hence the casts, but at runtime an absent key is what selects
+    // server-owned storage — an empty string is run through `uuid.FromString` and
+    // throws "expects 'userId' value to be a valid id"
+    // (server/runtime_javascript_nakama.go). Do not "fix" the casts by adding
+    // `userId: ""`.
+    function readSweepCursor(nk) {
+        try {
+            var read = { collection: COLLECTION_GC_STATE, key: KEY_SWEEP_CURSOR };
+            var objs = nk.storageRead([read]);
+            if (objs && objs.length > 0)
+                return "" + (objs[0].value.cursor || "");
+        }
+        catch (_e) { /* first run, or unreadable — start from the beginning */ }
+        return "";
+    }
+    function writeSweepCursor(nk, cursor) {
+        try {
+            var write = {
+                collection: COLLECTION_GC_STATE,
+                key: KEY_SWEEP_CURSOR,
+                value: { cursor: cursor, updated_at: nowSec() },
+                permissionRead: 0,
+                permissionWrite: 0,
+            };
+            nk.storageWrite([write]);
+        }
+        catch (_e) { /* losing the cursor costs a restart, not correctness */ }
+    }
+    /**
+     * Deletes expired sessions and their audio, across all accounts.
+     *
+     * Driven by the `recorder_asr_gc` cron. NOT called from the request path —
+     * see `reclaimAndCountForUser` for why.
+     *
+     * The cursor is persisted between runs. It previously was not, so every run
+     * restarted at the beginning of key order and, bounded at 5 pages, could never
+     * reach an expired session sitting beyond the first 500 objects: on a server
+     * with more than that many session records, reclamation was mathematically
+     * unable to make progress no matter how often it ran. Resuming where the last
+     * run stopped is what makes repeated ticks cover the whole keyspace, and
+     * reaching the end resets to the start so the next tick begins a fresh lap.
+     */
+    function sweep(nk, logger, limit) {
+        var removed = 0;
+        var scanned = 0;
+        var wrapped = false;
+        var budgetExhausted = false;
+        var now = nowSec();
+        var cursor = readSweepCursor(nk);
+        var pages = 0;
+        while (pages < GC_PAGES_PER_RUN) {
+            pages++;
+            var page;
+            try {
+                // `null`, NOT "". This is the all-owners listing that makes it a
+                // maintenance pass, and null is the only way to ask for it:
+                //
+                //   server/runtime_javascript_nakama.go:4717
+                //     if f.Argument(0) != goja.Undefined() && f.Argument(0) != goja.Null() {
+                //         u, err := uuid.FromString(userID)
+                //         if err != nil { panic(...("expects empty or valid user id")) }
+                //
+                // An empty string is not Undefined and not Null, so it reaches
+                // uuid.FromString, fails, and panics — despite the message naming
+                // "empty" as acceptable. Verified against a live local Nakama: with ""
+                // this loop threw on its first iteration every time and the sweep
+                // reported scanned=0 while sessions sat in storage. The `nkruntime`
+                // types declare the parameter as `string`, hence the cast.
+                page = nk.storageList(null, COLLECTION_SESSIONS, limit, cursor);
+            }
+            catch (e) {
+                // A cursor can be rejected if it was written by an older listing shape.
+                // Falling back to the start is better than never sweeping again.
+                if (cursor.length > 0) {
+                    logger.warn("[RecorderAsr] sweep cursor rejected; restarting from the beginning: " +
+                        (e && e.message ? e.message : String(e)));
+                    cursor = "";
+                    wrapped = true;
+                    continue;
+                }
+                // Not a cursor problem: the listing itself failed. This used to break
+                // silently, which is how the "" bug above stayed invisible — the sweep
+                // reported a clean scanned=0 instead of an error.
+                logger.error("[RecorderAsr] sweep could not list sessions: " +
+                    (e && e.message ? e.message : String(e)));
+                break;
+            }
+            if (!page || !page.objects || page.objects.length === 0) {
+                // End of the keyspace with nothing left on this page: start the next lap.
+                cursor = "";
+                wrapped = true;
+                break;
+            }
+            for (var i = 0; i < page.objects.length; i++) {
+                var obj = page.objects[i];
+                var rec = obj.value;
+                scanned++;
+                if (!rec || !rec.session_id)
+                    continue;
+                if (!isExpired(rec, now))
+                    continue;
+                if (removed >= GC_MAX_RECLAIMS_PER_RUN) {
+                    // Stop without advancing the cursor: the rest of this page has not
+                    // been dealt with, and re-reading it next run is correct because the
+                    // sessions deleted above no longer appear in it.
+                    budgetExhausted = true;
+                    break;
+                }
+                reclaimSession(nk, obj.userId, rec);
+                removed++;
+            }
+            if (budgetExhausted)
+                break;
+            if (!page.cursor) {
+                cursor = "";
+                wrapped = true;
+                break;
+            }
+            cursor = page.cursor;
+        }
+        writeSweepCursor(nk, cursor);
+        logger.info("[RecorderAsr] sweep scanned=" + scanned + " removed=" + removed +
+            " wrapped=" + wrapped + " budget_exhausted=" + budgetExhausted);
+        return {
+            removed: removed, scanned: scanned,
+            wrapped: wrapped, budgetExhausted: budgetExhausted,
+        };
+    }
+    RecorderAsr.sweep = sweep;
+    // ── RPC: recorder_asr_open ────────────────────────────────────────────────
+    function rpcOpen(ctx, logger, nk, payload) {
+        var userId = ctx.userId;
+        if (!userId)
+            return errorBody(ERR_UNAUTHENTICATED, "a Nakama session is required to open an ASR session");
+        var data;
+        try {
+            data = payload && payload.length > 0 ? JSON.parse(payload) : {};
+        }
+        catch (_e) {
+            return errorBody(ERR_INTERNAL, "malformed JSON payload");
+        }
+        var cfg = RecorderAsrProvider.config(ctx);
+        if (!RecorderAsrProvider.isAvailable(cfg, nk)) {
+            // Honest unavailability, and it must be reported at `open`: the client
+            // falls back to on-device speech only on ENDPOINT_UNAVAILABLE here. If we
+            // accepted the session and then produced no text, the user would get
+            // silence instead of the working fallback they have today.
+            return errorBody(ERR_ENDPOINT_UNAVAILABLE, RecorderAsrProvider.unavailableReason(cfg, nk));
+        }
+        // ── Age gate. Fail closed. ──
+        var assertion = ageAssertionOf(data);
+        if (assertion.bracket === "below_threshold" || assertion.bracket === "unknown") {
+            logger.warn("[RecorderAsr] open refused on age assertion bracket=" + assertion.bracket + " user=" + userId);
+            return errorBody(ERR_UNAUTHENTICATED, "audio capture is not available for this account: a declared age below the policy " +
+                "threshold, or an unanswered age gate, cannot be accepted for transcription " +
+                "(16 CFR 312.2(8) — a child's voice recording is personal information and no " +
+                "verifiable parental consent exists)");
+        }
+        if (assertion.bracket === "absent") {
+            if (requireAgeAssertion(ctx)) {
+                return errorBody(ERR_UNAUTHENTICATED, "age_assertion is required on recorder_asr_open (RECORDER_ASR_REQUIRE_AGE_ASSERTION=1)");
+            }
+            // The gate is OPEN by default and no shipped client sends the field, so
+            // in practice every production session takes this branch. That is a
+            // deliberate, and temporary, acceptance of unverified age — logged at warn
+            // on every occurrence so it shows up in ops rather than only in a comment.
+            // Flip RECORDER_ASR_REQUIRE_AGE_ASSERTION=1 once the client sends it.
+            logger.warn("[RecorderAsr] admitting session with NO age assertion " +
+                "(RECORDER_ASR_REQUIRE_AGE_ASSERTION is not 1) user=" + userId);
+        }
+        var audio = data.audio || {};
+        var codec = ("" + (audio.codec || CODEC_OPUS)).toLowerCase();
+        if (codec !== CODEC_PCM16 && codec !== CODEC_OPUS) {
+            return errorBody(ERR_INTERNAL, "unsupported codec: " + codec);
+        }
+        var rate = intOf(audio.sample_rate_hz, 16000);
+        if (!LEGAL_RATES["" + rate])
+            return errorBody(ERR_INTERNAL, "unsupported sample_rate_hz: " + rate);
+        var channels = intOf(audio.channels, 1);
+        if (channels !== 1 && channels !== 2)
+            return errorBody(ERR_INTERNAL, "unsupported channels: " + channels);
+        var frameMs = intOf(audio.frame_ms, 20);
+        if (!LEGAL_FRAME_MS["" + frameMs])
+            return errorBody(ERR_INTERNAL, "unsupported frame_ms: " + frameMs);
+        // Optional and not yet sent by any client — see the client-change note in
+        // docs/recorder/ASR_ENDPOINTS.md. Honoured when present so the packet-size
+        // probe can be skipped.
+        var packetBytes = intOf(audio.packet_bytes, 0);
+        var clientSessionId = "" + (data.client_session_id || "");
+        // ── Resume. Re-opening with the same client_session_id must continue the
+        //    same transcript, not start a second one.
+        //
+        //    This runs before any housekeeping: it is two point reads, it is the
+        //    common case on a flaky connection, and a resume must not be blocked by
+        //    the concurrency cap — the session it returns is already counted. ──
+        if (clientSessionId.length > 0) {
+            var existingId = "";
+            try {
+                var idx = nk.storageRead([{ collection: COLLECTION_INDEX, key: clientSessionId, userId: userId }]);
+                if (idx && idx.length > 0)
+                    existingId = "" + (idx[0].value.session_id || "");
+            }
+            catch (_e) { /* fall through to a fresh session */ }
+            if (existingId.length > 0) {
+                var existing = readSession(nk, userId, existingId);
+                if (existing !== null && existing.state === "open") {
+                    logger.info("[RecorderAsr] resume session=" + existingId + " from_seq=" + (existing.acked_seq + 1));
+                    writeSession(nk, userId, existing);
+                    return JSON.stringify({
+                        session_id: existing.session_id,
+                        resume_from_seq: existing.acked_seq + 1,
+                    });
+                }
+            }
+        }
+        // Housekeeping and the concurrency cap in one per-user listing. Bounded to
+        // the caller's own data, so a rejected open costs one page read rather than
+        // a scan across every account.
+        var reclaim;
+        try {
+            reclaim = reclaimAndCountForUser(nk, logger, userId);
+        }
+        catch (_e) {
+            // Best effort: a failing listing must not make opening a session fail.
+            reclaim = { openSessions: 0, removed: 0 };
+        }
+        if (reclaim.openSessions >= MAX_OPEN_SESSIONS_PER_USER) {
+            return errorBody(ERR_RATE_LIMITED, "too many concurrent ASR sessions (max " + MAX_OPEN_SESSIONS_PER_USER + ")");
+        }
+        var sessionId = "asr_srv_" + nk.uuidv4().replace(/-/g, "");
+        var now = nowSec();
+        var rec = {
+            session_id: sessionId,
+            client_session_id: clientSessionId,
+            contract_version: "" + (data.contract_version || ""),
+            locale: "" + (data.locale || "en_US"),
+            codec: codec,
+            sample_rate_hz: rate,
+            channels: channels,
+            frame_ms: frameMs,
+            packet_bytes: packetBytes,
+            device_record_id: "" + (data.device_record_id || ""),
+            binding_token_fp: fingerprint(nk, "" + (data.binding_token || "")),
+            age_assertion: assertion,
+            state: "open",
+            acked_seq: -1,
+            chunk_count: 0,
+            audio_bytes: 0,
+            next_offset: 0,
+            transcribed_bytes: 0,
+            transcribed_ms: 0,
+            first_chunk_seq: 0,
+            segments: [],
+            created_at: now,
+            updated_at: now,
+            closed_at: 0,
+            // An open session expires on idle; close replaces this with the
+            // transcript retention deadline.
+            expires_at: now + SESSION_IDLE_TTL_SECONDS,
+        };
+        writeSession(nk, userId, rec);
+        if (clientSessionId.length > 0) {
+            nk.storageWrite([{
+                    collection: COLLECTION_INDEX,
+                    key: clientSessionId,
+                    userId: userId,
+                    value: { session_id: sessionId, created_at: now },
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+        }
+        logger.info("[RecorderAsr] open session=" + sessionId + " codec=" + codec +
+            " rate=" + rate + " ch=" + channels + " age=" + assertion.bracket +
+            " device=" + (rec.device_record_id.length > 0 ? "yes" : "no"));
+        return JSON.stringify({ session_id: sessionId, resume_from_seq: 0 });
+    }
+    RecorderAsr.rpcOpen = rpcOpen;
+    /** Reads the optional age assertion, defaulting to an explicit "absent" so the
+     *  session record never looks like a claim that was never made. */
+    function ageAssertionOf(data) {
+        var a = data && data.age_assertion;
+        if (!a || !a.bracket) {
+            return { bracket: "absent", min_age: 0, declared_at: "", source: "absent" };
+        }
+        var bracket = ("" + a.bracket).toLowerCase();
+        if (bracket !== "at_or_above_threshold" && bracket !== "below_threshold")
+            bracket = "unknown";
+        return {
+            bracket: bracket,
+            min_age: intOf(a.min_age, 13),
+            declared_at: "" + (a.declared_at || ""),
+            source: "client",
+        };
+    }
+    // ── RPC: recorder_asr_push ────────────────────────────────────────────────
+    function rpcPush(ctx, logger, nk, payload) {
+        var userId = ctx.userId;
+        if (!userId)
+            return errorBody(ERR_UNAUTHENTICATED, "a Nakama session is required to push audio");
+        var data;
+        try {
+            data = payload && payload.length > 0 ? JSON.parse(payload) : {};
+        }
+        catch (_e) {
+            return errorBody(ERR_INTERNAL, "malformed JSON payload");
+        }
+        var sessionId = "" + (data.session_id || "");
+        if (sessionId.length === 0)
+            return errorBody(ERR_INTERNAL, "session_id is required");
+        var rec = readSession(nk, userId, sessionId);
+        if (rec === null) {
+            // Either it never existed, it was swept, or it belongs to another account.
+            // All three are the same answer from here, and deliberately so: the reply
+            // must not tell a caller whether somebody else's session id is real.
+            return errorBody(ERR_NOT_FOUND, "no such ASR session for this account");
+        }
+        if (rec.state !== "open") {
+            return errorBody(ERR_INTERNAL, "ASR session is already closed");
+        }
+        var seq = intOf(data.seq, -1);
+        if (seq < 0)
+            return errorBody(ERR_INTERNAL, "seq is required and must be >= 0");
+        var b64 = "" + (data.audio_b64 || "");
+        if (b64.length > MAX_PUSH_B64_CHARS) {
+            return errorBody(ERR_INTERNAL, "audio chunk too large: " + b64.length + " base64 chars (max " + MAX_PUSH_B64_CHARS + ")");
+        }
+        // ── Idempotency. A replayed chunk is ignored, never appended. ──
+        if (seq <= rec.acked_seq) {
+            logger.info("[RecorderAsr] duplicate seq=" + seq + " session=" + sessionId + " (ignored)");
+            return JSON.stringify({ acked_seq: rec.acked_seq, segments: [] });
+        }
+        if (rec.chunk_count + 1 > MAX_CHUNKS_PER_SESSION) {
+            return errorBody(ERR_RATE_LIMITED, "session chunk limit reached (" + MAX_CHUNKS_PER_SESSION + ")");
+        }
+        var bytes;
+        try {
+            bytes = new Uint8Array(nk.base64Decode(b64));
+        }
+        catch (_e) {
+            return errorBody(ERR_INTERNAL, "audio_b64 is not valid base64");
+        }
+        if (rec.audio_bytes + bytes.length > MAX_SESSION_BYTES) {
+            return errorBody(ERR_RATE_LIMITED, "session audio limit reached (" + MAX_SESSION_BYTES + " bytes)");
+        }
+        if (bytes.length > 0) {
+            var chunk = { seq: seq, off: rec.next_offset, bytes: bytes.length, b64: b64 };
+            nk.storageWrite([{
+                    collection: COLLECTION_CHUNKS,
+                    key: chunkKey(sessionId, seq),
+                    userId: userId,
+                    value: chunk,
+                    // Audio is never readable by the client; only the server reads it, and
+                    // only until it is behind the transcription watermark.
+                    permissionRead: 0,
+                    permissionWrite: 0,
+                }]);
+            rec.next_offset += bytes.length;
+            rec.audio_bytes += bytes.length;
+            rec.chunk_count++;
+        }
+        // A gap (seq jumping ahead) is expected, not an error: the client's
+        // backpressure drops the OLDEST queued chunk on overflow while sequence
+        // numbers keep incrementing, so audio can be genuinely lost upstream.
+        // Acking the highest received seq is what lets the client free its queue.
+        //
+        // The gap is capped, though. `acked_seq` feeds a dense key range in
+        // `readWindowBytes` and `deleteChunks`, so an unbounded jump here is an
+        // unbounded amount of server work from one client-supplied integer — see
+        // MAX_CHUNK_SEQ_GAP. RATE_LIMITED rather than INTERNAL because the client
+        // retries it with backoff, and reopening is the correct recovery.
+        if (seq - rec.acked_seq > MAX_CHUNK_SEQ_GAP) {
+            logger.warn("[RecorderAsr] seq gap too large session=" + sessionId +
+                " acked=" + rec.acked_seq + " got=" + seq + " max_gap=" + MAX_CHUNK_SEQ_GAP);
+            return errorBody(ERR_RATE_LIMITED, "seq gap too large (" + (seq - rec.acked_seq) + " > " + MAX_CHUNK_SEQ_GAP +
+                "): too much audio was dropped to continue this session, open a new one");
+        }
+        if (seq - rec.acked_seq > 1) {
+            logger.warn("[RecorderAsr] seq gap session=" + sessionId +
+                " expected=" + (rec.acked_seq + 1) + " got=" + seq + " (client-side drop)");
+        }
+        rec.acked_seq = seq;
+        var isLast = data.is_last === true;
+        var segments = [];
+        try {
+            segments = transcribeWindow(ctx, logger, nk, userId, rec, isLast);
+        }
+        catch (e) {
+            logger.error("[RecorderAsr] transcription failed: " + (e && e.message ? e.message : String(e)));
+        }
+        rec.expires_at = nowSec() + SESSION_IDLE_TTL_SECONDS;
+        writeSession(nk, userId, rec);
+        return JSON.stringify({ acked_seq: rec.acked_seq, segments: segments });
+    }
+    RecorderAsr.rpcPush = rpcPush;
+    // ── RPC: recorder_asr_close ───────────────────────────────────────────────
+    function rpcClose(ctx, logger, nk, payload) {
+        var userId = ctx.userId;
+        if (!userId)
+            return errorBody(ERR_UNAUTHENTICATED, "a Nakama session is required to close an ASR session");
+        var data;
+        try {
+            data = payload && payload.length > 0 ? JSON.parse(payload) : {};
+        }
+        catch (_e) {
+            return errorBody(ERR_INTERNAL, "malformed JSON payload");
+        }
+        var sessionId = "" + (data.session_id || "");
+        if (sessionId.length === 0)
+            return errorBody(ERR_INTERNAL, "session_id is required");
+        var rec = readSession(nk, userId, sessionId);
+        if (rec === null) {
+            return errorBody(ERR_NOT_FOUND, "no such ASR session for this account");
+        }
+        // ── Idempotency. A retried close returns the same trailing segments and
+        //    does NOT transcribe again or produce a second transcript. ──
+        if (rec.state === "closed") {
+            logger.info("[RecorderAsr] duplicate close session=" + sessionId + " (replayed)");
+            return JSON.stringify({
+                acked_seq: rec.acked_seq,
+                segments: rec.closing_segments || [],
+            });
+        }
+        var trailing = [];
+        // Flush the tail. Bounded by MAX_CALL_MS inside transcribeWindow, and by two
+        // passes here, so close latency stays predictable even after a burst.
+        for (var pass = 0; pass < 2; pass++) {
+            var more = [];
+            try {
+                more = transcribeWindow(ctx, logger, nk, userId, rec, true);
+            }
+            catch (e) {
+                logger.error("[RecorderAsr] close transcription failed: " + (e && e.message ? e.message : String(e)));
+                break;
+            }
+            for (var i = 0; i < more.length; i++)
+                trailing.push(more[i]);
+            if (rec.transcribed_bytes >= rec.next_offset)
+                break;
+        }
+        // Retention: every remaining audio chunk goes now. The server keeps no
+        // audio past the end of a session.
+        deleteChunks(nk, userId, sessionId, rec.first_chunk_seq, rec.acked_seq);
+        rec.first_chunk_seq = rec.acked_seq + 1;
+        var ttl = transcriptTtlSeconds(ctx);
+        rec.state = "closed";
+        rec.closed_at = nowSec();
+        rec.closing_segments = trailing;
+        if (ttl <= 0) {
+            // Zero retention: hand the transcript back once and keep nothing. A
+            // retried close then returns no segments, which the client tolerates —
+            // it keeps the transcript it already has.
+            try {
+                nk.storageDelete([
+                    { collection: COLLECTION_SESSIONS, key: sessionId, userId: userId },
+                    { collection: COLLECTION_INDEX, key: rec.client_session_id, userId: userId },
+                ]);
+            }
+            catch (_e) { /* already gone */ }
+        }
+        else {
+            rec.expires_at = rec.closed_at + ttl;
+            writeSession(nk, userId, rec);
+        }
+        logger.info("[RecorderAsr] close session=" + sessionId +
+            " segments_total=" + rec.segments.length +
+            " trailing=" + trailing.length +
+            " audio_bytes=" + rec.audio_bytes + " (audio deleted)");
+        return JSON.stringify({ acked_seq: rec.acked_seq, segments: trailing });
+    }
+    RecorderAsr.rpcClose = rpcClose;
+    // ── RPC: recorder_asr_purge ───────────────────────────────────────────────
+    // Right-to-erasure for the caller's own ASR data. Idempotent.
+    function rpcPurge(ctx, logger, nk, _payload) {
+        var userId = ctx.userId;
+        if (!userId)
+            return errorBody(ERR_UNAUTHENTICATED, "a Nakama session is required");
+        var sessions = 0;
+        var cursor = "";
+        var guard = 0;
+        while (guard < 20) {
+            guard++;
+            var page = nk.storageList(userId, COLLECTION_SESSIONS, 100, cursor);
+            if (!page || !page.objects || page.objects.length === 0)
+                break;
+            for (var i = 0; i < page.objects.length; i++) {
+                var rec = page.objects[i].value;
+                if (!rec || !rec.session_id)
+                    continue;
+                deleteChunks(nk, userId, rec.session_id, 0, rec.acked_seq);
+                try {
+                    nk.storageDelete([
+                        { collection: COLLECTION_SESSIONS, key: rec.session_id, userId: userId },
+                        { collection: COLLECTION_INDEX, key: rec.client_session_id, userId: userId },
+                    ]);
+                }
+                catch (_e) { /* already gone */ }
+                sessions++;
+            }
+            if (!page.cursor)
+                break;
+            cursor = page.cursor;
+        }
+        logger.info("[RecorderAsr] purged " + sessions + " session(s) for user=" + userId);
+        return JSON.stringify({ purged_sessions: sessions });
+    }
+    RecorderAsr.rpcPurge = rpcPurge;
+    // ── RPC: recorder_asr_gc ──────────────────────────────────────────────────
+    // Service-only maintenance entry point for a cron, in addition to the
+    // opportunistic sweep on open.
+    function rpcGc(ctx, logger, nk, payload) {
+        var expected = "" + ((ctx.env && ctx.env["RECORDER_ASR_GC_TOKEN"]) || "");
+        var data = {};
+        try {
+            data = payload && payload.length > 0 ? JSON.parse(payload) : {};
+        }
+        catch (_e) {
+            data = {};
+        }
+        if (expected.length === 0 || "" + (data.service_token || "") !== expected) {
+            // Includes the unset-token case: with no token configured this RPC refuses
+            // everything rather than becoming an unauthenticated global delete.
+            return errorBody(ERR_UNAUTHENTICATED, "recorder_asr_gc is service-only");
+        }
+        var result = sweep(nk, logger, GC_SCAN_LIMIT);
+        // `wrapped` tells an operator a full lap finished. `budget_exhausted` tells
+        // the caller to call again immediately — the run stopped on its deletion
+        // cap, not because there was nothing left. A schedule that never wraps is
+        // not keeping up.
+        return JSON.stringify({
+            swept: result.removed,
+            scanned: result.scanned,
+            wrapped: result.wrapped,
+            budget_exhausted: result.budgetExhausted,
+        });
+    }
+    RecorderAsr.rpcGc = rpcGc;
+    // ── Registration ──────────────────────────────────────────────────────────
+    function register(initializer) {
+        __rpc_recorder_asr_open = rpcOpen;
+        __rpc_recorder_asr_push = rpcPush;
+        __rpc_recorder_asr_close = rpcClose;
+        __rpc_recorder_asr_purge = rpcPurge;
+        __rpc_recorder_asr_gc = rpcGc;
+    }
+    RecorderAsr.register = register;
+    register();
+})(RecorderAsr || (RecorderAsr = {}));
+// =============================================================================
+// Recorder ASR provider — speech recognition behind one seam.
+//
+// The engine
+// ----------
+// The provider in use is the organisation's own in-cluster faster-whisper
+// deployment (`voice-pipeline-stt` in namespace `aicart`, image
+// `fedirz/faster-whisper-server`, model `Systran/faster-whisper-small.en`). It
+// speaks the OpenAI `/v1/audio/transcriptions` shape, so the same path works
+// against OpenAI or any OpenAI-compatible endpoint — only the shim's
+// `RECORDER_ASR_BASE_URL` changes.
+//
+// No new vendor and no new credential: the service is already deployed, already
+// paid for (self-hosted CPU), and reachable from Nakama over cluster DNS.
+//
+// Measured throughput (2026-08-28, one CPU pod, small.en int8, 4 threads,
+// arm64): 22.4 s wall for 59.5 s of 16 kHz mono audio, i.e. ~0.38x realtime,
+// warm. That number is why transcription is windowed rather than done in one
+// shot at close — see `RecorderAsr.WINDOW_MS`. Nakama's HTTP write timeout
+// defaults to 10 s (`server/config.go` `socket.write_timeout_ms`), so any single
+// RPC that waits on ASR has to stay well inside that.
+//
+// Why the upload goes through a sidecar
+// ------------------------------------
+// The engine needs a multipart body containing raw audio bytes, and this
+// runtime cannot produce one. That is a hard limit, not a missing library:
+//
+//   * `nk.httpRequest` takes the body as a Go string built from a JS string
+//     (`server/runtime_javascript_nakama.go:818` → `strings.NewReader`), so any
+//     code unit >= 0x80 is re-encoded as multi-byte UTF-8. Measured: a
+//     122,998-byte WAV left as 252,532 bytes.
+//   * `nk.binaryToString`, the only ArrayBuffer→string bridge, panics unless
+//     the buffer is valid UTF-8 (`runtime_javascript_nakama.go:334`
+//     `if !utf8.Valid(...)`). Audio never is. Observed live before the shim
+//     existed: every push logged `provider failed: expects data to be UTF-8
+//     encoded`, for both WAV and Ogg.
+//
+// Goja has no FFI, sockets or filesystem, so there is no third option inside
+// the runtime. The upload therefore happens in a sidecar —
+// `deploy/recorder-asr-shim/shim.py`, a stdlib-only process in this pod
+// listening on loopback — which takes the audio as base64 and forwards real
+// multipart. Base64 is ASCII, so it survives `nk.httpRequest` untouched, and
+// `nk.base64Encode` accepts an ArrayBuffer with no UTF-8 check
+// (`runtime_javascript_nakama.go:915`).
+//
+// A sidecar rather than a Go plugin because a plugin under `data/modules/` is
+// baked into the server image by `Dockerfile.production` stage 3, so every ASR
+// tweak would ride a full Nakama release through CodeBuild.
+//
+// Everything else stays here: container muxing, windowing, segment timing.
+// The shim only moves bytes.
+//
+// Engine configuration — base URL, model, API key — belongs to the shim, not to
+// this module. There is exactly one place to set it and no pair of values that
+// can disagree. What this module needs to know is only *where the shim is* and
+// *whether transcription can actually happen*, and it asks the shim the latter
+// rather than inferring it.
+//
+// If the shim is absent, or present but unable to reach the engine, this reports
+// itself unavailable and the RPCs answer ENDPOINT_UNAVAILABLE — the signal the
+// Flutter client uses to fall back to on-device speech. A misconfigured server
+// degrades to an honest failure instead of accepting audio it cannot transcribe.
+// =============================================================================
+var RecorderAsrProvider;
+(function (RecorderAsrProvider) {
+    /** Must match `DEFAULT_LISTEN` in deploy/recorder-asr-shim/shim.py. */
+    var DEFAULT_SHIM_URL = "http://127.0.0.1:7359";
+    function config(ctx) {
+        var env = ctx.env || {};
+        var timeout = parseInt("" + (env["RECORDER_ASR_TIMEOUT_MS"] || "9000"), 10);
+        var shim = "" + (env["RECORDER_ASR_SHIM_URL"] || DEFAULT_SHIM_URL);
+        // Defaults on. `RECORDER_ASR_ENABLED=0` is the off switch, and it is a
+        // non-empty value on purpose: both the compose entrypoint and the k8s args
+        // skip empty values when building `--runtime.env`, so a flag whose "off"
+        // state is the empty string can never actually be set.
+        var enabled = "" + (env["RECORDER_ASR_ENABLED"] || "1") !== "0";
+        return {
+            shimUrl: shim.replace(/\/$/, ""),
+            timeoutMs: isNaN(timeout) || timeout <= 0 ? 9000 : timeout,
+            enabled: enabled,
+        };
+    }
+    RecorderAsrProvider.config = config;
+    /**
+     * Per-probe budget for `/healthz`.
+     *
+     * The refusal path probes twice: `isAvailable` decides, then
+     * `unavailableReason` probes again to say *why*. When the shim is unreachable
+     * both probes run to their full timeout, so the ceiling is twice this — and it
+     * has to stay comfortably under Nakama's `socket.write_timeout_ms` (10 s
+     * default) or `open` fails to answer at all instead of answering
+     * ENDPOINT_UNAVAILABLE, which is precisely the outcome that costs the client
+     * its on-device fallback. Measured with a hung shim: 6.1 s at 3,000 ms each,
+     * which was inside the budget but not by much. 2,000 ms puts the worst case
+     * near 4 s. It is still far above a healthy loopback GET (single-digit ms).
+     */
+    var HEALTH_PROBE_TIMEOUT_MS = 2000;
+    /**
+     * Whether the shim is answering AND says it can reach the engine.
+     *
+     * Both halves are the shim's `ok`: it probes the engine itself (`/health`,
+     * falling back to `/v1/models`) and reports false when the engine is
+     * unreachable, so this is a measurement of "a recording can become text",
+     * not of "the sidecar process is alive". That distinction is the whole point
+     * — see `isAvailable`.
+     *
+     * Not cached here. The probe is one loopback GET inside this pod and only
+     * runs on `open` — once per recording, not per chunk — so the cost is noise,
+     * and caching in a pooled Goja VM would turn a momentary hiccup into ASR
+     * being dead for the lifetime of that VM. The shim does hold a short-lived
+     * verdict of its own so a burst of opens does not hammer the engine.
+     */
+    function shimReady(nk, cfg) {
+        try {
+            var resp = nk.httpRequest(cfg.shimUrl + "/healthz", "get", {}, null, HEALTH_PROBE_TIMEOUT_MS);
+            if (resp.code < 200 || resp.code >= 300)
+                return false;
+            var parsed = JSON.parse(resp.body);
+            return !!(parsed && parsed.ok === true);
+        }
+        catch (_e) {
+            return false;
+        }
+    }
+    RecorderAsrProvider.shimReady = shimReady;
+    /**
+     * A provider is available only if the bytes can actually be delivered and
+     * turned into text.
+     *
+     * This is load-bearing, not defensive. The client falls back to on-device
+     * speech when `open` answers ENDPOINT_UNAVAILABLE and does NOT fall back when
+     * `open` succeeds, so reporting available while unable to transcribe produces
+     * silence for the user — strictly worse than failing. There is deliberately
+     * no path to `true` that does not involve the shim confirming it reached the
+     * engine.
+     *
+     * `nk` is optional on purpose. Pass it at `open`, where being honest is the
+     * whole point. Omit it on the per-chunk path, which is best-effort anyway —
+     * a failed upload there is absorbed and retried on the next window, so paying
+     * for a probe every chunk would buy nothing.
+     */
+    function isAvailable(cfg, nk) {
+        if (!cfg.enabled)
+            return false;
+        if (nk && !shimReady(nk, cfg))
+            return false;
+        return true;
+    }
+    RecorderAsrProvider.isAvailable = isAvailable;
+    /** Operator-facing reason, surfaced in the RPC error so a misconfiguration is
+     *  diagnosable from a client log rather than only from server logs. */
+    function unavailableReason(cfg, nk) {
+        if (!cfg.enabled)
+            return "device transcription is disabled (RECORDER_ASR_ENABLED=0)";
+        var detail = "";
+        try {
+            var resp = nk.httpRequest(cfg.shimUrl + "/healthz", "get", {}, null, HEALTH_PROBE_TIMEOUT_MS);
+            if (resp.code >= 200 && resp.code < 300) {
+                var parsed = JSON.parse(resp.body);
+                if (parsed && parsed.ok === true)
+                    return "ASR backend unavailable";
+                detail = " — the shim is running but reports: " +
+                    ("" + ((parsed && parsed.reason) || "no reason given"));
+            }
+            else {
+                detail = " — /healthz answered HTTP " + resp.code;
+            }
+        }
+        catch (e) {
+            detail = " — /healthz is not answering (" +
+                (e && e.message ? e.message : String(e)) + ")";
+        }
+        return "the recorder-asr-shim sidecar cannot deliver audio to the speech " +
+            "engine via " + cfg.shimUrl + detail +
+            " (see deploy/recorder-asr-shim/README.md)";
+    }
+    RecorderAsrProvider.unavailableReason = unavailableReason;
+    /**
+     * Whether a segment claims more text than its own duration could contain.
+     *
+     * Whisper's known failure mode at the end of a window is to loop, emitting the
+     * previous sentence several times over with near-zero durations. Measured live
+     * on the Ogg Opus path (2026-08-28): three consecutive segments of 240 ms,
+     * 80 ms and 80 ms, each carrying the same 95-character sentence — an implied
+     * ~1,190 characters per second. Left in, that sentence appears three extra
+     * times in the user's transcript.
+     *
+     * The test is a speaking rate, not a duration: a genuinely short segment
+     * carrying short text ("4.") is fine, and only a physically impossible density
+     * is rejected. Conversational English runs ~15-17 characters per second and
+     * very fast speech ~25, so 60 is roughly 2.5x beyond any real speaker while
+     * still an order of magnitude below the artifact. Short fragments are exempt
+     * entirely, because a two-character segment at a plausible rate can trip a
+     * rate test on rounding alone.
+     */
+    var MAX_CHARS_PER_SECOND = 60;
+    var MIN_LENGTH_FOR_RATE_CHECK = 24;
+    function isRepetitionArtifact(text, durationMs) {
+        if (text.length < MIN_LENGTH_FOR_RATE_CHECK)
+            return false;
+        if (durationMs <= 0)
+            return true;
+        return (text.length * 1000 / durationMs) > MAX_CHARS_PER_SECOND;
+    }
+    RecorderAsrProvider.isRepetitionArtifact = isRepetitionArtifact;
+    /** `en_US` / `en-GB` → `en`. Whisper wants the bare language subtag, and an
+     *  unknown value makes it auto-detect, which is worse than not asking. */
+    function languageOf(locale) {
+        var l = ("" + (locale || "")).replace("_", "-");
+        var dash = l.indexOf("-");
+        var tag = (dash > 0 ? l.substring(0, dash) : l).toLowerCase();
+        return /^[a-z]{2,3}$/.test(tag) ? tag : "";
+    }
+    /**
+     * One transcription round trip.
+     *
+     * Throws on transport failure or a non-2xx engine response; the caller decides
+     * whether that fails the RPC or is absorbed (a failed `close` must not lose a
+     * transcript the client already has).
+     */
+    function transcribe(nk, logger, cfg, req) {
+        if (!cfg.enabled)
+            throw new Error("device transcription is disabled");
+        // The audio crosses to the shim as base64 inside JSON. base64Encode takes
+        // the ArrayBuffer directly and does no UTF-8 validation, so the bytes are
+        // never routed through a JS string.
+        //
+        // `req.bytes` is passed as a whole-buffer Uint8Array by every caller, but
+        // `subarray` views are cheap to create by accident and `.buffer` on one of
+        // those is the entire backing store — which would upload the wrong bytes,
+        // silently and plausibly. Assert instead of trusting.
+        if (req.bytes.byteOffset !== 0 || req.bytes.byteLength !== req.bytes.buffer.byteLength) {
+            throw new Error("transcribe: req.bytes must own its buffer (got a view at offset " +
+                req.bytes.byteOffset + " of " + req.bytes.buffer.byteLength + " bytes)");
+        }
+        var payload = JSON.stringify({
+            audio_b64: nk.base64Encode(req.bytes.buffer),
+            content_type: req.contentType,
+            filename: req.filename,
+            language: languageOf(req.locale),
+        });
+        var started = Date.now();
+        // Shim timeout is a little longer than the engine's so the engine's own
+        // deadline is what fires first and we get its status rather than a hangup.
+        var resp = nk.httpRequest(cfg.shimUrl + "/transcribe", "post", { "Content-Type": "application/json" }, payload, cfg.timeoutMs + 2000);
+        var elapsed = Date.now() - started;
+        if (resp.code < 200 || resp.code >= 300) {
+            throw new Error("ASR shim HTTP " + resp.code + ": " + ("" + resp.body).substring(0, 300));
+        }
+        var envelope;
+        try {
+            envelope = JSON.parse(resp.body);
+        }
+        catch (_e) {
+            throw new Error("ASR shim returned non-JSON");
+        }
+        if (!envelope.ok) {
+            throw new Error("ASR engine " + (envelope.code || 0) + ": " +
+                ("" + (envelope.error || envelope.body || "unknown")).substring(0, 300));
+        }
+        var parsed;
+        try {
+            parsed = JSON.parse(envelope.body);
+        }
+        catch (_e2) {
+            throw new Error("ASR engine returned non-JSON body");
+        }
+        var segments = [];
+        var dropped = 0;
+        var raw = parsed && parsed.segments;
+        if (raw && raw.length) {
+            for (var i = 0; i < raw.length; i++) {
+                var s = raw[i];
+                var text = ("" + (s.text || "")).replace(/^\s+|\s+$/g, "");
+                if (text.length === 0)
+                    continue;
+                var beginMs = req.offsetMs + Math.round((s.start || 0) * 1000);
+                var endMs = req.offsetMs + Math.round((s.end || 0) * 1000);
+                if (isRepetitionArtifact(text, endMs - beginMs)) {
+                    dropped++;
+                    continue;
+                }
+                segments.push({
+                    text: text,
+                    beginMs: beginMs,
+                    endMs: endMs,
+                    isFinal: true,
+                });
+            }
+        }
+        else if (parsed && parsed.text) {
+            // `verbose_json` should always carry segments; this is the degenerate
+            // single-utterance shape some OpenAI-compatible servers return.
+            var whole = ("" + parsed.text).replace(/^\s+|\s+$/g, "");
+            if (whole.length > 0) {
+                segments.push({
+                    text: whole,
+                    beginMs: req.offsetMs,
+                    endMs: req.offsetMs + Math.round((parsed.duration || 0) * 1000),
+                    isFinal: true,
+                });
+            }
+        }
+        logger.info("[RecorderAsr] provider ok bytes=" + req.bytes.length +
+            " segments=" + segments.length +
+            (dropped > 0 ? " dropped_repetitions=" + dropped : "") +
+            " engine_ms=" + (envelope.provider_ms || 0) +
+            " total_ms=" + elapsed);
+        return {
+            segments: segments,
+            durationMs: Math.round((parsed && parsed.duration ? parsed.duration : 0) * 1000),
+            providerMs: elapsed,
+        };
+    }
+    RecorderAsrProvider.transcribe = transcribe;
+})(RecorderAsrProvider || (RecorderAsrProvider = {}));
+// =============================================================================
+// Recorder audio containers — PCM16 → WAV, bare Opus packets → Ogg Opus.
+//
+// Why containers at all
+// --------------------
+// The QuizVerse recorder ("Curio" pen) uploads *raw* audio: either PCM16 that
+// the handset already decoded with libopus, or bare Opus packets straight off
+// the BLE link. Neither is something a speech engine will accept — every ASR
+// backend wants a demuxable file. So this file is the adapter, and it is
+// deliberately the ONLY place that knows about byte layouts.
+//
+// Why this is not a native dependency
+// -----------------------------------
+// Nakama's runtime here is Goja (ES5), which has no FFI and no Node APIs, so
+// "decode Opus on the server" is not available to us at any price. It turns out
+// not to be needed: the ASR backend is ffmpeg-backed and accepts Ogg Opus, so
+// the server only has to *containerise* the packets it is handed, never decode
+// them. Containerising is pure integer work — a CRC32 table and some page
+// headers — which is why it lives in TypeScript with no new dependency.
+//
+// Byte-safety rule that is load-bearing (do not "simplify" this)
+// --------------------------------------------------------------
+// Container bytes must never pass through a JS string. This runtime gives us no
+// safe way to do it: `nk.binaryToString` refuses outright to convert a buffer
+// that is not valid UTF-8 —
+//
+//     if !utf8.Valid(data.Bytes()) {
+//         panic(r.NewTypeError("expects data to be UTF-8 encoded"))
+//     }
+//         — server/runtime_javascript_nakama.go
+//
+// and `nk.httpRequest` takes only a Go string, which re-encodes as UTF-8 and
+// inflates every byte above 0x7F (measured: a 122,998-byte WAV became 252,532
+// bytes). A WAV or an Ogg page is binary and fails that check essentially
+// always; before the shim below existed, every upload of both codecs logged
+// `provider failed: expects data to be UTF-8 encoded` against a real Nakama.
+//
+// So: assemble everything as a `Uint8Array` and never concatenate it as a
+// string. The one conversion applied to a finished container is
+// `nk.base64Encode`, which takes the ArrayBuffer directly and validates
+// nothing, and the upload itself happens in a sidecar process
+// (`deploy/recorder-asr-shim/shim.py`) — see recorder_asr_provider.ts.
+//
+// Note that base64 is not a shortcut past the muxing here: neither container
+// can be assembled by concatenating base64. A WAV header is 44 bytes (not a
+// multiple of 3, so it does not align to a base64 quantum), window trimming
+// cuts chunks at arbitrary byte offsets, and Ogg pages carry a CRC computed
+// over the page's own bytes. Real bytes are required, then encoded once.
+// =============================================================================
+var RecorderAudio;
+(function (RecorderAudio) {
+    // ── Byte buffer helpers ───────────────────────────────────────────────────
+    /** ASCII string → bytes. Throws on any non-ASCII input, which in this file
+     *  would mean a header was built from user data by mistake. */
+    function asciiBytes(s) {
+        var out = new Uint8Array(s.length);
+        for (var i = 0; i < s.length; i++) {
+            var c = s.charCodeAt(i);
+            if (c > 0x7f) {
+                throw new Error("asciiBytes: non-ASCII char at " + i + " (0x" + c.toString(16) + ")");
+            }
+            out[i] = c;
+        }
+        return out;
+    }
+    RecorderAudio.asciiBytes = asciiBytes;
+    function concatBytes(parts) {
+        var total = 0;
+        var i;
+        for (i = 0; i < parts.length; i++)
+            total += parts[i].length;
+        var out = new Uint8Array(total);
+        var off = 0;
+        for (i = 0; i < parts.length; i++) {
+            out.set(parts[i], off);
+            off += parts[i].length;
+        }
+        return out;
+    }
+    RecorderAudio.concatBytes = concatBytes;
+    function writeU32LE(buf, off, v) {
+        buf[off] = v & 0xff;
+        buf[off + 1] = (v >>> 8) & 0xff;
+        buf[off + 2] = (v >>> 16) & 0xff;
+        buf[off + 3] = (v >>> 24) & 0xff;
+    }
+    function writeU16LE(buf, off, v) {
+        buf[off] = v & 0xff;
+        buf[off + 1] = (v >>> 8) & 0xff;
+    }
+    // ── WAV (RIFF/PCM) ────────────────────────────────────────────────────────
+    /**
+     * Wraps signed-16-bit little-endian PCM in a 44-byte canonical WAV header.
+     *
+     * `pcm` is passed through untouched — this never resamples or re-scales, so a
+     * wrong `sampleRateHz` produces audio at the wrong speed rather than silence.
+     * The rate therefore comes from the client's session metadata and is
+     * validated by the caller against the Opus-legal set.
+     */
+    function wavFromPcm16(pcm, sampleRateHz, channels) {
+        var byteRate = sampleRateHz * channels * 2;
+        var header = new Uint8Array(44);
+        header.set(asciiBytes("RIFF"), 0);
+        writeU32LE(header, 4, 36 + pcm.length);
+        header.set(asciiBytes("WAVEfmt "), 8);
+        writeU32LE(header, 16, 16); // fmt chunk size
+        writeU16LE(header, 20, 1); // WAVE_FORMAT_PCM
+        writeU16LE(header, 22, channels);
+        writeU32LE(header, 24, sampleRateHz);
+        writeU32LE(header, 28, byteRate);
+        writeU16LE(header, 32, channels * 2); // block align
+        writeU16LE(header, 34, 16); // bits per sample
+        header.set(asciiBytes("data"), 36);
+        writeU32LE(header, 40, pcm.length);
+        return concatBytes([header, pcm]);
+    }
+    RecorderAudio.wavFromPcm16 = wavFromPcm16;
+    // ── Opus bitstream inspection ─────────────────────────────────────────────
+    /** Frame duration in microseconds per TOC config number (RFC 6716 Table 2). */
+    var CONFIG_FRAME_MICROS = [
+        10000, 20000, 40000, 60000,
+        10000, 20000, 40000, 60000,
+        10000, 20000, 40000, 60000,
+        10000, 20000, 10000, 20000,
+        2500, 5000, 10000, 20000,
+        2500, 5000, 10000, 20000,
+        2500, 5000, 10000, 20000,
+        2500, 5000, 10000, 20000,
+    ];
+    /**
+     * Reads a packet's own TOC byte (RFC 6716 §3.1). This is the cheapest
+     * available proof that we are pointed at real Opus, and it is the only
+     * independent check on the packet size — see `sliceBarePackets`.
+     *
+     * Returns null rather than throwing, because it is called speculatively
+     * while probing candidate packet sizes.
+     */
+    function inspectOpusPacket(packet) {
+        if (packet.length < 1)
+            return null;
+        var toc = packet[0];
+        var config = (toc >> 3) & 0x1f;
+        var isStereo = (toc & 0x04) !== 0;
+        var code = toc & 0x03;
+        var frameCount;
+        if (code === 0) {
+            frameCount = 1;
+        }
+        else if (code === 1 || code === 2) {
+            frameCount = 2;
+        }
+        else {
+            if (packet.length < 2)
+                return null;
+            frameCount = packet[1] & 0x3f;
+            if (frameCount < 1)
+                return null;
+        }
+        var micros = CONFIG_FRAME_MICROS[config];
+        return {
+            config: config,
+            frameMicros: micros,
+            frameCount: frameCount,
+            isStereo: isStereo,
+            durationMicros: micros * frameCount,
+        };
+    }
+    RecorderAudio.inspectOpusPacket = inspectOpusPacket;
+    /**
+     * Splits a concatenated bare-Opus byte stream into fixed-size packets.
+     *
+     * The pen's real-time stream has no container and no length prefix, so the
+     * packet boundary is implicit and recoverable only because the encoder is CBR
+     * at a fixed packet size (40 bytes on the pnote pen, 80 on the RCSP sibling
+     * family). A wrong size does NOT fail loudly on its own — libopus happily
+     * decodes the first frame of a concatenated pair and drops the rest — so
+     * every candidate slice is validated against its own TOC byte here, and the
+     * caller is expected to prefer a candidate that validates cleanly and divides
+     * the stream exactly.
+     */
+    function sliceBarePackets(stream, packetBytes) {
+        var out = [];
+        var whole = Math.floor(stream.length / packetBytes);
+        for (var i = 0; i < whole; i++) {
+            out.push(stream.subarray(i * packetBytes, (i + 1) * packetBytes));
+        }
+        return out;
+    }
+    RecorderAudio.sliceBarePackets = sliceBarePackets;
+    /**
+     * Picks the packet size that the bytes themselves support.
+     *
+     * Checked against every candidate rather than assumed, because the client
+     * does not currently send the packet size (see docs/recorder/ASR_ENDPOINTS.md
+     * §"Client gap") and guessing wrong is the one error that produces plausible
+     * audio at half the true length instead of an exception.
+     */
+    function guessPacketSize(stream, candidates) {
+        var best = null;
+        for (var c = 0; c < candidates.length; c++) {
+            var size = candidates[c];
+            if (size <= 0 || stream.length < size)
+                continue;
+            var packets = sliceBarePackets(stream, size);
+            var remainder = stream.length - packets.length * size;
+            var ok = packets.length > 0;
+            var micros = 0;
+            var stereo = false;
+            // Sample rather than scan: 50 packets/s means a long session is tens of
+            // thousands of packets, and a wrong size shows up in the first few.
+            var step = Math.max(1, Math.floor(packets.length / 64));
+            for (var i = 0; i < packets.length && ok; i += step) {
+                var info = inspectOpusPacket(packets[i]);
+                if (info === null) {
+                    ok = false;
+                    break;
+                }
+                if (micros === 0) {
+                    micros = info.durationMicros;
+                    stereo = info.isStereo;
+                }
+                else if (info.durationMicros !== micros || info.isStereo !== stereo) {
+                    ok = false;
+                    break;
+                }
+            }
+            var guess = {
+                packetBytes: size,
+                packets: packets.length,
+                remainder: remainder,
+                frameMicros: micros,
+                channels: stereo ? 2 : 1,
+                clean: ok && remainder === 0,
+            };
+            if (guess.clean)
+                return guess;
+            if (best === null || (ok && !best.clean))
+                best = guess;
+        }
+        return best;
+    }
+    RecorderAudio.guessPacketSize = guessPacketSize;
+    // ── Ogg Opus muxing ───────────────────────────────────────────────────────
+    var CRC_TABLE = null;
+    /**
+     * Ogg's CRC32: polynomial 0x04c11db7, MSB-first, no input/output reflection
+     * and no final xor. It is NOT the zlib/PNG CRC32, and using that one produces
+     * a file every demuxer rejects.
+     */
+    function crcTable() {
+        if (CRC_TABLE !== null)
+            return CRC_TABLE;
+        var table = [];
+        for (var i = 0; i < 256; i++) {
+            var r = i << 24;
+            for (var j = 0; j < 8; j++) {
+                r = (r & 0x80000000) !== 0 ? ((r << 1) ^ 0x04c11db7) : (r << 1);
+            }
+            table.push(r >>> 0);
+        }
+        CRC_TABLE = table;
+        return table;
+    }
+    function oggCrc(buf) {
+        var table = crcTable();
+        var crc = 0;
+        for (var i = 0; i < buf.length; i++) {
+            crc = ((crc << 8) ^ table[((crc >>> 24) ^ buf[i]) & 0xff]) >>> 0;
+        }
+        return crc >>> 0;
+    }
+    /** Lacing values for one page's segment table. Each packet is encoded as
+     *  ceil(len/255) bytes; a packet whose length is a multiple of 255 needs an
+     *  explicit terminating 0 or the demuxer will wait for a continuation. */
+    function lacing(lengths) {
+        var segs = [];
+        for (var i = 0; i < lengths.length; i++) {
+            var n = lengths[i];
+            while (n >= 255) {
+                segs.push(255);
+                n -= 255;
+            }
+            segs.push(n);
+        }
+        return segs;
+    }
+    function oggPage(headerType, granulePos, serial, pageSeq, packets) {
+        var lengths = [];
+        var i;
+        for (i = 0; i < packets.length; i++)
+            lengths.push(packets[i].length);
+        var segs = lacing(lengths);
+        if (segs.length > 255)
+            throw new Error("oggPage: " + segs.length + " lacing values exceeds 255");
+        var payloadLen = 0;
+        for (i = 0; i < packets.length; i++)
+            payloadLen += packets[i].length;
+        var page = new Uint8Array(27 + segs.length + payloadLen);
+        page.set(asciiBytes("OggS"), 0);
+        page[4] = 0; // stream structure version
+        page[5] = headerType & 0xff;
+        // granule position is 64-bit LE. Opus granules count 48 kHz samples, so a
+        // 32-bit low word covers ~24 h of audio — the high word is written from the
+        // float division rather than left at zero so a long session cannot wrap.
+        writeU32LE(page, 6, granulePos >>> 0);
+        writeU32LE(page, 10, Math.floor(granulePos / 4294967296));
+        writeU32LE(page, 14, serial);
+        writeU32LE(page, 18, pageSeq);
+        writeU32LE(page, 22, 0); // CRC placeholder — computed over zeros
+        page[26] = segs.length;
+        for (i = 0; i < segs.length; i++)
+            page[27 + i] = segs[i];
+        var off = 27 + segs.length;
+        for (i = 0; i < packets.length; i++) {
+            page.set(packets[i], off);
+            off += packets[i].length;
+        }
+        writeU32LE(page, 22, oggCrc(page));
+        return page;
+    }
+    /** RFC 7845 §5.1 ID header. */
+    function opusHead(channels, sampleRateHz, preSkip) {
+        var h = new Uint8Array(19);
+        h.set(asciiBytes("OpusHead"), 0);
+        h[8] = 1; // version
+        h[9] = channels & 0xff;
+        writeU16LE(h, 10, preSkip);
+        writeU32LE(h, 12, sampleRateHz); // original input rate, informational
+        writeU16LE(h, 16, 0); // output gain
+        h[18] = 0; // channel mapping family 0
+        return h;
+    }
+    /** RFC 7845 §5.2 comment header. */
+    function opusTags() {
+        var vendor = asciiBytes("quizverse-recorder-asr");
+        var t = new Uint8Array(8 + 4 + vendor.length + 4);
+        t.set(asciiBytes("OpusTags"), 0);
+        writeU32LE(t, 8, vendor.length);
+        t.set(vendor, 12);
+        writeU32LE(t, 12 + vendor.length, 0); // zero user comments
+        return t;
+    }
+    /**
+     * Muxes bare Opus packets into a single-stream Ogg Opus file.
+     *
+     * `preSkip` is left at libopus's default 312 samples @48 kHz; it only affects
+     * the first ~6.5 ms of output, and the pen's stream has no encoder delay
+     * metadata for us to do better with.
+     */
+    function oggOpusFromPackets(packets, sampleRateHz, channels, frameMicros, serial) {
+        if (packets.length === 0)
+            throw new Error("oggOpusFromPackets: no packets");
+        var preSkip = 312;
+        var pages = [];
+        var seq = 0;
+        pages.push(oggPage(0x02, 0, serial, seq++, [opusHead(channels, sampleRateHz, preSkip)]));
+        pages.push(oggPage(0x00, 0, serial, seq++, [opusTags()]));
+        // Granule positions are in 48 kHz samples regardless of the decode rate
+        // (RFC 7845 §4), so the per-packet advance is derived from the frame
+        // duration, not from sampleRateHz.
+        var granulePerPacket = Math.round(frameMicros * 48000 / 1000000);
+        var granule = preSkip;
+        var i = 0;
+        // Batch packets per page, staying under both the 255-lacing-value limit and
+        // Ogg's ~64 KiB practical page size.
+        var PER_PAGE = 50;
+        while (i < packets.length) {
+            var batch = [];
+            var bytes = 0;
+            while (i < packets.length && batch.length < PER_PAGE && bytes < 48000) {
+                batch.push(packets[i]);
+                bytes += packets[i].length + 1;
+                granule += granulePerPacket;
+                i++;
+            }
+            var last = i >= packets.length;
+            pages.push(oggPage(last ? 0x04 : 0x00, granule, serial, seq++, batch));
+        }
+        return {
+            bytes: concatBytes(pages),
+            packets: packets.length,
+            durationMs: Math.round(packets.length * frameMicros / 1000),
+        };
+    }
+    RecorderAudio.oggOpusFromPackets = oggOpusFromPackets;
+})(RecorderAudio || (RecorderAudio = {}));
 // research.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // QuizVerse Research & Validation instrument (grant-evidence pipeline).
@@ -194550,6 +196615,11 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("qv_agent_analyze_quiz_performance", __rpc_qv_agent_analyze_quiz_performance); } catch(e) {}
   try { initializer.registerRpc("qv_agent_generate_trivia", __rpc_qv_agent_generate_trivia); } catch(e) {}
   try { initializer.registerRpc("qv_agent_public_activity", __rpc_qv_agent_public_activity); } catch(e) {}
+  try { initializer.registerRpc("recorder_asr_open", __rpc_recorder_asr_open); } catch(e) {}
+  try { initializer.registerRpc("recorder_asr_push", __rpc_recorder_asr_push); } catch(e) {}
+  try { initializer.registerRpc("recorder_asr_close", __rpc_recorder_asr_close); } catch(e) {}
+  try { initializer.registerRpc("recorder_asr_purge", __rpc_recorder_asr_purge); } catch(e) {}
+  try { initializer.registerRpc("recorder_asr_gc", __rpc_recorder_asr_gc); } catch(e) {}
   try { initializer.registerRpc("quizverse_research_consent", __rpc_quizverse_research_consent); } catch(e) {}
   try { initializer.registerRpc("quizverse_research_assignment_get", __rpc_quizverse_research_assignment_get); } catch(e) {}
   try { initializer.registerRpc("quizverse_research_diagnostic_submit", __rpc_quizverse_research_diagnostic_submit); } catch(e) {}
@@ -195468,5 +197538,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1334 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
+  logger.info("[Postbuild] Registered " + 1339 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
 }

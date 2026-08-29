@@ -1085,6 +1085,30 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[Library] Failed to register library v2.4.0 RPCs: " + (err.message || String(err)));
   }
 
+  // ---- Curio Recorder ASR ----
+  // recorder_asr_open / _push / _close are called by name from the QuizVerse
+  // Flutter client (lib/features/recorder/data/recorder_asr_transport.dart) to
+  // turn audio captured on the Curio wearable into text. Until these existed
+  // every such call classified as endpointUnavailable and nothing recorded on
+  // the device could become a note. _purge is the user's own right-to-erasure
+  // and _gc is the service-token sweep for a cron.
+  //
+  // Needs the recorder-asr-shim sidecar reachable at RECORDER_ASR_SHIM_URL to do
+  // anything, because this runtime cannot send a binary HTTP body and the speech
+  // engine accepts multipart only. Without it open returns ENDPOINT_UNAVAILABLE
+  // honestly rather than accepting audio it cannot transcribe — the client falls
+  // back to on-device speech only on that code, so a false "available" would
+  // hand the user silence. Single-arg register() so postbuild's autoInvokeRegister
+  // re-runs it on every pooled Goja VM. See data/modules/src/recorder/recorder_asr.ts
+  // and docs/recorder/ASR_ENDPOINTS.md.
+  try {
+    logger.info("[RecorderAsr] Registering recorder_asr_open / _push / _close / _purge / _gc RPCs...");
+    RecorderAsr.register(initializer);
+    logger.info("[RecorderAsr] registered");
+  } catch (err: any) {
+    logger.error("[RecorderAsr] failed to register: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- Event Bus Handlers ----
   try {
     HiroAchievements.registerEventHandlers();

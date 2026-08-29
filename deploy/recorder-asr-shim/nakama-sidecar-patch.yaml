@@ -1,0 +1,172 @@
+# Strategic-merge patch: add the recorder-asr-shim sidecar to intelliverse-nakama.
+#
+# This is a patch rather than a full Deployment because the intelliverse-nakama
+# Deployment spec does not live in this repo — .github/workflows/deploy-eks.yml
+# rolls it forward with `kubectl set image` (CodeBuild and CodePipeline no
+# longer exist in account 803881282303). Applying a full spec from here would
+# silently revert whatever else the cluster carries, including the live
+# ROLLOUT_NONCE and the PATHA_INDEX_JS_URL command wrapper.
+#
+#   kubectl -n aicart patch deployment intelliverse-nakama \
+#     --patch-file deploy/recorder-asr-shim/nakama-sidecar-patch.yaml
+#
+# Strategic merge keys containers by name, so re-applying is idempotent and the
+# `intelliverse-nakama` container entry below only adds env — it does not
+# replace the existing env array. `args` is NOT patchable this way (it is a
+# plain list and strategic merge replaces it wholesale), so the --runtime.env
+# flags are added by the JSON patch in step 3 of the README instead.
+#
+# ✅ CONTAINER NAME — VERIFIED 2026-08-29 against the live cluster.
+# This file previously guessed `nakama`. That guess was WRONG for this
+# Deployment and would have caused an outage: strategic merge keys containers
+# by name, so it would not have added env to the real container — it would have
+# appended a THIRD container called `nakama` with an env array and no image,
+# which the API server rejects.
+#
+#   kubectl -n aicart get deploy intelliverse-nakama \
+#     -o jsonpath='{.spec.template.spec.containers[*].name}'
+#   → intelliverse-nakama          ← this Deployment (the one patched here)
+#
+#   kubectl -n aicart get deploy intelliverse-nakama-multiplayer \
+#     -o jsonpath='{.spec.template.spec.containers[*].name}'
+#   → nakama                       ← where the old guess came from
+#
+# The two tiers run the same image under DIFFERENT container names. If this
+# patch is ever retargeted at the multiplayer tier, the name below must become
+# `nakama`. Re-verify after any Deployment replacement rather than trusting
+# this comment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intelliverse-nakama
+spec:
+  template:
+    metadata:
+      labels:
+        recorder-asr: enabled
+    spec:
+      volumes:
+        - name: recorder-asr-shim-src
+          configMap:
+            name: recorder-asr-shim
+            defaultMode: 0555
+      containers:
+        # ── The shim itself ──────────────────────────────────────────────────
+        - name: recorder-asr-shim
+          # Stock upstream python. There is no image to build and nothing to
+          # publish: the shim is stdlib-only, so its whole supply chain is this
+          # tag plus the ConfigMap.
+          image: python:3.12-alpine
+          command: ["python3", "-u", "/opt/shim/shim.py"]
+          env:
+            # Loopback only. Not in any Service, no containerPort, so the shim
+            # is unreachable from outside this pod by construction — which is
+            # what lets it carry no credential of its own and what stops it
+            # becoming an open transcription proxy.
+            - name: RECORDER_ASR_SHIM_LISTEN
+              value: "127.0.0.1:7359"
+            - name: RECORDER_ASR_BASE_URL
+              value: "http://voice-pipeline-stt.aicart.svc.cluster.local:8000"
+            - name: RECORDER_ASR_MODEL
+              value: "Systran/faster-whisper-small.en"
+            # The engine is ClusterIP with no ingress, declares no security
+            # schemes and reads no API-key env var, so this is intentionally
+            # empty. Kept as an explicit stanza so that if an authenticating
+            # engine ever replaces it, the wiring is a Secret away.
+            - name: RECORDER_ASR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: recorder-asr-secrets
+                  key: engine-api-key
+                  optional: true
+            # Must stay below Nakama's HTTP write timeout, since the JS side
+            # waits on this call inside a push RPC.
+            - name: RECORDER_ASR_TIMEOUT_MS
+              value: "9000"
+          # Measured: ~1.1-1.9 s of wall time per window, essentially all of it
+          # blocked on the engine. The shim's own work is one base64 decode and
+          # one buffer copy per call, so CPU is a rounding error; memory is
+          # bounded by max_audio_bytes plus the multipart copy of it.
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: recorder-asr-shim-src
+              mountPath: /opt/shim
+              readOnly: true
+          # /healthz reports whether the ENGINE is reachable, not whether the
+          # shim process is up, so it is deliberately NOT a livenessProbe: a
+          # cold or restarting engine would otherwise kill a healthy sidecar.
+          # Startup only needs the listener to be bound.
+          startupProbe:
+            tcpSocket:
+              port: 7359
+            periodSeconds: 2
+            failureThreshold: 15
+        # ── env added to the existing Nakama container ───────────────────────
+        # Name VERIFIED against the live Deployment — see the header. Do not
+        # change to `nakama`; that is the multiplayer tier's container name.
+        - name: intelliverse-nakama
+          env:
+            - name: RECORDER_ASR_SHIM_URL
+              value: "http://127.0.0.1:7359"
+            - name: RECORDER_ASR_ENABLED
+              value: "1"
+            - name: RECORDER_ASR_TIMEOUT_MS
+              value: "9000"
+            # Without this the GC RPC refuses every call, which is the state
+            # every environment has been in. See README § The GC token.
+            #
+            # optional: true — VERIFIED-DELIBERATE, 2026-08-29.
+            #
+            # Secret `recorder-asr-secrets` does NOT exist in namespace aicart
+            # (`kubectl -n aicart get secret recorder-asr-secrets` →
+            # NotFound). A non-optional secretKeyRef to a missing Secret does
+            # not degrade the feature — kubelet cannot build the container
+            # environment, so EVERY intelliverse-nakama pod goes
+            # CreateContainerConfigError and the whole of Nakama goes down.
+            # Trading a total outage for a garbage-collection sweep that is
+            # already inert in every environment is not a trade worth making.
+            #
+            # Degrading is safe here because the RPC was written to fail
+            # closed on exactly this case. recorder_asr.ts::rpcGc reads the
+            # token and returns ERR_UNAUTHENTICATED when it is empty:
+            #   "Includes the unset-token case: with no token configured this
+            #    RPC refuses everything rather than becoming an
+            #    unauthenticated global delete."
+            # So with the Secret absent, recorder_asr_gc refuses every call —
+            # which is the state production is in today and the state we want
+            # until a real token exists. The four user-facing RPCs (_open,
+            # _push, _close, _purge) do not read this value and are unaffected.
+            #
+            # This also removes a cross-workstream ordering dependency: the
+            # patch is now safe to apply before, during or after the secret
+            # rotation, instead of requiring the Secret to land first.
+            #
+            # TO ENABLE GC LATER (owned by the secret-rotation workstream —
+            # deliberately NOT done here, and no Secret is created or modified
+            # by this change):
+            #   1. create Secret recorder-asr-secrets with key `gc-token`
+            #   2. add RECORDER_ASR_GC_TOKEN to a --runtime.env flag (the JSON
+            #      patch in README step 3) — the Goja runtime reads ctx.env,
+            #      not the container env, so step 1 alone is not enough
+            #   3. kubectl -n aicart rollout restart deploy/intelliverse-nakama
+            #   4. confirm recorder_asr_gc stops returning UNAUTHENTICATED
+            # No code change is needed at any point.
+            - name: RECORDER_ASR_GC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: recorder-asr-secrets
+                  key: gc-token
+                  optional: true

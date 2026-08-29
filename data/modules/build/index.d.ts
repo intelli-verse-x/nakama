@@ -3902,6 +3902,221 @@ declare namespace RewardDelivery {
 declare namespace QvAgent {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace RecorderAsr {
+    /**
+     * How much already-consumed audio the next window re-reads.
+     *
+     * Zero in the normal case, and that is the whole point. `transcribed_bytes`
+     * is rewound to the end of the last committed utterance after every window,
+     * so the next window already starts on a clean utterance boundary and there
+     * is nothing to recover by reaching further back. Re-feeding anyway is what
+     * produced duplicated text at every seam: the engine received the tail of a
+     * committed sentence, transcribed it again as part of a longer segment, and
+     * that segment's timings straddled the watermark so the drop rule could not
+     * catch it. Measured before the fix — "…sidecar shim." committed, then
+     * "sidecar shim. 2. The audio was…" committed immediately after, with
+     * `begin_ms` moving backwards.
+     *
+     * The overlap is for the degraded path only: audio the byte watermark passed
+     * over without any text being committed for it (chunks missing, a container
+     * that would not mux, a forced flush that finalised nothing). There the
+     * boundary is arbitrary and an utterance really can be sliced in half, so the
+     * next window reaches back to pick up its start.
+     *
+     * Exported for tests: this is one branch on two integers, and the degraded
+     * path cannot be reached through the RPCs without racing storage.
+     */
+    function overlapMsFor(consumedMs: number, committedMs: number): number;
+    interface UserReclaim {
+        /** Sessions still genuinely open after reclamation — what the cap counts. */
+        openSessions: number;
+        removed: number;
+    }
+    interface SweepResult {
+        removed: number;
+        scanned: number;
+        /** True when this run reached the end of key order and reset to the start. */
+        wrapped: boolean;
+        /** True when the run stopped on its deletion budget rather than finishing.
+         *  The cursor was deliberately left where it was, so calling again resumes
+         *  on the same page — the sessions already deleted are gone, so it makes
+         *  progress rather than repeating work. */
+        budgetExhausted: boolean;
+    }
+    /**
+     * Deletes expired sessions and their audio, across all accounts.
+     *
+     * Driven by the `recorder_asr_gc` cron. NOT called from the request path —
+     * see `reclaimAndCountForUser` for why.
+     *
+     * The cursor is persisted between runs. It previously was not, so every run
+     * restarted at the beginning of key order and, bounded at 5 pages, could never
+     * reach an expired session sitting beyond the first 500 objects: on a server
+     * with more than that many session records, reclamation was mathematically
+     * unable to make progress no matter how often it ran. Resuming where the last
+     * run stopped is what makes repeated ticks cover the whole keyspace, and
+     * reaching the end resets to the start so the next tick begins a fresh lap.
+     */
+    function sweep(nk: nkruntime.Nakama, logger: nkruntime.Logger, limit: number): SweepResult;
+    function rpcOpen(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcPush(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcClose(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function rpcPurge(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, _payload: string): string;
+    function rpcGc(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace RecorderAsrProvider {
+    interface Config {
+        /** Loopback address of the base64→multipart sidecar. */
+        shimUrl: string;
+        timeoutMs: number;
+        /** Operator kill switch, `RECORDER_ASR_ENABLED=0`. */
+        enabled: boolean;
+    }
+    interface Segment {
+        text: string;
+        beginMs: number;
+        endMs: number;
+        isFinal: boolean;
+    }
+    interface TranscribeRequest {
+        bytes: Uint8Array;
+        contentType: string;
+        filename: string;
+        /** BCP-47-ish locale from the client (`en_US`); reduced to `en` for the API. */
+        locale: string;
+        /** Added to every returned segment's timings so a window's transcript lands
+         *  at the right place in the session timeline. */
+        offsetMs: number;
+    }
+    interface TranscribeResult {
+        segments: Segment[];
+        /** Audio duration the engine reported, in ms. */
+        durationMs: number;
+        providerMs: number;
+    }
+    function config(ctx: nkruntime.Context): Config;
+    /**
+     * Whether the shim is answering AND says it can reach the engine.
+     *
+     * Both halves are the shim's `ok`: it probes the engine itself (`/health`,
+     * falling back to `/v1/models`) and reports false when the engine is
+     * unreachable, so this is a measurement of "a recording can become text",
+     * not of "the sidecar process is alive". That distinction is the whole point
+     * — see `isAvailable`.
+     *
+     * Not cached here. The probe is one loopback GET inside this pod and only
+     * runs on `open` — once per recording, not per chunk — so the cost is noise,
+     * and caching in a pooled Goja VM would turn a momentary hiccup into ASR
+     * being dead for the lifetime of that VM. The shim does hold a short-lived
+     * verdict of its own so a burst of opens does not hammer the engine.
+     */
+    function shimReady(nk: nkruntime.Nakama, cfg: Config): boolean;
+    /**
+     * A provider is available only if the bytes can actually be delivered and
+     * turned into text.
+     *
+     * This is load-bearing, not defensive. The client falls back to on-device
+     * speech when `open` answers ENDPOINT_UNAVAILABLE and does NOT fall back when
+     * `open` succeeds, so reporting available while unable to transcribe produces
+     * silence for the user — strictly worse than failing. There is deliberately
+     * no path to `true` that does not involve the shim confirming it reached the
+     * engine.
+     *
+     * `nk` is optional on purpose. Pass it at `open`, where being honest is the
+     * whole point. Omit it on the per-chunk path, which is best-effort anyway —
+     * a failed upload there is absorbed and retried on the next window, so paying
+     * for a probe every chunk would buy nothing.
+     */
+    function isAvailable(cfg: Config, nk?: nkruntime.Nakama): boolean;
+    /** Operator-facing reason, surfaced in the RPC error so a misconfiguration is
+     *  diagnosable from a client log rather than only from server logs. */
+    function unavailableReason(cfg: Config, nk: nkruntime.Nakama): string;
+    function isRepetitionArtifact(text: string, durationMs: number): boolean;
+    /**
+     * One transcription round trip.
+     *
+     * Throws on transport failure or a non-2xx engine response; the caller decides
+     * whether that fails the RPC or is absorbed (a failed `close` must not lose a
+     * transcript the client already has).
+     */
+    function transcribe(nk: nkruntime.Nakama, logger: nkruntime.Logger, cfg: Config, req: TranscribeRequest): TranscribeResult;
+}
+declare namespace RecorderAudio {
+    /** ASCII string → bytes. Throws on any non-ASCII input, which in this file
+     *  would mean a header was built from user data by mistake. */
+    function asciiBytes(s: string): Uint8Array;
+    function concatBytes(parts: Uint8Array[]): Uint8Array;
+    /**
+     * Wraps signed-16-bit little-endian PCM in a 44-byte canonical WAV header.
+     *
+     * `pcm` is passed through untouched — this never resamples or re-scales, so a
+     * wrong `sampleRateHz` produces audio at the wrong speed rather than silence.
+     * The rate therefore comes from the client's session metadata and is
+     * validated by the caller against the Opus-legal set.
+     */
+    function wavFromPcm16(pcm: Uint8Array, sampleRateHz: number, channels: number): Uint8Array;
+    interface OpusPacketInfo {
+        config: number;
+        frameMicros: number;
+        frameCount: number;
+        isStereo: boolean;
+        durationMicros: number;
+    }
+    /**
+     * Reads a packet's own TOC byte (RFC 6716 §3.1). This is the cheapest
+     * available proof that we are pointed at real Opus, and it is the only
+     * independent check on the packet size — see `sliceBarePackets`.
+     *
+     * Returns null rather than throwing, because it is called speculatively
+     * while probing candidate packet sizes.
+     */
+    function inspectOpusPacket(packet: Uint8Array): OpusPacketInfo;
+    /**
+     * Splits a concatenated bare-Opus byte stream into fixed-size packets.
+     *
+     * The pen's real-time stream has no container and no length prefix, so the
+     * packet boundary is implicit and recoverable only because the encoder is CBR
+     * at a fixed packet size (40 bytes on the pnote pen, 80 on the RCSP sibling
+     * family). A wrong size does NOT fail loudly on its own — libopus happily
+     * decodes the first frame of a concatenated pair and drops the rest — so
+     * every candidate slice is validated against its own TOC byte here, and the
+     * caller is expected to prefer a candidate that validates cleanly and divides
+     * the stream exactly.
+     */
+    function sliceBarePackets(stream: Uint8Array, packetBytes: number): Uint8Array[];
+    interface PacketSizeGuess {
+        packetBytes: number;
+        packets: number;
+        remainder: number;
+        frameMicros: number;
+        channels: number;
+        /** True when every packet's TOC agreed and the stream divided exactly. */
+        clean: boolean;
+    }
+    /**
+     * Picks the packet size that the bytes themselves support.
+     *
+     * Checked against every candidate rather than assumed, because the client
+     * does not currently send the packet size (see docs/recorder/ASR_ENDPOINTS.md
+     * §"Client gap") and guessing wrong is the one error that produces plausible
+     * audio at half the true length instead of an exception.
+     */
+    function guessPacketSize(stream: Uint8Array, candidates: number[]): PacketSizeGuess;
+    interface OggOpusResult {
+        bytes: Uint8Array;
+        packets: number;
+        durationMs: number;
+    }
+    /**
+     * Muxes bare Opus packets into a single-stream Ogg Opus file.
+     *
+     * `preSkip` is left at libopus's default 312 samples @48 kHz; it only affects
+     * the first ~6.5 ms of output, and the pen's stream has no encoder delay
+     * metadata for us to do better with.
+     */
+    function oggOpusFromPackets(packets: Uint8Array[], sampleRateHz: number, channels: number, frameMicros: number, serial: number): OggOpusResult;
+}
 declare namespace Research {
     var MODULE_VERSION: string;
     function register(initializer: nkruntime.Initializer): void;

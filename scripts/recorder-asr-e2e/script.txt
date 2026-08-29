@@ -1,0 +1,6 @@
+One. This is the Curio recorder speaking through the sidecar shim.
+Two. The audio was captured on the device and sent to Nakama as base sixty four.
+Three. The server wrapped it in a container and asked the whisper engine for text.
+Four. Windowing means each push transcribes about eight seconds of new audio.
+Five. The overlap prevents a sentence from being cut in half at the seam.
+Six. If this transcript reads correctly then device audio has become text.
