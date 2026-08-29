@@ -790,3 +790,8 @@ GEMINI.md
 data/modules/-
 /.local
 dev.ps1
+
+# Compiled __tests__ bundles (tsconfig.tests.json output). Local only.
+# Merging one into the production bundle makes Nakama refuse to start; see
+# the build-tests note in data/modules/postbuild.js.
+data/modules/build-tests/

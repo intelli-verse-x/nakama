@@ -29,7 +29,18 @@ const EXCLUDE_FILES = new Set([
   'index.js', 'postbuild.js', 'legacy_runtime.js',
   'package.json', 'package-lock.json', 'tsconfig.json'
 ]);
-const EXCLUDE_DIRS = new Set(['node_modules', 'build', '.git', 'src']);
+// 'build-tests' holds compiled __tests__ bundles (tsconfig.tests.json). They
+// are whole copies of the runtime plus test namespaces, so merging one produces
+// a second definition of every namespace at the wrong position in the file — an
+// eval-time TypeError, because a namespace that used to resolve now runs before
+// its dependency. Nakama then refuses to start.
+//
+// Measured 2026-08-29: with build-tests/ present the bundle went from 9.18 MB
+// to 13.99 MB and from 123 to 124 merged modules, while the registered-RPC
+// count stayed at exactly 1338 — so neither the RPC superset gate nor the
+// PATHA byte floor would have flagged it. Only `node -c` passing while the
+// runtime refuses to boot. Keep this exclusion.
+const EXCLUDE_DIRS = new Set(['node_modules', 'build', 'build-tests', '.git', 'src']);
 
 function isNakamaCompatible(content, relPath) {
   if (content.trimStart().startsWith('#!')) {

@@ -25,30 +25,59 @@ namespace LegacyPush {
       pendingGameId?: string;
       pendingIsSandbox?: boolean;
       pendingFcmProjectId?: string;
+      // Age clearance recorded at registration time, for audit. See
+      // resolveAgeClearance() — a push token is a persistent identifier under
+      // 16 CFR 312.2(7), so what we knew about the account's age when we
+      // started collecting one has to be recoverable after the fact.
+      ageBracket?: string;
+      ageSource?: string;
+      ageCheckedAt?: number;
     }[];
   }
 
   var DEFAULT_PUSH_NOTIFICATION_CODE = 7001;
 
-  // ─── Production hardcoded Lambda Function URLs ──────────────────────────────
-  // Single source of truth for the AWS Lambda Function URLs that back our push
-  // pipeline. Hardcoded so the system works even when Nakama starts without the
-  // PUSH_REGISTER_URL / PUSH_LAMBDA_URL / PUSH_SEND_URL env vars set (e.g. on
-  // first deploy, or in a fresh K8s manifest). Env vars still take precedence
-  // when present, so ops can rotate URLs without a Nakama rebuild.
+  // ─── Provider endpoints come from config only ───────────────────────────────
+  // There are deliberately NO hardcoded fallback URLs here.
   //
-  // Update both values below if the Lambda URLs ever change.
-  //   - REGISTER URL → push-register-endpoint Lambda (creates SNS endpoint ARN)
-  //   - SEND URL     → push-send-notification Lambda (publishes to SNS endpoint)
+  // Until 2026-08 this file carried two `lambda-url.us-east-1.on.aws` defaults
+  // for the register/send Lambdas. Both are Function URLs with AuthType=NONE in
+  // a legacy AWS account and are still reachable from the open internet, so a
+  // dropped `PUSH_SEND_URL` override in the nakama-secret config.yaml would
+  // have silently moved production off the in-cluster bridge and back onto an
+  // unauthenticated public endpoint — the failure mode nobody would notice,
+  // because push would keep working.
   //
-  // ⚠️ TODO(ops): paste the actual REGISTER URL between the quotes below.
-  // The SEND URL is from the production push-notification documentation.
-  var PUSH_REGISTER_URL_DEFAULT = "https://alwe7byu637jhiwnkyzlg2fphm0fxioh.lambda-url.us-east-1.on.aws/";
-  var PUSH_SEND_URL_DEFAULT     = "https://dp3gdkvjst4dwlehmuk3o7l4zm0rjapm.lambda-url.us-east-1.on.aws/";
+  // Live wiring today (verify with the secret, not the Deployment: the
+  // Deployment's env: carries no PUSH_* vars at all):
+  //   kubectl -n aicart get secret nakama-secret -o jsonpath='{.data.config\.yaml}' \
+  //     | base64 -d | grep PUSH_
+  //   → PUSH_REGISTER_URL=http://nakama-push-bridge.aicart.svc.cluster.local:8080/register
+  //   → PUSH_SEND_URL=http://nakama-push-bridge.aicart.svc.cluster.local:8080/send
+  //
+  // With no default, a missing override degrades loudly (registrations park as
+  // pending, sends report providerConfigured=false) instead of failing open.
+
+  // A token row for a user who owns a phone and a tablet is legitimate; 53 rows
+  // for one account is token rotation that never evicted anything, and every
+  // one of them costs a sequential bridge call on every notification.
+  //
+  // Ten is chosen from the production distribution over all 14,496 token rows
+  // (measured 2026-08-29): p95 = 1, p99 = 1, max = 53, only 9 accounts hold
+  // more than 3 and only 5 hold more than 10. So the cap sits an order of
+  // magnitude above the 99th percentile — a genuine multi-device user is
+  // nowhere near it — while bounding worst-case fan-out to 10 bridge calls.
+  var MAX_TOKENS_PER_USER = 10;
+
+  // Optimistic-concurrency attempts for a token-row read-modify-write.
+  var TOKEN_WRITE_MAX_ATTEMPTS = 5;
+
+  function pushTokensKey(userId: string): string {
+    return "token_" + userId;
+  }
 
   function getPushTokens(nk: nkruntime.Nakama, userId: string): PushTokenData {
-    var key = "token_" + userId;
-    var data = Storage.readJson<PushTokenData>(nk, Constants.PUSH_TOKENS_COLLECTION, key, userId);
+    var data = Storage.readJson<PushTokenData>(nk, Constants.PUSH_TOKENS_COLLECTION, pushTokensKey(userId), userId);
     return data || { tokens: [] };
   }
 
@@ -67,9 +96,139 @@ namespace LegacyPush {
     return false;
   }
 
+  // permissionWrite: 0 — server-only. Owner-read (1) is correct: the device
+  // reads back its own endpoint state. Owner-WRITE was not: it let a client
+  // bypass push_register_token entirely and store an `endpointArn` of its
+  // choosing, so notifications intended for that account would be delivered
+  // to whatever device the attacker had pointed the ARN at.
+  //
+  // Rows written before this change are still `write=1` in storage; a code
+  // change cannot retroactively fix them. See
+  // data/modules/migrations/2026-08-29-push-tokens-server-write-only.sql.
   function savePushTokens(nk: nkruntime.Nakama, userId: string, data: PushTokenData): void {
-    var key = "token_" + userId;
-    Storage.writeJson(nk, Constants.PUSH_TOKENS_COLLECTION, key, userId, data);
+    Storage.writeJson(nk, Constants.PUSH_TOKENS_COLLECTION, pushTokensKey(userId), userId, data,
+      1 as nkruntime.ReadPermissionValues, 0 as nkruntime.WritePermissionValues);
+  }
+
+  function isVersionConflict(err: any): boolean {
+    var msg = (err && err.message ? String(err.message) : String(err)).toLowerCase();
+    return msg.indexOf("version") >= 0;
+  }
+
+  // Version-checked read-modify-write of one user's token row.
+  //
+  // The unguarded `read → mutate → write` this replaces was last-write-wins, so
+  // two devices of the same account registering at the same moment would drop
+  // each other's row. `mutate` may therefore be called more than once and must
+  // be free of side effects outside the object it is handed.
+  //
+  // Returns the committed data, or throws if the conflict does not settle.
+  function updatePushTokens(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string,
+    mutate: (data: PushTokenData) => void
+  ): PushTokenData {
+    var key = pushTokensKey(userId);
+    var lastErr: any = null;
+    for (var attempt = 1; attempt <= TOKEN_WRITE_MAX_ATTEMPTS; attempt++) {
+      var recs = nk.storageRead([{ collection: Constants.PUSH_TOKENS_COLLECTION, key: key, userId: userId }]);
+      var existing = (recs && recs.length > 0) ? recs[0] : null;
+      // "*" is Nakama's "this key must not already exist" precondition, which
+      // is what makes a first write race-safe too.
+      var version = existing && existing.version ? existing.version : "*";
+      var data: PushTokenData = (existing && existing.value)
+        ? (existing.value as PushTokenData)
+        : { tokens: [] };
+      if (!data.tokens) data.tokens = [];
+      mutate(data);
+      try {
+        nk.storageWrite([{
+          collection: Constants.PUSH_TOKENS_COLLECTION,
+          key: key,
+          userId: userId,
+          value: data,
+          version: version,
+          permissionRead: 1 as nkruntime.ReadPermissionValues,
+          permissionWrite: 0 as nkruntime.WritePermissionValues,
+        }]);
+        return data;
+      } catch (e: any) {
+        lastErr = e;
+        if (!isVersionConflict(e)) throw e;
+        logger.info("[Push] token row version conflict for userId=%s (attempt %s/%s) — re-reading and re-applying.",
+          userId, attempt, TOKEN_WRITE_MAX_ATTEMPTS);
+      }
+    }
+    throw lastErr || new Error("push token write did not settle");
+  }
+
+  // Bounds the per-user fan-out. Drops the least-recently-registered rows
+  // first, and never drops `keepToken` (the registration in flight) or a row
+  // still awaiting its SNS endpoint.
+  function evictExcessTokens(logger: nkruntime.Logger, userId: string, data: PushTokenData, keepToken: string): number {
+    if (!data.tokens || data.tokens.length <= MAX_TOKENS_PER_USER) return 0;
+    var protectedRows: any[] = [];
+    var evictable: any[] = [];
+    for (var i = 0; i < data.tokens.length; i++) {
+      var t: any = data.tokens[i];
+      if (!t) continue;
+      if (t.token === keepToken || t.pendingRegistration === true) protectedRows.push(t);
+      else evictable.push(t);
+    }
+    // Oldest activity first, so the survivors are the devices actually in use.
+    evictable.sort(function (a: any, b: any): number {
+      return (a.updatedAt || 0) - (b.updatedAt || 0);
+    });
+    var room = MAX_TOKENS_PER_USER - protectedRows.length;
+    if (room < 0) room = 0;
+    var dropped = evictable.length > room ? evictable.length - room : 0;
+    if (dropped <= 0) return 0;
+    var kept = evictable.slice(dropped);
+    // Preserve the original ordering of the survivors for stable output.
+    var survivors: any[] = [];
+    for (var j = 0; j < data.tokens.length; j++) {
+      var row: any = data.tokens[j];
+      if (!row) continue;
+      if (protectedRows.indexOf(row) >= 0 || kept.indexOf(row) >= 0) survivors.push(row);
+    }
+    data.tokens = survivors;
+    logger.warn("[Push] evicted %s least-recently-registered token row(s) for userId=%s — " +
+      "cap is %s per account; the SNS endpoints themselves are left alone.",
+      dropped, userId, MAX_TOKENS_PER_USER);
+    return dropped;
+  }
+
+  // ─── Caller trust ──────────────────────────────────────────────────────────
+  // A Nakama RPC invoked with the server's http_key — cron jobs, other server
+  // modules, ops curl — arrives with NO ctx.userId. A client call ALWAYS has
+  // one: Nakama sets it from the verified session token and a client has no way
+  // to suppress it. The absence of a userId is therefore an authenticated
+  // signal that the caller holds the server key, not a payload field a caller
+  // could assert. This is the same test the notif_cron_* RPCs in this file and
+  // RpcHelpers.requireAdmin already use.
+  //
+  // Worth recording what the internal callers actually do, because it is not
+  // what a grep suggests: nothing in this repo invokes the push RPCs
+  // server-to-server. The cron fan-outs (notification_scheduler.ts) and
+  // hermes.ts call sendLocalizedPushToUser() directly as a function, so they
+  // never reach rpcPushSendEvent and are unaffected by the authorization added
+  // there. friends/friend_invites.js does not send push at all — the "push_send"
+  // hits in it are Array.prototype.push. The server-key path below is kept for
+  // ops and future out-of-process callers, not because a current one depends on
+  // it.
+  function isSystemCaller(ctx: nkruntime.Context): boolean {
+    return !ctx.userId;
+  }
+
+  function isAdminUser(nk: nkruntime.Nakama, userId: string): boolean {
+    if (!userId) return false;
+    try {
+      var accounts = nk.accountsGetId([userId]);
+      if (accounts && accounts.length > 0) {
+        var metadata: any = accounts[0].user.metadata;
+        if (metadata && metadata.admin === true) return true;
+      }
+    } catch (_) { }
+    return false;
   }
 
   // True only when `userId` maps to a real account. Used to avoid
@@ -88,6 +247,161 @@ namespace LegacyPush {
 
   function env(ctx: nkruntime.Context, key: string): string {
     return (ctx.env && ctx.env[key]) || "";
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //                          SERVER-SIDE AGE GATE
+  // ───────────────────────────────────────────────────────────────────────────
+  // A push token is a persistent identifier under 16 CFR 312.2(7), so creating
+  // one for a child is a collection event we have no verifiable parental
+  // consent for. Before this, the only thing standing between an under-13
+  // account and an SNS endpoint was the Flutter client choosing not to ask
+  // Firebase for a token; the Unity client has no such check, and neither does
+  // anything that speaks to the RPC directly.
+  //
+  // Two signals, checked strongest first, mirroring the two patterns already in
+  // this codebase:
+  //
+  //   1. `dob_iso` on the account metadata — the same field
+  //      tournaments/rpcs.ts::readUserDob reads and enforces `min_age` against.
+  //      An actual date of birth is authoritative: under the threshold is a
+  //      hard refusal.
+  //   2. An `age_assertion` on the payload — the vocabulary
+  //      recorder/recorder_asr.ts already uses
+  //      (at_or_above_threshold | below_threshold | unknown). `below_threshold`
+  //      and `unknown` both refuse: an unanswered gate is not permission.
+  //
+  // WHAT HAPPENS WHEN THERE IS NEITHER, AND WHY IT IS NOT A HARD REFUSAL
+  //
+  // Failing closed is the compliance-correct default and it is NOT what this
+  // does by default, deliberately and measurably:
+  //
+  //   * `dob_iso` is present on 0 of 61,902 production accounts. The Flutter
+  //     age gate keeps the declared date of birth in device-local
+  //     SharedPreferences (`qv_age_dob_ymd`) and has never sent it to the
+  //     server, so there is no DOB on the server to check for anyone.
+  //   * No shipped client sends `age_assertion` on push_register_token yet.
+  //   * All 14,496 accounts that currently hold a push token would therefore
+  //     resolve to `absent`.
+  //
+  // Defaulting to closed would take push notifications to zero for the entire
+  // user base and would break the imminent Flutter rollout on its first call.
+  // So `absent` is admitted, recorded as explicitly absent on the token row,
+  // and logged — and the refusal is one env var away:
+  //
+  //   PUSH_REQUIRE_AGE_ASSERTION=1
+  //
+  // The migration to get there, in order:
+  //   1. Ship a Flutter build that forwards its existing AgeBracket on
+  //      push_register_token (it already computes exactly these three values
+  //      in lib/features/auth/domain/age_gate.dart).
+  //   2. Give Unity the same gate, or stop registering tokens from it.
+  //   3. Watch `[Push] age gate: admitted an absent declaration` fall to zero.
+  //   4. Set PUSH_REQUIRE_AGE_ASSERTION=1 in the nakama-secret runtime env.
+  //
+  // Note on the one age-ish signal that does exist server-side: 18,662
+  // qv_onboarding_profiles rows carry `snapshot.age` as a coarse band whose
+  // lowest value is "u18". That is the wrong granularity for a 13 threshold —
+  // "u18" covers 13-17, who are permitted — so it is deliberately NOT used to
+  // refuse. Only 34 of the 14,496 token owners have such a row anyway.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  var PUSH_AGE_THRESHOLD_DEFAULT = 13;   // US COPPA floor (16 CFR 312)
+
+  interface AgeClearance {
+    allowed: boolean;
+    bracket: string;   // at_or_above_threshold | below_threshold | unknown | absent
+    source: string;    // account_dob | client | absent
+    minAge: number;
+    reason: string;
+  }
+
+  function ageThreshold(ctx: nkruntime.Context): number {
+    var raw = parseInt(env(ctx, "PUSH_AGE_THRESHOLD") || "", 10);
+    if (!raw || raw <= 0) return PUSH_AGE_THRESHOLD_DEFAULT;
+    return raw;
+  }
+
+  function requireAgeAssertion(ctx: nkruntime.Context): boolean {
+    return (env(ctx, "PUSH_REQUIRE_AGE_ASSERTION") || "0") === "1";
+  }
+
+  // Age in whole years from account metadata `dob_iso`, or 0 when absent or
+  // unparseable. Same computation as tournaments/rpcs.ts::readUserDob, kept
+  // local so this module has no cross-namespace dependency.
+  function accountAgeYears(nk: nkruntime.Nakama, userId: string): number {
+    try {
+      var acc = nk.accountsGetId([userId]);
+      if (acc && acc.length > 0) {
+        var md: any = acc[0].user.metadata;
+        if (md && md.dob_iso) {
+          var dob = new Date(md.dob_iso);
+          if (isNaN(dob.getTime())) return 0;
+          var now = new Date();
+          var age = now.getFullYear() - dob.getFullYear();
+          var m = now.getMonth() - dob.getMonth();
+          if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+          return age > 0 ? age : 0;
+        }
+      }
+    } catch (_) { }
+    return 0;
+  }
+
+  function normalizeAgeBracket(raw: any): string {
+    var b = String(raw || "").toLowerCase();
+    if (b === "at_or_above_threshold" || b === "atorabovethreshold") return "at_or_above_threshold";
+    if (b === "below_threshold" || b === "belowthreshold") return "below_threshold";
+    return "unknown";
+  }
+
+  function resolveAgeClearance(
+    ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama,
+    userId: string, data: any
+  ): AgeClearance {
+    var minAge = ageThreshold(ctx);
+
+    // 1. A real date of birth on the account wins over anything the caller says.
+    var age = accountAgeYears(nk, userId);
+    if (age > 0) {
+      if (age < minAge) {
+        return {
+          allowed: false, bracket: "below_threshold", source: "account_dob", minAge: minAge,
+          reason: "account dob_iso resolves to age " + age + ", below the " + minAge + " threshold",
+        };
+      }
+      return { allowed: true, bracket: "at_or_above_threshold", source: "account_dob", minAge: minAge, reason: "" };
+    }
+
+    // 2. A client-declared bracket. Fails closed on below_threshold and on an
+    //    unanswered or unrecognised gate.
+    var asserted = data && (data.age_assertion || data.ageAssertion);
+    if (asserted) {
+      var bracket = normalizeAgeBracket(asserted.bracket);
+      if (bracket === "at_or_above_threshold") {
+        return { allowed: true, bracket: bracket, source: "client", minAge: minAge, reason: "" };
+      }
+      return {
+        allowed: false, bracket: bracket, source: "client", minAge: minAge,
+        reason: bracket === "below_threshold"
+          ? "client declared an age below the " + minAge + " threshold"
+          : "client age declaration is unknown — an unanswered gate is not permission",
+      };
+    }
+
+    // 3. Nothing at all. See the block comment above for why this is admitted
+    //    by default and how to close it.
+    if (requireAgeAssertion(ctx)) {
+      return {
+        allowed: false, bracket: "absent", source: "absent", minAge: minAge,
+        reason: "no account dob_iso and no age_assertion (PUSH_REQUIRE_AGE_ASSERTION=1)",
+      };
+    }
+    logger.warn("[Push] age gate: admitted an absent declaration for userId=%s — " +
+      "no dob_iso on the account and no age_assertion on the payload. " +
+      "PUSH_REQUIRE_AGE_ASSERTION is not 1, so this is admitted rather than refused; " +
+      "this line falling to zero is the signal that it can be set.", userId);
+    return { allowed: true, bracket: "absent", source: "absent", minAge: minAge, reason: "" };
   }
 
   function parseJsonSafe(raw: string): any {
@@ -131,13 +445,23 @@ namespace LegacyPush {
   // token was sent at an APNs Platform App). They make push_send_event
   // produce noisy "endpointArn missing" rows in providerResults and skew
   // the recipientCount math. Idempotent — safe to call on every send.
+  //
+  // A row with pendingRegistration=true is NOT a ghost: it is a registration
+  // whose provider call has not finished yet, and it has no endpointArn for
+  // exactly that reason. Dropping it — which this used to do, from three
+  // separate callers including every send and every get_endpoints — destroyed
+  // in-flight registrations, and the row it destroyed was the only thing the
+  // 30-minute retry scheduler had to work from. Pending rows are kept until
+  // flushPendingRegistrations gives up on them (it clears the flag after
+  // PENDING_MAX_RETRIES), at which point they become collectable here.
   function pruneGhostTokens(tokensData: PushTokenData): { kept: any[], dropped: number } {
     if (!tokensData || !tokensData.tokens) return { kept: [], dropped: 0 };
     var kept: any[] = [];
     var dropped = 0;
     for (var i = 0; i < tokensData.tokens.length; i++) {
       var t = tokensData.tokens[i];
-      if (t && typeof t.endpointArn === "string" && t.endpointArn.length > 0) {
+      var hasArn = !!(t && typeof t.endpointArn === "string" && t.endpointArn.length > 0);
+      if (hasArn || (t && t.pendingRegistration === true)) {
         kept.push(t);
       } else {
         dropped++;
@@ -191,9 +515,11 @@ namespace LegacyPush {
 
   function registerProviderEndpoint(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, userId: string, token: string, platform: string, gameId: string, isSandbox: boolean, fcmProjectId: string): any {
     var normalizedPlatform = normalizePlatform(platform);
-    var registerUrl = env(ctx, "PUSH_REGISTER_URL") || env(ctx, "PUSH_LAMBDA_URL") || PUSH_REGISTER_URL_DEFAULT;
+    var registerUrl = env(ctx, "PUSH_REGISTER_URL") || env(ctx, "PUSH_LAMBDA_URL");
     if (!registerUrl) {
-      logger.warn("[Push] registerProviderEndpoint: no register URL configured for platform=%s userId=%s", normalizedPlatform, userId);
+      logger.error("[Push] registerProviderEndpoint: PUSH_REGISTER_URL is not configured — refusing to register. " +
+        "There is no fallback URL on purpose. Set PUSH_REGISTER_URL in the nakama-secret config.yaml runtime env " +
+        "(the Deployment's env: is not read by the JS runtime). platform=%s userId=%s", normalizedPlatform, userId);
       return { configured: false };
     }
 
@@ -291,9 +617,11 @@ namespace LegacyPush {
         "it will be auto-corrected next time push_register_token runs.",
         endpoint.platform, arnPlatform, endpoint.endpointArn);
     }
-    var sendUrl = env(ctx, "PUSH_SEND_URL") || PUSH_SEND_URL_DEFAULT;
+    var sendUrl = env(ctx, "PUSH_SEND_URL");
     if (!sendUrl) {
-      logger.warn("[Push] sendProviderPush: no send URL configured for platform=%s", normalizedPlatform);
+      logger.error("[Push] sendProviderPush: PUSH_SEND_URL is not configured — refusing to send. " +
+        "There is no fallback URL on purpose: the old default was a public, unauthenticated Lambda Function URL. " +
+        "Set PUSH_SEND_URL in the nakama-secret config.yaml runtime env. platform=%s", normalizedPlatform);
       return { configured: false };
     }
     if (!endpoint.endpointArn) {
@@ -375,6 +703,24 @@ namespace LegacyPush {
         return RpcHelpers.errorResponse("token required");
       }
 
+      // ─── Age gate — before ANY storage write or provider call ──────────────
+      // A refused registration must leave no trace: no token row, no SNS
+      // endpoint, nothing for the retry scheduler to pick up later.
+      var clearance = resolveAgeClearance(ctx, logger, nk, userId, data);
+      if (!clearance.allowed) {
+        logger.warn("[Push] push_register_token REFUSED by age gate: userId=%s bracket=%s source=%s minAge=%s reason=%s",
+          userId, clearance.bracket, clearance.source, clearance.minAge, clearance.reason);
+        return JSON.stringify({
+          success: false,
+          pending: false,
+          error: "age requirement not met",
+          code: "AGE_RESTRICTED",
+          http_status: 403,
+          minAge: clearance.minAge,
+          ageBracket: clearance.bracket,
+        });
+      }
+
       var now = Math.floor(Date.now() / 1000);
       var normalizedPlatformEarly = normalizePlatform(platform);
 
@@ -396,51 +742,58 @@ namespace LegacyPush {
       // succeeds we update the row with the ARN. If Lambda fails (context
       // canceled), the pending row stays and the scheduler retries every
       // 30 min via flushPendingRegistrations.
+      //
+      // The read-modify-write below is version-checked (updatePushTokens), so
+      // two devices of the same account registering at the same moment can no
+      // longer drop each other's row.
       // ─────────────────────────────────────────────────────────────────────
-      var tokensData = getPushTokens(nk, userId);
+      updatePushTokens(nk, logger, userId, function (tokensData: PushTokenData): void {
+        // Ghost-row hygiene: drop existing rows with no endpointArn that are
+        // not themselves awaiting registration. Idempotent.
+        var pruned = pruneGhostTokens(tokensData);
+        if (pruned.dropped > 0) {
+          logger.info("[Push] push_register_token: pruned %s ghost token row(s) (no endpointArn, not pending) for userId=%s",
+            pruned.dropped, userId);
+        }
+        tokensData.tokens = pruned.kept;
 
-      // Ghost-row hygiene: drop any existing rows for this user that have no
-      // endpointArn (stale failed registrations). They're never deliverable
-      // and only confuse providerResults at send time. Idempotent.
-      var pruned = pruneGhostTokens(tokensData);
-      if (pruned.dropped > 0) {
-        logger.info("[Push] push_register_token: pruned %s ghost token row(s) (no endpointArn) for userId=%s",
-          pruned.dropped, userId);
-      }
-      tokensData.tokens = pruned.kept;
-
-      // Upsert a pending row — guarantees the token is never lost regardless
-      // of what happens to the Lambda call or the second storage write.
-      var existingPendingIdx = -1;
-      for (var i = 0; i < tokensData.tokens.length; i++) {
-        if (tokensData.tokens[i].token === token) { existingPendingIdx = i; break; }
-      }
-      if (existingPendingIdx >= 0) {
-        var ep = tokensData.tokens[existingPendingIdx];
-        ep.platform = normalizedPlatformEarly;
-        ep.updatedAt = now;
-        ep.pendingRegistration = true;
-        ep.pendingGameId = gameId;
-        ep.pendingIsSandbox = isSandbox;
-        ep.pendingFcmProjectId = fcmProjectId;
-      } else {
-        tokensData.tokens.push({
-          token: token,
-          platform: normalizedPlatformEarly,
-          updatedAt: now,
-          pendingRegistration: true,
-          pendingRetries: 0,
-          pendingLastAttempt: now,
-          pendingGameId: gameId,
-          pendingIsSandbox: isSandbox,
-          pendingFcmProjectId: fcmProjectId,
-        });
-      }
-      // This write MUST happen before any nk.httpRequest call. It is the
-      // atomicity guarantee — token is safe even if context cancels later.
-      savePushTokens(nk, userId, tokensData);
-      // Register this user in the pending index so the scheduler can find
-      // the row if the Lambda call below fails (context canceled).
+        // Upsert a pending row — guarantees the token is never lost regardless
+        // of what happens to the Lambda call or the second storage write.
+        var existingPendingIdx = -1;
+        for (var i = 0; i < tokensData.tokens.length; i++) {
+          if (tokensData.tokens[i].token === token) { existingPendingIdx = i; break; }
+        }
+        if (existingPendingIdx >= 0) {
+          var ep = tokensData.tokens[existingPendingIdx];
+          ep.platform = normalizedPlatformEarly;
+          ep.updatedAt = now;
+          ep.pendingRegistration = true;
+          ep.pendingGameId = gameId;
+          ep.pendingIsSandbox = isSandbox;
+          ep.pendingFcmProjectId = fcmProjectId;
+          ep.ageBracket = clearance.bracket;
+          ep.ageSource = clearance.source;
+          ep.ageCheckedAt = now;
+        } else {
+          tokensData.tokens.push({
+            token: token,
+            platform: normalizedPlatformEarly,
+            updatedAt: now,
+            pendingRegistration: true,
+            pendingRetries: 0,
+            pendingLastAttempt: now,
+            pendingGameId: gameId,
+            pendingIsSandbox: isSandbox,
+            pendingFcmProjectId: fcmProjectId,
+            ageBracket: clearance.bracket,
+            ageSource: clearance.source,
+            ageCheckedAt: now,
+          });
+        }
+        evictExcessTokens(logger, userId, tokensData, token);
+      });
+      // Mark this user as having a pending registration so the scheduler can
+      // find the row if the Lambda call below fails (context canceled).
       addToPendingIndex(nk, logger, userId);
       logger.info("[Push] push_register_token: pending row saved. Calling Lambda. userId=%s platform=%s",
         userId, normalizedPlatformEarly);
@@ -458,37 +811,41 @@ namespace LegacyPush {
       // If this write fails, the pending row from above is already saved.
       // The scheduler will retry and obtain the ARN on the next 30-min tick.
       try {
-        var tokensData2 = getPushTokens(nk, userId);
-        var targetIdx = -1;
-        for (var j = 0; j < tokensData2.tokens.length; j++) {
-          if (tokensData2.tokens[j].token === token) { targetIdx = j; break; }
-        }
-        if (targetIdx < 0) {
-          // Pending row was somehow absent — re-add it (defensive)
-          targetIdx = tokensData2.tokens.length;
-          tokensData2.tokens.push({ token: token, platform: resolvedPlatform, updatedAt: now, pendingRegistration: true });
-        }
-        var row = tokensData2.tokens[targetIdx];
-        row.platform = resolvedPlatform;
-        row.updatedAt = now;
-        if (provider && provider.success && provider.endpointArn) {
-          row.endpointArn = provider.endpointArn;
-          row.pendingRegistration = false;
-          row.pendingRetries = 0;
-          row.provider = provider.provider || "sns";
-          row.providerRegisteredAt = now;
-          row.providerError = undefined;
-          // Clear scheduler stash fields after successful registration
-          row.pendingGameId = undefined;
-          row.pendingIsSandbox = undefined;
-          row.pendingFcmProjectId = undefined;
-        } else if (provider && provider.configured) {
-          row.pendingRegistration = true;
-          row.pendingRetries = (row.pendingRetries || 0) + 1;
-          row.pendingLastAttempt = now;
-          row.providerError = (provider && provider.error) || "Lambda registration failed";
-        }
-        savePushTokens(nk, userId, tokensData2);
+        updatePushTokens(nk, logger, userId, function (tokensData2: PushTokenData): void {
+          var targetIdx = -1;
+          for (var j = 0; j < tokensData2.tokens.length; j++) {
+            if (tokensData2.tokens[j].token === token) { targetIdx = j; break; }
+          }
+          if (targetIdx < 0) {
+            // Pending row was somehow absent — re-add it (defensive)
+            targetIdx = tokensData2.tokens.length;
+            tokensData2.tokens.push({ token: token, platform: resolvedPlatform, updatedAt: now, pendingRegistration: true });
+          }
+          var row = tokensData2.tokens[targetIdx];
+          row.platform = resolvedPlatform;
+          row.updatedAt = now;
+          row.ageBracket = clearance.bracket;
+          row.ageSource = clearance.source;
+          row.ageCheckedAt = now;
+          if (provider && provider.success && provider.endpointArn) {
+            row.endpointArn = provider.endpointArn;
+            row.pendingRegistration = false;
+            row.pendingRetries = 0;
+            row.provider = provider.provider || "sns";
+            row.providerRegisteredAt = now;
+            row.providerError = undefined;
+            // Clear scheduler stash fields after successful registration
+            row.pendingGameId = undefined;
+            row.pendingIsSandbox = undefined;
+            row.pendingFcmProjectId = undefined;
+          } else if (provider && provider.configured) {
+            row.pendingRegistration = true;
+            row.pendingRetries = (row.pendingRetries || 0) + 1;
+            row.pendingLastAttempt = now;
+            row.providerError = (provider && provider.error) || "Lambda registration failed";
+          }
+          evictExcessTokens(logger, userId, tokensData2, token);
+        });
       } catch (saveErr: any) {
         // Context was already canceled during or after the Lambda call.
         // The initial pending row (written BEFORE Lambda) is safe in storage.
@@ -499,6 +856,10 @@ namespace LegacyPush {
       }
 
       var finalArn = (provider && provider.endpointArn) ? provider.endpointArn : "";
+      // Registration completed inline, so the scheduler has nothing to do for
+      // this user. Clearing the marker keeps the flush scan proportional to the
+      // work outstanding rather than to everyone who ever registered.
+      if (finalArn) clearPendingIndexIfSettled(nk, logger, userId);
       if (finalArn) {
         logger.info("[Push] push_register_token SUCCESS: userId=%s requestedPlatform=%s resolvedPlatform=%s endpointArn=%s",
           userId, platform, resolvedPlatform, finalArn);
@@ -526,6 +887,26 @@ namespace LegacyPush {
     }
   }
 
+  // ─── push_send_event ───────────────────────────────────────────────────────
+  // AUTHORIZATION. This RPC composes an arbitrary title and body and delivers
+  // it to a device under this app's name and icon. Until 2026-08 it called no
+  // auth helper at all: any signed-in account could push any text to any other
+  // account, which is a phishing and harassment primitive wearing our identity.
+  //
+  // The rule now:
+  //   * server key (no ctx.userId) — unrestricted. This is the cron fan-out and
+  //     server-to-server path. It cannot be reached from a client: Nakama sets
+  //     ctx.userId from the verified session token, so a client can never
+  //     present an empty one. See isSystemCaller().
+  //   * an account with metadata.admin === true — unrestricted, and logged.
+  //   * any other signed-in caller — may only target ITSELF. Verified against
+  //     both shipped clients before narrowing it: the Unity SDK exposes
+  //     QuizVerseSDK.Push.SendEvent but nothing in the game calls it, and the
+  //     Flutter client has no caller at all. The engagement pushes that do
+  //     target other users (friend request, friend challenge) go through
+  //     notif_friend_* / sendLocalizedPushToUser, which are server-key RPCs
+  //     with server-owned copy, and are unaffected.
+  //   * anonymous — rejected.
   function rpcPushSendEvent(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       var data = RpcHelpers.parseRpcPayload(payload);
@@ -547,22 +928,49 @@ namespace LegacyPush {
         logger.warn("[Push] push_send_event rejected: no targetUserId in payload.");
         return RpcHelpers.errorResponse("userId required");
       }
+
+      var systemCall = isSystemCaller(ctx);
+      if (!systemCall) {
+        var callerId = ctx.userId;
+        if (targetUserId !== callerId) {
+          if (!isAdminUser(nk, callerId)) {
+            logger.warn("[Push] push_send_event DENIED: callerUserId=%s tried to push to targetUserId=%s. " +
+              "Clients may only send to themselves; cross-user pushes are server-key or admin only.",
+              callerId, targetUserId);
+            return JSON.stringify({
+              success: false,
+              error: "not permitted to send to another user",
+              code: "forbidden",
+              http_status: 403,
+            });
+          }
+          logger.warn("[Push] push_send_event: admin userId=%s sending to targetUserId=%s subject=%s",
+            callerId, targetUserId, subject);
+        }
+      }
+
       if (!code || code <= 0) code = DEFAULT_PUSH_NOTIFICATION_CODE;
       var title = content.title || subject;
       var body = content.body || "";
       var tokensData = getPushTokens(nk, targetUserId);
 
-      // Self-heal: drop ghost token rows (no endpointArn). These are stale
-      // failed registrations that pollute providerResults and confuse callers.
-      // Persist the cleanup once so future sends and push_get_endpoints stay
-      // clean too. Safe / idempotent.
+      // Self-heal: drop ghost token rows (no endpointArn and not pending).
+      // These are stale failed registrations that pollute providerResults and
+      // confuse callers. Persist the cleanup once so future sends and
+      // push_get_endpoints stay clean too. Safe / idempotent.
       var prunedAtSend = pruneGhostTokens(tokensData);
       if (prunedAtSend.dropped > 0) {
         logger.info("[Push] push_send_event: pruning %s ghost row(s) (no endpointArn) for targetUserId=%s — " +
           "these came from earlier failed registrations and were never deliverable.",
           prunedAtSend.dropped, targetUserId);
         tokensData.tokens = prunedAtSend.kept;
-        try { savePushTokens(nk, targetUserId, tokensData); } catch (_) {}
+        try {
+          savePushTokens(nk, targetUserId, tokensData);
+        } catch (pruneErr: any) {
+          logger.warn("[Push] push_send_event: ghost-row prune write FAILED for targetUserId=%s — " +
+            "the rows stay in storage and will be retried on the next send. error=%s",
+            targetUserId, pruneErr && pruneErr.message ? pruneErr.message : String(pruneErr));
+        }
       }
 
       logger.info("[Push] push_send_event: eventType=%s targetUserId=%s deliverableTokens=%s",
@@ -588,6 +996,10 @@ namespace LegacyPush {
       var hasDeadToken = false;
       for (var i = 0; i < deliverableTokens.length; i++) {
         var t: any = deliverableTokens[i];
+        // A row still awaiting its SNS endpoint has nothing to publish to. It
+        // is kept (the scheduler owns it) but skipped rather than reported as a
+        // send failure.
+        if (!t || (!t.endpointArn && t.pendingRegistration === true)) continue;
         var providerResult = sendProviderPush(ctx, logger, nk, t, {
           title: title,
           body: body,
@@ -626,7 +1038,17 @@ namespace LegacyPush {
           savePushTokens(nk, targetUserId, tokensData);
           logger.info("[Push] push_send_event: pruned %s dead token row(s) (provider reported UNREGISTERED/disabled) for targetUserId=%s",
             removedCount, targetUserId);
-        } catch (_) {}
+        } catch (deadErr: any) {
+          // This used to be `catch (_) {}`. That silence is precisely how a
+          // dead-endpoint leak ran for nine days unnoticed: the provider kept
+          // saying "drop this token", the write kept failing, and the row kept
+          // being retried forever with nothing in the logs to say so.
+          logger.warn("[Push] push_send_event: dead-token PRUNE WRITE FAILED for targetUserId=%s — " +
+            "%s row(s) the provider reported as permanently dead are still in storage and WILL be retried. " +
+            "If this repeats, the token collection is leaking dead endpoints. error=%s",
+            targetUserId, removedCount,
+            deadErr && deadErr.message ? deadErr.message : String(deadErr));
+        }
       }
       nk.notificationsSend([{
         userId: targetUserId,
@@ -682,11 +1104,46 @@ namespace LegacyPush {
     }
   }
 
+  // ─── push_get_endpoints ────────────────────────────────────────────────────
+  // Resolved `data.userId || userId` before 2026-08, which is an IDOR: any
+  // signed-in account could read any other account's SNS endpoint ARNs by
+  // naming them in the payload. The ARN is the send capability — the bridge
+  // publishes to whatever ARN it is handed — so leaking it leaks the ability to
+  // address someone else's device.
+  //
+  // Now: the caller's own rows, unless the caller is the server key or an admin.
+  // Neither shipped client passes a userId here (the Unity SDK sends an empty
+  // PushGetEndpointsPayload; Flutter has no caller), so nothing legitimate
+  // depended on the old behaviour.
   function rpcPushGetEndpoints(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
-      var userId = RpcHelpers.requireUserId(ctx);
       var data = RpcHelpers.parseRpcPayload(payload);
-      var targetUserId = data.userId || userId;
+      var requested = data.userId || data.targetUserId || "";
+      var targetUserId: string;
+
+      if (isSystemCaller(ctx)) {
+        // Server key: must name a target, since there is no caller identity.
+        if (!requested) return RpcHelpers.errorResponse("userId required for a server-key call");
+        targetUserId = String(requested);
+      } else {
+        var callerId = RpcHelpers.requireUserId(ctx);
+        if (!requested || requested === callerId) {
+          targetUserId = callerId;
+        } else if (isAdminUser(nk, callerId)) {
+          logger.warn("[Push] push_get_endpoints: admin userId=%s reading endpoints of userId=%s", callerId, requested);
+          targetUserId = String(requested);
+        } else {
+          logger.warn("[Push] push_get_endpoints DENIED: callerUserId=%s tried to read endpoints of userId=%s",
+            callerId, requested);
+          return JSON.stringify({
+            success: false,
+            error: "not permitted to read another user's endpoints",
+            code: "forbidden",
+            http_status: 403,
+          });
+        }
+      }
+
       var tokensData = getPushTokens(nk, targetUserId);
       // Self-heal ghost rows here too — many callers hit get_endpoints to
       // check device state without ever calling send_event, so we mustn't
@@ -694,12 +1151,18 @@ namespace LegacyPush {
       var prunedHere = pruneGhostTokens(tokensData);
       if (prunedHere.dropped > 0) {
         tokensData.tokens = prunedHere.kept;
-        try { savePushTokens(nk, targetUserId, tokensData); } catch (_) {}
+        try {
+          savePushTokens(nk, targetUserId, tokensData);
+        } catch (ghostErr: any) {
+          logger.warn("[Push] push_get_endpoints: ghost-row prune write failed for userId=%s — error=%s",
+            targetUserId, ghostErr && ghostErr.message ? ghostErr.message : String(ghostErr));
+        }
       }
       var endpoints = tokensData.tokens.map(function (t) {
         return {
           endpointArn: t.endpointArn,
           platform: platformFromArn(t.endpointArn || "") || t.platform,
+          pending: t.pendingRegistration === true,
           enabled: !t.providerError,
           createdAt: t.providerRegisteredAt ? new Date(t.providerRegisteredAt * 1000).toISOString() : "",
           lastUpdated: t.updatedAt ? new Date(t.updatedAt * 1000).toISOString() : ""
@@ -1514,6 +1977,8 @@ namespace LegacyPush {
     var localCodes: { [c: string]: number } = {};
     for (var i = 0; i < deliverable.length; i++) {
       var t: any = deliverable[i];
+      // Registrations still in flight have no endpoint to publish to yet.
+      if (!t || (!t.endpointArn && t.pendingRegistration === true)) continue;
       var providerResult = sendProviderPush(ctx, logger, nk, t, {
         title: title, body: body, data: mergedData,
         gameId: opts.gameId || "quizverse", eventType: eventType
@@ -1539,8 +2004,19 @@ namespace LegacyPush {
         if (kt && kt.token && localDead[kt.token]) continue;
         keptTokens.push(kt);
       }
+      var localRemoved = tokensData.tokens.length - keptTokens.length;
       tokensData.tokens = keptTokens;
-      try { savePushTokens(nk, userId, tokensData); } catch (_) {}
+      try {
+        savePushTokens(nk, userId, tokensData);
+      } catch (localDeadErr: any) {
+        // Same swallow, same consequence as in push_send_event: silence here
+        // means the cron fan-out keeps paying for endpoints the provider has
+        // already declared dead, with no signal that it is doing so.
+        logger.warn("[Push] sendLocalizedPushToUser: dead-token PRUNE WRITE FAILED for userId=%s — " +
+          "%s dead row(s) remain and every future cron send will retry them. error=%s",
+          userId, localRemoved,
+          localDeadErr && localDeadErr.message ? localDeadErr.message : String(localDeadErr));
+      }
     }
 
     if (!opts.skipInAppNotification) {
@@ -2765,22 +3241,68 @@ namespace LegacyPush {
   var PENDING_MAX_RETRIES = 3;
   var PENDING_RETRY_INTERVAL_SEC = 30 * 60; // 30 min — matches scheduler dispatch period
 
+  // ─── The pending index is one row PER USER, not one global row ─────────────
+  // It used to be a single JSON array at (push_pending_index, "index", system
+  // user), read-modify-written by every push_register_token call with no
+  // version check. Nakama's versionless write is last-write-wins, so two
+  // concurrent registrations silently dropped each other's entry — and a
+  // registration missing from the index is a registration the 30-minute retry
+  // scheduler cannot see, i.e. permanently stuck pending. The array was also
+  // unbounded. A mass-registration burst (a Flutter rollout is exactly that
+  // shape) is the workload that turns this from latent into lossy.
+  //
+  // A row per user has no contention to lose: the key is derived from the
+  // userId, so concurrent registrations write different rows. It is also
+  // self-bounding, since a settled user's row is deleted.
+  var PENDING_INDEX_COLLECTION = "push_pending_index";
+  var PENDING_INDEX_LEGACY_KEY = "index";
+  var PENDING_INDEX_ROW_KEY    = "pending";
+  var PENDING_SYSTEM_USER_ID   = "00000000-0000-0000-0000-000000000000";
+  var PENDING_SCAN_PAGE        = 100;
+
+  // Every user with an outstanding pending marker. Includes anything still
+  // listed in the legacy global row so a deploy does not orphan whatever was
+  // in flight at cutover.
+  function listPendingUserIds(logger: nkruntime.Logger, nk: nkruntime.Nakama): string[] {
+    var seen: { [uid: string]: boolean } = {};
+    var ids: string[] = [];
+
+    // `null` (not "") lists every owner — the real runtime rejects "".
+    var cursor = "";
+    for (var page = 0; page < 200; page++) {
+      var res: any;
+      try {
+        res = nk.storageList(null as any, PENDING_INDEX_COLLECTION, PENDING_SCAN_PAGE, cursor || undefined as any);
+      } catch (e: any) {
+        logger.warn("[Push] listPendingUserIds: storageList failed: %s", e && e.message ? e.message : String(e));
+        break;
+      }
+      var objs = (res && res.objects) ? res.objects : [];
+      for (var i = 0; i < objs.length; i++) {
+        var o: any = objs[i];
+        if (!o) continue;
+        if (o.key === PENDING_INDEX_ROW_KEY && o.userId && o.userId !== PENDING_SYSTEM_USER_ID) {
+          if (!seen[o.userId]) { seen[o.userId] = true; ids.push(o.userId); }
+          continue;
+        }
+        // Legacy global array — drained, not maintained.
+        if (o.key === PENDING_INDEX_LEGACY_KEY && o.value && o.value.userIds) {
+          var legacy: string[] = o.value.userIds;
+          for (var j = 0; j < legacy.length; j++) {
+            var lid = legacy[j];
+            if (lid && !seen[lid]) { seen[lid] = true; ids.push(lid); }
+          }
+        }
+      }
+      cursor = (res && res.cursor) ? res.cursor : "";
+      if (!cursor) break;
+    }
+    return ids;
+  }
+
   export function flushPendingRegistrations(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): void {
     try {
-      // List all records in the push_tokens collection across all users.
-      // Nakama's storageList with empty userId iterates global-scope objects;
-      // our tokens are user-scoped, so we use a sentinel index key.
-      // Strategy: read the pending_index — a small JSON array of userIds that
-      // have pending tokens, maintained by rpcPushRegisterToken.
-      var PENDING_INDEX_COLLECTION = "push_pending_index";
-      var PENDING_INDEX_KEY        = "index";
-      var SYSTEM_USER_ID           = "00000000-0000-0000-0000-000000000000";
-
-      var indexObjs = nk.storageRead([{ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_KEY, userId: SYSTEM_USER_ID }]);
-      var pendingUserIds: string[] = [];
-      if (indexObjs && indexObjs.length > 0 && indexObjs[0].value && indexObjs[0].value.userIds) {
-        pendingUserIds = indexObjs[0].value.userIds as string[];
-      }
+      var pendingUserIds = listPendingUserIds(logger, nk);
       if (!pendingUserIds || pendingUserIds.length === 0) {
         logger.info("[Push] flushPendingRegistrations: no pending registrations.");
         return;
@@ -2805,6 +3327,12 @@ namespace LegacyPush {
           }
           var td = getPushTokens(nk, uid);
           var hasPending = false;
+          // The provider calls below are HTTP and cannot happen inside a
+          // version-checked write, so the outcome for each token is collected
+          // here and re-applied to a freshly-read row afterwards. That way a
+          // registration that landed concurrently is not clobbered by a stale
+          // snapshot taken before the Lambda call.
+          var outcomes: { [token: string]: any } = {};
           for (var k = 0; k < td.tokens.length; k++) {
             var row = td.tokens[k];
             if (!row.pendingRegistration) continue;
@@ -2813,8 +3341,7 @@ namespace LegacyPush {
             if ((row.pendingRetries || 0) >= PENDING_MAX_RETRIES) {
               logger.warn("[Push] flushPending: token maxed out retries (%s) — marking dead. userId=%s platform=%s tokenPrefix=%s",
                 PENDING_MAX_RETRIES, uid, row.platform, row.token ? row.token.substring(0, 10) : "?");
-              row.pendingRegistration = false;
-              row.providerError = "max_retries_exceeded";
+              outcomes[row.token] = { giveUp: true };
               continue;
             }
 
@@ -2832,30 +3359,47 @@ namespace LegacyPush {
               uid, row.platform, (row.pendingRetries || 0) + 1, row.token ? row.token.substring(0, 10) : "?");
 
             var pResult = registerProviderEndpoint(ctx, logger, nk, uid, row.token, row.platform, pGameId, pIsSandbox, pFcmProjId);
-            row.pendingRetries = (row.pendingRetries || 0) + 1;
-            row.pendingLastAttempt = now;
 
             if (pResult && pResult.success && pResult.endpointArn) {
-              var arnP = platformFromArn(pResult.endpointArn);
-              row.endpointArn         = pResult.endpointArn;
-              row.platform            = arnP || row.platform;
-              row.provider            = pResult.provider || "sns";
-              row.providerRegisteredAt = now;
-              row.providerError       = undefined;
-              row.pendingRegistration = false;
-              row.pendingGameId       = undefined;
-              row.pendingIsSandbox    = undefined;
-              row.pendingFcmProjectId = undefined;
+              outcomes[row.token] = { endpointArn: pResult.endpointArn, provider: pResult.provider || "sns" };
               logger.info("[Push] flushPending: SUCCESS userId=%s endpointArn=%s resolvedPlatform=%s",
-                uid, pResult.endpointArn, row.platform);
+                uid, pResult.endpointArn, platformFromArn(pResult.endpointArn) || row.platform);
             } else {
-              row.providerError = (pResult && pResult.error) || "Lambda registration failed";
+              outcomes[row.token] = { error: (pResult && pResult.error) || "Lambda registration failed" };
               hasPending = true;
               logger.warn("[Push] flushPending: retry failed. userId=%s attempt=%s error=%s",
-                uid, row.pendingRetries, row.providerError);
+                uid, (row.pendingRetries || 0) + 1, outcomes[row.token].error);
             }
           }
-          savePushTokens(nk, uid, td);
+
+          updatePushTokens(nk, logger, uid, function (fresh: PushTokenData): void {
+            for (var fi = 0; fi < fresh.tokens.length; fi++) {
+              var fr: any = fresh.tokens[fi];
+              if (!fr || !fr.token) continue;
+              var out = outcomes[fr.token];
+              if (!out) continue;
+              if (out.giveUp) {
+                fr.pendingRegistration = false;
+                fr.providerError = "max_retries_exceeded";
+                continue;
+              }
+              fr.pendingRetries = (fr.pendingRetries || 0) + 1;
+              fr.pendingLastAttempt = now;
+              if (out.endpointArn) {
+                fr.endpointArn = out.endpointArn;
+                fr.platform = platformFromArn(out.endpointArn) || fr.platform;
+                fr.provider = out.provider;
+                fr.providerRegisteredAt = now;
+                fr.providerError = undefined;
+                fr.pendingRegistration = false;
+                fr.pendingGameId = undefined;
+                fr.pendingIsSandbox = undefined;
+                fr.pendingFcmProjectId = undefined;
+              } else {
+                fr.providerError = out.error;
+              }
+            }
+          });
           if (hasPending) remainingUserIds.push(uid);
         } catch (ue: any) {
           // Storage read error or unexpected failure for this specific user —
@@ -2873,42 +3417,75 @@ namespace LegacyPush {
         }
       }
 
-      // Update the pending index with only the users that still have pending tokens.
-      nk.storageWrite([{
-        collection: PENDING_INDEX_COLLECTION,
-        key: PENDING_INDEX_KEY,
-        userId: SYSTEM_USER_ID,
-        value: { userIds: remainingUserIds },
-        permissionRead: 0,
-        permissionWrite: 0,
-      }]);
+      // Delete the marker for every user that settled this tick. Deleting a
+      // per-user row cannot lose a registration that arrived while this loop was
+      // running, which is what rewriting one shared array did: the array written
+      // here was computed from a snapshot taken before the provider calls.
+      var settled: nkruntime.StorageDeleteRequest[] = [];
+      for (var s = 0; s < pendingUserIds.length; s++) {
+        var sid = pendingUserIds[s];
+        if (remainingUserIds.indexOf(sid) >= 0) continue;
+        settled.push({ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_ROW_KEY, userId: sid });
+      }
+      if (settled.length > 0) {
+        try {
+          nk.storageDelete(settled);
+        } catch (delErr: any) {
+          logger.warn("[Push] flushPendingRegistrations: could not clear %s settled pending marker(s) — " +
+            "they will simply be re-scanned next tick. error=%s",
+            settled.length, delErr && delErr.message ? delErr.message : String(delErr));
+        }
+      }
+      // Drain the legacy global array once it has nothing left to contribute.
+      try {
+        nk.storageWrite([{
+          collection: PENDING_INDEX_COLLECTION,
+          key: PENDING_INDEX_LEGACY_KEY,
+          userId: PENDING_SYSTEM_USER_ID,
+          value: { userIds: [], drained: true },
+          permissionRead: 0,
+          permissionWrite: 0,
+        }]);
+      } catch (_) { /* the per-user rows are the source of truth now */ }
       logger.info("[Push] flushPendingRegistrations: done. remaining pending users: %s", remainingUserIds.length);
     } catch (e: any) {
       logger.error("[Push] flushPendingRegistrations exception: %s", e.message || String(e));
     }
   }
 
-  // Adds a userId to the pending_index so the scheduler can find it.
-  // Called automatically from rpcPushRegisterToken when a pending row is written.
+  // Marks a user as having an outstanding registration so the scheduler can
+  // find it. Called from rpcPushRegisterToken right after the pending row is
+  // written. One row per user: no shared array, so no lost update, and the
+  // write is idempotent rather than read-modify-write.
   function addToPendingIndex(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string): void {
     try {
-      var PENDING_INDEX_COLLECTION = "push_pending_index";
-      var PENDING_INDEX_KEY        = "index";
-      var SYSTEM_USER_ID           = "00000000-0000-0000-0000-000000000000";
-      var objs = nk.storageRead([{ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_KEY, userId: SYSTEM_USER_ID }]);
-      var ids: string[] = (objs && objs.length > 0 && objs[0].value && objs[0].value.userIds)
-        ? (objs[0].value.userIds as string[])
-        : [];
-      if (ids.indexOf(userId) < 0) ids.push(userId);
       nk.storageWrite([{
         collection: PENDING_INDEX_COLLECTION,
-        key: PENDING_INDEX_KEY,
-        userId: SYSTEM_USER_ID,
-        value: { userIds: ids },
+        key: PENDING_INDEX_ROW_KEY,
+        userId: userId,
+        value: { userId: userId, markedAt: Math.floor(Date.now() / 1000) },
         permissionRead: 0,
         permissionWrite: 0,
       }]);
-    } catch (_) { /* non-fatal — flush will just skip this user this tick */ }
+    } catch (e: any) {
+      // Non-fatal, but no longer silent: a lost marker means the 30-minute
+      // retry cannot see this registration, so it is worth a line.
+      logger.warn("[Push] addToPendingIndex: could not mark userId=%s as pending — " +
+        "if the provider call below fails, the scheduler will not retry it. error=%s",
+        userId, e && e.message ? e.message : String(e));
+    }
+  }
+
+  // Clears the marker once a registration has completed inline. Best-effort:
+  // a stale marker only costs one extra no-op scan on the next flush tick.
+  function clearPendingIndexIfSettled(nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string): void {
+    try {
+      var td = getPushTokens(nk, userId);
+      for (var i = 0; i < td.tokens.length; i++) {
+        if (td.tokens[i] && td.tokens[i].pendingRegistration === true) return;
+      }
+      nk.storageDelete([{ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_ROW_KEY, userId: userId }]);
+    } catch (_) { /* harmless — the next flush tick re-checks */ }
   }
 
   function rpcPushFlushPending(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, _payload: string): string {

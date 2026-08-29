@@ -21,6 +21,13 @@ data/modules/build/
 # in CI. Prod always re-runs tsc itself, but keeping this negation makes
 # the dev / prod paths converge on the same input set.
 !data/modules/build/index.js
+# Compiled __tests__ bundles (tsconfig.tests.json → build-tests/all-tests.js,
+# ~4.7 MB). postbuild.js now skips this directory, but keep it out of the
+# build context too: a local `docker build` from a tree where someone had run
+# the test compile would otherwise ship test code into the image. Merging it
+# takes the bundle from 9.2 MB to 14.0 MB with the RPC count unchanged at
+# 1338, so neither the superset gate nor the PATHA byte floor would notice.
+data/modules/build-tests/
 data/modules/node_modules/
 data/modules/*.bak
 data/modules/*.md

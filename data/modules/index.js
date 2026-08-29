@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-08-25T14:00:40.771Z
+// Generated: 2026-08-29T21:53:18.930Z
 // RPC Count: 1334
 // ============================================================
 
@@ -1356,7 +1356,7 @@ var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"
 ﻿
 
 
-// --- Module: achievements\achievements.js ---
+// --- Module: achievements/achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1945,7 +1945,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player\ai_player.js ---
+// --- Module: ai_player/ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2757,7 +2757,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\admin\analytics_admin.js ---
+// --- Module: analytics/admin/analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3503,7 +3503,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\analytics.js ---
+// --- Module: analytics/analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -5521,7 +5521,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\backfill\analytics_backfill.js ---
+// --- Module: analytics/backfill/analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -6653,7 +6653,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\dropoff\analytics_dropoff.js ---
+// --- Module: analytics/dropoff/analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -7229,7 +7229,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\extended\analytics_extended.js ---
+// --- Module: analytics/extended/analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -10501,7 +10501,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
+// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -11240,7 +11240,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\hardening\analytics_hardening.js ---
+// --- Module: analytics/hardening/analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -11868,7 +11868,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\history\analytics_history.js ---
+// --- Module: analytics/history/analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -12814,7 +12814,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\modes\analytics_modes.js ---
+// --- Module: analytics/modes/analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -13416,7 +13416,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\ops\analytics_ops.js ---
+// --- Module: analytics/ops/analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -14059,7 +14059,7 @@ function __ModuleInit_12(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\player_analytics_store.js ---
+// --- Module: analytics/player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -14740,7 +14740,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics\player_profile\analytics_player_profile.js ---
+// --- Module: analytics/player_profile/analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -15529,7 +15529,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\read_models\analytics_read_models.js ---
+// --- Module: analytics/read_models/analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -16171,7 +16171,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\recap_signals\recap_signals.js ---
+// --- Module: analytics/recap_signals/recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -16474,7 +16474,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
+// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -16728,7 +16728,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\rollup\analytics_rollup.js ---
+// --- Module: analytics/rollup/analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -19738,7 +19738,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
+// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -20572,7 +20572,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\segments\analytics_segments.js ---
+// --- Module: analytics/segments/analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -21161,7 +21161,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
+// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -21596,7 +21596,7 @@ function __ModuleInit_21(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\v2\analytics_v2.js ---
+// --- Module: analytics/v2/analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -22614,7 +22614,7 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges\badge_definitions.js ---
+// --- Module: badges/badge_definitions.js ---
 /**
  * QuizVerse Badge Definitions — all 207 badges from the game manifest.
  * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
@@ -22898,7 +22898,7 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
 };
 
 
-// --- Module: badges\badge_seed_definitions.js ---
+// --- Module: badges/badge_seed_definitions.js ---
 // badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
 // Run once via admin RPC or directly call badges_bulk_create
 // Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
@@ -23041,7 +23041,7 @@ var LEGENDARY_AND_SEASONAL_BADGES = {
 // Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
 
 
-// --- Module: badges\badges.js ---
+// --- Module: badges/badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -24717,7 +24717,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: characters\characters.js ---
+// --- Module: characters/characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -25371,7 +25371,7 @@ function quizverseCharactersAutoUnlock(nk, logger, userId, gameId, badgeIds) {
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
 
-// --- Module: chat_moderation\chat_moderation.js ---
+// --- Module: chat_moderation/chat_moderation.js ---
 // chat_moderation.js - Chat Moderation Pipeline
 // Storage collection: chat_reports, chat_filter_config
 // RPCs: chat_filter_message (public), chat_report_message (public),
@@ -25904,7 +25904,7 @@ function __ModuleInit_27(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chatbox\chatbox.js ---
+// --- Module: chatbox/chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -27248,7 +27248,7 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: copilot\cognito_wallet_mapper.js ---
+// --- Module: copilot/cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -27480,7 +27480,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_aggregate.js ---
+// --- Module: copilot/leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27592,7 +27592,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_friends.js ---
+// --- Module: copilot/leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -27769,7 +27769,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_sync.js ---
+// --- Module: copilot/leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27844,7 +27844,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\utils.js ---
+// --- Module: copilot/utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -27930,7 +27930,7 @@ var utils = {
 };
 
 
-// --- Module: copilot\wallet_registry.js ---
+// --- Module: copilot/wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -28085,7 +28085,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot\wallet_utils.js ---
+// --- Module: copilot/wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -28191,7 +28191,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket\cricket_ai_integration.js ---
+// --- Module: cricket/cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -29032,7 +29032,7 @@ function __ModuleInit_36(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_daily_challenges.js ---
+// --- Module: cricket/cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -29607,7 +29607,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_economy.js ---
+// --- Module: cricket/cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -30284,7 +30284,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_engagement.js ---
+// --- Module: cricket/cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -30891,7 +30891,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_live_match.js ---
+// --- Module: cricket/cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -31651,7 +31651,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_predictions.js ---
+// --- Module: cricket/cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -32318,7 +32318,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_retention.js ---
+// --- Module: cricket/cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -33156,7 +33156,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_season_pass.js ---
+// --- Module: cricket/cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -33768,7 +33768,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_trivia.js ---
+// --- Module: cricket/cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -34718,7 +34718,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\engagement.js ---
+// --- Module: cricket_worldcup/engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -35387,7 +35387,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\predictions.js ---
+// --- Module: cricket_worldcup/predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -35977,7 +35977,7 @@ function __ModuleInit_46(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game\cross_game.js ---
+// --- Module: cross_game/cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -36468,7 +36468,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions\daily_missions.js ---
+// --- Module: daily_missions/daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -36847,7 +36847,7 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards\daily_progress.js ---
+// --- Module: daily_rewards/daily_progress.js ---
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
@@ -37153,7 +37153,7 @@ function __ModuleInit_49(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_reward_calendar.js ---
+// --- Module: daily_rewards/daily_reward_calendar.js ---
 // daily_reward_calendar.js - 30-Day Daily Reward Calendar View
 // Extends the daily rewards system with a full calendar preview
 // RPC: daily_reward_get_calendar
@@ -37272,7 +37272,7 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_rewards.js ---
+// --- Module: daily_rewards/daily_rewards.js ---
 // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
 /**
@@ -38005,7 +38005,7 @@ function __ModuleInit_51(ctx, logger, nk, initializer) {
     logger.info("[DailyRewards] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: event_pipeline\event_pipeline.js ---
+// --- Module: event_pipeline/event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -38403,7 +38403,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics\external_analytics.js ---
+// --- Module: external_analytics/external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -39026,7 +39026,7 @@ function __ModuleInit_53(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers\external_pollers.js ---
+// --- Module: external_pollers/external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -39416,7 +39416,7 @@ function __ModuleInit_54(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel\fortune_wheel.js ---
+// --- Module: fortune_wheel/fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -39798,7 +39798,7 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friend_streaks\friend_streaks.js ---
+// --- Module: friend_streaks/friend_streaks.js ---
 // friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
 // RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
 // Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
@@ -40413,7 +40413,7 @@ function __ModuleInit_56(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_challenges.js ---
+// --- Module: friends/friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -41506,7 +41506,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_invites.js ---
+// --- Module: friends/friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -42924,7 +42924,7 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friends.js ---
+// --- Module: friends/friends.js ---
 // ============================================================================
 // friends.js — Helper-only module (Phase-4 C2 cleanup)
 // ============================================================================
@@ -43144,7 +43144,7 @@ function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, 
 }
 
 
-// --- Module: friends\friends_extras.js ---
+// --- Module: friends/friends_extras.js ---
 // ============================================================================
 // friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
 // ============================================================================
@@ -43703,7 +43703,7 @@ function __ModuleInit_60(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\notification_codes.js ---
+// --- Module: friends/notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -44022,7 +44022,7 @@ function sendFriendsNotification(ctx, nk, logger, subjectKey, userId, payload, s
 }
 
 
-// --- Module: game_metrics\game_metrics.js ---
+// --- Module: game_metrics/game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -44403,7 +44403,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups\groups.js ---
+// --- Module: groups/groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -46450,7 +46450,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure\batch_operations.js ---
+// --- Module: infrastructure/batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -46712,7 +46712,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure\caching.js ---
+// --- Module: infrastructure/caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -46950,7 +46950,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure\rate_limiting.js ---
+// --- Module: infrastructure/rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -47128,7 +47128,7 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 // initializer.registerRpc("submit_score", withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest\ivx_quest.js ---
+// --- Module: ivx_quest/ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -47496,7 +47496,7 @@ function __ModuleInit_68(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-badges\lap-badges.js ---
+// --- Module: lap-badges/lap-badges.js ---
 /**
  * QuizVerse Link & Play Badge Event Bridge
  *
@@ -47702,7 +47702,7 @@ function __ModuleInit_69(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-gamification\lap-gamification.js ---
+// --- Module: lap-gamification/lap-gamification.js ---
 /**
  * QuizVerse Link & Play — gamification (XP / streak / client badges).
  *
@@ -48037,7 +48037,7 @@ function __ModuleInit_70(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-library\lap-library.js ---
+// --- Module: lap-library/lap-library.js ---
 /**
  * QuizVerse Link & Play — saved learn artifacts (server-authoritative).
  *
@@ -48501,7 +48501,7 @@ function __ModuleInit_71(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-missions\lap-missions.js ---
+// --- Module: lap-missions/lap-missions.js ---
 /**
  * QuizVerse Link & Play — daily / weekly missions sync.
  *
@@ -48858,7 +48858,7 @@ function __ModuleInit_72(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-recents\lap-recents.js ---
+// --- Module: lap-recents/lap-recents.js ---
 /**
  * QuizVerse Link & Play — recent notes index (cross-surface sync).
  *
@@ -49105,7 +49105,7 @@ function __ModuleInit_73(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth\lasttolive_depth.js ---
+// --- Module: lasttolive_depth/lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -50829,7 +50829,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leagues\leagues.js ---
+// --- Module: leagues/leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -51462,7 +51462,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: learner_home_widgets\learner_home_widgets.js ---
+// --- Module: learner_home_widgets/learner_home_widgets.js ---
 // learner_home_widgets.js — Per-user Home-screen widget configs for TutorX
 // Nakama V8 JavaScript runtime (Goja ES5 — no ES modules, no Node built-ins).
 //
@@ -51764,7 +51764,7 @@ function __ModuleInit_78(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_quotes\learner_quotes.js ---
+// --- Module: learner_quotes/learner_quotes.js ---
 // learner_quotes.js — Daily LLM-personalized "confidence boost" quotes for TutorX
 // (Goja ES5, no Node built-ins, no global-scope state).
 //
@@ -52124,7 +52124,7 @@ function __ModuleInit_79(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_reminders\learner_reminders.js ---
+// --- Module: learner_reminders/learner_reminders.js ---
 // learner_reminders.js — Per-user study reminders for TutorX (Goja ES5, no Node built-ins).
 //
 // Lets a learner create study reminders (one-off or recurring: daily / weekdays /
@@ -52333,7 +52333,7 @@ function __ModuleInit_80(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_review\learner_review.js ---
+// --- Module: learner_review/learner_review.js ---
 // learner_review.js — First-class spaced-repetition review queue for TutorX
 // (Goja ES5, no Node built-ins, all RPC fns at global scope).
 //
@@ -52685,7 +52685,7 @@ function __ModuleInit_81(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: live_ops\live_ops.js ---
+// --- Module: live_ops/live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -53318,7 +53318,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest\manifest.js ---
+// --- Module: manifest/manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -53430,7 +53430,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking\matchmaking.js ---
+// --- Module: matchmaking/matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -55146,7 +55146,7 @@ __rpc_lasttolive_save_player_data = __rpc_lasttolive_save_player_data || (lastto
 __rpc_lasttolive_load_player_data = __rpc_lasttolive_load_player_data || (lasttoliveLoadPlayerData);
 
 
-// --- Module: multiplayer\multiplayer_locks.js ---
+// --- Module: multiplayer/multiplayer_locks.js ---
 // multiplayer_locks.js — Multiplayer Account Lock System (QVVBS189)
 
 var LOCK_COLLECTION = "multiplayer_locks";
@@ -55355,7 +55355,7 @@ function __ModuleInit_86(ctx, logger, nk, initializer) {
     logger.info("[MultiplayerLock] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -55810,7 +55810,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications\notification_gate.js ---
+// --- Module: notifications/notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -55970,7 +55970,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications\notification_inbox.js ---
+// --- Module: notifications/notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -56508,7 +56508,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine\offer_engine.js ---
+// --- Module: offer_engine/offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -57427,7 +57427,7 @@ function __ModuleInit_90(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding\ob_analytics_emit.js ---
+// --- Module: onboarding/ob_analytics_emit.js ---
 /**
  * Server-side ob_* analytics for Unity onboarding hooks (D1/D7, welcome bonus, streak shield).
  * Writes to qv_onboarding_events — same lake as web onboarding_events_batch.
@@ -57479,7 +57479,7 @@ function obAnalyticsEmitEvent(nk, nakamaUserId, eventName, data) {
 }
 
 
-// --- Module: onboarding\onboarding.js ---
+// --- Module: onboarding/onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -58571,7 +58571,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization\personalization.js ---
+// --- Module: personalization/personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -59178,7 +59178,7 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: player\player_full_profile.js ---
+// --- Module: player/player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -59393,7 +59393,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts\player_gifts.js ---
+// --- Module: player_gifts/player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -60270,7 +60270,7 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 // These will be registered in the main index.js
 
 
-// --- Module: progression\mastery_system.js ---
+// --- Module: progression/mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -60606,7 +60606,7 @@ module.exports = {
 
 
 
-// --- Module: progression\progressive_unlocks.js ---
+// --- Module: progression/progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -62468,7 +62468,7 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quiz_results\quiz_results.js ---
+// --- Module: quiz_results/quiz_results.js ---
 // quiz_results.js - Quiz Results Tracking & Analytics System
 // Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
 //
@@ -63646,7 +63646,7 @@ function __ModuleInit_101(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_depth\quizverse_depth.js ---
+// --- Module: quizverse_depth/quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -64642,7 +64642,7 @@ function __ModuleInit_102(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_seen\quizverse_seen.js ---
+// --- Module: quizverse_seen/quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -65150,7 +65150,7 @@ function __ModuleInit_103(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: retention\collections.js ---
+// --- Module: retention/collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -65664,7 +65664,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\retention_v2.js ---
+// --- Module: retention/retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -66159,7 +66159,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\season_pass.js ---
+// --- Module: retention/season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -66821,7 +66821,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\winback.js ---
+// --- Module: retention/winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -67382,7 +67382,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads\rewarded_ads.js ---
+// --- Module: rewarded_ads/rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -68283,7 +68283,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets\s3_assets.js ---
+// --- Module: s3_assets/s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -68706,7 +68706,7 @@ function __ModuleInit_109(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat\satori_compat.js ---
+// --- Module: satori_compat/satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -68893,7 +68893,7 @@ function __ModuleInit_110(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct\satori_direct.js ---
+// --- Module: satori_direct/satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -69103,11 +69103,17 @@ function sdTimeout(ctx) {
 // src/satori/satori-direct-control.ts) — lets ops cut the paid Satori
 // mirror without a redeploy. Default (missing/unreadable config) is ON to
 // preserve existing behaviour.
-var SD_KILLSWITCH = { value: null, loadedAt: 0 };
+// Do not name a field `value` on this cache. Goja treats some host/module
+// objects' `.value` as read-only ("Cannot assign to read only property
+// 'value'"), which aborted every Satori publish on analytics_log_event.
+// Module-level cache also does not survive the Goja VM pool; the try/catch
+// around assignment is only for intra-call reuse.
+var SD_KILLSWITCH_ON = null;
+var SD_KILLSWITCH_AT = 0;
 function sdCloudEnabled(nk) {
     var now = Date.now();
-    if (SD_KILLSWITCH.value !== null && (now - SD_KILLSWITCH.loadedAt) < 60000) {
-        return SD_KILLSWITCH.value;
+    if (SD_KILLSWITCH_ON !== null && (now - SD_KILLSWITCH_AT) < 60000) {
+        return SD_KILLSWITCH_ON;
     }
     var enabled = true;
     try {
@@ -69120,11 +69126,12 @@ function sdCloudEnabled(nk) {
             enabled = false;
         }
     } catch (e) {
-        // Storage hiccup — keep last known value if any, else default ON.
-        if (SD_KILLSWITCH.value !== null) return SD_KILLSWITCH.value;
+        if (SD_KILLSWITCH_ON !== null) return SD_KILLSWITCH_ON;
     }
-    SD_KILLSWITCH.value = enabled;
-    SD_KILLSWITCH.loadedAt = now;
+    try {
+        SD_KILLSWITCH_ON = enabled;
+        SD_KILLSWITCH_AT = now;
+    } catch (eAssign) { /* frozen module scope — skip cache */ }
     return enabled;
 }
 
@@ -69449,7 +69456,14 @@ function sdEventsPublish(ctx, nk, logger, identifier, events) {
             timestamp: rfc3339
         };
         if (e.id) wire.id = String(e.id);
-        if (typeof e.value === "string" && e.value.length > 0) wire.value = e.value;
+        if (typeof e.value === "string" && e.value.length > 0) {
+            try {
+                wire.value = e.value;
+            } catch (eVal) {
+                wire = { name: name, timestamp: rfc3339, value: e.value };
+                if (e.id) wire.id = String(e.id);
+            }
+        }
         // Prefer an explicit per-event identity_id; fall back to the caller-provided one.
         var iid = e.identity_id || identifier;
         if (iid) wire.identity_id = String(iid);
@@ -69935,7 +69949,7 @@ function __ModuleInit_111(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases\sdk_aliases.js ---
+// --- Module: sdk_aliases/sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -70097,7 +70111,7 @@ function __ModuleInit_112(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review\smart_review.js ---
+// --- Module: smart_review/smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -70895,7 +70909,7 @@ function __ModuleInit_113(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: tournaments\tournaments.js ---
+// --- Module: tournaments/tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -71448,7 +71462,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: tutorx\tutorx_coin_gate.js ---
+// --- Module: tutorx/tutorx_coin_gate.js ---
 // tutorx_coin_gate.js — per-service TutorX AI coin pricing (mirrors TutorX SPA catalog)
 
 var TUTORX_SERVICE_CATALOG = {
@@ -71585,7 +71599,7 @@ function tutorxWriteUsage(nk, collection, userId, today, usage) {
 }
 
 
-// --- Module: visual_path\visual_path.js ---
+// --- Module: visual_path/visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -71936,7 +71950,7 @@ function __ModuleInit_116(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet\wallet.js ---
+// --- Module: wallet/wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -144093,24 +144107,43 @@ var LegacyPush;
         return { message: msg, code: code };
     }
     var DEFAULT_PUSH_NOTIFICATION_CODE = 7001;
-    // ─── Production hardcoded Lambda Function URLs ──────────────────────────────
-    // Single source of truth for the AWS Lambda Function URLs that back our push
-    // pipeline. Hardcoded so the system works even when Nakama starts without the
-    // PUSH_REGISTER_URL / PUSH_LAMBDA_URL / PUSH_SEND_URL env vars set (e.g. on
-    // first deploy, or in a fresh K8s manifest). Env vars still take precedence
-    // when present, so ops can rotate URLs without a Nakama rebuild.
+    // ─── Provider endpoints come from config only ───────────────────────────────
+    // There are deliberately NO hardcoded fallback URLs here.
     //
-    // Update both values below if the Lambda URLs ever change.
-    //   - REGISTER URL → push-register-endpoint Lambda (creates SNS endpoint ARN)
-    //   - SEND URL     → push-send-notification Lambda (publishes to SNS endpoint)
+    // Until 2026-08 this file carried two `lambda-url.us-east-1.on.aws` defaults
+    // for the register/send Lambdas. Both are Function URLs with AuthType=NONE in
+    // a legacy AWS account and are still reachable from the open internet, so a
+    // dropped `PUSH_SEND_URL` override in the nakama-secret config.yaml would
+    // have silently moved production off the in-cluster bridge and back onto an
+    // unauthenticated public endpoint — the failure mode nobody would notice,
+    // because push would keep working.
     //
-    // ⚠️ TODO(ops): paste the actual REGISTER URL between the quotes below.
-    // The SEND URL is from the production push-notification documentation.
-    var PUSH_REGISTER_URL_DEFAULT = "https://alwe7byu637jhiwnkyzlg2fphm0fxioh.lambda-url.us-east-1.on.aws/";
-    var PUSH_SEND_URL_DEFAULT = "https://dp3gdkvjst4dwlehmuk3o7l4zm0rjapm.lambda-url.us-east-1.on.aws/";
+    // Live wiring today (verify with the secret, not the Deployment: the
+    // Deployment's env: carries no PUSH_* vars at all):
+    //   kubectl -n aicart get secret nakama-secret -o jsonpath='{.data.config\.yaml}' \
+    //     | base64 -d | grep PUSH_
+    //   → PUSH_REGISTER_URL=http://nakama-push-bridge.aicart.svc.cluster.local:8080/register
+    //   → PUSH_SEND_URL=http://nakama-push-bridge.aicart.svc.cluster.local:8080/send
+    //
+    // With no default, a missing override degrades loudly (registrations park as
+    // pending, sends report providerConfigured=false) instead of failing open.
+    // A token row for a user who owns a phone and a tablet is legitimate; 53 rows
+    // for one account is token rotation that never evicted anything, and every
+    // one of them costs a sequential bridge call on every notification.
+    //
+    // Ten is chosen from the production distribution over all 14,496 token rows
+    // (measured 2026-08-29): p95 = 1, p99 = 1, max = 53, only 9 accounts hold
+    // more than 3 and only 5 hold more than 10. So the cap sits an order of
+    // magnitude above the 99th percentile — a genuine multi-device user is
+    // nowhere near it — while bounding worst-case fan-out to 10 bridge calls.
+    var MAX_TOKENS_PER_USER = 10;
+    // Optimistic-concurrency attempts for a token-row read-modify-write.
+    var TOKEN_WRITE_MAX_ATTEMPTS = 5;
+    function pushTokensKey(userId) {
+        return "token_" + userId;
+    }
     function getPushTokens(nk, userId) {
-        var key = "token_" + userId;
-        var data = Storage.readJson(nk, Constants.PUSH_TOKENS_COLLECTION, key, userId);
+        var data = Storage.readJson(nk, Constants.PUSH_TOKENS_COLLECTION, pushTokensKey(userId), userId);
         return data || { tokens: [] };
     }
     // True if the user has at least one registered device endpoint that is not
@@ -144131,9 +144164,142 @@ var LegacyPush;
         return false;
     }
     LegacyPush.userHasPushTokens = userHasPushTokens;
+    // permissionWrite: 0 — server-only. Owner-read (1) is correct: the device
+    // reads back its own endpoint state. Owner-WRITE was not: it let a client
+    // bypass push_register_token entirely and store an `endpointArn` of its
+    // choosing, so notifications intended for that account would be delivered
+    // to whatever device the attacker had pointed the ARN at.
+    //
+    // Rows written before this change are still `write=1` in storage; a code
+    // change cannot retroactively fix them. See
+    // data/modules/migrations/2026-08-29-push-tokens-server-write-only.sql.
     function savePushTokens(nk, userId, data) {
-        var key = "token_" + userId;
-        Storage.writeJson(nk, Constants.PUSH_TOKENS_COLLECTION, key, userId, data);
+        Storage.writeJson(nk, Constants.PUSH_TOKENS_COLLECTION, pushTokensKey(userId), userId, data, 1, 0);
+    }
+    function isVersionConflict(err) {
+        var msg = (err && err.message ? String(err.message) : String(err)).toLowerCase();
+        return msg.indexOf("version") >= 0;
+    }
+    // Version-checked read-modify-write of one user's token row.
+    //
+    // The unguarded `read → mutate → write` this replaces was last-write-wins, so
+    // two devices of the same account registering at the same moment would drop
+    // each other's row. `mutate` may therefore be called more than once and must
+    // be free of side effects outside the object it is handed.
+    //
+    // Returns the committed data, or throws if the conflict does not settle.
+    function updatePushTokens(nk, logger, userId, mutate) {
+        var key = pushTokensKey(userId);
+        var lastErr = null;
+        for (var attempt = 1; attempt <= TOKEN_WRITE_MAX_ATTEMPTS; attempt++) {
+            var recs = nk.storageRead([{ collection: Constants.PUSH_TOKENS_COLLECTION, key: key, userId: userId }]);
+            var existing = (recs && recs.length > 0) ? recs[0] : null;
+            // "*" is Nakama's "this key must not already exist" precondition, which
+            // is what makes a first write race-safe too.
+            var version = existing && existing.version ? existing.version : "*";
+            var data = (existing && existing.value)
+                ? existing.value
+                : { tokens: [] };
+            if (!data.tokens)
+                data.tokens = [];
+            mutate(data);
+            try {
+                nk.storageWrite([{
+                        collection: Constants.PUSH_TOKENS_COLLECTION,
+                        key: key,
+                        userId: userId,
+                        value: data,
+                        version: version,
+                        permissionRead: 1,
+                        permissionWrite: 0,
+                    }]);
+                return data;
+            }
+            catch (e) {
+                lastErr = e;
+                if (!isVersionConflict(e))
+                    throw e;
+                logger.info("[Push] token row version conflict for userId=%s (attempt %s/%s) — re-reading and re-applying.", userId, attempt, TOKEN_WRITE_MAX_ATTEMPTS);
+            }
+        }
+        throw lastErr || new Error("push token write did not settle");
+    }
+    // Bounds the per-user fan-out. Drops the least-recently-registered rows
+    // first, and never drops `keepToken` (the registration in flight) or a row
+    // still awaiting its SNS endpoint.
+    function evictExcessTokens(logger, userId, data, keepToken) {
+        if (!data.tokens || data.tokens.length <= MAX_TOKENS_PER_USER)
+            return 0;
+        var protectedRows = [];
+        var evictable = [];
+        for (var i = 0; i < data.tokens.length; i++) {
+            var t = data.tokens[i];
+            if (!t)
+                continue;
+            if (t.token === keepToken || t.pendingRegistration === true)
+                protectedRows.push(t);
+            else
+                evictable.push(t);
+        }
+        // Oldest activity first, so the survivors are the devices actually in use.
+        evictable.sort(function (a, b) {
+            return (a.updatedAt || 0) - (b.updatedAt || 0);
+        });
+        var room = MAX_TOKENS_PER_USER - protectedRows.length;
+        if (room < 0)
+            room = 0;
+        var dropped = evictable.length > room ? evictable.length - room : 0;
+        if (dropped <= 0)
+            return 0;
+        var kept = evictable.slice(dropped);
+        // Preserve the original ordering of the survivors for stable output.
+        var survivors = [];
+        for (var j = 0; j < data.tokens.length; j++) {
+            var row = data.tokens[j];
+            if (!row)
+                continue;
+            if (protectedRows.indexOf(row) >= 0 || kept.indexOf(row) >= 0)
+                survivors.push(row);
+        }
+        data.tokens = survivors;
+        logger.warn("[Push] evicted %s least-recently-registered token row(s) for userId=%s — " +
+            "cap is %s per account; the SNS endpoints themselves are left alone.", dropped, userId, MAX_TOKENS_PER_USER);
+        return dropped;
+    }
+    // ─── Caller trust ──────────────────────────────────────────────────────────
+    // A Nakama RPC invoked with the server's http_key — cron jobs, other server
+    // modules, ops curl — arrives with NO ctx.userId. A client call ALWAYS has
+    // one: Nakama sets it from the verified session token and a client has no way
+    // to suppress it. The absence of a userId is therefore an authenticated
+    // signal that the caller holds the server key, not a payload field a caller
+    // could assert. This is the same test the notif_cron_* RPCs in this file and
+    // RpcHelpers.requireAdmin already use.
+    //
+    // Worth recording what the internal callers actually do, because it is not
+    // what a grep suggests: nothing in this repo invokes the push RPCs
+    // server-to-server. The cron fan-outs (notification_scheduler.ts) and
+    // hermes.ts call sendLocalizedPushToUser() directly as a function, so they
+    // never reach rpcPushSendEvent and are unaffected by the authorization added
+    // there. friends/friend_invites.js does not send push at all — the "push_send"
+    // hits in it are Array.prototype.push. The server-key path below is kept for
+    // ops and future out-of-process callers, not because a current one depends on
+    // it.
+    function isSystemCaller(ctx) {
+        return !ctx.userId;
+    }
+    function isAdminUser(nk, userId) {
+        if (!userId)
+            return false;
+        try {
+            var accounts = nk.accountsGetId([userId]);
+            if (accounts && accounts.length > 0) {
+                var metadata = accounts[0].user.metadata;
+                if (metadata && metadata.admin === true)
+                    return true;
+            }
+        }
+        catch (_) { }
+        return false;
     }
     // True only when `userId` maps to a real account. Used to avoid
     // storage_user_id_fkey violations when retrying pending push registrations
@@ -144152,6 +144318,146 @@ var LegacyPush;
     }
     function env(ctx, key) {
         return (ctx.env && ctx.env[key]) || "";
+    }
+    // ═══════════════════════════════════════════════════════════════════════════
+    //                          SERVER-SIDE AGE GATE
+    // ───────────────────────────────────────────────────────────────────────────
+    // A push token is a persistent identifier under 16 CFR 312.2(7), so creating
+    // one for a child is a collection event we have no verifiable parental
+    // consent for. Before this, the only thing standing between an under-13
+    // account and an SNS endpoint was the Flutter client choosing not to ask
+    // Firebase for a token; the Unity client has no such check, and neither does
+    // anything that speaks to the RPC directly.
+    //
+    // Two signals, checked strongest first, mirroring the two patterns already in
+    // this codebase:
+    //
+    //   1. `dob_iso` on the account metadata — the same field
+    //      tournaments/rpcs.ts::readUserDob reads and enforces `min_age` against.
+    //      An actual date of birth is authoritative: under the threshold is a
+    //      hard refusal.
+    //   2. An `age_assertion` on the payload — the vocabulary
+    //      recorder/recorder_asr.ts already uses
+    //      (at_or_above_threshold | below_threshold | unknown). `below_threshold`
+    //      and `unknown` both refuse: an unanswered gate is not permission.
+    //
+    // WHAT HAPPENS WHEN THERE IS NEITHER, AND WHY IT IS NOT A HARD REFUSAL
+    //
+    // Failing closed is the compliance-correct default and it is NOT what this
+    // does by default, deliberately and measurably:
+    //
+    //   * `dob_iso` is present on 0 of 61,902 production accounts. The Flutter
+    //     age gate keeps the declared date of birth in device-local
+    //     SharedPreferences (`qv_age_dob_ymd`) and has never sent it to the
+    //     server, so there is no DOB on the server to check for anyone.
+    //   * No shipped client sends `age_assertion` on push_register_token yet.
+    //   * All 14,496 accounts that currently hold a push token would therefore
+    //     resolve to `absent`.
+    //
+    // Defaulting to closed would take push notifications to zero for the entire
+    // user base and would break the imminent Flutter rollout on its first call.
+    // So `absent` is admitted, recorded as explicitly absent on the token row,
+    // and logged — and the refusal is one env var away:
+    //
+    //   PUSH_REQUIRE_AGE_ASSERTION=1
+    //
+    // The migration to get there, in order:
+    //   1. Ship a Flutter build that forwards its existing AgeBracket on
+    //      push_register_token (it already computes exactly these three values
+    //      in lib/features/auth/domain/age_gate.dart).
+    //   2. Give Unity the same gate, or stop registering tokens from it.
+    //   3. Watch `[Push] age gate: admitted an absent declaration` fall to zero.
+    //   4. Set PUSH_REQUIRE_AGE_ASSERTION=1 in the nakama-secret runtime env.
+    //
+    // Note on the one age-ish signal that does exist server-side: 18,662
+    // qv_onboarding_profiles rows carry `snapshot.age` as a coarse band whose
+    // lowest value is "u18". That is the wrong granularity for a 13 threshold —
+    // "u18" covers 13-17, who are permitted — so it is deliberately NOT used to
+    // refuse. Only 34 of the 14,496 token owners have such a row anyway.
+    // ═══════════════════════════════════════════════════════════════════════════
+    var PUSH_AGE_THRESHOLD_DEFAULT = 13; // US COPPA floor (16 CFR 312)
+    function ageThreshold(ctx) {
+        var raw = parseInt(env(ctx, "PUSH_AGE_THRESHOLD") || "", 10);
+        if (!raw || raw <= 0)
+            return PUSH_AGE_THRESHOLD_DEFAULT;
+        return raw;
+    }
+    function requireAgeAssertion(ctx) {
+        return (env(ctx, "PUSH_REQUIRE_AGE_ASSERTION") || "0") === "1";
+    }
+    // Age in whole years from account metadata `dob_iso`, or 0 when absent or
+    // unparseable. Same computation as tournaments/rpcs.ts::readUserDob, kept
+    // local so this module has no cross-namespace dependency.
+    function accountAgeYears(nk, userId) {
+        try {
+            var acc = nk.accountsGetId([userId]);
+            if (acc && acc.length > 0) {
+                var md = acc[0].user.metadata;
+                if (md && md.dob_iso) {
+                    var dob = new Date(md.dob_iso);
+                    if (isNaN(dob.getTime()))
+                        return 0;
+                    var now = new Date();
+                    var age = now.getFullYear() - dob.getFullYear();
+                    var m = now.getMonth() - dob.getMonth();
+                    if (m < 0 || (m === 0 && now.getDate() < dob.getDate()))
+                        age--;
+                    return age > 0 ? age : 0;
+                }
+            }
+        }
+        catch (_) { }
+        return 0;
+    }
+    function normalizeAgeBracket(raw) {
+        var b = String(raw || "").toLowerCase();
+        if (b === "at_or_above_threshold" || b === "atorabovethreshold")
+            return "at_or_above_threshold";
+        if (b === "below_threshold" || b === "belowthreshold")
+            return "below_threshold";
+        return "unknown";
+    }
+    function resolveAgeClearance(ctx, logger, nk, userId, data) {
+        var minAge = ageThreshold(ctx);
+        // 1. A real date of birth on the account wins over anything the caller says.
+        var age = accountAgeYears(nk, userId);
+        if (age > 0) {
+            if (age < minAge) {
+                return {
+                    allowed: false, bracket: "below_threshold", source: "account_dob", minAge: minAge,
+                    reason: "account dob_iso resolves to age " + age + ", below the " + minAge + " threshold",
+                };
+            }
+            return { allowed: true, bracket: "at_or_above_threshold", source: "account_dob", minAge: minAge, reason: "" };
+        }
+        // 2. A client-declared bracket. Fails closed on below_threshold and on an
+        //    unanswered or unrecognised gate.
+        var asserted = data && (data.age_assertion || data.ageAssertion);
+        if (asserted) {
+            var bracket = normalizeAgeBracket(asserted.bracket);
+            if (bracket === "at_or_above_threshold") {
+                return { allowed: true, bracket: bracket, source: "client", minAge: minAge, reason: "" };
+            }
+            return {
+                allowed: false, bracket: bracket, source: "client", minAge: minAge,
+                reason: bracket === "below_threshold"
+                    ? "client declared an age below the " + minAge + " threshold"
+                    : "client age declaration is unknown — an unanswered gate is not permission",
+            };
+        }
+        // 3. Nothing at all. See the block comment above for why this is admitted
+        //    by default and how to close it.
+        if (requireAgeAssertion(ctx)) {
+            return {
+                allowed: false, bracket: "absent", source: "absent", minAge: minAge,
+                reason: "no account dob_iso and no age_assertion (PUSH_REQUIRE_AGE_ASSERTION=1)",
+            };
+        }
+        logger.warn("[Push] age gate: admitted an absent declaration for userId=%s — " +
+            "no dob_iso on the account and no age_assertion on the payload. " +
+            "PUSH_REQUIRE_AGE_ASSERTION is not 1, so this is admitted rather than refused; " +
+            "this line falling to zero is the signal that it can be set.", userId);
+        return { allowed: true, bracket: "absent", source: "absent", minAge: minAge, reason: "" };
     }
     function parseJsonSafe(raw) {
         if (!raw)
@@ -144207,6 +144513,15 @@ var LegacyPush;
     // token was sent at an APNs Platform App). They make push_send_event
     // produce noisy "endpointArn missing" rows in providerResults and skew
     // the recipientCount math. Idempotent — safe to call on every send.
+    //
+    // A row with pendingRegistration=true is NOT a ghost: it is a registration
+    // whose provider call has not finished yet, and it has no endpointArn for
+    // exactly that reason. Dropping it — which this used to do, from three
+    // separate callers including every send and every get_endpoints — destroyed
+    // in-flight registrations, and the row it destroyed was the only thing the
+    // 30-minute retry scheduler had to work from. Pending rows are kept until
+    // flushPendingRegistrations gives up on them (it clears the flag after
+    // PENDING_MAX_RETRIES), at which point they become collectable here.
     function pruneGhostTokens(tokensData) {
         if (!tokensData || !tokensData.tokens)
             return { kept: [], dropped: 0 };
@@ -144214,7 +144529,8 @@ var LegacyPush;
         var dropped = 0;
         for (var i = 0; i < tokensData.tokens.length; i++) {
             var t = tokensData.tokens[i];
-            if (t && typeof t.endpointArn === "string" && t.endpointArn.length > 0) {
+            var hasArn = !!(t && typeof t.endpointArn === "string" && t.endpointArn.length > 0);
+            if (hasArn || (t && t.pendingRegistration === true)) {
                 kept.push(t);
             }
             else {
@@ -144271,9 +144587,11 @@ var LegacyPush;
     }
     function registerProviderEndpoint(ctx, logger, nk, userId, token, platform, gameId, isSandbox, fcmProjectId) {
         var normalizedPlatform = normalizePlatform(platform);
-        var registerUrl = env(ctx, "PUSH_REGISTER_URL") || env(ctx, "PUSH_LAMBDA_URL") || PUSH_REGISTER_URL_DEFAULT;
+        var registerUrl = env(ctx, "PUSH_REGISTER_URL") || env(ctx, "PUSH_LAMBDA_URL");
         if (!registerUrl) {
-            logger.warn("[Push] registerProviderEndpoint: no register URL configured for platform=%s userId=%s", normalizedPlatform, userId);
+            logger.error("[Push] registerProviderEndpoint: PUSH_REGISTER_URL is not configured — refusing to register. " +
+                "There is no fallback URL on purpose. Set PUSH_REGISTER_URL in the nakama-secret config.yaml runtime env " +
+                "(the Deployment's env: is not read by the JS runtime). platform=%s userId=%s", normalizedPlatform, userId);
             return { configured: false };
         }
         logger.info("[Push] Registering %s endpoint for userId=%s gameId=%s isSandbox=%s", normalizedPlatform, userId, gameId || "quizverse", String(!!isSandbox));
@@ -144365,9 +144683,11 @@ var LegacyPush;
                 "Using ARN. arn=%s — this row was likely written by a buggy register call; " +
                 "it will be auto-corrected next time push_register_token runs.", endpoint.platform, arnPlatform, endpoint.endpointArn);
         }
-        var sendUrl = env(ctx, "PUSH_SEND_URL") || PUSH_SEND_URL_DEFAULT;
+        var sendUrl = env(ctx, "PUSH_SEND_URL");
         if (!sendUrl) {
-            logger.warn("[Push] sendProviderPush: no send URL configured for platform=%s", normalizedPlatform);
+            logger.error("[Push] sendProviderPush: PUSH_SEND_URL is not configured — refusing to send. " +
+                "There is no fallback URL on purpose: the old default was a public, unauthenticated Lambda Function URL. " +
+                "Set PUSH_SEND_URL in the nakama-secret config.yaml runtime env. platform=%s", normalizedPlatform);
             return { configured: false };
         }
         if (!endpoint.endpointArn) {
@@ -144442,6 +144762,22 @@ var LegacyPush;
                 logger.warn("[Push] push_register_token rejected: no token provided. userId=%s platform=%s", userId, platform);
                 return RpcHelpers.errorResponse("token required");
             }
+            // ─── Age gate — before ANY storage write or provider call ──────────────
+            // A refused registration must leave no trace: no token row, no SNS
+            // endpoint, nothing for the retry scheduler to pick up later.
+            var clearance = resolveAgeClearance(ctx, logger, nk, userId, data);
+            if (!clearance.allowed) {
+                logger.warn("[Push] push_register_token REFUSED by age gate: userId=%s bracket=%s source=%s minAge=%s reason=%s", userId, clearance.bracket, clearance.source, clearance.minAge, clearance.reason);
+                return JSON.stringify({
+                    success: false,
+                    pending: false,
+                    error: "age requirement not met",
+                    code: "AGE_RESTRICTED",
+                    http_status: 403,
+                    minAge: clearance.minAge,
+                    ageBracket: clearance.bracket,
+                });
+            }
             var now = Math.floor(Date.now() / 1000);
             var normalizedPlatformEarly = normalizePlatform(platform);
             // ─────────────────────────────────────────────────────────────────────
@@ -144462,52 +144798,60 @@ var LegacyPush;
             // succeeds we update the row with the ARN. If Lambda fails (context
             // canceled), the pending row stays and the scheduler retries every
             // 30 min via flushPendingRegistrations.
+            //
+            // The read-modify-write below is version-checked (updatePushTokens), so
+            // two devices of the same account registering at the same moment can no
+            // longer drop each other's row.
             // ─────────────────────────────────────────────────────────────────────
-            var tokensData = getPushTokens(nk, userId);
-            // Ghost-row hygiene: drop any existing rows for this user that have no
-            // endpointArn (stale failed registrations). They're never deliverable
-            // and only confuse providerResults at send time. Idempotent.
-            var pruned = pruneGhostTokens(tokensData);
-            if (pruned.dropped > 0) {
-                logger.info("[Push] push_register_token: pruned %s ghost token row(s) (no endpointArn) for userId=%s", pruned.dropped, userId);
-            }
-            tokensData.tokens = pruned.kept;
-            // Upsert a pending row — guarantees the token is never lost regardless
-            // of what happens to the Lambda call or the second storage write.
-            var existingPendingIdx = -1;
-            for (var i = 0; i < tokensData.tokens.length; i++) {
-                if (tokensData.tokens[i].token === token) {
-                    existingPendingIdx = i;
-                    break;
+            updatePushTokens(nk, logger, userId, function (tokensData) {
+                // Ghost-row hygiene: drop existing rows with no endpointArn that are
+                // not themselves awaiting registration. Idempotent.
+                var pruned = pruneGhostTokens(tokensData);
+                if (pruned.dropped > 0) {
+                    logger.info("[Push] push_register_token: pruned %s ghost token row(s) (no endpointArn, not pending) for userId=%s", pruned.dropped, userId);
                 }
-            }
-            if (existingPendingIdx >= 0) {
-                var ep = tokensData.tokens[existingPendingIdx];
-                ep.platform = normalizedPlatformEarly;
-                ep.updatedAt = now;
-                ep.pendingRegistration = true;
-                ep.pendingGameId = gameId;
-                ep.pendingIsSandbox = isSandbox;
-                ep.pendingFcmProjectId = fcmProjectId;
-            }
-            else {
-                tokensData.tokens.push({
-                    token: token,
-                    platform: normalizedPlatformEarly,
-                    updatedAt: now,
-                    pendingRegistration: true,
-                    pendingRetries: 0,
-                    pendingLastAttempt: now,
-                    pendingGameId: gameId,
-                    pendingIsSandbox: isSandbox,
-                    pendingFcmProjectId: fcmProjectId,
-                });
-            }
-            // This write MUST happen before any nk.httpRequest call. It is the
-            // atomicity guarantee — token is safe even if context cancels later.
-            savePushTokens(nk, userId, tokensData);
-            // Register this user in the pending index so the scheduler can find
-            // the row if the Lambda call below fails (context canceled).
+                tokensData.tokens = pruned.kept;
+                // Upsert a pending row — guarantees the token is never lost regardless
+                // of what happens to the Lambda call or the second storage write.
+                var existingPendingIdx = -1;
+                for (var i = 0; i < tokensData.tokens.length; i++) {
+                    if (tokensData.tokens[i].token === token) {
+                        existingPendingIdx = i;
+                        break;
+                    }
+                }
+                if (existingPendingIdx >= 0) {
+                    var ep = tokensData.tokens[existingPendingIdx];
+                    ep.platform = normalizedPlatformEarly;
+                    ep.updatedAt = now;
+                    ep.pendingRegistration = true;
+                    ep.pendingGameId = gameId;
+                    ep.pendingIsSandbox = isSandbox;
+                    ep.pendingFcmProjectId = fcmProjectId;
+                    ep.ageBracket = clearance.bracket;
+                    ep.ageSource = clearance.source;
+                    ep.ageCheckedAt = now;
+                }
+                else {
+                    tokensData.tokens.push({
+                        token: token,
+                        platform: normalizedPlatformEarly,
+                        updatedAt: now,
+                        pendingRegistration: true,
+                        pendingRetries: 0,
+                        pendingLastAttempt: now,
+                        pendingGameId: gameId,
+                        pendingIsSandbox: isSandbox,
+                        pendingFcmProjectId: fcmProjectId,
+                        ageBracket: clearance.bracket,
+                        ageSource: clearance.source,
+                        ageCheckedAt: now,
+                    });
+                }
+                evictExcessTokens(logger, userId, tokensData, token);
+            });
+            // Mark this user as having a pending registration so the scheduler can
+            // find the row if the Lambda call below fails (context canceled).
             addToPendingIndex(nk, logger, userId);
             logger.info("[Push] push_register_token: pending row saved. Calling Lambda. userId=%s platform=%s", userId, normalizedPlatformEarly);
             // ─── Lambda call (context-cancel-safe: pending row already saved) ───
@@ -144521,41 +144865,45 @@ var LegacyPush;
             // If this write fails, the pending row from above is already saved.
             // The scheduler will retry and obtain the ARN on the next 30-min tick.
             try {
-                var tokensData2 = getPushTokens(nk, userId);
-                var targetIdx = -1;
-                for (var j = 0; j < tokensData2.tokens.length; j++) {
-                    if (tokensData2.tokens[j].token === token) {
-                        targetIdx = j;
-                        break;
+                updatePushTokens(nk, logger, userId, function (tokensData2) {
+                    var targetIdx = -1;
+                    for (var j = 0; j < tokensData2.tokens.length; j++) {
+                        if (tokensData2.tokens[j].token === token) {
+                            targetIdx = j;
+                            break;
+                        }
                     }
-                }
-                if (targetIdx < 0) {
-                    // Pending row was somehow absent — re-add it (defensive)
-                    targetIdx = tokensData2.tokens.length;
-                    tokensData2.tokens.push({ token: token, platform: resolvedPlatform, updatedAt: now, pendingRegistration: true });
-                }
-                var row = tokensData2.tokens[targetIdx];
-                row.platform = resolvedPlatform;
-                row.updatedAt = now;
-                if (provider && provider.success && provider.endpointArn) {
-                    row.endpointArn = provider.endpointArn;
-                    row.pendingRegistration = false;
-                    row.pendingRetries = 0;
-                    row.provider = provider.provider || "sns";
-                    row.providerRegisteredAt = now;
-                    row.providerError = undefined;
-                    // Clear scheduler stash fields after successful registration
-                    row.pendingGameId = undefined;
-                    row.pendingIsSandbox = undefined;
-                    row.pendingFcmProjectId = undefined;
-                }
-                else if (provider && provider.configured) {
-                    row.pendingRegistration = true;
-                    row.pendingRetries = (row.pendingRetries || 0) + 1;
-                    row.pendingLastAttempt = now;
-                    row.providerError = (provider && provider.error) || "Lambda registration failed";
-                }
-                savePushTokens(nk, userId, tokensData2);
+                    if (targetIdx < 0) {
+                        // Pending row was somehow absent — re-add it (defensive)
+                        targetIdx = tokensData2.tokens.length;
+                        tokensData2.tokens.push({ token: token, platform: resolvedPlatform, updatedAt: now, pendingRegistration: true });
+                    }
+                    var row = tokensData2.tokens[targetIdx];
+                    row.platform = resolvedPlatform;
+                    row.updatedAt = now;
+                    row.ageBracket = clearance.bracket;
+                    row.ageSource = clearance.source;
+                    row.ageCheckedAt = now;
+                    if (provider && provider.success && provider.endpointArn) {
+                        row.endpointArn = provider.endpointArn;
+                        row.pendingRegistration = false;
+                        row.pendingRetries = 0;
+                        row.provider = provider.provider || "sns";
+                        row.providerRegisteredAt = now;
+                        row.providerError = undefined;
+                        // Clear scheduler stash fields after successful registration
+                        row.pendingGameId = undefined;
+                        row.pendingIsSandbox = undefined;
+                        row.pendingFcmProjectId = undefined;
+                    }
+                    else if (provider && provider.configured) {
+                        row.pendingRegistration = true;
+                        row.pendingRetries = (row.pendingRetries || 0) + 1;
+                        row.pendingLastAttempt = now;
+                        row.providerError = (provider && provider.error) || "Lambda registration failed";
+                    }
+                    evictExcessTokens(logger, userId, tokensData2, token);
+                });
             }
             catch (saveErr) {
                 // Context was already canceled during or after the Lambda call.
@@ -144565,6 +144913,11 @@ var LegacyPush;
                     "pending row already saved, scheduler will complete registration. userId=%s error=%s", userId, saveErr.message || String(saveErr));
             }
             var finalArn = (provider && provider.endpointArn) ? provider.endpointArn : "";
+            // Registration completed inline, so the scheduler has nothing to do for
+            // this user. Clearing the marker keeps the flush scan proportional to the
+            // work outstanding rather than to everyone who ever registered.
+            if (finalArn)
+                clearPendingIndexIfSettled(nk, logger, userId);
             if (finalArn) {
                 logger.info("[Push] push_register_token SUCCESS: userId=%s requestedPlatform=%s resolvedPlatform=%s endpointArn=%s", userId, platform, resolvedPlatform, finalArn);
             }
@@ -144590,6 +144943,26 @@ var LegacyPush;
             return RpcHelpers.errorResponse(e.message || "Failed to register token");
         }
     }
+    // ─── push_send_event ───────────────────────────────────────────────────────
+    // AUTHORIZATION. This RPC composes an arbitrary title and body and delivers
+    // it to a device under this app's name and icon. Until 2026-08 it called no
+    // auth helper at all: any signed-in account could push any text to any other
+    // account, which is a phishing and harassment primitive wearing our identity.
+    //
+    // The rule now:
+    //   * server key (no ctx.userId) — unrestricted. This is the cron fan-out and
+    //     server-to-server path. It cannot be reached from a client: Nakama sets
+    //     ctx.userId from the verified session token, so a client can never
+    //     present an empty one. See isSystemCaller().
+    //   * an account with metadata.admin === true — unrestricted, and logged.
+    //   * any other signed-in caller — may only target ITSELF. Verified against
+    //     both shipped clients before narrowing it: the Unity SDK exposes
+    //     QuizVerseSDK.Push.SendEvent but nothing in the game calls it, and the
+    //     Flutter client has no caller at all. The engagement pushes that do
+    //     target other users (friend request, friend challenge) go through
+    //     notif_friend_* / sendLocalizedPushToUser, which are server-key RPCs
+    //     with server-owned copy, and are unaffected.
+    //   * anonymous — rejected.
     function rpcPushSendEvent(ctx, logger, nk, payload) {
         try {
             var data = RpcHelpers.parseRpcPayload(payload);
@@ -144611,15 +144984,32 @@ var LegacyPush;
                 logger.warn("[Push] push_send_event rejected: no targetUserId in payload.");
                 return RpcHelpers.errorResponse("userId required");
             }
+            var systemCall = isSystemCaller(ctx);
+            if (!systemCall) {
+                var callerId = ctx.userId;
+                if (targetUserId !== callerId) {
+                    if (!isAdminUser(nk, callerId)) {
+                        logger.warn("[Push] push_send_event DENIED: callerUserId=%s tried to push to targetUserId=%s. " +
+                            "Clients may only send to themselves; cross-user pushes are server-key or admin only.", callerId, targetUserId);
+                        return JSON.stringify({
+                            success: false,
+                            error: "not permitted to send to another user",
+                            code: "forbidden",
+                            http_status: 403,
+                        });
+                    }
+                    logger.warn("[Push] push_send_event: admin userId=%s sending to targetUserId=%s subject=%s", callerId, targetUserId, subject);
+                }
+            }
             if (!code || code <= 0)
                 code = DEFAULT_PUSH_NOTIFICATION_CODE;
             var title = content.title || subject;
             var body = content.body || "";
             var tokensData = getPushTokens(nk, targetUserId);
-            // Self-heal: drop ghost token rows (no endpointArn). These are stale
-            // failed registrations that pollute providerResults and confuse callers.
-            // Persist the cleanup once so future sends and push_get_endpoints stay
-            // clean too. Safe / idempotent.
+            // Self-heal: drop ghost token rows (no endpointArn and not pending).
+            // These are stale failed registrations that pollute providerResults and
+            // confuse callers. Persist the cleanup once so future sends and
+            // push_get_endpoints stay clean too. Safe / idempotent.
             var prunedAtSend = pruneGhostTokens(tokensData);
             if (prunedAtSend.dropped > 0) {
                 logger.info("[Push] push_send_event: pruning %s ghost row(s) (no endpointArn) for targetUserId=%s — " +
@@ -144628,7 +145018,10 @@ var LegacyPush;
                 try {
                     savePushTokens(nk, targetUserId, tokensData);
                 }
-                catch (_) { }
+                catch (pruneErr) {
+                    logger.warn("[Push] push_send_event: ghost-row prune write FAILED for targetUserId=%s — " +
+                        "the rows stay in storage and will be retried on the next send. error=%s", targetUserId, pruneErr && pruneErr.message ? pruneErr.message : String(pruneErr));
+                }
             }
             logger.info("[Push] push_send_event: eventType=%s targetUserId=%s deliverableTokens=%s", subject, targetUserId, tokensData.tokens ? tokensData.tokens.length : 0);
             if (!tokensData.tokens || tokensData.tokens.length === 0) {
@@ -144653,6 +145046,11 @@ var LegacyPush;
             var hasDeadToken = false;
             for (var i = 0; i < deliverableTokens.length; i++) {
                 var t = deliverableTokens[i];
+                // A row still awaiting its SNS endpoint has nothing to publish to. It
+                // is kept (the scheduler owns it) but skipped rather than reported as a
+                // send failure.
+                if (!t || (!t.endpointArn && t.pendingRegistration === true))
+                    continue;
                 var providerResult = sendProviderPush(ctx, logger, nk, t, {
                     title: title,
                     body: body,
@@ -144696,7 +145094,15 @@ var LegacyPush;
                     savePushTokens(nk, targetUserId, tokensData);
                     logger.info("[Push] push_send_event: pruned %s dead token row(s) (provider reported UNREGISTERED/disabled) for targetUserId=%s", removedCount, targetUserId);
                 }
-                catch (_) { }
+                catch (deadErr) {
+                    // This used to be `catch (_) {}`. That silence is precisely how a
+                    // dead-endpoint leak ran for nine days unnoticed: the provider kept
+                    // saying "drop this token", the write kept failing, and the row kept
+                    // being retried forever with nothing in the logs to say so.
+                    logger.warn("[Push] push_send_event: dead-token PRUNE WRITE FAILED for targetUserId=%s — " +
+                        "%s row(s) the provider reported as permanently dead are still in storage and WILL be retried. " +
+                        "If this repeats, the token collection is leaking dead endpoints. error=%s", targetUserId, removedCount, deadErr && deadErr.message ? deadErr.message : String(deadErr));
+                }
             }
             nk.notificationsSend([{
                     userId: targetUserId,
@@ -144757,11 +145163,47 @@ var LegacyPush;
             return RpcHelpers.errorResponse(e.message || "Failed to send event");
         }
     }
+    // ─── push_get_endpoints ────────────────────────────────────────────────────
+    // Resolved `data.userId || userId` before 2026-08, which is an IDOR: any
+    // signed-in account could read any other account's SNS endpoint ARNs by
+    // naming them in the payload. The ARN is the send capability — the bridge
+    // publishes to whatever ARN it is handed — so leaking it leaks the ability to
+    // address someone else's device.
+    //
+    // Now: the caller's own rows, unless the caller is the server key or an admin.
+    // Neither shipped client passes a userId here (the Unity SDK sends an empty
+    // PushGetEndpointsPayload; Flutter has no caller), so nothing legitimate
+    // depended on the old behaviour.
     function rpcPushGetEndpoints(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
-            var targetUserId = data.userId || userId;
+            var requested = data.userId || data.targetUserId || "";
+            var targetUserId;
+            if (isSystemCaller(ctx)) {
+                // Server key: must name a target, since there is no caller identity.
+                if (!requested)
+                    return RpcHelpers.errorResponse("userId required for a server-key call");
+                targetUserId = String(requested);
+            }
+            else {
+                var callerId = RpcHelpers.requireUserId(ctx);
+                if (!requested || requested === callerId) {
+                    targetUserId = callerId;
+                }
+                else if (isAdminUser(nk, callerId)) {
+                    logger.warn("[Push] push_get_endpoints: admin userId=%s reading endpoints of userId=%s", callerId, requested);
+                    targetUserId = String(requested);
+                }
+                else {
+                    logger.warn("[Push] push_get_endpoints DENIED: callerUserId=%s tried to read endpoints of userId=%s", callerId, requested);
+                    return JSON.stringify({
+                        success: false,
+                        error: "not permitted to read another user's endpoints",
+                        code: "forbidden",
+                        http_status: 403,
+                    });
+                }
+            }
             var tokensData = getPushTokens(nk, targetUserId);
             // Self-heal ghost rows here too — many callers hit get_endpoints to
             // check device state without ever calling send_event, so we mustn't
@@ -144772,12 +145214,15 @@ var LegacyPush;
                 try {
                     savePushTokens(nk, targetUserId, tokensData);
                 }
-                catch (_) { }
+                catch (ghostErr) {
+                    logger.warn("[Push] push_get_endpoints: ghost-row prune write failed for userId=%s — error=%s", targetUserId, ghostErr && ghostErr.message ? ghostErr.message : String(ghostErr));
+                }
             }
             var endpoints = tokensData.tokens.map(function (t) {
                 return {
                     endpointArn: t.endpointArn,
                     platform: platformFromArn(t.endpointArn || "") || t.platform,
+                    pending: t.pendingRegistration === true,
                     enabled: !t.providerError,
                     createdAt: t.providerRegisteredAt ? new Date(t.providerRegisteredAt * 1000).toISOString() : "",
                     lastUpdated: t.updatedAt ? new Date(t.updatedAt * 1000).toISOString() : ""
@@ -145600,6 +146045,9 @@ var LegacyPush;
         var localCodes = {};
         for (var i = 0; i < deliverable.length; i++) {
             var t = deliverable[i];
+            // Registrations still in flight have no endpoint to publish to yet.
+            if (!t || (!t.endpointArn && t.pendingRegistration === true))
+                continue;
             var providerResult = sendProviderPush(ctx, logger, nk, t, {
                 title: title, body: body, data: mergedData,
                 gameId: opts.gameId || "quizverse", eventType: eventType
@@ -145630,11 +146078,18 @@ var LegacyPush;
                     continue;
                 keptTokens.push(kt);
             }
+            var localRemoved = tokensData.tokens.length - keptTokens.length;
             tokensData.tokens = keptTokens;
             try {
                 savePushTokens(nk, userId, tokensData);
             }
-            catch (_) { }
+            catch (localDeadErr) {
+                // Same swallow, same consequence as in push_send_event: silence here
+                // means the cron fan-out keeps paying for endpoints the provider has
+                // already declared dead, with no signal that it is doing so.
+                logger.warn("[Push] sendLocalizedPushToUser: dead-token PRUNE WRITE FAILED for userId=%s — " +
+                    "%s dead row(s) remain and every future cron send will retry them. error=%s", userId, localRemoved, localDeadErr && localDeadErr.message ? localDeadErr.message : String(localDeadErr));
+            }
         }
         if (!opts.skipInAppNotification) {
             try {
@@ -147070,21 +147525,74 @@ var LegacyPush;
     // ─────────────────────────────────────────────────────────────────────────
     var PENDING_MAX_RETRIES = 3;
     var PENDING_RETRY_INTERVAL_SEC = 30 * 60; // 30 min — matches scheduler dispatch period
+    // ─── The pending index is one row PER USER, not one global row ─────────────
+    // It used to be a single JSON array at (push_pending_index, "index", system
+    // user), read-modify-written by every push_register_token call with no
+    // version check. Nakama's versionless write is last-write-wins, so two
+    // concurrent registrations silently dropped each other's entry — and a
+    // registration missing from the index is a registration the 30-minute retry
+    // scheduler cannot see, i.e. permanently stuck pending. The array was also
+    // unbounded. A mass-registration burst (a Flutter rollout is exactly that
+    // shape) is the workload that turns this from latent into lossy.
+    //
+    // A row per user has no contention to lose: the key is derived from the
+    // userId, so concurrent registrations write different rows. It is also
+    // self-bounding, since a settled user's row is deleted.
+    var PENDING_INDEX_COLLECTION = "push_pending_index";
+    var PENDING_INDEX_LEGACY_KEY = "index";
+    var PENDING_INDEX_ROW_KEY = "pending";
+    var PENDING_SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+    var PENDING_SCAN_PAGE = 100;
+    // Every user with an outstanding pending marker. Includes anything still
+    // listed in the legacy global row so a deploy does not orphan whatever was
+    // in flight at cutover.
+    function listPendingUserIds(logger, nk) {
+        var seen = {};
+        var ids = [];
+        // `null` (not "") lists every owner — the real runtime rejects "".
+        var cursor = "";
+        for (var page = 0; page < 200; page++) {
+            var res;
+            try {
+                res = nk.storageList(null, PENDING_INDEX_COLLECTION, PENDING_SCAN_PAGE, cursor || undefined);
+            }
+            catch (e) {
+                logger.warn("[Push] listPendingUserIds: storageList failed: %s", e && e.message ? e.message : String(e));
+                break;
+            }
+            var objs = (res && res.objects) ? res.objects : [];
+            for (var i = 0; i < objs.length; i++) {
+                var o = objs[i];
+                if (!o)
+                    continue;
+                if (o.key === PENDING_INDEX_ROW_KEY && o.userId && o.userId !== PENDING_SYSTEM_USER_ID) {
+                    if (!seen[o.userId]) {
+                        seen[o.userId] = true;
+                        ids.push(o.userId);
+                    }
+                    continue;
+                }
+                // Legacy global array — drained, not maintained.
+                if (o.key === PENDING_INDEX_LEGACY_KEY && o.value && o.value.userIds) {
+                    var legacy = o.value.userIds;
+                    for (var j = 0; j < legacy.length; j++) {
+                        var lid = legacy[j];
+                        if (lid && !seen[lid]) {
+                            seen[lid] = true;
+                            ids.push(lid);
+                        }
+                    }
+                }
+            }
+            cursor = (res && res.cursor) ? res.cursor : "";
+            if (!cursor)
+                break;
+        }
+        return ids;
+    }
     function flushPendingRegistrations(ctx, logger, nk) {
         try {
-            // List all records in the push_tokens collection across all users.
-            // Nakama's storageList with empty userId iterates global-scope objects;
-            // our tokens are user-scoped, so we use a sentinel index key.
-            // Strategy: read the pending_index — a small JSON array of userIds that
-            // have pending tokens, maintained by rpcPushRegisterToken.
-            var PENDING_INDEX_COLLECTION = "push_pending_index";
-            var PENDING_INDEX_KEY = "index";
-            var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
-            var indexObjs = nk.storageRead([{ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_KEY, userId: SYSTEM_USER_ID }]);
-            var pendingUserIds = [];
-            if (indexObjs && indexObjs.length > 0 && indexObjs[0].value && indexObjs[0].value.userIds) {
-                pendingUserIds = indexObjs[0].value.userIds;
-            }
+            var pendingUserIds = listPendingUserIds(logger, nk);
             if (!pendingUserIds || pendingUserIds.length === 0) {
                 logger.info("[Push] flushPendingRegistrations: no pending registrations.");
                 return;
@@ -147107,6 +147615,12 @@ var LegacyPush;
                     }
                     var td = getPushTokens(nk, uid);
                     var hasPending = false;
+                    // The provider calls below are HTTP and cannot happen inside a
+                    // version-checked write, so the outcome for each token is collected
+                    // here and re-applied to a freshly-read row afterwards. That way a
+                    // registration that landed concurrently is not clobbered by a stale
+                    // snapshot taken before the Lambda call.
+                    var outcomes = {};
                     for (var k = 0; k < td.tokens.length; k++) {
                         var row = td.tokens[k];
                         if (!row.pendingRegistration)
@@ -147114,8 +147628,7 @@ var LegacyPush;
                         // Skip tokens that hit max retries — they're permanently invalid.
                         if ((row.pendingRetries || 0) >= PENDING_MAX_RETRIES) {
                             logger.warn("[Push] flushPending: token maxed out retries (%s) — marking dead. userId=%s platform=%s tokenPrefix=%s", PENDING_MAX_RETRIES, uid, row.platform, row.token ? row.token.substring(0, 10) : "?");
-                            row.pendingRegistration = false;
-                            row.providerError = "max_retries_exceeded";
+                            outcomes[row.token] = { giveUp: true };
                             continue;
                         }
                         // Throttle: don't retry more often than PENDING_RETRY_INTERVAL_SEC.
@@ -147128,28 +147641,47 @@ var LegacyPush;
                         var pFcmProjId = row.pendingFcmProjectId || env(ctx, "DEFAULT_FCM_PROJECT_ID") || "";
                         logger.info("[Push] flushPending: retrying Lambda registration. userId=%s platform=%s attempt=%s tokenPrefix=%s", uid, row.platform, (row.pendingRetries || 0) + 1, row.token ? row.token.substring(0, 10) : "?");
                         var pResult = registerProviderEndpoint(ctx, logger, nk, uid, row.token, row.platform, pGameId, pIsSandbox, pFcmProjId);
-                        row.pendingRetries = (row.pendingRetries || 0) + 1;
-                        row.pendingLastAttempt = now;
                         if (pResult && pResult.success && pResult.endpointArn) {
-                            var arnP = platformFromArn(pResult.endpointArn);
-                            row.endpointArn = pResult.endpointArn;
-                            row.platform = arnP || row.platform;
-                            row.provider = pResult.provider || "sns";
-                            row.providerRegisteredAt = now;
-                            row.providerError = undefined;
-                            row.pendingRegistration = false;
-                            row.pendingGameId = undefined;
-                            row.pendingIsSandbox = undefined;
-                            row.pendingFcmProjectId = undefined;
-                            logger.info("[Push] flushPending: SUCCESS userId=%s endpointArn=%s resolvedPlatform=%s", uid, pResult.endpointArn, row.platform);
+                            outcomes[row.token] = { endpointArn: pResult.endpointArn, provider: pResult.provider || "sns" };
+                            logger.info("[Push] flushPending: SUCCESS userId=%s endpointArn=%s resolvedPlatform=%s", uid, pResult.endpointArn, platformFromArn(pResult.endpointArn) || row.platform);
                         }
                         else {
-                            row.providerError = (pResult && pResult.error) || "Lambda registration failed";
+                            outcomes[row.token] = { error: (pResult && pResult.error) || "Lambda registration failed" };
                             hasPending = true;
-                            logger.warn("[Push] flushPending: retry failed. userId=%s attempt=%s error=%s", uid, row.pendingRetries, row.providerError);
+                            logger.warn("[Push] flushPending: retry failed. userId=%s attempt=%s error=%s", uid, (row.pendingRetries || 0) + 1, outcomes[row.token].error);
                         }
                     }
-                    savePushTokens(nk, uid, td);
+                    updatePushTokens(nk, logger, uid, function (fresh) {
+                        for (var fi = 0; fi < fresh.tokens.length; fi++) {
+                            var fr = fresh.tokens[fi];
+                            if (!fr || !fr.token)
+                                continue;
+                            var out = outcomes[fr.token];
+                            if (!out)
+                                continue;
+                            if (out.giveUp) {
+                                fr.pendingRegistration = false;
+                                fr.providerError = "max_retries_exceeded";
+                                continue;
+                            }
+                            fr.pendingRetries = (fr.pendingRetries || 0) + 1;
+                            fr.pendingLastAttempt = now;
+                            if (out.endpointArn) {
+                                fr.endpointArn = out.endpointArn;
+                                fr.platform = platformFromArn(out.endpointArn) || fr.platform;
+                                fr.provider = out.provider;
+                                fr.providerRegisteredAt = now;
+                                fr.providerError = undefined;
+                                fr.pendingRegistration = false;
+                                fr.pendingGameId = undefined;
+                                fr.pendingIsSandbox = undefined;
+                                fr.pendingFcmProjectId = undefined;
+                            }
+                            else {
+                                fr.providerError = out.error;
+                            }
+                        }
+                    });
                     if (hasPending)
                         remainingUserIds.push(uid);
                 }
@@ -147169,15 +147701,38 @@ var LegacyPush;
                     }
                 }
             }
-            // Update the pending index with only the users that still have pending tokens.
-            nk.storageWrite([{
-                    collection: PENDING_INDEX_COLLECTION,
-                    key: PENDING_INDEX_KEY,
-                    userId: SYSTEM_USER_ID,
-                    value: { userIds: remainingUserIds },
-                    permissionRead: 0,
-                    permissionWrite: 0,
-                }]);
+            // Delete the marker for every user that settled this tick. Deleting a
+            // per-user row cannot lose a registration that arrived while this loop was
+            // running, which is what rewriting one shared array did: the array written
+            // here was computed from a snapshot taken before the provider calls.
+            var settled = [];
+            for (var s = 0; s < pendingUserIds.length; s++) {
+                var sid = pendingUserIds[s];
+                if (remainingUserIds.indexOf(sid) >= 0)
+                    continue;
+                settled.push({ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_ROW_KEY, userId: sid });
+            }
+            if (settled.length > 0) {
+                try {
+                    nk.storageDelete(settled);
+                }
+                catch (delErr) {
+                    logger.warn("[Push] flushPendingRegistrations: could not clear %s settled pending marker(s) — " +
+                        "they will simply be re-scanned next tick. error=%s", settled.length, delErr && delErr.message ? delErr.message : String(delErr));
+                }
+            }
+            // Drain the legacy global array once it has nothing left to contribute.
+            try {
+                nk.storageWrite([{
+                        collection: PENDING_INDEX_COLLECTION,
+                        key: PENDING_INDEX_LEGACY_KEY,
+                        userId: PENDING_SYSTEM_USER_ID,
+                        value: { userIds: [], drained: true },
+                        permissionRead: 0,
+                        permissionWrite: 0,
+                    }]);
+            }
+            catch (_) { /* the per-user rows are the source of truth now */ }
             logger.info("[Push] flushPendingRegistrations: done. remaining pending users: %s", remainingUserIds.length);
         }
         catch (e) {
@@ -147185,29 +147740,40 @@ var LegacyPush;
         }
     }
     LegacyPush.flushPendingRegistrations = flushPendingRegistrations;
-    // Adds a userId to the pending_index so the scheduler can find it.
-    // Called automatically from rpcPushRegisterToken when a pending row is written.
+    // Marks a user as having an outstanding registration so the scheduler can
+    // find it. Called from rpcPushRegisterToken right after the pending row is
+    // written. One row per user: no shared array, so no lost update, and the
+    // write is idempotent rather than read-modify-write.
     function addToPendingIndex(nk, logger, userId) {
         try {
-            var PENDING_INDEX_COLLECTION = "push_pending_index";
-            var PENDING_INDEX_KEY = "index";
-            var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
-            var objs = nk.storageRead([{ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_KEY, userId: SYSTEM_USER_ID }]);
-            var ids = (objs && objs.length > 0 && objs[0].value && objs[0].value.userIds)
-                ? objs[0].value.userIds
-                : [];
-            if (ids.indexOf(userId) < 0)
-                ids.push(userId);
             nk.storageWrite([{
                     collection: PENDING_INDEX_COLLECTION,
-                    key: PENDING_INDEX_KEY,
-                    userId: SYSTEM_USER_ID,
-                    value: { userIds: ids },
+                    key: PENDING_INDEX_ROW_KEY,
+                    userId: userId,
+                    value: { userId: userId, markedAt: Math.floor(Date.now() / 1000) },
                     permissionRead: 0,
                     permissionWrite: 0,
                 }]);
         }
-        catch (_) { /* non-fatal — flush will just skip this user this tick */ }
+        catch (e) {
+            // Non-fatal, but no longer silent: a lost marker means the 30-minute
+            // retry cannot see this registration, so it is worth a line.
+            logger.warn("[Push] addToPendingIndex: could not mark userId=%s as pending — " +
+                "if the provider call below fails, the scheduler will not retry it. error=%s", userId, e && e.message ? e.message : String(e));
+        }
+    }
+    // Clears the marker once a registration has completed inline. Best-effort:
+    // a stale marker only costs one extra no-op scan on the next flush tick.
+    function clearPendingIndexIfSettled(nk, logger, userId) {
+        try {
+            var td = getPushTokens(nk, userId);
+            for (var i = 0; i < td.tokens.length; i++) {
+                if (td.tokens[i] && td.tokens[i].pendingRegistration === true)
+                    return;
+            }
+            nk.storageDelete([{ collection: PENDING_INDEX_COLLECTION, key: PENDING_INDEX_ROW_KEY, userId: userId }]);
+        }
+        catch (_) { /* harmless — the next flush tick re-checks */ }
     }
     function rpcPushFlushPending(ctx, logger, nk, _payload) {
         flushPendingRegistrations(ctx, logger, nk);
