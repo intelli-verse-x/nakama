@@ -49,6 +49,29 @@ jobs:
         with:
           fetch-depth: 2  # needed for the web/-changed diff (admin console step)
 
+      # Runs before anything expensive. 4239b28ef shipped scripts/ecr-digest.sh
+      # and scripts/assert-deploy-account.sh with CRLF endings; the "Configure
+      # kubectl for EKS" step sources them, so every run died at 38 s with
+      # `line 10: $'\r': command not found` and master deployed nothing from
+      # 2026-08-25 to 2026-08-29. .gitattributes now pins *.sh to eol=lf; this
+      # step is the enforcement that actually gates the deploy.
+      - name: Reject CRLF in shell scripts
+        run: |
+          set -euo pipefail
+          bad=$(git ls-files -z '*.sh' '*.bash' 'Dockerfile' 'Dockerfile.*' \
+                  | xargs -0 grep -lU $'\r' 2>/dev/null || true)
+          if [ -n "$bad" ]; then
+            echo "::error::CRLF line endings found in files a POSIX shell parses."
+            echo "$bad" | sed 's/^/  /'
+            echo "Fix with:  perl -i -pe 's/\r\n/\n/g' <file>   (.gitattributes has *.sh text eol=lf)"
+            exit 1
+          fi
+          echo "No CRLF in any shell script or Dockerfile."
+          for f in $(git ls-files '*.sh'); do
+            bash -n "$f" || { echo "::error::$f fails bash -n"; exit 1; }
+          done
+          echo "All shell scripts pass bash -n."
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
