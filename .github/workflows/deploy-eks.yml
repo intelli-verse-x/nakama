@@ -175,6 +175,39 @@ jobs:
           chmod +x scripts/smoke-test-js-runtime.sh
           ./scripts/smoke-test-js-runtime.sh image "${REPOSITORY_URI}:${IMAGE_VERSION}"
 
+      # RCA 2026-08-28: a rebuild from a tree 653 commits behind master would
+      # have dropped 211 RPCs that production was actively serving (41 with
+      # measured live traffic — the whole social subsystem, the live-event
+      # auto-end cron, wallet ops, World Trivia). Nothing upstream catches it:
+      # tsc, `node -c` and the JS smoke test all pass on the smaller bundle,
+      # because it is valid JS and the RPCs the smoke test probes are old
+      # enough to survive. Compare the candidate's registered-RPC set against
+      # the bundle currently serving prod and refuse to go backwards.
+      # Runs BEFORE the multi-arch push so a bad bundle never reaches ECR.
+      #
+      # Re-measured 2026-08-29 against the live pod: baseline is 1338 RPCs,
+      # and the then-current work branch would have removed 222 of them
+      # (admin prize fulfilment, battlepass, creator_event_*, revenue
+      # verification) while adding 25.
+      #
+      # RPC_GATE_REQUIRE_BASELINE=true is load-bearing. The gate has two
+      # skip paths — the live image not resolving, and the baseline digest
+      # not being pullable — and both `return 0` with only a warning. With
+      # the ECR lifecycle remediation in flight (only the last 10 tagged
+      # images are kept) an expiring baseline digest is a realistic way for
+      # the gate to pass vacuously at exactly the moment it matters. A gate
+      # that silently passes is worse than no gate, because it is trusted.
+      # If this step fails with "cannot pull the live image", fix the
+      # baseline — do not disable the requirement.
+      - name: RPC superset gate (candidate must not drop live RPCs)
+        env:
+          ALLOW_RPC_REMOVAL: ${{ vars.ALLOW_RPC_REMOVAL }}
+          RPC_GATE_REQUIRE_BASELINE: "true"
+        run: |
+          set -euo pipefail
+          chmod +x scripts/rpc-superset-gate.sh
+          ./scripts/rpc-superset-gate.sh gate "${REPOSITORY_URI}:${IMAGE_VERSION}"
+
       - name: Build + push multi-arch (amd64+arm64)
         run: |
           set -euo pipefail
