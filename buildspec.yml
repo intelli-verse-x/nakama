@@ -120,10 +120,11 @@ phases:
           -o jsonpath='{.data.dashboard_secret}' 2>/dev/null \
           | base64 -d 2>/dev/null || true)
         if [ -z "$RUNTIME_DASHBOARD_SECRET" ]; then
-          echo "WARN: nakama-secret/dashboard_secret not found - using hardcoded fallback"
-          RUNTIME_DASHBOARD_SECRET="2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8"
+          echo "FATAL: nakama-secret/dashboard_secret is missing or empty."
+          echo "       There is no hardcoded fallback (F10, 2026-08-07)."
+          exit 1
         fi
-        echo "DASHBOARD_SECRET fingerprint=$(printf '%s' "$RUNTIME_DASHBOARD_SECRET" | cut -c1-8)..."
+        echo "DASHBOARD_SECRET length=${#RUNTIME_DASHBOARD_SECRET} (value not logged)"
       - HTTP_KEY_FP="$(printf '%s' "$RUNTIME_HTTP_KEY" | head -c 4)…(len=$(printf '%s' "$RUNTIME_HTTP_KEY" | wc -c))"
       - echo "http_key fingerprint=$HTTP_KEY_FP"
       - echo "=== Patching web/analytics-dashboard/index.html serverKey ==="
@@ -140,8 +141,8 @@ phases:
             exit 1
           fi
           echo "=== Patching web/analytics-dashboard/index.html bootstrapSecret ==="
-          BOOT_BEFORE=$(grep -c "bootstrapSecret: '2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8'" web/analytics-dashboard/index.html || true)
-          sed -i "s|bootstrapSecret: '2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8'|bootstrapSecret: '${RUNTIME_DASHBOARD_SECRET}'|g" web/analytics-dashboard/index.html
+          BOOT_BEFORE=$(grep -c "bootstrapSecret: '__DASHBOARD_SECRET__'" web/analytics-dashboard/index.html || true)
+          sed -i "s|bootstrapSecret: '__DASHBOARD_SECRET__'|bootstrapSecret: '${RUNTIME_DASHBOARD_SECRET}'|g" web/analytics-dashboard/index.html
           BOOT_AFTER=$(grep -c "bootstrapSecret: '${RUNTIME_DASHBOARD_SECRET}'" web/analytics-dashboard/index.html || true)
           echo "bootstrapSecret occurrences before=$BOOT_BEFORE  after=$BOOT_AFTER  (expect equal & non-zero)"
           if [ "$BOOT_BEFORE" -eq 0 ] || [ "$BOOT_AFTER" -eq 0 ]; then

@@ -121,8 +121,9 @@ jobs:
           RUNTIME_DASHBOARD_SECRET=$(kubectl get secret nakama-secret -n "$K8S_NAMESPACE" \
             -o jsonpath='{.data.dashboard_secret}' 2>/dev/null | base64 -d 2>/dev/null || true)
           if [ -z "$RUNTIME_DASHBOARD_SECRET" ]; then
-            echo "WARN: nakama-secret/dashboard_secret not found - using hardcoded fallback"
-            RUNTIME_DASHBOARD_SECRET="2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8"
+            echo "FATAL: nakama-secret/dashboard_secret is missing or empty."
+            echo "       There is no hardcoded fallback (F10, 2026-08-07)."
+            exit 1
           fi
           echo "::add-mask::$RUNTIME_HTTP_KEY"
           echo "::add-mask::$RUNTIME_DASHBOARD_SECRET"
@@ -141,9 +142,9 @@ jobs:
             # 2026-07 dashboard removed it (auth is server-validated via
             # admin_login), so the patch is conditional: only enforce it when
             # the placeholder is actually present.
-            BOOT_BEFORE=$(grep -c "bootstrapSecret: '2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8'" web/analytics-dashboard/index.html || true)
+            BOOT_BEFORE=$(grep -c "bootstrapSecret: '__DASHBOARD_SECRET__'" web/analytics-dashboard/index.html || true)
             if [ "$BOOT_BEFORE" -gt 0 ]; then
-              sed -i "s|bootstrapSecret: '2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8'|bootstrapSecret: '${RUNTIME_DASHBOARD_SECRET}'|g" web/analytics-dashboard/index.html
+              sed -i "s|bootstrapSecret: '__DASHBOARD_SECRET__'|bootstrapSecret: '${RUNTIME_DASHBOARD_SECRET}'|g" web/analytics-dashboard/index.html
               BOOT_AFTER=$(grep -c "bootstrapSecret: '${RUNTIME_DASHBOARD_SECRET}'" web/analytics-dashboard/index.html || true)
               echo "bootstrapSecret occurrences before=$BOOT_BEFORE after=$BOOT_AFTER"
               if [ "$BOOT_AFTER" -eq 0 ]; then

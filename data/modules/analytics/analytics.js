@@ -1791,9 +1791,13 @@ function rpcAnalyticsDashboard(ctx, logger, nk, payload) {
             var arqRemainingMs = arqDeadlineMs - (Date.now() - __adStartMs) - arqHeadroomMs;
             if (arqRemainingMs < 3000) {
                 autoRollupMeta = { triggered: false, skipped: "insufficient_budget", date: yday };
+            } else if (!(ctx && ctx.env && ctx.env.DASHBOARD_SECRET)) {
+                // F10 (2026-08-07): the hardcoded dashboard-secret fallback is
+                // deleted. Without a real shared secret the synthetic admin gate
+                // cannot be satisfied, so skip the pass instead of falling back.
+                autoRollupMeta = { triggered: false, skipped: "dashboard_secret_unset", date: yday };
             } else {
-                var aSecret = (ctx && ctx.env && ctx.env.DASHBOARD_SECRET) ||
-                    "2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8";
+                var aSecret = String(ctx.env.DASHBOARD_SECRET);
                 logger.info("[analytics_dashboard] stale rollup for " + yday +
                             " — auto-triggering one pass (budget_ms=" + arqRemainingMs + ")");
                 var passRaw = rpcAnalyticsRollupRun(ctx, logger, nk, JSON.stringify({
