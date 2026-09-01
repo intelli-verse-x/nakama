@@ -29,6 +29,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Ban,
+  FlaskConical,
 } from "lucide-react";
 import {
   serverKeyAuth,
@@ -36,17 +37,19 @@ import {
   satori,
   questEngine,
   type Audience,
+  type Experiment,
   type QuestEngineQuest,
   type QuestEngineStep,
   type QuestEngineConfig,
 } from "@nakama/shared";
 import { cn } from "@/lib/utils";
 import { RewardBuilder, type RewardBuilderReward } from "@/components/RewardBuilder";
+import { QuestAbPanel, questAbBadgeLabel } from "@/components/QuestAbPanel";
 
 const GLOBAL_CONFIG_SCOPE = "global";
 // Quest Engine stores config under a concrete gameId. Global scope maps to the
-// QuizVerse UUID so Admin saves land on the same tenant Unity reads
-// (see quest_engine.ts resolveGameId — also aliases legacy "default").
+// QuizVerse UUID so Admin saves land on the same tenant Unity reads.
+// Backend aliases "default" → QuizVerse only; missing gameId is an error.
 const QUEST_ENGINE_DEFAULT_GAME = "126bf539-dae2-4bcf-964d-316c0fa1f92b";
 
 function rpcGameId(scope: string) {
@@ -1584,10 +1587,12 @@ interface EngineQuestRowProps {
   onEdit: (q: QuestEngineQuest) => void;
   onDuplicate: (q: QuestEngineQuest) => void;
   onDelete: (q: QuestEngineQuest) => void;
+  onAb: (q: QuestEngineQuest) => void;
+  abBadge?: string | null;
   isDeleting: boolean;
 }
 
-function EngineQuestRow({ quest, onEdit, onDuplicate, onDelete, isDeleting }: EngineQuestRowProps) {
+function EngineQuestRow({ quest, onEdit, onDuplicate, onDelete, onAb, abBadge, isDeleting }: EngineQuestRowProps) {
   const [expanded, setExpanded] = useState(false);
   const rewards = formatEngineReward(quest);
   const resetLabel = engineResetLabel(quest.resetIntervalSec);
@@ -1625,6 +1630,12 @@ function EngineQuestRow({ quest, onEdit, onDuplicate, onDelete, isDeleting }: En
                 hidden
               </span>
             )}
+            {abBadge ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-400">
+                <FlaskConical className="h-3 w-3" />
+                {abBadge}
+              </span>
+            ) : null}
             <h4 className="text-sm font-semibold text-foreground truncate">{quest.name}</h4>
             <code className="text-xs text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
               {quest.id}
@@ -1666,6 +1677,13 @@ function EngineQuestRow({ quest, onEdit, onDuplicate, onDelete, isDeleting }: En
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          <button
+            onClick={() => onAb(quest)}
+            title="A/B this"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <FlaskConical className="h-4 w-4" />
+          </button>
           <button
             onClick={() => setExpanded(!expanded)}
             title="Details"
@@ -1710,6 +1728,12 @@ function EngineQuestRow({ quest, onEdit, onDuplicate, onDelete, isDeleting }: En
   );
 }
 
+function rewardCurrenciesHint(quest: { reward?: { guaranteed?: { currencies?: Record<string, number> } } } | undefined): string {
+  const currencies = quest?.reward?.guaranteed?.currencies;
+  if (!currencies) return "—";
+  return Object.entries(currencies).map(([k, v]) => `${k} ${v}`).join(", ") || "—";
+}
+
 function QuestEnginePanel() {
   const gameScope = useScopedGameId() ?? GLOBAL_CONFIG_SCOPE;
   const engineGameId = rpcGameId(gameScope) ?? QUEST_ENGINE_DEFAULT_GAME;
@@ -1722,9 +1746,22 @@ function QuestEnginePanel() {
   const [showBulk, setShowBulk] = useState(false);
   const [bulkJson, setBulkJson] = useState("");
   const [bulkError, setBulkError] = useState("");
+  const [previewUserId, setPreviewUserId] = useState("");
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+  const [previewExperiment, setPreviewExperiment] = useState("");
+  const [previewRows, setPreviewRows] = useState<Array<{ id: string; name: string; base: string; personalized: string }>>([]);
+  const [abSeedQuestId, setAbSeedQuestId] = useState<string | null>(null);
 
   const { data: config, isLoading, isError, error, refetch } = useQuestEngineConfig(engineGameId);
   const save = useSaveQuestEngineConfig(engineGameId);
+  const abExperiments = useQuery({
+    queryKey: ["satori", "experiments", engineGameId],
+    queryFn: () => satori.getAllExperiments(serverKeyAuth(), engineGameId),
+    select: (d: { experiments?: Experiment[] }) =>
+      (d.experiments ?? []).filter((exp) => exp.configSystem === "quest_engine"),
+    staleTime: 15_000,
+  });
 
   const quests = useMemo(() => {
     if (!config?.quests) return [];
@@ -1839,6 +1876,39 @@ function QuestEnginePanel() {
     });
   }, [bulkJson, save]);
 
+  const runPreview = useCallback(async () => {
+    const uid = previewUserId.trim();
+    if (!uid) {
+      setPreviewError("Paste a QA player user id first.");
+      return;
+    }
+    setPreviewBusy(true);
+    setPreviewError("");
+    try {
+      const data = await hiro.previewPersonalizer(
+        { userId: uid, system: "quest_engine", gameId: engineGameId },
+        serverKeyAuth(),
+      );
+      const baseQuests = data.baseConfig?.quests || {};
+      const mergedQuests = data.personalizedConfig?.quests || {};
+      const ids = Array.from(new Set([...Object.keys(baseQuests), ...Object.keys(mergedQuests)])).sort();
+      setPreviewRows(ids.map((id) => ({
+        id,
+        name: String(mergedQuests[id]?.name || baseQuests[id]?.name || id),
+        base: rewardCurrenciesHint(baseQuests[id]),
+        personalized: rewardCurrenciesHint(mergedQuests[id]),
+      })));
+      const exp = data.experiment;
+      setPreviewExperiment(exp?.experimentId ? `${exp.experimentId} / ${exp.variantId || "—"}` : "no running assignment");
+    } catch (e) {
+      setPreviewRows([]);
+      setPreviewExperiment("");
+      setPreviewError((e as Error).message || "Preview failed");
+    } finally {
+      setPreviewBusy(false);
+    }
+  }, [previewUserId, engineGameId]);
+
   return (
     <div className="space-y-6">
       {/* Panel header */}
@@ -1879,6 +1949,62 @@ function QuestEnginePanel() {
           </button>
         </div>
       </div>
+
+      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+        <p className="text-sm font-medium text-foreground">Preview as user</p>
+        <p className="text-xs text-muted-foreground">
+          Shows this game&apos;s quest list after the A/B sticker for a QA player. Unity still only sends
+          {" "}<code className="rounded bg-muted px-1 py-0.5">{"{ gameId }"}</code>.
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            value={previewUserId}
+            onChange={(e) => setPreviewUserId(e.target.value)}
+            placeholder="QA user id"
+            className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <button
+            type="button"
+            onClick={() => { void runPreview(); }}
+            disabled={previewBusy}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+          >
+            {previewBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+            Preview
+          </button>
+        </div>
+        {previewError ? <p className="text-xs text-destructive">{previewError}</p> : null}
+        {previewExperiment ? <p className="text-xs text-muted-foreground">Assignment: {previewExperiment}</p> : null}
+        {previewRows.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-muted-foreground">
+                  <th className="py-1 pr-3 font-medium">Quest</th>
+                  <th className="py-1 pr-3 font-medium">Jar reward</th>
+                  <th className="py-1 font-medium">This player</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewRows.map((row) => (
+                  <tr key={row.id} className="border-t border-border">
+                    <td className="py-1 pr-3">{row.name}</td>
+                    <td className="py-1 pr-3 font-mono">{row.base}</td>
+                    <td className="py-1 font-mono">{row.personalized}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </div>
+
+      <QuestAbPanel
+        gameId={engineGameId}
+        quests={quests}
+        seedQuestId={abSeedQuestId}
+        onSeedHandled={() => setAbSeedQuestId(null)}
+      />
 
       {/* Bulk JSON editor */}
       {showBulk && (
@@ -2037,6 +2163,8 @@ function QuestEnginePanel() {
               }}
               onDuplicate={handleDuplicate}
               onDelete={(q) => setConfirmDelete(q)}
+              onAb={(q) => setAbSeedQuestId(q.id)}
+              abBadge={questAbBadgeLabel(quest.id, abExperiments.data ?? [])}
               isDeleting={deletingId === quest.id}
             />
           ))}

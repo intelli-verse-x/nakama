@@ -722,13 +722,21 @@ await satori.toggleFlag({
     overview:
       "Experiments run A/B tests by splitting players into variant groups. Each variant can have different config values, and Satori tracks metrics per variant to determine winners. Use experiments to test pricing, UI layouts, difficulty curves, and reward values.",
     configSteps: [
-      "Create experiments in Admin > Experiments.",
+      "Create experiments in Admin > Experiments. Pick the game first — never Global for quest tests.",
+      "Quest A/B lives on Admin > Quests: New A/B, or A/B this on a row. Two recipes only (new prize, or this vs that). Experiments page stays for non-quest tests.",
       "Define variants with names, weights (traffic split %), and data payloads.",
+      "For quest A/B: set configSystem=quest_engine, goalMetric=quest_completed, and overlay only reward/hidden/enabled/name/description.",
       "Target specific audiences or run on all players.",
       "Hiro's Personalizer can override config values per-variant automatically.",
+      "Quest A/B rollout: QA audience first (internal accounts, two devices, same userId stays sticky). Then 10% test / 90% control for 48h with goal quest_completed. If SRM or claim errors: Pause (up to 1 minute), do not Promote.",
+      "Promote only after min-sample + SRM + significance. Optionally 25% then 50% with a stable split so the 10% stay in test. Local proof: node tests/quest_ab_overlay_live_rpc.mjs against docker :7350.",
       "Monitor results in the Analytics page and pick the winning variant.",
     ],
     clientCode: `import { satori } from "@nakama/shared";
+
+// Unity / game client: always send the registry UUID. "default" aliases
+// QuizVerse only. Missing gameId does not steal another game's quests.
+// quest_engine_get({ gameId: "<registry UUID>" })
 
 // Admin: List all experiments
 const experiments = await satori.getAllExperiments({
@@ -749,7 +757,10 @@ await satori.setupExperiment({
 
 // Game client: variant assignment is automatic.
 // When the client reads store config, Hiro's Personalizer
-// applies the experiment variant's data overlay.`,
+// applies the experiment variant's data overlay.
+
+// Quest A/B preview as a QA user (admin / server-key):
+// hiro_personalizer_preview({ userId, system: "quest_engine", gameId })`,
     rpcs: [
       { id: "satori_experiments_get_all", method: "POST", description: "List all experiments and variants" },
       { id: "satori_experiment_setup", method: "POST", description: "Create or update an experiment" },

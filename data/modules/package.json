@@ -9,7 +9,9 @@
     "build:watch": "npx tsc --watch",
     "docs:rpc-index": "node scripts/generate-rpc-index.js",
     "eval:social": "node tests/social_zone_eval_suite.mjs",
-    "test:seedq": "node tests/seedq_imageguess_test_suite.mjs"
+    "test:seedq": "node tests/seedq_imageguess_test_suite.mjs",
+    "test:quest-ab": "node tests/quest_ab_overlay_regression_test.mjs",
+    "eval:quest-ab": "node tests/quest_ab_overlay_live_rpc.mjs"
   },
   "devDependencies": {
     "typescript": "^5.5.0"

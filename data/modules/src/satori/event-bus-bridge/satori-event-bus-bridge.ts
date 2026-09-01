@@ -75,7 +75,9 @@ namespace SatoriEventBusBridge {
       EventBus.Events.CHALLENGE_COMPLETED,
       // Retention loop
       EventBus.Events.STREAK_UPDATED,
-      EventBus.Events.REWARD_GRANTED
+      EventBus.Events.REWARD_GRANTED,
+      // Quest A/B conversions — low frequency. Do not add QUEST_STEP_COMPLETED.
+      EventBus.Events.QUEST_COMPLETED
     ];
     return _subscribed;
   }
@@ -135,6 +137,11 @@ namespace SatoriEventBusBridge {
         timestamp: Date.now(),
         metadata: buildMetadata(eventName, data)
       });
+      if (eventName === EventBus.Events.QUEST_COMPLETED &&
+          typeof SatoriExperiments !== "undefined" &&
+          SatoriExperiments.recordQuestCompletedConversion) {
+        SatoriExperiments.recordQuestCompletedConversion(nk, logger, data);
+      }
     } catch (err: any) {
       // Never let analytics capture break the gameplay path.
       logger.warn(

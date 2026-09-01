@@ -75,6 +75,7 @@ namespace Satori {
     name: string;
     config: { [key: string]: string };
     weight: number;
+    trackedQuestIds?: string[];
   }
 
   export interface ExperimentDefinition {
@@ -85,6 +86,13 @@ namespace Satori {
     audienceId?: string;
     variants: ExperimentVariant[];
     goalMetric?: string;
+    configSystem?: string;
+    splitKey?: string;
+    gameId?: string;
+    configRevision?: string;
+    trackedQuestIds?: string[];
+    minSamplePerArm?: number;
+    phases?: any[];
     startAt?: number;
     endAt?: number;
     createdAt: number;
@@ -96,6 +104,13 @@ namespace Satori {
     variantId: string;
     assignedAt: number;
     locked?: boolean;
+    phaseId?: string | null;
+    configRevision?: string;
+    // Funnel idempotency (first write wins). convertedAt = completed.
+    exposedAt?: number;
+    startedAt?: number;
+    convertedAt?: number;
+    claimedAt?: number;
   }
 
   export interface UserExperiments {

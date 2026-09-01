@@ -10,6 +10,7 @@
 6. [Leaderboards (Daily, Weekly, Monthly, All-Time)](#leaderboards)
 7. [Daily Rewards System](#daily-rewards-system)
 8. [Daily Missions System](#daily-missions-system)
+8a. [Quest Engine](#quest-engine)
 9. [Wallet System](#wallet-system)
 10. [Analytics System](#analytics-system)
 11. [Friends & Social System](#friends--social-system)
@@ -378,6 +379,7 @@ The Nakama multi-game backend provides the following features:
 | **Leaderboards** | Daily, Weekly, Monthly, All-Time leaderboards | 3 |
 | **Daily Rewards** | Login rewards with streak tracking | 2 |
 | **Daily Missions** | Daily objectives with rewards | 3 |
+| **Quest Engine** | Per-game quests + optional A/B overlay (same list) | 3 |
 | **Wallet System** | Global and per-game virtual currency | 4 |
 | **Analytics** | Event tracking and metrics | 1 |
 | **Friends & Social** | Friend management and challenges | 6 |
@@ -1297,6 +1299,43 @@ public class MissionEntryUI : MonoBehaviour
             claimButton.interactable = false;
         }
     }
+}
+```
+
+---
+
+## Quest Engine
+
+Use the **Quest Engine** for in-game quests. LiveOps can sticker a prize/name on the **same** list. Unity never sees experiment ids.
+
+Send only `{ "gameId": "<registry UUID>" }` (plus `questId` / `eventType` where needed). `"default"` means QuizVerse only. Missing `gameId` is an error.
+
+| RPC | When to call | Payload |
+|-----|----------------|---------|
+| `quest_engine_get` | Open quests / home | `{ "gameId": "<uuid>" }` |
+| `quest_engine_record_event` | Optional; EventBus also feeds progress | `{ "gameId": "<uuid>", "eventType": "match_won", "value": 1 }` |
+| `quest_engine_claim_reward` | Claim button | `{ "gameId": "<uuid>", "questId": "daily_win_3" }` |
+
+Admin/LiveOps RPCs (`quest_engine_admin_*`, `satori_experiment_setup`, `satori_experiments_results`, `satori_experiments_declare_winner`, `satori_experiments_undo_promote`, `hiro_personalizer_preview`) are **not** Unity calls. See `GAME_ONBOARDING_GUIDE.md` Quest A/B.
+
+```csharp
+public async Task GetQuests()
+{
+    var payload = JsonUtility.ToJson(new { gameId = gameId });
+    var result = await client.RpcAsync(session, "quest_engine_get", payload);
+    Debug.Log(result.Payload);
+}
+
+public async Task RecordQuestEvent(string eventType, int value = 1)
+{
+    var payload = JsonUtility.ToJson(new { gameId = gameId, eventType, value });
+    await client.RpcAsync(session, "quest_engine_record_event", payload);
+}
+
+public async Task ClaimQuest(string questId)
+{
+    var payload = JsonUtility.ToJson(new { gameId = gameId, questId });
+    await client.RpcAsync(session, "quest_engine_claim_reward", payload);
 }
 ```
 
@@ -3275,6 +3314,9 @@ if (session.IsExpired)
 | **Daily Missions** | `get_daily_missions` | Get all missions with progress |
 | | `submit_mission_progress` | Update mission progress |
 | | `claim_mission_reward` | Claim completed mission reward |
+| **Quest Engine** | `quest_engine_get` | Load quests for `{ gameId }` (overlay already applied) |
+| | `quest_engine_record_event` | Report `{ gameId, eventType, value }` |
+| | `quest_engine_claim_reward` | Claim `{ gameId, questId }` using reward snapshot |
 | **Wallet** | `wallet_get_all` | Get all wallets |
 | | `wallet_update_global` | Update global wallet |
 | | `wallet_update_game_wallet` | Update game wallet |

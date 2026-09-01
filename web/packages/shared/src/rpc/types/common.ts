@@ -344,6 +344,7 @@ export interface ExperimentVariant {
   name: string;
   weight: number;
   data?: Record<string, unknown>;
+  config?: Record<string, unknown>;
 }
 
 export interface Experiment {
@@ -351,8 +352,22 @@ export interface Experiment {
   name: string;
   description?: string;
   enabled: boolean;
+  status?: string;
   audiences?: string[];
   variants: ExperimentVariant[];
+  configSystem?: string;
+  goalMetric?: string;
+  splitKey?: string;
+  gameId?: string;
+  configRevision?: string;
+  trackedQuestIds?: string[];
+  minSamplePerArm?: number;
+  promotion?: {
+    state?: string;
+    auditKey?: string | null;
+    restored?: boolean;
+    restoredAt?: number | null;
+  };
   created_at?: string;
   updated_at?: string;
 }

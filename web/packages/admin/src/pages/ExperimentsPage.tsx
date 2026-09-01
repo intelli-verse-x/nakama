@@ -10,6 +10,7 @@ import {
   Pencil,
   X,
   Check,
+  Undo2,
   AlertTriangle,
   Filter,
   Users,
@@ -539,6 +540,7 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
   const qc = useQueryClient();
   const [goalEvent, setGoalEvent] = useState("");
   const [declareConfirm, setDeclareConfirm] = useState<string | null>(null);
+  const [restoreConfirm, setRestoreConfirm] = useState(false);
 
   const results = useQuery({
     queryKey: ["satori", "experiment-results", gameScope, experiment.id, goalEvent],
@@ -554,19 +556,51 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
     retry: false,
   });
 
+  const isQuestEngine = experiment.configSystem === "quest_engine";
   const declareWinner = useMutation({
     mutationFn: (variantId: string) =>
       satori.declareExperimentWinner(
-        { experimentId: experiment.id, variantId, game_id: rpcGameId(gameScope) },
+        {
+          experimentId: experiment.id,
+          variantId,
+          game_id: rpcGameId(gameScope),
+          ...(isQuestEngine ? { promote: true } : {}),
+        },
         serverKeyAuth(),
       ),
     onSuccess: (_, variantId) => {
       qc.invalidateQueries({ queryKey: ["satori", "experiments", gameScope] });
       qc.invalidateQueries({ queryKey: ["satori", "experiment-results", gameScope, experiment.id] });
-      onToast(`Winner declared: "${variantId}". Experiment ended.`);
+      onToast(
+        isQuestEngine
+          ? `Winner "${variantId}" is now the live quest list. Experiment ended.`
+          : `Winner declared: "${variantId}". Experiment ended.`,
+      );
       setDeclareConfirm(null);
     },
     onError: () => onToast("Failed to declare winner.", "error"),
+  });
+
+  const undoPromote = useMutation({
+    mutationFn: () => {
+      const fromResults = results.data && (results.data as ExperimentResults).promotion?.auditKey;
+      const auditKey = fromResults || experiment.promotion?.auditKey;
+      return satori.undoExperimentPromote(
+        {
+          experimentId: experiment.id,
+          game_id: rpcGameId(gameScope),
+          ...(auditKey ? { auditKey } : {}),
+        },
+        serverKeyAuth(),
+      );
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["satori", "experiments", gameScope] });
+      qc.invalidateQueries({ queryKey: ["satori", "experiment-results", gameScope, experiment.id] });
+      onToast("Old quest list is back. The test stays ended.");
+      setRestoreConfirm(false);
+    },
+    onError: () => onToast("Failed to restore the old quest list.", "error"),
   });
 
   const data: ExperimentResults | undefined =
@@ -587,6 +621,13 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
     setDeclareConfirm(variantId);
   };
 
+  const promo = data?.promotion || experiment.promotion;
+  const canUndo =
+    isQuestEngine &&
+    !!data?.winnerVariantId &&
+    !!promo?.auditKey &&
+    !promo?.restored;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-xl">
@@ -602,6 +643,11 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
                 {data.winnerVariantId && (
                   <span className="ml-2 font-medium text-emerald-500">
                     Winner declared: {data.winnerVariantId}
+                  </span>
+                )}
+                {promo?.restored && (
+                  <span className="ml-2 font-medium text-amber-600 dark:text-amber-400">
+                    Old quest list restored
                   </span>
                 )}
               </p>
@@ -656,13 +702,46 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
             <div
               className={cn(
                 "rounded-lg border p-3 text-sm",
-                data.suggestedWinner
-                  ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300"
-                  : "border-border bg-muted/40 text-muted-foreground",
+                data.srm && data.srm.passed === false
+                  ? "border-rose-500/40 bg-rose-500/5 text-rose-700 dark:text-rose-300"
+                  : data.suggestedWinner
+                    ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300"
+                    : "border-border bg-muted/40 text-muted-foreground",
               )}
             >
               {data.recommendation}
             </div>
+
+            {data.srm && (
+              <p className="text-xs text-muted-foreground">
+                Split check (SRM):{" "}
+                {data.srm.skipped
+                  ? "not enough traffic yet to judge the split"
+                  : data.srm.passed
+                    ? "fair — observed mix matches the planned weights"
+                    : "lopsided — do not promote"}
+                {typeof data.srm.pValue === "number" && !data.srm.skipped
+                  ? " (p=" + data.srm.pValue.toExponential(2) + ")"
+                  : ""}
+                .
+              </p>
+            )}
+
+            {data.minSample && (
+              <p className="text-xs text-muted-foreground">
+                Sample: {data.minSample.perArm} per variant (
+                {data.minSample.mode === "qa"
+                  ? "QA"
+                  : data.minSample.mode === "live"
+                    ? "live"
+                    : "custom"}
+                ) — {data.minSample.met ? "enough to recommend a winner" : "not enough yet"}
+                {!data.minSample.met && data.minSample.shortVariants.length > 0
+                  ? ". Short: " + data.minSample.shortVariants.join(", ")
+                  : ""}
+                .
+              </p>
+            )}
 
             {/* Variant rows */}
             <div className="space-y-2">
@@ -708,15 +787,26 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
                       {!data.winnerVariantId && (
                         <button
                           onClick={() => handleDeclare(v.id)}
-                          disabled={declareWinner.isPending}
-                          className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600"
+                          disabled={
+                            declareWinner.isPending ||
+                            (data.minSample ? !data.minSample.met : false) ||
+                            (data.srm ? data.srm.passed === false : false)
+                          }
+                          title={
+                            data.srm && data.srm.passed === false
+                              ? "Split is lopsided (SRM) — do not promote"
+                              : data.minSample && !data.minSample.met
+                                ? "Need at least " + data.minSample.perArm + " players in every variant first"
+                                : undefined
+                          }
+                          className="inline-flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {declareWinner.isPending ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
                             <Check className="h-3 w-3" />
                           )}
-                          Declare winner
+                          {isQuestEngine ? "Write winner" : "Declare winner"}
                         </button>
                       )}
                     </div>
@@ -729,6 +819,15 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
                         style={{ width: `${Math.min((v.rate / maxRate) * 100, 100)}%` }}
                       />
                     </div>
+                    {(v.assigned != null || v.exposed != null) && (
+                      <p className="mt-1.5 text-[11px] tabular-nums text-muted-foreground">
+                        Funnel: {(v.assigned ?? 0).toLocaleString()} assigned →{" "}
+                        {(v.exposed ?? 0).toLocaleString()} seen →{" "}
+                        {(v.started ?? 0).toLocaleString()} started →{" "}
+                        {(v.completed ?? 0).toLocaleString()} finished →{" "}
+                        {(v.claimed ?? 0).toLocaleString()} claimed
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -747,17 +846,47 @@ function ResultsModal({ experiment, gameScope, onClose, onToast }: ResultsModalP
             </p>
           </div>
         ) : null}
+        {canUndo && (
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => setRestoreConfirm(true)}
+              disabled={undoPromote.isPending}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {undoPromote.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Undo2 className="h-3 w-3" />
+              )}
+              Undo — put old quest list back
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Declare winner confirmation */}
       {declareConfirm && (
         <ConfirmDialog
-          title="Declare winner?"
-          description={`Mark "${declareConfirm}" as the winner and end experiment "${experiment.id}" permanently in production?`}
-          confirmLabel="Declare winner"
+          title={isQuestEngine ? "Write winner onto the live quest list?" : "Declare winner?"}
+          description={
+            isQuestEngine
+              ? `This writes the winning sticker onto the real quest list, then ends "${experiment.id}". Everyone sees the winner after this.`
+              : `Mark "${declareConfirm}" as the winner and end experiment "${experiment.id}" permanently in production?`
+          }
+          confirmLabel={isQuestEngine ? "Write winner & end" : "Declare winner"}
           confirmVariant="primary"
           onConfirm={() => declareWinner.mutate(declareConfirm)}
           onCancel={() => setDeclareConfirm(null)}
+        />
+      )}
+      {restoreConfirm && (
+        <ConfirmDialog
+          title="Put the old quest list back?"
+          description={`This copies the photo taken before the winner was written, then puts it on the real quest list. The test "${experiment.id}" stays ended.`}
+          confirmLabel="Restore old list"
+          confirmVariant="danger"
+          onConfirm={() => undoPromote.mutate()}
+          onCancel={() => setRestoreConfirm(false)}
         />
       )}
     </div>
@@ -1112,6 +1241,10 @@ export function ExperimentsPage() {
 
   const handleFormSubmit = useCallback(
     (params: Parameters<typeof satori.setupExperiment>[0]) => {
+      if (params.configSystem === "quest_engine" && !rpcGameId(gameScope)) {
+        showToast("Pick a game first. Quest A/B tests are per gameId and must not use Global.", "error");
+        return;
+      }
       const isEdit = !!editing;
       openConfirm({
         key: `save-${params.id}`,
@@ -1128,12 +1261,12 @@ export function ExperimentsPage() {
               setEditing(null);
               showToast(isEdit ? `Experiment "${params.id}" updated.` : `Experiment "${params.id}" created and running.`);
             },
-            onError: () => showToast(`Failed to save "${params.id}".`, "error"),
+            onError: (err) => showToast((err as Error)?.message || `Failed to save "${params.id}".`, "error"),
           });
         },
       });
     },
-    [setup, editing, openConfirm, showToast],
+    [setup, editing, openConfirm, showToast, gameScope],
   );
 
   return (

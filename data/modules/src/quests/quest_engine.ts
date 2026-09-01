@@ -23,12 +23,13 @@ namespace QuestEngine {
     prerequisiteIds?: string[];
     repeatable?: boolean;
     resetIntervalSec?: number;
-    // Surprise reward: quest is invisible to the player until completed.
-    // Events still progress it server-side and the reward auto-grants;
-    // once completed it is revealed in quest_engine_get (with hidden: true)
-    // so the client can explain where the reward came from.
+    // Surprise reward: invisible until the player has started or completed it.
+    // Events still progress it server-side. Overlay hidden cannot hide in-flight
+    // or completed-unclaimed work — get still returns those rows.
     hidden?: boolean;
-    // Soft-disable: keeps the quest in config but hides it from players.
+    // Soft-disable: keeps the quest in config but hides it from players who
+    // have not started it. Overlay enabled:false cannot hide in-flight work
+    // or block claim of a completed-unclaimed reward.
     enabled?: boolean;
     // Bucket-specific: how many bucket quests a player may have active at once.
     // Only meaningful when category === "bucket".
@@ -56,6 +57,31 @@ namespace QuestEngine {
     claimedAt: number | null;
     resetCount: number;
     lastResetAt: number | null;
+    // Promised payout at first startedAt. Claim/auto-grant use this so an
+    // experiment end or promote cannot change a prize the player already earned.
+    rewardSnapshot?: Hiro.Reward | null;
+    // Frozen A/B context at first exposure (get) or first start. Never rewrite.
+    // Do not send this field to Unity clients.
+    abAttribution?: QuestAbAttribution | null;
+  }
+
+  interface QuestAbAttribution {
+    experimentId: string;
+    variantId: string;
+    phaseId: string | null;
+    configRevision: string;
+    gameId: string;
+    questId: string;
+    exposedAt: number;
+  }
+
+  interface QuestAbContext {
+    experimentId: string;
+    variantId: string;
+    phaseId: string | null;
+    configRevision: string;
+    gameId: string;
+    trackedQuestIds: string[];
   }
 
   interface UserQuestState {
@@ -159,6 +185,184 @@ namespace QuestEngine {
       }
     }
     return DEFAULT_QUESTS_CONFIG;
+  }
+
+  // Admin preview / personalizer: raw jar only (no overlay).
+  export function loadRawConfig(nk: nkruntime.Nakama, gameId: string): QuestsConfig {
+    return loadConfig(nk, gameId);
+  }
+
+  // Player-facing config: base quest list + Satori/Hiro overlay.
+  // Admin save/get MUST keep using loadConfig (raw). Overlay failure never
+  // breaks gameplay — fall back to the stored list.
+  var QUEST_ENGINE_SYSTEM = "quest_engine";
+
+  function loadPlayerConfig(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger,
+    userId: string, gameId: string
+  ): QuestsConfig {
+    var base = loadConfig(nk, gameId);
+    if (!userId) return base;
+    try {
+      if (typeof HiroPersonalizers !== "undefined" && HiroPersonalizers.personalize) {
+        return HiroPersonalizers.personalize(nk, userId, QUEST_ENGINE_SYSTEM, base, gameId, logger);
+      }
+    } catch (err: any) {
+      logger.warn(
+        "[QuestEngine] overlay skipped gameId=%s user=%s: %s",
+        gameId, userId, err && err.message ? err.message : String(err)
+      );
+    }
+    return base;
+  }
+
+  function loadConfigRecord(nk: nkruntime.Nakama, gameId: string): { config: QuestsConfig; version: string } {
+    var rows: nkruntime.StorageObject[] = [];
+    try {
+      rows = nk.storageRead([{
+        collection: QUEST_CONFIG_COLLECTION,
+        key: configKey(gameId),
+        userId: Constants.SYSTEM_USER_ID
+      }]);
+    } catch (_) {}
+    if (rows && rows.length > 0 && rows[0].value) {
+      return { config: rows[0].value as QuestsConfig, version: rows[0].version || "" };
+    }
+    return { config: loadConfig(nk, gameId), version: "" };
+  }
+
+  function saveConfigOcc(nk: nkruntime.Nakama, gameId: string, config: QuestsConfig, version: string): boolean {
+    try {
+      var writeObj: nkruntime.StorageWriteRequest = {
+        collection: QUEST_CONFIG_COLLECTION,
+        key: configKey(gameId),
+        userId: Constants.SYSTEM_USER_ID,
+        value: config,
+        permissionRead:  2 as nkruntime.ReadPermissionValues,
+        permissionWrite: 0 as nkruntime.WritePermissionValues
+      };
+      if (version) (writeObj as any).version = version;
+      nk.storageWrite([writeObj]);
+      return true;
+    } catch (_e: any) {
+      return false;
+    }
+  }
+
+  function cloneJson(obj: any): any {
+    return JSON.parse(JSON.stringify(obj == null ? {} : obj));
+  }
+
+  function hashQuestsConfig(config: any): string {
+    var quests = (config && config.quests) || {};
+    var ids: string[] = [];
+    for (var k in quests) {
+      if (quests.hasOwnProperty(k)) ids.push(k);
+    }
+    ids.sort();
+    var parts: string[] = [];
+    for (var i = 0; i < ids.length; i++) {
+      parts.push(ids[i] + ":" + JSON.stringify(quests[ids[i]]));
+    }
+    var s = parts.join("\n");
+    var hash = 0;
+    for (var c = 0; c < s.length; c++) {
+      hash = ((hash << 5) - hash) + s.charCodeAt(c);
+      hash = hash & 0x7FFFFFFF;
+    }
+    return String(hash) + ":" + String(s.length);
+  }
+
+  function applyWinnerOverlay(base: QuestsConfig, overlay: any): QuestsConfig {
+    var copy = cloneJson(base) as QuestsConfig;
+    if (!copy.quests) copy.quests = {};
+    if (typeof HiroPersonalizers !== "undefined" && HiroPersonalizers.applyQuestEngineOverlay) {
+      return HiroPersonalizers.applyQuestEngineOverlay(copy, overlay || { quests: {} });
+    }
+    return copy;
+  }
+
+  // Prepare → write → verify. Caller persists experiment promotion state between
+  // steps so a crash can resume. Never ends the experiment here.
+  export function runPromoteStep(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger,
+    gameId: string, overlay: any, step: string, ctx: any
+  ): { ok: boolean; auditKey?: string; desiredHash?: string; error?: string } {
+    if (!gameId) return { ok: false, error: "gameId required" };
+    var experimentId = ctx && ctx.experimentId ? String(ctx.experimentId) : "";
+    var variantId = ctx && ctx.variantId ? String(ctx.variantId) : "";
+    var now = Math.floor(Date.now() / 1000);
+
+    if (step === "prepare") {
+      var rec = loadConfigRecord(nk, gameId);
+      var desired = applyWinnerOverlay(rec.config, overlay);
+      var desiredHash = hashQuestsConfig(desired);
+      var auditKey = "promote_" + experimentId + "_" + now;
+      try {
+        nk.storageWrite([{
+          collection: QUEST_CONFIG_AUDIT_COLLECTION,
+          key: auditKey,
+          userId: Constants.SYSTEM_USER_ID,
+          value: {
+            gameId: gameId,
+            experimentId: experimentId,
+            variantId: variantId,
+            actor: "promote",
+            timestamp: now,
+            previous: rec.config,
+            desired: desired,
+            desiredHash: desiredHash,
+            promotion: true
+          },
+          permissionRead: 2 as nkruntime.ReadPermissionValues,
+          permissionWrite: 0 as nkruntime.WritePermissionValues
+        }]);
+      } catch (err: any) {
+        logger.warn("[QuestEngine] promote audit failed: %s", err && err.message ? err.message : String(err));
+        return { ok: false, error: "failed to snapshot quest config" };
+      }
+      logger.info("[QuestEngine] promote prepared gameId=%s experiment=%s variant=%s auditKey=%s",
+        gameId, experimentId, variantId, auditKey);
+      return { ok: true, auditKey: auditKey, desiredHash: desiredHash };
+    }
+
+    if (step === "write") {
+      var auditKeyW = ctx && ctx.auditKey ? String(ctx.auditKey) : "";
+      var desiredHashW = ctx && ctx.desiredHash ? String(ctx.desiredHash) : "";
+      if (!auditKeyW) return { ok: false, error: "auditKey required" };
+      var auditRows: nkruntime.StorageObject[] = [];
+      try {
+        auditRows = nk.storageRead([{
+          collection: QUEST_CONFIG_AUDIT_COLLECTION,
+          key: auditKeyW,
+          userId: Constants.SYSTEM_USER_ID
+        }]);
+      } catch (_) {}
+      var audit = (auditRows && auditRows.length > 0 && auditRows[0].value) ? auditRows[0].value : null;
+      if (!audit || !audit.desired) return { ok: false, error: "promote audit missing" };
+      var live = loadConfigRecord(nk, gameId);
+      if (hashQuestsConfig(live.config) === (audit.desiredHash || desiredHashW)) {
+        return { ok: true, auditKey: auditKeyW, desiredHash: audit.desiredHash || desiredHashW };
+      }
+      if (!saveConfigOcc(nk, gameId, audit.desired as QuestsConfig, live.version)) {
+        return { ok: false, error: "quest config changed during promote; retry" };
+      }
+      logger.info("[QuestEngine] promote wrote gameId=%s experiment=%s auditKey=%s",
+        gameId, experimentId, auditKeyW);
+      return { ok: true, auditKey: auditKeyW, desiredHash: audit.desiredHash || desiredHashW };
+    }
+
+    if (step === "verify") {
+      var want = ctx && ctx.desiredHash ? String(ctx.desiredHash) : "";
+      var liveV = loadConfig(nk, gameId);
+      var got = hashQuestsConfig(liveV);
+      if (!want || got !== want) {
+        return { ok: false, error: "promote verify failed: quest config hash mismatch", desiredHash: want };
+      }
+      return { ok: true, desiredHash: got, auditKey: ctx && ctx.auditKey ? String(ctx.auditKey) : "" };
+    }
+
+    return { ok: false, error: "unknown promote step" };
   }
 
   function saveConfig(nk: nkruntime.Nakama, gameId: string, config: QuestsConfig): void {
@@ -358,10 +562,99 @@ namespace QuestEngine {
         completedAt: null,
         claimedAt: null,
         resetCount: 0,
-        lastResetAt: null
+        lastResetAt: null,
+        rewardSnapshot: null,
+        abAttribution: null
       };
     }
     return state.quests[questId];
+  }
+
+  function cloneReward(reward: Hiro.Reward): Hiro.Reward {
+    try {
+      return JSON.parse(JSON.stringify(reward));
+    } catch (_) {
+      return reward;
+    }
+  }
+
+  function stampRewardSnapshot(progress: QuestProgress, reward: Hiro.Reward): void {
+    if (progress.rewardSnapshot) return;
+    if (!reward) return;
+    progress.rewardSnapshot = cloneReward(reward);
+  }
+
+  function effectiveReward(progress: QuestProgress, qConfig: QuestConfig): Hiro.Reward {
+    if (progress && progress.rewardSnapshot) return progress.rewardSnapshot;
+    return (qConfig && qConfig.reward) ? qConfig.reward : undefined;
+  }
+
+  function rewardPreviewOf(progress: QuestProgress, qConfig: QuestConfig): any {
+    var reward = effectiveReward(progress, qConfig);
+    return (reward && reward.guaranteed) ? reward.guaranteed : null;
+  }
+
+  function loadQuestAbContext(
+    nk: nkruntime.Nakama, userId: string, gameId: string
+  ): QuestAbContext | null {
+    try {
+      if (typeof SatoriExperiments !== "undefined" && SatoriExperiments.getRunningQuestEngineAttribution) {
+        return SatoriExperiments.getRunningQuestEngineAttribution(nk, userId, gameId);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function isTrackedQuest(ctx: QuestAbContext, questId: string): boolean {
+    if (!ctx || !questId) return false;
+    var tracked = ctx.trackedQuestIds;
+    if (!tracked || tracked.length === 0) return false;
+    for (var i = 0; i < tracked.length; i++) {
+      if (tracked[i] === questId) return true;
+    }
+    return false;
+  }
+
+  // First write wins. Overlay stop / new phase / promote cannot rewrite history.
+  // Untracked quests get no stamp so later completes cannot count as conversions.
+  function stampAbAttribution(
+    progress: QuestProgress, ctx: QuestAbContext, questId: string, now: number
+  ): boolean {
+    if (!progress || !ctx || !questId) return false;
+    if (progress.abAttribution) return false;
+    if (!isTrackedQuest(ctx, questId)) return false;
+    progress.abAttribution = {
+      experimentId: ctx.experimentId,
+      variantId: ctx.variantId,
+      phaseId: ctx.phaseId || null,
+      configRevision: String(ctx.configRevision || ""),
+      gameId: ctx.gameId,
+      questId: questId,
+      exposedAt: now
+    };
+    return true;
+  }
+
+  function recordAbFunnel(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger,
+    userId: string, progress: QuestProgress, step: string
+  ): void {
+    var a = progress && progress.abAttribution;
+    if (!a || !a.experimentId || !a.variantId || !userId) return;
+    try {
+      SatoriExperiments.recordQuestFunnelStep(nk, logger, {
+        userId: userId,
+        gameId: a.gameId,
+        experimentId: a.experimentId,
+        variantId: a.variantId,
+        step: step
+      });
+    } catch (err: any) {
+      logger.warn(
+        "[QuestEngine] funnel %s failed: %s",
+        step, err && err.message ? err.message : String(err)
+      );
+    }
   }
 
   function getStepCount(progress: QuestProgress, stepId: string): number {
@@ -389,9 +682,16 @@ namespace QuestEngine {
     return config.enabled !== false; // default true when omitted
   }
 
+  function hasInFlightProgress(progress: QuestProgress): boolean {
+    return !!(progress && (progress.startedAt || progress.completedAt));
+  }
+
   function isQuestVisible(config: QuestConfig, progress: QuestProgress): boolean {
+    // A/B overlay (or liveops) may set hidden/enabled:false. Never hide a
+    // quest the player already started or completed — including unclaimed.
+    if (hasInFlightProgress(progress)) return true;
     if (!isQuestEnabled(config)) return false;
-    if (config.hidden && !progress.completedAt) return false;
+    if (config.hidden) return false;
     return true;
   }
 
@@ -518,6 +818,8 @@ namespace QuestEngine {
     progress.startedAt = null;
     progress.completedAt = null;
     progress.claimedAt = null;
+    progress.rewardSnapshot = null;
+    progress.abAttribution = null;
     progress.resetCount = (progress.resetCount || 0) + 1;
     progress.lastResetAt = now;
   }
@@ -542,10 +844,12 @@ namespace QuestEngine {
     return true;
   }
 
+  var GAME_ID_REQUIRED = "gameId required (registry UUID). Use default only as the QuizVerse alias.";
+
   function resolveGameId(data: any): string {
-    var id = RpcHelpers.gameId(data) || Constants.QUIZVERSE_GAME_ID;
-    // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID so
-    // Unity quest_engine_get and LiveOps share the same storage keys.
+    var id = RpcHelpers.gameId(data) || "";
+    // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID only.
+    // Missing ids must not steal QuizVerse quests.
     if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
       return Constants.QUIZVERSE_GAME_ID;
     }
@@ -554,26 +858,35 @@ namespace QuestEngine {
 
   // ─── RPC: quest_engine_get ─────────────────────────────────────────────────
   // Returns all non-expired quests with per-step progress for the calling user.
-  // Read-only: only writes state when a repeatable reset actually occurred.
+  // Writes state on repeatable reset and on first A/B exposure stamp.
+  // Never sends experiment ids to Unity.
 
   function rpcQuestEngineGet(
     ctx: nkruntime.Context, logger: nkruntime.Logger,
     nk: nkruntime.Nakama, payload: string
   ): string {
-    var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
     var gameId = resolveGameId(data);
+    if (!gameId) return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
+    var userId: string;
+    if (isAdminCaller(ctx) && data.userId) {
+      userId = String(data.userId);
+    } else {
+      userId = RpcHelpers.requireUserId(ctx);
+    }
     var now = Math.floor(Date.now() / 1000);
 
     // Opt player into new-quest inbox fan-out for this App-ID
     try { subscribeUser(nk, gameId, userId); } catch (_) {}
 
-    var config = loadConfig(nk, gameId);
+    var config = loadPlayerConfig(nk, logger, userId, gameId);
     var state = loadUserState(nk, userId, gameId);
     var stateModified = false;
+    var abCtx = loadQuestAbContext(nk, userId, gameId);
 
     var result: any[] = [];
     var questIds = Object.keys(config.quests);
+    var funnelExposeProgress: QuestProgress = null;
 
     for (var i = 0; i < questIds.length; i++) {
       var questId = questIds[i];
@@ -589,6 +902,9 @@ namespace QuestEngine {
       }
 
       if (!isQuestVisible(qConfig, progress)) continue;
+
+      if (stampAbAttribution(progress, abCtx, questId, now)) stateModified = true;
+      if (progress.abAttribution) funnelExposeProgress = progress;
 
       var unlocked = isQuestUnlocked(qConfig, state);
 
@@ -621,17 +937,30 @@ namespace QuestEngine {
         // Guaranteed-only preview so clients can render "you'll earn X" without
         // ever needing their own copy of the reward config. Weighted/random
         // rewards stay unexposed until granted, so surprises stay surprises.
-        rewardPreview: (qConfig.reward && qConfig.reward.guaranteed) ? qConfig.reward.guaranteed : null,
+        rewardPreview: rewardPreviewOf(progress, qConfig),
         additionalProperties: qConfig.additionalProperties || null
       });
     }
 
-    // Only write to storage if a repeatable reset changed the state
+    // Write on repeatable reset or first A/B exposure stamp.
     if (stateModified) {
       saveUserState(nk, userId, gameId, state);
     }
+    if (funnelExposeProgress) {
+      recordAbFunnel(nk, logger, userId, funnelExposeProgress, "exposed");
+    }
 
-    return RpcHelpers.successResponse({ quests: result });
+    var payloadOut: any = { quests: result };
+    if (data.debug === true && isAdminCaller(ctx) && abCtx) {
+      payloadOut.debug = {
+        experiment: {
+          experimentId: abCtx.experimentId,
+          variantId: abCtx.variantId,
+          gameId: gameId
+        }
+      };
+    }
+    return RpcHelpers.successResponse(payloadOut);
   }
 
   // ─── Core event processing (shared by RPC and EventBus bridge) ───────────
@@ -663,8 +992,9 @@ namespace QuestEngine {
   ): ProcessEventResult {
     var now = Math.floor(Date.now() / 1000);
 
-    var config = loadConfig(nk, gameId);
+    var config = loadPlayerConfig(nk, logger, userId, gameId);
     var state = loadUserState(nk, userId, gameId);
+    var abCtx = loadQuestAbContext(nk, userId, gameId);
 
     var updatedCount = 0;
     var updatedQuests: { [questId: string]: any } = {};
@@ -687,6 +1017,11 @@ namespace QuestEngine {
         resetQuestProgress(progress, now);
       }
 
+      // Overlay enabled:false must not start new work. In-flight (started or
+      // completed-unclaimed) still progresses so the player can finish/claim.
+      // Hidden surprise quests still progress in the background.
+      if (!isQuestEnabled(qConfig) && !hasInFlightProgress(progress)) continue;
+
       // Skip quests that are still completed (non-repeatable, or repeatable window not expired yet)
       if (progress.completedAt) continue;
 
@@ -701,7 +1036,12 @@ namespace QuestEngine {
         if (!progress.steps[stepCfg.id]) {
           progress.steps[stepCfg.id] = { count: 0, completedAt: null };
         }
-        if (!progress.startedAt) progress.startedAt = now;
+        if (!progress.startedAt) {
+          progress.startedAt = now;
+          stampRewardSnapshot(progress, qConfig.reward);
+          stampAbAttribution(progress, abCtx, questId, now);
+          recordAbFunnel(nk, logger, userId, progress, "started");
+        }
 
         var prevCount = progress.steps[stepCfg.id].count;
         // For count-based steps (requiredValue not set) increment by 1 each event.
@@ -733,17 +1073,24 @@ namespace QuestEngine {
         if (areAllStepsDone(qConfig, progress) && !progress.completedAt) {
           progress.completedAt = now;
           try {
-            EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_COMPLETED, {
-              userId: userId, questId: questId
-            });
+            var emitData: any = { userId: userId, questId: questId, gameId: gameId };
+            if (progress.abAttribution) {
+              emitData.experimentId = progress.abAttribution.experimentId;
+              emitData.variantId = progress.abAttribution.variantId;
+              emitData.phaseId = progress.abAttribution.phaseId;
+              emitData.configRevision = progress.abAttribution.configRevision;
+              emitData.exposedAt = progress.abAttribution.exposedAt;
+            }
+            EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_COMPLETED, emitData);
           } catch (busErr: any) {
             logger.warn("[QuestEngine] EventBus quest emit failed: " + (busErr && busErr.message ? busErr.message : String(busErr)));
           }
           logger.info("[QuestEngine] Quest completed: quest=%s user=%s", questId, userId);
 
           // Queue reward for Phase 3 — do NOT grant yet (state not saved)
-          if (qConfig.reward) {
-            rewardPending.push({ questId: questId, reward: qConfig.reward });
+          var payoutReward = effectiveReward(progress, qConfig);
+          if (payoutReward) {
+            rewardPending.push({ questId: questId, reward: payoutReward });
           }
         }
 
@@ -773,6 +1120,7 @@ namespace QuestEngine {
         state.quests[rq.questId].claimedAt = now;
         updatedQuests[rq.questId].claimedAt = now;
         anyClaimedAt = true;
+        recordAbFunnel(nk, logger, userId, state.quests[rq.questId], "claimed");
         logger.info("[QuestEngine] Reward auto-granted: quest=%s user=%s", rq.questId, userId);
 
         // Server-driven fulfilment + player notification (reward catalog).
@@ -820,6 +1168,7 @@ namespace QuestEngine {
     var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
     var gameId = resolveGameId(data);
+    if (!gameId) return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
     var eventType = data.eventType as string;
     var value = (data.value !== undefined && data.value !== null) ? Number(data.value) : 0;
     var metadata = (data.metadata as { [k: string]: string }) || {};
@@ -940,14 +1289,16 @@ namespace QuestEngine {
     var userId = RpcHelpers.requireUserId(ctx);
     var data = RpcHelpers.parseRpcPayload(payload);
     var gameId = resolveGameId(data);
+    if (!gameId) return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
     var questId = data.questId as string;
 
     if (!questId) return RpcHelpers.errorResponse("questId is required");
 
-    var config = loadConfig(nk, gameId);
+    var config = loadPlayerConfig(nk, logger, userId, gameId);
     var qConfig = config.quests[questId];
     if (!qConfig) return RpcHelpers.errorResponse("Unknown quest: " + questId);
 
+    // Overlay hidden/enabled:false must not block a completed-unclaimed claim.
     // Fast-path checks for clean error messages — the authoritative guard is
     // the OCC-guarded marker write below.
     var peek = loadUserState(nk, userId, gameId);
@@ -955,7 +1306,8 @@ namespace QuestEngine {
 
     if (!peekProgress || !peekProgress.completedAt) return RpcHelpers.errorResponse("Quest not completed");
     if (peekProgress.claimedAt) return RpcHelpers.errorResponse("Quest reward already claimed");
-    if (!qConfig.reward) return RpcHelpers.successResponse({ reward: null });
+    var payReward = effectiveReward(peekProgress, qConfig);
+    if (!payReward) return RpcHelpers.successResponse({ reward: null });
 
     var now = Math.floor(Date.now() / 1000);
 
@@ -974,7 +1326,7 @@ namespace QuestEngine {
     // Marker is durable — only now resolve and grant the reward.
     var resolved: Hiro.ResolvedReward;
     try {
-      resolved = RewardEngine.resolveReward(nk, qConfig.reward);
+      resolved = RewardEngine.resolveReward(nk, payReward);
       RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
     } catch (grantErr: any) {
       // Grant failed after the claim marker was persisted. Best-effort
@@ -989,6 +1341,7 @@ namespace QuestEngine {
       return RpcHelpers.errorResponse("Reward grant failed — please retry");
     }
     logger.info("[QuestEngine] Reward claimed manually: quest=%s user=%s", questId, userId);
+    recordAbFunnel(nk, logger, userId, peekProgress, "claimed");
 
     // Same server-driven fulfilment path as auto-grant (catalog + notification).
     try {
@@ -998,6 +1351,130 @@ namespace QuestEngine {
     }
 
     return RpcHelpers.successResponse({ reward: resolved });
+  }
+
+  function persistAdminConfig(
+    nk: nkruntime.Nakama, ctx: nkruntime.Context, logger: nkruntime.Logger,
+    gameId: string, config: QuestsConfig, opts: { silent?: boolean; notifyUserIds?: string[] }
+  ): { ok: boolean; error?: string; questCount?: number; newQuestCount?: number; notified?: number } {
+    if (!config || !config.quests || typeof config.quests !== "object" || Array.isArray(config.quests)) {
+      return { ok: false, error: "config.quests object required" };
+    }
+    var cleaned: { [questId: string]: QuestConfig } = {};
+    var rawKeys = Object.keys(config.quests);
+    for (var ck = 0; ck < rawKeys.length; ck++) {
+      var ckId = rawKeys[ck];
+      if (ckId === "__proto__" || ckId === "constructor" || ckId === "prototype") continue;
+      cleaned[ckId] = config.quests[ckId];
+    }
+    config = { quests: cleaned };
+
+    var questCount = Object.keys(config.quests).length;
+    var validationErrors: string[] = [];
+    var questKeys = Object.keys(config.quests);
+    for (var vi = 0; vi < questKeys.length; vi++) {
+      var vq = config.quests[questKeys[vi]];
+      var verr = validateQuestConfig(vq);
+      if (verr) validationErrors.push((vq && vq.id ? vq.id : questKeys[vi]) + ": " + verr);
+    }
+    if (validationErrors.length > 0) {
+      return { ok: false, error: "Invalid quest config: " + validationErrors.join("; ") };
+    }
+
+    var prev = loadConfig(nk, gameId);
+    var prevIds: { [id: string]: boolean } = {};
+    var prevKeys = Object.keys(prev.quests || {});
+    for (var pi = 0; pi < prevKeys.length; pi++) prevIds[prevKeys[pi]] = true;
+
+    var newlyAdded: QuestConfig[] = [];
+    var newKeys = Object.keys(config.quests);
+    for (var ni = 0; ni < newKeys.length; ni++) {
+      var nid = newKeys[ni];
+      if (!prevIds[nid]) newlyAdded.push(config.quests[nid]);
+    }
+
+    saveConfig(nk, gameId, config);
+    logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+
+    var newIds: string[] = [];
+    for (var ai = 0; ai < newlyAdded.length; ai++) newIds.push(newlyAdded[ai].id);
+    auditConfigChange(nk, ctx, logger, gameId, config, newIds);
+
+    var notified = 0;
+    if (!opts.silent && newlyAdded.length > 0) {
+      notified = notifyNewQuests(nk, logger, gameId, newlyAdded, opts.notifyUserIds);
+    }
+    return { ok: true, questCount: questCount, newQuestCount: newlyAdded.length, notified: notified };
+  }
+
+  // Put the pre-promote quest list back. Writes through persistAdminConfig
+  // (same door as quest_engine_admin_save_config). Does not reopen the test.
+  export function restorePromoteAudit(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context,
+    gameId: string, auditKey: string
+  ): { ok: boolean; error?: string; already?: boolean; restored?: boolean; restoreAuditKey?: string; experimentId?: string } {
+    if (!auditKey) return { ok: false, error: "auditKey required" };
+    if (!gameId) return { ok: false, error: "gameId required" };
+    var auditRows: nkruntime.StorageObject[] = [];
+    try {
+      auditRows = nk.storageRead([{
+        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+        key: auditKey,
+        userId: Constants.SYSTEM_USER_ID
+      }]);
+    } catch (_) {}
+    var audit = (auditRows && auditRows.length > 0 && auditRows[0].value) ? auditRows[0].value : null;
+    if (!audit || audit.promotion !== true || !audit.previous || !audit.previous.quests) {
+      return { ok: false, error: "promote audit snapshot missing" };
+    }
+    var auditGame = audit.gameId ? String(audit.gameId) : "";
+    if (auditGame && auditGame !== gameId) {
+      return { ok: false, error: "audit gameId does not match" };
+    }
+    var previous = cloneJson(audit.previous) as QuestsConfig;
+    var live = loadConfig(nk, gameId);
+    var liveHash = hashQuestsConfig(live);
+    var prevHash = hashQuestsConfig(previous);
+    var desiredHash = audit.desiredHash ? String(audit.desiredHash) : hashQuestsConfig(audit.desired);
+    if (liveHash === prevHash) {
+      return {
+        ok: true, already: true, restored: true, experimentId: audit.experimentId ? String(audit.experimentId) : ""
+      };
+    }
+    if (desiredHash && liveHash !== desiredHash) {
+      return { ok: false, error: "quest list changed after promote; cannot restore" };
+    }
+    var saved = persistAdminConfig(nk, ctx, logger, gameId, previous, { silent: true });
+    if (!saved.ok) return { ok: false, error: saved.error || "restore save failed" };
+    var now = Math.floor(Date.now() / 1000);
+    var experimentId = audit.experimentId ? String(audit.experimentId) : "";
+    var restoreAuditKey = "restore_" + experimentId + "_" + now;
+    try {
+      nk.storageWrite([{
+        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+        key: restoreAuditKey,
+        userId: Constants.SYSTEM_USER_ID,
+        value: {
+          gameId: gameId,
+          experimentId: experimentId,
+          actor: "restore",
+          timestamp: now,
+          restoreOf: auditKey,
+          previous: live,
+          desired: previous,
+          restore: true
+        },
+        permissionRead: 2 as nkruntime.ReadPermissionValues,
+        permissionWrite: 0 as nkruntime.WritePermissionValues
+      }]);
+    } catch (err: any) {
+      logger.warn("[QuestEngine] restore audit failed: %s", err && err.message ? err.message : String(err));
+    }
+    logger.info("[QuestEngine] promote restored gameId=%s experiment=%s auditKey=%s restoreAuditKey=%s",
+      gameId, experimentId, auditKey, restoreAuditKey);
+    return {
+      ok: true, restored: true, already: false, restoreAuditKey: restoreAuditKey, experimentId: experimentId
+    };
   }
 
   // ─── RPC: quest_engine_admin_save_config ─────────────────────────────────
@@ -1018,6 +1495,7 @@ namespace QuestEngine {
 
     var data = RpcHelpers.parseRpcPayload(payload);
     var gameId = resolveGameId(data);
+    if (!gameId) return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
 
     var config: QuestsConfig;
 
@@ -1040,58 +1518,16 @@ namespace QuestEngine {
       return RpcHelpers.errorResponse("Payload must contain config.quests (object) or quests (array)");
     }
 
-    var questCount = Object.keys(config.quests).length;
-
-    // Validate every quest before persisting.
-    var validationErrors: string[] = [];
-    var questKeys = Object.keys(config.quests);
-    for (var vi = 0; vi < questKeys.length; vi++) {
-      var vq = config.quests[questKeys[vi]];
-      var verr = validateQuestConfig(vq);
-      if (verr) validationErrors.push(vq.id + ": " + verr);
-    }
-    if (validationErrors.length > 0) {
-      return RpcHelpers.errorResponse("Invalid quest config: " + validationErrors.join("; "));
-    }
-
-    // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
-    // silent: true  → skip fan-out (use for bulk reseed)
-    // notifyUserIds → extra targets (optional)
-    var prev = loadConfig(nk, gameId);
-    var prevIds: { [id: string]: boolean } = {};
-    var prevKeys = Object.keys(prev.quests || {});
-    for (var pi = 0; pi < prevKeys.length; pi++) prevIds[prevKeys[pi]] = true;
-
-    var newlyAdded: QuestConfig[] = [];
-    var newKeys = Object.keys(config.quests);
-    for (var ni = 0; ni < newKeys.length; ni++) {
-      var nid = newKeys[ni];
-      if (!prevIds[nid]) newlyAdded.push(config.quests[nid]);
-    }
-
-    saveConfig(nk, gameId, config);
-    logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
-
-    // Audit log (best-effort)
-    var newIds: string[] = [];
-    for (var ai = 0; ai < newlyAdded.length; ai++) newIds.push(newlyAdded[ai].id);
-    auditConfigChange(nk, ctx, logger, gameId, config, newIds);
-
-    var notified = 0;
-    var silent = data.silent === true || data.notifyNewQuests === false;
-    if (!silent && newlyAdded.length > 0) {
-      var extra: string[] | undefined;
-      if (Array.isArray(data.notifyUserIds)) {
-        extra = data.notifyUserIds as string[];
-      }
-      notified = notifyNewQuests(nk, logger, gameId, newlyAdded, extra);
-    }
-
+    var saved = persistAdminConfig(nk, ctx, logger, gameId, config, {
+      silent: data.silent === true || data.notifyNewQuests === false,
+      notifyUserIds: Array.isArray(data.notifyUserIds) ? data.notifyUserIds : undefined
+    });
+    if (!saved.ok) return RpcHelpers.errorResponse(saved.error || "failed to save quest config");
     return RpcHelpers.successResponse({
       saved: true,
-      questCount: questCount,
-      newQuestCount: newlyAdded.length,
-      notified: notified
+      questCount: saved.questCount,
+      newQuestCount: saved.newQuestCount,
+      notified: saved.notified
     });
   }
 
@@ -1108,6 +1544,7 @@ namespace QuestEngine {
 
     var data = RpcHelpers.parseRpcPayload(payload);
     var gameId = resolveGameId(data);
+    if (!gameId) return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
 
     var config = loadConfig(nk, gameId);
     var questCount = Object.keys(config.quests).length;

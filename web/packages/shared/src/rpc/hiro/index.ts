@@ -111,6 +111,38 @@ export function consumeInventoryItem(
   return hiroRpc("inventory", "consume", { id: itemId, instance_id: instanceId, count }, opts);
 }
 
+export function previewPersonalizer(
+  params: { userId: string; system: string; gameId?: string },
+  opts: RpcOptions,
+) {
+  return callRpc("hiro_personalizer_preview", {
+    userId: params.userId,
+    system: params.system,
+    gameId: params.gameId,
+  }, opts).then((value) => {
+    if (value && typeof value === "object" && "success" in value) {
+      const envelope = value as { success: boolean; error?: string };
+      if (envelope.success === false) {
+        throw new Error(envelope.error || "Preview failed");
+      }
+    }
+    return unwrapData<{
+      system: string;
+      userId: string;
+      gameId?: string | null;
+      baseConfig: { quests?: Record<string, QuestPreview> };
+      personalizedConfig: { quests?: Record<string, QuestPreview> };
+      experiment?: { experimentId?: string; variantId?: string } | null;
+    }>(value);
+  });
+}
+
+interface QuestPreview {
+  id?: string;
+  name?: string;
+  reward?: { guaranteed?: { currencies?: Record<string, number> } };
+}
+
 export function updateInventoryItem(
   itemId: string,
   instanceId: string,

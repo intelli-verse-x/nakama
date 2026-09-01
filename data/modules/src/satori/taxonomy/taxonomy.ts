@@ -41,7 +41,17 @@ namespace SatoriTaxonomy {
       achievement_claimed: gameplaySchema("achievement_claimed", "progression", "Achievement reward claimed"),
       challenge_completed: gameplaySchema("challenge_completed", "engagement", "Challenge completed"),
       streak_updated: gameplaySchema("streak_updated", "engagement", "Daily streak advanced"),
-      reward_granted: gameplaySchema("reward_granted", "progression", "Reward granted to player")
+      reward_granted: gameplaySchema("reward_granted", "progression", "Reward granted to player"),
+      quest_completed: {
+        name: "quest_completed",
+        category: "progression",
+        description: "Player completed a Quest Engine quest",
+        requiredMetadata: [],
+        optionalMetadata: ["gameId", "questId", "experimentId", "variantId", "phaseId", "configRevision", "exposedAt"],
+        metadataTypes: {},
+        maxMetadataKeys: 50,
+        deprecated: false
+      }
     },
     enforceStrict: false,
     maxEventNameLength: 128,
@@ -51,6 +61,18 @@ namespace SatoriTaxonomy {
 
   function getConfig(nk: nkruntime.Nakama): TaxonomyConfig {
     return ConfigLoader.loadSatoriConfig<TaxonomyConfig>(nk, "taxonomy", DEFAULT_CONFIG);
+  }
+
+  // Live taxonomy storage does not auto-merge TypeScript defaults. Upsert a
+  // default schema when capture sees a known gameplay event that is missing.
+  export function ensureDefaultSchema(nk: nkruntime.Nakama, eventName: string): boolean {
+    if (!eventName || !DEFAULT_CONFIG.schemas[eventName]) return false;
+    var config = getConfig(nk);
+    if (config.schemas && config.schemas[eventName]) return true;
+    if (!config.schemas) config.schemas = {};
+    config.schemas[eventName] = DEFAULT_CONFIG.schemas[eventName];
+    ConfigLoader.saveSatoriConfig(nk, "taxonomy", config);
+    return true;
   }
 
   export interface ValidationResult {
@@ -73,7 +95,11 @@ namespace SatoriTaxonomy {
       errors.push("Event name exceeds max length of " + config.maxEventNameLength);
     }
 
-    var schema = config.schemas[event.name];
+    var schema = (config.schemas && config.schemas[event.name]) || null;
+    if (!schema && ensureDefaultSchema(nk, event.name)) {
+      config = getConfig(nk);
+      schema = config.schemas[event.name];
+    }
 
     if (!schema && config.enforceStrict) {
       errors.push("Unknown event '" + event.name + "' (strict mode enabled)");
