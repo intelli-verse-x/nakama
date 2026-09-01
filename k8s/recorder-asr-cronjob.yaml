@@ -1,0 +1,160 @@
+# recorder_asr_gc CronJob — retention sweep for the Curio recorder sessions.
+#
+# Why this file exists
+# --------------------
+# `recorder_asr_gc` reclaims abandoned open sessions and deletes chunk rows and
+# transcripts past their TTL. Nakama's JavaScript runtime has no scheduler, so
+# the RPC has never once run: it needs an external trigger, and there wasn't
+# one. It also reads RECORDER_ASR_GC_TOKEN and refuses every call when that is
+# empty (which is the safe default — with no token it would be an
+# unauthenticated global delete), and the variable is set in no environment. So
+# the RPC has been dead on both counts.
+#
+# This follows the same shape as k8s/analytics-cronjob.yaml: a curl image
+# POSTing to a Nakama RPC with http_key plus a service token, both from a
+# Secret.
+#
+# Prerequisites — see deploy/recorder-asr-shim/README.md § The GC token:
+#   kubectl -n aicart create secret generic recorder-asr-secrets \
+#     --from-literal=gc-token="$(openssl rand -hex 32)" \
+#     --from-literal=engine-api-key=""
+#
+# RECORDER_ASR_GC_TOKEN must be injected into the Nakama container from the SAME
+# Secret key AND listed in a --runtime.env flag, or the RPC still refuses
+# everything. Both steps are in that README.
+#
+# Deploy:
+#   kubectl apply -f k8s/recorder-asr-cronjob.yaml -n aicart
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: recorder-asr-gc
+  labels:
+    app: recorder-asr
+    component: gc
+spec:
+  # Every 15 minutes. The sweep is cursor-paged at GC_SCAN_LIMIT=100 sessions
+  # per call and persists its cursor, so a backlog is worked through a page at a
+  # time across runs rather than needing one big scan. The interval only has to
+  # be short enough that the cursor laps the collection faster than sessions
+  # accumulate; `wrapped` in the response is how you tell (see below).
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  # Don't fire a burst of catch-up runs after the controller has been down.
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      # A sweep that hasn't answered in 2 minutes is stuck, not slow.
+      activeDeadlineSeconds: 120
+      template:
+        metadata:
+          labels:
+            app: recorder-asr
+            component: gc
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: gc-trigger
+              image: curlimages/curl:8.10.1
+              env:
+                # VERIFIED 2026-08-29. This was "http://nakama:7350"; there is
+                # no Service named `nakama` in aicart, so every run would have
+                # failed DNS resolution. The main tier's Service is
+                # `intelliverse-nakama` (ClusterIP, 7349/7350/7351, selector
+                # app=intelliverse-nakama,component=server). Deliberately not
+                # `intelliverse-nakama-multiplayer`, which also serves 7350 —
+                # the GC sweep must run against the tier that owns the recorder
+                # storage records.
+                #   kubectl -n aicart get svc intelliverse-nakama
+                - name: NAKAMA_URL
+                  value: "http://intelliverse-nakama.aicart.svc.cluster.local:7350"
+                - name: GC_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: recorder-asr-secrets
+                      key: gc-token
+                # The runtime http_key. `buildspec.yml` reads it from
+                # secret/nakama-secret key `http_key` and treats that as the
+                # source of truth, so this uses the same one rather than
+                # analytics-cron-secrets' separate copy, which could drift.
+                - name: HTTP_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: nakama-secret
+                      key: http_key
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                capabilities:
+                  drop: ["ALL"]
+              command: ["/bin/sh", "-ec"]
+              args:
+                - |
+                  # The RPC caps deletions per call so one call stays inside
+                  # Nakama's 10 s socket write timeout, and reports
+                  # budget_exhausted when it stopped on that cap rather than
+                  # because there was nothing left. So call it in a loop.
+                  #
+                  # The sweep persists its cursor before answering, so a call
+                  # whose response is lost has still made progress and a repeat
+                  # is safe.
+                  MAX_CALLS=20
+                  TOTAL=0
+                  # --data-binary from a file, so the token never appears in
+                  # argv where `ps` inside the pod could read it.
+                  umask 077
+                  printf '{"service_token":"%s"}' "${GC_TOKEN}" > /tmp/gc.json
+                  i=1
+                  while [ "$i" -le "$MAX_CALLS" ]; do
+                    CODE=$(curl -sS --max-time 30 -X POST \
+                      "${NAKAMA_URL}/v2/rpc/recorder_asr_gc?http_key=${HTTP_KEY}&unwrap=true" \
+                      -H "Content-Type: application/json" \
+                      --data-binary @/tmp/gc.json \
+                      -o /tmp/gc-out.json -w "%{http_code}" || echo "000")
+                    BODY=$(cat /tmp/gc-out.json 2>/dev/null)
+                    echo "[recorder-asr-gc] call ${i} status=${CODE} ${BODY}"
+
+                    if [ "${CODE}" != "200" ]; then
+                      rm -f /tmp/gc.json
+                      echo "[recorder-asr-gc] HTTP ${CODE} — a 401 means the" \
+                           "http_key is wrong (nakama-secret key http_key)"
+                      exit 1
+                    fi
+                    # A 200 carrying {"error":...} is how the RPC reports a bad
+                    # or missing token, so HTTP status alone is not the signal.
+                    case "${BODY}" in
+                      *'"error"'*)
+                        rm -f /tmp/gc.json
+                        echo "[recorder-asr-gc] RPC refused the call — check that" \
+                             "RECORDER_ASR_GC_TOKEN in the Nakama container matches" \
+                             "recorder-asr-secrets/gc-token AND is listed in a" \
+                             "--runtime.env flag"
+                        exit 1 ;;
+                    esac
+
+                    TOTAL=$((TOTAL + 1))
+                    # Keep going only while the deletion budget is the reason it
+                    # stopped. Otherwise this run has nothing more to do.
+                    case "${BODY}" in
+                      *'"budget_exhausted":true'*) ;;
+                      *) break ;;
+                    esac
+                    i=$((i + 1))
+                  done
+                  rm -f /tmp/gc.json
+                  # `wrapped:false` on every run means the cursor never reaches
+                  # the end of the collection and the schedule is not keeping
+                  # up — shorten the interval or raise MAX_CALLS.
+                  echo "[recorder-asr-gc] done after ${TOTAL} call(s)"

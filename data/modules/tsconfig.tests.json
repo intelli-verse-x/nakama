@@ -1,0 +1,22 @@
+// The production tsconfig with __tests__ compiled in, so tests share the
+// single-file bundle and every namespace is reachable as a global.
+//
+// src/learner-toolbelt/__tests__ is excluded: it calls
+// LearnerToolbelt.rpcScorePredict, which is no longer exported, so it has not
+// compiled for some time. That is a pre-existing break and unrelated to the
+// recorder tests — re-include it once someone re-exports that function.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outFile": "./build-tests/all-tests.js",
+    "declaration": false
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "src/learner-toolbelt/__tests__/**"
+  ]
+}

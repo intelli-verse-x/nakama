@@ -26,3 +26,32 @@
 data/modules/index.js          merge=regen-modules-index linguist-generated=true
 data/modules/build/index.js    merge=regen-modules-index linguist-generated=true
 data/modules/build/index.d.ts  linguist-generated=true
+
+# ──────────────────────────────────────────────────────────────────────────
+# Line endings for anything a POSIX shell or the Docker builder parses.
+#
+# Commit 4239b28ef added scripts/ecr-digest.sh and
+# scripts/assert-deploy-account.sh from a Windows workstation with CRLF
+# endings, and deploy-eks.yml sources them in its *first* step. Sourcing a
+# CRLF file under bash appends \r to every token, so the step died with
+#   scripts/ecr-digest.sh: line 10: $'\r': command not found   (exit 127)
+# and every push to master built and deployed nothing for 15 days
+# (2026-08-25 → 2026-08-29; last green run 2026-08-10).
+#
+# `text eol=lf` forces LF into the index *and* the working tree regardless
+# of the committer's core.autocrlf, so the same mistake cannot be
+# reintroduced from a Windows checkout. `.github/workflows/preflight`-style
+# enforcement also lives in deploy-eks.yml ("Reject CRLF in shell scripts")
+# because .gitattributes only protects paths that go through git's
+# normalisation, and a guard that runs in CI is the one that actually gates
+# the deploy.
+# ──────────────────────────────────────────────────────────────────────────
+*.sh            text eol=lf
+*.bash          text eol=lf
+Dockerfile      text eol=lf
+Dockerfile.*    text eol=lf
+
+# PowerShell helpers are Windows-native and intentionally CRLF. Pinned
+# explicitly so they are never caught by a future blanket `* text=auto`
+# and so their endings are a stated decision rather than an accident.
+*.ps1           text eol=crlf

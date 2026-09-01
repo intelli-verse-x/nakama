@@ -49,6 +49,29 @@ jobs:
         with:
           fetch-depth: 2  # needed for the web/-changed diff (admin console step)
 
+      # Runs before anything expensive. 4239b28ef shipped scripts/ecr-digest.sh
+      # and scripts/assert-deploy-account.sh with CRLF endings; the "Configure
+      # kubectl for EKS" step sources them, so every run died at 38 s with
+      # `line 10: $'\r': command not found` and master deployed nothing from
+      # 2026-08-25 to 2026-08-29. .gitattributes now pins *.sh to eol=lf; this
+      # step is the enforcement that actually gates the deploy.
+      - name: Reject CRLF in shell scripts
+        run: |
+          set -euo pipefail
+          bad=$(git ls-files -z '*.sh' '*.bash' 'Dockerfile' 'Dockerfile.*' \
+                  | xargs -0 grep -lU $'\r' 2>/dev/null || true)
+          if [ -n "$bad" ]; then
+            echo "::error::CRLF line endings found in files a POSIX shell parses."
+            echo "$bad" | sed 's/^/  /'
+            echo "Fix with:  perl -i -pe 's/\r\n/\n/g' <file>   (.gitattributes has *.sh text eol=lf)"
+            exit 1
+          fi
+          echo "No CRLF in any shell script or Dockerfile."
+          for f in $(git ls-files '*.sh'); do
+            bash -n "$f" || { echo "::error::$f fails bash -n"; exit 1; }
+          done
+          echo "All shell scripts pass bash -n."
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -152,6 +175,39 @@ jobs:
           chmod +x scripts/smoke-test-js-runtime.sh
           ./scripts/smoke-test-js-runtime.sh image "${REPOSITORY_URI}:${IMAGE_VERSION}"
 
+      # RCA 2026-08-28: a rebuild from a tree 653 commits behind master would
+      # have dropped 211 RPCs that production was actively serving (41 with
+      # measured live traffic — the whole social subsystem, the live-event
+      # auto-end cron, wallet ops, World Trivia). Nothing upstream catches it:
+      # tsc, `node -c` and the JS smoke test all pass on the smaller bundle,
+      # because it is valid JS and the RPCs the smoke test probes are old
+      # enough to survive. Compare the candidate's registered-RPC set against
+      # the bundle currently serving prod and refuse to go backwards.
+      # Runs BEFORE the multi-arch push so a bad bundle never reaches ECR.
+      #
+      # Re-measured 2026-08-29 against the live pod: baseline is 1338 RPCs,
+      # and the then-current work branch would have removed 222 of them
+      # (admin prize fulfilment, battlepass, creator_event_*, revenue
+      # verification) while adding 25.
+      #
+      # RPC_GATE_REQUIRE_BASELINE=true is load-bearing. The gate has two
+      # skip paths — the live image not resolving, and the baseline digest
+      # not being pullable — and both `return 0` with only a warning. With
+      # the ECR lifecycle remediation in flight (only the last 10 tagged
+      # images are kept) an expiring baseline digest is a realistic way for
+      # the gate to pass vacuously at exactly the moment it matters. A gate
+      # that silently passes is worse than no gate, because it is trusted.
+      # If this step fails with "cannot pull the live image", fix the
+      # baseline — do not disable the requirement.
+      - name: RPC superset gate (candidate must not drop live RPCs)
+        env:
+          ALLOW_RPC_REMOVAL: ${{ vars.ALLOW_RPC_REMOVAL }}
+          RPC_GATE_REQUIRE_BASELINE: "true"
+        run: |
+          set -euo pipefail
+          chmod +x scripts/rpc-superset-gate.sh
+          ./scripts/rpc-superset-gate.sh gate "${REPOSITORY_URI}:${IMAGE_VERSION}"
+
       - name: Build + push multi-arch (amd64+arm64)
         run: |
           set -euo pipefail
@@ -233,7 +289,19 @@ jobs:
 
           echo "=== Injecting runtime secrets into deployment env (before image update) ==="
           echo "=== Removing legacy raw OPENAI_API_KEY from deployment env (LiteLLM gateway holds vendor keys) ==="
-          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" OPENAI_API_KEY- || true
+          # --containers is scoped deliberately. `kubectl set env deployment/x KEY=VAL`
+          # with no selector writes to EVERY container in the pod template. The
+          # recorder-asr-shim sidecar (deploy/recorder-asr-shim/) lands in this
+          # same pod, and without this selector every CI run would also stamp
+          # TMDB_API_KEY, DASHBOARD_SECRET, LLM_PROVIDER and the rest onto the
+          # shim. The shim ignores unknown env, so it is harmless in itself —
+          # but it means the shim's environment is no longer only what its patch
+          # says, which is a trap for whoever debugs it next. The container name
+          # is verified: this Deployment's container is `intelliverse-nakama`
+          # (the multiplayer tier's is `nakama`), which is what K8S_CONTAINER
+          # already holds.
+          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+            --containers="$K8S_CONTAINER" OPENAI_API_KEY- || true
           INJECT_ARGS=""
           [ -n "$XAI_API_KEY" ]        && INJECT_ARGS="$INJECT_ARGS XAI_API_KEY=$XAI_API_KEY"
           [ -n "$LLM_PROVIDER" ]       && INJECT_ARGS="$INJECT_ARGS LLM_PROVIDER=$LLM_PROVIDER"
@@ -245,13 +313,41 @@ jobs:
           [ -n "$NEWSAPI_API_KEY" ]    && INJECT_ARGS="$INJECT_ARGS NEWSAPI_API_KEY=$NEWSAPI_API_KEY"
           [ -n "$NASA_API_KEY" ]       && INJECT_ARGS="$INJECT_ARGS NASA_API_KEY=$NASA_API_KEY"
           INJECT_ARGS="$INJECT_ARGS DASHBOARD_SECRET=$RUNTIME_DASHBOARD_SECRET ROLLUP_ENABLED=true DASHBOARD_PREFER_ROLLUPS=true"
-          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" $INJECT_ARGS
+          # Same reasoning as the OPENAI_API_KEY- removal above: scope this to
+          # the Nakama container so the recorder-asr-shim sidecar does not
+          # accumulate a copy of every runtime secret on each CI roll.
+          kubectl set env deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
+            --containers="$K8S_CONTAINER" $INJECT_ARGS
 
           CURRENT_REPLICAS=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
             -o jsonpath='{.spec.replicas}')
           pause_hpa "$K8S_NAMESPACE" intelliverse-nakama "$CURRENT_REPLICAS"
           trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama' EXIT
           delete_unpullable_pods "$K8S_NAMESPACE" "$K8S_DEPLOYMENT"
+
+          # Record change-cause BEFORE set image, not after.
+          #
+          # `kubectl rollout history` reads kubernetes.io/change-cause off each
+          # ReplicaSet, and the Deployment controller stamps the RS with the
+          # annotation the Deployment carries AT THE MOMENT the RS is created.
+          # Annotating afterwards races the RS that set image just created.
+          #
+          # This deployment was never annotated at all — only the multiplayer
+          # tier was — so all nine recorded revisions of intelliverse-nakama
+          # carry one identical string from a long-dead `--record=true` call,
+          # naming digest 15ad0d58 and, in revisions 1 and 2, the
+          # decommissioned 970547373533 account. `kubectl rollout undo` is
+          # therefore unusable: every revision looks the same, so there is no
+          # way to tell which one to go back to. Rollback has to be done by
+          # re-pinning the prod-rollback digest instead.
+          #
+          # Every field here is one someone actually needs mid-incident: which
+          # run produced it, what tag, what digest, which commit, who triggered
+          # it, and when.
+          CHANGE_CAUSE="gha${GITHUB_RUN_NUMBER} ${IMAGE_VERSION} digest=${IMAGE_DIGEST} sha=${GITHUB_SHA} by=${GITHUB_ACTOR} at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "change-cause: $CHANGE_CAUSE"
+          kubectl annotate deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" --overwrite \
+            kubernetes.io/change-cause="$CHANGE_CAUSE"
 
           echo "=== Rolling deployment to ${IMAGE_VERSION} (digest pinned) ==="
           kubectl set image deployment/"$K8S_DEPLOYMENT" \
@@ -274,6 +370,12 @@ jobs:
             fi
             if [ -n "$SAFE_ROLLBACK" ]; then
               echo "auto-rolling back to $SAFE_ROLLBACK"
+              # Mark the rollback distinctly, again before set image. Without
+              # this the auto-rollback revision is indistinguishable from the
+              # deploy that caused it, which is exactly how the history got
+              # into its current useless state.
+              kubectl annotate deployment/"$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" --overwrite \
+                kubernetes.io/change-cause="AUTO-ROLLBACK from gha${GITHUB_RUN_NUMBER} (${IMAGE_VERSION}) to ${SAFE_ROLLBACK##*@} — post-rollout smoke test rc=${SMOKE_RC} at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
               kubectl set image deployment/"$K8S_DEPLOYMENT" \
                 "$K8S_CONTAINER=$SAFE_ROLLBACK" -n "$K8S_NAMESPACE"
               set +e
@@ -329,10 +431,14 @@ jobs:
           trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama-multiplayer' EXIT
           delete_unpullable_pods "$K8S_NAMESPACE" "$K8S_MP_DEPLOYMENT"
           echo "=== Rolling $K8S_MP_DEPLOYMENT to ${IMAGE_VERSION} (${IMAGE_DIGEST}) ==="
+          # Annotate BEFORE set image — see the long note on the main tier.
+          # This tier was already annotated, but afterwards, which races the
+          # ReplicaSet that set image has just created. Same string format as
+          # the main tier so the two histories can be read side by side.
+          kubectl annotate deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --overwrite \
+            kubernetes.io/change-cause="gha${GITHUB_RUN_NUMBER} ${IMAGE_VERSION} digest=${IMAGE_DIGEST} sha=${GITHUB_SHA} by=${GITHUB_ACTOR} at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           kubectl set image deployment/"$K8S_MP_DEPLOYMENT" \
             "$K8S_MP_CONTAINER"="$NEW_IMAGE" -n "$K8S_NAMESPACE"
-          kubectl annotate deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --overwrite \
-            kubernetes.io/change-cause="deploy-eks gha${GITHUB_RUN_NUMBER}: ${IMAGE_VERSION} (digest pinned)"
           set +e
           kubectl rollout status deployment/"$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" --timeout=15m
           MP_RC=$?
