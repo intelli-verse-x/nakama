@@ -6,8 +6,8 @@
 > `COMPLETE_RPC_REFERENCE.md` — but THIS file is the authoritative answer to
 > "does RPC X exist?" (see architecture doc §17.4 for why).
 
-**Generated:** 2026-07-06T16:20:40.649Z
-**Total registered RPC ids:** 1235
+**Generated:** 2026-09-01T13:24:48.350Z
+**Total registered RPC ids:** 1351
 
 ## `achievements_*` (4)
 
@@ -16,7 +16,7 @@
 - `achievements_get_all`
 - `achievements_update_progress`
 
-## `admin_*` (55)
+## `admin_*` (57)
 
 - `admin_account_ban`
 - `admin_account_delete`
@@ -48,8 +48,10 @@
 - `admin_matches_list`
 - `admin_player_inspect`
 - `admin_prize_backfill_emails`
+- `admin_prize_catalog_set`
 - `admin_prize_fulfillment_settle`
 - `admin_prize_fulfillments_list`
+- `admin_revenuecat_dashboard`
 - `admin_satori_audiences_list`
 - `admin_satori_config_get`
 - `admin_satori_config_set`
@@ -218,6 +220,12 @@
 - `batch_execute`
 - `batch_wallet_operations`
 
+## `battlepass_*` (3)
+
+- `battlepass_get`
+- `battlepass_record_event`
+- `battlepass_unlock_premium`
+
 ## `brain_*` (4)
 
 - `brain_coins_earn`
@@ -262,10 +270,13 @@
 - `compatibility_list_sessions`
 - `compatibility_submit_answers`
 
-## `conv_*` (3)
+## `conv_*` (6)
 
 - `conv_message_capture`
 - `conv_my_list`
+- `conv_pending_cta_clear`
+- `conv_pending_cta_get`
+- `conv_pending_cta_set`
 - `conv_user_purge`
 
 ## `create_*` (8)
@@ -279,8 +290,9 @@
 - `create_quizverse_group`
 - `create_time_period_leaderboards`
 
-## `creator_*` (25)
+## `creator_*` (28)
 
+- `creator_event_abandon`
 - `creator_event_auto_end_sweep`
 - `creator_event_can_play`
 - `creator_event_cancel`
@@ -300,8 +312,10 @@
 - `creator_event_results`
 - `creator_event_rewards_create`
 - `creator_event_rewards_get`
+- `creator_event_spa_auto_end_sweep`
 - `creator_event_spa_claim`
 - `creator_event_spa_end_queue`
+- `creator_event_spa_join`
 - `creator_event_spa_save_delivery`
 - `creator_event_submit`
 - `creator_event_update_promo`
@@ -385,11 +399,13 @@
 - `cricket_update_challenge_progress`
 - `cricket_upgrade_to_premium`
 
-## `daily_*` (9)
+## `daily_*` (11)
 
 - `daily_missions_claim`
 - `daily_missions_get`
 - `daily_missions_update_progress`
+- `daily_progress_check`
+- `daily_progress_claim`
 - `daily_reward_get_calendar`
 - `daily_rewards_claim`
 - `daily_rewards_get_calendar`
@@ -665,7 +681,7 @@
 - `intellidraws_past`
 - `intellidraws_winners`
 
-## `ivx_*` (61)
+## `ivx_*` (64)
 
 - `ivx_app_config_get`
 - `ivx_app_registry_upsert`
@@ -701,6 +717,9 @@
 - `ivx_social_friends_feed`
 - `ivx_social_friends_list`
 - `ivx_social_friends_online_count`
+- `ivx_social_gift_currency`
+- `ivx_social_gift_history`
+- `ivx_social_gift_item`
 - `ivx_social_group_invite_link`
 - `ivx_social_group_join_by_code`
 - `ivx_social_group_search`
@@ -786,6 +805,18 @@
 - `list_notification_inbox`
 - `list_pending_friend_challenges`
 - `list_pending_friend_invites`
+
+## `lms_*` (9)
+
+- `lms_attempt_complete`
+- `lms_deeplink_bind`
+- `lms_grade_push`
+- `lms_import_pack`
+- `lms_launch_session`
+- `lms_link_status`
+- `lms_platform_delete`
+- `lms_platform_list`
+- `lms_platform_upsert`
 
 ## `lt_*` (38)
 
@@ -882,9 +913,12 @@
 - `nakama_analytics_top_slow`
 - `nakama_js_health`
 
-## `notif_*` (11)
+## `notif_*` (14)
 
+- `notif_cron_boardgame_weekly`
+- `notif_cron_chess_daily_puzzle`
 - `notif_cron_daily_quiz`
+- `notif_cron_holiday_event`
 - `notif_cron_idle_winback`
 - `notif_cron_motivation`
 - `notif_cron_premium_daily_quiz`
@@ -982,9 +1016,17 @@
 - `quiz_submit_result`
 - `quiz_submit_result_v2`
 
-## `quizverse_*` (98)
+## `quizverse_*` (149)
 
+- `quizverse_aahaa_catalog`
+- `quizverse_aahaa_fact_pack`
+- `quizverse_aahaa_generate_all`
+- `quizverse_aahaa_get`
+- `quizverse_aahaa_profile_set`
+- `quizverse_aahaa_react`
+- `quizverse_aahaa_validate`
 - `quizverse_abandon_pack`
+- `quizverse_adaptive_difficulty`
 - `quizverse_admin_grant_item`
 - `quizverse_admin_stats`
 - `quizverse_ai_generate_questions`
@@ -992,16 +1034,21 @@
 - `quizverse_ai_notes_create`
 - `quizverse_ai_stt_transcribe`
 - `quizverse_analytics_fanout`
+- `quizverse_answer_reveal`
 - `quizverse_backfill_player_summaries`
 - `quizverse_blog_embed_create`
 - `quizverse_blog_embed_get`
 - `quizverse_blog_quiz_reward`
+- `quizverse_brain_prompt_commit`
+- `quizverse_brain_prompt_evaluate`
 - `quizverse_cache_refresh_tick`
+- `quizverse_category_war`
 - `quizverse_chatbox_greeting`
 - `quizverse_chatbox_message`
 - `quizverse_claim_daily_reward`
 - `quizverse_consume_item`
 - `quizverse_create_match`
+- `quizverse_daily_puzzle`
 - `quizverse_deliver_pending_chat_messages`
 - `quizverse_embed_claim_pending`
 - `quizverse_embed_quiz_complete`
@@ -1036,6 +1083,25 @@
 - `quizverse_kb_filter_unseen_questions`
 - `quizverse_kb_get_context`
 - `quizverse_kb_register_seen_questions`
+- `quizverse_knowledge_duel`
+- `quizverse_knowledge_map`
+- `quizverse_lap_badge_event`
+- `quizverse_lap_badge_sync`
+- `quizverse_lap_gamification_get`
+- `quizverse_lap_gamification_upsert`
+- `quizverse_lap_library_delete`
+- `quizverse_lap_library_get`
+- `quizverse_lap_library_list`
+- `quizverse_lap_library_pin`
+- `quizverse_lap_library_recall`
+- `quizverse_lap_library_save`
+- `quizverse_lap_library_stats`
+- `quizverse_lap_missions_get`
+- `quizverse_lap_missions_upsert`
+- `quizverse_lap_note_quota`
+- `quizverse_lap_recents_get`
+- `quizverse_lap_recents_replace`
+- `quizverse_lap_recents_touch`
 - `quizverse_list_inventory`
 - `quizverse_list_packs`
 - `quizverse_live_banner_check`
@@ -1043,9 +1109,12 @@
 - `quizverse_load_pack`
 - `quizverse_load_player_data`
 - `quizverse_log_event`
+- `quizverse_merge_guest_to_account`
 - `quizverse_mp_request_pack`
 - `quizverse_pack_cleanup_tick`
+- `quizverse_party_play_quota`
 - `quizverse_prewarm_tick`
+- `quizverse_prize_catalog_get`
 - `quizverse_product_metrics`
 - `quizverse_rc_sync`
 - `quizverse_refresh_server_cache`
@@ -1058,6 +1127,16 @@
 - `quizverse_research_waitlist_join`
 - `quizverse_save_player_data`
 - `quizverse_search_items`
+- `quizverse_seedq_asset_job`
+- `quizverse_seedq_consume_set`
+- `quizverse_seedq_focus_tracks`
+- `quizverse_seedq_get_staged`
+- `quizverse_seedq_ingest`
+- `quizverse_seedq_ingest_tick`
+- `quizverse_seedq_pool_stats`
+- `quizverse_seedq_provenance`
+- `quizverse_seedq_review`
+- `quizverse_seedq_sources`
 - `quizverse_seen_get`
 - `quizverse_seen_merge`
 - `quizverse_seen_purge`
@@ -1065,17 +1144,23 @@
 - `quizverse_seen_stats`
 - `quizverse_send_channel_message`
 - `quizverse_spend_currency`
+- `quizverse_streak_quiz`
+- `quizverse_study_mode`
 - `quizverse_submit_multiplayer_match`
 - `quizverse_submit_result`
 - `quizverse_submit_score`
+- `quizverse_sudoku_generate`
 - `quizverse_track_session_end`
 - `quizverse_track_session_start`
+- `quizverse_trivia_night`
 - `quizverse_tts_synthesize`
 - `quizverse_update_user_profile`
 - `quizverse_validate_purchase`
 - `quizverse_videos_consume`
 - `quizverse_videos_grant`
+- `quizverse_videos_refund`
 - `quizverse_videos_status`
+- `quizverse_warm_topic`
 - `quizverse_web_ad_reward`
 - `quizverse_weekly_fetch`
 - `quizverse_words_daily_seed`
@@ -1083,7 +1168,7 @@
 - `quizverse_words_duel_leaderboard`
 - `quizverse_words_duel_submit`
 
-## `qv_*` (10)
+## `qv_*` (11)
 
 - `qv_agent_analyze_quiz_performance`
 - `qv_agent_generate_trivia`
@@ -1092,9 +1177,18 @@
 - `qv_agent_memory_read`
 - `qv_agent_memory_write`
 - `qv_agent_ping`
+- `qv_agent_public_activity`
 - `qv_kb_user_dump`
 - `qv_kb_user_kind`
 - `qv_kb_user_summary`
+
+## `recorder_*` (5)
+
+- `recorder_asr_close`
+- `recorder_asr_gc`
+- `recorder_asr_open`
+- `recorder_asr_purge`
+- `recorder_asr_push`
 
 ## `referral_*` (4)
 
@@ -1113,12 +1207,34 @@
 - `retention_track_first_session`
 - `retention_use_streak_shield`
 
+## `reward_*` (9)
+
+- `reward_advice`
+- `reward_catalog_admin_get`
+- `reward_catalog_admin_save`
+- `reward_catalog_get`
+- `reward_delivery_list_mine`
+- `reward_delivery_set_email`
+- `reward_joke`
+- `reward_quote`
+- `reward_yoda`
+
 ## `rewarded_*` (4)
 
 - `rewarded_ad_claim`
 - `rewarded_ad_get_status`
 - `rewarded_ad_request_token`
 - `rewarded_ad_validate_score_multiplier`
+
+## `router_*` (7)
+
+- `router_wallet_credit`
+- `router_wallet_debit`
+- `router_wallet_get`
+- `router_wallet_history`
+- `router_wallet_hold`
+- `router_wallet_settle`
+- `router_wallet_transfer`
 
 ## `rpc_*` (5)
 
@@ -1135,7 +1251,7 @@
 - `s3_asset_manifest_update`
 - `s3_starwars_character_images`
 
-## `satori_*` (88)
+## `satori_*` (89)
 
 - `satori_audiences_compute`
 - `satori_audiences_estimate`
@@ -1168,6 +1284,7 @@
 - `satori_experiments_get_all`
 - `satori_experiments_get_variant`
 - `satori_experiments_results`
+- `satori_experiments_undo_promote`
 - `satori_flags_get`
 - `satori_flags_get_all`
 - `satori_flags_set`
@@ -1401,13 +1518,28 @@
 - `winback_record_session`
 - `winback_schedule_reengagement`
 
+## `world_*` (12)
+
+- `world_answer_submit`
+- `world_checkpoint_reach`
+- `world_leaderboard_get`
+- `world_object_found`
+- `world_session_abandon`
+- `world_session_finish`
+- `world_session_get`
+- `world_session_start`
+- `world_story_get`
+- `world_story_upsert`
+- `world_template_upsert`
+- `world_trivia_pack_upsert`
+
 ## `wow_*` (3)
 
 - `wow_moments_react`
 - `wow_moments_select`
 - `wow_moments_state_get`
 
-## Ungrouped / small prefixes (65)
+## Ungrouped / small prefixes (67)
 
 - `...`
 - `<id>`
@@ -1445,7 +1577,9 @@
 - `insights_aggregator_tick`
 - `intelliverse_find_friends`
 - `intelliverse_find_nearby_players`
+- `kiosk_arcade_create`
 - `kyc_profile_sync`
+- `kyc_verification_status_sync`
 - `library.countdown.emit_due`
 - `library.countdown.list_mine`
 - `library.countdown.subscribe`

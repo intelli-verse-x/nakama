@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-08-29T22:02:41.170Z
-// RPC Count: 1339
+// Generated: 2026-09-01T13:28:53.118Z
+// RPC Count: 1340
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -644,6 +644,7 @@ var __rpc_satori_events_search;
 var __rpc_satori_event_errors;
 var __rpc_satori_experiments_results;
 var __rpc_satori_experiments_declare_winner;
+var __rpc_satori_experiments_undo_promote;
 var __rpc_satori_experiments_get;
 var __rpc_satori_experiments_get_variant;
 var __rpc_satori_experiments_get_all;
@@ -1353,7 +1354,7 @@ var __rpc_visual_path_skip_day_with_ad;
 var __rpc_kiosk_arcade_create;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_undo_promote":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (123 files) ---
 
@@ -1361,7 +1362,7 @@ var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"
 ﻿
 
 
-// --- Module: achievements/achievements.js ---
+// --- Module: achievements\achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1950,7 +1951,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player/ai_player.js ---
+// --- Module: ai_player\ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2762,7 +2763,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/admin/analytics_admin.js ---
+// --- Module: analytics\admin\analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3508,7 +3509,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/analytics.js ---
+// --- Module: analytics\analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -5526,7 +5527,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/backfill/analytics_backfill.js ---
+// --- Module: analytics\backfill\analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -6658,7 +6659,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/dropoff/analytics_dropoff.js ---
+// --- Module: analytics\dropoff\analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -7234,7 +7235,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/extended/analytics_extended.js ---
+// --- Module: analytics\extended\analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -10506,7 +10507,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
+// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -11245,7 +11246,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/hardening/analytics_hardening.js ---
+// --- Module: analytics\hardening\analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -11873,7 +11874,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/history/analytics_history.js ---
+// --- Module: analytics\history\analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -12819,7 +12820,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/modes/analytics_modes.js ---
+// --- Module: analytics\modes\analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -13421,7 +13422,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/ops/analytics_ops.js ---
+// --- Module: analytics\ops\analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -14064,7 +14065,7 @@ function __ModuleInit_12(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/player_analytics_store.js ---
+// --- Module: analytics\player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -14745,7 +14746,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics/player_profile/analytics_player_profile.js ---
+// --- Module: analytics\player_profile\analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -15534,7 +15535,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/read_models/analytics_read_models.js ---
+// --- Module: analytics\read_models\analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -16176,7 +16177,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/recap_signals/recap_signals.js ---
+// --- Module: analytics\recap_signals\recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -16479,7 +16480,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
+// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -16733,7 +16734,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/rollup/analytics_rollup.js ---
+// --- Module: analytics\rollup\analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -19743,7 +19744,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
+// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -20577,7 +20578,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/segments/analytics_segments.js ---
+// --- Module: analytics\segments\analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -21166,7 +21167,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
+// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -21601,7 +21602,7 @@ function __ModuleInit_21(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics/v2/analytics_v2.js ---
+// --- Module: analytics\v2\analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -22619,7 +22620,7 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges/badge_definitions.js ---
+// --- Module: badges\badge_definitions.js ---
 /**
  * QuizVerse Badge Definitions — all 207 badges from the game manifest.
  * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
@@ -22903,7 +22904,7 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
 };
 
 
-// --- Module: badges/badge_seed_definitions.js ---
+// --- Module: badges\badge_seed_definitions.js ---
 // badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
 // Run once via admin RPC or directly call badges_bulk_create
 // Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
@@ -23046,7 +23047,7 @@ var LEGENDARY_AND_SEASONAL_BADGES = {
 // Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
 
 
-// --- Module: badges/badges.js ---
+// --- Module: badges\badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -24722,7 +24723,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: characters/characters.js ---
+// --- Module: characters\characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -25376,7 +25377,7 @@ function quizverseCharactersAutoUnlock(nk, logger, userId, gameId, badgeIds) {
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
 
-// --- Module: chat_moderation/chat_moderation.js ---
+// --- Module: chat_moderation\chat_moderation.js ---
 // chat_moderation.js - Chat Moderation Pipeline
 // Storage collection: chat_reports, chat_filter_config
 // RPCs: chat_filter_message (public), chat_report_message (public),
@@ -25909,7 +25910,7 @@ function __ModuleInit_27(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chatbox/chatbox.js ---
+// --- Module: chatbox\chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -27253,7 +27254,7 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: copilot/cognito_wallet_mapper.js ---
+// --- Module: copilot\cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -27485,7 +27486,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/leaderboard_aggregate.js ---
+// --- Module: copilot\leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27597,7 +27598,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/leaderboard_friends.js ---
+// --- Module: copilot\leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -27774,7 +27775,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/leaderboard_sync.js ---
+// --- Module: copilot\leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -27849,7 +27850,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot/utils.js ---
+// --- Module: copilot\utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -27935,7 +27936,7 @@ var utils = {
 };
 
 
-// --- Module: copilot/wallet_registry.js ---
+// --- Module: copilot\wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -28090,7 +28091,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot/wallet_utils.js ---
+// --- Module: copilot\wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -28196,7 +28197,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket/cricket_ai_integration.js ---
+// --- Module: cricket\cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -29037,7 +29038,7 @@ function __ModuleInit_36(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_daily_challenges.js ---
+// --- Module: cricket\cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -29612,7 +29613,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_economy.js ---
+// --- Module: cricket\cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -30289,7 +30290,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_engagement.js ---
+// --- Module: cricket\cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -30896,7 +30897,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_live_match.js ---
+// --- Module: cricket\cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -31656,7 +31657,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_predictions.js ---
+// --- Module: cricket\cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -32323,7 +32324,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_retention.js ---
+// --- Module: cricket\cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -33161,7 +33162,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_season_pass.js ---
+// --- Module: cricket\cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -33773,7 +33774,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket/cricket_trivia.js ---
+// --- Module: cricket\cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -34723,7 +34724,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup/engagement.js ---
+// --- Module: cricket_worldcup\engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -35392,7 +35393,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup/predictions.js ---
+// --- Module: cricket_worldcup\predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -35982,7 +35983,7 @@ function __ModuleInit_46(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game/cross_game.js ---
+// --- Module: cross_game\cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -36473,7 +36474,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions/daily_missions.js ---
+// --- Module: daily_missions\daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -36852,7 +36853,7 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards/daily_progress.js ---
+// --- Module: daily_rewards\daily_progress.js ---
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
@@ -37158,7 +37159,7 @@ function __ModuleInit_49(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards/daily_reward_calendar.js ---
+// --- Module: daily_rewards\daily_reward_calendar.js ---
 // daily_reward_calendar.js - 30-Day Daily Reward Calendar View
 // Extends the daily rewards system with a full calendar preview
 // RPC: daily_reward_get_calendar
@@ -37277,7 +37278,7 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards/daily_rewards.js ---
+// --- Module: daily_rewards\daily_rewards.js ---
 // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
 /**
@@ -38010,7 +38011,7 @@ function __ModuleInit_51(ctx, logger, nk, initializer) {
     logger.info("[DailyRewards] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: event_pipeline/event_pipeline.js ---
+// --- Module: event_pipeline\event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -38408,7 +38409,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics/external_analytics.js ---
+// --- Module: external_analytics\external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -39031,7 +39032,7 @@ function __ModuleInit_53(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers/external_pollers.js ---
+// --- Module: external_pollers\external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -39421,7 +39422,7 @@ function __ModuleInit_54(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel/fortune_wheel.js ---
+// --- Module: fortune_wheel\fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -39803,7 +39804,7 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friend_streaks/friend_streaks.js ---
+// --- Module: friend_streaks\friend_streaks.js ---
 // friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
 // RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
 // Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
@@ -40418,7 +40419,7 @@ function __ModuleInit_56(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/friend_challenges.js ---
+// --- Module: friends\friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -41511,7 +41512,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/friend_invites.js ---
+// --- Module: friends\friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -42929,7 +42930,7 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/friends.js ---
+// --- Module: friends\friends.js ---
 // ============================================================================
 // friends.js — Helper-only module (Phase-4 C2 cleanup)
 // ============================================================================
@@ -43149,7 +43150,7 @@ function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, 
 }
 
 
-// --- Module: friends/friends_extras.js ---
+// --- Module: friends\friends_extras.js ---
 // ============================================================================
 // friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
 // ============================================================================
@@ -43708,7 +43709,7 @@ function __ModuleInit_60(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends/notification_codes.js ---
+// --- Module: friends\notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -44027,7 +44028,7 @@ function sendFriendsNotification(ctx, nk, logger, subjectKey, userId, payload, s
 }
 
 
-// --- Module: game_metrics/game_metrics.js ---
+// --- Module: game_metrics\game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -44408,7 +44409,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups/groups.js ---
+// --- Module: groups\groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -46455,7 +46456,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure/batch_operations.js ---
+// --- Module: infrastructure\batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -46717,7 +46718,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure/caching.js ---
+// --- Module: infrastructure\caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -46955,7 +46956,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure/rate_limiting.js ---
+// --- Module: infrastructure\rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -47133,7 +47134,7 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 // initializer.registerRpc("submit_score", withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest/ivx_quest.js ---
+// --- Module: ivx_quest\ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -47501,7 +47502,7 @@ function __ModuleInit_68(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-badges/lap-badges.js ---
+// --- Module: lap-badges\lap-badges.js ---
 /**
  * QuizVerse Link & Play Badge Event Bridge
  *
@@ -47707,7 +47708,7 @@ function __ModuleInit_69(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-gamification/lap-gamification.js ---
+// --- Module: lap-gamification\lap-gamification.js ---
 /**
  * QuizVerse Link & Play — gamification (XP / streak / client badges).
  *
@@ -48042,7 +48043,7 @@ function __ModuleInit_70(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-library/lap-library.js ---
+// --- Module: lap-library\lap-library.js ---
 /**
  * QuizVerse Link & Play — saved learn artifacts (server-authoritative).
  *
@@ -48506,7 +48507,7 @@ function __ModuleInit_71(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-missions/lap-missions.js ---
+// --- Module: lap-missions\lap-missions.js ---
 /**
  * QuizVerse Link & Play — daily / weekly missions sync.
  *
@@ -48863,7 +48864,7 @@ function __ModuleInit_72(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-recents/lap-recents.js ---
+// --- Module: lap-recents\lap-recents.js ---
 /**
  * QuizVerse Link & Play — recent notes index (cross-surface sync).
  *
@@ -49110,7 +49111,7 @@ function __ModuleInit_73(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth/lasttolive_depth.js ---
+// --- Module: lasttolive_depth\lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -50834,7 +50835,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leagues/leagues.js ---
+// --- Module: leagues\leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -51467,7 +51468,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: learner_home_widgets/learner_home_widgets.js ---
+// --- Module: learner_home_widgets\learner_home_widgets.js ---
 // learner_home_widgets.js — Per-user Home-screen widget configs for TutorX
 // Nakama V8 JavaScript runtime (Goja ES5 — no ES modules, no Node built-ins).
 //
@@ -51769,7 +51770,7 @@ function __ModuleInit_78(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_quotes/learner_quotes.js ---
+// --- Module: learner_quotes\learner_quotes.js ---
 // learner_quotes.js — Daily LLM-personalized "confidence boost" quotes for TutorX
 // (Goja ES5, no Node built-ins, no global-scope state).
 //
@@ -52129,7 +52130,7 @@ function __ModuleInit_79(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_reminders/learner_reminders.js ---
+// --- Module: learner_reminders\learner_reminders.js ---
 // learner_reminders.js — Per-user study reminders for TutorX (Goja ES5, no Node built-ins).
 //
 // Lets a learner create study reminders (one-off or recurring: daily / weekdays /
@@ -52338,7 +52339,7 @@ function __ModuleInit_80(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_review/learner_review.js ---
+// --- Module: learner_review\learner_review.js ---
 // learner_review.js — First-class spaced-repetition review queue for TutorX
 // (Goja ES5, no Node built-ins, all RPC fns at global scope).
 //
@@ -52690,7 +52691,7 @@ function __ModuleInit_81(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: live_ops/live_ops.js ---
+// --- Module: live_ops\live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -53323,7 +53324,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest/manifest.js ---
+// --- Module: manifest\manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -53435,7 +53436,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking/matchmaking.js ---
+// --- Module: matchmaking\matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -55151,7 +55152,7 @@ __rpc_lasttolive_save_player_data = __rpc_lasttolive_save_player_data || (lastto
 __rpc_lasttolive_load_player_data = __rpc_lasttolive_load_player_data || (lasttoliveLoadPlayerData);
 
 
-// --- Module: multiplayer/multiplayer_locks.js ---
+// --- Module: multiplayer\multiplayer_locks.js ---
 // multiplayer_locks.js — Multiplayer Account Lock System (QVVBS189)
 
 var LOCK_COLLECTION = "multiplayer_locks";
@@ -55360,7 +55361,7 @@ function __ModuleInit_86(ctx, logger, nk, initializer) {
     logger.info("[MultiplayerLock] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -55815,7 +55816,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications/notification_gate.js ---
+// --- Module: notifications\notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -55975,7 +55976,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications/notification_inbox.js ---
+// --- Module: notifications\notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -56513,7 +56514,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine/offer_engine.js ---
+// --- Module: offer_engine\offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -57432,7 +57433,7 @@ function __ModuleInit_90(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding/ob_analytics_emit.js ---
+// --- Module: onboarding\ob_analytics_emit.js ---
 /**
  * Server-side ob_* analytics for Unity onboarding hooks (D1/D7, welcome bonus, streak shield).
  * Writes to qv_onboarding_events — same lake as web onboarding_events_batch.
@@ -57484,7 +57485,7 @@ function obAnalyticsEmitEvent(nk, nakamaUserId, eventName, data) {
 }
 
 
-// --- Module: onboarding/onboarding.js ---
+// --- Module: onboarding\onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -58576,7 +58577,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization/personalization.js ---
+// --- Module: personalization\personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -59183,7 +59184,7 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: player/player_full_profile.js ---
+// --- Module: player\player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -59398,7 +59399,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts/player_gifts.js ---
+// --- Module: player_gifts\player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -60275,7 +60276,7 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 // These will be registered in the main index.js
 
 
-// --- Module: progression/mastery_system.js ---
+// --- Module: progression\mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -60611,7 +60612,7 @@ module.exports = {
 
 
 
-// --- Module: progression/progressive_unlocks.js ---
+// --- Module: progression\progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -62473,7 +62474,7 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quiz_results/quiz_results.js ---
+// --- Module: quiz_results\quiz_results.js ---
 // quiz_results.js - Quiz Results Tracking & Analytics System
 // Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
 //
@@ -63651,7 +63652,7 @@ function __ModuleInit_101(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_depth/quizverse_depth.js ---
+// --- Module: quizverse_depth\quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -64647,7 +64648,7 @@ function __ModuleInit_102(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_seen/quizverse_seen.js ---
+// --- Module: quizverse_seen\quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -65155,7 +65156,7 @@ function __ModuleInit_103(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: retention/collections.js ---
+// --- Module: retention\collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -65669,7 +65670,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention/retention_v2.js ---
+// --- Module: retention\retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -66164,7 +66165,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention/season_pass.js ---
+// --- Module: retention\season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -66826,7 +66827,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention/winback.js ---
+// --- Module: retention\winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -67387,7 +67388,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads/rewarded_ads.js ---
+// --- Module: rewarded_ads\rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -68288,7 +68289,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets/s3_assets.js ---
+// --- Module: s3_assets\s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -68711,7 +68712,7 @@ function __ModuleInit_109(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat/satori_compat.js ---
+// --- Module: satori_compat\satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -68898,7 +68899,7 @@ function __ModuleInit_110(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct/satori_direct.js ---
+// --- Module: satori_direct\satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -69954,7 +69955,7 @@ function __ModuleInit_111(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases/sdk_aliases.js ---
+// --- Module: sdk_aliases\sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -70116,7 +70117,7 @@ function __ModuleInit_112(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review/smart_review.js ---
+// --- Module: smart_review\smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -70914,7 +70915,7 @@ function __ModuleInit_113(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: tournaments/tournaments.js ---
+// --- Module: tournaments\tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -71467,7 +71468,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: tutorx/tutorx_coin_gate.js ---
+// --- Module: tutorx\tutorx_coin_gate.js ---
 // tutorx_coin_gate.js — per-service TutorX AI coin pricing (mirrors TutorX SPA catalog)
 
 var TUTORX_SERVICE_CATALOG = {
@@ -71604,7 +71605,7 @@ function tutorxWriteUsage(nk, collection, userId, today, usage) {
 }
 
 
-// --- Module: visual_path/visual_path.js ---
+// --- Module: visual_path\visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -71955,7 +71956,7 @@ function __ModuleInit_116(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet/wallet.js ---
+// --- Module: wallet\wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -127255,8 +127256,21 @@ var AdminConsole;
                 name: def.name || id,
                 description: def.description || "",
                 enabled: def.enabled !== undefined ? !!def.enabled : def.status !== "draft",
+                status: def.status || (def.enabled === false ? "draft" : "running"),
                 audiences: firstArray(def.audiences) || (def.audienceId ? [def.audienceId] : []),
                 variants: def.variants || [],
+                configSystem: def.configSystem,
+                goalMetric: def.goalMetric,
+                splitKey: def.splitKey,
+                gameId: def.gameId,
+                configRevision: def.configRevision,
+                trackedQuestIds: def.trackedQuestIds,
+                minSamplePerArm: def.minSamplePerArm,
+                promotion: def.promotion ? {
+                    state: def.promotion.state || null,
+                    auditKey: def.promotion.auditKey || null,
+                    restored: !!def.promotion.restored
+                } : undefined,
                 created_at: isoFromSec(def.createdAt),
                 updated_at: isoFromSec(def.updatedAt)
             });
@@ -128066,25 +128080,282 @@ var AdminConsole;
         return RpcHelpers.successResponse({ event: newEvent, action: action });
     }
     // ---- Experiment Quick Setup ----
+    var QUEST_ENGINE_SYSTEM = "quest_engine";
+    function canonicalExperimentGameId(raw) {
+        var id = String(raw || "").trim();
+        if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+            return Constants.QUIZVERSE_GAME_ID;
+        }
+        return id;
+    }
+    function runningQuestEngineExperimentId(experiments, exceptId) {
+        for (var id in experiments) {
+            if (exceptId && id === exceptId)
+                continue;
+            var exp = experiments[id];
+            if (!exp)
+                continue;
+            if (exp.configSystem === QUEST_ENGINE_SYSTEM && exp.status === "running") {
+                return String(exp.id || id);
+            }
+        }
+        return "";
+    }
+    var QUEST_ENGINE_OVERLAY_FIELDS = {
+        reward: true,
+        hidden: true,
+        enabled: true,
+        name: true,
+        description: true
+    };
+    var QUEST_OVERLAY_MAX_BYTES = 32768;
+    var QUEST_OVERLAY_MAX_QUESTS = 50;
+    var QUEST_REWARD_AMOUNT_MAX = 1000000000;
+    function isUnsafeOverlayKey(key) {
+        return key === "__proto__" || key === "constructor" || key === "prototype";
+    }
+    function parseVariantOverlay(variant) {
+        if (!variant)
+            return null;
+        var raw = variant.config || variant.data;
+        if (raw == null || raw === "")
+            return null;
+        raw = parseMaybeJson(raw, raw);
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return null;
+        return raw;
+    }
+    function overlayFingerprint(variants) {
+        var parts = [];
+        if (!variants)
+            return "";
+        for (var i = 0; i < variants.length; i++) {
+            parts.push(JSON.stringify(parseVariantOverlay(variants[i]) || {}));
+        }
+        return parts.join("\n");
+    }
+    function loadQuestConfigForGame(nk, gameId) {
+        var rows = [];
+        try {
+            rows = nk.storageRead([{
+                    collection: "qv_quest_config",
+                    key: gameId,
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+        }
+        catch (_) { }
+        if (rows && rows.length > 0 && rows[0].value)
+            return rows[0].value;
+        if (gameId === Constants.QUIZVERSE_GAME_ID) {
+            try {
+                rows = nk.storageRead([{
+                        collection: "qv_quest_config",
+                        key: "default",
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+            }
+            catch (_) {
+                rows = [];
+            }
+            if (rows && rows.length > 0 && rows[0].value)
+                return rows[0].value;
+        }
+        return { quests: {} };
+    }
+    function validateRewardAmounts(grant, path) {
+        if (!grant || typeof grant !== "object" || Array.isArray(grant)) {
+            return path + " must be an object";
+        }
+        function checkMap(map, label, itemShape) {
+            if (map == null)
+                return "";
+            if (typeof map !== "object" || Array.isArray(map))
+                return label + " must be an object";
+            for (var k in map) {
+                if (!map.hasOwnProperty(k))
+                    continue;
+                if (isUnsafeOverlayKey(k) || !k)
+                    return label + " has an invalid key";
+                if (itemShape) {
+                    var item = map[k];
+                    if (!item || typeof item !== "object")
+                        return label + "." + k + " must be { min, max? }";
+                    var min = Number(item.min);
+                    var max = item.max == null ? min : Number(item.max);
+                    if (!isFinite(min) || min < 0 || min > QUEST_REWARD_AMOUNT_MAX)
+                        return label + "." + k + ".min is out of range";
+                    if (!isFinite(max) || max < min || max > QUEST_REWARD_AMOUNT_MAX)
+                        return label + "." + k + ".max is out of range";
+                }
+                else {
+                    var n = Number(map[k]);
+                    if (!isFinite(n) || n < 0 || n > QUEST_REWARD_AMOUNT_MAX)
+                        return label + "." + k + " amount is out of range";
+                }
+            }
+            return "";
+        }
+        var err = checkMap(grant.currencies, path + ".currencies", false);
+        if (err)
+            return err;
+        err = checkMap(grant.items, path + ".items", true);
+        if (err)
+            return err;
+        err = checkMap(grant.energies, path + ".energies", false);
+        if (err)
+            return err;
+        return "";
+    }
+    function validateQuestEngineReward(nk, reward, questId) {
+        if (reward == null)
+            return "";
+        if (typeof reward !== "object" || Array.isArray(reward))
+            return questId + " reward must be an object";
+        if (reward.weighted)
+            return questId + " reward cannot use weighted rolls in a quest overlay";
+        if (!reward.guaranteed || typeof reward.guaranteed !== "object" || Array.isArray(reward.guaranteed)) {
+            return questId + " reward must be { guaranteed: ... }";
+        }
+        var amtErr = validateRewardAmounts(reward.guaranteed, questId + ".reward.guaranteed");
+        if (amtErr)
+            return amtErr;
+        try {
+            RewardEngine.resolveReward(nk, reward);
+        }
+        catch (_e) {
+            return questId + " reward is not RewardEngine-shaped";
+        }
+        return "";
+    }
+    function validateQuestEngineOverlay(nk, gameId, variants) {
+        var base = loadQuestConfigForGame(nk, gameId);
+        var quests = (base && base.quests) ? base.quests : {};
+        if (!variants || !variants.length)
+            return "quest_engine experiment needs variants[]";
+        for (var v = 0; v < variants.length; v++) {
+            var overlay = parseVariantOverlay(variants[v]);
+            if (!overlay)
+                continue;
+            var encoded = "";
+            try {
+                encoded = JSON.stringify(overlay);
+            }
+            catch (_) {
+                return "variant overlay is not JSON";
+            }
+            if (encoded.length > QUEST_OVERLAY_MAX_BYTES)
+                return "variant overlay exceeds " + QUEST_OVERLAY_MAX_BYTES + " bytes";
+            for (var top in overlay) {
+                if (!overlay.hasOwnProperty(top))
+                    continue;
+                if (isUnsafeOverlayKey(top))
+                    return "unsafe overlay key: " + top;
+                if (top !== "quests")
+                    return "quest overlay may only contain quests (unknown key: " + top + ")";
+            }
+            // Empty control (config: {}) is the "same quest, different prize" recipe.
+            if (!overlay.quests)
+                continue;
+            if (typeof overlay.quests !== "object" || Array.isArray(overlay.quests)) {
+                return "quest overlay must be { quests: { questId: { ... } } }";
+            }
+            var patchedIds = Object.keys(overlay.quests);
+            if (patchedIds.length === 0)
+                continue;
+            if (patchedIds.length > QUEST_OVERLAY_MAX_QUESTS) {
+                return "quest overlay patches too many quests (max " + QUEST_OVERLAY_MAX_QUESTS + ")";
+            }
+            for (var i = 0; i < patchedIds.length; i++) {
+                var questId = patchedIds[i];
+                if (isUnsafeOverlayKey(questId))
+                    return "unsafe quest id";
+                if (!quests.hasOwnProperty(questId))
+                    return "unknown quest id: " + questId;
+                var patch = overlay.quests[questId];
+                if (patch == null)
+                    return "cannot delete quest " + questId + " via overlay";
+                if (typeof patch !== "object" || Array.isArray(patch))
+                    return questId + " overlay must be an object";
+                for (var field in patch) {
+                    if (!patch.hasOwnProperty(field))
+                        continue;
+                    if (isUnsafeOverlayKey(field))
+                        return questId + " has an unsafe field";
+                    if (!QUEST_ENGINE_OVERLAY_FIELDS[field]) {
+                        return questId + " forbids field '" + field + "' (allowed: reward, hidden, enabled, name, description)";
+                    }
+                }
+                if (patch.hasOwnProperty("name") && typeof patch.name !== "string")
+                    return questId + " name must be a string";
+                if (patch.hasOwnProperty("description") && patch.description != null && typeof patch.description !== "string") {
+                    return questId + " description must be a string";
+                }
+                if (patch.hasOwnProperty("hidden") && typeof patch.hidden !== "boolean")
+                    return questId + " hidden must be boolean";
+                if (patch.hasOwnProperty("enabled") && typeof patch.enabled !== "boolean")
+                    return questId + " enabled must be boolean";
+                if (patch.hasOwnProperty("reward")) {
+                    var rewardErr = validateQuestEngineReward(nk, patch.reward, questId);
+                    if (rewardErr)
+                        return rewardErr;
+                }
+            }
+        }
+        return "";
+    }
     function rpcExperimentSetup(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
         var variants = data.variants || parseMaybeJson(data.variants_json, undefined);
         if (!data.id || !data.name || !variants)
             return RpcHelpers.errorResponse("id, name, and variants[] required");
+        var configSystem = String(data.configSystem || data.config_system || "").trim();
+        var goalMetric = data.goalMetric || data.goal_metric;
+        var splitKey = data.splitKey || data.split_key;
+        var status = data.status || (data.enabled === false ? "draft" : "running");
         var gameId = adminGameId(data);
+        if (configSystem === QUEST_ENGINE_SYSTEM) {
+            if (!String(gameId || "").trim()) {
+                return RpcHelpers.errorResponse("gameId required (registry UUID). Use default only as the QuizVerse alias.");
+            }
+            gameId = canonicalExperimentGameId(gameId);
+            if (String(splitKey || "").toLowerCase() === "random") {
+                return RpcHelpers.errorResponse("quest_engine experiments cannot use splitKey=random; assignments must be sticky");
+            }
+        }
         var expConfig = readScopedConfig(nk, Constants.SATORI_CONFIGS_COLLECTION, "experiments", gameId, {});
+        if (configSystem === QUEST_ENGINE_SYSTEM && status === "running") {
+            var otherRunning = runningQuestEngineExperimentId(expConfig, data.id);
+            if (otherRunning) {
+                return RpcHelpers.errorResponse("Only one running quest_engine experiment per game (already running: " + otherRunning + ")");
+            }
+        }
+        if (configSystem === QUEST_ENGINE_SYSTEM) {
+            var existing = expConfig[data.id];
+            if (existing && existing.status === "running" && status === "running" &&
+                overlayFingerprint(existing.variants) !== overlayFingerprint(variants)) {
+                return RpcHelpers.errorResponse("cannot edit quest overlay while experiment is running; set status to draft first");
+            }
+            var overlayErr = validateQuestEngineOverlay(nk, gameId, variants);
+            if (overlayErr)
+                return RpcHelpers.errorResponse(overlayErr);
+        }
         var now = Math.floor(Date.now() / 1000);
+        var prev = expConfig[data.id];
         var audiences = firstArray(data.audiences) || firstArray(data.audiences_json);
+        var overlayChanged = !prev || overlayFingerprint(prev.variants) !== overlayFingerprint(variants);
+        var configRevision = (!overlayChanged && prev && prev.configRevision) ? prev.configRevision : String(now);
+        var trackedQuestIds = data.trackedQuestIds || data.tracked_quest_ids || (prev && prev.trackedQuestIds) || undefined;
         var newExp = {
             id: data.id,
             name: data.name,
             description: data.description || "",
-            status: data.status || (data.enabled === false ? "draft" : "running"),
+            status: status,
             audienceId: (audiences && audiences[0]) || data.audience_id || data.audienceId || undefined,
             variants: variants,
-            goalMetric: data.goalMetric,
-            splitKey: data.splitKey,
+            configSystem: configSystem || undefined,
+            goalMetric: goalMetric,
+            splitKey: splitKey,
             lockParticipation: data.lockParticipation || false,
             admissionDeadline: data.admissionDeadline,
             startAt: data.startAt,
@@ -128092,9 +128363,19 @@ var AdminConsole;
             phases: data.phases,
             experimentType: data.experimentType || "custom",
             gameId: gameId || data.gameId || data.game_id || undefined,
-            createdAt: (expConfig[data.id] && expConfig[data.id].createdAt) || now,
+            configRevision: configRevision,
+            trackedQuestIds: trackedQuestIds,
+            createdAt: (prev && prev.createdAt) || now,
             updatedAt: now
         };
+        var minSampleRaw = data.minSamplePerArm || data.min_sample_per_arm || data.minSample || data.min_sample;
+        var minSampleParsed = parseInt(String(minSampleRaw == null ? "" : minSampleRaw), 10);
+        if (minSampleParsed > 0) {
+            newExp.minSamplePerArm = minSampleParsed;
+        }
+        else if (prev && prev.minSamplePerArm > 0) {
+            newExp.minSamplePerArm = prev.minSamplePerArm;
+        }
         var action = expConfig[data.id] ? "updated" : "created";
         expConfig[data.id] = newExp;
         var key = saveScopedSatoriConfig(nk, "experiments", gameId, expConfig);
@@ -130809,6 +131090,19 @@ var HiroMailbox;
 var HiroPersonalizers;
 (function (HiroPersonalizers) {
     var OVERRIDES_COLLECTION = "hiro_personalizer_overrides";
+    var QUEST_ENGINE_SYSTEM = "quest_engine";
+    // v1 progress-safe overlay. steps / requiredCount / eventType / new quest ids
+    // are dropped at apply time (setup validator later rejects them loudly).
+    var QUEST_ENGINE_OVERLAY_ALLOWLIST = {
+        reward: true,
+        hidden: true,
+        enabled: true,
+        name: true,
+        description: true
+    };
+    function isUnsafeKey(key) {
+        return key === "__proto__" || key === "constructor" || key === "prototype";
+    }
     function deepClone(obj) {
         if (obj === null || typeof obj !== "object")
             return obj;
@@ -130820,7 +131114,7 @@ var HiroPersonalizers;
         }
         var clone = {};
         for (var key in obj) {
-            if (obj.hasOwnProperty(key))
+            if (obj.hasOwnProperty(key) && !isUnsafeKey(key))
                 clone[key] = deepClone(obj[key]);
         }
         return clone;
@@ -130829,18 +131123,23 @@ var HiroPersonalizers;
         var parts = path.split(".");
         var current = obj;
         for (var i = 0; i < parts.length - 1; i++) {
+            if (isUnsafeKey(parts[i]))
+                return;
             if (current[parts[i]] === undefined || current[parts[i]] === null) {
                 current[parts[i]] = {};
             }
             current = current[parts[i]];
         }
-        current[parts[parts.length - 1]] = value;
+        var last = parts[parts.length - 1];
+        if (isUnsafeKey(last))
+            return;
+        current[last] = value;
     }
     function mergeDeep(target, source) {
         if (!source || typeof source !== "object")
             return target;
         for (var key in source) {
-            if (!source.hasOwnProperty(key))
+            if (!source.hasOwnProperty(key) || isUnsafeKey(key))
                 continue;
             if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key]) &&
                 target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
@@ -130851,6 +131150,87 @@ var HiroPersonalizers;
             }
         }
         return target;
+    }
+    function parseMaybeJson(value) {
+        if (typeof value !== "string")
+            return value;
+        try {
+            return JSON.parse(value);
+        }
+        catch (_) {
+            return value;
+        }
+    }
+    // Admin UI stores variant.data; Hiro seed/docs use variant.config (string map or object).
+    function normalizeVariantOverlay(variant) {
+        if (!variant)
+            return null;
+        var raw = variant.config || variant.data;
+        if (raw == null)
+            return null;
+        raw = parseMaybeJson(raw);
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return null;
+        var out = {};
+        for (var key in raw) {
+            if (!raw.hasOwnProperty(key) || isUnsafeKey(key))
+                continue;
+            out[key] = parseMaybeJson(raw[key]);
+        }
+        return out;
+    }
+    function hasRunningConfigSystem(nk, system, gameId) {
+        if (system === QUEST_ENGINE_SYSTEM && !gameId)
+            return false;
+        var experiments = ConfigLoader.loadSatoriConfigForGame(nk, "experiments", gameId, {});
+        for (var expId in experiments) {
+            var exp = experiments[expId];
+            if (exp && exp.status === "running" && exp.configSystem === system)
+                return true;
+        }
+        return false;
+    }
+    // Overlay existing quests only. Reward replaces the whole object (no currency merge).
+    function applyQuestEngineOverlay(config, overlay) {
+        if (!config || !config.quests || !overlay || !overlay.quests || typeof overlay.quests !== "object") {
+            return config;
+        }
+        var patched = overlay.quests;
+        for (var questId in patched) {
+            if (!patched.hasOwnProperty(questId) || isUnsafeKey(questId))
+                continue;
+            if (!config.quests.hasOwnProperty(questId))
+                continue;
+            var src = patched[questId];
+            if (!src || typeof src !== "object" || Array.isArray(src))
+                continue;
+            var dest = config.quests[questId];
+            if (src.hasOwnProperty("reward") && QUEST_ENGINE_OVERLAY_ALLOWLIST.reward) {
+                dest.reward = deepClone(src.reward);
+            }
+            if (src.hasOwnProperty("hidden") && QUEST_ENGINE_OVERLAY_ALLOWLIST.hidden) {
+                dest.hidden = !!src.hidden;
+            }
+            if (src.hasOwnProperty("enabled") && QUEST_ENGINE_OVERLAY_ALLOWLIST.enabled) {
+                dest.enabled = !!src.enabled;
+            }
+            if (src.hasOwnProperty("name") && QUEST_ENGINE_OVERLAY_ALLOWLIST.name && typeof src.name === "string") {
+                dest.name = src.name;
+            }
+            if (src.hasOwnProperty("description") && QUEST_ENGINE_OVERLAY_ALLOWLIST.description &&
+                (src.description == null || typeof src.description === "string")) {
+                dest.description = src.description;
+            }
+        }
+        return config;
+    }
+    HiroPersonalizers.applyQuestEngineOverlay = applyQuestEngineOverlay;
+    function applySystemOverlay(system, config, overlay) {
+        if (!overlay)
+            return config;
+        if (system === QUEST_ENGINE_SYSTEM)
+            return applyQuestEngineOverlay(config, overlay);
+        return mergeDeep(config, overlay);
     }
     // ---- Storage Personalizer ----
     function applyStorageOverrides(nk, userId, system, config, gameId) {
@@ -130864,18 +131244,16 @@ var HiroPersonalizers;
         return config;
     }
     // ---- Satori Personalizer (feature flags + experiments) ----
-    function applySatoriOverrides(nk, userId, system, config, gameId) {
+    function applySatoriOverrides(nk, userId, system, config, gameId, logger) {
         // Check feature flags for config overrides
         var flagName = "hiro_" + system + "_override";
         var flag = SatoriFeatureFlags.getFlag(nk, userId, flagName, undefined, gameId);
         if (flag && flag.value) {
             try {
-                var flagOverrides = JSON.parse(flag.value);
-                config = mergeDeep(config, flagOverrides);
+                config = applySystemOverlay(system, config, JSON.parse(flag.value));
             }
             catch (_) { }
         }
-        // Check experiment variants for config overrides
         var experiments = ConfigLoader.loadSatoriConfigForGame(nk, "experiments", gameId, {});
         for (var expId in experiments) {
             var exp = experiments[expId];
@@ -130883,19 +131261,11 @@ var HiroPersonalizers;
                 continue;
             if (!exp.configSystem || exp.configSystem !== system)
                 continue;
-            var variant = SatoriExperiments.getVariant(nk, userId, expId, gameId);
-            if (variant && variant.config) {
+            var variant = SatoriExperiments.getVariant(nk, userId, expId, gameId, logger);
+            var overlay = normalizeVariantOverlay(variant);
+            if (overlay) {
                 try {
-                    var variantOverrides = {};
-                    for (var key in variant.config) {
-                        try {
-                            variantOverrides[key] = JSON.parse(variant.config[key]);
-                        }
-                        catch (_) {
-                            variantOverrides[key] = variant.config[key];
-                        }
-                    }
-                    config = mergeDeep(config, variantOverrides);
+                    config = applySystemOverlay(system, config, overlay);
                 }
                 catch (_) { }
             }
@@ -130903,10 +131273,20 @@ var HiroPersonalizers;
         return config;
     }
     // ---- Public API ----
-    function personalize(nk, userId, system, baseConfig, gameId) {
+    function personalize(nk, userId, system, baseConfig, gameId, logger) {
+        // Fast path: no running quest_engine experiment → skip overlay clone/merge.
+        // Storage overrides still apply if present.
+        if (system === QUEST_ENGINE_SYSTEM && !hasRunningConfigSystem(nk, system, gameId)) {
+            var stored = Storage.readJson(nk, OVERRIDES_COLLECTION, Constants.gameKey(gameId, "overrides"), userId);
+            if (!stored || !stored.overrides || !stored.overrides[system] || stored.overrides[system].length === 0) {
+                return baseConfig;
+            }
+            var storageOnly = deepClone(baseConfig);
+            return applyStorageOverrides(nk, userId, system, storageOnly, gameId);
+        }
         var config = deepClone(baseConfig);
         config = applyStorageOverrides(nk, userId, system, config, gameId);
-        config = applySatoriOverrides(nk, userId, system, config, gameId);
+        config = applySatoriOverrides(nk, userId, system, config, gameId, logger);
         return config;
     }
     HiroPersonalizers.personalize = personalize;
@@ -130970,10 +131350,41 @@ var HiroPersonalizers;
         var data = RpcHelpers.parseRpcPayload(payload);
         if (!data.userId || !data.system)
             return RpcHelpers.errorResponse("userId and system required");
-        var gameId = RpcHelpers.gameId(data);
-        var base = ConfigLoader.loadConfigForGame(nk, data.system, gameId, {});
-        var personalized = personalize(nk, data.userId, data.system, base, gameId);
-        return RpcHelpers.successResponse({ system: data.system, userId: data.userId, baseConfig: base, personalizedConfig: personalized });
+        var rawGame = RpcHelpers.gameId(data) || "";
+        var gameId = (rawGame === "default" || rawGame === Constants.DEFAULT_GAME_ID)
+            ? Constants.QUIZVERSE_GAME_ID
+            : rawGame;
+        var base;
+        if (data.system === QUEST_ENGINE_SYSTEM) {
+            RpcHelpers.requireAdmin(ctx, nk);
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required (registry UUID). Use default only as the QuizVerse alias.");
+            if (typeof QuestEngine === "undefined" || !QuestEngine.loadRawConfig) {
+                return RpcHelpers.errorResponse("quest engine unavailable");
+            }
+            base = QuestEngine.loadRawConfig(nk, gameId);
+        }
+        else {
+            base = ConfigLoader.loadConfigForGame(nk, data.system, gameId, {});
+        }
+        var personalized = personalize(nk, data.userId, data.system, base, gameId, logger);
+        var experiment = null;
+        if (data.system === QUEST_ENGINE_SYSTEM) {
+            try {
+                if (typeof SatoriExperiments !== "undefined" && SatoriExperiments.getRunningQuestEngineAttribution) {
+                    experiment = SatoriExperiments.getRunningQuestEngineAttribution(nk, data.userId, gameId);
+                }
+            }
+            catch (_) { }
+        }
+        return RpcHelpers.successResponse({
+            system: data.system,
+            userId: data.userId,
+            gameId: gameId || null,
+            baseConfig: base,
+            personalizedConfig: personalized,
+            experiment: experiment
+        });
     }
     function register(initializer) {
         __rpc_hiro_personalizer_set_override = rpcSetOverride;
@@ -134444,7 +134855,7 @@ var IdentityResolver;
 //   - wallets (sum-merge currencies+items, per-currency fraud cap, zero ghost)
 //   - hiro_progression / hiro_streaks / hiro_stats / hiro_inventory /
 //     hiro_achievements (copy-if-absent — destination keeps its own state)
-//   - daily_rewards, qv_seen, qv_quests, badges, characters (copy-if-absent)
+//   - daily_rewards, qv_seen, qv_quests, badges, characters, satori_assignments (copy-if-absent)
 // Leaderboard records are owner-immutable → NOT ported (accepted, logged).
 //
 // Idempotency: merge_idem_{ghost}_{cognito} (same pattern as account_merge).
@@ -134474,6 +134885,7 @@ var QuizverseMerge;
             "qv_quests",
             "badges",
             "characters",
+            Constants.SATORI_ASSIGNMENTS_COLLECTION,
         ];
     }
     function isServiceCaller(ctx, payload) {
@@ -162029,7 +162441,9 @@ var QuestEventBusBridge;
     function resolveQuestGameId(data) {
         var id = (data && (data.gameId || data.game_id || data.appId || data.app_id))
             ? String(data.gameId || data.game_id || data.appId || data.app_id)
-            : Constants.QUIZVERSE_GAME_ID;
+            : "";
+        if (!id)
+            return "";
         if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
             return Constants.QUIZVERSE_GAME_ID;
         }
@@ -162047,6 +162461,10 @@ var QuestEventBusBridge;
         // Extract common fields from event data — same tenant alias as quest_engine.resolveGameId
         // (local copy avoids cross-namespace eval-order issues in the merged Goja bundle).
         var gameId = resolveQuestGameId(data);
+        if (!gameId) {
+            logger.warn("[QuestEventBusBridge] skip event without gameId event=%s user=%s", eventName, ctx.userId);
+            return;
+        }
         var value = extractValue(eventName, data);
         var metadata = extractMetadata(eventName, data);
         logger.debug("[QuestEventBusBridge] Processing event=%s → questEventType=%s user=%s game=%s value=%d", eventName, questEventType, ctx.userId, gameId, value);
@@ -162251,6 +162669,174 @@ var QuestEngine;
         }
         return DEFAULT_QUESTS_CONFIG;
     }
+    // Admin preview / personalizer: raw jar only (no overlay).
+    function loadRawConfig(nk, gameId) {
+        return loadConfig(nk, gameId);
+    }
+    QuestEngine.loadRawConfig = loadRawConfig;
+    // Player-facing config: base quest list + Satori/Hiro overlay.
+    // Admin save/get MUST keep using loadConfig (raw). Overlay failure never
+    // breaks gameplay — fall back to the stored list.
+    var QUEST_ENGINE_SYSTEM = "quest_engine";
+    function loadPlayerConfig(nk, logger, userId, gameId) {
+        var base = loadConfig(nk, gameId);
+        if (!userId)
+            return base;
+        try {
+            if (typeof HiroPersonalizers !== "undefined" && HiroPersonalizers.personalize) {
+                return HiroPersonalizers.personalize(nk, userId, QUEST_ENGINE_SYSTEM, base, gameId, logger);
+            }
+        }
+        catch (err) {
+            logger.warn("[QuestEngine] overlay skipped gameId=%s user=%s: %s", gameId, userId, err && err.message ? err.message : String(err));
+        }
+        return base;
+    }
+    function loadConfigRecord(nk, gameId) {
+        var rows = [];
+        try {
+            rows = nk.storageRead([{
+                    collection: QUEST_CONFIG_COLLECTION,
+                    key: configKey(gameId),
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+        }
+        catch (_) { }
+        if (rows && rows.length > 0 && rows[0].value) {
+            return { config: rows[0].value, version: rows[0].version || "" };
+        }
+        return { config: loadConfig(nk, gameId), version: "" };
+    }
+    function saveConfigOcc(nk, gameId, config, version) {
+        try {
+            var writeObj = {
+                collection: QUEST_CONFIG_COLLECTION,
+                key: configKey(gameId),
+                userId: Constants.SYSTEM_USER_ID,
+                value: config,
+                permissionRead: 2,
+                permissionWrite: 0
+            };
+            if (version)
+                writeObj.version = version;
+            nk.storageWrite([writeObj]);
+            return true;
+        }
+        catch (_e) {
+            return false;
+        }
+    }
+    function cloneJson(obj) {
+        return JSON.parse(JSON.stringify(obj == null ? {} : obj));
+    }
+    function hashQuestsConfig(config) {
+        var quests = (config && config.quests) || {};
+        var ids = [];
+        for (var k in quests) {
+            if (quests.hasOwnProperty(k))
+                ids.push(k);
+        }
+        ids.sort();
+        var parts = [];
+        for (var i = 0; i < ids.length; i++) {
+            parts.push(ids[i] + ":" + JSON.stringify(quests[ids[i]]));
+        }
+        var s = parts.join("\n");
+        var hash = 0;
+        for (var c = 0; c < s.length; c++) {
+            hash = ((hash << 5) - hash) + s.charCodeAt(c);
+            hash = hash & 0x7FFFFFFF;
+        }
+        return String(hash) + ":" + String(s.length);
+    }
+    function applyWinnerOverlay(base, overlay) {
+        var copy = cloneJson(base);
+        if (!copy.quests)
+            copy.quests = {};
+        if (typeof HiroPersonalizers !== "undefined" && HiroPersonalizers.applyQuestEngineOverlay) {
+            return HiroPersonalizers.applyQuestEngineOverlay(copy, overlay || { quests: {} });
+        }
+        return copy;
+    }
+    // Prepare → write → verify. Caller persists experiment promotion state between
+    // steps so a crash can resume. Never ends the experiment here.
+    function runPromoteStep(nk, logger, gameId, overlay, step, ctx) {
+        if (!gameId)
+            return { ok: false, error: "gameId required" };
+        var experimentId = ctx && ctx.experimentId ? String(ctx.experimentId) : "";
+        var variantId = ctx && ctx.variantId ? String(ctx.variantId) : "";
+        var now = Math.floor(Date.now() / 1000);
+        if (step === "prepare") {
+            var rec = loadConfigRecord(nk, gameId);
+            var desired = applyWinnerOverlay(rec.config, overlay);
+            var desiredHash = hashQuestsConfig(desired);
+            var auditKey = "promote_" + experimentId + "_" + now;
+            try {
+                nk.storageWrite([{
+                        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                        key: auditKey,
+                        userId: Constants.SYSTEM_USER_ID,
+                        value: {
+                            gameId: gameId,
+                            experimentId: experimentId,
+                            variantId: variantId,
+                            actor: "promote",
+                            timestamp: now,
+                            previous: rec.config,
+                            desired: desired,
+                            desiredHash: desiredHash,
+                            promotion: true
+                        },
+                        permissionRead: 2,
+                        permissionWrite: 0
+                    }]);
+            }
+            catch (err) {
+                logger.warn("[QuestEngine] promote audit failed: %s", err && err.message ? err.message : String(err));
+                return { ok: false, error: "failed to snapshot quest config" };
+            }
+            logger.info("[QuestEngine] promote prepared gameId=%s experiment=%s variant=%s auditKey=%s", gameId, experimentId, variantId, auditKey);
+            return { ok: true, auditKey: auditKey, desiredHash: desiredHash };
+        }
+        if (step === "write") {
+            var auditKeyW = ctx && ctx.auditKey ? String(ctx.auditKey) : "";
+            var desiredHashW = ctx && ctx.desiredHash ? String(ctx.desiredHash) : "";
+            if (!auditKeyW)
+                return { ok: false, error: "auditKey required" };
+            var auditRows = [];
+            try {
+                auditRows = nk.storageRead([{
+                        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                        key: auditKeyW,
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+            }
+            catch (_) { }
+            var audit = (auditRows && auditRows.length > 0 && auditRows[0].value) ? auditRows[0].value : null;
+            if (!audit || !audit.desired)
+                return { ok: false, error: "promote audit missing" };
+            var live = loadConfigRecord(nk, gameId);
+            if (hashQuestsConfig(live.config) === (audit.desiredHash || desiredHashW)) {
+                return { ok: true, auditKey: auditKeyW, desiredHash: audit.desiredHash || desiredHashW };
+            }
+            if (!saveConfigOcc(nk, gameId, audit.desired, live.version)) {
+                return { ok: false, error: "quest config changed during promote; retry" };
+            }
+            logger.info("[QuestEngine] promote wrote gameId=%s experiment=%s auditKey=%s", gameId, experimentId, auditKeyW);
+            return { ok: true, auditKey: auditKeyW, desiredHash: audit.desiredHash || desiredHashW };
+        }
+        if (step === "verify") {
+            var want = ctx && ctx.desiredHash ? String(ctx.desiredHash) : "";
+            var liveV = loadConfig(nk, gameId);
+            var got = hashQuestsConfig(liveV);
+            if (!want || got !== want) {
+                return { ok: false, error: "promote verify failed: quest config hash mismatch", desiredHash: want };
+            }
+            return { ok: true, desiredHash: got, auditKey: ctx && ctx.auditKey ? String(ctx.auditKey) : "" };
+        }
+        return { ok: false, error: "unknown promote step" };
+    }
+    QuestEngine.runPromoteStep = runPromoteStep;
     function saveConfig(nk, gameId, config) {
         nk.storageWrite([{
                 collection: QUEST_CONFIG_COLLECTION,
@@ -162443,10 +163029,94 @@ var QuestEngine;
                 completedAt: null,
                 claimedAt: null,
                 resetCount: 0,
-                lastResetAt: null
+                lastResetAt: null,
+                rewardSnapshot: null,
+                abAttribution: null
             };
         }
         return state.quests[questId];
+    }
+    function cloneReward(reward) {
+        try {
+            return JSON.parse(JSON.stringify(reward));
+        }
+        catch (_) {
+            return reward;
+        }
+    }
+    function stampRewardSnapshot(progress, reward) {
+        if (progress.rewardSnapshot)
+            return;
+        if (!reward)
+            return;
+        progress.rewardSnapshot = cloneReward(reward);
+    }
+    function effectiveReward(progress, qConfig) {
+        if (progress && progress.rewardSnapshot)
+            return progress.rewardSnapshot;
+        return (qConfig && qConfig.reward) ? qConfig.reward : undefined;
+    }
+    function rewardPreviewOf(progress, qConfig) {
+        var reward = effectiveReward(progress, qConfig);
+        return (reward && reward.guaranteed) ? reward.guaranteed : null;
+    }
+    function loadQuestAbContext(nk, userId, gameId) {
+        try {
+            if (typeof SatoriExperiments !== "undefined" && SatoriExperiments.getRunningQuestEngineAttribution) {
+                return SatoriExperiments.getRunningQuestEngineAttribution(nk, userId, gameId);
+            }
+        }
+        catch (_) { }
+        return null;
+    }
+    function isTrackedQuest(ctx, questId) {
+        if (!ctx || !questId)
+            return false;
+        var tracked = ctx.trackedQuestIds;
+        if (!tracked || tracked.length === 0)
+            return false;
+        for (var i = 0; i < tracked.length; i++) {
+            if (tracked[i] === questId)
+                return true;
+        }
+        return false;
+    }
+    // First write wins. Overlay stop / new phase / promote cannot rewrite history.
+    // Untracked quests get no stamp so later completes cannot count as conversions.
+    function stampAbAttribution(progress, ctx, questId, now) {
+        if (!progress || !ctx || !questId)
+            return false;
+        if (progress.abAttribution)
+            return false;
+        if (!isTrackedQuest(ctx, questId))
+            return false;
+        progress.abAttribution = {
+            experimentId: ctx.experimentId,
+            variantId: ctx.variantId,
+            phaseId: ctx.phaseId || null,
+            configRevision: String(ctx.configRevision || ""),
+            gameId: ctx.gameId,
+            questId: questId,
+            exposedAt: now
+        };
+        return true;
+    }
+    function recordAbFunnel(nk, logger, userId, progress, step) {
+        var a = progress && progress.abAttribution;
+        if (!a || !a.experimentId || !a.variantId || !userId)
+            return;
+        try {
+            SatoriExperiments.recordQuestFunnelStep(nk, logger, {
+                userId: userId,
+                gameId: a.gameId,
+                experimentId: a.experimentId,
+                variantId: a.variantId,
+                step: step
+            });
+        }
+        catch (err) {
+            logger.warn("[QuestEngine] funnel %s failed: %s", step, err && err.message ? err.message : String(err));
+        }
     }
     function getStepCount(progress, stepId) {
         return (progress.steps[stepId] && progress.steps[stepId].count) || 0;
@@ -162470,10 +163140,17 @@ var QuestEngine;
     function isQuestEnabled(config) {
         return config.enabled !== false; // default true when omitted
     }
+    function hasInFlightProgress(progress) {
+        return !!(progress && (progress.startedAt || progress.completedAt));
+    }
     function isQuestVisible(config, progress) {
+        // A/B overlay (or liveops) may set hidden/enabled:false. Never hide a
+        // quest the player already started or completed — including unclaimed.
+        if (hasInFlightProgress(progress))
+            return true;
         if (!isQuestEnabled(config))
             return false;
-        if (config.hidden && !progress.completedAt)
+        if (config.hidden)
             return false;
         return true;
     }
@@ -162628,6 +163305,8 @@ var QuestEngine;
         progress.startedAt = null;
         progress.completedAt = null;
         progress.claimedAt = null;
+        progress.rewardSnapshot = null;
+        progress.abAttribution = null;
         progress.resetCount = (progress.resetCount || 0) + 1;
         progress.lastResetAt = now;
     }
@@ -162650,10 +163329,11 @@ var QuestEngine;
         }
         return true;
     }
+    var GAME_ID_REQUIRED = "gameId required (registry UUID). Use default only as the QuizVerse alias.";
     function resolveGameId(data) {
-        var id = RpcHelpers.gameId(data) || Constants.QUIZVERSE_GAME_ID;
-        // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID so
-        // Unity quest_engine_get and LiveOps share the same storage keys.
+        var id = RpcHelpers.gameId(data) || "";
+        // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID only.
+        // Missing ids must not steal QuizVerse quests.
         if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
             return Constants.QUIZVERSE_GAME_ID;
         }
@@ -162661,22 +163341,33 @@ var QuestEngine;
     }
     // ─── RPC: quest_engine_get ─────────────────────────────────────────────────
     // Returns all non-expired quests with per-step progress for the calling user.
-    // Read-only: only writes state when a repeatable reset actually occurred.
+    // Writes state on repeatable reset and on first A/B exposure stamp.
+    // Never sends experiment ids to Unity.
     function rpcQuestEngineGet(ctx, logger, nk, payload) {
-        var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
+        var userId;
+        if (isAdminCaller(ctx) && data.userId) {
+            userId = String(data.userId);
+        }
+        else {
+            userId = RpcHelpers.requireUserId(ctx);
+        }
         var now = Math.floor(Date.now() / 1000);
         // Opt player into new-quest inbox fan-out for this App-ID
         try {
             subscribeUser(nk, gameId, userId);
         }
         catch (_) { }
-        var config = loadConfig(nk, gameId);
+        var config = loadPlayerConfig(nk, logger, userId, gameId);
         var state = loadUserState(nk, userId, gameId);
         var stateModified = false;
+        var abCtx = loadQuestAbContext(nk, userId, gameId);
         var result = [];
         var questIds = Object.keys(config.quests);
+        var funnelExposeProgress = null;
         for (var i = 0; i < questIds.length; i++) {
             var questId = questIds[i];
             var qConfig = config.quests[questId];
@@ -162689,6 +163380,10 @@ var QuestEngine;
             }
             if (!isQuestVisible(qConfig, progress))
                 continue;
+            if (stampAbAttribution(progress, abCtx, questId, now))
+                stateModified = true;
+            if (progress.abAttribution)
+                funnelExposeProgress = progress;
             var unlocked = isQuestUnlocked(qConfig, state);
             var stepsOut = [];
             for (var s = 0; s < qConfig.steps.length; s++) {
@@ -162718,20 +163413,34 @@ var QuestEngine;
                 // Guaranteed-only preview so clients can render "you'll earn X" without
                 // ever needing their own copy of the reward config. Weighted/random
                 // rewards stay unexposed until granted, so surprises stay surprises.
-                rewardPreview: (qConfig.reward && qConfig.reward.guaranteed) ? qConfig.reward.guaranteed : null,
+                rewardPreview: rewardPreviewOf(progress, qConfig),
                 additionalProperties: qConfig.additionalProperties || null
             });
         }
-        // Only write to storage if a repeatable reset changed the state
+        // Write on repeatable reset or first A/B exposure stamp.
         if (stateModified) {
             saveUserState(nk, userId, gameId, state);
         }
-        return RpcHelpers.successResponse({ quests: result });
+        if (funnelExposeProgress) {
+            recordAbFunnel(nk, logger, userId, funnelExposeProgress, "exposed");
+        }
+        var payloadOut = { quests: result };
+        if (data.debug === true && isAdminCaller(ctx) && abCtx) {
+            payloadOut.debug = {
+                experiment: {
+                    experimentId: abCtx.experimentId,
+                    variantId: abCtx.variantId,
+                    gameId: gameId
+                }
+            };
+        }
+        return RpcHelpers.successResponse(payloadOut);
     }
     function processEventInternal(nk, logger, ctx, userId, gameId, eventType, value, metadata) {
         var now = Math.floor(Date.now() / 1000);
-        var config = loadConfig(nk, gameId);
+        var config = loadPlayerConfig(nk, logger, userId, gameId);
         var state = loadUserState(nk, userId, gameId);
+        var abCtx = loadQuestAbContext(nk, userId, gameId);
         var updatedCount = 0;
         var updatedQuests = {};
         // Track quests that completed this call and need auto-reward granting
@@ -162750,6 +163459,11 @@ var QuestEngine;
             if (shouldResetQuest(qConfig, progress, now)) {
                 resetQuestProgress(progress, now);
             }
+            // Overlay enabled:false must not start new work. In-flight (started or
+            // completed-unclaimed) still progresses so the player can finish/claim.
+            // Hidden surprise quests still progress in the background.
+            if (!isQuestEnabled(qConfig) && !hasInFlightProgress(progress))
+                continue;
             // Skip quests that are still completed (non-repeatable, or repeatable window not expired yet)
             if (progress.completedAt)
                 continue;
@@ -162763,8 +163477,12 @@ var QuestEngine;
                 if (!progress.steps[stepCfg.id]) {
                     progress.steps[stepCfg.id] = { count: 0, completedAt: null };
                 }
-                if (!progress.startedAt)
+                if (!progress.startedAt) {
                     progress.startedAt = now;
+                    stampRewardSnapshot(progress, qConfig.reward);
+                    stampAbAttribution(progress, abCtx, questId, now);
+                    recordAbFunnel(nk, logger, userId, progress, "started");
+                }
                 var prevCount = progress.steps[stepCfg.id].count;
                 // For count-based steps (requiredValue not set) increment by 1 each event.
                 // For accumulation steps (e.g. "earn 500 XP") increment by the event value.
@@ -162793,17 +163511,24 @@ var QuestEngine;
                 if (areAllStepsDone(qConfig, progress) && !progress.completedAt) {
                     progress.completedAt = now;
                     try {
-                        EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_COMPLETED, {
-                            userId: userId, questId: questId
-                        });
+                        var emitData = { userId: userId, questId: questId, gameId: gameId };
+                        if (progress.abAttribution) {
+                            emitData.experimentId = progress.abAttribution.experimentId;
+                            emitData.variantId = progress.abAttribution.variantId;
+                            emitData.phaseId = progress.abAttribution.phaseId;
+                            emitData.configRevision = progress.abAttribution.configRevision;
+                            emitData.exposedAt = progress.abAttribution.exposedAt;
+                        }
+                        EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_COMPLETED, emitData);
                     }
                     catch (busErr) {
                         logger.warn("[QuestEngine] EventBus quest emit failed: " + (busErr && busErr.message ? busErr.message : String(busErr)));
                     }
                     logger.info("[QuestEngine] Quest completed: quest=%s user=%s", questId, userId);
                     // Queue reward for Phase 3 — do NOT grant yet (state not saved)
-                    if (qConfig.reward) {
-                        rewardPending.push({ questId: questId, reward: qConfig.reward });
+                    var payoutReward = effectiveReward(progress, qConfig);
+                    if (payoutReward) {
+                        rewardPending.push({ questId: questId, reward: payoutReward });
                     }
                 }
                 updatedQuests[questId] = {
@@ -162830,6 +163555,7 @@ var QuestEngine;
                 state.quests[rq.questId].claimedAt = now;
                 updatedQuests[rq.questId].claimedAt = now;
                 anyClaimedAt = true;
+                recordAbFunnel(nk, logger, userId, state.quests[rq.questId], "claimed");
                 logger.info("[QuestEngine] Reward auto-granted: quest=%s user=%s", rq.questId, userId);
                 // Server-driven fulfilment + player notification (reward catalog).
                 // Isolated: delivery problems never roll back grants or progress.
@@ -162869,6 +163595,8 @@ var QuestEngine;
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var eventType = data.eventType;
         var value = (data.value !== undefined && data.value !== null) ? Number(data.value) : 0;
         var metadata = data.metadata || {};
@@ -162971,13 +163699,16 @@ var QuestEngine;
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var questId = data.questId;
         if (!questId)
             return RpcHelpers.errorResponse("questId is required");
-        var config = loadConfig(nk, gameId);
+        var config = loadPlayerConfig(nk, logger, userId, gameId);
         var qConfig = config.quests[questId];
         if (!qConfig)
             return RpcHelpers.errorResponse("Unknown quest: " + questId);
+        // Overlay hidden/enabled:false must not block a completed-unclaimed claim.
         // Fast-path checks for clean error messages — the authoritative guard is
         // the OCC-guarded marker write below.
         var peek = loadUserState(nk, userId, gameId);
@@ -162986,7 +163717,8 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Quest not completed");
         if (peekProgress.claimedAt)
             return RpcHelpers.errorResponse("Quest reward already claimed");
-        if (!qConfig.reward)
+        var payReward = effectiveReward(peekProgress, qConfig);
+        if (!payReward)
             return RpcHelpers.successResponse({ reward: null });
         var now = Math.floor(Date.now() / 1000);
         // F14 SECURITY: persist claimedAt FIRST with an OCC version CAS, before
@@ -163003,7 +163735,7 @@ var QuestEngine;
         // Marker is durable — only now resolve and grant the reward.
         var resolved;
         try {
-            resolved = RewardEngine.resolveReward(nk, qConfig.reward);
+            resolved = RewardEngine.resolveReward(nk, payReward);
             RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
         }
         catch (grantErr) {
@@ -163018,6 +163750,7 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Reward grant failed — please retry");
         }
         logger.info("[QuestEngine] Reward claimed manually: quest=%s user=%s", questId, userId);
+        recordAbFunnel(nk, logger, userId, peekProgress, "claimed");
         // Same server-driven fulfilment path as auto-grant (catalog + notification).
         try {
             RewardDelivery.onQuestReward(nk, logger, ctx, userId, gameId, questId, qConfig.name || questId, resolved);
@@ -163027,6 +163760,126 @@ var QuestEngine;
         }
         return RpcHelpers.successResponse({ reward: resolved });
     }
+    function persistAdminConfig(nk, ctx, logger, gameId, config, opts) {
+        if (!config || !config.quests || typeof config.quests !== "object" || Array.isArray(config.quests)) {
+            return { ok: false, error: "config.quests object required" };
+        }
+        var cleaned = {};
+        var rawKeys = Object.keys(config.quests);
+        for (var ck = 0; ck < rawKeys.length; ck++) {
+            var ckId = rawKeys[ck];
+            if (ckId === "__proto__" || ckId === "constructor" || ckId === "prototype")
+                continue;
+            cleaned[ckId] = config.quests[ckId];
+        }
+        config = { quests: cleaned };
+        var questCount = Object.keys(config.quests).length;
+        var validationErrors = [];
+        var questKeys = Object.keys(config.quests);
+        for (var vi = 0; vi < questKeys.length; vi++) {
+            var vq = config.quests[questKeys[vi]];
+            var verr = validateQuestConfig(vq);
+            if (verr)
+                validationErrors.push((vq && vq.id ? vq.id : questKeys[vi]) + ": " + verr);
+        }
+        if (validationErrors.length > 0) {
+            return { ok: false, error: "Invalid quest config: " + validationErrors.join("; ") };
+        }
+        var prev = loadConfig(nk, gameId);
+        var prevIds = {};
+        var prevKeys = Object.keys(prev.quests || {});
+        for (var pi = 0; pi < prevKeys.length; pi++)
+            prevIds[prevKeys[pi]] = true;
+        var newlyAdded = [];
+        var newKeys = Object.keys(config.quests);
+        for (var ni = 0; ni < newKeys.length; ni++) {
+            var nid = newKeys[ni];
+            if (!prevIds[nid])
+                newlyAdded.push(config.quests[nid]);
+        }
+        saveConfig(nk, gameId, config);
+        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+        var newIds = [];
+        for (var ai = 0; ai < newlyAdded.length; ai++)
+            newIds.push(newlyAdded[ai].id);
+        auditConfigChange(nk, ctx, logger, gameId, config, newIds);
+        var notified = 0;
+        if (!opts.silent && newlyAdded.length > 0) {
+            notified = notifyNewQuests(nk, logger, gameId, newlyAdded, opts.notifyUserIds);
+        }
+        return { ok: true, questCount: questCount, newQuestCount: newlyAdded.length, notified: notified };
+    }
+    // Put the pre-promote quest list back. Writes through persistAdminConfig
+    // (same door as quest_engine_admin_save_config). Does not reopen the test.
+    function restorePromoteAudit(nk, logger, ctx, gameId, auditKey) {
+        if (!auditKey)
+            return { ok: false, error: "auditKey required" };
+        if (!gameId)
+            return { ok: false, error: "gameId required" };
+        var auditRows = [];
+        try {
+            auditRows = nk.storageRead([{
+                    collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                    key: auditKey,
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+        }
+        catch (_) { }
+        var audit = (auditRows && auditRows.length > 0 && auditRows[0].value) ? auditRows[0].value : null;
+        if (!audit || audit.promotion !== true || !audit.previous || !audit.previous.quests) {
+            return { ok: false, error: "promote audit snapshot missing" };
+        }
+        var auditGame = audit.gameId ? String(audit.gameId) : "";
+        if (auditGame && auditGame !== gameId) {
+            return { ok: false, error: "audit gameId does not match" };
+        }
+        var previous = cloneJson(audit.previous);
+        var live = loadConfig(nk, gameId);
+        var liveHash = hashQuestsConfig(live);
+        var prevHash = hashQuestsConfig(previous);
+        var desiredHash = audit.desiredHash ? String(audit.desiredHash) : hashQuestsConfig(audit.desired);
+        if (liveHash === prevHash) {
+            return {
+                ok: true, already: true, restored: true, experimentId: audit.experimentId ? String(audit.experimentId) : ""
+            };
+        }
+        if (desiredHash && liveHash !== desiredHash) {
+            return { ok: false, error: "quest list changed after promote; cannot restore" };
+        }
+        var saved = persistAdminConfig(nk, ctx, logger, gameId, previous, { silent: true });
+        if (!saved.ok)
+            return { ok: false, error: saved.error || "restore save failed" };
+        var now = Math.floor(Date.now() / 1000);
+        var experimentId = audit.experimentId ? String(audit.experimentId) : "";
+        var restoreAuditKey = "restore_" + experimentId + "_" + now;
+        try {
+            nk.storageWrite([{
+                    collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                    key: restoreAuditKey,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: {
+                        gameId: gameId,
+                        experimentId: experimentId,
+                        actor: "restore",
+                        timestamp: now,
+                        restoreOf: auditKey,
+                        previous: live,
+                        desired: previous,
+                        restore: true
+                    },
+                    permissionRead: 2,
+                    permissionWrite: 0
+                }]);
+        }
+        catch (err) {
+            logger.warn("[QuestEngine] restore audit failed: %s", err && err.message ? err.message : String(err));
+        }
+        logger.info("[QuestEngine] promote restored gameId=%s experiment=%s auditKey=%s restoreAuditKey=%s", gameId, experimentId, auditKey, restoreAuditKey);
+        return {
+            ok: true, restored: true, already: false, restoreAuditKey: restoreAuditKey, experimentId: experimentId
+        };
+    }
+    QuestEngine.restorePromoteAudit = restorePromoteAudit;
     // ─── RPC: quest_engine_admin_save_config ─────────────────────────────────
     // Saves quest config to storage. Server-key only — rejects authenticated users.
     //
@@ -163040,6 +163893,8 @@ var QuestEngine;
         }
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var config;
         // Shape (a): { config: { quests: { ... } } }
         if (data.config && data.config.quests && !Array.isArray(data.config.quests)) {
@@ -163060,55 +163915,17 @@ var QuestEngine;
         else {
             return RpcHelpers.errorResponse("Payload must contain config.quests (object) or quests (array)");
         }
-        var questCount = Object.keys(config.quests).length;
-        // Validate every quest before persisting.
-        var validationErrors = [];
-        var questKeys = Object.keys(config.quests);
-        for (var vi = 0; vi < questKeys.length; vi++) {
-            var vq = config.quests[questKeys[vi]];
-            var verr = validateQuestConfig(vq);
-            if (verr)
-                validationErrors.push(vq.id + ": " + verr);
-        }
-        if (validationErrors.length > 0) {
-            return RpcHelpers.errorResponse("Invalid quest config: " + validationErrors.join("; "));
-        }
-        // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
-        // silent: true  → skip fan-out (use for bulk reseed)
-        // notifyUserIds → extra targets (optional)
-        var prev = loadConfig(nk, gameId);
-        var prevIds = {};
-        var prevKeys = Object.keys(prev.quests || {});
-        for (var pi = 0; pi < prevKeys.length; pi++)
-            prevIds[prevKeys[pi]] = true;
-        var newlyAdded = [];
-        var newKeys = Object.keys(config.quests);
-        for (var ni = 0; ni < newKeys.length; ni++) {
-            var nid = newKeys[ni];
-            if (!prevIds[nid])
-                newlyAdded.push(config.quests[nid]);
-        }
-        saveConfig(nk, gameId, config);
-        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
-        // Audit log (best-effort)
-        var newIds = [];
-        for (var ai = 0; ai < newlyAdded.length; ai++)
-            newIds.push(newlyAdded[ai].id);
-        auditConfigChange(nk, ctx, logger, gameId, config, newIds);
-        var notified = 0;
-        var silent = data.silent === true || data.notifyNewQuests === false;
-        if (!silent && newlyAdded.length > 0) {
-            var extra;
-            if (Array.isArray(data.notifyUserIds)) {
-                extra = data.notifyUserIds;
-            }
-            notified = notifyNewQuests(nk, logger, gameId, newlyAdded, extra);
-        }
+        var saved = persistAdminConfig(nk, ctx, logger, gameId, config, {
+            silent: data.silent === true || data.notifyNewQuests === false,
+            notifyUserIds: Array.isArray(data.notifyUserIds) ? data.notifyUserIds : undefined
+        });
+        if (!saved.ok)
+            return RpcHelpers.errorResponse(saved.error || "failed to save quest config");
         return RpcHelpers.successResponse({
             saved: true,
-            questCount: questCount,
-            newQuestCount: newlyAdded.length,
-            notified: notified
+            questCount: saved.questCount,
+            newQuestCount: saved.newQuestCount,
+            notified: saved.notified
         });
     }
     // ─── RPC: quest_engine_admin_get_config ──────────────────────────────────
@@ -163119,6 +163936,8 @@ var QuestEngine;
         }
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var config = loadConfig(nk, gameId);
         var questCount = Object.keys(config.quests).length;
         logger.info("[QuestEngine] Config retrieved: gameId=%s quests=%d", gameId, questCount);
@@ -170178,7 +170997,9 @@ var SatoriEventBusBridge;
             EventBus.Events.CHALLENGE_COMPLETED,
             // Retention loop
             EventBus.Events.STREAK_UPDATED,
-            EventBus.Events.REWARD_GRANTED
+            EventBus.Events.REWARD_GRANTED,
+            // Quest A/B conversions — low frequency. Do not add QUEST_STEP_COMPLETED.
+            EventBus.Events.QUEST_COMPLETED
         ];
         return _subscribed;
     }
@@ -170227,6 +171048,11 @@ var SatoriEventBusBridge;
                 timestamp: Date.now(),
                 metadata: buildMetadata(eventName, data)
             });
+            if (eventName === EventBus.Events.QUEST_COMPLETED &&
+                typeof SatoriExperiments !== "undefined" &&
+                SatoriExperiments.recordQuestCompletedConversion) {
+                SatoriExperiments.recordQuestCompletedConversion(nk, logger, data);
+            }
         }
         catch (err) {
             // Never let analytics capture break the gameplay path.
@@ -170900,6 +171726,92 @@ var SatoriExperimentResults;
         var pValue = 2 * (1 - normalCdf(Math.abs(z)));
         return { z: z, pValue: pValue };
     }
+    var SRM_ALPHA = 0.001;
+    // Upper-tail P(χ²_df > x). df=1,2 closed form; else Wilson–Hilferty.
+    function chiSquareSurvival(chi2, df) {
+        if (!(chi2 > 0) || df < 1)
+            return 1;
+        if (chi2 === Infinity)
+            return 0;
+        if (df === 1)
+            return 2 * (1 - normalCdf(Math.sqrt(chi2)));
+        if (df === 2)
+            return Math.exp(-chi2 / 2);
+        var cuberoot = Math.pow(chi2 / df, 1 / 3);
+        var mu = 1 - 2 / (9 * df);
+        var sigma = Math.sqrt(2 / (9 * df));
+        if (sigma === 0)
+            return 1;
+        return 1 - normalCdf((cuberoot - mu) / sigma);
+    }
+    // Observed exposure counts vs configured variant weights.
+    function computeSrm(variants, exposures) {
+        var observed = {};
+        var expected = {};
+        var weights = {};
+        var totalN = 0;
+        var totalW = 0;
+        var keys = [];
+        for (var i = 0; i < variants.length; i++) {
+            var k = variantKeyOf(variants[i]);
+            if (!k)
+                continue;
+            keys.push(k);
+            var w = typeof variants[i].weight === "number" ? variants[i].weight : 1;
+            if (w < 0)
+                w = 0;
+            weights[k] = w;
+            observed[k] = exposures[k] || 0;
+            totalN += observed[k];
+            totalW += w;
+        }
+        var df = keys.length - 1;
+        if (keys.length < 2 || totalN < 1 || totalW <= 0 || df < 1) {
+            return {
+                chiSquare: 0, degreesOfFreedom: Math.max(df, 0), pValue: 1, alpha: SRM_ALPHA,
+                passed: true, skipped: true, observed: observed, expected: expected, weights: weights
+            };
+        }
+        var chi2 = 0;
+        var minExpected = Infinity;
+        var infinite = false;
+        for (var j = 0; j < keys.length; j++) {
+            var vk = keys[j];
+            var e = totalN * (weights[vk] / totalW);
+            expected[vk] = e;
+            if (e < minExpected)
+                minExpected = e;
+            if (e <= 0) {
+                if (observed[vk] > 0) {
+                    infinite = true;
+                    chi2 = Infinity;
+                }
+                continue;
+            }
+            var diff = observed[vk] - e;
+            chi2 += (diff * diff) / e;
+        }
+        if (minExpected < 5 && !infinite) {
+            return {
+                chiSquare: chi2, degreesOfFreedom: df, pValue: chiSquareSurvival(chi2, df),
+                alpha: SRM_ALPHA, passed: true, skipped: true,
+                observed: observed, expected: expected, weights: weights
+            };
+        }
+        var pValue = infinite ? 0 : chiSquareSurvival(chi2, df);
+        var passed = pValue >= SRM_ALPHA;
+        return {
+            chiSquare: infinite ? null : chi2,
+            degreesOfFreedom: df,
+            pValue: pValue,
+            alpha: SRM_ALPHA,
+            passed: passed,
+            skipped: false,
+            observed: observed,
+            expected: expected,
+            weights: weights
+        };
+    }
     // ---- Data collection ----
     function loadExperimentDef(nk, experimentId, gameId) {
         var experiments = ConfigLoader.loadSatoriConfigForGame(nk, "experiments", gameId, {});
@@ -170929,7 +171841,11 @@ var SatoriExperimentResults;
                     continue;
                 byUser[obj.userId] = {
                     variantKey: a.variantId,
-                    assignedAtMs: toMs(a.assignedAt || 0)
+                    assignedAtMs: toMs(a.assignedAt || 0),
+                    exposedAtMs: a.exposedAt ? toMs(a.exposedAt) : 0,
+                    startedAtMs: a.startedAt ? toMs(a.startedAt) : 0,
+                    convertedAtMs: a.convertedAt ? toMs(a.convertedAt) : 0,
+                    claimedAtMs: a.claimedAt ? toMs(a.claimedAt) : 0
                 };
             }
             cursor = (page && page.cursor) || "";
@@ -170979,6 +171895,102 @@ var SatoriExperimentResults;
             truncated = true;
         return { convertedUsers: convertedUsers, totalGoalEvents: totalGoalEvents, truncated: truncated, scannedRecords: scannedRecords };
     }
+    // Quest A/B: count convertedAt on the assignment. Unattributed quest_completed
+    // events must not convert (hidden quest, other game, complete before exposure).
+    function collectConvertedAt(byUser) {
+        var convertedUsers = {};
+        var total = 0;
+        for (var uid in byUser) {
+            if (!byUser.hasOwnProperty(uid))
+                continue;
+            if (byUser[uid].convertedAtMs) {
+                convertedUsers[uid] = true;
+                total++;
+            }
+        }
+        return { convertedUsers: convertedUsers, totalGoalEvents: total, truncated: false, scannedRecords: 0 };
+    }
+    function incCount(dest, key) {
+        dest[key] = (dest[key] || 0) + 1;
+    }
+    function unixToUtcDay(unixOrMs) {
+        var ms = unixOrMs < 100000000000 ? unixOrMs * 1000 : unixOrMs;
+        var d = new Date(ms);
+        var m = d.getUTCMonth() + 1;
+        var day = d.getUTCDate();
+        var mm = m < 10 ? "0" + m : String(m);
+        var dd = day < 10 ? "0" + day : String(day);
+        return d.getUTCFullYear() + "-" + mm + "-" + dd;
+    }
+    // Bounded repair: rebuild 32 shard docs from per-user assignment markers.
+    function rebuildFunnelShardsFromAssignments(nk, experimentId, gameId, byUser) {
+        var docs = [];
+        for (var i = 0; i < SatoriExperiments.FUNNEL_SHARD_COUNT; i++) {
+            docs.push(SatoriExperiments.emptyFunnelShardDoc());
+        }
+        for (var uid in byUser) {
+            if (!byUser.hasOwnProperty(uid))
+                continue;
+            var info = byUser[uid];
+            if (!info || !info.variantKey)
+                continue;
+            var shard = SatoriExperiments.funnelShardIndexOf(uid);
+            var doc = docs[shard];
+            incCount(doc.assigned, info.variantKey);
+            if (info.exposedAtMs)
+                incCount(doc.exposed, info.variantKey);
+            if (info.startedAtMs)
+                incCount(doc.started, info.variantKey);
+            if (info.convertedAtMs)
+                incCount(doc.completed, info.variantKey);
+            if (info.claimedAtMs)
+                incCount(doc.claimed, info.variantKey);
+            if (info.assignedAtMs) {
+                var dayA = unixToUtcDay(info.assignedAtMs);
+                if (!doc.byDay[dayA])
+                    doc.byDay[dayA] = { assigned: {}, completed: {} };
+                incCount(doc.byDay[dayA].assigned, info.variantKey);
+            }
+            if (info.convertedAtMs) {
+                var dayC = unixToUtcDay(info.convertedAtMs);
+                if (!doc.byDay[dayC])
+                    doc.byDay[dayC] = { assigned: {}, completed: {} };
+                incCount(doc.byDay[dayC].completed, info.variantKey);
+            }
+        }
+        SatoriExperiments.replaceFunnelShards(nk, gameId, experimentId, docs);
+    }
+    var MIN_SAMPLE_QA = 30;
+    var MIN_SAMPLE_LIVE = 100;
+    function isQaExperiment(def) {
+        var aid = String((def && def.audienceId) || "").toLowerCase();
+        if (!aid)
+            return false;
+        if (aid === "all" || aid === "quizverse_all_players" || aid.indexOf("all_player") >= 0)
+            return false;
+        return true;
+    }
+    function resolveMinSamplePerArm(def, data) {
+        var raw = (data && (data.minSample || data.min_sample || data.minSamplePerArm)) ||
+            (def && (def.minSamplePerArm || def.minSample));
+        var parsed = parseInt(String(raw == null ? "" : raw), 10);
+        if (parsed > 0) {
+            if (parsed > 100000)
+                parsed = 100000;
+            return { perArm: parsed, mode: "override" };
+        }
+        if (isQaExperiment(def))
+            return { perArm: MIN_SAMPLE_QA, mode: "qa" };
+        return { perArm: MIN_SAMPLE_LIVE, mode: "live" };
+    }
+    function countMapTotal(map) {
+        var total = 0;
+        for (var k in map) {
+            if (map.hasOwnProperty(k))
+                total += map[k] || 0;
+        }
+        return total;
+    }
     // ---- RPCs ----
     // satori_experiments_results — per-variant exposures, conversions, rates,
     // z-test vs control, and a recommendation.
@@ -171001,16 +172013,76 @@ var SatoriExperimentResults;
         if (variants.length < 2)
             return RpcHelpers.errorResponse("Experiment needs at least 2 variants for results");
         var maxEventPages = Math.min(Math.max(parseInt(data.max_event_pages, 10) || EVENTS_DEFAULT_PAGES, 1), EVENTS_MAX_PAGES);
-        var assignmentScan = collectAssignments(nk, experimentId, gameId);
-        var conversionScan = collectConversions(nk, goalEvent, assignmentScan.byUser, maxEventPages);
-        // Tally per variant.
+        var goalIsQuestCompleted = goalEvent === "quest_completed";
+        var shardSums = goalIsQuestCompleted
+            ? SatoriExperiments.loadFunnelShardSums(nk, gameId, experimentId)
+            : null;
+        var assignmentScan = null;
+        var reconciled = false;
+        if (goalIsQuestCompleted && data.reconcile === true) {
+            assignmentScan = collectAssignments(nk, experimentId, gameId);
+            rebuildFunnelShardsFromAssignments(nk, experimentId, gameId, assignmentScan.byUser);
+            shardSums = SatoriExperiments.loadFunnelShardSums(nk, gameId, experimentId);
+            reconciled = true;
+        }
+        var usedShards = !!(shardSums && shardSums.shardsPresent);
+        var conversionScan = {
+            convertedUsers: {},
+            totalGoalEvents: 0,
+            truncated: false,
+            scannedRecords: 0
+        };
         var exposures = {};
         var conversions = {};
-        for (var uid in assignmentScan.byUser) {
-            var vk = assignmentScan.byUser[uid].variantKey;
-            exposures[vk] = (exposures[vk] || 0) + 1;
-            if (conversionScan.convertedUsers[uid]) {
-                conversions[vk] = (conversions[vk] || 0) + 1;
+        var funnelAssigned = {};
+        var funnelExposed = {};
+        var funnelStarted = {};
+        var funnelCompleted = {};
+        var funnelClaimed = {};
+        var byDay = {};
+        if (usedShards) {
+            funnelAssigned = shardSums.assigned;
+            funnelExposed = shardSums.exposed;
+            funnelStarted = shardSums.started;
+            funnelCompleted = shardSums.completed;
+            funnelClaimed = shardSums.claimed;
+            byDay = shardSums.byDay || {};
+            conversions = shardSums.completed;
+            // Exposure is get-time, not assignment. Fall back to assigned only when
+            // no exposed ticks exist yet (pre-T9 shards).
+            if (goalIsQuestCompleted && countMapTotal(shardSums.exposed) > 0) {
+                exposures = shardSums.exposed;
+            }
+            else {
+                exposures = shardSums.assigned;
+            }
+            conversionScan.totalGoalEvents = countMapTotal(conversions);
+        }
+        else {
+            if (!assignmentScan)
+                assignmentScan = collectAssignments(nk, experimentId, gameId);
+            conversionScan = goalIsQuestCompleted
+                ? collectConvertedAt(assignmentScan.byUser)
+                : collectConversions(nk, goalEvent, assignmentScan.byUser, maxEventPages);
+            for (var uid in assignmentScan.byUser) {
+                var info = assignmentScan.byUser[uid];
+                var vk = info.variantKey;
+                exposures[vk] = (exposures[vk] || 0) + 1;
+                incCount(funnelAssigned, vk);
+                if (info.exposedAtMs)
+                    incCount(funnelExposed, vk);
+                if (info.startedAtMs)
+                    incCount(funnelStarted, vk);
+                if (info.convertedAtMs)
+                    incCount(funnelCompleted, vk);
+                if (info.claimedAtMs)
+                    incCount(funnelClaimed, vk);
+                if (conversionScan.convertedUsers[uid]) {
+                    conversions[vk] = (conversions[vk] || 0) + 1;
+                }
+            }
+            if (goalIsQuestCompleted && countMapTotal(funnelExposed) > 0) {
+                exposures = funnelExposed;
             }
         }
         // Control = variant with id/name "control", else first.
@@ -171033,9 +172105,24 @@ var SatoriExperimentResults;
                 isControl: vKey === controlKey,
                 exposures: n,
                 conversions: conv,
-                rate: n > 0 ? conv / n : 0
+                rate: n > 0 ? conv / n : 0,
+                assigned: funnelAssigned[vKey] || 0,
+                exposed: funnelExposed[vKey] || 0,
+                started: funnelStarted[vKey] || 0,
+                completed: funnelCompleted[vKey] || 0,
+                claimed: funnelClaimed[vKey] || 0
             });
         }
+        var minCfg = resolveMinSamplePerArm(def, data);
+        var shortVariants = [];
+        for (var ms = 0; ms < variantRows.length; ms++) {
+            if ((variantRows[ms].exposures || 0) < minCfg.perArm) {
+                shortVariants.push(variantRows[ms].id);
+            }
+        }
+        var sampleMet = shortVariants.length === 0 && variantRows.length >= 2;
+        var srm = computeSrm(variants, exposures);
+        var srmPassed = !!(srm && srm.passed !== false);
         // Compare every non-control variant to control.
         var cN = exposures[controlKey] || 0;
         var cConv = conversions[controlKey] || 0;
@@ -171049,7 +172136,7 @@ var SatoriExperimentResults;
                 continue;
             var test = zTest(cConv, cN, row.conversions, row.exposures);
             var lift = cRate > 0 ? (row.rate - cRate) / cRate : (row.rate > 0 ? 1 : 0);
-            var significant = !!(test && test.pValue < 0.05);
+            var significant = sampleMet && srmPassed && !!(test && test.pValue < 0.05);
             comparisons.push({
                 variantId: row.id,
                 controlId: controlKey,
@@ -171065,7 +172152,19 @@ var SatoriExperimentResults;
             }
         }
         var recommendation;
-        if (winner) {
+        if (!srmPassed) {
+            winner = null;
+            recommendation = "Do not promote: sample ratio mismatch — observed traffic does not match the configured split (p=" +
+                (typeof srm.pValue === "number" ? srm.pValue.toExponential(2) : "0") +
+                "). Fix assignment before trusting a winner.";
+            logger.warn("[ExperimentResults] SRM fail experiment=%s chi2=%s p=%s", experimentId, String(srm.chiSquare), String(srm.pValue));
+        }
+        else if (!sampleMet) {
+            winner = null;
+            var modeLabel = minCfg.mode === "qa" ? "QA, 30 per arm" : (minCfg.mode === "live" ? "live, 100 per arm" : "custom");
+            recommendation = "Need at least " + minCfg.perArm + " players in every variant before picking a winner (" + modeLabel + "). Still short: " + shortVariants.join(", ") + ".";
+        }
+        else if (winner) {
             recommendation = "Variant '" + winner + "' beats control with 95% confidence — consider declaring it the winner.";
         }
         else {
@@ -171088,18 +172187,88 @@ var SatoriExperimentResults;
             comparisons: comparisons,
             suggestedWinner: winner,
             recommendation: recommendation,
+            minSample: {
+                perArm: minCfg.perArm,
+                mode: minCfg.mode,
+                met: sampleMet,
+                shortVariants: shortVariants
+            },
+            srm: srm,
+            funnel: {
+                assigned: funnelAssigned,
+                exposed: funnelExposed,
+                started: funnelStarted,
+                completed: funnelCompleted,
+                claimed: funnelClaimed
+            },
+            byDay: byDay,
             scan: {
-                assignmentObjectsScanned: assignmentScan.scanned,
-                assignmentsTruncated: assignmentScan.truncated,
+                source: usedShards ? "shards" : "assignment_scan",
+                shardsRead: shardSums ? shardSums.shardsRead : 0,
+                reconciled: reconciled,
+                assignmentObjectsScanned: assignmentScan ? assignmentScan.scanned : 0,
+                assignmentsTruncated: assignmentScan ? assignmentScan.truncated : false,
                 eventRecordsScanned: conversionScan.scannedRecords,
                 eventsTruncated: conversionScan.truncated,
                 totalGoalEvents: conversionScan.totalGoalEvents
-            }
+            },
+            promotion: def.promotion ? {
+                state: def.promotion.state || null,
+                auditKey: def.promotion.auditKey || null,
+                restored: !!def.promotion.restored,
+                restoredAt: def.promotion.restoredAt || null
+            } : null
         });
     }
-    // satori_experiments_declare_winner — end the experiment and record the
-    // winning variant on its definition.
-    // Payload: { experimentId, variantId, game_id? }
+    // satori_experiments_declare_winner — end the experiment and optionally
+    // promote the winning quest overlay onto qv_quest_config.
+    // Payload: { experimentId, variantId, game_id?, promote? }
+    function persistExperimentDef(nk, configKey, experiments, experimentId, def) {
+        experiments[experimentId] = def;
+        Storage.writeSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, configKey, experiments);
+        ConfigLoader.invalidateCache(configKey);
+    }
+    function parseVariantOverlay(variant) {
+        var raw = variant && (variant.config || variant.data);
+        if (typeof raw === "string") {
+            try {
+                raw = JSON.parse(raw);
+            }
+            catch (_e) {
+                raw = {};
+            }
+        }
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return { quests: {} };
+        return raw;
+    }
+    function findVariantByKey(variants, variantId) {
+        for (var i = 0; i < variants.length; i++) {
+            if (variantKeyOf(variants[i]) === variantId)
+                return variants[i];
+        }
+        return null;
+    }
+    function promoteGateError(nk, def, gameId, experimentId, data) {
+        var sums = SatoriExperiments.loadFunnelShardSums(nk, gameId, experimentId);
+        var exposures = {};
+        if (sums && sums.shardsPresent) {
+            exposures = (def.goalMetric === "quest_completed" && countMapTotal(sums.exposed) > 0)
+                ? sums.exposed : sums.assigned;
+        }
+        var srm = computeSrm(def.variants || [], exposures);
+        if (srm && srm.passed === false)
+            return "cannot promote: sample ratio mismatch";
+        var minCfg = resolveMinSamplePerArm(def, data);
+        var variants = def.variants || [];
+        for (var v = 0; v < variants.length; v++) {
+            var vk = variantKeyOf(variants[v]);
+            if ((exposures[vk] || 0) < minCfg.perArm) {
+                return "cannot promote: need at least " + minCfg.perArm + " players per variant";
+            }
+        }
+        return "";
+    }
     function rpcDeclareWinner(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -171108,8 +172277,7 @@ var SatoriExperimentResults;
         if (!experimentId || !variantId)
             return RpcHelpers.errorResponse("experimentId and variantId required");
         var gameId = RpcHelpers.gameId(data);
-        // Resolve the exact config key the definition lives under (scoped first,
-        // then global) so we write back to the same object we read.
+        var promote = data.promote === true || data.promote === "true";
         var scopedKey = Constants.gameKey(gameId, "experiments");
         var configKey = scopedKey;
         var experiments = Storage.readSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, scopedKey);
@@ -171121,30 +172289,153 @@ var SatoriExperimentResults;
             return RpcHelpers.errorResponse("Experiment '" + experimentId + "' not found");
         }
         var def = experiments[experimentId];
-        var validVariant = false;
         var defVariants = def.variants || [];
-        for (var i = 0; i < defVariants.length; i++) {
-            if (variantKeyOf(defVariants[i]) === variantId) {
-                validVariant = true;
-                break;
-            }
-        }
-        if (!validVariant)
+        var winnerVariant = findVariantByKey(defVariants, variantId);
+        if (!winnerVariant)
             return RpcHelpers.errorResponse("Variant '" + variantId + "' not found on experiment");
         var now = Math.floor(Date.now() / 1000);
+        var isQuestEngine = def.configSystem === "quest_engine";
+        var questGameId = def.gameId || gameId;
+        if (!questGameId || questGameId === "default" || questGameId === Constants.DEFAULT_GAME_ID) {
+            questGameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        if (promote && isQuestEngine) {
+            var promo = def.promotion || {};
+            if (promo.state === "finalized" && promo.variantId === variantId) {
+                return RpcHelpers.successResponse({
+                    experimentId: experimentId, winnerVariantId: variantId, status: def.status || "ended",
+                    promoted: true, auditKey: promo.auditKey || null, promotionState: "finalized"
+                });
+            }
+            if (promo.state === "finalized" && promo.variantId && promo.variantId !== variantId) {
+                return RpcHelpers.errorResponse("already promoted variant '" + promo.variantId + "'");
+            }
+            if (promo.variantId && promo.variantId !== variantId &&
+                (promo.state === "prepared" || promo.state === "written" || promo.state === "verified")) {
+                return RpcHelpers.errorResponse("promotion already in progress for variant '" + promo.variantId + "'");
+            }
+            var gateErr = promoteGateError(nk, def, questGameId, experimentId, data);
+            if (gateErr)
+                return RpcHelpers.errorResponse(gateErr);
+            var overlay = parseVariantOverlay(winnerVariant);
+            var stepCtx = {
+                experimentId: experimentId,
+                variantId: variantId,
+                auditKey: promo.auditKey,
+                desiredHash: promo.desiredHash
+            };
+            if (promo.state !== "prepared" && promo.state !== "written" && promo.state !== "verified") {
+                var prepared = QuestEngine.runPromoteStep(nk, logger, questGameId, overlay, "prepare", stepCtx);
+                if (!prepared.ok)
+                    return RpcHelpers.errorResponse(prepared.error || "promote prepare failed");
+                def.promotion = {
+                    state: "prepared",
+                    variantId: variantId,
+                    auditKey: prepared.auditKey,
+                    desiredHash: prepared.desiredHash,
+                    preparedAt: now
+                };
+                def.updatedAt = now;
+                persistExperimentDef(nk, configKey, experiments, experimentId, def);
+                promo = def.promotion;
+                stepCtx.auditKey = promo.auditKey;
+                stepCtx.desiredHash = promo.desiredHash;
+            }
+            if (promo.state !== "verified") {
+                var written = QuestEngine.runPromoteStep(nk, logger, questGameId, overlay, "write", stepCtx);
+                if (!written.ok) {
+                    logger.warn("[ExperimentResults] promote write failed experiment=%s: %s", experimentId, written.error || "");
+                    return RpcHelpers.errorResponse(written.error || "promote write failed");
+                }
+                var verified = QuestEngine.runPromoteStep(nk, logger, questGameId, overlay, "verify", stepCtx);
+                if (!verified.ok) {
+                    logger.warn("[ExperimentResults] promote verify failed experiment=%s: %s", experimentId, verified.error || "");
+                    return RpcHelpers.errorResponse(verified.error || "promote verify failed");
+                }
+            }
+            def.status = "ended";
+            def.winnerVariantId = variantId;
+            def.endedAt = now;
+            def.updatedAt = now;
+            def.promotion.state = "finalized";
+            def.promotion.finalizedAt = now;
+            persistExperimentDef(nk, configKey, experiments, experimentId, def);
+            logger.info("[quest_ab] promote gameId=%s experimentId=%s variantId=%s userId=%s auditKey=%s", questGameId, experimentId, variantId, ctx.userId || "admin", def.promotion.auditKey || "");
+            logger.info("[ExperimentResults] promote finalized gameId=%s experiment=%s variant=%s auditKey=%s", questGameId, experimentId, variantId, def.promotion.auditKey || "");
+            return RpcHelpers.successResponse({
+                experimentId: experimentId,
+                winnerVariantId: variantId,
+                status: "ended",
+                promoted: true,
+                auditKey: def.promotion.auditKey || null,
+                promotionState: "finalized"
+            });
+        }
         def.status = "ended";
         def.winnerVariantId = variantId;
         def.endedAt = now;
         def.updatedAt = now;
-        experiments[experimentId] = def;
-        Storage.writeSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, configKey, experiments);
-        ConfigLoader.invalidateCache(configKey);
-        logger.info("[ExperimentResults] '%s' ended, winner='%s' (by admin)", experimentId, variantId);
-        return RpcHelpers.successResponse({ experimentId: experimentId, winnerVariantId: variantId, status: "ended" });
+        persistExperimentDef(nk, configKey, experiments, experimentId, def);
+        logger.info("[ExperimentResults] '%s' ended, winner='%s' (by admin, promote=%s)", experimentId, variantId, String(promote));
+        return RpcHelpers.successResponse({
+            experimentId: experimentId, winnerVariantId: variantId, status: "ended", promoted: false
+        });
+    }
+    // satori_experiments_undo_promote — put the pre-promote quest list back.
+    // Experiment stays ended. Payload: { experimentId, game_id?, auditKey? }
+    function rpcUndoPromote(ctx, logger, nk, payload) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var experimentId = data.experimentId || data.experiment_id;
+        if (!experimentId)
+            return RpcHelpers.errorResponse("experimentId required");
+        var gameId = RpcHelpers.gameId(data);
+        var scopedKey = Constants.gameKey(gameId, "experiments");
+        var configKey = scopedKey;
+        var experiments = Storage.readSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, scopedKey);
+        if ((!experiments || !experiments[experimentId]) && scopedKey !== "experiments") {
+            configKey = "experiments";
+            experiments = Storage.readSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, configKey);
+        }
+        if (!experiments || !experiments[experimentId]) {
+            return RpcHelpers.errorResponse("Experiment '" + experimentId + "' not found");
+        }
+        var def = experiments[experimentId];
+        if (def.configSystem !== "quest_engine") {
+            return RpcHelpers.errorResponse("undo promote is only for quest_engine experiments");
+        }
+        var promo = def.promotion || {};
+        var auditKey = data.auditKey || data.audit_key || promo.auditKey;
+        if (!auditKey)
+            return RpcHelpers.errorResponse("no promote audit snapshot to restore");
+        var questGameId = def.gameId || gameId;
+        if (!questGameId || questGameId === "default" || questGameId === Constants.DEFAULT_GAME_ID) {
+            questGameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        var restored = QuestEngine.restorePromoteAudit(nk, logger, ctx, questGameId, String(auditKey));
+        if (!restored.ok)
+            return RpcHelpers.errorResponse(restored.error || "restore failed");
+        var now = Math.floor(Date.now() / 1000);
+        def.promotion = def.promotion || {};
+        def.promotion.restored = true;
+        def.promotion.restoredAt = now;
+        def.promotion.restoreAuditKey = restored.restoreAuditKey || promo.restoreAuditKey || null;
+        def.updatedAt = now;
+        persistExperimentDef(nk, configKey, experiments, experimentId, def);
+        logger.info("[ExperimentResults] promote undone gameId=%s experiment=%s auditKey=%s", questGameId, experimentId, auditKey);
+        return RpcHelpers.successResponse({
+            experimentId: experimentId,
+            restored: true,
+            already: !!restored.already,
+            auditKey: auditKey,
+            restoreAuditKey: def.promotion.restoreAuditKey || null,
+            status: def.status || "ended"
+        });
     }
     function register(initializer) {
         __rpc_satori_experiments_results = rpcResults;
         __rpc_satori_experiments_declare_winner = rpcDeclareWinner;
+        __rpc_satori_experiments_undo_promote = rpcUndoPromote;
     }
     SatoriExperimentResults.register = register;
     register();
@@ -171205,34 +172496,88 @@ var SatoriExperiments;
             return true;
         return Math.floor(Date.now() / 1000) <= def.admissionDeadline;
     }
-    function getVariant(nk, userId, experimentId, gameId) {
-        var experiments = getExperiments(nk, gameId);
-        var def = experiments[experimentId];
-        if (!def || !isExperimentActive(def))
-            return null;
-        if (!def.variants || def.variants.length === 0)
-            return null;
-        if (def.audienceId && !SatoriAudiences.isInAudience(nk, userId, def.audienceId, gameId)) {
-            return null;
+    function experimentConfigRevision(def) {
+        if (def && def.configRevision != null && String(def.configRevision) !== "") {
+            return String(def.configRevision);
         }
-        var userExp = getUserExperiments(nk, userId, gameId);
-        var assignment = userExp.assignments[experimentId];
-        // Treat missing or legacy-broken assignments (variantId undefined/null) as unassigned.
-        if (!assignment || !assignment.variantId) {
-            if (!isWithinAdmissionDeadline(def))
-                return null;
-            var variantId = deterministicAssign(userId, experimentId, def.variants, def.splitKey);
-            assignment = {
-                experimentId: experimentId,
-                variantId: variantId,
-                assignedAt: Math.floor(Date.now() / 1000)
-            };
-            userExp.assignments[experimentId] = assignment;
-            saveUserExperiments(nk, userId, userExp, gameId);
+        return String((def && (def.updatedAt || def.createdAt)) || 0);
+    }
+    function currentPhaseId(def) {
+        if (!def || !def.phases || !Array.isArray(def.phases) || def.phases.length === 0)
+            return null;
+        var now = Math.floor(Date.now() / 1000);
+        for (var p = 0; p < def.phases.length; p++) {
+            var phase = def.phases[p];
+            if (!phase)
+                continue;
+            if (phase.startAt && now < phase.startAt)
+                continue;
+            if (phase.endAt && now > phase.endAt)
+                continue;
+            return phase.id || phase.name || String(p);
         }
-        if (def.lockParticipation && assignment.locked) {
-            // locked assignments cannot change
+        return null;
+    }
+    function overlayQuestIds(variant) {
+        var raw = variant && (variant.config || variant.data);
+        if (typeof raw === "string") {
+            try {
+                raw = JSON.parse(raw);
+            }
+            catch (_) {
+                return [];
+            }
         }
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return [];
+        var quests = raw.quests;
+        if (!quests || typeof quests !== "object" || Array.isArray(quests))
+            return [];
+        var ids = [];
+        for (var k in quests) {
+            if (quests.hasOwnProperty(k) && k !== "__proto__" && k !== "constructor" && k !== "prototype") {
+                ids.push(k);
+            }
+        }
+        return ids;
+    }
+    function resolveTrackedQuestIds(def, variant) {
+        if (variant && Array.isArray(variant.trackedQuestIds) && variant.trackedQuestIds.length > 0) {
+            return variant.trackedQuestIds.slice();
+        }
+        if (def && Array.isArray(def.trackedQuestIds) && def.trackedQuestIds.length > 0) {
+            return def.trackedQuestIds.slice();
+        }
+        var fromVariant = overlayQuestIds(variant);
+        if (fromVariant.length > 0)
+            return fromVariant;
+        var union = [];
+        var seen = {};
+        var variants = (def && def.variants) || [];
+        for (var i = 0; i < variants.length; i++) {
+            var ids = overlayQuestIds(variants[i]);
+            for (var j = 0; j < ids.length; j++) {
+                if (!seen[ids[j]]) {
+                    seen[ids[j]] = true;
+                    union.push(ids[j]);
+                }
+            }
+        }
+        return union;
+    }
+    function fillAssignmentFreeze(assignment, def) {
+        var changed = false;
+        if (!assignment.configRevision) {
+            assignment.configRevision = experimentConfigRevision(def);
+            changed = true;
+        }
+        if (assignment.phaseId === undefined) {
+            assignment.phaseId = currentPhaseId(def);
+            changed = true;
+        }
+        return changed;
+    }
+    function findAssignedVariant(def, assignment) {
         var found = null;
         for (var i = 0; i < def.variants.length; i++) {
             if (variantKey(def.variants[i]) === assignment.variantId) {
@@ -171240,7 +172585,6 @@ var SatoriExperiments;
                 break;
             }
         }
-        // Multi-phase: check if current phase has different variants
         if (def.phases && Array.isArray(def.phases)) {
             var now = Math.floor(Date.now() / 1000);
             for (var p = 0; p < def.phases.length; p++) {
@@ -171258,7 +172602,425 @@ var SatoriExperiments;
         }
         return found;
     }
+    function getVariant(nk, userId, experimentId, gameId, logger) {
+        var experiments = getExperiments(nk, gameId);
+        var def = experiments[experimentId];
+        if (!def || !isExperimentActive(def))
+            return null;
+        if (!def.variants || def.variants.length === 0)
+            return null;
+        var userExp = getUserExperiments(nk, userId, gameId);
+        var assignment = userExp.assignments[experimentId];
+        // Sticky: admitted players keep their bucket even if they leave the audience.
+        // Audience / admission deadline apply only to first assignment.
+        if (assignment && assignment.variantId) {
+            if (fillAssignmentFreeze(assignment, def)) {
+                userExp.assignments[experimentId] = assignment;
+                saveUserExperiments(nk, userId, userExp, gameId);
+            }
+            if (def.lockParticipation && assignment.locked) {
+                // locked assignments cannot change
+            }
+            return findAssignedVariant(def, assignment);
+        }
+        if (def.audienceId && !SatoriAudiences.isInAudience(nk, userId, def.audienceId, gameId)) {
+            return null;
+        }
+        if (!isWithinAdmissionDeadline(def))
+            return null;
+        var variantId = deterministicAssign(userId, experimentId, def.variants, def.splitKey);
+        assignment = {
+            experimentId: experimentId,
+            variantId: variantId,
+            assignedAt: Math.floor(Date.now() / 1000),
+            phaseId: currentPhaseId(def),
+            configRevision: experimentConfigRevision(def)
+        };
+        userExp.assignments[experimentId] = assignment;
+        saveUserExperiments(nk, userId, userExp, gameId);
+        if (def.configSystem === "quest_engine") {
+            try {
+                bumpFunnelShardOcc(nk, userId, gameId || "", experimentId, variantId, "assigned", assignment.assignedAt);
+            }
+            catch (_assignBump) {
+                // Assignment is the source of truth; shards rebuild from assignedAt.
+            }
+            if (logger) {
+                logger.info("[quest_ab] assigned gameId=%s experimentId=%s variantId=%s userId=%s", gameId || "", experimentId, variantId, userId);
+            }
+        }
+        return findAssignedVariant(def, assignment);
+    }
     SatoriExperiments.getVariant = getVariant;
+    var CONVERT_OCC_MAX_RETRIES = 3;
+    SatoriExperiments.FUNNEL_SHARD_COUNT = 32;
+    var FUNNEL_BY_DAY_MAX = 60;
+    function funnelShardIndex(userId) {
+        var hash = 0;
+        var seed = userId || "";
+        for (var c = 0; c < seed.length; c++) {
+            hash = ((hash << 5) - hash) + seed.charCodeAt(c);
+            hash = hash & 0x7FFFFFFF;
+        }
+        return hash % SatoriExperiments.FUNNEL_SHARD_COUNT;
+    }
+    function canonicalFunnelGameId(gameId) {
+        if (!gameId || gameId === "default" || gameId === Constants.DEFAULT_GAME_ID) {
+            return Constants.QUIZVERSE_GAME_ID;
+        }
+        return gameId;
+    }
+    function funnelShardKey(gameId, experimentId, shard) {
+        return Constants.gameKey(canonicalFunnelGameId(gameId), "funnel:" + experimentId + ":" + String(shard));
+    }
+    function utcDayKey(unix) {
+        var ms = unix < 100000000000 ? unix * 1000 : unix;
+        var d = new Date(ms);
+        var m = d.getUTCMonth() + 1;
+        var day = d.getUTCDate();
+        var mm = m < 10 ? "0" + m : String(m);
+        var dd = day < 10 ? "0" + day : String(day);
+        return d.getUTCFullYear() + "-" + mm + "-" + dd;
+    }
+    function pruneByDay(doc) {
+        if (!doc || !doc.byDay)
+            return;
+        var days = [];
+        for (var k in doc.byDay) {
+            if (doc.byDay.hasOwnProperty(k))
+                days.push(k);
+        }
+        if (days.length <= FUNNEL_BY_DAY_MAX)
+            return;
+        days.sort();
+        var drop = days.length - FUNNEL_BY_DAY_MAX;
+        for (var i = 0; i < drop; i++) {
+            delete doc.byDay[days[i]];
+        }
+    }
+    function emptyFunnelShardDoc() {
+        return {
+            assigned: {},
+            exposed: {},
+            started: {},
+            completed: {},
+            claimed: {},
+            byDay: {},
+            updatedAt: 0
+        };
+    }
+    SatoriExperiments.emptyFunnelShardDoc = emptyFunnelShardDoc;
+    function funnelShardIndexOf(userId) {
+        return funnelShardIndex(userId);
+    }
+    SatoriExperiments.funnelShardIndexOf = funnelShardIndexOf;
+    function isFunnelStep(step) {
+        return step === "assigned" || step === "exposed" || step === "started" ||
+            step === "completed" || step === "claimed";
+    }
+    function bumpFunnelShardOcc(nk, userId, gameId, experimentId, variantId, step, now) {
+        if (!isFunnelStep(step) || !variantId || !experimentId)
+            return;
+        var key = funnelShardKey(gameId, experimentId, funnelShardIndex(userId));
+        for (var attempt = 0; attempt < CONVERT_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                        key: key,
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var doc = (rec && rec.value) ? rec.value : emptyFunnelShardDoc();
+                if (!doc[step] || typeof doc[step] !== "object")
+                    doc[step] = {};
+                doc[step][variantId] = (doc[step][variantId] || 0) + 1;
+                if (step === "assigned" || step === "completed") {
+                    if (!doc.byDay || typeof doc.byDay !== "object")
+                        doc.byDay = {};
+                    var day = utcDayKey(now);
+                    if (!doc.byDay[day] || typeof doc.byDay[day] !== "object")
+                        doc.byDay[day] = {};
+                    if (!doc.byDay[day][step] || typeof doc.byDay[day][step] !== "object")
+                        doc.byDay[day][step] = {};
+                    doc.byDay[day][step][variantId] = (doc.byDay[day][step][variantId] || 0) + 1;
+                    pruneByDay(doc);
+                }
+                doc.updatedAt = now;
+                var writeObj = {
+                    collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                    key: key,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: doc,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return;
+            }
+            catch (_e) {
+                // version conflict → retry
+            }
+        }
+    }
+    function addCountMap(dest, src) {
+        if (!src || typeof src !== "object")
+            return;
+        for (var k in src) {
+            if (!src.hasOwnProperty(k))
+                continue;
+            dest[k] = (dest[k] || 0) + (typeof src[k] === "number" ? src[k] : 0);
+        }
+    }
+    function loadFunnelShardSums(nk, gameId, experimentId) {
+        var sums = {
+            assigned: {},
+            exposed: {},
+            started: {},
+            completed: {},
+            claimed: {},
+            byDay: {},
+            shardsRead: 0,
+            shardsPresent: false
+        };
+        if (!experimentId)
+            return sums;
+        var reqs = [];
+        for (var i = 0; i < SatoriExperiments.FUNNEL_SHARD_COUNT; i++) {
+            reqs.push({
+                collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                key: funnelShardKey(gameId, experimentId, i),
+                userId: Constants.SYSTEM_USER_ID
+            });
+        }
+        var rows = nk.storageRead(reqs) || [];
+        sums.shardsRead = rows.length;
+        sums.shardsPresent = rows.length > 0;
+        for (var r = 0; r < rows.length; r++) {
+            var val = rows[r] && rows[r].value ? rows[r].value : null;
+            if (!val)
+                continue;
+            addCountMap(sums.assigned, val.assigned);
+            addCountMap(sums.exposed, val.exposed);
+            addCountMap(sums.started, val.started);
+            addCountMap(sums.completed, val.completed);
+            addCountMap(sums.claimed, val.claimed);
+            if (val.byDay && typeof val.byDay === "object") {
+                for (var day in val.byDay) {
+                    if (!val.byDay.hasOwnProperty(day))
+                        continue;
+                    if (!sums.byDay[day])
+                        sums.byDay[day] = { assigned: {}, completed: {} };
+                    addCountMap(sums.byDay[day].assigned, val.byDay[day].assigned);
+                    addCountMap(sums.byDay[day].completed, val.byDay[day].completed);
+                }
+            }
+        }
+        return sums;
+    }
+    SatoriExperiments.loadFunnelShardSums = loadFunnelShardSums;
+    function replaceFunnelShards(nk, gameId, experimentId, docs) {
+        var writes = [];
+        var now = Math.floor(Date.now() / 1000);
+        for (var i = 0; i < SatoriExperiments.FUNNEL_SHARD_COUNT; i++) {
+            var doc = (docs && docs[i]) ? docs[i] : emptyFunnelShardDoc();
+            pruneByDay(doc);
+            doc.updatedAt = now;
+            writes.push({
+                collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                key: funnelShardKey(gameId, experimentId, i),
+                userId: Constants.SYSTEM_USER_ID,
+                value: doc,
+                permissionRead: 1,
+                permissionWrite: 0
+            });
+        }
+        nk.storageWrite(writes);
+    }
+    SatoriExperiments.replaceFunnelShards = replaceFunnelShards;
+    function markAssignmentStampOcc(nk, userId, gameId, experimentId, variantId, field, now) {
+        var key = Constants.gameKey(gameId, "assignments");
+        for (var attempt = 0; attempt < CONVERT_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                        key: key,
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var data = (rec && rec.value)
+                    ? rec.value
+                    : { assignments: {} };
+                if (!data.assignments)
+                    data.assignments = {};
+                var assignment = data.assignments[experimentId];
+                if (!assignment || !assignment.variantId)
+                    return "unassigned";
+                if (assignment.variantId !== variantId)
+                    return "mismatch";
+                if (assignment[field])
+                    return "already";
+                assignment[field] = now;
+                var writeObj = {
+                    collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                    key: key,
+                    userId: userId,
+                    value: data,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return "stamped";
+            }
+            catch (_e) {
+                // version conflict → retry
+            }
+        }
+        return "conflict";
+    }
+    // Exposed / started / claimed: stamp assignment then bump the user shard.
+    // Completed stays on markQuestConvertedOcc (convertedAt).
+    function recordQuestFunnelStep(nk, logger, data) {
+        if (!data)
+            return;
+        var userId = data.userId ? String(data.userId) : "";
+        var gameId = data.gameId || data.game_id ? String(data.gameId || data.game_id) : "";
+        var experimentId = data.experimentId ? String(data.experimentId) : "";
+        var variantId = data.variantId ? String(data.variantId) : "";
+        var step = data.step ? String(data.step) : "";
+        if (!userId || !gameId || !experimentId || !variantId)
+            return;
+        if (step !== "exposed" && step !== "started" && step !== "claimed")
+            return;
+        if (gameId === "default" || gameId === Constants.DEFAULT_GAME_ID) {
+            gameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        var field = step === "exposed" ? "exposedAt" : (step === "started" ? "startedAt" : "claimedAt");
+        var now = Math.floor(Date.now() / 1000);
+        var mark = markAssignmentStampOcc(nk, userId, gameId, experimentId, variantId, field, now);
+        if (mark !== "stamped")
+            return;
+        try {
+            bumpFunnelShardOcc(nk, userId, gameId, experimentId, variantId, step, now);
+        }
+        catch (err) {
+            logger.warn("[SatoriExperiments] funnel shard bump failed step=%s experiment=%s user=%s: %s", step, experimentId, userId, err && err.message ? err.message : String(err));
+        }
+    }
+    SatoriExperiments.recordQuestFunnelStep = recordQuestFunnelStep;
+    function markQuestConvertedOcc(nk, userId, gameId, experimentId, variantId, now) {
+        var key = Constants.gameKey(gameId, "assignments");
+        for (var attempt = 0; attempt < CONVERT_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                        key: key,
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var data = (rec && rec.value)
+                    ? rec.value
+                    : { assignments: {} };
+                if (!data.assignments)
+                    data.assignments = {};
+                var assignment = data.assignments[experimentId];
+                if (!assignment || !assignment.variantId)
+                    return "unassigned";
+                if (assignment.variantId !== variantId)
+                    return "mismatch";
+                if (assignment.convertedAt)
+                    return "already";
+                assignment.convertedAt = now;
+                var writeObj = {
+                    collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                    key: key,
+                    userId: userId,
+                    value: data,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return "converted";
+            }
+            catch (_e) {
+                // version conflict → retry
+            }
+        }
+        return "conflict";
+    }
+    function bumpConversionCounterOcc(nk, userId, gameId, experimentId, variantId, now) {
+        bumpFunnelShardOcc(nk, userId, gameId, experimentId, variantId, "completed", now);
+    }
+    // Once-per-user conversion. Requires frozen attribution on the event
+    // (gameId + experimentId + variantId + questId). Unrelated completes no-op.
+    function recordQuestCompletedConversion(nk, logger, data) {
+        if (!data)
+            return;
+        var userId = data.userId ? String(data.userId) : "";
+        var gameId = data.gameId || data.game_id ? String(data.gameId || data.game_id) : "";
+        var questId = data.questId ? String(data.questId) : "";
+        var experimentId = data.experimentId ? String(data.experimentId) : "";
+        var variantId = data.variantId ? String(data.variantId) : "";
+        if (!userId || !gameId || !questId || !experimentId || !variantId)
+            return;
+        if (gameId === "default" || gameId === Constants.DEFAULT_GAME_ID) {
+            gameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        var exposedAt = typeof data.exposedAt === "number" ? data.exposedAt : 0;
+        var now = Math.floor(Date.now() / 1000);
+        if (exposedAt && now < exposedAt)
+            return;
+        var mark = markQuestConvertedOcc(nk, userId, gameId, experimentId, variantId, now);
+        if (mark !== "converted")
+            return;
+        try {
+            bumpConversionCounterOcc(nk, userId, gameId, experimentId, variantId, now);
+        }
+        catch (err) {
+            logger.warn("[SatoriExperiments] conversion counter bump failed experiment=%s user=%s: %s", experimentId, userId, err && err.message ? err.message : String(err));
+        }
+        logger.info("[SatoriExperiments] quest_completed conversion experiment=%s variant=%s quest=%s user=%s gameId=%s", experimentId, variantId, questId, userId, gameId);
+    }
+    SatoriExperiments.recordQuestCompletedConversion = recordQuestCompletedConversion;
+    // Frozen context for quest A/B. Null if no running quest_engine experiment
+    // assigned this user. Callers stamp this onto QuestProgress once and never rewrite.
+    function getRunningQuestEngineAttribution(nk, userId, gameId) {
+        if (!userId || !gameId)
+            return null;
+        var experiments = getExperiments(nk, gameId);
+        for (var expId in experiments) {
+            if (!experiments.hasOwnProperty(expId))
+                continue;
+            var def = experiments[expId];
+            if (!def || def.configSystem !== "quest_engine" || !isExperimentActive(def))
+                continue;
+            var variant = getVariant(nk, userId, expId, gameId);
+            if (!variant)
+                continue;
+            var userExp = getUserExperiments(nk, userId, gameId);
+            var assignment = userExp.assignments[expId];
+            if (!assignment || !assignment.variantId)
+                continue;
+            return {
+                experimentId: expId,
+                variantId: assignment.variantId,
+                phaseId: assignment.phaseId !== undefined ? assignment.phaseId : currentPhaseId(def),
+                configRevision: assignment.configRevision || experimentConfigRevision(def),
+                gameId: gameId,
+                trackedQuestIds: resolveTrackedQuestIds(def, variant)
+            };
+        }
+        return null;
+    }
+    SatoriExperiments.getRunningQuestEngineAttribution = getRunningQuestEngineAttribution;
     // ---- RPCs ----
     function rpcGet(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
@@ -171270,9 +173032,10 @@ var SatoriExperiments;
             var def = experiments[id];
             if (!isExperimentActive(def))
                 continue;
-            if (def.audienceId && !SatoriAudiences.isInAudience(nk, userId, def.audienceId, gameId))
-                continue;
+            // getVariant is sticky: already-assigned players stay listed after audience change.
             var variant = getVariant(nk, userId, id, gameId);
+            if (!variant)
+                continue;
             result.push({
                 id: id,
                 name: def.name,
@@ -177057,7 +178820,17 @@ var SatoriTaxonomy;
             achievement_claimed: gameplaySchema("achievement_claimed", "progression", "Achievement reward claimed"),
             challenge_completed: gameplaySchema("challenge_completed", "engagement", "Challenge completed"),
             streak_updated: gameplaySchema("streak_updated", "engagement", "Daily streak advanced"),
-            reward_granted: gameplaySchema("reward_granted", "progression", "Reward granted to player")
+            reward_granted: gameplaySchema("reward_granted", "progression", "Reward granted to player"),
+            quest_completed: {
+                name: "quest_completed",
+                category: "progression",
+                description: "Player completed a Quest Engine quest",
+                requiredMetadata: [],
+                optionalMetadata: ["gameId", "questId", "experimentId", "variantId", "phaseId", "configRevision", "exposedAt"],
+                metadataTypes: {},
+                maxMetadataKeys: 50,
+                deprecated: false
+            }
         },
         enforceStrict: false,
         maxEventNameLength: 128,
@@ -177067,6 +178840,21 @@ var SatoriTaxonomy;
     function getConfig(nk) {
         return ConfigLoader.loadSatoriConfig(nk, "taxonomy", DEFAULT_CONFIG);
     }
+    // Live taxonomy storage does not auto-merge TypeScript defaults. Upsert a
+    // default schema when capture sees a known gameplay event that is missing.
+    function ensureDefaultSchema(nk, eventName) {
+        if (!eventName || !DEFAULT_CONFIG.schemas[eventName])
+            return false;
+        var config = getConfig(nk);
+        if (config.schemas && config.schemas[eventName])
+            return true;
+        if (!config.schemas)
+            config.schemas = {};
+        config.schemas[eventName] = DEFAULT_CONFIG.schemas[eventName];
+        ConfigLoader.saveSatoriConfig(nk, "taxonomy", config);
+        return true;
+    }
+    SatoriTaxonomy.ensureDefaultSchema = ensureDefaultSchema;
     function validateEvent(nk, event) {
         var config = getConfig(nk);
         var errors = [];
@@ -177078,7 +178866,11 @@ var SatoriTaxonomy;
         if (event.name.length > config.maxEventNameLength) {
             errors.push("Event name exceeds max length of " + config.maxEventNameLength);
         }
-        var schema = config.schemas[event.name];
+        var schema = (config.schemas && config.schemas[event.name]) || null;
+        if (!schema && ensureDefaultSchema(nk, event.name)) {
+            config = getConfig(nk);
+            schema = config.schemas[event.name];
+        }
         if (!schema && config.enforceStrict) {
             errors.push("Unknown event '" + event.name + "' (strict mode enabled)");
             return { valid: false, errors: errors, warnings: warnings };
@@ -196665,6 +198457,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("satori_event_errors", __rpc_satori_event_errors); } catch(e) {}
   try { initializer.registerRpc("satori_experiments_results", __rpc_satori_experiments_results); } catch(e) {}
   try { initializer.registerRpc("satori_experiments_declare_winner", __rpc_satori_experiments_declare_winner); } catch(e) {}
+  try { initializer.registerRpc("satori_experiments_undo_promote", __rpc_satori_experiments_undo_promote); } catch(e) {}
   try { initializer.registerRpc("satori_experiments_get", __rpc_satori_experiments_get); } catch(e) {}
   try { initializer.registerRpc("satori_experiments_get_variant", __rpc_satori_experiments_get_variant); } catch(e) {}
   try { initializer.registerRpc("satori_experiments_get_all", __rpc_satori_experiments_get_all); } catch(e) {}
@@ -197538,5 +199331,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1339 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
+  logger.info("[Postbuild] Registered " + 1340 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
 }

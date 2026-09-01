@@ -460,6 +460,7 @@ Quest tests overlay the **same** quest list (`qv_quest_config`) for that game. T
 - LiveOps starts quest tests from **Admin > Quests** (`New A/B` / `A/B this`). Two recipes only: same quest new prize, or this quest vs that quest. Do not paste overlay JSON on the Experiments page for quests.
 - Preview a QA user from the Quests page (or `hiro_personalizer_preview` with `system=quest_engine`).
 - One running `quest_engine` experiment per game. Overlay may change reward / hidden / enabled / name / description only.
+- Guest → registered merge ports `satori_assignments` copy-if-absent, so the A/B bucket stays sticky.
 
 ### Player RPCs (Unity / device session)
 

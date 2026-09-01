@@ -27814,8 +27814,21 @@ var AdminConsole;
                 name: def.name || id,
                 description: def.description || "",
                 enabled: def.enabled !== undefined ? !!def.enabled : def.status !== "draft",
+                status: def.status || (def.enabled === false ? "draft" : "running"),
                 audiences: firstArray(def.audiences) || (def.audienceId ? [def.audienceId] : []),
                 variants: def.variants || [],
+                configSystem: def.configSystem,
+                goalMetric: def.goalMetric,
+                splitKey: def.splitKey,
+                gameId: def.gameId,
+                configRevision: def.configRevision,
+                trackedQuestIds: def.trackedQuestIds,
+                minSamplePerArm: def.minSamplePerArm,
+                promotion: def.promotion ? {
+                    state: def.promotion.state || null,
+                    auditKey: def.promotion.auditKey || null,
+                    restored: !!def.promotion.restored
+                } : undefined,
                 created_at: isoFromSec(def.createdAt),
                 updated_at: isoFromSec(def.updatedAt)
             });
@@ -28625,25 +28638,282 @@ var AdminConsole;
         return RpcHelpers.successResponse({ event: newEvent, action: action });
     }
     // ---- Experiment Quick Setup ----
+    var QUEST_ENGINE_SYSTEM = "quest_engine";
+    function canonicalExperimentGameId(raw) {
+        var id = String(raw || "").trim();
+        if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+            return Constants.QUIZVERSE_GAME_ID;
+        }
+        return id;
+    }
+    function runningQuestEngineExperimentId(experiments, exceptId) {
+        for (var id in experiments) {
+            if (exceptId && id === exceptId)
+                continue;
+            var exp = experiments[id];
+            if (!exp)
+                continue;
+            if (exp.configSystem === QUEST_ENGINE_SYSTEM && exp.status === "running") {
+                return String(exp.id || id);
+            }
+        }
+        return "";
+    }
+    var QUEST_ENGINE_OVERLAY_FIELDS = {
+        reward: true,
+        hidden: true,
+        enabled: true,
+        name: true,
+        description: true
+    };
+    var QUEST_OVERLAY_MAX_BYTES = 32768;
+    var QUEST_OVERLAY_MAX_QUESTS = 50;
+    var QUEST_REWARD_AMOUNT_MAX = 1000000000;
+    function isUnsafeOverlayKey(key) {
+        return key === "__proto__" || key === "constructor" || key === "prototype";
+    }
+    function parseVariantOverlay(variant) {
+        if (!variant)
+            return null;
+        var raw = variant.config || variant.data;
+        if (raw == null || raw === "")
+            return null;
+        raw = parseMaybeJson(raw, raw);
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return null;
+        return raw;
+    }
+    function overlayFingerprint(variants) {
+        var parts = [];
+        if (!variants)
+            return "";
+        for (var i = 0; i < variants.length; i++) {
+            parts.push(JSON.stringify(parseVariantOverlay(variants[i]) || {}));
+        }
+        return parts.join("\n");
+    }
+    function loadQuestConfigForGame(nk, gameId) {
+        var rows = [];
+        try {
+            rows = nk.storageRead([{
+                    collection: "qv_quest_config",
+                    key: gameId,
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+        }
+        catch (_) { }
+        if (rows && rows.length > 0 && rows[0].value)
+            return rows[0].value;
+        if (gameId === Constants.QUIZVERSE_GAME_ID) {
+            try {
+                rows = nk.storageRead([{
+                        collection: "qv_quest_config",
+                        key: "default",
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+            }
+            catch (_) {
+                rows = [];
+            }
+            if (rows && rows.length > 0 && rows[0].value)
+                return rows[0].value;
+        }
+        return { quests: {} };
+    }
+    function validateRewardAmounts(grant, path) {
+        if (!grant || typeof grant !== "object" || Array.isArray(grant)) {
+            return path + " must be an object";
+        }
+        function checkMap(map, label, itemShape) {
+            if (map == null)
+                return "";
+            if (typeof map !== "object" || Array.isArray(map))
+                return label + " must be an object";
+            for (var k in map) {
+                if (!map.hasOwnProperty(k))
+                    continue;
+                if (isUnsafeOverlayKey(k) || !k)
+                    return label + " has an invalid key";
+                if (itemShape) {
+                    var item = map[k];
+                    if (!item || typeof item !== "object")
+                        return label + "." + k + " must be { min, max? }";
+                    var min = Number(item.min);
+                    var max = item.max == null ? min : Number(item.max);
+                    if (!isFinite(min) || min < 0 || min > QUEST_REWARD_AMOUNT_MAX)
+                        return label + "." + k + ".min is out of range";
+                    if (!isFinite(max) || max < min || max > QUEST_REWARD_AMOUNT_MAX)
+                        return label + "." + k + ".max is out of range";
+                }
+                else {
+                    var n = Number(map[k]);
+                    if (!isFinite(n) || n < 0 || n > QUEST_REWARD_AMOUNT_MAX)
+                        return label + "." + k + " amount is out of range";
+                }
+            }
+            return "";
+        }
+        var err = checkMap(grant.currencies, path + ".currencies", false);
+        if (err)
+            return err;
+        err = checkMap(grant.items, path + ".items", true);
+        if (err)
+            return err;
+        err = checkMap(grant.energies, path + ".energies", false);
+        if (err)
+            return err;
+        return "";
+    }
+    function validateQuestEngineReward(nk, reward, questId) {
+        if (reward == null)
+            return "";
+        if (typeof reward !== "object" || Array.isArray(reward))
+            return questId + " reward must be an object";
+        if (reward.weighted)
+            return questId + " reward cannot use weighted rolls in a quest overlay";
+        if (!reward.guaranteed || typeof reward.guaranteed !== "object" || Array.isArray(reward.guaranteed)) {
+            return questId + " reward must be { guaranteed: ... }";
+        }
+        var amtErr = validateRewardAmounts(reward.guaranteed, questId + ".reward.guaranteed");
+        if (amtErr)
+            return amtErr;
+        try {
+            RewardEngine.resolveReward(nk, reward);
+        }
+        catch (_e) {
+            return questId + " reward is not RewardEngine-shaped";
+        }
+        return "";
+    }
+    function validateQuestEngineOverlay(nk, gameId, variants) {
+        var base = loadQuestConfigForGame(nk, gameId);
+        var quests = (base && base.quests) ? base.quests : {};
+        if (!variants || !variants.length)
+            return "quest_engine experiment needs variants[]";
+        for (var v = 0; v < variants.length; v++) {
+            var overlay = parseVariantOverlay(variants[v]);
+            if (!overlay)
+                continue;
+            var encoded = "";
+            try {
+                encoded = JSON.stringify(overlay);
+            }
+            catch (_) {
+                return "variant overlay is not JSON";
+            }
+            if (encoded.length > QUEST_OVERLAY_MAX_BYTES)
+                return "variant overlay exceeds " + QUEST_OVERLAY_MAX_BYTES + " bytes";
+            for (var top in overlay) {
+                if (!overlay.hasOwnProperty(top))
+                    continue;
+                if (isUnsafeOverlayKey(top))
+                    return "unsafe overlay key: " + top;
+                if (top !== "quests")
+                    return "quest overlay may only contain quests (unknown key: " + top + ")";
+            }
+            // Empty control (config: {}) is the "same quest, different prize" recipe.
+            if (!overlay.quests)
+                continue;
+            if (typeof overlay.quests !== "object" || Array.isArray(overlay.quests)) {
+                return "quest overlay must be { quests: { questId: { ... } } }";
+            }
+            var patchedIds = Object.keys(overlay.quests);
+            if (patchedIds.length === 0)
+                continue;
+            if (patchedIds.length > QUEST_OVERLAY_MAX_QUESTS) {
+                return "quest overlay patches too many quests (max " + QUEST_OVERLAY_MAX_QUESTS + ")";
+            }
+            for (var i = 0; i < patchedIds.length; i++) {
+                var questId = patchedIds[i];
+                if (isUnsafeOverlayKey(questId))
+                    return "unsafe quest id";
+                if (!quests.hasOwnProperty(questId))
+                    return "unknown quest id: " + questId;
+                var patch = overlay.quests[questId];
+                if (patch == null)
+                    return "cannot delete quest " + questId + " via overlay";
+                if (typeof patch !== "object" || Array.isArray(patch))
+                    return questId + " overlay must be an object";
+                for (var field in patch) {
+                    if (!patch.hasOwnProperty(field))
+                        continue;
+                    if (isUnsafeOverlayKey(field))
+                        return questId + " has an unsafe field";
+                    if (!QUEST_ENGINE_OVERLAY_FIELDS[field]) {
+                        return questId + " forbids field '" + field + "' (allowed: reward, hidden, enabled, name, description)";
+                    }
+                }
+                if (patch.hasOwnProperty("name") && typeof patch.name !== "string")
+                    return questId + " name must be a string";
+                if (patch.hasOwnProperty("description") && patch.description != null && typeof patch.description !== "string") {
+                    return questId + " description must be a string";
+                }
+                if (patch.hasOwnProperty("hidden") && typeof patch.hidden !== "boolean")
+                    return questId + " hidden must be boolean";
+                if (patch.hasOwnProperty("enabled") && typeof patch.enabled !== "boolean")
+                    return questId + " enabled must be boolean";
+                if (patch.hasOwnProperty("reward")) {
+                    var rewardErr = validateQuestEngineReward(nk, patch.reward, questId);
+                    if (rewardErr)
+                        return rewardErr;
+                }
+            }
+        }
+        return "";
+    }
     function rpcExperimentSetup(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
         var variants = data.variants || parseMaybeJson(data.variants_json, undefined);
         if (!data.id || !data.name || !variants)
             return RpcHelpers.errorResponse("id, name, and variants[] required");
+        var configSystem = String(data.configSystem || data.config_system || "").trim();
+        var goalMetric = data.goalMetric || data.goal_metric;
+        var splitKey = data.splitKey || data.split_key;
+        var status = data.status || (data.enabled === false ? "draft" : "running");
         var gameId = adminGameId(data);
+        if (configSystem === QUEST_ENGINE_SYSTEM) {
+            if (!String(gameId || "").trim()) {
+                return RpcHelpers.errorResponse("gameId required (registry UUID). Use default only as the QuizVerse alias.");
+            }
+            gameId = canonicalExperimentGameId(gameId);
+            if (String(splitKey || "").toLowerCase() === "random") {
+                return RpcHelpers.errorResponse("quest_engine experiments cannot use splitKey=random; assignments must be sticky");
+            }
+        }
         var expConfig = readScopedConfig(nk, Constants.SATORI_CONFIGS_COLLECTION, "experiments", gameId, {});
+        if (configSystem === QUEST_ENGINE_SYSTEM && status === "running") {
+            var otherRunning = runningQuestEngineExperimentId(expConfig, data.id);
+            if (otherRunning) {
+                return RpcHelpers.errorResponse("Only one running quest_engine experiment per game (already running: " + otherRunning + ")");
+            }
+        }
+        if (configSystem === QUEST_ENGINE_SYSTEM) {
+            var existing = expConfig[data.id];
+            if (existing && existing.status === "running" && status === "running" &&
+                overlayFingerprint(existing.variants) !== overlayFingerprint(variants)) {
+                return RpcHelpers.errorResponse("cannot edit quest overlay while experiment is running; set status to draft first");
+            }
+            var overlayErr = validateQuestEngineOverlay(nk, gameId, variants);
+            if (overlayErr)
+                return RpcHelpers.errorResponse(overlayErr);
+        }
         var now = Math.floor(Date.now() / 1000);
+        var prev = expConfig[data.id];
         var audiences = firstArray(data.audiences) || firstArray(data.audiences_json);
+        var overlayChanged = !prev || overlayFingerprint(prev.variants) !== overlayFingerprint(variants);
+        var configRevision = (!overlayChanged && prev && prev.configRevision) ? prev.configRevision : String(now);
+        var trackedQuestIds = data.trackedQuestIds || data.tracked_quest_ids || (prev && prev.trackedQuestIds) || undefined;
         var newExp = {
             id: data.id,
             name: data.name,
             description: data.description || "",
-            status: data.status || (data.enabled === false ? "draft" : "running"),
+            status: status,
             audienceId: (audiences && audiences[0]) || data.audience_id || data.audienceId || undefined,
             variants: variants,
-            goalMetric: data.goalMetric,
-            splitKey: data.splitKey,
+            configSystem: configSystem || undefined,
+            goalMetric: goalMetric,
+            splitKey: splitKey,
             lockParticipation: data.lockParticipation || false,
             admissionDeadline: data.admissionDeadline,
             startAt: data.startAt,
@@ -28651,9 +28921,19 @@ var AdminConsole;
             phases: data.phases,
             experimentType: data.experimentType || "custom",
             gameId: gameId || data.gameId || data.game_id || undefined,
-            createdAt: (expConfig[data.id] && expConfig[data.id].createdAt) || now,
+            configRevision: configRevision,
+            trackedQuestIds: trackedQuestIds,
+            createdAt: (prev && prev.createdAt) || now,
             updatedAt: now
         };
+        var minSampleRaw = data.minSamplePerArm || data.min_sample_per_arm || data.minSample || data.min_sample;
+        var minSampleParsed = parseInt(String(minSampleRaw == null ? "" : minSampleRaw), 10);
+        if (minSampleParsed > 0) {
+            newExp.minSamplePerArm = minSampleParsed;
+        }
+        else if (prev && prev.minSamplePerArm > 0) {
+            newExp.minSamplePerArm = prev.minSamplePerArm;
+        }
         var action = expConfig[data.id] ? "updated" : "created";
         expConfig[data.id] = newExp;
         var key = saveScopedSatoriConfig(nk, "experiments", gameId, expConfig);
@@ -31357,6 +31637,19 @@ var HiroMailbox;
 var HiroPersonalizers;
 (function (HiroPersonalizers) {
     var OVERRIDES_COLLECTION = "hiro_personalizer_overrides";
+    var QUEST_ENGINE_SYSTEM = "quest_engine";
+    // v1 progress-safe overlay. steps / requiredCount / eventType / new quest ids
+    // are dropped at apply time (setup validator later rejects them loudly).
+    var QUEST_ENGINE_OVERLAY_ALLOWLIST = {
+        reward: true,
+        hidden: true,
+        enabled: true,
+        name: true,
+        description: true
+    };
+    function isUnsafeKey(key) {
+        return key === "__proto__" || key === "constructor" || key === "prototype";
+    }
     function deepClone(obj) {
         if (obj === null || typeof obj !== "object")
             return obj;
@@ -31368,7 +31661,7 @@ var HiroPersonalizers;
         }
         var clone = {};
         for (var key in obj) {
-            if (obj.hasOwnProperty(key))
+            if (obj.hasOwnProperty(key) && !isUnsafeKey(key))
                 clone[key] = deepClone(obj[key]);
         }
         return clone;
@@ -31377,18 +31670,23 @@ var HiroPersonalizers;
         var parts = path.split(".");
         var current = obj;
         for (var i = 0; i < parts.length - 1; i++) {
+            if (isUnsafeKey(parts[i]))
+                return;
             if (current[parts[i]] === undefined || current[parts[i]] === null) {
                 current[parts[i]] = {};
             }
             current = current[parts[i]];
         }
-        current[parts[parts.length - 1]] = value;
+        var last = parts[parts.length - 1];
+        if (isUnsafeKey(last))
+            return;
+        current[last] = value;
     }
     function mergeDeep(target, source) {
         if (!source || typeof source !== "object")
             return target;
         for (var key in source) {
-            if (!source.hasOwnProperty(key))
+            if (!source.hasOwnProperty(key) || isUnsafeKey(key))
                 continue;
             if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key]) &&
                 target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
@@ -31399,6 +31697,87 @@ var HiroPersonalizers;
             }
         }
         return target;
+    }
+    function parseMaybeJson(value) {
+        if (typeof value !== "string")
+            return value;
+        try {
+            return JSON.parse(value);
+        }
+        catch (_) {
+            return value;
+        }
+    }
+    // Admin UI stores variant.data; Hiro seed/docs use variant.config (string map or object).
+    function normalizeVariantOverlay(variant) {
+        if (!variant)
+            return null;
+        var raw = variant.config || variant.data;
+        if (raw == null)
+            return null;
+        raw = parseMaybeJson(raw);
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return null;
+        var out = {};
+        for (var key in raw) {
+            if (!raw.hasOwnProperty(key) || isUnsafeKey(key))
+                continue;
+            out[key] = parseMaybeJson(raw[key]);
+        }
+        return out;
+    }
+    function hasRunningConfigSystem(nk, system, gameId) {
+        if (system === QUEST_ENGINE_SYSTEM && !gameId)
+            return false;
+        var experiments = ConfigLoader.loadSatoriConfigForGame(nk, "experiments", gameId, {});
+        for (var expId in experiments) {
+            var exp = experiments[expId];
+            if (exp && exp.status === "running" && exp.configSystem === system)
+                return true;
+        }
+        return false;
+    }
+    // Overlay existing quests only. Reward replaces the whole object (no currency merge).
+    function applyQuestEngineOverlay(config, overlay) {
+        if (!config || !config.quests || !overlay || !overlay.quests || typeof overlay.quests !== "object") {
+            return config;
+        }
+        var patched = overlay.quests;
+        for (var questId in patched) {
+            if (!patched.hasOwnProperty(questId) || isUnsafeKey(questId))
+                continue;
+            if (!config.quests.hasOwnProperty(questId))
+                continue;
+            var src = patched[questId];
+            if (!src || typeof src !== "object" || Array.isArray(src))
+                continue;
+            var dest = config.quests[questId];
+            if (src.hasOwnProperty("reward") && QUEST_ENGINE_OVERLAY_ALLOWLIST.reward) {
+                dest.reward = deepClone(src.reward);
+            }
+            if (src.hasOwnProperty("hidden") && QUEST_ENGINE_OVERLAY_ALLOWLIST.hidden) {
+                dest.hidden = !!src.hidden;
+            }
+            if (src.hasOwnProperty("enabled") && QUEST_ENGINE_OVERLAY_ALLOWLIST.enabled) {
+                dest.enabled = !!src.enabled;
+            }
+            if (src.hasOwnProperty("name") && QUEST_ENGINE_OVERLAY_ALLOWLIST.name && typeof src.name === "string") {
+                dest.name = src.name;
+            }
+            if (src.hasOwnProperty("description") && QUEST_ENGINE_OVERLAY_ALLOWLIST.description &&
+                (src.description == null || typeof src.description === "string")) {
+                dest.description = src.description;
+            }
+        }
+        return config;
+    }
+    HiroPersonalizers.applyQuestEngineOverlay = applyQuestEngineOverlay;
+    function applySystemOverlay(system, config, overlay) {
+        if (!overlay)
+            return config;
+        if (system === QUEST_ENGINE_SYSTEM)
+            return applyQuestEngineOverlay(config, overlay);
+        return mergeDeep(config, overlay);
     }
     // ---- Storage Personalizer ----
     function applyStorageOverrides(nk, userId, system, config, gameId) {
@@ -31412,18 +31791,16 @@ var HiroPersonalizers;
         return config;
     }
     // ---- Satori Personalizer (feature flags + experiments) ----
-    function applySatoriOverrides(nk, userId, system, config, gameId) {
+    function applySatoriOverrides(nk, userId, system, config, gameId, logger) {
         // Check feature flags for config overrides
         var flagName = "hiro_" + system + "_override";
         var flag = SatoriFeatureFlags.getFlag(nk, userId, flagName, undefined, gameId);
         if (flag && flag.value) {
             try {
-                var flagOverrides = JSON.parse(flag.value);
-                config = mergeDeep(config, flagOverrides);
+                config = applySystemOverlay(system, config, JSON.parse(flag.value));
             }
             catch (_) { }
         }
-        // Check experiment variants for config overrides
         var experiments = ConfigLoader.loadSatoriConfigForGame(nk, "experiments", gameId, {});
         for (var expId in experiments) {
             var exp = experiments[expId];
@@ -31431,19 +31808,11 @@ var HiroPersonalizers;
                 continue;
             if (!exp.configSystem || exp.configSystem !== system)
                 continue;
-            var variant = SatoriExperiments.getVariant(nk, userId, expId, gameId);
-            if (variant && variant.config) {
+            var variant = SatoriExperiments.getVariant(nk, userId, expId, gameId, logger);
+            var overlay = normalizeVariantOverlay(variant);
+            if (overlay) {
                 try {
-                    var variantOverrides = {};
-                    for (var key in variant.config) {
-                        try {
-                            variantOverrides[key] = JSON.parse(variant.config[key]);
-                        }
-                        catch (_) {
-                            variantOverrides[key] = variant.config[key];
-                        }
-                    }
-                    config = mergeDeep(config, variantOverrides);
+                    config = applySystemOverlay(system, config, overlay);
                 }
                 catch (_) { }
             }
@@ -31451,10 +31820,20 @@ var HiroPersonalizers;
         return config;
     }
     // ---- Public API ----
-    function personalize(nk, userId, system, baseConfig, gameId) {
+    function personalize(nk, userId, system, baseConfig, gameId, logger) {
+        // Fast path: no running quest_engine experiment → skip overlay clone/merge.
+        // Storage overrides still apply if present.
+        if (system === QUEST_ENGINE_SYSTEM && !hasRunningConfigSystem(nk, system, gameId)) {
+            var stored = Storage.readJson(nk, OVERRIDES_COLLECTION, Constants.gameKey(gameId, "overrides"), userId);
+            if (!stored || !stored.overrides || !stored.overrides[system] || stored.overrides[system].length === 0) {
+                return baseConfig;
+            }
+            var storageOnly = deepClone(baseConfig);
+            return applyStorageOverrides(nk, userId, system, storageOnly, gameId);
+        }
         var config = deepClone(baseConfig);
         config = applyStorageOverrides(nk, userId, system, config, gameId);
-        config = applySatoriOverrides(nk, userId, system, config, gameId);
+        config = applySatoriOverrides(nk, userId, system, config, gameId, logger);
         return config;
     }
     HiroPersonalizers.personalize = personalize;
@@ -31518,10 +31897,41 @@ var HiroPersonalizers;
         var data = RpcHelpers.parseRpcPayload(payload);
         if (!data.userId || !data.system)
             return RpcHelpers.errorResponse("userId and system required");
-        var gameId = RpcHelpers.gameId(data);
-        var base = ConfigLoader.loadConfigForGame(nk, data.system, gameId, {});
-        var personalized = personalize(nk, data.userId, data.system, base, gameId);
-        return RpcHelpers.successResponse({ system: data.system, userId: data.userId, baseConfig: base, personalizedConfig: personalized });
+        var rawGame = RpcHelpers.gameId(data) || "";
+        var gameId = (rawGame === "default" || rawGame === Constants.DEFAULT_GAME_ID)
+            ? Constants.QUIZVERSE_GAME_ID
+            : rawGame;
+        var base;
+        if (data.system === QUEST_ENGINE_SYSTEM) {
+            RpcHelpers.requireAdmin(ctx, nk);
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required (registry UUID). Use default only as the QuizVerse alias.");
+            if (typeof QuestEngine === "undefined" || !QuestEngine.loadRawConfig) {
+                return RpcHelpers.errorResponse("quest engine unavailable");
+            }
+            base = QuestEngine.loadRawConfig(nk, gameId);
+        }
+        else {
+            base = ConfigLoader.loadConfigForGame(nk, data.system, gameId, {});
+        }
+        var personalized = personalize(nk, data.userId, data.system, base, gameId, logger);
+        var experiment = null;
+        if (data.system === QUEST_ENGINE_SYSTEM) {
+            try {
+                if (typeof SatoriExperiments !== "undefined" && SatoriExperiments.getRunningQuestEngineAttribution) {
+                    experiment = SatoriExperiments.getRunningQuestEngineAttribution(nk, data.userId, gameId);
+                }
+            }
+            catch (_) { }
+        }
+        return RpcHelpers.successResponse({
+            system: data.system,
+            userId: data.userId,
+            gameId: gameId || null,
+            baseConfig: base,
+            personalizedConfig: personalized,
+            experiment: experiment
+        });
     }
     function register(initializer) {
         initializer.registerRpc("hiro_personalizer_set_override", rpcSetOverride);
@@ -34976,7 +35386,7 @@ var IdentityResolver;
 //   - wallets (sum-merge currencies+items, per-currency fraud cap, zero ghost)
 //   - hiro_progression / hiro_streaks / hiro_stats / hiro_inventory /
 //     hiro_achievements (copy-if-absent — destination keeps its own state)
-//   - daily_rewards, qv_seen, qv_quests, badges, characters (copy-if-absent)
+//   - daily_rewards, qv_seen, qv_quests, badges, characters, satori_assignments (copy-if-absent)
 // Leaderboard records are owner-immutable → NOT ported (accepted, logged).
 //
 // Idempotency: merge_idem_{ghost}_{cognito} (same pattern as account_merge).
@@ -35006,6 +35416,7 @@ var QuizverseMerge;
             "qv_quests",
             "badges",
             "characters",
+            Constants.SATORI_ASSIGNMENTS_COLLECTION,
         ];
     }
     function isServiceCaller(ctx, payload) {
@@ -62523,7 +62934,9 @@ var QuestEventBusBridge;
     function resolveQuestGameId(data) {
         var id = (data && (data.gameId || data.game_id || data.appId || data.app_id))
             ? String(data.gameId || data.game_id || data.appId || data.app_id)
-            : Constants.QUIZVERSE_GAME_ID;
+            : "";
+        if (!id)
+            return "";
         if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
             return Constants.QUIZVERSE_GAME_ID;
         }
@@ -62541,6 +62954,10 @@ var QuestEventBusBridge;
         // Extract common fields from event data — same tenant alias as quest_engine.resolveGameId
         // (local copy avoids cross-namespace eval-order issues in the merged Goja bundle).
         var gameId = resolveQuestGameId(data);
+        if (!gameId) {
+            logger.warn("[QuestEventBusBridge] skip event without gameId event=%s user=%s", eventName, ctx.userId);
+            return;
+        }
         var value = extractValue(eventName, data);
         var metadata = extractMetadata(eventName, data);
         logger.debug("[QuestEventBusBridge] Processing event=%s → questEventType=%s user=%s game=%s value=%d", eventName, questEventType, ctx.userId, gameId, value);
@@ -62745,6 +63162,174 @@ var QuestEngine;
         }
         return DEFAULT_QUESTS_CONFIG;
     }
+    // Admin preview / personalizer: raw jar only (no overlay).
+    function loadRawConfig(nk, gameId) {
+        return loadConfig(nk, gameId);
+    }
+    QuestEngine.loadRawConfig = loadRawConfig;
+    // Player-facing config: base quest list + Satori/Hiro overlay.
+    // Admin save/get MUST keep using loadConfig (raw). Overlay failure never
+    // breaks gameplay — fall back to the stored list.
+    var QUEST_ENGINE_SYSTEM = "quest_engine";
+    function loadPlayerConfig(nk, logger, userId, gameId) {
+        var base = loadConfig(nk, gameId);
+        if (!userId)
+            return base;
+        try {
+            if (typeof HiroPersonalizers !== "undefined" && HiroPersonalizers.personalize) {
+                return HiroPersonalizers.personalize(nk, userId, QUEST_ENGINE_SYSTEM, base, gameId, logger);
+            }
+        }
+        catch (err) {
+            logger.warn("[QuestEngine] overlay skipped gameId=%s user=%s: %s", gameId, userId, err && err.message ? err.message : String(err));
+        }
+        return base;
+    }
+    function loadConfigRecord(nk, gameId) {
+        var rows = [];
+        try {
+            rows = nk.storageRead([{
+                    collection: QUEST_CONFIG_COLLECTION,
+                    key: configKey(gameId),
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+        }
+        catch (_) { }
+        if (rows && rows.length > 0 && rows[0].value) {
+            return { config: rows[0].value, version: rows[0].version || "" };
+        }
+        return { config: loadConfig(nk, gameId), version: "" };
+    }
+    function saveConfigOcc(nk, gameId, config, version) {
+        try {
+            var writeObj = {
+                collection: QUEST_CONFIG_COLLECTION,
+                key: configKey(gameId),
+                userId: Constants.SYSTEM_USER_ID,
+                value: config,
+                permissionRead: 2,
+                permissionWrite: 0
+            };
+            if (version)
+                writeObj.version = version;
+            nk.storageWrite([writeObj]);
+            return true;
+        }
+        catch (_e) {
+            return false;
+        }
+    }
+    function cloneJson(obj) {
+        return JSON.parse(JSON.stringify(obj == null ? {} : obj));
+    }
+    function hashQuestsConfig(config) {
+        var quests = (config && config.quests) || {};
+        var ids = [];
+        for (var k in quests) {
+            if (quests.hasOwnProperty(k))
+                ids.push(k);
+        }
+        ids.sort();
+        var parts = [];
+        for (var i = 0; i < ids.length; i++) {
+            parts.push(ids[i] + ":" + JSON.stringify(quests[ids[i]]));
+        }
+        var s = parts.join("\n");
+        var hash = 0;
+        for (var c = 0; c < s.length; c++) {
+            hash = ((hash << 5) - hash) + s.charCodeAt(c);
+            hash = hash & 0x7FFFFFFF;
+        }
+        return String(hash) + ":" + String(s.length);
+    }
+    function applyWinnerOverlay(base, overlay) {
+        var copy = cloneJson(base);
+        if (!copy.quests)
+            copy.quests = {};
+        if (typeof HiroPersonalizers !== "undefined" && HiroPersonalizers.applyQuestEngineOverlay) {
+            return HiroPersonalizers.applyQuestEngineOverlay(copy, overlay || { quests: {} });
+        }
+        return copy;
+    }
+    // Prepare → write → verify. Caller persists experiment promotion state between
+    // steps so a crash can resume. Never ends the experiment here.
+    function runPromoteStep(nk, logger, gameId, overlay, step, ctx) {
+        if (!gameId)
+            return { ok: false, error: "gameId required" };
+        var experimentId = ctx && ctx.experimentId ? String(ctx.experimentId) : "";
+        var variantId = ctx && ctx.variantId ? String(ctx.variantId) : "";
+        var now = Math.floor(Date.now() / 1000);
+        if (step === "prepare") {
+            var rec = loadConfigRecord(nk, gameId);
+            var desired = applyWinnerOverlay(rec.config, overlay);
+            var desiredHash = hashQuestsConfig(desired);
+            var auditKey = "promote_" + experimentId + "_" + now;
+            try {
+                nk.storageWrite([{
+                        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                        key: auditKey,
+                        userId: Constants.SYSTEM_USER_ID,
+                        value: {
+                            gameId: gameId,
+                            experimentId: experimentId,
+                            variantId: variantId,
+                            actor: "promote",
+                            timestamp: now,
+                            previous: rec.config,
+                            desired: desired,
+                            desiredHash: desiredHash,
+                            promotion: true
+                        },
+                        permissionRead: 2,
+                        permissionWrite: 0
+                    }]);
+            }
+            catch (err) {
+                logger.warn("[QuestEngine] promote audit failed: %s", err && err.message ? err.message : String(err));
+                return { ok: false, error: "failed to snapshot quest config" };
+            }
+            logger.info("[QuestEngine] promote prepared gameId=%s experiment=%s variant=%s auditKey=%s", gameId, experimentId, variantId, auditKey);
+            return { ok: true, auditKey: auditKey, desiredHash: desiredHash };
+        }
+        if (step === "write") {
+            var auditKeyW = ctx && ctx.auditKey ? String(ctx.auditKey) : "";
+            var desiredHashW = ctx && ctx.desiredHash ? String(ctx.desiredHash) : "";
+            if (!auditKeyW)
+                return { ok: false, error: "auditKey required" };
+            var auditRows = [];
+            try {
+                auditRows = nk.storageRead([{
+                        collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                        key: auditKeyW,
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+            }
+            catch (_) { }
+            var audit = (auditRows && auditRows.length > 0 && auditRows[0].value) ? auditRows[0].value : null;
+            if (!audit || !audit.desired)
+                return { ok: false, error: "promote audit missing" };
+            var live = loadConfigRecord(nk, gameId);
+            if (hashQuestsConfig(live.config) === (audit.desiredHash || desiredHashW)) {
+                return { ok: true, auditKey: auditKeyW, desiredHash: audit.desiredHash || desiredHashW };
+            }
+            if (!saveConfigOcc(nk, gameId, audit.desired, live.version)) {
+                return { ok: false, error: "quest config changed during promote; retry" };
+            }
+            logger.info("[QuestEngine] promote wrote gameId=%s experiment=%s auditKey=%s", gameId, experimentId, auditKeyW);
+            return { ok: true, auditKey: auditKeyW, desiredHash: audit.desiredHash || desiredHashW };
+        }
+        if (step === "verify") {
+            var want = ctx && ctx.desiredHash ? String(ctx.desiredHash) : "";
+            var liveV = loadConfig(nk, gameId);
+            var got = hashQuestsConfig(liveV);
+            if (!want || got !== want) {
+                return { ok: false, error: "promote verify failed: quest config hash mismatch", desiredHash: want };
+            }
+            return { ok: true, desiredHash: got, auditKey: ctx && ctx.auditKey ? String(ctx.auditKey) : "" };
+        }
+        return { ok: false, error: "unknown promote step" };
+    }
+    QuestEngine.runPromoteStep = runPromoteStep;
     function saveConfig(nk, gameId, config) {
         nk.storageWrite([{
                 collection: QUEST_CONFIG_COLLECTION,
@@ -62937,10 +63522,94 @@ var QuestEngine;
                 completedAt: null,
                 claimedAt: null,
                 resetCount: 0,
-                lastResetAt: null
+                lastResetAt: null,
+                rewardSnapshot: null,
+                abAttribution: null
             };
         }
         return state.quests[questId];
+    }
+    function cloneReward(reward) {
+        try {
+            return JSON.parse(JSON.stringify(reward));
+        }
+        catch (_) {
+            return reward;
+        }
+    }
+    function stampRewardSnapshot(progress, reward) {
+        if (progress.rewardSnapshot)
+            return;
+        if (!reward)
+            return;
+        progress.rewardSnapshot = cloneReward(reward);
+    }
+    function effectiveReward(progress, qConfig) {
+        if (progress && progress.rewardSnapshot)
+            return progress.rewardSnapshot;
+        return (qConfig && qConfig.reward) ? qConfig.reward : undefined;
+    }
+    function rewardPreviewOf(progress, qConfig) {
+        var reward = effectiveReward(progress, qConfig);
+        return (reward && reward.guaranteed) ? reward.guaranteed : null;
+    }
+    function loadQuestAbContext(nk, userId, gameId) {
+        try {
+            if (typeof SatoriExperiments !== "undefined" && SatoriExperiments.getRunningQuestEngineAttribution) {
+                return SatoriExperiments.getRunningQuestEngineAttribution(nk, userId, gameId);
+            }
+        }
+        catch (_) { }
+        return null;
+    }
+    function isTrackedQuest(ctx, questId) {
+        if (!ctx || !questId)
+            return false;
+        var tracked = ctx.trackedQuestIds;
+        if (!tracked || tracked.length === 0)
+            return false;
+        for (var i = 0; i < tracked.length; i++) {
+            if (tracked[i] === questId)
+                return true;
+        }
+        return false;
+    }
+    // First write wins. Overlay stop / new phase / promote cannot rewrite history.
+    // Untracked quests get no stamp so later completes cannot count as conversions.
+    function stampAbAttribution(progress, ctx, questId, now) {
+        if (!progress || !ctx || !questId)
+            return false;
+        if (progress.abAttribution)
+            return false;
+        if (!isTrackedQuest(ctx, questId))
+            return false;
+        progress.abAttribution = {
+            experimentId: ctx.experimentId,
+            variantId: ctx.variantId,
+            phaseId: ctx.phaseId || null,
+            configRevision: String(ctx.configRevision || ""),
+            gameId: ctx.gameId,
+            questId: questId,
+            exposedAt: now
+        };
+        return true;
+    }
+    function recordAbFunnel(nk, logger, userId, progress, step) {
+        var a = progress && progress.abAttribution;
+        if (!a || !a.experimentId || !a.variantId || !userId)
+            return;
+        try {
+            SatoriExperiments.recordQuestFunnelStep(nk, logger, {
+                userId: userId,
+                gameId: a.gameId,
+                experimentId: a.experimentId,
+                variantId: a.variantId,
+                step: step
+            });
+        }
+        catch (err) {
+            logger.warn("[QuestEngine] funnel %s failed: %s", step, err && err.message ? err.message : String(err));
+        }
     }
     function getStepCount(progress, stepId) {
         return (progress.steps[stepId] && progress.steps[stepId].count) || 0;
@@ -62964,10 +63633,17 @@ var QuestEngine;
     function isQuestEnabled(config) {
         return config.enabled !== false; // default true when omitted
     }
+    function hasInFlightProgress(progress) {
+        return !!(progress && (progress.startedAt || progress.completedAt));
+    }
     function isQuestVisible(config, progress) {
+        // A/B overlay (or liveops) may set hidden/enabled:false. Never hide a
+        // quest the player already started or completed — including unclaimed.
+        if (hasInFlightProgress(progress))
+            return true;
         if (!isQuestEnabled(config))
             return false;
-        if (config.hidden && !progress.completedAt)
+        if (config.hidden)
             return false;
         return true;
     }
@@ -63122,6 +63798,8 @@ var QuestEngine;
         progress.startedAt = null;
         progress.completedAt = null;
         progress.claimedAt = null;
+        progress.rewardSnapshot = null;
+        progress.abAttribution = null;
         progress.resetCount = (progress.resetCount || 0) + 1;
         progress.lastResetAt = now;
     }
@@ -63144,10 +63822,11 @@ var QuestEngine;
         }
         return true;
     }
+    var GAME_ID_REQUIRED = "gameId required (registry UUID). Use default only as the QuizVerse alias.";
     function resolveGameId(data) {
-        var id = RpcHelpers.gameId(data) || Constants.QUIZVERSE_GAME_ID;
-        // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID so
-        // Unity quest_engine_get and LiveOps share the same storage keys.
+        var id = RpcHelpers.gameId(data) || "";
+        // Alias legacy Admin/EventBus "default" tenant onto QuizVerse UUID only.
+        // Missing ids must not steal QuizVerse quests.
         if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
             return Constants.QUIZVERSE_GAME_ID;
         }
@@ -63155,22 +63834,33 @@ var QuestEngine;
     }
     // ─── RPC: quest_engine_get ─────────────────────────────────────────────────
     // Returns all non-expired quests with per-step progress for the calling user.
-    // Read-only: only writes state when a repeatable reset actually occurred.
+    // Writes state on repeatable reset and on first A/B exposure stamp.
+    // Never sends experiment ids to Unity.
     function rpcQuestEngineGet(ctx, logger, nk, payload) {
-        var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
+        var userId;
+        if (isAdminCaller(ctx) && data.userId) {
+            userId = String(data.userId);
+        }
+        else {
+            userId = RpcHelpers.requireUserId(ctx);
+        }
         var now = Math.floor(Date.now() / 1000);
         // Opt player into new-quest inbox fan-out for this App-ID
         try {
             subscribeUser(nk, gameId, userId);
         }
         catch (_) { }
-        var config = loadConfig(nk, gameId);
+        var config = loadPlayerConfig(nk, logger, userId, gameId);
         var state = loadUserState(nk, userId, gameId);
         var stateModified = false;
+        var abCtx = loadQuestAbContext(nk, userId, gameId);
         var result = [];
         var questIds = Object.keys(config.quests);
+        var funnelExposeProgress = null;
         for (var i = 0; i < questIds.length; i++) {
             var questId = questIds[i];
             var qConfig = config.quests[questId];
@@ -63183,6 +63873,10 @@ var QuestEngine;
             }
             if (!isQuestVisible(qConfig, progress))
                 continue;
+            if (stampAbAttribution(progress, abCtx, questId, now))
+                stateModified = true;
+            if (progress.abAttribution)
+                funnelExposeProgress = progress;
             var unlocked = isQuestUnlocked(qConfig, state);
             var stepsOut = [];
             for (var s = 0; s < qConfig.steps.length; s++) {
@@ -63212,20 +63906,34 @@ var QuestEngine;
                 // Guaranteed-only preview so clients can render "you'll earn X" without
                 // ever needing their own copy of the reward config. Weighted/random
                 // rewards stay unexposed until granted, so surprises stay surprises.
-                rewardPreview: (qConfig.reward && qConfig.reward.guaranteed) ? qConfig.reward.guaranteed : null,
+                rewardPreview: rewardPreviewOf(progress, qConfig),
                 additionalProperties: qConfig.additionalProperties || null
             });
         }
-        // Only write to storage if a repeatable reset changed the state
+        // Write on repeatable reset or first A/B exposure stamp.
         if (stateModified) {
             saveUserState(nk, userId, gameId, state);
         }
-        return RpcHelpers.successResponse({ quests: result });
+        if (funnelExposeProgress) {
+            recordAbFunnel(nk, logger, userId, funnelExposeProgress, "exposed");
+        }
+        var payloadOut = { quests: result };
+        if (data.debug === true && isAdminCaller(ctx) && abCtx) {
+            payloadOut.debug = {
+                experiment: {
+                    experimentId: abCtx.experimentId,
+                    variantId: abCtx.variantId,
+                    gameId: gameId
+                }
+            };
+        }
+        return RpcHelpers.successResponse(payloadOut);
     }
     function processEventInternal(nk, logger, ctx, userId, gameId, eventType, value, metadata) {
         var now = Math.floor(Date.now() / 1000);
-        var config = loadConfig(nk, gameId);
+        var config = loadPlayerConfig(nk, logger, userId, gameId);
         var state = loadUserState(nk, userId, gameId);
+        var abCtx = loadQuestAbContext(nk, userId, gameId);
         var updatedCount = 0;
         var updatedQuests = {};
         // Track quests that completed this call and need auto-reward granting
@@ -63244,6 +63952,11 @@ var QuestEngine;
             if (shouldResetQuest(qConfig, progress, now)) {
                 resetQuestProgress(progress, now);
             }
+            // Overlay enabled:false must not start new work. In-flight (started or
+            // completed-unclaimed) still progresses so the player can finish/claim.
+            // Hidden surprise quests still progress in the background.
+            if (!isQuestEnabled(qConfig) && !hasInFlightProgress(progress))
+                continue;
             // Skip quests that are still completed (non-repeatable, or repeatable window not expired yet)
             if (progress.completedAt)
                 continue;
@@ -63257,8 +63970,12 @@ var QuestEngine;
                 if (!progress.steps[stepCfg.id]) {
                     progress.steps[stepCfg.id] = { count: 0, completedAt: null };
                 }
-                if (!progress.startedAt)
+                if (!progress.startedAt) {
                     progress.startedAt = now;
+                    stampRewardSnapshot(progress, qConfig.reward);
+                    stampAbAttribution(progress, abCtx, questId, now);
+                    recordAbFunnel(nk, logger, userId, progress, "started");
+                }
                 var prevCount = progress.steps[stepCfg.id].count;
                 // For count-based steps (requiredValue not set) increment by 1 each event.
                 // For accumulation steps (e.g. "earn 500 XP") increment by the event value.
@@ -63287,17 +64004,24 @@ var QuestEngine;
                 if (areAllStepsDone(qConfig, progress) && !progress.completedAt) {
                     progress.completedAt = now;
                     try {
-                        EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_COMPLETED, {
-                            userId: userId, questId: questId
-                        });
+                        var emitData = { userId: userId, questId: questId, gameId: gameId };
+                        if (progress.abAttribution) {
+                            emitData.experimentId = progress.abAttribution.experimentId;
+                            emitData.variantId = progress.abAttribution.variantId;
+                            emitData.phaseId = progress.abAttribution.phaseId;
+                            emitData.configRevision = progress.abAttribution.configRevision;
+                            emitData.exposedAt = progress.abAttribution.exposedAt;
+                        }
+                        EventBus.emit(nk, logger, ctx, EventBus.Events.QUEST_COMPLETED, emitData);
                     }
                     catch (busErr) {
                         logger.warn("[QuestEngine] EventBus quest emit failed: " + (busErr && busErr.message ? busErr.message : String(busErr)));
                     }
                     logger.info("[QuestEngine] Quest completed: quest=%s user=%s", questId, userId);
                     // Queue reward for Phase 3 — do NOT grant yet (state not saved)
-                    if (qConfig.reward) {
-                        rewardPending.push({ questId: questId, reward: qConfig.reward });
+                    var payoutReward = effectiveReward(progress, qConfig);
+                    if (payoutReward) {
+                        rewardPending.push({ questId: questId, reward: payoutReward });
                     }
                 }
                 updatedQuests[questId] = {
@@ -63324,6 +64048,7 @@ var QuestEngine;
                 state.quests[rq.questId].claimedAt = now;
                 updatedQuests[rq.questId].claimedAt = now;
                 anyClaimedAt = true;
+                recordAbFunnel(nk, logger, userId, state.quests[rq.questId], "claimed");
                 logger.info("[QuestEngine] Reward auto-granted: quest=%s user=%s", rq.questId, userId);
                 // Server-driven fulfilment + player notification (reward catalog).
                 // Isolated: delivery problems never roll back grants or progress.
@@ -63363,6 +64088,8 @@ var QuestEngine;
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var eventType = data.eventType;
         var value = (data.value !== undefined && data.value !== null) ? Number(data.value) : 0;
         var metadata = data.metadata || {};
@@ -63465,13 +64192,16 @@ var QuestEngine;
         var userId = RpcHelpers.requireUserId(ctx);
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var questId = data.questId;
         if (!questId)
             return RpcHelpers.errorResponse("questId is required");
-        var config = loadConfig(nk, gameId);
+        var config = loadPlayerConfig(nk, logger, userId, gameId);
         var qConfig = config.quests[questId];
         if (!qConfig)
             return RpcHelpers.errorResponse("Unknown quest: " + questId);
+        // Overlay hidden/enabled:false must not block a completed-unclaimed claim.
         // Fast-path checks for clean error messages — the authoritative guard is
         // the OCC-guarded marker write below.
         var peek = loadUserState(nk, userId, gameId);
@@ -63480,7 +64210,8 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Quest not completed");
         if (peekProgress.claimedAt)
             return RpcHelpers.errorResponse("Quest reward already claimed");
-        if (!qConfig.reward)
+        var payReward = effectiveReward(peekProgress, qConfig);
+        if (!payReward)
             return RpcHelpers.successResponse({ reward: null });
         var now = Math.floor(Date.now() / 1000);
         // F14 SECURITY: persist claimedAt FIRST with an OCC version CAS, before
@@ -63497,7 +64228,7 @@ var QuestEngine;
         // Marker is durable — only now resolve and grant the reward.
         var resolved;
         try {
-            resolved = RewardEngine.resolveReward(nk, qConfig.reward);
+            resolved = RewardEngine.resolveReward(nk, payReward);
             RewardEngine.grantReward(nk, logger, ctx, userId, gameId, resolved);
         }
         catch (grantErr) {
@@ -63512,6 +64243,7 @@ var QuestEngine;
             return RpcHelpers.errorResponse("Reward grant failed — please retry");
         }
         logger.info("[QuestEngine] Reward claimed manually: quest=%s user=%s", questId, userId);
+        recordAbFunnel(nk, logger, userId, peekProgress, "claimed");
         // Same server-driven fulfilment path as auto-grant (catalog + notification).
         try {
             RewardDelivery.onQuestReward(nk, logger, ctx, userId, gameId, questId, qConfig.name || questId, resolved);
@@ -63521,6 +64253,126 @@ var QuestEngine;
         }
         return RpcHelpers.successResponse({ reward: resolved });
     }
+    function persistAdminConfig(nk, ctx, logger, gameId, config, opts) {
+        if (!config || !config.quests || typeof config.quests !== "object" || Array.isArray(config.quests)) {
+            return { ok: false, error: "config.quests object required" };
+        }
+        var cleaned = {};
+        var rawKeys = Object.keys(config.quests);
+        for (var ck = 0; ck < rawKeys.length; ck++) {
+            var ckId = rawKeys[ck];
+            if (ckId === "__proto__" || ckId === "constructor" || ckId === "prototype")
+                continue;
+            cleaned[ckId] = config.quests[ckId];
+        }
+        config = { quests: cleaned };
+        var questCount = Object.keys(config.quests).length;
+        var validationErrors = [];
+        var questKeys = Object.keys(config.quests);
+        for (var vi = 0; vi < questKeys.length; vi++) {
+            var vq = config.quests[questKeys[vi]];
+            var verr = validateQuestConfig(vq);
+            if (verr)
+                validationErrors.push((vq && vq.id ? vq.id : questKeys[vi]) + ": " + verr);
+        }
+        if (validationErrors.length > 0) {
+            return { ok: false, error: "Invalid quest config: " + validationErrors.join("; ") };
+        }
+        var prev = loadConfig(nk, gameId);
+        var prevIds = {};
+        var prevKeys = Object.keys(prev.quests || {});
+        for (var pi = 0; pi < prevKeys.length; pi++)
+            prevIds[prevKeys[pi]] = true;
+        var newlyAdded = [];
+        var newKeys = Object.keys(config.quests);
+        for (var ni = 0; ni < newKeys.length; ni++) {
+            var nid = newKeys[ni];
+            if (!prevIds[nid])
+                newlyAdded.push(config.quests[nid]);
+        }
+        saveConfig(nk, gameId, config);
+        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
+        var newIds = [];
+        for (var ai = 0; ai < newlyAdded.length; ai++)
+            newIds.push(newlyAdded[ai].id);
+        auditConfigChange(nk, ctx, logger, gameId, config, newIds);
+        var notified = 0;
+        if (!opts.silent && newlyAdded.length > 0) {
+            notified = notifyNewQuests(nk, logger, gameId, newlyAdded, opts.notifyUserIds);
+        }
+        return { ok: true, questCount: questCount, newQuestCount: newlyAdded.length, notified: notified };
+    }
+    // Put the pre-promote quest list back. Writes through persistAdminConfig
+    // (same door as quest_engine_admin_save_config). Does not reopen the test.
+    function restorePromoteAudit(nk, logger, ctx, gameId, auditKey) {
+        if (!auditKey)
+            return { ok: false, error: "auditKey required" };
+        if (!gameId)
+            return { ok: false, error: "gameId required" };
+        var auditRows = [];
+        try {
+            auditRows = nk.storageRead([{
+                    collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                    key: auditKey,
+                    userId: Constants.SYSTEM_USER_ID
+                }]);
+        }
+        catch (_) { }
+        var audit = (auditRows && auditRows.length > 0 && auditRows[0].value) ? auditRows[0].value : null;
+        if (!audit || audit.promotion !== true || !audit.previous || !audit.previous.quests) {
+            return { ok: false, error: "promote audit snapshot missing" };
+        }
+        var auditGame = audit.gameId ? String(audit.gameId) : "";
+        if (auditGame && auditGame !== gameId) {
+            return { ok: false, error: "audit gameId does not match" };
+        }
+        var previous = cloneJson(audit.previous);
+        var live = loadConfig(nk, gameId);
+        var liveHash = hashQuestsConfig(live);
+        var prevHash = hashQuestsConfig(previous);
+        var desiredHash = audit.desiredHash ? String(audit.desiredHash) : hashQuestsConfig(audit.desired);
+        if (liveHash === prevHash) {
+            return {
+                ok: true, already: true, restored: true, experimentId: audit.experimentId ? String(audit.experimentId) : ""
+            };
+        }
+        if (desiredHash && liveHash !== desiredHash) {
+            return { ok: false, error: "quest list changed after promote; cannot restore" };
+        }
+        var saved = persistAdminConfig(nk, ctx, logger, gameId, previous, { silent: true });
+        if (!saved.ok)
+            return { ok: false, error: saved.error || "restore save failed" };
+        var now = Math.floor(Date.now() / 1000);
+        var experimentId = audit.experimentId ? String(audit.experimentId) : "";
+        var restoreAuditKey = "restore_" + experimentId + "_" + now;
+        try {
+            nk.storageWrite([{
+                    collection: QUEST_CONFIG_AUDIT_COLLECTION,
+                    key: restoreAuditKey,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: {
+                        gameId: gameId,
+                        experimentId: experimentId,
+                        actor: "restore",
+                        timestamp: now,
+                        restoreOf: auditKey,
+                        previous: live,
+                        desired: previous,
+                        restore: true
+                    },
+                    permissionRead: 2,
+                    permissionWrite: 0
+                }]);
+        }
+        catch (err) {
+            logger.warn("[QuestEngine] restore audit failed: %s", err && err.message ? err.message : String(err));
+        }
+        logger.info("[QuestEngine] promote restored gameId=%s experiment=%s auditKey=%s restoreAuditKey=%s", gameId, experimentId, auditKey, restoreAuditKey);
+        return {
+            ok: true, restored: true, already: false, restoreAuditKey: restoreAuditKey, experimentId: experimentId
+        };
+    }
+    QuestEngine.restorePromoteAudit = restorePromoteAudit;
     // ─── RPC: quest_engine_admin_save_config ─────────────────────────────────
     // Saves quest config to storage. Server-key only — rejects authenticated users.
     //
@@ -63534,6 +64386,8 @@ var QuestEngine;
         }
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var config;
         // Shape (a): { config: { quests: { ... } } }
         if (data.config && data.config.quests && !Array.isArray(data.config.quests)) {
@@ -63554,55 +64408,17 @@ var QuestEngine;
         else {
             return RpcHelpers.errorResponse("Payload must contain config.quests (object) or quests (array)");
         }
-        var questCount = Object.keys(config.quests).length;
-        // Validate every quest before persisting.
-        var validationErrors = [];
-        var questKeys = Object.keys(config.quests);
-        for (var vi = 0; vi < questKeys.length; vi++) {
-            var vq = config.quests[questKeys[vi]];
-            var verr = validateQuestConfig(vq);
-            if (verr)
-                validationErrors.push(vq.id + ": " + verr);
-        }
-        if (validationErrors.length > 0) {
-            return RpcHelpers.errorResponse("Invalid quest config: " + validationErrors.join("; "));
-        }
-        // Diff vs previous config → notify subscribers about newly added (non-hidden) quests.
-        // silent: true  → skip fan-out (use for bulk reseed)
-        // notifyUserIds → extra targets (optional)
-        var prev = loadConfig(nk, gameId);
-        var prevIds = {};
-        var prevKeys = Object.keys(prev.quests || {});
-        for (var pi = 0; pi < prevKeys.length; pi++)
-            prevIds[prevKeys[pi]] = true;
-        var newlyAdded = [];
-        var newKeys = Object.keys(config.quests);
-        for (var ni = 0; ni < newKeys.length; ni++) {
-            var nid = newKeys[ni];
-            if (!prevIds[nid])
-                newlyAdded.push(config.quests[nid]);
-        }
-        saveConfig(nk, gameId, config);
-        logger.info("[QuestEngine] Config saved: gameId=%s quests=%d new=%d", gameId, questCount, newlyAdded.length);
-        // Audit log (best-effort)
-        var newIds = [];
-        for (var ai = 0; ai < newlyAdded.length; ai++)
-            newIds.push(newlyAdded[ai].id);
-        auditConfigChange(nk, ctx, logger, gameId, config, newIds);
-        var notified = 0;
-        var silent = data.silent === true || data.notifyNewQuests === false;
-        if (!silent && newlyAdded.length > 0) {
-            var extra;
-            if (Array.isArray(data.notifyUserIds)) {
-                extra = data.notifyUserIds;
-            }
-            notified = notifyNewQuests(nk, logger, gameId, newlyAdded, extra);
-        }
+        var saved = persistAdminConfig(nk, ctx, logger, gameId, config, {
+            silent: data.silent === true || data.notifyNewQuests === false,
+            notifyUserIds: Array.isArray(data.notifyUserIds) ? data.notifyUserIds : undefined
+        });
+        if (!saved.ok)
+            return RpcHelpers.errorResponse(saved.error || "failed to save quest config");
         return RpcHelpers.successResponse({
             saved: true,
-            questCount: questCount,
-            newQuestCount: newlyAdded.length,
-            notified: notified
+            questCount: saved.questCount,
+            newQuestCount: saved.newQuestCount,
+            notified: saved.notified
         });
     }
     // ─── RPC: quest_engine_admin_get_config ──────────────────────────────────
@@ -63613,6 +64429,8 @@ var QuestEngine;
         }
         var data = RpcHelpers.parseRpcPayload(payload);
         var gameId = resolveGameId(data);
+        if (!gameId)
+            return RpcHelpers.errorResponse(GAME_ID_REQUIRED);
         var config = loadConfig(nk, gameId);
         var questCount = Object.keys(config.quests).length;
         logger.info("[QuestEngine] Config retrieved: gameId=%s quests=%d", gameId, questCount);
@@ -70660,7 +71478,9 @@ var SatoriEventBusBridge;
             EventBus.Events.CHALLENGE_COMPLETED,
             // Retention loop
             EventBus.Events.STREAK_UPDATED,
-            EventBus.Events.REWARD_GRANTED
+            EventBus.Events.REWARD_GRANTED,
+            // Quest A/B conversions — low frequency. Do not add QUEST_STEP_COMPLETED.
+            EventBus.Events.QUEST_COMPLETED
         ];
         return _subscribed;
     }
@@ -70709,6 +71529,11 @@ var SatoriEventBusBridge;
                 timestamp: Date.now(),
                 metadata: buildMetadata(eventName, data)
             });
+            if (eventName === EventBus.Events.QUEST_COMPLETED &&
+                typeof SatoriExperiments !== "undefined" &&
+                SatoriExperiments.recordQuestCompletedConversion) {
+                SatoriExperiments.recordQuestCompletedConversion(nk, logger, data);
+            }
         }
         catch (err) {
             // Never let analytics capture break the gameplay path.
@@ -71380,6 +72205,92 @@ var SatoriExperimentResults;
         var pValue = 2 * (1 - normalCdf(Math.abs(z)));
         return { z: z, pValue: pValue };
     }
+    var SRM_ALPHA = 0.001;
+    // Upper-tail P(χ²_df > x). df=1,2 closed form; else Wilson–Hilferty.
+    function chiSquareSurvival(chi2, df) {
+        if (!(chi2 > 0) || df < 1)
+            return 1;
+        if (chi2 === Infinity)
+            return 0;
+        if (df === 1)
+            return 2 * (1 - normalCdf(Math.sqrt(chi2)));
+        if (df === 2)
+            return Math.exp(-chi2 / 2);
+        var cuberoot = Math.pow(chi2 / df, 1 / 3);
+        var mu = 1 - 2 / (9 * df);
+        var sigma = Math.sqrt(2 / (9 * df));
+        if (sigma === 0)
+            return 1;
+        return 1 - normalCdf((cuberoot - mu) / sigma);
+    }
+    // Observed exposure counts vs configured variant weights.
+    function computeSrm(variants, exposures) {
+        var observed = {};
+        var expected = {};
+        var weights = {};
+        var totalN = 0;
+        var totalW = 0;
+        var keys = [];
+        for (var i = 0; i < variants.length; i++) {
+            var k = variantKeyOf(variants[i]);
+            if (!k)
+                continue;
+            keys.push(k);
+            var w = typeof variants[i].weight === "number" ? variants[i].weight : 1;
+            if (w < 0)
+                w = 0;
+            weights[k] = w;
+            observed[k] = exposures[k] || 0;
+            totalN += observed[k];
+            totalW += w;
+        }
+        var df = keys.length - 1;
+        if (keys.length < 2 || totalN < 1 || totalW <= 0 || df < 1) {
+            return {
+                chiSquare: 0, degreesOfFreedom: Math.max(df, 0), pValue: 1, alpha: SRM_ALPHA,
+                passed: true, skipped: true, observed: observed, expected: expected, weights: weights
+            };
+        }
+        var chi2 = 0;
+        var minExpected = Infinity;
+        var infinite = false;
+        for (var j = 0; j < keys.length; j++) {
+            var vk = keys[j];
+            var e = totalN * (weights[vk] / totalW);
+            expected[vk] = e;
+            if (e < minExpected)
+                minExpected = e;
+            if (e <= 0) {
+                if (observed[vk] > 0) {
+                    infinite = true;
+                    chi2 = Infinity;
+                }
+                continue;
+            }
+            var diff = observed[vk] - e;
+            chi2 += (diff * diff) / e;
+        }
+        if (minExpected < 5 && !infinite) {
+            return {
+                chiSquare: chi2, degreesOfFreedom: df, pValue: chiSquareSurvival(chi2, df),
+                alpha: SRM_ALPHA, passed: true, skipped: true,
+                observed: observed, expected: expected, weights: weights
+            };
+        }
+        var pValue = infinite ? 0 : chiSquareSurvival(chi2, df);
+        var passed = pValue >= SRM_ALPHA;
+        return {
+            chiSquare: infinite ? null : chi2,
+            degreesOfFreedom: df,
+            pValue: pValue,
+            alpha: SRM_ALPHA,
+            passed: passed,
+            skipped: false,
+            observed: observed,
+            expected: expected,
+            weights: weights
+        };
+    }
     // ---- Data collection ----
     function loadExperimentDef(nk, experimentId, gameId) {
         var experiments = ConfigLoader.loadSatoriConfigForGame(nk, "experiments", gameId, {});
@@ -71409,7 +72320,11 @@ var SatoriExperimentResults;
                     continue;
                 byUser[obj.userId] = {
                     variantKey: a.variantId,
-                    assignedAtMs: toMs(a.assignedAt || 0)
+                    assignedAtMs: toMs(a.assignedAt || 0),
+                    exposedAtMs: a.exposedAt ? toMs(a.exposedAt) : 0,
+                    startedAtMs: a.startedAt ? toMs(a.startedAt) : 0,
+                    convertedAtMs: a.convertedAt ? toMs(a.convertedAt) : 0,
+                    claimedAtMs: a.claimedAt ? toMs(a.claimedAt) : 0
                 };
             }
             cursor = (page && page.cursor) || "";
@@ -71459,6 +72374,102 @@ var SatoriExperimentResults;
             truncated = true;
         return { convertedUsers: convertedUsers, totalGoalEvents: totalGoalEvents, truncated: truncated, scannedRecords: scannedRecords };
     }
+    // Quest A/B: count convertedAt on the assignment. Unattributed quest_completed
+    // events must not convert (hidden quest, other game, complete before exposure).
+    function collectConvertedAt(byUser) {
+        var convertedUsers = {};
+        var total = 0;
+        for (var uid in byUser) {
+            if (!byUser.hasOwnProperty(uid))
+                continue;
+            if (byUser[uid].convertedAtMs) {
+                convertedUsers[uid] = true;
+                total++;
+            }
+        }
+        return { convertedUsers: convertedUsers, totalGoalEvents: total, truncated: false, scannedRecords: 0 };
+    }
+    function incCount(dest, key) {
+        dest[key] = (dest[key] || 0) + 1;
+    }
+    function unixToUtcDay(unixOrMs) {
+        var ms = unixOrMs < 100000000000 ? unixOrMs * 1000 : unixOrMs;
+        var d = new Date(ms);
+        var m = d.getUTCMonth() + 1;
+        var day = d.getUTCDate();
+        var mm = m < 10 ? "0" + m : String(m);
+        var dd = day < 10 ? "0" + day : String(day);
+        return d.getUTCFullYear() + "-" + mm + "-" + dd;
+    }
+    // Bounded repair: rebuild 32 shard docs from per-user assignment markers.
+    function rebuildFunnelShardsFromAssignments(nk, experimentId, gameId, byUser) {
+        var docs = [];
+        for (var i = 0; i < SatoriExperiments.FUNNEL_SHARD_COUNT; i++) {
+            docs.push(SatoriExperiments.emptyFunnelShardDoc());
+        }
+        for (var uid in byUser) {
+            if (!byUser.hasOwnProperty(uid))
+                continue;
+            var info = byUser[uid];
+            if (!info || !info.variantKey)
+                continue;
+            var shard = SatoriExperiments.funnelShardIndexOf(uid);
+            var doc = docs[shard];
+            incCount(doc.assigned, info.variantKey);
+            if (info.exposedAtMs)
+                incCount(doc.exposed, info.variantKey);
+            if (info.startedAtMs)
+                incCount(doc.started, info.variantKey);
+            if (info.convertedAtMs)
+                incCount(doc.completed, info.variantKey);
+            if (info.claimedAtMs)
+                incCount(doc.claimed, info.variantKey);
+            if (info.assignedAtMs) {
+                var dayA = unixToUtcDay(info.assignedAtMs);
+                if (!doc.byDay[dayA])
+                    doc.byDay[dayA] = { assigned: {}, completed: {} };
+                incCount(doc.byDay[dayA].assigned, info.variantKey);
+            }
+            if (info.convertedAtMs) {
+                var dayC = unixToUtcDay(info.convertedAtMs);
+                if (!doc.byDay[dayC])
+                    doc.byDay[dayC] = { assigned: {}, completed: {} };
+                incCount(doc.byDay[dayC].completed, info.variantKey);
+            }
+        }
+        SatoriExperiments.replaceFunnelShards(nk, gameId, experimentId, docs);
+    }
+    var MIN_SAMPLE_QA = 30;
+    var MIN_SAMPLE_LIVE = 100;
+    function isQaExperiment(def) {
+        var aid = String((def && def.audienceId) || "").toLowerCase();
+        if (!aid)
+            return false;
+        if (aid === "all" || aid === "quizverse_all_players" || aid.indexOf("all_player") >= 0)
+            return false;
+        return true;
+    }
+    function resolveMinSamplePerArm(def, data) {
+        var raw = (data && (data.minSample || data.min_sample || data.minSamplePerArm)) ||
+            (def && (def.minSamplePerArm || def.minSample));
+        var parsed = parseInt(String(raw == null ? "" : raw), 10);
+        if (parsed > 0) {
+            if (parsed > 100000)
+                parsed = 100000;
+            return { perArm: parsed, mode: "override" };
+        }
+        if (isQaExperiment(def))
+            return { perArm: MIN_SAMPLE_QA, mode: "qa" };
+        return { perArm: MIN_SAMPLE_LIVE, mode: "live" };
+    }
+    function countMapTotal(map) {
+        var total = 0;
+        for (var k in map) {
+            if (map.hasOwnProperty(k))
+                total += map[k] || 0;
+        }
+        return total;
+    }
     // ---- RPCs ----
     // satori_experiments_results — per-variant exposures, conversions, rates,
     // z-test vs control, and a recommendation.
@@ -71481,16 +72492,76 @@ var SatoriExperimentResults;
         if (variants.length < 2)
             return RpcHelpers.errorResponse("Experiment needs at least 2 variants for results");
         var maxEventPages = Math.min(Math.max(parseInt(data.max_event_pages, 10) || EVENTS_DEFAULT_PAGES, 1), EVENTS_MAX_PAGES);
-        var assignmentScan = collectAssignments(nk, experimentId, gameId);
-        var conversionScan = collectConversions(nk, goalEvent, assignmentScan.byUser, maxEventPages);
-        // Tally per variant.
+        var goalIsQuestCompleted = goalEvent === "quest_completed";
+        var shardSums = goalIsQuestCompleted
+            ? SatoriExperiments.loadFunnelShardSums(nk, gameId, experimentId)
+            : null;
+        var assignmentScan = null;
+        var reconciled = false;
+        if (goalIsQuestCompleted && data.reconcile === true) {
+            assignmentScan = collectAssignments(nk, experimentId, gameId);
+            rebuildFunnelShardsFromAssignments(nk, experimentId, gameId, assignmentScan.byUser);
+            shardSums = SatoriExperiments.loadFunnelShardSums(nk, gameId, experimentId);
+            reconciled = true;
+        }
+        var usedShards = !!(shardSums && shardSums.shardsPresent);
+        var conversionScan = {
+            convertedUsers: {},
+            totalGoalEvents: 0,
+            truncated: false,
+            scannedRecords: 0
+        };
         var exposures = {};
         var conversions = {};
-        for (var uid in assignmentScan.byUser) {
-            var vk = assignmentScan.byUser[uid].variantKey;
-            exposures[vk] = (exposures[vk] || 0) + 1;
-            if (conversionScan.convertedUsers[uid]) {
-                conversions[vk] = (conversions[vk] || 0) + 1;
+        var funnelAssigned = {};
+        var funnelExposed = {};
+        var funnelStarted = {};
+        var funnelCompleted = {};
+        var funnelClaimed = {};
+        var byDay = {};
+        if (usedShards) {
+            funnelAssigned = shardSums.assigned;
+            funnelExposed = shardSums.exposed;
+            funnelStarted = shardSums.started;
+            funnelCompleted = shardSums.completed;
+            funnelClaimed = shardSums.claimed;
+            byDay = shardSums.byDay || {};
+            conversions = shardSums.completed;
+            // Exposure is get-time, not assignment. Fall back to assigned only when
+            // no exposed ticks exist yet (pre-T9 shards).
+            if (goalIsQuestCompleted && countMapTotal(shardSums.exposed) > 0) {
+                exposures = shardSums.exposed;
+            }
+            else {
+                exposures = shardSums.assigned;
+            }
+            conversionScan.totalGoalEvents = countMapTotal(conversions);
+        }
+        else {
+            if (!assignmentScan)
+                assignmentScan = collectAssignments(nk, experimentId, gameId);
+            conversionScan = goalIsQuestCompleted
+                ? collectConvertedAt(assignmentScan.byUser)
+                : collectConversions(nk, goalEvent, assignmentScan.byUser, maxEventPages);
+            for (var uid in assignmentScan.byUser) {
+                var info = assignmentScan.byUser[uid];
+                var vk = info.variantKey;
+                exposures[vk] = (exposures[vk] || 0) + 1;
+                incCount(funnelAssigned, vk);
+                if (info.exposedAtMs)
+                    incCount(funnelExposed, vk);
+                if (info.startedAtMs)
+                    incCount(funnelStarted, vk);
+                if (info.convertedAtMs)
+                    incCount(funnelCompleted, vk);
+                if (info.claimedAtMs)
+                    incCount(funnelClaimed, vk);
+                if (conversionScan.convertedUsers[uid]) {
+                    conversions[vk] = (conversions[vk] || 0) + 1;
+                }
+            }
+            if (goalIsQuestCompleted && countMapTotal(funnelExposed) > 0) {
+                exposures = funnelExposed;
             }
         }
         // Control = variant with id/name "control", else first.
@@ -71513,9 +72584,24 @@ var SatoriExperimentResults;
                 isControl: vKey === controlKey,
                 exposures: n,
                 conversions: conv,
-                rate: n > 0 ? conv / n : 0
+                rate: n > 0 ? conv / n : 0,
+                assigned: funnelAssigned[vKey] || 0,
+                exposed: funnelExposed[vKey] || 0,
+                started: funnelStarted[vKey] || 0,
+                completed: funnelCompleted[vKey] || 0,
+                claimed: funnelClaimed[vKey] || 0
             });
         }
+        var minCfg = resolveMinSamplePerArm(def, data);
+        var shortVariants = [];
+        for (var ms = 0; ms < variantRows.length; ms++) {
+            if ((variantRows[ms].exposures || 0) < minCfg.perArm) {
+                shortVariants.push(variantRows[ms].id);
+            }
+        }
+        var sampleMet = shortVariants.length === 0 && variantRows.length >= 2;
+        var srm = computeSrm(variants, exposures);
+        var srmPassed = !!(srm && srm.passed !== false);
         // Compare every non-control variant to control.
         var cN = exposures[controlKey] || 0;
         var cConv = conversions[controlKey] || 0;
@@ -71529,7 +72615,7 @@ var SatoriExperimentResults;
                 continue;
             var test = zTest(cConv, cN, row.conversions, row.exposures);
             var lift = cRate > 0 ? (row.rate - cRate) / cRate : (row.rate > 0 ? 1 : 0);
-            var significant = !!(test && test.pValue < 0.05);
+            var significant = sampleMet && srmPassed && !!(test && test.pValue < 0.05);
             comparisons.push({
                 variantId: row.id,
                 controlId: controlKey,
@@ -71545,7 +72631,19 @@ var SatoriExperimentResults;
             }
         }
         var recommendation;
-        if (winner) {
+        if (!srmPassed) {
+            winner = null;
+            recommendation = "Do not promote: sample ratio mismatch — observed traffic does not match the configured split (p=" +
+                (typeof srm.pValue === "number" ? srm.pValue.toExponential(2) : "0") +
+                "). Fix assignment before trusting a winner.";
+            logger.warn("[ExperimentResults] SRM fail experiment=%s chi2=%s p=%s", experimentId, String(srm.chiSquare), String(srm.pValue));
+        }
+        else if (!sampleMet) {
+            winner = null;
+            var modeLabel = minCfg.mode === "qa" ? "QA, 30 per arm" : (minCfg.mode === "live" ? "live, 100 per arm" : "custom");
+            recommendation = "Need at least " + minCfg.perArm + " players in every variant before picking a winner (" + modeLabel + "). Still short: " + shortVariants.join(", ") + ".";
+        }
+        else if (winner) {
             recommendation = "Variant '" + winner + "' beats control with 95% confidence — consider declaring it the winner.";
         }
         else {
@@ -71568,18 +72666,88 @@ var SatoriExperimentResults;
             comparisons: comparisons,
             suggestedWinner: winner,
             recommendation: recommendation,
+            minSample: {
+                perArm: minCfg.perArm,
+                mode: minCfg.mode,
+                met: sampleMet,
+                shortVariants: shortVariants
+            },
+            srm: srm,
+            funnel: {
+                assigned: funnelAssigned,
+                exposed: funnelExposed,
+                started: funnelStarted,
+                completed: funnelCompleted,
+                claimed: funnelClaimed
+            },
+            byDay: byDay,
             scan: {
-                assignmentObjectsScanned: assignmentScan.scanned,
-                assignmentsTruncated: assignmentScan.truncated,
+                source: usedShards ? "shards" : "assignment_scan",
+                shardsRead: shardSums ? shardSums.shardsRead : 0,
+                reconciled: reconciled,
+                assignmentObjectsScanned: assignmentScan ? assignmentScan.scanned : 0,
+                assignmentsTruncated: assignmentScan ? assignmentScan.truncated : false,
                 eventRecordsScanned: conversionScan.scannedRecords,
                 eventsTruncated: conversionScan.truncated,
                 totalGoalEvents: conversionScan.totalGoalEvents
-            }
+            },
+            promotion: def.promotion ? {
+                state: def.promotion.state || null,
+                auditKey: def.promotion.auditKey || null,
+                restored: !!def.promotion.restored,
+                restoredAt: def.promotion.restoredAt || null
+            } : null
         });
     }
-    // satori_experiments_declare_winner — end the experiment and record the
-    // winning variant on its definition.
-    // Payload: { experimentId, variantId, game_id? }
+    // satori_experiments_declare_winner — end the experiment and optionally
+    // promote the winning quest overlay onto qv_quest_config.
+    // Payload: { experimentId, variantId, game_id?, promote? }
+    function persistExperimentDef(nk, configKey, experiments, experimentId, def) {
+        experiments[experimentId] = def;
+        Storage.writeSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, configKey, experiments);
+        ConfigLoader.invalidateCache(configKey);
+    }
+    function parseVariantOverlay(variant) {
+        var raw = variant && (variant.config || variant.data);
+        if (typeof raw === "string") {
+            try {
+                raw = JSON.parse(raw);
+            }
+            catch (_e) {
+                raw = {};
+            }
+        }
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return { quests: {} };
+        return raw;
+    }
+    function findVariantByKey(variants, variantId) {
+        for (var i = 0; i < variants.length; i++) {
+            if (variantKeyOf(variants[i]) === variantId)
+                return variants[i];
+        }
+        return null;
+    }
+    function promoteGateError(nk, def, gameId, experimentId, data) {
+        var sums = SatoriExperiments.loadFunnelShardSums(nk, gameId, experimentId);
+        var exposures = {};
+        if (sums && sums.shardsPresent) {
+            exposures = (def.goalMetric === "quest_completed" && countMapTotal(sums.exposed) > 0)
+                ? sums.exposed : sums.assigned;
+        }
+        var srm = computeSrm(def.variants || [], exposures);
+        if (srm && srm.passed === false)
+            return "cannot promote: sample ratio mismatch";
+        var minCfg = resolveMinSamplePerArm(def, data);
+        var variants = def.variants || [];
+        for (var v = 0; v < variants.length; v++) {
+            var vk = variantKeyOf(variants[v]);
+            if ((exposures[vk] || 0) < minCfg.perArm) {
+                return "cannot promote: need at least " + minCfg.perArm + " players per variant";
+            }
+        }
+        return "";
+    }
     function rpcDeclareWinner(ctx, logger, nk, payload) {
         RpcHelpers.requireAdmin(ctx, nk);
         var data = RpcHelpers.parseRpcPayload(payload);
@@ -71588,8 +72756,7 @@ var SatoriExperimentResults;
         if (!experimentId || !variantId)
             return RpcHelpers.errorResponse("experimentId and variantId required");
         var gameId = RpcHelpers.gameId(data);
-        // Resolve the exact config key the definition lives under (scoped first,
-        // then global) so we write back to the same object we read.
+        var promote = data.promote === true || data.promote === "true";
         var scopedKey = Constants.gameKey(gameId, "experiments");
         var configKey = scopedKey;
         var experiments = Storage.readSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, scopedKey);
@@ -71601,30 +72768,153 @@ var SatoriExperimentResults;
             return RpcHelpers.errorResponse("Experiment '" + experimentId + "' not found");
         }
         var def = experiments[experimentId];
-        var validVariant = false;
         var defVariants = def.variants || [];
-        for (var i = 0; i < defVariants.length; i++) {
-            if (variantKeyOf(defVariants[i]) === variantId) {
-                validVariant = true;
-                break;
-            }
-        }
-        if (!validVariant)
+        var winnerVariant = findVariantByKey(defVariants, variantId);
+        if (!winnerVariant)
             return RpcHelpers.errorResponse("Variant '" + variantId + "' not found on experiment");
         var now = Math.floor(Date.now() / 1000);
+        var isQuestEngine = def.configSystem === "quest_engine";
+        var questGameId = def.gameId || gameId;
+        if (!questGameId || questGameId === "default" || questGameId === Constants.DEFAULT_GAME_ID) {
+            questGameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        if (promote && isQuestEngine) {
+            var promo = def.promotion || {};
+            if (promo.state === "finalized" && promo.variantId === variantId) {
+                return RpcHelpers.successResponse({
+                    experimentId: experimentId, winnerVariantId: variantId, status: def.status || "ended",
+                    promoted: true, auditKey: promo.auditKey || null, promotionState: "finalized"
+                });
+            }
+            if (promo.state === "finalized" && promo.variantId && promo.variantId !== variantId) {
+                return RpcHelpers.errorResponse("already promoted variant '" + promo.variantId + "'");
+            }
+            if (promo.variantId && promo.variantId !== variantId &&
+                (promo.state === "prepared" || promo.state === "written" || promo.state === "verified")) {
+                return RpcHelpers.errorResponse("promotion already in progress for variant '" + promo.variantId + "'");
+            }
+            var gateErr = promoteGateError(nk, def, questGameId, experimentId, data);
+            if (gateErr)
+                return RpcHelpers.errorResponse(gateErr);
+            var overlay = parseVariantOverlay(winnerVariant);
+            var stepCtx = {
+                experimentId: experimentId,
+                variantId: variantId,
+                auditKey: promo.auditKey,
+                desiredHash: promo.desiredHash
+            };
+            if (promo.state !== "prepared" && promo.state !== "written" && promo.state !== "verified") {
+                var prepared = QuestEngine.runPromoteStep(nk, logger, questGameId, overlay, "prepare", stepCtx);
+                if (!prepared.ok)
+                    return RpcHelpers.errorResponse(prepared.error || "promote prepare failed");
+                def.promotion = {
+                    state: "prepared",
+                    variantId: variantId,
+                    auditKey: prepared.auditKey,
+                    desiredHash: prepared.desiredHash,
+                    preparedAt: now
+                };
+                def.updatedAt = now;
+                persistExperimentDef(nk, configKey, experiments, experimentId, def);
+                promo = def.promotion;
+                stepCtx.auditKey = promo.auditKey;
+                stepCtx.desiredHash = promo.desiredHash;
+            }
+            if (promo.state !== "verified") {
+                var written = QuestEngine.runPromoteStep(nk, logger, questGameId, overlay, "write", stepCtx);
+                if (!written.ok) {
+                    logger.warn("[ExperimentResults] promote write failed experiment=%s: %s", experimentId, written.error || "");
+                    return RpcHelpers.errorResponse(written.error || "promote write failed");
+                }
+                var verified = QuestEngine.runPromoteStep(nk, logger, questGameId, overlay, "verify", stepCtx);
+                if (!verified.ok) {
+                    logger.warn("[ExperimentResults] promote verify failed experiment=%s: %s", experimentId, verified.error || "");
+                    return RpcHelpers.errorResponse(verified.error || "promote verify failed");
+                }
+            }
+            def.status = "ended";
+            def.winnerVariantId = variantId;
+            def.endedAt = now;
+            def.updatedAt = now;
+            def.promotion.state = "finalized";
+            def.promotion.finalizedAt = now;
+            persistExperimentDef(nk, configKey, experiments, experimentId, def);
+            logger.info("[quest_ab] promote gameId=%s experimentId=%s variantId=%s userId=%s auditKey=%s", questGameId, experimentId, variantId, ctx.userId || "admin", def.promotion.auditKey || "");
+            logger.info("[ExperimentResults] promote finalized gameId=%s experiment=%s variant=%s auditKey=%s", questGameId, experimentId, variantId, def.promotion.auditKey || "");
+            return RpcHelpers.successResponse({
+                experimentId: experimentId,
+                winnerVariantId: variantId,
+                status: "ended",
+                promoted: true,
+                auditKey: def.promotion.auditKey || null,
+                promotionState: "finalized"
+            });
+        }
         def.status = "ended";
         def.winnerVariantId = variantId;
         def.endedAt = now;
         def.updatedAt = now;
-        experiments[experimentId] = def;
-        Storage.writeSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, configKey, experiments);
-        ConfigLoader.invalidateCache(configKey);
-        logger.info("[ExperimentResults] '%s' ended, winner='%s' (by admin)", experimentId, variantId);
-        return RpcHelpers.successResponse({ experimentId: experimentId, winnerVariantId: variantId, status: "ended" });
+        persistExperimentDef(nk, configKey, experiments, experimentId, def);
+        logger.info("[ExperimentResults] '%s' ended, winner='%s' (by admin, promote=%s)", experimentId, variantId, String(promote));
+        return RpcHelpers.successResponse({
+            experimentId: experimentId, winnerVariantId: variantId, status: "ended", promoted: false
+        });
+    }
+    // satori_experiments_undo_promote — put the pre-promote quest list back.
+    // Experiment stays ended. Payload: { experimentId, game_id?, auditKey? }
+    function rpcUndoPromote(ctx, logger, nk, payload) {
+        RpcHelpers.requireAdmin(ctx, nk);
+        var data = RpcHelpers.parseRpcPayload(payload);
+        var experimentId = data.experimentId || data.experiment_id;
+        if (!experimentId)
+            return RpcHelpers.errorResponse("experimentId required");
+        var gameId = RpcHelpers.gameId(data);
+        var scopedKey = Constants.gameKey(gameId, "experiments");
+        var configKey = scopedKey;
+        var experiments = Storage.readSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, scopedKey);
+        if ((!experiments || !experiments[experimentId]) && scopedKey !== "experiments") {
+            configKey = "experiments";
+            experiments = Storage.readSystemJson(nk, Constants.SATORI_CONFIGS_COLLECTION, configKey);
+        }
+        if (!experiments || !experiments[experimentId]) {
+            return RpcHelpers.errorResponse("Experiment '" + experimentId + "' not found");
+        }
+        var def = experiments[experimentId];
+        if (def.configSystem !== "quest_engine") {
+            return RpcHelpers.errorResponse("undo promote is only for quest_engine experiments");
+        }
+        var promo = def.promotion || {};
+        var auditKey = data.auditKey || data.audit_key || promo.auditKey;
+        if (!auditKey)
+            return RpcHelpers.errorResponse("no promote audit snapshot to restore");
+        var questGameId = def.gameId || gameId;
+        if (!questGameId || questGameId === "default" || questGameId === Constants.DEFAULT_GAME_ID) {
+            questGameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        var restored = QuestEngine.restorePromoteAudit(nk, logger, ctx, questGameId, String(auditKey));
+        if (!restored.ok)
+            return RpcHelpers.errorResponse(restored.error || "restore failed");
+        var now = Math.floor(Date.now() / 1000);
+        def.promotion = def.promotion || {};
+        def.promotion.restored = true;
+        def.promotion.restoredAt = now;
+        def.promotion.restoreAuditKey = restored.restoreAuditKey || promo.restoreAuditKey || null;
+        def.updatedAt = now;
+        persistExperimentDef(nk, configKey, experiments, experimentId, def);
+        logger.info("[ExperimentResults] promote undone gameId=%s experiment=%s auditKey=%s", questGameId, experimentId, auditKey);
+        return RpcHelpers.successResponse({
+            experimentId: experimentId,
+            restored: true,
+            already: !!restored.already,
+            auditKey: auditKey,
+            restoreAuditKey: def.promotion.restoreAuditKey || null,
+            status: def.status || "ended"
+        });
     }
     function register(initializer) {
         initializer.registerRpc("satori_experiments_results", rpcResults);
         initializer.registerRpc("satori_experiments_declare_winner", rpcDeclareWinner);
+        initializer.registerRpc("satori_experiments_undo_promote", rpcUndoPromote);
     }
     SatoriExperimentResults.register = register;
 })(SatoriExperimentResults || (SatoriExperimentResults = {}));
@@ -71684,34 +72974,88 @@ var SatoriExperiments;
             return true;
         return Math.floor(Date.now() / 1000) <= def.admissionDeadline;
     }
-    function getVariant(nk, userId, experimentId, gameId) {
-        var experiments = getExperiments(nk, gameId);
-        var def = experiments[experimentId];
-        if (!def || !isExperimentActive(def))
-            return null;
-        if (!def.variants || def.variants.length === 0)
-            return null;
-        if (def.audienceId && !SatoriAudiences.isInAudience(nk, userId, def.audienceId, gameId)) {
-            return null;
+    function experimentConfigRevision(def) {
+        if (def && def.configRevision != null && String(def.configRevision) !== "") {
+            return String(def.configRevision);
         }
-        var userExp = getUserExperiments(nk, userId, gameId);
-        var assignment = userExp.assignments[experimentId];
-        // Treat missing or legacy-broken assignments (variantId undefined/null) as unassigned.
-        if (!assignment || !assignment.variantId) {
-            if (!isWithinAdmissionDeadline(def))
-                return null;
-            var variantId = deterministicAssign(userId, experimentId, def.variants, def.splitKey);
-            assignment = {
-                experimentId: experimentId,
-                variantId: variantId,
-                assignedAt: Math.floor(Date.now() / 1000)
-            };
-            userExp.assignments[experimentId] = assignment;
-            saveUserExperiments(nk, userId, userExp, gameId);
+        return String((def && (def.updatedAt || def.createdAt)) || 0);
+    }
+    function currentPhaseId(def) {
+        if (!def || !def.phases || !Array.isArray(def.phases) || def.phases.length === 0)
+            return null;
+        var now = Math.floor(Date.now() / 1000);
+        for (var p = 0; p < def.phases.length; p++) {
+            var phase = def.phases[p];
+            if (!phase)
+                continue;
+            if (phase.startAt && now < phase.startAt)
+                continue;
+            if (phase.endAt && now > phase.endAt)
+                continue;
+            return phase.id || phase.name || String(p);
         }
-        if (def.lockParticipation && assignment.locked) {
-            // locked assignments cannot change
+        return null;
+    }
+    function overlayQuestIds(variant) {
+        var raw = variant && (variant.config || variant.data);
+        if (typeof raw === "string") {
+            try {
+                raw = JSON.parse(raw);
+            }
+            catch (_) {
+                return [];
+            }
         }
+        if (!raw || typeof raw !== "object" || Array.isArray(raw))
+            return [];
+        var quests = raw.quests;
+        if (!quests || typeof quests !== "object" || Array.isArray(quests))
+            return [];
+        var ids = [];
+        for (var k in quests) {
+            if (quests.hasOwnProperty(k) && k !== "__proto__" && k !== "constructor" && k !== "prototype") {
+                ids.push(k);
+            }
+        }
+        return ids;
+    }
+    function resolveTrackedQuestIds(def, variant) {
+        if (variant && Array.isArray(variant.trackedQuestIds) && variant.trackedQuestIds.length > 0) {
+            return variant.trackedQuestIds.slice();
+        }
+        if (def && Array.isArray(def.trackedQuestIds) && def.trackedQuestIds.length > 0) {
+            return def.trackedQuestIds.slice();
+        }
+        var fromVariant = overlayQuestIds(variant);
+        if (fromVariant.length > 0)
+            return fromVariant;
+        var union = [];
+        var seen = {};
+        var variants = (def && def.variants) || [];
+        for (var i = 0; i < variants.length; i++) {
+            var ids = overlayQuestIds(variants[i]);
+            for (var j = 0; j < ids.length; j++) {
+                if (!seen[ids[j]]) {
+                    seen[ids[j]] = true;
+                    union.push(ids[j]);
+                }
+            }
+        }
+        return union;
+    }
+    function fillAssignmentFreeze(assignment, def) {
+        var changed = false;
+        if (!assignment.configRevision) {
+            assignment.configRevision = experimentConfigRevision(def);
+            changed = true;
+        }
+        if (assignment.phaseId === undefined) {
+            assignment.phaseId = currentPhaseId(def);
+            changed = true;
+        }
+        return changed;
+    }
+    function findAssignedVariant(def, assignment) {
         var found = null;
         for (var i = 0; i < def.variants.length; i++) {
             if (variantKey(def.variants[i]) === assignment.variantId) {
@@ -71719,7 +73063,6 @@ var SatoriExperiments;
                 break;
             }
         }
-        // Multi-phase: check if current phase has different variants
         if (def.phases && Array.isArray(def.phases)) {
             var now = Math.floor(Date.now() / 1000);
             for (var p = 0; p < def.phases.length; p++) {
@@ -71737,7 +73080,425 @@ var SatoriExperiments;
         }
         return found;
     }
+    function getVariant(nk, userId, experimentId, gameId, logger) {
+        var experiments = getExperiments(nk, gameId);
+        var def = experiments[experimentId];
+        if (!def || !isExperimentActive(def))
+            return null;
+        if (!def.variants || def.variants.length === 0)
+            return null;
+        var userExp = getUserExperiments(nk, userId, gameId);
+        var assignment = userExp.assignments[experimentId];
+        // Sticky: admitted players keep their bucket even if they leave the audience.
+        // Audience / admission deadline apply only to first assignment.
+        if (assignment && assignment.variantId) {
+            if (fillAssignmentFreeze(assignment, def)) {
+                userExp.assignments[experimentId] = assignment;
+                saveUserExperiments(nk, userId, userExp, gameId);
+            }
+            if (def.lockParticipation && assignment.locked) {
+                // locked assignments cannot change
+            }
+            return findAssignedVariant(def, assignment);
+        }
+        if (def.audienceId && !SatoriAudiences.isInAudience(nk, userId, def.audienceId, gameId)) {
+            return null;
+        }
+        if (!isWithinAdmissionDeadline(def))
+            return null;
+        var variantId = deterministicAssign(userId, experimentId, def.variants, def.splitKey);
+        assignment = {
+            experimentId: experimentId,
+            variantId: variantId,
+            assignedAt: Math.floor(Date.now() / 1000),
+            phaseId: currentPhaseId(def),
+            configRevision: experimentConfigRevision(def)
+        };
+        userExp.assignments[experimentId] = assignment;
+        saveUserExperiments(nk, userId, userExp, gameId);
+        if (def.configSystem === "quest_engine") {
+            try {
+                bumpFunnelShardOcc(nk, userId, gameId || "", experimentId, variantId, "assigned", assignment.assignedAt);
+            }
+            catch (_assignBump) {
+                // Assignment is the source of truth; shards rebuild from assignedAt.
+            }
+            if (logger) {
+                logger.info("[quest_ab] assigned gameId=%s experimentId=%s variantId=%s userId=%s", gameId || "", experimentId, variantId, userId);
+            }
+        }
+        return findAssignedVariant(def, assignment);
+    }
     SatoriExperiments.getVariant = getVariant;
+    var CONVERT_OCC_MAX_RETRIES = 3;
+    SatoriExperiments.FUNNEL_SHARD_COUNT = 32;
+    var FUNNEL_BY_DAY_MAX = 60;
+    function funnelShardIndex(userId) {
+        var hash = 0;
+        var seed = userId || "";
+        for (var c = 0; c < seed.length; c++) {
+            hash = ((hash << 5) - hash) + seed.charCodeAt(c);
+            hash = hash & 0x7FFFFFFF;
+        }
+        return hash % SatoriExperiments.FUNNEL_SHARD_COUNT;
+    }
+    function canonicalFunnelGameId(gameId) {
+        if (!gameId || gameId === "default" || gameId === Constants.DEFAULT_GAME_ID) {
+            return Constants.QUIZVERSE_GAME_ID;
+        }
+        return gameId;
+    }
+    function funnelShardKey(gameId, experimentId, shard) {
+        return Constants.gameKey(canonicalFunnelGameId(gameId), "funnel:" + experimentId + ":" + String(shard));
+    }
+    function utcDayKey(unix) {
+        var ms = unix < 100000000000 ? unix * 1000 : unix;
+        var d = new Date(ms);
+        var m = d.getUTCMonth() + 1;
+        var day = d.getUTCDate();
+        var mm = m < 10 ? "0" + m : String(m);
+        var dd = day < 10 ? "0" + day : String(day);
+        return d.getUTCFullYear() + "-" + mm + "-" + dd;
+    }
+    function pruneByDay(doc) {
+        if (!doc || !doc.byDay)
+            return;
+        var days = [];
+        for (var k in doc.byDay) {
+            if (doc.byDay.hasOwnProperty(k))
+                days.push(k);
+        }
+        if (days.length <= FUNNEL_BY_DAY_MAX)
+            return;
+        days.sort();
+        var drop = days.length - FUNNEL_BY_DAY_MAX;
+        for (var i = 0; i < drop; i++) {
+            delete doc.byDay[days[i]];
+        }
+    }
+    function emptyFunnelShardDoc() {
+        return {
+            assigned: {},
+            exposed: {},
+            started: {},
+            completed: {},
+            claimed: {},
+            byDay: {},
+            updatedAt: 0
+        };
+    }
+    SatoriExperiments.emptyFunnelShardDoc = emptyFunnelShardDoc;
+    function funnelShardIndexOf(userId) {
+        return funnelShardIndex(userId);
+    }
+    SatoriExperiments.funnelShardIndexOf = funnelShardIndexOf;
+    function isFunnelStep(step) {
+        return step === "assigned" || step === "exposed" || step === "started" ||
+            step === "completed" || step === "claimed";
+    }
+    function bumpFunnelShardOcc(nk, userId, gameId, experimentId, variantId, step, now) {
+        if (!isFunnelStep(step) || !variantId || !experimentId)
+            return;
+        var key = funnelShardKey(gameId, experimentId, funnelShardIndex(userId));
+        for (var attempt = 0; attempt < CONVERT_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                        key: key,
+                        userId: Constants.SYSTEM_USER_ID
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var doc = (rec && rec.value) ? rec.value : emptyFunnelShardDoc();
+                if (!doc[step] || typeof doc[step] !== "object")
+                    doc[step] = {};
+                doc[step][variantId] = (doc[step][variantId] || 0) + 1;
+                if (step === "assigned" || step === "completed") {
+                    if (!doc.byDay || typeof doc.byDay !== "object")
+                        doc.byDay = {};
+                    var day = utcDayKey(now);
+                    if (!doc.byDay[day] || typeof doc.byDay[day] !== "object")
+                        doc.byDay[day] = {};
+                    if (!doc.byDay[day][step] || typeof doc.byDay[day][step] !== "object")
+                        doc.byDay[day][step] = {};
+                    doc.byDay[day][step][variantId] = (doc.byDay[day][step][variantId] || 0) + 1;
+                    pruneByDay(doc);
+                }
+                doc.updatedAt = now;
+                var writeObj = {
+                    collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                    key: key,
+                    userId: Constants.SYSTEM_USER_ID,
+                    value: doc,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return;
+            }
+            catch (_e) {
+                // version conflict → retry
+            }
+        }
+    }
+    function addCountMap(dest, src) {
+        if (!src || typeof src !== "object")
+            return;
+        for (var k in src) {
+            if (!src.hasOwnProperty(k))
+                continue;
+            dest[k] = (dest[k] || 0) + (typeof src[k] === "number" ? src[k] : 0);
+        }
+    }
+    function loadFunnelShardSums(nk, gameId, experimentId) {
+        var sums = {
+            assigned: {},
+            exposed: {},
+            started: {},
+            completed: {},
+            claimed: {},
+            byDay: {},
+            shardsRead: 0,
+            shardsPresent: false
+        };
+        if (!experimentId)
+            return sums;
+        var reqs = [];
+        for (var i = 0; i < SatoriExperiments.FUNNEL_SHARD_COUNT; i++) {
+            reqs.push({
+                collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                key: funnelShardKey(gameId, experimentId, i),
+                userId: Constants.SYSTEM_USER_ID
+            });
+        }
+        var rows = nk.storageRead(reqs) || [];
+        sums.shardsRead = rows.length;
+        sums.shardsPresent = rows.length > 0;
+        for (var r = 0; r < rows.length; r++) {
+            var val = rows[r] && rows[r].value ? rows[r].value : null;
+            if (!val)
+                continue;
+            addCountMap(sums.assigned, val.assigned);
+            addCountMap(sums.exposed, val.exposed);
+            addCountMap(sums.started, val.started);
+            addCountMap(sums.completed, val.completed);
+            addCountMap(sums.claimed, val.claimed);
+            if (val.byDay && typeof val.byDay === "object") {
+                for (var day in val.byDay) {
+                    if (!val.byDay.hasOwnProperty(day))
+                        continue;
+                    if (!sums.byDay[day])
+                        sums.byDay[day] = { assigned: {}, completed: {} };
+                    addCountMap(sums.byDay[day].assigned, val.byDay[day].assigned);
+                    addCountMap(sums.byDay[day].completed, val.byDay[day].completed);
+                }
+            }
+        }
+        return sums;
+    }
+    SatoriExperiments.loadFunnelShardSums = loadFunnelShardSums;
+    function replaceFunnelShards(nk, gameId, experimentId, docs) {
+        var writes = [];
+        var now = Math.floor(Date.now() / 1000);
+        for (var i = 0; i < SatoriExperiments.FUNNEL_SHARD_COUNT; i++) {
+            var doc = (docs && docs[i]) ? docs[i] : emptyFunnelShardDoc();
+            pruneByDay(doc);
+            doc.updatedAt = now;
+            writes.push({
+                collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                key: funnelShardKey(gameId, experimentId, i),
+                userId: Constants.SYSTEM_USER_ID,
+                value: doc,
+                permissionRead: 1,
+                permissionWrite: 0
+            });
+        }
+        nk.storageWrite(writes);
+    }
+    SatoriExperiments.replaceFunnelShards = replaceFunnelShards;
+    function markAssignmentStampOcc(nk, userId, gameId, experimentId, variantId, field, now) {
+        var key = Constants.gameKey(gameId, "assignments");
+        for (var attempt = 0; attempt < CONVERT_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                        key: key,
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var data = (rec && rec.value)
+                    ? rec.value
+                    : { assignments: {} };
+                if (!data.assignments)
+                    data.assignments = {};
+                var assignment = data.assignments[experimentId];
+                if (!assignment || !assignment.variantId)
+                    return "unassigned";
+                if (assignment.variantId !== variantId)
+                    return "mismatch";
+                if (assignment[field])
+                    return "already";
+                assignment[field] = now;
+                var writeObj = {
+                    collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                    key: key,
+                    userId: userId,
+                    value: data,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return "stamped";
+            }
+            catch (_e) {
+                // version conflict → retry
+            }
+        }
+        return "conflict";
+    }
+    // Exposed / started / claimed: stamp assignment then bump the user shard.
+    // Completed stays on markQuestConvertedOcc (convertedAt).
+    function recordQuestFunnelStep(nk, logger, data) {
+        if (!data)
+            return;
+        var userId = data.userId ? String(data.userId) : "";
+        var gameId = data.gameId || data.game_id ? String(data.gameId || data.game_id) : "";
+        var experimentId = data.experimentId ? String(data.experimentId) : "";
+        var variantId = data.variantId ? String(data.variantId) : "";
+        var step = data.step ? String(data.step) : "";
+        if (!userId || !gameId || !experimentId || !variantId)
+            return;
+        if (step !== "exposed" && step !== "started" && step !== "claimed")
+            return;
+        if (gameId === "default" || gameId === Constants.DEFAULT_GAME_ID) {
+            gameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        var field = step === "exposed" ? "exposedAt" : (step === "started" ? "startedAt" : "claimedAt");
+        var now = Math.floor(Date.now() / 1000);
+        var mark = markAssignmentStampOcc(nk, userId, gameId, experimentId, variantId, field, now);
+        if (mark !== "stamped")
+            return;
+        try {
+            bumpFunnelShardOcc(nk, userId, gameId, experimentId, variantId, step, now);
+        }
+        catch (err) {
+            logger.warn("[SatoriExperiments] funnel shard bump failed step=%s experiment=%s user=%s: %s", step, experimentId, userId, err && err.message ? err.message : String(err));
+        }
+    }
+    SatoriExperiments.recordQuestFunnelStep = recordQuestFunnelStep;
+    function markQuestConvertedOcc(nk, userId, gameId, experimentId, variantId, now) {
+        var key = Constants.gameKey(gameId, "assignments");
+        for (var attempt = 0; attempt < CONVERT_OCC_MAX_RETRIES; attempt++) {
+            try {
+                var rows = nk.storageRead([{
+                        collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                        key: key,
+                        userId: userId
+                    }]);
+                var rec = (rows && rows.length > 0) ? rows[0] : null;
+                var ver = (rec && rec.version) ? rec.version : "";
+                var data = (rec && rec.value)
+                    ? rec.value
+                    : { assignments: {} };
+                if (!data.assignments)
+                    data.assignments = {};
+                var assignment = data.assignments[experimentId];
+                if (!assignment || !assignment.variantId)
+                    return "unassigned";
+                if (assignment.variantId !== variantId)
+                    return "mismatch";
+                if (assignment.convertedAt)
+                    return "already";
+                assignment.convertedAt = now;
+                var writeObj = {
+                    collection: Constants.SATORI_ASSIGNMENTS_COLLECTION,
+                    key: key,
+                    userId: userId,
+                    value: data,
+                    permissionRead: 1,
+                    permissionWrite: 0
+                };
+                if (ver)
+                    writeObj.version = ver;
+                nk.storageWrite([writeObj]);
+                return "converted";
+            }
+            catch (_e) {
+                // version conflict → retry
+            }
+        }
+        return "conflict";
+    }
+    function bumpConversionCounterOcc(nk, userId, gameId, experimentId, variantId, now) {
+        bumpFunnelShardOcc(nk, userId, gameId, experimentId, variantId, "completed", now);
+    }
+    // Once-per-user conversion. Requires frozen attribution on the event
+    // (gameId + experimentId + variantId + questId). Unrelated completes no-op.
+    function recordQuestCompletedConversion(nk, logger, data) {
+        if (!data)
+            return;
+        var userId = data.userId ? String(data.userId) : "";
+        var gameId = data.gameId || data.game_id ? String(data.gameId || data.game_id) : "";
+        var questId = data.questId ? String(data.questId) : "";
+        var experimentId = data.experimentId ? String(data.experimentId) : "";
+        var variantId = data.variantId ? String(data.variantId) : "";
+        if (!userId || !gameId || !questId || !experimentId || !variantId)
+            return;
+        if (gameId === "default" || gameId === Constants.DEFAULT_GAME_ID) {
+            gameId = Constants.QUIZVERSE_GAME_ID;
+        }
+        var exposedAt = typeof data.exposedAt === "number" ? data.exposedAt : 0;
+        var now = Math.floor(Date.now() / 1000);
+        if (exposedAt && now < exposedAt)
+            return;
+        var mark = markQuestConvertedOcc(nk, userId, gameId, experimentId, variantId, now);
+        if (mark !== "converted")
+            return;
+        try {
+            bumpConversionCounterOcc(nk, userId, gameId, experimentId, variantId, now);
+        }
+        catch (err) {
+            logger.warn("[SatoriExperiments] conversion counter bump failed experiment=%s user=%s: %s", experimentId, userId, err && err.message ? err.message : String(err));
+        }
+        logger.info("[SatoriExperiments] quest_completed conversion experiment=%s variant=%s quest=%s user=%s gameId=%s", experimentId, variantId, questId, userId, gameId);
+    }
+    SatoriExperiments.recordQuestCompletedConversion = recordQuestCompletedConversion;
+    // Frozen context for quest A/B. Null if no running quest_engine experiment
+    // assigned this user. Callers stamp this onto QuestProgress once and never rewrite.
+    function getRunningQuestEngineAttribution(nk, userId, gameId) {
+        if (!userId || !gameId)
+            return null;
+        var experiments = getExperiments(nk, gameId);
+        for (var expId in experiments) {
+            if (!experiments.hasOwnProperty(expId))
+                continue;
+            var def = experiments[expId];
+            if (!def || def.configSystem !== "quest_engine" || !isExperimentActive(def))
+                continue;
+            var variant = getVariant(nk, userId, expId, gameId);
+            if (!variant)
+                continue;
+            var userExp = getUserExperiments(nk, userId, gameId);
+            var assignment = userExp.assignments[expId];
+            if (!assignment || !assignment.variantId)
+                continue;
+            return {
+                experimentId: expId,
+                variantId: assignment.variantId,
+                phaseId: assignment.phaseId !== undefined ? assignment.phaseId : currentPhaseId(def),
+                configRevision: assignment.configRevision || experimentConfigRevision(def),
+                gameId: gameId,
+                trackedQuestIds: resolveTrackedQuestIds(def, variant)
+            };
+        }
+        return null;
+    }
+    SatoriExperiments.getRunningQuestEngineAttribution = getRunningQuestEngineAttribution;
     // ---- RPCs ----
     function rpcGet(ctx, logger, nk, payload) {
         var userId = RpcHelpers.requireUserId(ctx);
@@ -71749,9 +73510,10 @@ var SatoriExperiments;
             var def = experiments[id];
             if (!isExperimentActive(def))
                 continue;
-            if (def.audienceId && !SatoriAudiences.isInAudience(nk, userId, def.audienceId, gameId))
-                continue;
+            // getVariant is sticky: already-assigned players stay listed after audience change.
             var variant = getVariant(nk, userId, id, gameId);
+            if (!variant)
+                continue;
             result.push({
                 id: id,
                 name: def.name,
@@ -77524,7 +79286,17 @@ var SatoriTaxonomy;
             achievement_claimed: gameplaySchema("achievement_claimed", "progression", "Achievement reward claimed"),
             challenge_completed: gameplaySchema("challenge_completed", "engagement", "Challenge completed"),
             streak_updated: gameplaySchema("streak_updated", "engagement", "Daily streak advanced"),
-            reward_granted: gameplaySchema("reward_granted", "progression", "Reward granted to player")
+            reward_granted: gameplaySchema("reward_granted", "progression", "Reward granted to player"),
+            quest_completed: {
+                name: "quest_completed",
+                category: "progression",
+                description: "Player completed a Quest Engine quest",
+                requiredMetadata: [],
+                optionalMetadata: ["gameId", "questId", "experimentId", "variantId", "phaseId", "configRevision", "exposedAt"],
+                metadataTypes: {},
+                maxMetadataKeys: 50,
+                deprecated: false
+            }
         },
         enforceStrict: false,
         maxEventNameLength: 128,
@@ -77534,6 +79306,21 @@ var SatoriTaxonomy;
     function getConfig(nk) {
         return ConfigLoader.loadSatoriConfig(nk, "taxonomy", DEFAULT_CONFIG);
     }
+    // Live taxonomy storage does not auto-merge TypeScript defaults. Upsert a
+    // default schema when capture sees a known gameplay event that is missing.
+    function ensureDefaultSchema(nk, eventName) {
+        if (!eventName || !DEFAULT_CONFIG.schemas[eventName])
+            return false;
+        var config = getConfig(nk);
+        if (config.schemas && config.schemas[eventName])
+            return true;
+        if (!config.schemas)
+            config.schemas = {};
+        config.schemas[eventName] = DEFAULT_CONFIG.schemas[eventName];
+        ConfigLoader.saveSatoriConfig(nk, "taxonomy", config);
+        return true;
+    }
+    SatoriTaxonomy.ensureDefaultSchema = ensureDefaultSchema;
     function validateEvent(nk, event) {
         var config = getConfig(nk);
         var errors = [];
@@ -77545,7 +79332,11 @@ var SatoriTaxonomy;
         if (event.name.length > config.maxEventNameLength) {
             errors.push("Event name exceeds max length of " + config.maxEventNameLength);
         }
-        var schema = config.schemas[event.name];
+        var schema = (config.schemas && config.schemas[event.name]) || null;
+        if (!schema && ensureDefaultSchema(nk, event.name)) {
+            config = getConfig(nk);
+            schema = config.schemas[event.name];
+        }
         if (!schema && config.enforceStrict) {
             errors.push("Unknown event '" + event.name + "' (strict mode enabled)");
             return { valid: false, errors: errors, warnings: warnings };

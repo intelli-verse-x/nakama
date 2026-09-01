@@ -88,6 +88,7 @@ function makeCtx() {
       HIRO_INVENTORY_COLLECTION: 'hiro_inventory',
       HIRO_ACHIEVEMENTS_COLLECTION: 'hiro_achievements',
       DAILY_REWARDS_COLLECTION: 'daily_rewards',
+      SATORI_ASSIGNMENTS_COLLECTION: 'satori_assignments',
     },
     RpcHelpers: {
       parseRpcPayload: (p) => (typeof p === 'string' ? JSON.parse(p || '{}') : p || {}),
@@ -134,6 +135,9 @@ function seed(ctx) {
   ctx.store['hiro_streaks|quizverse:state|' + GHOST] = { current: 7 };
   ctx.store['hiro_streaks|quizverse:state|' + DEST] = { current: 30 };
   ctx.store['qv_seen|solo_cricket|' + GHOST] = { seen: ['q1', 'q2'] };
+  ctx.store['satori_assignments|126bf539-dae2-4bcf-964d-316c0fa1f92b:assignments|' + GHOST] = {
+    assignments: { quest_reward_ab: { variantId: 'treatment', assignedAt: 1 } },
+  };
 }
 
 // ── A: authorization ────────────────────────────────────────────────────────
@@ -174,6 +178,9 @@ function seed(ctx) {
     ctx.store['hiro_streaks|quizverse:state|' + DEST].current === 30);
   check('B1 ghost-only qv_seen doc ported',
     ctx.store['qv_seen|solo_cricket|' + DEST] !== undefined);
+  check('B1 ghost A/B assignment ported copy-if-absent',
+    ctx.store['satori_assignments|126bf539-dae2-4bcf-964d-316c0fa1f92b:assignments|' + DEST]
+      .assignments.quest_reward_ab.variantId === 'treatment');
 
   const auditKey = 'account_merge_log|merge_idem_' + GHOST + '_' + DEST + '|SYSTEM';
   check('B1 audit row written', ctx.store[auditKey] !== undefined);
@@ -211,6 +218,18 @@ function seed(ctx) {
   // Idem key differs, so this reaches the sentinel check.
   check('B4 merged ghost → 409 on second target',
     second.success === false && second.code === 409);
+}
+
+// ── B5: destination assignment wins; guest bucket does not flip dest ────────
+{
+  const ctx = makeCtx(); seed(ctx);
+  ctx.store['satori_assignments|126bf539-dae2-4bcf-964d-316c0fa1f92b:assignments|' + DEST] = {
+    assignments: { quest_reward_ab: { variantId: 'control', assignedAt: 9 } },
+  };
+  callRpc(ctx.sandbox, GHOST, { ghost_user_id: GHOST, cognito_user_id: DEST });
+  check('B5 destination A/B bucket kept (copy-if-absent)',
+    ctx.store['satori_assignments|126bf539-dae2-4bcf-964d-316c0fa1f92b:assignments|' + DEST]
+      .assignments.quest_reward_ab.variantId === 'control');
 }
 
 // ── Done ────────────────────────────────────────────────────────────────────
