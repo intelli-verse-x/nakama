@@ -13,8 +13,8 @@
 |------|---------|----------|--------|
 | **README.md** | Project overview, quick start, deployment | All contributors | ✅ Active |
 | **NAKAMA_COMPLETE_DOCUMENTATION.md** | Master documentation index for all Nakama features | All developers | ✅ Active |
-| **GAME_ONBOARDING_GUIDE.md** | How to add new games to the platform | Game integrators, backend devs | ✅ Active |
-| **UNITY_DEVELOPER_COMPLETE_GUIDE.md** | Complete Unity integration guide (3360 lines) | Unity developers | ✅ Active |
+| **GAME_ONBOARDING_GUIDE.md** | How to add new games to the platform (includes Quest A/B RPC table) | Game integrators, backend devs | ✅ Active |
+| **UNITY_DEVELOPER_COMPLETE_GUIDE.md** | Complete Unity integration guide (includes Quest Engine player RPCs) | Unity developers | ✅ Active |
 
 ### Feature-Specific Documentation
 

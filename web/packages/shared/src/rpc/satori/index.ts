@@ -84,8 +84,15 @@ export function setupExperiment(
     name: string;
     variants_json: string;
     enabled?: boolean;
+    status?: string;
     audiences_json?: string;
     game_id?: string;
+    configSystem?: string;
+    goalMetric?: string;
+    splitKey?: string;
+    trackedQuestIds?: string[];
+    minSamplePerArm?: number;
+    audienceId?: string;
   },
   opts: RpcOptions,
 ) {
@@ -164,6 +171,11 @@ export interface ExperimentVariantResult {
   exposures: number;
   conversions: number;
   rate: number;
+  assigned?: number;
+  exposed?: number;
+  started?: number;
+  completed?: number;
+  claimed?: number;
 }
 
 export interface ExperimentComparison {
@@ -186,13 +198,47 @@ export interface ExperimentResults {
   comparisons: ExperimentComparison[];
   suggestedWinner: string | null;
   recommendation: string;
+  minSample?: {
+    perArm: number;
+    mode: string;
+    met: boolean;
+    shortVariants: string[];
+  };
+  srm?: {
+    chiSquare: number | null;
+    degreesOfFreedom: number;
+    pValue: number;
+    alpha: number;
+    passed: boolean;
+    skipped?: boolean;
+    observed?: Record<string, number>;
+    expected?: Record<string, number>;
+    weights?: Record<string, number>;
+  };
+  funnel?: {
+    assigned: Record<string, number>;
+    exposed: Record<string, number>;
+    started: Record<string, number>;
+    completed: Record<string, number>;
+    claimed: Record<string, number>;
+  };
+  byDay?: Record<string, { assigned?: Record<string, number>; completed?: Record<string, number> }>;
   scan: {
+    source?: string;
+    shardsRead?: number;
+    reconciled?: boolean;
     assignmentObjectsScanned: number;
     assignmentsTruncated: boolean;
     eventRecordsScanned: number;
     eventsTruncated: boolean;
     totalGoalEvents: number;
   };
+  promotion?: {
+    state?: string | null;
+    auditKey?: string | null;
+    restored?: boolean;
+    restoredAt?: number | null;
+  } | null;
 }
 
 export function getExperimentResults(
@@ -205,10 +251,17 @@ export function getExperimentResults(
 }
 
 export function declareExperimentWinner(
-  params: { experimentId: string; variantId: string; game_id?: string },
+  params: { experimentId: string; variantId: string; game_id?: string; promote?: boolean },
   opts: RpcOptions,
 ) {
   return callRpc("satori_experiments_declare_winner", params, opts);
+}
+
+export function undoExperimentPromote(
+  params: { experimentId: string; game_id?: string; auditKey?: string },
+  opts: RpcOptions,
+) {
+  return callRpc("satori_experiments_undo_promote", params, opts);
 }
 
 /* ── Event debugger (live tail + search) ──────────────────────────── */

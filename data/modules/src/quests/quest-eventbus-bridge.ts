@@ -78,7 +78,8 @@ namespace QuestEventBusBridge {
     var id =
       (data && (data.gameId || data.game_id || data.appId || data.app_id))
         ? String(data.gameId || data.game_id || data.appId || data.app_id)
-        : Constants.QUIZVERSE_GAME_ID;
+        : "";
+    if (!id) return "";
     if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
       return Constants.QUIZVERSE_GAME_ID;
     }
@@ -105,6 +106,10 @@ namespace QuestEventBusBridge {
     // Extract common fields from event data — same tenant alias as quest_engine.resolveGameId
     // (local copy avoids cross-namespace eval-order issues in the merged Goja bundle).
     var gameId = resolveQuestGameId(data);
+    if (!gameId) {
+      logger.warn("[QuestEventBusBridge] skip event without gameId event=%s user=%s", eventName, ctx.userId);
+      return;
+    }
     var value = extractValue(eventName, data);
     var metadata = extractMetadata(eventName, data);
 

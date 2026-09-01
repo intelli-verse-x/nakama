@@ -275,9 +275,19 @@ RPCs: `admin_config_get("store")` / `admin_config_set("store")` for offer catalo
 
 #### Quest / Mission Config (`/admin/content/quests`)
 
-Visual quest builder. Fields: mission title, category, objective type, target amount, linked mode, reward payload, repeatability, time window, audience targeting. Preview quest card, detail panel, completion toast.
+Visual quest builder for the **Quest Engine** (`qv_quest_config`). Fields: mission title, category, objective type, target amount, linked mode, reward payload, repeatability, time window. **New A/B** / **A/B this** starts a `quest_engine` overlay test (same list, sticker prizes). Funnel card: Assigned → Exposed → Started → Completed → Claimed.
 
-RPCs: `admin_config_get("challenges")` / `admin_config_set("challenges")`.
+| RPC | Purpose |
+|-----|---------|
+| `quest_engine_admin_get_config` | Raw quest list for `gameId` (no overlay) |
+| `quest_engine_admin_save_config` | Save quest list |
+| `hiro_personalizer_preview` | Preview overlay as one user (`system=quest_engine`) |
+| `satori_experiment_setup` | Create quest overlay test (`configSystem=quest_engine`) |
+| `satori_experiments_results` | Funnel / SRM / min-sample |
+| `satori_experiments_declare_winner` | Pause (`promote:false`) or Promote winning sticker |
+| `satori_experiments_undo_promote` | Restore pre-promote snapshot |
+
+Hiro challenges (`admin_config_get("challenges")`) is a different system. Do not paste quest overlay JSON on the Experiments page.
 
 #### Battle Pass Config (`/admin/content/battlepass`)
 
@@ -319,11 +329,14 @@ Table: name, value, enabled, audience, rollout %, last modified.
 
 | RPC / Endpoint | Purpose |
 |---|---|
-| `satori_experiments_get` | List experiments |
+| `satori_experiments_get_all` | List experiments (`admin_satori_experiments_list` from the admin client) |
 | `satori_experiments_get_variant` | Check variant assignment |
-| `admin_experiment_setup` | Create/update |
+| `satori_experiment_setup` | Create/update (quest tests: `configSystem=quest_engine`) |
+| `satori_experiments_results` | Funnel, SRM, min-sample, `byDay` |
+| `satori_experiments_declare_winner` | End test; `promote:true` writes quest overlay onto `qv_quest_config` |
+| `satori_experiments_undo_promote` | Undo a quest Promote |
 
-Variant editor with weight sliders, audience targeting. Metrics: retention, conversion, ARPPU, session length with confidence indicators.
+Variant editor with weight sliders, audience targeting. **Quest overlays start from Admin > Quests**, not by pasting JSON here. Metrics: retention, conversion, ARPPU, session length with confidence indicators.
 
 #### Live Events (`/admin/satori/events`)
 
@@ -878,6 +891,7 @@ These are the custom RPCs registered in `data/modules/index.js` for game-specifi
 | Chat & Messaging | `send_group_chat_message`, `send_direct_message`, `send_chat_room_message` | §7 |
 | Groups & Guilds | `create_game_group`, group wallet/XP RPCs | §8 |
 | Daily Systems | `daily_rewards_claim`, `daily_missions_get`, `daily_missions_update_progress` | §9 |
+| Quest Engine | `quest_engine_get`, `quest_engine_record_event`, `quest_engine_claim_reward` | `GAME_ONBOARDING_GUIDE.md` Quest A/B |
 | Analytics | `analytics_log_event` | §10 |
 | Push Notifications | `send_push_notification` | §11 |
 | Game-Specific | `quizverse_*`, `lasttolive_*` prefixed RPCs | §4 |
@@ -914,7 +928,7 @@ Satori RPCs follow the pattern `satori_{system}_{action}`.
 | System | Key RPCs | What It Controls |
 |--------|----------|-----------------|
 | **flags** | `satori_flags_get_all`, `satori_flags_toggle` | Feature flags, kill switches, rollout % |
-| **experiments** | `satori_experiments_get_all`, `satori_experiment_setup` | A/B tests, variant assignment, audience targeting |
+| **experiments** | `satori_experiments_get_all`, `satori_experiment_setup`, `satori_experiments_results`, `satori_experiments_declare_winner`, `satori_experiments_undo_promote` | A/B tests, quest overlay, funnel, promote/undo |
 | **live_events** | `satori_live_events_list`, `satori_live_event_schedule` | Scheduled events, timing, rewards, audiences |
 | **audiences** | `satori_audiences_list`, `satori_audiences_compute` | Player segmentation, targeting rules |
 | **messages** | `satori_messages_list`, `satori_message_broadcast` | Push campaigns, scheduled delivery, audience targeting |
@@ -930,7 +944,7 @@ This table maps common game lifecycle phases to the RPCs a client needs at each 
 |-------|-----------------|-----------|-------------|
 | **Install → First Launch** | `create_or_sync_user`, `create_player_wallet` | `hiro_tutorials_get` | `satori_flags_get_all`, `satori_experiments_get_all` |
 | **Onboarding** | `get_player_metadata` | `hiro_tutorials_update`, `hiro_economy_grant` (starter gift) | `satori_audiences_compute` (segment new user) |
-| **Home Screen Load** | `get_wallet_balance`, `friends_list` | `hiro_streaks_list`, `hiro_store_list`, `hiro_challenges_list`, `hiro_energy_get` | `satori_live_events_list`, `satori_flags_get_all` |
+| **Home Screen Load** | `get_wallet_balance`, `friends_list`, `quest_engine_get` | `hiro_streaks_list`, `hiro_store_list`, `hiro_challenges_list`, `hiro_energy_get` | `satori_live_events_list`, `satori_flags_get_all` |
 | **Daily Login** | — | `hiro_streaks_update`, `hiro_streaks_claim`, `hiro_incentives_list` | `satori_messages_list` |
 | **Pre-Match** | matchmaker RPCs | `hiro_energy_spend` | `satori_flags_get_all` (mode gating) |
 | **Post-Match** | `submit_leaderboard_score`, `analytics_log_event` | `hiro_achievements_update`, `hiro_progression_get`, `hiro_event_leaderboards_submit`, `hiro_challenges_claim` | — |

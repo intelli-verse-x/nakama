@@ -16,7 +16,7 @@
 //   - wallets (sum-merge currencies+items, per-currency fraud cap, zero ghost)
 //   - hiro_progression / hiro_streaks / hiro_stats / hiro_inventory /
 //     hiro_achievements (copy-if-absent — destination keeps its own state)
-//   - daily_rewards, qv_seen, qv_quests, badges, characters (copy-if-absent)
+//   - daily_rewards, qv_seen, qv_quests, badges, characters, satori_assignments (copy-if-absent)
 // Leaderboard records are owner-immutable → NOT ported (accepted, logged).
 //
 // Idempotency: merge_idem_{ghost}_{cognito} (same pattern as account_merge).
@@ -49,6 +49,7 @@ namespace QuizverseMerge {
       "qv_quests",
       "badges",
       "characters",
+      Constants.SATORI_ASSIGNMENTS_COLLECTION,
     ];
   }
 

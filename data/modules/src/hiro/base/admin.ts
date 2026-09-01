@@ -1201,8 +1201,21 @@ namespace AdminConsole {
         name: def.name || id,
         description: def.description || "",
         enabled: def.enabled !== undefined ? !!def.enabled : def.status !== "draft",
+        status: def.status || (def.enabled === false ? "draft" : "running"),
         audiences: firstArray(def.audiences) || (def.audienceId ? [def.audienceId] : []),
         variants: def.variants || [],
+        configSystem: def.configSystem,
+        goalMetric: def.goalMetric,
+        splitKey: def.splitKey,
+        gameId: def.gameId,
+        configRevision: def.configRevision,
+        trackedQuestIds: def.trackedQuestIds,
+        minSamplePerArm: def.minSamplePerArm,
+        promotion: def.promotion ? {
+          state: def.promotion.state || null,
+          auditKey: def.promotion.auditKey || null,
+          restored: !!def.promotion.restored
+        } : undefined,
         created_at: isoFromSec(def.createdAt),
         updated_at: isoFromSec(def.updatedAt)
       });
@@ -2044,26 +2057,249 @@ namespace AdminConsole {
 
   // ---- Experiment Quick Setup ----
 
+  var QUEST_ENGINE_SYSTEM = "quest_engine";
+
+  function canonicalExperimentGameId(raw: string): string {
+    var id = String(raw || "").trim();
+    if (id === "default" || id === Constants.DEFAULT_GAME_ID) {
+      return Constants.QUIZVERSE_GAME_ID;
+    }
+    return id;
+  }
+
+  function runningQuestEngineExperimentId(experiments: { [id: string]: any }, exceptId?: string): string {
+    for (var id in experiments) {
+      if (exceptId && id === exceptId) continue;
+      var exp = experiments[id];
+      if (!exp) continue;
+      if (exp.configSystem === QUEST_ENGINE_SYSTEM && exp.status === "running") {
+        return String(exp.id || id);
+      }
+    }
+    return "";
+  }
+
+  var QUEST_ENGINE_OVERLAY_FIELDS: { [k: string]: boolean } = {
+    reward: true,
+    hidden: true,
+    enabled: true,
+    name: true,
+    description: true
+  };
+  var QUEST_OVERLAY_MAX_BYTES = 32768;
+  var QUEST_OVERLAY_MAX_QUESTS = 50;
+  var QUEST_REWARD_AMOUNT_MAX = 1000000000;
+
+  function isUnsafeOverlayKey(key: string): boolean {
+    return key === "__proto__" || key === "constructor" || key === "prototype";
+  }
+
+  function parseVariantOverlay(variant: any): any {
+    if (!variant) return null;
+    var raw = variant.config || variant.data;
+    if (raw == null || raw === "") return null;
+    raw = parseMaybeJson(raw, raw);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    return raw;
+  }
+
+  function overlayFingerprint(variants: any[]): string {
+    var parts: string[] = [];
+    if (!variants) return "";
+    for (var i = 0; i < variants.length; i++) {
+      parts.push(JSON.stringify(parseVariantOverlay(variants[i]) || {}));
+    }
+    return parts.join("\n");
+  }
+
+  function loadQuestConfigForGame(nk: nkruntime.Nakama, gameId: string): any {
+    var rows: nkruntime.StorageObject[] = [];
+    try {
+      rows = nk.storageRead([{
+        collection: "qv_quest_config",
+        key: gameId,
+        userId: Constants.SYSTEM_USER_ID
+      }]);
+    } catch (_) {}
+    if (rows && rows.length > 0 && rows[0].value) return rows[0].value;
+    if (gameId === Constants.QUIZVERSE_GAME_ID) {
+      try {
+        rows = nk.storageRead([{
+          collection: "qv_quest_config",
+          key: "default",
+          userId: Constants.SYSTEM_USER_ID
+        }]);
+      } catch (_) {
+        rows = [];
+      }
+      if (rows && rows.length > 0 && rows[0].value) return rows[0].value;
+    }
+    return { quests: {} };
+  }
+
+  function validateRewardAmounts(grant: any, path: string): string {
+    if (!grant || typeof grant !== "object" || Array.isArray(grant)) {
+      return path + " must be an object";
+    }
+    function checkMap(map: any, label: string, itemShape: boolean): string {
+      if (map == null) return "";
+      if (typeof map !== "object" || Array.isArray(map)) return label + " must be an object";
+      for (var k in map) {
+        if (!map.hasOwnProperty(k)) continue;
+        if (isUnsafeOverlayKey(k) || !k) return label + " has an invalid key";
+        if (itemShape) {
+          var item = map[k];
+          if (!item || typeof item !== "object") return label + "." + k + " must be { min, max? }";
+          var min = Number(item.min);
+          var max = item.max == null ? min : Number(item.max);
+          if (!isFinite(min) || min < 0 || min > QUEST_REWARD_AMOUNT_MAX) return label + "." + k + ".min is out of range";
+          if (!isFinite(max) || max < min || max > QUEST_REWARD_AMOUNT_MAX) return label + "." + k + ".max is out of range";
+        } else {
+          var n = Number(map[k]);
+          if (!isFinite(n) || n < 0 || n > QUEST_REWARD_AMOUNT_MAX) return label + "." + k + " amount is out of range";
+        }
+      }
+      return "";
+    }
+    var err = checkMap(grant.currencies, path + ".currencies", false);
+    if (err) return err;
+    err = checkMap(grant.items, path + ".items", true);
+    if (err) return err;
+    err = checkMap(grant.energies, path + ".energies", false);
+    if (err) return err;
+    return "";
+  }
+
+  function validateQuestEngineReward(nk: nkruntime.Nakama, reward: any, questId: string): string {
+    if (reward == null) return "";
+    if (typeof reward !== "object" || Array.isArray(reward)) return questId + " reward must be an object";
+    if (reward.weighted) return questId + " reward cannot use weighted rolls in a quest overlay";
+    if (!reward.guaranteed || typeof reward.guaranteed !== "object" || Array.isArray(reward.guaranteed)) {
+      return questId + " reward must be { guaranteed: ... }";
+    }
+    var amtErr = validateRewardAmounts(reward.guaranteed, questId + ".reward.guaranteed");
+    if (amtErr) return amtErr;
+    try {
+      RewardEngine.resolveReward(nk, reward);
+    } catch (_e) {
+      return questId + " reward is not RewardEngine-shaped";
+    }
+    return "";
+  }
+
+  function validateQuestEngineOverlay(nk: nkruntime.Nakama, gameId: string, variants: any[]): string {
+    var base = loadQuestConfigForGame(nk, gameId);
+    var quests = (base && base.quests) ? base.quests : {};
+    if (!variants || !variants.length) return "quest_engine experiment needs variants[]";
+
+    for (var v = 0; v < variants.length; v++) {
+      var overlay = parseVariantOverlay(variants[v]);
+      if (!overlay) continue;
+      var encoded = "";
+      try { encoded = JSON.stringify(overlay); } catch (_) { return "variant overlay is not JSON"; }
+      if (encoded.length > QUEST_OVERLAY_MAX_BYTES) return "variant overlay exceeds " + QUEST_OVERLAY_MAX_BYTES + " bytes";
+
+      for (var top in overlay) {
+        if (!overlay.hasOwnProperty(top)) continue;
+        if (isUnsafeOverlayKey(top)) return "unsafe overlay key: " + top;
+        if (top !== "quests") return "quest overlay may only contain quests (unknown key: " + top + ")";
+      }
+      // Empty control (config: {}) is the "same quest, different prize" recipe.
+      if (!overlay.quests) continue;
+      if (typeof overlay.quests !== "object" || Array.isArray(overlay.quests)) {
+        return "quest overlay must be { quests: { questId: { ... } } }";
+      }
+
+      var patchedIds = Object.keys(overlay.quests);
+      if (patchedIds.length === 0) continue;
+      if (patchedIds.length > QUEST_OVERLAY_MAX_QUESTS) {
+        return "quest overlay patches too many quests (max " + QUEST_OVERLAY_MAX_QUESTS + ")";
+      }
+      for (var i = 0; i < patchedIds.length; i++) {
+        var questId = patchedIds[i];
+        if (isUnsafeOverlayKey(questId)) return "unsafe quest id";
+        if (!quests.hasOwnProperty(questId)) return "unknown quest id: " + questId;
+        var patch = overlay.quests[questId];
+        if (patch == null) return "cannot delete quest " + questId + " via overlay";
+        if (typeof patch !== "object" || Array.isArray(patch)) return questId + " overlay must be an object";
+        for (var field in patch) {
+          if (!patch.hasOwnProperty(field)) continue;
+          if (isUnsafeOverlayKey(field)) return questId + " has an unsafe field";
+          if (!QUEST_ENGINE_OVERLAY_FIELDS[field]) {
+            return questId + " forbids field '" + field + "' (allowed: reward, hidden, enabled, name, description)";
+          }
+        }
+        if (patch.hasOwnProperty("name") && typeof patch.name !== "string") return questId + " name must be a string";
+        if (patch.hasOwnProperty("description") && patch.description != null && typeof patch.description !== "string") {
+          return questId + " description must be a string";
+        }
+        if (patch.hasOwnProperty("hidden") && typeof patch.hidden !== "boolean") return questId + " hidden must be boolean";
+        if (patch.hasOwnProperty("enabled") && typeof patch.enabled !== "boolean") return questId + " enabled must be boolean";
+        if (patch.hasOwnProperty("reward")) {
+          var rewardErr = validateQuestEngineReward(nk, patch.reward, questId);
+          if (rewardErr) return rewardErr;
+        }
+      }
+    }
+    return "";
+  }
+
   function rpcExperimentSetup(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     RpcHelpers.requireAdmin(ctx, nk);
     var data = RpcHelpers.parseRpcPayload(payload);
     var variants = data.variants || parseMaybeJson(data.variants_json, undefined);
     if (!data.id || !data.name || !variants) return RpcHelpers.errorResponse("id, name, and variants[] required");
 
+    var configSystem = String(data.configSystem || data.config_system || "").trim();
+    var goalMetric = data.goalMetric || data.goal_metric;
+    var splitKey = data.splitKey || data.split_key;
+    var status = data.status || (data.enabled === false ? "draft" : "running");
     var gameId = adminGameId(data);
+    if (configSystem === QUEST_ENGINE_SYSTEM) {
+      if (!String(gameId || "").trim()) {
+        return RpcHelpers.errorResponse("gameId required (registry UUID). Use default only as the QuizVerse alias.");
+      }
+      gameId = canonicalExperimentGameId(gameId);
+      if (String(splitKey || "").toLowerCase() === "random") {
+        return RpcHelpers.errorResponse("quest_engine experiments cannot use splitKey=random; assignments must be sticky");
+      }
+    }
+
     var expConfig = readScopedConfig(nk, Constants.SATORI_CONFIGS_COLLECTION, "experiments", gameId, {}) as { [id: string]: any };
+    if (configSystem === QUEST_ENGINE_SYSTEM && status === "running") {
+      var otherRunning = runningQuestEngineExperimentId(expConfig, data.id);
+      if (otherRunning) {
+        return RpcHelpers.errorResponse("Only one running quest_engine experiment per game (already running: " + otherRunning + ")");
+      }
+    }
+
+    if (configSystem === QUEST_ENGINE_SYSTEM) {
+      var existing = expConfig[data.id];
+      if (existing && existing.status === "running" && status === "running" &&
+          overlayFingerprint(existing.variants) !== overlayFingerprint(variants)) {
+        return RpcHelpers.errorResponse("cannot edit quest overlay while experiment is running; set status to draft first");
+      }
+      var overlayErr = validateQuestEngineOverlay(nk, gameId, variants);
+      if (overlayErr) return RpcHelpers.errorResponse(overlayErr);
+    }
+
     var now = Math.floor(Date.now() / 1000);
+    var prev = expConfig[data.id];
     var audiences = firstArray(data.audiences) || firstArray(data.audiences_json);
+    var overlayChanged = !prev || overlayFingerprint(prev.variants) !== overlayFingerprint(variants);
+    var configRevision = (!overlayChanged && prev && prev.configRevision) ? prev.configRevision : String(now);
+    var trackedQuestIds = data.trackedQuestIds || data.tracked_quest_ids || (prev && prev.trackedQuestIds) || undefined;
 
     var newExp: any = {
       id: data.id,
       name: data.name,
       description: data.description || "",
-      status: data.status || (data.enabled === false ? "draft" : "running"),
+      status: status,
       audienceId: (audiences && audiences[0]) || data.audience_id || data.audienceId || undefined,
       variants: variants,
-      goalMetric: data.goalMetric,
-      splitKey: data.splitKey,
+      configSystem: configSystem || undefined,
+      goalMetric: goalMetric,
+      splitKey: splitKey,
       lockParticipation: data.lockParticipation || false,
       admissionDeadline: data.admissionDeadline,
       startAt: data.startAt,
@@ -2071,9 +2307,18 @@ namespace AdminConsole {
       phases: data.phases,
       experimentType: data.experimentType || "custom",
       gameId: gameId || data.gameId || data.game_id || undefined,
-      createdAt: (expConfig[data.id] && expConfig[data.id].createdAt) || now,
+      configRevision: configRevision,
+      trackedQuestIds: trackedQuestIds,
+      createdAt: (prev && prev.createdAt) || now,
       updatedAt: now
     };
+    var minSampleRaw = data.minSamplePerArm || data.min_sample_per_arm || data.minSample || data.min_sample;
+    var minSampleParsed = parseInt(String(minSampleRaw == null ? "" : minSampleRaw), 10);
+    if (minSampleParsed > 0) {
+      newExp.minSamplePerArm = minSampleParsed;
+    } else if (prev && prev.minSamplePerArm > 0) {
+      newExp.minSamplePerArm = prev.minSamplePerArm;
+    }
 
     var action = expConfig[data.id] ? "updated" : "created";
     expConfig[data.id] = newExp;

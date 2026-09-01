@@ -1327,7 +1327,8 @@ declare namespace HiroMailbox {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace HiroPersonalizers {
-    function personalize<T>(nk: nkruntime.Nakama, userId: string, system: string, baseConfig: T, gameId?: string): T;
+    function applyQuestEngineOverlay(config: any, overlay: any): any;
+    function personalize<T>(nk: nkruntime.Nakama, userId: string, system: string, baseConfig: T, gameId?: string, logger?: nkruntime.Logger): T;
     function personalizeConfig<T>(nk: nkruntime.Nakama, userId: string, system: string, loader: () => T, gameId?: string): T;
     function register(initializer: nkruntime.Initializer): void;
 }
@@ -3863,6 +3864,46 @@ declare namespace QuestEventBusBridge {
     function register(initializer: nkruntime.Initializer, logger: nkruntime.Logger): void;
 }
 declare namespace QuestEngine {
+    interface QuestStepConfig {
+        id: string;
+        description: string;
+        eventType: string;
+        requiredCount: number;
+        requiredValue?: number;
+        filterField?: string;
+        filterValue?: string;
+    }
+    interface QuestConfig {
+        id: string;
+        name: string;
+        description?: string;
+        category?: string;
+        steps: QuestStepConfig[];
+        reward?: Hiro.Reward;
+        expiresAt?: number;
+        prerequisiteIds?: string[];
+        repeatable?: boolean;
+        resetIntervalSec?: number;
+        hidden?: boolean;
+        enabled?: boolean;
+        maxConcurrent?: number;
+        requiresOptIn?: boolean;
+        additionalProperties?: {
+            [key: string]: string;
+        };
+    }
+    interface QuestsConfig {
+        quests: {
+            [questId: string]: QuestConfig;
+        };
+    }
+    export function loadRawConfig(nk: nkruntime.Nakama, gameId: string): QuestsConfig;
+    export function runPromoteStep(nk: nkruntime.Nakama, logger: nkruntime.Logger, gameId: string, overlay: any, step: string, ctx: any): {
+        ok: boolean;
+        auditKey?: string;
+        desiredHash?: string;
+        error?: string;
+    };
     interface ProcessEventResult {
         updatedCount: number;
         updatedQuests: {
@@ -3872,6 +3913,14 @@ declare namespace QuestEngine {
     export function processEvent(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, userId: string, gameId: string, eventType: string, value: number, metadata: {
         [k: string]: string;
     }): ProcessEventResult;
+    export function restorePromoteAudit(nk: nkruntime.Nakama, logger: nkruntime.Logger, ctx: nkruntime.Context, gameId: string, auditKey: string): {
+        ok: boolean;
+        error?: string;
+        already?: boolean;
+        restored?: boolean;
+        restoreAuditKey?: string;
+        experimentId?: string;
+    };
     export function register(initializer: nkruntime.Initializer): void;
     export {};
 }
@@ -4312,6 +4361,10 @@ declare namespace SatoriExperimentResults {
     interface AssignmentInfo {
         variantKey: string;
         assignedAtMs: number;
+        exposedAtMs?: number;
+        startedAtMs?: number;
+        convertedAtMs?: number;
+        claimedAtMs?: number;
     }
     function collectAssignments(nk: nkruntime.Nakama, experimentId: string, gameId?: string): {
         byUser: {
@@ -4323,7 +4376,41 @@ declare namespace SatoriExperimentResults {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace SatoriExperiments {
-    function getVariant(nk: nkruntime.Nakama, userId: string, experimentId: string, gameId?: string): Satori.ExperimentVariant | null;
+    function getVariant(nk: nkruntime.Nakama, userId: string, experimentId: string, gameId?: string, logger?: nkruntime.Logger): Satori.ExperimentVariant | null;
+    var FUNNEL_SHARD_COUNT: number;
+    function emptyFunnelShardDoc(): any;
+    function funnelShardIndexOf(userId: string): number;
+    function loadFunnelShardSums(nk: nkruntime.Nakama, gameId: string, experimentId: string): {
+        assigned: {
+            [k: string]: number;
+        };
+        exposed: {
+            [k: string]: number;
+        };
+        started: {
+            [k: string]: number;
+        };
+        completed: {
+            [k: string]: number;
+        };
+        claimed: {
+            [k: string]: number;
+        };
+        byDay: any;
+        shardsRead: number;
+        shardsPresent: boolean;
+    };
+    function replaceFunnelShards(nk: nkruntime.Nakama, gameId: string, experimentId: string, docs: any[]): void;
+    function recordQuestFunnelStep(nk: nkruntime.Nakama, logger: nkruntime.Logger, data: any): void;
+    function recordQuestCompletedConversion(nk: nkruntime.Nakama, logger: nkruntime.Logger, data: any): void;
+    function getRunningQuestEngineAttribution(nk: nkruntime.Nakama, userId: string, gameId: string): {
+        experimentId: string;
+        variantId: string;
+        phaseId: string | null;
+        configRevision: string;
+        gameId: string;
+        trackedQuestIds: string[];
+    } | null;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace SatoriFeatureFlags {
@@ -4440,6 +4527,7 @@ declare namespace SatoriRetention {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace SatoriTaxonomy {
+    function ensureDefaultSchema(nk: nkruntime.Nakama, eventName: string): boolean;
     interface ValidationResult {
         valid: boolean;
         errors: string[];
@@ -6155,6 +6243,7 @@ declare namespace Satori {
             [key: string]: string;
         };
         weight: number;
+        trackedQuestIds?: string[];
     }
     interface ExperimentDefinition {
         id: string;
@@ -6164,6 +6253,13 @@ declare namespace Satori {
         audienceId?: string;
         variants: ExperimentVariant[];
         goalMetric?: string;
+        configSystem?: string;
+        splitKey?: string;
+        gameId?: string;
+        configRevision?: string;
+        trackedQuestIds?: string[];
+        minSamplePerArm?: number;
+        phases?: any[];
         startAt?: number;
         endAt?: number;
         createdAt: number;
@@ -6174,6 +6270,12 @@ declare namespace Satori {
         variantId: string;
         assignedAt: number;
         locked?: boolean;
+        phaseId?: string | null;
+        configRevision?: string;
+        exposedAt?: number;
+        startedAt?: number;
+        convertedAt?: number;
+        claimedAt?: number;
     }
     interface UserExperiments {
         assignments: {

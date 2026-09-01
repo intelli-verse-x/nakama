@@ -450,6 +450,74 @@ After onboarding, you can view game data in the Nakama Admin Console:
 3. **Users**: View player profiles with game-specific data
 4. **Groups**: View guilds/clans filtered by gameId metadata
 
+## Quest A/B (existing quest engine)
+
+Quest tests overlay the **same** quest list (`qv_quest_config`) for that game. There is no second quest system.
+
+- Every player RPC (`quest_engine_get`, `quest_engine_record_event`, `quest_engine_claim_reward`) and quest experiment setup must send `gameId` as the registry UUID.
+- `"default"` aliases to the QuizVerse UUID only. Missing `gameId` is an error — it does not fall through to QuizVerse.
+- Unity payload stays `{ "gameId": "<registry UUID>" }`. Do not send experiment ids to the client.
+- LiveOps starts quest tests from **Admin > Quests** (`New A/B` / `A/B this`). Two recipes only: same quest new prize, or this quest vs that quest. Do not paste overlay JSON on the Experiments page for quests.
+- Preview a QA user from the Quests page (or `hiro_personalizer_preview` with `system=quest_engine`).
+- One running `quest_engine` experiment per game. Overlay may change reward / hidden / enabled / name / description only.
+- Guest → registered merge ports `satori_assignments` copy-if-absent, so the A/B bucket stays sticky.
+
+### Player RPCs (Unity / device session)
+
+`POST /v2/rpc/{id}` with a player session. Always send the registry UUID. Never send experiment ids.
+
+| RPC | Call | Payload | What comes back |
+|-----|------|---------|-----------------|
+| `quest_engine_get` | Home / quests screen | `{ "gameId": "<uuid>" }` | Visible quests with progress. Overlay already applied. No experiment ids (admin + `debug:true` may add `debug.experiment`). |
+| `quest_engine_record_event` | After a player action (optional; EventBus also feeds the engine) | `{ "gameId": "<uuid>", "eventType": "match_won", "value": 1, "metadata": {} }` | `{ updatedQuests, quests }` |
+| `quest_engine_claim_reward` | Claim button | `{ "gameId": "<uuid>", "questId": "daily_win_3" }` | Pays the **snapshot** prize from when the quest started, not a later overlay |
+
+Unity C# shape:
+
+```csharp
+await client.RpcAsync(session, "quest_engine_get", JsonUtility.ToJson(new { gameId }));
+await client.RpcAsync(session, "quest_engine_record_event", JsonUtility.ToJson(new { gameId, eventType = "match_won", value = 1 }));
+await client.RpcAsync(session, "quest_engine_claim_reward", JsonUtility.ToJson(new { gameId, questId }));
+```
+
+### Admin RPCs (http_key / Admin Console)
+
+These are **not** Unity calls. Quests page + Experiments page use them.
+
+| RPC | Call | Payload notes |
+|-----|------|----------------|
+| `quest_engine_admin_get_config` | Load quest list | `{ "gameId": "<uuid>" }` — **raw** config, no overlay |
+| `quest_engine_admin_save_config` | Save quest list | `{ "gameId": "<uuid>", "config": { "quests": { ... } } }` or `{ "gameId", "quests": [ { "id": "...", ... } ] }` |
+| `hiro_personalizer_preview` | Preview one player | `{ "userId": "<nakama user id>", "system": "quest_engine", "gameId": "<uuid>" }` |
+| `satori_experiments_get_all` | List experiments | `{ "game_id": "<uuid>" }` (admin list helper: `admin_satori_experiments_list`) |
+| `satori_experiment_setup` | Create / update a quest overlay test | `configSystem: "quest_engine"`, `goalMetric: "quest_completed"`, `game_id`, variants with `config` and/or `data`, `trackedQuestIds`, `minSamplePerArm`. Ban `splitKey=random`. |
+| `satori_experiments_results` | Funnel card | `{ "experimentId": "...", "game_id": "<uuid>", "goal_event": "quest_completed" }` — Assigned → Exposed → Started → Completed → Claimed, SRM, min-sample, `byDay` |
+| `satori_experiments_declare_winner` | Pause or Promote | `{ "experimentId": "...", "variantId": "...", "game_id": "<uuid>", "promote": true\|false }` — `promote:true` writes the winning sticker onto `qv_quest_config` |
+| `satori_experiments_undo_promote` | Undo Promote | `{ "experimentId": "...", "game_id": "<uuid>", "auditKey": "<optional>" }` |
+
+Admin TypeScript wrappers live in `web/packages/shared/src/rpc/quest-engine/index.ts` and `web/packages/shared/src/rpc/satori/index.ts` (`setupExperiment`, `getExperimentResults`, `declareExperimentWinner`, `undoExperimentPromote`, `previewPersonalizer`).
+
+### Local two-user proof
+
+From `data/modules` against docker Nakama (`127.0.0.1:7350`):
+
+```
+node tests/quest_ab_overlay_live_rpc.mjs
+```
+
+That script saves a throwaway `ab_probe` quest on two unused game UUIDs (it does **not** overwrite QuizVerse), runs a 50/50 prize test, checks two players land on 100 vs 200 and stay sticky, proves kill-without-promote keeps the promised 200, and checks Promote stays blocked until min-sample.
+
+### QA then 10% prod checklist
+
+Do not call this production-ready until every box is green.
+
+1. **QA audience first** — 100% test variant, internal accounts only. Two devices, same `userId`, reinstall still sticky. Watch claim errors. Pause can take up to 1 minute to reach every server.
+2. **10% test / 90% control**, 48h. Goal = `quest_completed`. Watch session_start and claim errors. If SRM fails or crash-ish drop → status `ended` / Pause, **no Promote**.
+3. Optionally **25%** then **50%** (stable ID split so the 10% stay in test).
+4. Promote only after min-sample + SRM + significance. This writes the winning sticker onto the real quest list. Spot-check 5 live players see **one** list.
+5. Leave the experiment `ended`. Do not start a second quest overlay on the same reward until this one is done.
+6. Rollback: Pause or `status=ended` without Promote. Base `qv_quest_config` is unchanged until Promote succeeds. Undo from the Quests results card restores the audit snapshot.
+
 ## Migration from Legacy Games
 
 For existing games using hard-coded gameID ("quizverse", "lasttolive"):
@@ -485,6 +553,7 @@ For existing games using hard-coded gameID ("quizverse", "lasttolive"):
 
 ### Phase 3: Engagement Features
 - [ ] Implement daily rewards (`claim_daily_reward`)
+- [ ] Implement quests (`quest_engine_get`, `quest_engine_record_event`, `quest_engine_claim_reward`) with `{ gameId }` only
 - [ ] Implement social features (`find_friends`)
 - [ ] Implement guild system (`guild_create`, `guild_join`, `guild_leave`)
 
