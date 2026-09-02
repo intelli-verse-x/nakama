@@ -156,6 +156,13 @@ namespace FortuneWheelAdSpin {
                 break;
             }
             case "Coins": {
+                if (typeof WalletGrantGate !== "undefined" && WalletGrantGate) {
+                    const promoGate = WalletGrantGate.assertYoungAccountPromoBudget(nk, userId, +amount, logger);
+                    if (!promoGate.ok) {
+                        logger.warn("[FortuneWheelAdSpin] young-account promo cap blocked coin grant for " + userId);
+                        break;
+                    }
+                }
                 const changeset: { [key: string]: number } = { coins: +amount };
                 try { nk.walletUpdate(userId, changeset, {}, true); }
                 catch (e) { logger.warn("[FortuneWheelAdSpin] Coin grant failed: " + e); }
@@ -216,6 +223,24 @@ namespace FortuneWheelAdSpin {
         const userId = ctx.userId;
         if (!userId) {
             return JSON.stringify({ success: false, error: "Authentication required" });
+        }
+
+        let req: { placement?: string; txnId?: string; adToken?: string } = {};
+        try { req = payload ? JSON.parse(payload) : {}; } catch (_e) { req = {}; }
+        const placement = String(req.placement || "fortune_wheel_ad_spin");
+        const adToken = String(req.adToken || req.token || "");
+
+        if (typeof WalletGrantGate !== "undefined" && WalletGrantGate) {
+            const adGate = WalletGrantGate.assertAdGrantAuthorized(nk, userId, adToken, placement, logger);
+            if (!adGate.ok) {
+                return WalletGrantGate.rejectResponse(adGate.errorCode || "AD_VERIFICATION_REQUIRED", adGate.error || "Ad verification required");
+            }
+        } else if (!adToken) {
+            return JSON.stringify({
+                success: false,
+                error: "Rewarded ad token required",
+                errorCode: "AD_VERIFICATION_REQUIRED"
+            });
         }
 
         // 1. Read organic wheel state — must have done organic spin first

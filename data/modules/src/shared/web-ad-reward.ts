@@ -82,6 +82,19 @@ namespace WebAdReward {
     const placement = String(req.placement || "web_rewarded");
     const txnId = String(req.txnId || "");
 
+    if (typeof WalletGrantGate !== "undefined" && WalletGrantGate) {
+      const txnGate = WalletGrantGate.assertApplixirTxnVerified(nk, userId, txnId, logger);
+      if (!txnGate.ok) {
+        return WalletGrantGate.rejectResponse(txnGate.errorCode || "AD_VERIFICATION_REQUIRED", txnGate.error || "Ad verification required");
+      }
+    } else if (!txnId) {
+      return JSON.stringify({
+        success: false,
+        error: "Applixir transaction verification required",
+        errorCode: "AD_VERIFICATION_REQUIRED"
+      });
+    }
+
     const now = Math.floor(Date.now() / 1000);
     const today = utcDay();
     let state = readState(nk, userId);

@@ -334,6 +334,13 @@ function grantReward(nk, userId, rewardType, amount, logger) {
             break;
 
         case "Coins":
+            if (typeof WalletGrantGate !== "undefined" && WalletGrantGate) {
+                var promoGate = WalletGrantGate.assertYoungAccountPromoBudget(nk, userId, +amount, logger);
+                if (!promoGate.ok) {
+                    logger.warn("[fortune_wheel] young-account promo cap blocked coin grant for " + userId);
+                    break;
+                }
+            }
             var coinChangeset = {};
             coinChangeset["coins"] = +amount;
             try { nk.walletUpdate(userId, coinChangeset, {}, true); }

@@ -561,6 +561,7 @@ namespace TournamentRpcs {
     TournamentLeaderboard.ensureLeaderboard(nk, slug, null, 0);
 
     logger.info("[Tournaments] enter user=" + userId + " slug=" + slug + " method=" + entryMethod + " bc=" + bcCharged + " founder=" + isFounder);
+    creditDailyQuestFromServerEvent(nk, logger, userId, "tournament_enter", 1, tzOffsetMin);
     return RpcHelpers.successResponse({ entry: entry, founder_member: isFounder, idempotent: false });
   }
 
@@ -652,6 +653,11 @@ namespace TournamentRpcs {
       // caller_status; if the user is the only subscriber the tick still
       // helps update their own LeaderboardPanel client-side.
       try { TournamentRealtime.notifyScoreTick(nk, slug, userId, entry.score); } catch (_) { }
+      var tzOffsetMin = parseInt("" + (data.tz_offset_min || 0), 10);
+      if (isNaN(tzOffsetMin)) tzOffsetMin = 0;
+      if (effectiveScore > 0) {
+        creditDailyQuestFromServerEvent(nk, logger, userId, "answer_correct", effectiveScore, tzOffsetMin);
+      }
     }
 
     logger.info("[Tournaments] submit user=" + userId + " slug=" + slug + " pack=" + packId + " score=" + effectiveScore + " status=" + status);
@@ -1763,6 +1769,10 @@ namespace TournamentRpcs {
     if (!TournamentEconomyV2.resolveConfigBySlug(slug)) return RpcHelpers.errorResponse("tournament not found", 404);
     var userId = ctx.userId || ("anon_" + nowSec());
     TournamentLevers.addSpectator(nk, slug, userId);
+    if (ctx.userId) {
+      var tz = parseInt("" + (data.tz_offset_min || 0), 10);
+      creditDailyQuestFromServerEvent(nk, _l, ctx.userId, "spectate_or_share", 1, isNaN(tz) ? 0 : tz);
+    }
     TournamentLevers.logEvent(nk, "spectator_subscribed", ctx.userId || null, { slug: slug });
     return RpcHelpers.successResponse({
       subscribed: true,
@@ -1888,20 +1898,13 @@ namespace TournamentRpcs {
     });
   }
 
-  // Generic increment endpoint. Client fires e.g. metric=tournament_enter
-  // after a successful entry. Server is idempotent within a calendar day.
-  function rpcDailyQuestsRecord(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
-    var userId = RpcHelpers.requireUserId(ctx);
-    if (!TournamentEconomyV2.FEATURE_FLAGS.daily_quest_v1) {
-      return RpcHelpers.successResponse({ enabled: false });
-    }
-    var data = RpcHelpers.parseRpcPayload(payload);
-    var metric = "" + (data.metric || "");
-    var by = parseInt("" + (data.by || 1), 10);
-    var tz = parseInt("" + (data.tz_offset_min || 0), 10);
-    if (!metric) return RpcHelpers.errorResponse("metric required", 400);
-
-    var result = TournamentLevers.incrementDailyQuest(nk, userId, metric, isNaN(by) ? 1 : by, isNaN(tz) ? 0 : tz);
+  // ── A2 helper: credit daily quest rewards from SERVER events only ─────────
+  function creditDailyQuestFromServerEvent(
+    nk: nkruntime.Nakama, logger: nkruntime.Logger, userId: string,
+    metric: string, by: number, timezoneOffsetMin: number
+  ): void {
+    if (!TournamentEconomyV2.FEATURE_FLAGS.daily_quest_v1) return;
+    var result = TournamentLevers.incrementDailyQuest(nk, userId, metric, by, timezoneOffsetMin);
     var bcMinted = 0;
     if (result.newly_completed.length > 0) {
       var defs = TournamentEconomyV2.DAILY_QUESTS;
@@ -1914,20 +1917,27 @@ namespace TournamentRpcs {
     if (result.bonus_unlocked) bcMinted += TournamentEconomyV2.DAILY_QUEST_COMPLETION_BONUS.bc;
     if (bcMinted > 0) {
       try {
-        nk.walletUpdate(userId, { coins: bcMinted }, { source: "daily_quest" }, false);
+        nk.walletUpdate(userId, { coins: bcMinted }, { source: "daily_quest", metric: metric }, false);
       } catch (e: any) {
-        if (logger) logger.warn("[A2] quest reward credit failed for %s: %s", userId, e && e.message ? e.message : "?");
+        if (logger) logger.warn("[A2] server quest credit failed for %s: %s", userId, e && e.message ? e.message : "?");
       }
     }
-    TournamentLevers.logEvent(nk, "daily_quest_progress", userId, {
-      metric: metric, newly_completed: result.newly_completed, bonus_unlocked: result.bonus_unlocked, bc_minted: bcMinted,
-    });
-    return RpcHelpers.successResponse({
-      progress: result.row,
-      newly_completed: result.newly_completed,
-      bonus_unlocked: result.bonus_unlocked,
-      bc_minted: bcMinted,
-    });
+    if (result.newly_completed.length > 0 || result.bonus_unlocked) {
+      TournamentLevers.logEvent(nk, "daily_quest_progress", userId, {
+        metric: metric, newly_completed: result.newly_completed,
+        bonus_unlocked: result.bonus_unlocked, bc_minted: bcMinted, source: "server_hook",
+      });
+    }
+  }
+
+  // Generic increment endpoint. Client fires e.g. metric=tournament_enter
+  // after a successful entry. Server is idempotent within a calendar day.
+  function rpcDailyQuestsRecord(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    RpcHelpers.requireUserId(ctx);
+    // Fail-closed: quest progress + BC mints are recorded only from server hooks
+    // (tournament_enter, submit_pack_result, spectator_subscribe). Client-fired
+    // metrics were unauthenticated progress reports.
+    return RpcHelpers.errorResponse("Daily quest progress is recorded server-side only", 403);
   }
 
   // ── A3: tournament_referral_2sided_record (service-only) ───────────────────

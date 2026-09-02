@@ -542,12 +542,25 @@ function performDailyClaim(nk, logger, userId, gameId) {
         if (!claimState.claimHistory) claimState.claimHistory = [];
         if (typeof claimState.lastOpenTimestamp !== "number") claimState.lastOpenTimestamp = 0;
 
-        var recheck = canClaimToday(claimState);
-        if (!recheck.canClaim) {
-            return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
-        }
+    var recheck = canClaimToday(claimState);
+    if (!recheck.canClaim) {
+        return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
+    }
 
-        // Claim cycle day for reward table — independent of login currentStreak.
+    // Require app-open today (performAppOpenStreak via daily_rewards_get_status) before mint.
+    var todayUtc = getTodayUtcDateString();
+    var lastOpenDate = claimState.lastOpenTimestamp > 0
+        ? getUtcDateStringFromUnix(claimState.lastOpenTimestamp)
+        : "";
+    if (lastOpenDate !== todayUtc) {
+        return {
+            ok: false,
+            error: "App open required before claim (call daily_rewards_get_status first)",
+            reason: "app_open_required"
+        };
+    }
+
+    // Claim cycle day for reward table — independent of login currentStreak.
         var nextClaimDay = (claimState.totalClaims || 0) + 1;
         claimState.lastClaimTimestamp = utils.getUnixTimestamp();
         claimState.totalClaims = nextClaimDay;

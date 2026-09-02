@@ -108,29 +108,14 @@ function rpcCrossGameBonus(ctx, logger, nk, payload) {
 
         crossGameSafeWrite(nk, "cross_game_bonuses", "bonus:" + bonusId, userId, bonusRecord);
 
-        try {
-            nk.walletUpdate(userId, { coins: bonusAmount }, {
-                source: "cross_game_bonus",
-                source_game: data.source_game_id,
-                target_game: data.target_game_id,
-                event_type: data.event_type
-            }, true);
-        } catch (walletErr) {
-            logger.warn("[cross_game] Wallet update failed, using storage fallback: " + walletErr.message);
-            var walletKey = "wallet:" + data.target_game_id;
-            var wallet = crossGameSafeRead(nk, "cross_game_wallets", walletKey, userId) || { coins: 0 };
-            wallet.coins = (wallet.coins || 0) + bonusAmount;
-            wallet.updated_at = nowISO();
-            crossGameSafeWrite(nk, "cross_game_wallets", walletKey, userId, wallet);
-        }
-
-        logger.info("[cross_game] Bonus granted: " + bonusAmount + " coins from " + data.source_game_id + " -> " + data.target_game_id);
-
+        // Fail-closed: client-reported event_type is not proof of cross-game activity.
+        // Legitimate grants require a server-verified cross_game_events row written
+        // by an internal RPC — not yet wired in shipped clients.
         return JSON.stringify({
-            success: true,
-            bonus_granted: bonusAmount,
-            source_game: data.source_game_id,
-            target_game: data.target_game_id
+            success: false,
+            error: "Cross-game bonus requires server-verified event",
+            errorCode: "CROSS_GAME_VERIFICATION_REQUIRED",
+            http_status: 403
         });
 
     } catch (err) {
