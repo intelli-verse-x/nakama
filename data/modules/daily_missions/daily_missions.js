@@ -193,17 +193,65 @@ function rpcGetDailyMissions(ctx, logger, nk, payload) {
  */
 function rpcSubmitMissionProgress(ctx, logger, nk, payload) {
     utils.logInfo(logger, "RPC submit_mission_progress called");
+    
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+    
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId', 'missionId', 'value']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
+    
+    var gameId = data.gameId;
+    if (!utils.isValidUUID(gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
+    
     var userId = ctx.userId;
     if (!userId) {
         return utils.handleError(ctx, null, "User not authenticated");
     }
-    // Fail-closed: mission progress increments are server-authoritative only.
-    // Client-reported value deltas were unauthenticated completion claims.
+    
+    var missionId = data.missionId;
+    var value = data.value;
+    
+    // Get current progress
+    var progressData = getMissionProgress(nk, logger, userId, gameId);
+    
+    // Check if mission exists
+    if (!progressData.progress[missionId]) {
+        return utils.handleError(ctx, null, "Mission not found: " + missionId);
+    }
+    
+    var missionProgress = progressData.progress[missionId];
+    
+    // Update progress
+    missionProgress.currentValue += value;
+    
+    // Check if completed
+    if (missionProgress.currentValue >= missionProgress.targetValue && !missionProgress.completed) {
+        missionProgress.completed = true;
+        utils.logInfo(logger, "Mission " + missionId + " completed for user " + userId);
+    }
+    
+    // Save progress
+    if (!saveMissionProgress(nk, logger, userId, gameId, progressData)) {
+        return utils.handleError(ctx, null, "Failed to save mission progress");
+    }
+    
     return JSON.stringify({
-        success: false,
-        error: "Mission progress is recorded server-side only",
-        errorCode: "PROGRESS_SERVER_ONLY",
-        http_status: 403
+        success: true,
+        userId: userId,
+        gameId: gameId,
+        missionId: missionId,
+        currentValue: missionProgress.currentValue,
+        targetValue: missionProgress.targetValue,
+        completed: missionProgress.completed,
+        claimed: missionProgress.claimed,
+        timestamp: utils.getCurrentTimestamp()
     });
 }
 

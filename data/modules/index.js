@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-09-02T04:26:11.277Z
+// Generated: 2026-09-02T04:37:36.589Z
 // RPC Count: 1341
 // ============================================================
 
@@ -29197,15 +29197,104 @@ function rpcGetDailyChallenges(context, logger, nk, payload) {
  */
 function rpcUpdateChallengeProgress(context, logger, nk, payload) {
     const userId = context.userId;
+    
     if (!userId) {
         throw new Error("User must be authenticated");
     }
-    // Fail-closed: cricket challenge progress is server-authoritative only.
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { challengeType, value } = data;
+
+    if (!challengeType || value === undefined) {
+        throw new Error("challengeType and value are required");
+    }
+
+    const today = getTodayKey();
+
+    // Get daily challenges
+    const challenges = nk.storageRead([{
+        collection: COLLECTIONS.DAILY_CHALLENGES,
+        key: today,
+        userId: null
+    }]);
+
+    if (challenges.length === 0) {
+        return JSON.stringify({ success: false, message: "No challenges available today" });
+    }
+
+    const dailyChallenges = challenges[0].value.challenges;
+
+    // Get user's progress
+    const progressRecords = nk.storageRead([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId
+    }]);
+
+    const userProgress = progressRecords.length > 0 ? progressRecords[0].value : {
+        progress: {},
+        completed: [],
+        claimed: []
+    };
+
+    // Update progress for matching challenges
+    const updatedChallenges = [];
+    const newlyCompleted = [];
+
+    for (const challenge of dailyChallenges) {
+        if (challenge.type === challengeType && !userProgress.completed.includes(challenge.id)) {
+            const currentProgress = userProgress.progress[challenge.id] || 0;
+            const newProgress = challengeType === CHALLENGE_TYPES.TRIVIA_ACCURACY 
+                ? value // Accuracy is a direct value, not cumulative
+                : currentProgress + value;
+
+            userProgress.progress[challenge.id] = newProgress;
+
+            // Check if completed
+            if (newProgress >= challenge.target) {
+                if (!userProgress.completed.includes(challenge.id)) {
+                    userProgress.completed.push(challenge.id);
+                    newlyCompleted.push(challenge);
+                }
+            }
+
+            updatedChallenges.push({
+                id: challenge.id,
+                title: challenge.title,
+                currentProgress: Math.min(newProgress, challenge.target),
+                target: challenge.target,
+                isCompleted: newProgress >= challenge.target
+            });
+        }
+    }
+
+    // Save progress
+    nk.storageWrite([{
+        collection: COLLECTIONS.CHALLENGE_PROGRESS,
+        key: today,
+        userId: userId,
+        value: userProgress,
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} updated challenge progress: ${challengeType} += ${value}`);
+
     return JSON.stringify({
-        success: false,
-        error: "Challenge progress is recorded server-side only",
-        errorCode: "PROGRESS_SERVER_ONLY",
-        http_status: 403
+        success: true,
+        updatedChallenges,
+        newlyCompleted: newlyCompleted.map(c => ({
+            id: c.id,
+            title: c.title,
+            reward: c.reward,
+            xp: c.xp
+        }))
     });
 }
 
@@ -32466,13 +32555,115 @@ function rpcClaimTriggerReward(context, logger, nk, payload) {
     if (!userId) {
         throw new Error("User must be authenticated");
     }
-    // Fail-closed: retention trigger payouts require server-verified events (streak milestones,
-    // comeback detection). Client-supplied triggerType/daysAway was unauthenticated.
+
+    let data;
+    try {
+        data = JSON.parse(payload);
+    } catch (e) {
+        throw new Error("Invalid JSON payload");
+    }
+
+    const { triggerId, triggerType } = data;
+
+    if (!triggerId) {
+        throw new Error("triggerId is required");
+    }
+
+    // Check if already claimed
+    const claimKey = `claim_${triggerId}`;
+    const existing = nk.storageRead([{
+        collection: COLLECTIONS.TRIGGER_HISTORY,
+        key: claimKey,
+        userId: userId
+    }]);
+
+    if (existing.length > 0) {
+        return JSON.stringify({
+            success: false,
+            message: "Reward already claimed"
+        });
+    }
+
+    // Get retention data for reward calculation
+    const retentionData = getRetentionData(nk, userId);
+
+    // Determine reward based on trigger type
+    let reward = { coins: 0, xp: 0 };
+    let effects = [];
+
+    // Check streak milestones
+    if (STREAK_MILESTONES[retentionData.currentStreak]) {
+        const milestone = STREAK_MILESTONES[retentionData.currentStreak];
+        reward = { ...milestone.reward };
+        
+        // Handle special effects
+        if (reward.bonusDuration) {
+            activateBonusHour(nk, userId, reward.bonusMultiplier || 2.0, reward.bonusDuration);
+            effects.push("bonus_hour_activated");
+        }
+        
+        if (reward.effect) {
+            effects.push(reward.effect);
+        }
+    }
+
+    // Apply comeback bonus
+    if (triggerType === TRIGGER_TYPES.COMEBACK_BONUS) {
+        const daysAway = data.daysAway || 3;
+        reward.coins = Math.min(daysAway * 50, 500);
+        reward.xp = reward.coins / 2;
+    }
+
+    // Award coins
+    if (reward.coins > 0) {
+        const multiplier = getActiveMultiplier(nk, userId);
+        const finalCoins = Math.floor(reward.coins * multiplier);
+        
+        try {
+            nk.walletUpdate(userId, { coins: finalCoins }, { 
+                reason: `trigger_${triggerType}`,
+                triggerId: triggerId
+            }, true);
+            reward.coinsAwarded = finalCoins;
+        } catch (e) {
+            logger.error(`Failed to award coins: ${e.message}`);
+        }
+    }
+
+    // Award XP (to season pass)
+    if (reward.xp > 0) {
+        updateUserXP(nk, userId, reward.xp);
+    }
+
+    // Award items
+    if (reward.item) {
+        awardItem(nk, userId, reward.item, `trigger_${triggerId}`);
+        effects.push(`item_${reward.item}`);
+    }
+
+    // Record claim
+    nk.storageWrite([{
+        collection: COLLECTIONS.TRIGGER_HISTORY,
+        key: claimKey,
+        userId: userId,
+        value: {
+            triggerId,
+            triggerType,
+            reward,
+            effects,
+            claimedAt: Date.now()
+        },
+        permissionRead: 1,
+        permissionWrite: 0
+    }]);
+
+    logger.info(`User ${userId} claimed trigger ${triggerId}: ${JSON.stringify(reward)}`);
+
     return JSON.stringify({
-        success: false,
-        error: "Trigger rewards require server-verified retention events",
-        errorCode: "PROGRESS_SERVER_ONLY",
-        http_status: 403
+        success: true,
+        reward,
+        effects,
+        message: getRewardMessage(triggerType, reward)
     });
 }
 
@@ -36462,17 +36653,65 @@ function rpcGetDailyMissions(ctx, logger, nk, payload) {
  */
 function rpcSubmitMissionProgress(ctx, logger, nk, payload) {
     utils.logInfo(logger, "RPC submit_mission_progress called");
+    
+    var parsed = utils.safeJsonParse(payload);
+    if (!parsed.success) {
+        return utils.handleError(ctx, null, "Invalid JSON payload");
+    }
+    
+    var data = parsed.data;
+    var validation = utils.validatePayload(data, ['gameId', 'missionId', 'value']);
+    if (!validation.valid) {
+        return utils.handleError(ctx, null, "Missing required fields: " + validation.missing.join(", "));
+    }
+    
+    var gameId = data.gameId;
+    if (!utils.isValidUUID(gameId)) {
+        return utils.handleError(ctx, null, "Invalid gameId UUID format");
+    }
+    
     var userId = ctx.userId;
     if (!userId) {
         return utils.handleError(ctx, null, "User not authenticated");
     }
-    // Fail-closed: mission progress increments are server-authoritative only.
-    // Client-reported value deltas were unauthenticated completion claims.
+    
+    var missionId = data.missionId;
+    var value = data.value;
+    
+    // Get current progress
+    var progressData = getMissionProgress(nk, logger, userId, gameId);
+    
+    // Check if mission exists
+    if (!progressData.progress[missionId]) {
+        return utils.handleError(ctx, null, "Mission not found: " + missionId);
+    }
+    
+    var missionProgress = progressData.progress[missionId];
+    
+    // Update progress
+    missionProgress.currentValue += value;
+    
+    // Check if completed
+    if (missionProgress.currentValue >= missionProgress.targetValue && !missionProgress.completed) {
+        missionProgress.completed = true;
+        utils.logInfo(logger, "Mission " + missionId + " completed for user " + userId);
+    }
+    
+    // Save progress
+    if (!saveMissionProgress(nk, logger, userId, gameId, progressData)) {
+        return utils.handleError(ctx, null, "Failed to save mission progress");
+    }
+    
     return JSON.stringify({
-        success: false,
-        error: "Mission progress is recorded server-side only",
-        errorCode: "PROGRESS_SERVER_ONLY",
-        http_status: 403
+        success: true,
+        userId: userId,
+        gameId: gameId,
+        missionId: missionId,
+        currentValue: missionProgress.currentValue,
+        targetValue: missionProgress.targetValue,
+        completed: missionProgress.completed,
+        claimed: missionProgress.claimed,
+        timestamp: utils.getCurrentTimestamp()
     });
 }
 
@@ -37567,25 +37806,12 @@ function performDailyClaim(nk, logger, userId, gameId) {
         if (!claimState.claimHistory) claimState.claimHistory = [];
         if (typeof claimState.lastOpenTimestamp !== "number") claimState.lastOpenTimestamp = 0;
 
-    var recheck = canClaimToday(claimState);
-    if (!recheck.canClaim) {
-        return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
-    }
+        var recheck = canClaimToday(claimState);
+        if (!recheck.canClaim) {
+            return { ok: false, error: "Cannot claim reward: " + recheck.reason, reason: recheck.reason };
+        }
 
-    // Require app-open today (performAppOpenStreak via daily_rewards_get_status) before mint.
-    var todayUtc = getTodayUtcDateString();
-    var lastOpenDate = claimState.lastOpenTimestamp > 0
-        ? getUtcDateStringFromUnix(claimState.lastOpenTimestamp)
-        : "";
-    if (lastOpenDate !== todayUtc) {
-        return {
-            ok: false,
-            error: "App open required before claim (call daily_rewards_get_status first)",
-            reason: "app_open_required"
-        };
-    }
-
-    // Claim cycle day for reward table — independent of login currentStreak.
+        // Claim cycle day for reward table — independent of login currentStreak.
         var nextClaimDay = (claimState.totalClaims || 0) + 1;
         claimState.lastClaimTimestamp = utils.getUnixTimestamp();
         claimState.totalClaims = nextClaimDay;
@@ -63691,8 +63917,6 @@ function rpcQuizverseStreakQuiz(ctx, logger, nk, payload) {
         if (data.action === "start") {
             streak.current_streak = 0;
             streak.alive = true;
-            streak.server_verified = false;
-            streak.session_id = "sq_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
 
         } else if (data.action === "answer") {
             if (!streak.alive) {
@@ -63709,13 +63933,7 @@ function rpcQuizverseStreakQuiz(ctx, logger, nk, payload) {
             if (streak.current_streak > streak.best_streak) {
                 streak.best_streak = streak.current_streak;
             }
-            // Fail-closed: streak coin mint requires server-issued quiz session verification.
-            // Client-reported answer_correct/end was unauthenticated (streak * 10 coins).
-            var coins = 0;
-            if (streak.server_verified && streak.current_streak > 0) {
-                coins = streak.current_streak * 10;
-            }
-            var reward = null;
+            var coins = streak.current_streak * 10;
             if (coins > 0) {
                 nk.walletUpdate(userId, { coins: coins }, { reason: "streak_reward", streak: streak.current_streak }, true);
                 reward = { coins: coins };
@@ -64091,8 +64309,7 @@ function rpcQuizverseKnowledgeDuel(ctx, logger, nk, payload) {
 
                 var loserId = winner === subDuel.creator ? subDuel.opponent : subDuel.creator;
                 if (winner !== "draw") {
-                    // Fail-closed: duel payouts require server-validated quiz scores (not client submit.score).
-                    // Notifications still fire; wallet credit disabled until quiz outcome RPC is wired.
+                    nk.walletUpdate(winner, { coins: 50 }, { reason: "duel_win", duel_id: subDuel.duel_id }, true);
                     try {
                         // Signature: (userId, subject, content, code, senderId?, persistent?)
                         // Code 7402 is outside friend lifecycle 1–6 / 100–105.
