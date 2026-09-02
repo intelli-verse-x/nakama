@@ -184042,10 +184042,30 @@ var RpcHelpers;
         throw new Error("User ID is required (provide via auth token or 'userId' field in payload)");
     }
     RpcHelpers.resolveUserId = resolveUserId;
+    function headerValue(ctx, name) {
+        var headers = ctx.headers;
+        if (!headers)
+            return "";
+        var want = name.toLowerCase();
+        for (var key in headers) {
+            if (String(key).toLowerCase() !== want)
+                continue;
+            var raw = headers[key];
+            var value = Array.isArray(raw) ? raw[0] : raw;
+            return value === undefined || value === null ? "" : String(value);
+        }
+        return "";
+    }
     function requireAdmin(ctx, nk) {
-        // Server-to-server calls via http_key have no userId — treat as trusted
-        if (!ctx.userId)
-            return;
+        // A caller that authenticated with `?http_key=` has no ctx.userId, so
+        // http_key possession alone is not admin. Require a second credential.
+        if (!ctx.userId) {
+            var expected = String((ctx.env && ctx.env["ADMIN_S2S_TOKEN"]) || "");
+            var presented = headerValue(ctx, "x-admin-token");
+            if (expected.length > 0 && presented === expected)
+                return;
+            throw new Error("ADMIN_S2S_REQUIRED: admin RPCs require an authenticated admin session, or a server-to-server call presenting a valid X-Admin-Token header");
+        }
         // Dashboard admin sessions minted by admin_login (custom_id admin:<name>)
         if (ctx.username && ctx.username.indexOf("admin:") === 0) {
             try {
