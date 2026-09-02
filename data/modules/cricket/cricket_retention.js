@@ -230,115 +230,13 @@ function rpcClaimTriggerReward(context, logger, nk, payload) {
     if (!userId) {
         throw new Error("User must be authenticated");
     }
-
-    let data;
-    try {
-        data = JSON.parse(payload);
-    } catch (e) {
-        throw new Error("Invalid JSON payload");
-    }
-
-    const { triggerId, triggerType } = data;
-
-    if (!triggerId) {
-        throw new Error("triggerId is required");
-    }
-
-    // Check if already claimed
-    const claimKey = `claim_${triggerId}`;
-    const existing = nk.storageRead([{
-        collection: COLLECTIONS.TRIGGER_HISTORY,
-        key: claimKey,
-        userId: userId
-    }]);
-
-    if (existing.length > 0) {
-        return JSON.stringify({
-            success: false,
-            message: "Reward already claimed"
-        });
-    }
-
-    // Get retention data for reward calculation
-    const retentionData = getRetentionData(nk, userId);
-
-    // Determine reward based on trigger type
-    let reward = { coins: 0, xp: 0 };
-    let effects = [];
-
-    // Check streak milestones
-    if (STREAK_MILESTONES[retentionData.currentStreak]) {
-        const milestone = STREAK_MILESTONES[retentionData.currentStreak];
-        reward = { ...milestone.reward };
-        
-        // Handle special effects
-        if (reward.bonusDuration) {
-            activateBonusHour(nk, userId, reward.bonusMultiplier || 2.0, reward.bonusDuration);
-            effects.push("bonus_hour_activated");
-        }
-        
-        if (reward.effect) {
-            effects.push(reward.effect);
-        }
-    }
-
-    // Apply comeback bonus
-    if (triggerType === TRIGGER_TYPES.COMEBACK_BONUS) {
-        const daysAway = data.daysAway || 3;
-        reward.coins = Math.min(daysAway * 50, 500);
-        reward.xp = reward.coins / 2;
-    }
-
-    // Award coins
-    if (reward.coins > 0) {
-        const multiplier = getActiveMultiplier(nk, userId);
-        const finalCoins = Math.floor(reward.coins * multiplier);
-        
-        try {
-            nk.walletUpdate(userId, { coins: finalCoins }, { 
-                reason: `trigger_${triggerType}`,
-                triggerId: triggerId
-            }, true);
-            reward.coinsAwarded = finalCoins;
-        } catch (e) {
-            logger.error(`Failed to award coins: ${e.message}`);
-        }
-    }
-
-    // Award XP (to season pass)
-    if (reward.xp > 0) {
-        updateUserXP(nk, userId, reward.xp);
-    }
-
-    // Award items
-    if (reward.item) {
-        awardItem(nk, userId, reward.item, `trigger_${triggerId}`);
-        effects.push(`item_${reward.item}`);
-    }
-
-    // Record claim
-    nk.storageWrite([{
-        collection: COLLECTIONS.TRIGGER_HISTORY,
-        key: claimKey,
-        userId: userId,
-        value: {
-            triggerId,
-            triggerType,
-            reward,
-            effects,
-            claimedAt: Date.now()
-        },
-        permissionRead: 1,
-        permissionWrite: 0
-    }]);
-
-    logger.info(`User ${userId} claimed trigger ${triggerId}: ${JSON.stringify(reward)}`);
-
+    // Fail-closed: retention trigger payouts require server-verified events (streak milestones,
+    // comeback detection). Client-supplied triggerType/daysAway was unauthenticated.
     return JSON.stringify({
-        success: true,
-        reward,
-        effects,
-        message: getRewardMessage(triggerType, reward)
+        success: false,
+        error: "Trigger rewards require server-verified retention events",
+        errorCode: "PROGRESS_SERVER_ONLY",
+        http_status: 403
     });
 }
 

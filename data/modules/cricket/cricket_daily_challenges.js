@@ -158,104 +158,15 @@ function rpcGetDailyChallenges(context, logger, nk, payload) {
  */
 function rpcUpdateChallengeProgress(context, logger, nk, payload) {
     const userId = context.userId;
-    
     if (!userId) {
         throw new Error("User must be authenticated");
     }
-
-    let data;
-    try {
-        data = JSON.parse(payload);
-    } catch (e) {
-        throw new Error("Invalid JSON payload");
-    }
-
-    const { challengeType, value } = data;
-
-    if (!challengeType || value === undefined) {
-        throw new Error("challengeType and value are required");
-    }
-
-    const today = getTodayKey();
-
-    // Get daily challenges
-    const challenges = nk.storageRead([{
-        collection: COLLECTIONS.DAILY_CHALLENGES,
-        key: today,
-        userId: null
-    }]);
-
-    if (challenges.length === 0) {
-        return JSON.stringify({ success: false, message: "No challenges available today" });
-    }
-
-    const dailyChallenges = challenges[0].value.challenges;
-
-    // Get user's progress
-    const progressRecords = nk.storageRead([{
-        collection: COLLECTIONS.CHALLENGE_PROGRESS,
-        key: today,
-        userId: userId
-    }]);
-
-    const userProgress = progressRecords.length > 0 ? progressRecords[0].value : {
-        progress: {},
-        completed: [],
-        claimed: []
-    };
-
-    // Update progress for matching challenges
-    const updatedChallenges = [];
-    const newlyCompleted = [];
-
-    for (const challenge of dailyChallenges) {
-        if (challenge.type === challengeType && !userProgress.completed.includes(challenge.id)) {
-            const currentProgress = userProgress.progress[challenge.id] || 0;
-            const newProgress = challengeType === CHALLENGE_TYPES.TRIVIA_ACCURACY 
-                ? value // Accuracy is a direct value, not cumulative
-                : currentProgress + value;
-
-            userProgress.progress[challenge.id] = newProgress;
-
-            // Check if completed
-            if (newProgress >= challenge.target) {
-                if (!userProgress.completed.includes(challenge.id)) {
-                    userProgress.completed.push(challenge.id);
-                    newlyCompleted.push(challenge);
-                }
-            }
-
-            updatedChallenges.push({
-                id: challenge.id,
-                title: challenge.title,
-                currentProgress: Math.min(newProgress, challenge.target),
-                target: challenge.target,
-                isCompleted: newProgress >= challenge.target
-            });
-        }
-    }
-
-    // Save progress
-    nk.storageWrite([{
-        collection: COLLECTIONS.CHALLENGE_PROGRESS,
-        key: today,
-        userId: userId,
-        value: userProgress,
-        permissionRead: 1,
-        permissionWrite: 0
-    }]);
-
-    logger.info(`User ${userId} updated challenge progress: ${challengeType} += ${value}`);
-
+    // Fail-closed: cricket challenge progress is server-authoritative only.
     return JSON.stringify({
-        success: true,
-        updatedChallenges,
-        newlyCompleted: newlyCompleted.map(c => ({
-            id: c.id,
-            title: c.title,
-            reward: c.reward,
-            xp: c.xp
-        }))
+        success: false,
+        error: "Challenge progress is recorded server-side only",
+        errorCode: "PROGRESS_SERVER_ONLY",
+        http_status: 403
     });
 }
 
