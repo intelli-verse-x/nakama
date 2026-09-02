@@ -125,9 +125,39 @@ namespace RpcHelpers {
     throw new Error("User ID is required (provide via auth token or 'userId' field in payload)");
   }
 
+  /**
+   * Reads a header case-insensitively. `ctx.headers` is a map of
+   * string -> string[] (Go `http.Header`), so a present header arrives as a
+   * one-element array.
+   */
+  function headerValue(ctx: nkruntime.Context, name: string): string {
+    var headers = (ctx as any).headers;
+    if (!headers) return "";
+    var want = name.toLowerCase();
+    for (var key in headers) {
+      if (String(key).toLowerCase() !== want) continue;
+      var raw = headers[key];
+      var value = Array.isArray(raw) ? raw[0] : raw;
+      return value === undefined || value === null ? "" : String(value);
+    }
+    return "";
+  }
+
   export function requireAdmin(ctx: nkruntime.Context, nk: nkruntime.Nakama): void {
-    // Server-to-server calls via http_key have no userId — treat as trusted
-    if (!ctx.userId) return;
+    // A caller that authenticated with `?http_key=` has no ctx.userId: see
+    // server/api_rpc.go, where http_key auth leaves `isTokenAuth` false and
+    // `uid` empty. Possession of the runtime http_key is therefore not
+    // sufficient to be an admin — require a second, separately-rotatable
+    // credential on that path.
+    if (!ctx.userId) {
+      var expected = String((ctx.env && ctx.env["ADMIN_S2S_TOKEN"]) || "");
+      var presented = headerValue(ctx, "x-admin-token");
+      if (expected.length > 0 && presented === expected) return;
+      throw new Error(
+        "ADMIN_S2S_REQUIRED: admin RPCs require an authenticated admin session, " +
+        "or a server-to-server call presenting a valid X-Admin-Token header"
+      );
+    }
 
     // Dashboard admin sessions minted by admin_login (custom_id admin:<name>)
     if (ctx.username && ctx.username.indexOf("admin:") === 0) {
