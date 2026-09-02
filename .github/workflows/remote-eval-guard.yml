@@ -1,0 +1,101 @@
+name: remote-eval guard
+
+# Blocks the INC-2026-08-29 implant families and the carrier that delivered
+# them. This repository carried a live concealed payload on `main` -- 507 spaces
+# and 4,782 hidden bytes on line 261 of scripts/setup-dev-environment.js -- and
+# had no guard wiring at all, so nothing would have reported it.
+#
+# WHY THIS VENDORS THE GUARD INSTEAD OF CALLING THE SHARED ONE
+#
+# The other 23 consumers in this org call the reusable workflow in
+# intelli-verse-x/intelli-verse-kube-infra, which is the better arrangement:
+# one copy of the rules, so a correction reaches every consumer on its next run
+# with nothing to roll out.
+#
+# That does not work here. kube-infra is an INTERNAL repository and this one is
+# PUBLIC, and a public repository cannot consume a reusable workflow or an
+# action from an internal or private one. kube-infra's Actions access is already
+# set to `organization`, which is what makes the shared arrangement work for
+# every existing consumer -- but that setting reaches private and internal
+# repositories only, never public ones. Wiring it the shared way here produced a
+# run that failed before a single job started, with no log, because the
+# reference could not be resolved at all.
+#
+# This is a third variant of a trap this rollout has hit twice already. The
+# first was `actions/checkout` of a private repository failing under a
+# consumer's GITHUB_TOKEN; the fix was to deliver the guard as a composite
+# action fetched by the Actions runtime instead. That fix is what every internal
+# consumer uses, and it is still correct for them. It simply has a boundary
+# nobody had crossed before, because all 23 existing consumers are internal and
+# these two payload-carrying repositories are the org's only public forks.
+#
+# So the rules are vendored. The cost is honest and worth stating: this is a
+# SECOND COPY, and a second copy can rot. It is pinned by provenance below, and
+# it needs re-syncing whenever the shared guard changes.
+#
+#   vendored from : intelli-verse-x/intelli-verse-kube-infra
+#   source ref    : PR #472 head, e6ef76b1856703727f511cf637efc89fc587a9a3
+#   why that ref  : #472 is the change that makes the guard see the concealed
+#                   payload family at all. kube-infra `main` does not have those
+#                   rules yet, so vendoring from main would install a guard that
+#                   is blind to the exact implant this repository was carrying.
+#                   Re-sync from main once #472 lands.
+#
+# The alternative to vendoring is making this repository internal, which is a
+# visibility decision for the owner and not something a rollout should take.
+#
+# WHY A REQUIRED STATUS CHECK AND NOT A HOOK
+# The carrier passes --no-verify to both `git commit` and `git push`, so a hook
+# is not a control against it. Every control this campaign defeated was
+# client-side.
+#
+# The check context this produces is `guard` -- the bare form, because the job
+# runs natively here rather than through a reusable workflow. Consumers of the
+# shared workflow produce `remote-eval-guard / guard` instead. Requiring the
+# wrong one of the two creates a context that never appears and blocks every
+# pull request in the repository, so the distinction matters when this is added
+# to branch protection.
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The .gitignore-deletion rule compares against the merge base, so the
+          # base commit has to be present, not just the PR head.
+          fetch-depth: 0
+
+      - name: Scan for remote-eval loaders, concealed payloads and carrier traces
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          # --base enables the .gitignore-deletion rule, and needs the base
+          # branch to actually be present. Keyed on whether the ref RESOLVES,
+          # not on github.event_name: an earlier version of this rollout gated a
+          # setup step on `github.event_name == 'workflow_call'`, which never
+          # matches inside a reusable workflow, and the guard silently did
+          # nothing while reporting green. Observable state cannot fail that way
+          # -- if the ref is there the rule runs, if it is not the scan still
+          # runs without it, and neither path is silent.
+          base_arg=""
+          if [ -n "${BASE_REF:-}" ] \
+             && git rev-parse --verify -q "origin/${BASE_REF}" >/dev/null; then
+            base_arg="--base origin/${BASE_REF}"
+            echo "base branch resolved: origin/${BASE_REF} — .gitignore-deletion rule active"
+          else
+            echo "no base branch to compare against — .gitignore-deletion rule inactive"
+          fi
+
+          python3 scripts/check-remote-eval.py --root . ${base_arg}
