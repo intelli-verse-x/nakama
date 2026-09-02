@@ -272,6 +272,8 @@ function rpcQuizverseStreakQuiz(ctx, logger, nk, payload) {
         if (data.action === "start") {
             streak.current_streak = 0;
             streak.alive = true;
+            streak.server_verified = false;
+            streak.session_id = "sq_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
 
         } else if (data.action === "answer") {
             if (!streak.alive) {
@@ -288,7 +290,13 @@ function rpcQuizverseStreakQuiz(ctx, logger, nk, payload) {
             if (streak.current_streak > streak.best_streak) {
                 streak.best_streak = streak.current_streak;
             }
-            var coins = streak.current_streak * 10;
+            // Fail-closed: streak coin mint requires server-issued quiz session verification.
+            // Client-reported answer_correct/end was unauthenticated (streak * 10 coins).
+            var coins = 0;
+            if (streak.server_verified && streak.current_streak > 0) {
+                coins = streak.current_streak * 10;
+            }
+            var reward = null;
             if (coins > 0) {
                 nk.walletUpdate(userId, { coins: coins }, { reason: "streak_reward", streak: streak.current_streak }, true);
                 reward = { coins: coins };
@@ -664,7 +672,8 @@ function rpcQuizverseKnowledgeDuel(ctx, logger, nk, payload) {
 
                 var loserId = winner === subDuel.creator ? subDuel.opponent : subDuel.creator;
                 if (winner !== "draw") {
-                    nk.walletUpdate(winner, { coins: 50 }, { reason: "duel_win", duel_id: subDuel.duel_id }, true);
+                    // Fail-closed: duel payouts require server-validated quiz scores (not client submit.score).
+                    // Notifications still fire; wallet credit disabled until quiz outcome RPC is wired.
                     try {
                         // Signature: (userId, subject, content, code, senderId?, persistent?)
                         // Code 7402 is outside friend lifecycle 1–6 / 100–105.
