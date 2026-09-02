@@ -1099,9 +1099,9 @@ function quizverseFindFriends(context, logger, nk, payload) {
                 var exactUsers = nk.usersGetUsername([query]);
                 if (exactUsers && exactUsers.length > 0) {
                     for (var e = 0; e < exactUsers.length; e++) {
-                        if (exactUsers[e].id !== userId) {
+                        if (exactUsers[e].userId !== userId) {
                             rows.push({
-                                id: exactUsers[e].id,
+                                id: exactUsers[e].userId,
                                 username: exactUsers[e].username,
                                 display_name: exactUsers[e].displayName || exactUsers[e].username,
                                 avatar_url: exactUsers[e].avatarUrl || "",
