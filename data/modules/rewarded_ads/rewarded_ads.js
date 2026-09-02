@@ -85,6 +85,13 @@ var REWARD_CONFIG = {
         maxClaimsPerDay: 3,
         tierGate: ["t2", "t3"]  // T1 disabled — premium feel
     },
+    "fortune_wheel_ad_spin": {
+        rewardType: "action",
+        action: "fortune_wheel_ad_spin",
+        cooldownSeconds: 10800,  // 3 hours — matches ad-spin RPC cooldown
+        maxClaimsPerDay: 3,
+        tierGate: null
+    },
     "double_xp_levelup": {
         rewardType: "score_multiplier",
         multiplier: 2,
@@ -497,9 +504,9 @@ function rpcRewardedAdClaim(ctx, logger, nk, payload) {
     }
     
     var token = data.token;
-    var adCompleted = data.adCompleted === true;
-    var adNetwork = data.adNetwork || "unknown";
     var claimMetadata = data.metadata || {};
+    var adNetwork = data.adNetwork || (claimMetadata && claimMetadata.network) || "unknown";
+    var verificationId = claimMetadata.txnId || claimMetadata.verificationId || data.verificationId || data.txnId || "";
     
     if (!token) {
         logger.warn("[RewardedAds] Claim attempt without token from user: " + userId);
@@ -508,12 +515,26 @@ function rpcRewardedAdClaim(ctx, logger, nk, payload) {
             error: "Token required"
         });
     }
-    
-    if (!adCompleted) {
-        logger.info("[RewardedAds] Ad not completed for user: " + userId);
+
+    // Fail-closed: client adCompleted is NOT proof. Require network S2S verification
+    // (Applixir / LevelPlay / AdMob / Appodeal) via ad_network_s2s_verify or applixir callback.
+    if (typeof WalletGrantGate !== "undefined" && WalletGrantGate) {
+        var verifyMeta = claimMetadata || {};
+        if (verificationId && !verifyMeta.txnId) verifyMeta.txnId = verificationId;
+        var adVerify = WalletGrantGate.assertRewardedAdClaimVerified(
+            nk, userId, adNetwork, verifyMeta, token, logger
+        );
+        if (!adVerify.ok) {
+            return WalletGrantGate.rejectResponse(
+                adVerify.errorCode || "AD_VERIFICATION_REQUIRED",
+                adVerify.error || "Ad verification required"
+            );
+        }
+    } else {
         return JSON.stringify({
             success: false,
-            error: "Ad was not completed"
+            error: "Ad network verification required",
+            errorCode: "AD_VERIFICATION_REQUIRED"
         });
     }
     
