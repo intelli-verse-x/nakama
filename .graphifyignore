@@ -1,0 +1,23 @@
+# Nakama vendor + generated data would explode the graph and waste tokens.
+# Keep the arcade mailbox handler visible so agents can find kiosk-arcade-v1.
+vendor/
+data/**
+!data/modules/
+!data/modules/zz_kiosk_arcade_handlers.js
+_archived_docs/
+.runtime/
+.firecrawl/
+.git/
+node_modules/
+console/node_modules/
+web/node_modules/
+graphify-out/cache/
+*.pb.go
+*.pb.gw.go
+.env
+.env.*
+!.env.example
+*.png
+*.jpg
+*.pdf
+*.zip
