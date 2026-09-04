@@ -15,9 +15,23 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
+# INC-2026-08-29 follow-up (2026-09-04): AWS access is GitHub OIDC ->
+# github-actions-nakama-deploy, not static IAM-user keys. The shared
+# github-actions-deploy keys this workflow used were set Inactive on
+# 2026-08-31 (static-key -> OIDC migration) and deleted 2026-09-02, so every
+# master push from 2026-09-01 failed at "Configure AWS credentials" with
+# "The security token included in the request is invalid" and nothing after
+# aefe7cb reached production. id-token:write is what lets the runner mint the
+# OIDC token; contents:read is all checkout needs. Role trust/permissions are
+# owned in intelli-verse-kube-infra/iam/nakama-github-oidc/.
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: us-east-1
   AWS_ACCOUNT_ID: "803881282303"
+  DEPLOY_ROLE_ARN: arn:aws:iam::803881282303:role/github-actions-nakama-deploy
   ECR_REGISTRY: 803881282303.dkr.ecr.us-east-1.amazonaws.com
   ECR_REPOSITORY: intelliverse-nakama
   EKS_CLUSTER_NAME: ai-cart-auto-cluster
@@ -87,11 +101,11 @@ jobs:
           chmod +x scripts/test-hpa-restore-trap.sh
           ./scripts/test-hpa-restore-trap.sh
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          role-session-name: nakama-deploy-${{ github.run_id }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
