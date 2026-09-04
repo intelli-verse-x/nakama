@@ -113,8 +113,15 @@ pause_hpa() {
     echo "HPA ${hpa} not found — skipping pause"
     return 0
   fi
-  kubectl get hpa "$hpa" -n "$ns" \
-    -o jsonpath='{.spec.minReplicas} {.spec.maxReplicas}' > "/tmp/hpa-${hpa}-minmax"
+  # The trailing newline is load-bearing. `read` returns non-zero when it hits
+  # EOF without a delimiter, and kubectl jsonpath emits no trailing newline, so
+  # an unterminated file makes the `read` in restore_hpa fail — which under
+  # `set -e` kills the caller. See the note in restore_hpa.
+  {
+    kubectl get hpa "$hpa" -n "$ns" \
+      -o jsonpath='{.spec.minReplicas} {.spec.maxReplicas}'
+    echo
+  } > "/tmp/hpa-${hpa}-minmax"
   if [ -z "$replicas" ] || [ "$replicas" = "0" ]; then
     replicas="$(kubectl get hpa "$hpa" -n "$ns" -o jsonpath='{.status.desiredReplicas}')"
   fi
@@ -124,19 +131,40 @@ pause_hpa() {
     --patch "{\"spec\":{\"minReplicas\":${replicas},\"maxReplicas\":${replicas}}}"
 }
 
+# RCA 2026-09-01 (INC-2026-08-29): this ran from a `trap ... EXIT` in the
+# deploy step, so its exit status became the step's exit status. `read` returns
+# non-zero at EOF-without-newline, and pause_hpa wrote the file with kubectl
+# jsonpath (no trailing newline) — so `read` failed, `set -e` killed the
+# handler before the echo, and GHA runs 162-167 reported `exit code 1` after a
+# fully successful, smoke-tested rollout. The HPA was also left pinned at
+# min=max=<rollout replicas>, and steps after the deploy (multiplayer tier,
+# analytics backfill, admin console) were skipped.
+#
+# Two independent guards, because this must never fail its caller: the write
+# side terminates the file (pause_hpa), and the read side tolerates an
+# unterminated one. `return 0` is explicit — a cleanup handler must not be able
+# to report failure for a deploy that succeeded.
 restore_hpa() {
   local ns="${1:-aicart}"
   local hpa="${2:-}"
   [ -n "$hpa" ] || return 0
   if [ -f "/tmp/hpa-${hpa}-minmax" ]; then
     local min max
-    read -r min max < "/tmp/hpa-${hpa}-minmax"
-    [ -n "$min" ] || min=2
-    [ -n "$max" ] || max=10
+    read -r min max < "/tmp/hpa-${hpa}-minmax" || true
+    if [ -z "$min" ] || [ -z "$max" ]; then
+      echo "WARN: saved min/max for HPA ${hpa} is missing/partial (min='${min}' max='${max}') — defaulting to min=2 max=10."
+      [ -n "$min" ] || min=2
+      [ -n "$max" ] || max=10
+    fi
     echo "Restoring HPA ${hpa} min=${min} max=${max}"
-    kubectl patch hpa "$hpa" -n "$ns" --type=merge \
-      --patch "{\"spec\":{\"minReplicas\":${min},\"maxReplicas\":${max}}}" || true
+    if ! kubectl patch hpa "$hpa" -n "$ns" --type=merge \
+      --patch "{\"spec\":{\"minReplicas\":${min},\"maxReplicas\":${max}}}"; then
+      echo "WARN: failed to restore HPA ${hpa} — it may still be pinned at the rollout replica count. Run: kubectl patch hpa ${hpa} -n ${ns} --type=merge -p '{\"spec\":{\"minReplicas\":${min},\"maxReplicas\":${max}}}'"
+    fi
+  else
+    echo "WARN: no saved min/max for HPA ${hpa} — leaving it as-is."
   fi
+  return 0
 }
 
 delete_unpullable_pods() {

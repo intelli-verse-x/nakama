@@ -72,6 +72,21 @@ jobs:
           done
           echo "All shell scripts pass bash -n."
 
+      # INC-2026-08-29: runs 162-167 rolled prod successfully, passed the
+      # post-rollout smoke test, and still reported `exit code 1` — because the
+      # deploy step's `trap restore_hpa EXIT` handler failed and, under `set -e`,
+      # a handler's status becomes the step's status. Six deploys that were
+      # healthy reported failure, which is what taught everyone to read this
+      # workflow's conclusion as noise, and it skipped every step after the
+      # deploy — so the multiplayer tier was never rolled (the RCA 2026-07-10
+      # setup: it ages out of the ECR lifecycle window and ImagePullBackOffs).
+      # Needs no AWS or cluster access, so it runs with the other cheap gates.
+      - name: Deploy-step cleanup handlers must not fail a green deploy
+        run: |
+          set -euo pipefail
+          chmod +x scripts/test-hpa-restore-trap.sh
+          ./scripts/test-hpa-restore-trap.sh
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -322,7 +337,13 @@ jobs:
           CURRENT_REPLICAS=$(kubectl get deployment "$K8S_DEPLOYMENT" -n "$K8S_NAMESPACE" \
             -o jsonpath='{.spec.replicas}')
           pause_hpa "$K8S_NAMESPACE" intelliverse-nakama "$CURRENT_REPLICAS"
-          trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama' EXIT
+          # `|| true` is deliberate and only covers CLEANUP. Under `set -e` the
+          # exit status of an EXIT trap handler becomes the script's exit status,
+          # so a failing cleanup command reports a failed deploy that in fact
+          # succeeded — INC-2026-08-29, runs 162-167. It cannot mask a real
+          # failure: a non-zero status from the step body is still pending when
+          # the trap runs and is what the step exits with.
+          trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama || true' EXIT
           delete_unpullable_pods "$K8S_NAMESPACE" "$K8S_DEPLOYMENT"
 
           # Record change-cause BEFORE set image, not after.
@@ -428,7 +449,8 @@ jobs:
           MP_REPLICAS=$(kubectl get deployment "$K8S_MP_DEPLOYMENT" -n "$K8S_NAMESPACE" \
             -o jsonpath='{.spec.replicas}')
           pause_hpa "$K8S_NAMESPACE" intelliverse-nakama-multiplayer "$MP_REPLICAS"
-          trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama-multiplayer' EXIT
+          # Cleanup only — same reasoning as the main tier above.
+          trap 'restore_hpa "$K8S_NAMESPACE" intelliverse-nakama-multiplayer || true' EXIT
           delete_unpullable_pods "$K8S_NAMESPACE" "$K8S_MP_DEPLOYMENT"
           echo "=== Rolling $K8S_MP_DEPLOYMENT to ${IMAGE_VERSION} (${IMAGE_DIGEST}) ==="
           # Annotate BEFORE set image — see the long note on the main tier.
