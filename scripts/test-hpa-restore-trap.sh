@@ -80,11 +80,13 @@ run_case "kubectl patch fails"
 make_kubectl 0
 
 # The other half of the contract: cleanup must not SWALLOW a real failure.
+# Uses the exact trap the workflow installs (`|| true` included) so a future
+# change to the trap or to bash's EXIT semantics is caught here.
 rm -f /tmp/hpa-testhpa-minmax
 pause_hpa aicart testhpa 4 >/dev/null
 rc=0
 ( set -euo pipefail
-  trap 'restore_hpa aicart testhpa' EXIT
+  trap 'restore_hpa aicart testhpa || true' EXIT
   false
 ) || rc=$?
 if [ "$rc" -ne 0 ]; then

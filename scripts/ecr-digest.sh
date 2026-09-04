@@ -151,11 +151,16 @@ restore_hpa() {
   if [ -f "/tmp/hpa-${hpa}-minmax" ]; then
     local min max
     read -r min max < "/tmp/hpa-${hpa}-minmax" || true
-    [ -n "$min" ] || min=2
-    [ -n "$max" ] || max=10
+    if [ -z "$min" ] || [ -z "$max" ]; then
+      echo "WARN: saved min/max for HPA ${hpa} is missing/partial (min='${min}' max='${max}') — defaulting to min=2 max=10."
+      [ -n "$min" ] || min=2
+      [ -n "$max" ] || max=10
+    fi
     echo "Restoring HPA ${hpa} min=${min} max=${max}"
-    kubectl patch hpa "$hpa" -n "$ns" --type=merge \
-      --patch "{\"spec\":{\"minReplicas\":${min},\"maxReplicas\":${max}}}" || true
+    if ! kubectl patch hpa "$hpa" -n "$ns" --type=merge \
+      --patch "{\"spec\":{\"minReplicas\":${min},\"maxReplicas\":${max}}}"; then
+      echo "WARN: failed to restore HPA ${hpa} — it may still be pinned at the rollout replica count. Run: kubectl patch hpa ${hpa} -n ${ns} --type=merge -p '{\"spec\":{\"minReplicas\":${min},\"maxReplicas\":${max}}}'"
+    fi
   else
     echo "WARN: no saved min/max for HPA ${hpa} — leaving it as-is."
   fi
