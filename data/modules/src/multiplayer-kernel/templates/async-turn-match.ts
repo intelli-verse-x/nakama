@@ -22,7 +22,8 @@ namespace MpKernelAsyncTurn {
     TURN_END:          0x5002,  // server -> all      : authoritative move applied
     NOTIFY_OPPONENT:   0x5003,  // server -> all      : echoed for UI badge
     FORFEIT:           0x5004,  // client -> server   : I quit this game
-    RESIGN:            0x5005   // client -> server   : I resign (loss recorded)
+    RESIGN:            0x5005,  // client -> server   : I resign (loss recorded)
+    SEAT_ASSIGNED:     0x5006   // server -> all      : generator seated a player
   };
 
   export var DefaultInit = {
@@ -48,6 +49,13 @@ namespace MpKernelAsyncTurn {
       ended: boolean;
       winner_user_id?: string;
     };
+    // Optional: claim a seat / role when a presence joins. Chess uses this
+    // so walk-up phones are White then Black; spectators return null.
+    onActorJoin?(state: any, userId: string, actors: string[]): {
+      state: any;
+      actor: string;
+      seat_payload?: any;
+    } | null;
     // Apply a move. Throws / returns null on illegal move.
     applyMove(state: any, userId: string, payload: any): {
       state: any;
@@ -174,13 +182,33 @@ namespace MpKernelAsyncTurn {
       return { state: ks, accept: true };
     },
 
-    onJoin: function (_ctx, _logger, _nk, dispatcher, _tick, state, presences) {
+    onJoin: function (_ctx, _logger, nk, dispatcher, _tick, state, presences) {
       var ks = state as IState;
       var matchId = ((_ctx as any).matchId) || "";
       for (var i = 0; i < presences.length; i++) {
         var p = presences[i];
         ks.online[p.userId] = true;
         if (ks.actors.indexOf(p.userId) < 0) ks.actors.push(p.userId);
+
+        if (!ks.ended && ks.generator && ks.generator.onActorJoin) {
+          var seated = ks.generator.onActorJoin(ks.state, p.userId, ks.actors);
+          if (seated) {
+            ks.state = seated.state;
+            if (typeof seated.actor === "string") ks.current_actor = seated.actor;
+            if (seated.seat_payload) {
+              broadcastTemplate(ks, dispatcher, matchId, Op.SEAT_ASSIGNED, seated.seat_payload);
+            }
+            if (ks.game_id) persist(nk, ks.game_id, {
+              actors: ks.actors,
+              gen_state: ks.state,
+              last_move_unix_ms: ks.last_move_unix_ms,
+              started_unix_ms: ks.started_unix_ms,
+              ended: ks.ended,
+              winner_user_id: ks.winner_user_id
+            });
+          }
+        }
+
         // If it's their turn, immediately send TURN_START so client
         // can render move UI without waiting for next loop tick.
         if (!ks.ended && ks.current_actor === p.userId) {

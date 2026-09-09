@@ -93,6 +93,12 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QuizVerse] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  try {
+    ChessPlugin.register(initializer);
+  } catch (err: any) {
+    logger.error("[Chess] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- QuizVerse Nakama-Only Migration plugin ----
   // Registers the migration bridge RPCs (P0 live, P1/P2 deprecated-stub,
   // P3-P8 scaffolded) that bridge old Unity client calls to the new server

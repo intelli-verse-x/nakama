@@ -56,6 +56,9 @@ function mpKernelEnsureGenerators(nk, logger) {
   try { QuizVersePlugin.registerGenerators(nk); } catch (e) {
     try { logger.warn("[MpKernel] quizverse generator bootstrap failed: " + (e && e.message ? e.message : String(e))); } catch (_) {}
   }
+  try { ChessPlugin.registerGenerators(); } catch (e) {
+    try { logger.warn("[MpKernel] chess generator bootstrap failed: " + (e && e.message ? e.message : String(e))); } catch (_) {}
+  }
   __mpKernelGeneratorsReady = true;
 }
 
