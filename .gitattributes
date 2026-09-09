@@ -55,3 +55,4 @@ Dockerfile.*    text eol=lf
 # explicitly so they are never caught by a future blanket `* text=auto`
 # and so their endings are a stated decision rather than an accident.
 *.ps1           text eol=crlf
+graphify-out/graph.json merge=graphify

@@ -239,7 +239,7 @@ test("empty room TTL ends an abandoned match", function () {
   var dispatcher = { broadcastMessage: function () {} };
   var early = g.kioskArcadeMatchLoop({}, logger(), {}, dispatcher, 10, started.state, []);
   assert.ok(early.state);
-  var late = g.kioskArcadeMatchLoop({}, logger(), {}, dispatcher, 10 + 30 * 20, started.state, []);
+  var late = g.kioskArcadeMatchLoop({}, logger(), {}, dispatcher, 10 + 90 * 20, started.state, []);
   assert.equal(late.state, null);
 });
 

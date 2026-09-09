@@ -1,10 +1,11 @@
 /**
- * Kiosk arcade authoritative match — cluster-routable joystick mailbox.
+ * Kiosk arcade authoritative match — joystick mailbox on one Nakama node.
  *
- * Relayed matches (socket.createMatch) live in ONE Nakama replica's memory.
- * Join from another replica returns "Match not found". This handler is
- * created with nk.matchCreate so the match id is "uuid.node" and other
- * nodes forward the join.
+ * Open-source Nakama keeps the handler in that node's memory. JoinAttempt
+ * returns not found when node != this replica. The match id is "uuid.node"
+ * so the phone can drop its socket and retry until it lands on the owner.
+ * Unique --name values (nk-<pod suffix>) identify the owner. They do not
+ * forward the join.
  *
  * The TV is still the referee: READY, Spark/Bolt split, 10s reconnect, pay
  * freeze. This match only broadcasts opcodes 1–8. It does not simulate
@@ -16,7 +17,7 @@
 var KIOSK_ARCADE_TICK_HZ = 20;
 var KIOSK_ARCADE_HOST_GRACE_TICKS = 90 * KIOSK_ARCADE_TICK_HZ;
 var KIOSK_ARCADE_PHONE_GRACE_TICKS = 10 * KIOSK_ARCADE_TICK_HZ;
-var KIOSK_ARCADE_EMPTY_TTL_TICKS = 30 * KIOSK_ARCADE_TICK_HZ;
+var KIOSK_ARCADE_EMPTY_TTL_TICKS = 90 * KIOSK_ARCADE_TICK_HZ;
 var KIOSK_ARCADE_CREATE_WINDOW_MS = 60000;
 var KIOSK_ARCADE_CREATE_MAX = 8;
 var KIOSK_ARCADE_QUIZVERSE_ID = "126bf539";

@@ -794,3 +794,7 @@ dev.ps1
 # Merging one into the production bundle makes Nakama refuse to start; see
 # the build-tests note in data/modules/postbuild.js.
 data/modules/build-tests/
+
+# Local compose overrides (e.g. Cockroach UI port vs kiosk-x :8080)
+docker-compose.override.yml
+
