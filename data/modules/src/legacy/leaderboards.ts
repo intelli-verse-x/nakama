@@ -15,7 +15,9 @@ namespace LegacyLeaderboards {
         var existing = nk.leaderboardsGetId([leaderboardId]);
         if (existing && existing.length > 0) return true;
       } catch (_) { /* proceed to create */ }
-      nk.leaderboardCreate(leaderboardId, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, resetSchedule || "", metadata || {});
+      // enableRanks=true: without it Nakama skips rank tracking on the board
+      // and rankCount/owner ranks stay empty for every reader.
+      nk.leaderboardCreate(leaderboardId, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, resetSchedule || "", metadata || {}, true);
       logger.info("[LegacyLeaderboards] Created: " + leaderboardId);
       return true;
     } catch (err: any) {
@@ -117,7 +119,7 @@ namespace LegacyLeaderboards {
       var globalId = "leaderboard_global";
       if (!existingIds[globalId]) {
         try {
-          nk.leaderboardCreate(globalId, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, "0 0 * * 0", { scope: "global", desc: "Global Ecosystem Leaderboard" });
+          nk.leaderboardCreate(globalId, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, "0 0 * * 0", { scope: "global", desc: "Global Ecosystem Leaderboard" }, true);
           created.push(globalId);
           existingRecords.push({ leaderboardId: globalId, scope: "global", createdAt: new Date().toISOString() });
         } catch (err: any) {
@@ -142,7 +144,7 @@ namespace LegacyLeaderboards {
             desc: "Leaderboard for " + (game.gameTitle || game.name || "Untitled"),
             gameId: gid,
             scope: "game"
-          });
+          }, true);
           created.push(lbId);
           existingRecords.push({ leaderboardId: lbId, gameId: gid, scope: "game", createdAt: new Date().toISOString() });
         } catch (err: any) {
@@ -166,11 +168,14 @@ namespace LegacyLeaderboards {
       for (var i = 0; i < PERIODS.length; i++) {
         var period = PERIODS[i];
         var gid = "leaderboard_global_" + period;
+        var gExists = false;
         try {
-          nk.leaderboardsGetId([gid]);
-        } catch (_) {
+          var gRows = nk.leaderboardsGetId([gid]);
+          gExists = !!(gRows && gRows.length > 0);
+        } catch (_) { /* missing → create below */ }
+        if (!gExists) {
           try {
-            nk.leaderboardCreate(gid, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, RESET_SCHEDULES[period], { scope: "global", timePeriod: period });
+            nk.leaderboardCreate(gid, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, RESET_SCHEDULES[period], { scope: "global", timePeriod: period }, true);
             allLeaderboards.push({ leaderboardId: gid, period: period, scope: "global" });
           } catch (e: any) { logger.warn("[LegacyLeaderboards] create global " + period + ": " + e.message); }
         }
@@ -183,19 +188,21 @@ namespace LegacyLeaderboards {
         for (var k = 0; k < PERIODS.length; k++) {
           var p = PERIODS[k];
           var lid = "leaderboard_" + gameId + "_" + p;
+          var exists = false;
           try {
-            nk.leaderboardsGetId([lid]);
-          } catch (_) {
+            var rows = nk.leaderboardsGetId([lid]);
+            exists = !!(rows && rows.length > 0);
+          } catch (_) { /* missing → create below */ }
+          if (exists) continue;
           try {
             nk.leaderboardCreate(lid, true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, RESET_SCHEDULES[p], {
                 gameId: gameId,
                 gameTitle: game.gameTitle || game.name,
                 scope: "game",
                 timePeriod: p
-              });
+              }, true);
               allLeaderboards.push({ leaderboardId: lid, period: p, gameId: gameId });
             } catch (e: any) { logger.warn("[LegacyLeaderboards] create " + lid + ": " + e.message); }
-          }
         }
       }
 
@@ -245,6 +252,14 @@ namespace LegacyLeaderboards {
       for (var i = 0; i < PERIODS.length; i++) {
         var period = PERIODS[i];
         var lbId = "leaderboard_" + gameId + "_" + period;
+        // Self-heal: create missing boards on first submit. Without this a
+        // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
+        // boards and every score silently lands in errors[] — the RPC still
+        // returns success, so the client believes the write happened.
+        if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
+          errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
+          continue;
+        }
         try {
           nk.leaderboardRecordWrite(lbId, userId, username, score, subscore, metadata);
           results.push({ leaderboardId: lbId, period: period, scope: "game", success: true });
@@ -255,6 +270,10 @@ namespace LegacyLeaderboards {
       for (var j = 0; j < PERIODS.length; j++) {
         var p = PERIODS[j];
         var gid = "leaderboard_global_" + p;
+        if (!ensureLeaderboardExists(nk, logger, gid, RESET_SCHEDULES[p], { scope: "global", timePeriod: p })) {
+          errors.push({ leaderboardId: gid, period: p, error: "leaderboard unavailable" });
+          continue;
+        }
         try {
           nk.leaderboardRecordWrite(gid, userId, username, score, subscore, metadata);
           results.push({ leaderboardId: gid, period: p, scope: "global", success: true });

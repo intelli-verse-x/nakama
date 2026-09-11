@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-09-03T19:58:00.861Z
-// RPC Count: 1340
+// Generated: 2026-09-11T17:45:05.611Z
+// RPC Count: 1341
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -136,6 +136,7 @@ var __rpc_ivx_social_friends_blocked;
 var __rpc_ivx_set_player_presence;
 var __rpc_ivx_get_cross_game_messages;
 var __rpc_ivx_mark_message_read;
+var __rpc_chess_create_match;
 var __rpc_quizverse_pack_cleanup_tick;
 var __rpc_quizverse_blog_embed_create;
 var __rpc_quizverse_blog_embed_get;
@@ -1354,9 +1355,9 @@ var __rpc_visual_path_skip_day_with_ad;
 var __rpc_kiosk_arcade_create;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_undo_promote":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"chess_create_match":true,"quizverse_pack_cleanup_tick":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_undo_promote":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
-// --- Discovered Modules (123 files) ---
+// --- Discovered Modules (124 files) ---
 
 // --- Module: _wiki_gen.js ---
 ﻿
@@ -27254,6 +27255,1765 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
+// --- Module: chess\chess-engine-vendor.js ---
+﻿// Vendored: chess.js v0.10.3 (BSD-2-Clause) — https://github.com/jhlywa/chess.js
+//
+// WHY THE OLD VERSION: chess.js >= 1.0 ships as compiled TypeScript using
+// classes and arrow functions, which the Goja ES5 VM cannot parse. 0.10.3 is
+// the last pure-ES5 release (verified: zero arrow functions, zero classes) and
+// exposes the same rule set we need — legal move generation, check/checkmate/
+// stalemate, threefold repetition, the fifty-move rule and insufficient
+// material.
+//
+// It lives outside src/ because postbuild.js excludes src/ from its plain-JS
+// module discovery; tsc never sees this file. Chess lands at global scope,
+// where src/games/chess/index.ts picks it up via declare var Chess.
+//
+// The CommonJS/AMD export footer was removed — Goja defines neither exports
+// nor define, and postbuild only rewrites module guards.
+//
+// DO NOT EDIT. Re-vendor from the CDN if this ever needs bumping.
+/*
+ * Copyright (c) 2020, Jeff Hlywa (jhlywa@gmail.com)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ *----------------------------------------------------------------------------*/
+
+/* minified license below  */
+
+/* @license
+ * Copyright (c) 2018, Jeff Hlywa (jhlywa@gmail.com)
+ * Released under the BSD license
+ * https://github.com/jhlywa/chess.js/blob/master/LICENSE
+ */
+
+var Chess = function(fen) {
+  var BLACK = 'b'
+  var WHITE = 'w'
+
+  var EMPTY = -1
+
+  var PAWN = 'p'
+  var KNIGHT = 'n'
+  var BISHOP = 'b'
+  var ROOK = 'r'
+  var QUEEN = 'q'
+  var KING = 'k'
+
+  var SYMBOLS = 'pnbrqkPNBRQK'
+
+  var DEFAULT_POSITION =
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+
+  var POSSIBLE_RESULTS = ['1-0', '0-1', '1/2-1/2', '*']
+
+  var PAWN_OFFSETS = {
+    b: [16, 32, 17, 15],
+    w: [-16, -32, -17, -15]
+  }
+
+  var PIECE_OFFSETS = {
+    n: [-18, -33, -31, -14, 18, 33, 31, 14],
+    b: [-17, -15, 17, 15],
+    r: [-16, 1, 16, -1],
+    q: [-17, -16, -15, 1, 17, 16, 15, -1],
+    k: [-17, -16, -15, 1, 17, 16, 15, -1]
+  }
+
+  // prettier-ignore
+  var ATTACKS = [
+    20, 0, 0, 0, 0, 0, 0, 24,  0, 0, 0, 0, 0, 0,20, 0,
+     0,20, 0, 0, 0, 0, 0, 24,  0, 0, 0, 0, 0,20, 0, 0,
+     0, 0,20, 0, 0, 0, 0, 24,  0, 0, 0, 0,20, 0, 0, 0,
+     0, 0, 0,20, 0, 0, 0, 24,  0, 0, 0,20, 0, 0, 0, 0,
+     0, 0, 0, 0,20, 0, 0, 24,  0, 0,20, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0,20, 2, 24,  2,20, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 2,53, 56, 53, 2, 0, 0, 0, 0, 0, 0,
+    24,24,24,24,24,24,56,  0, 56,24,24,24,24,24,24, 0,
+     0, 0, 0, 0, 0, 2,53, 56, 53, 2, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0,20, 2, 24,  2,20, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0,20, 0, 0, 24,  0, 0,20, 0, 0, 0, 0, 0,
+     0, 0, 0,20, 0, 0, 0, 24,  0, 0, 0,20, 0, 0, 0, 0,
+     0, 0,20, 0, 0, 0, 0, 24,  0, 0, 0, 0,20, 0, 0, 0,
+     0,20, 0, 0, 0, 0, 0, 24,  0, 0, 0, 0, 0,20, 0, 0,
+    20, 0, 0, 0, 0, 0, 0, 24,  0, 0, 0, 0, 0, 0,20
+  ];
+
+  // prettier-ignore
+  var RAYS = [
+     17,  0,  0,  0,  0,  0,  0, 16,  0,  0,  0,  0,  0,  0, 15, 0,
+      0, 17,  0,  0,  0,  0,  0, 16,  0,  0,  0,  0,  0, 15,  0, 0,
+      0,  0, 17,  0,  0,  0,  0, 16,  0,  0,  0,  0, 15,  0,  0, 0,
+      0,  0,  0, 17,  0,  0,  0, 16,  0,  0,  0, 15,  0,  0,  0, 0,
+      0,  0,  0,  0, 17,  0,  0, 16,  0,  0, 15,  0,  0,  0,  0, 0,
+      0,  0,  0,  0,  0, 17,  0, 16,  0, 15,  0,  0,  0,  0,  0, 0,
+      0,  0,  0,  0,  0,  0, 17, 16, 15,  0,  0,  0,  0,  0,  0, 0,
+      1,  1,  1,  1,  1,  1,  1,  0, -1, -1,  -1,-1, -1, -1, -1, 0,
+      0,  0,  0,  0,  0,  0,-15,-16,-17,  0,  0,  0,  0,  0,  0, 0,
+      0,  0,  0,  0,  0,-15,  0,-16,  0,-17,  0,  0,  0,  0,  0, 0,
+      0,  0,  0,  0,-15,  0,  0,-16,  0,  0,-17,  0,  0,  0,  0, 0,
+      0,  0,  0,-15,  0,  0,  0,-16,  0,  0,  0,-17,  0,  0,  0, 0,
+      0,  0,-15,  0,  0,  0,  0,-16,  0,  0,  0,  0,-17,  0,  0, 0,
+      0,-15,  0,  0,  0,  0,  0,-16,  0,  0,  0,  0,  0,-17,  0, 0,
+    -15,  0,  0,  0,  0,  0,  0,-16,  0,  0,  0,  0,  0,  0,-17
+  ];
+
+  var SHIFTS = { p: 0, n: 1, b: 2, r: 3, q: 4, k: 5 }
+
+  var FLAGS = {
+    NORMAL: 'n',
+    CAPTURE: 'c',
+    BIG_PAWN: 'b',
+    EP_CAPTURE: 'e',
+    PROMOTION: 'p',
+    KSIDE_CASTLE: 'k',
+    QSIDE_CASTLE: 'q'
+  }
+
+  var BITS = {
+    NORMAL: 1,
+    CAPTURE: 2,
+    BIG_PAWN: 4,
+    EP_CAPTURE: 8,
+    PROMOTION: 16,
+    KSIDE_CASTLE: 32,
+    QSIDE_CASTLE: 64
+  }
+
+  var RANK_1 = 7
+  var RANK_2 = 6
+  var RANK_3 = 5
+  var RANK_4 = 4
+  var RANK_5 = 3
+  var RANK_6 = 2
+  var RANK_7 = 1
+  var RANK_8 = 0
+
+  // prettier-ignore
+  var SQUARES = {
+    a8:   0, b8:   1, c8:   2, d8:   3, e8:   4, f8:   5, g8:   6, h8:   7,
+    a7:  16, b7:  17, c7:  18, d7:  19, e7:  20, f7:  21, g7:  22, h7:  23,
+    a6:  32, b6:  33, c6:  34, d6:  35, e6:  36, f6:  37, g6:  38, h6:  39,
+    a5:  48, b5:  49, c5:  50, d5:  51, e5:  52, f5:  53, g5:  54, h5:  55,
+    a4:  64, b4:  65, c4:  66, d4:  67, e4:  68, f4:  69, g4:  70, h4:  71,
+    a3:  80, b3:  81, c3:  82, d3:  83, e3:  84, f3:  85, g3:  86, h3:  87,
+    a2:  96, b2:  97, c2:  98, d2:  99, e2: 100, f2: 101, g2: 102, h2: 103,
+    a1: 112, b1: 113, c1: 114, d1: 115, e1: 116, f1: 117, g1: 118, h1: 119
+  };
+
+  var ROOKS = {
+    w: [
+      { square: SQUARES.a1, flag: BITS.QSIDE_CASTLE },
+      { square: SQUARES.h1, flag: BITS.KSIDE_CASTLE }
+    ],
+    b: [
+      { square: SQUARES.a8, flag: BITS.QSIDE_CASTLE },
+      { square: SQUARES.h8, flag: BITS.KSIDE_CASTLE }
+    ]
+  }
+
+  var board = new Array(128)
+  var kings = { w: EMPTY, b: EMPTY }
+  var turn = WHITE
+  var castling = { w: 0, b: 0 }
+  var ep_square = EMPTY
+  var half_moves = 0
+  var move_number = 1
+  var history = []
+  var header = {}
+
+  /* if the user passes in a fen string, load it, else default to
+   * starting position
+   */
+  if (typeof fen === 'undefined') {
+    load(DEFAULT_POSITION)
+  } else {
+    load(fen)
+  }
+
+  function clear(keep_headers) {
+    if (typeof keep_headers === 'undefined') {
+      keep_headers = false
+    }
+
+    board = new Array(128)
+    kings = { w: EMPTY, b: EMPTY }
+    turn = WHITE
+    castling = { w: 0, b: 0 }
+    ep_square = EMPTY
+    half_moves = 0
+    move_number = 1
+    history = []
+    if (!keep_headers) header = {}
+    update_setup(generate_fen())
+  }
+
+  function reset() {
+    load(DEFAULT_POSITION)
+  }
+
+  function load(fen, keep_headers) {
+    if (typeof keep_headers === 'undefined') {
+      keep_headers = false
+    }
+
+    var tokens = fen.split(/\s+/)
+    var position = tokens[0]
+    var square = 0
+
+    if (!validate_fen(fen).valid) {
+      return false
+    }
+
+    clear(keep_headers)
+
+    for (var i = 0; i < position.length; i++) {
+      var piece = position.charAt(i)
+
+      if (piece === '/') {
+        square += 8
+      } else if (is_digit(piece)) {
+        square += parseInt(piece, 10)
+      } else {
+        var color = piece < 'a' ? WHITE : BLACK
+        put({ type: piece.toLowerCase(), color: color }, algebraic(square))
+        square++
+      }
+    }
+
+    turn = tokens[1]
+
+    if (tokens[2].indexOf('K') > -1) {
+      castling.w |= BITS.KSIDE_CASTLE
+    }
+    if (tokens[2].indexOf('Q') > -1) {
+      castling.w |= BITS.QSIDE_CASTLE
+    }
+    if (tokens[2].indexOf('k') > -1) {
+      castling.b |= BITS.KSIDE_CASTLE
+    }
+    if (tokens[2].indexOf('q') > -1) {
+      castling.b |= BITS.QSIDE_CASTLE
+    }
+
+    ep_square = tokens[3] === '-' ? EMPTY : SQUARES[tokens[3]]
+    half_moves = parseInt(tokens[4], 10)
+    move_number = parseInt(tokens[5], 10)
+
+    update_setup(generate_fen())
+
+    return true
+  }
+
+  /* TODO: this function is pretty much crap - it validates structure but
+   * completely ignores content (e.g. doesn't verify that each side has a king)
+   * ... we should rewrite this, and ditch the silly error_number field while
+   * we're at it
+   */
+  function validate_fen(fen) {
+    var errors = {
+      0: 'No errors.',
+      1: 'FEN string must contain six space-delimited fields.',
+      2: '6th field (move number) must be a positive integer.',
+      3: '5th field (half move counter) must be a non-negative integer.',
+      4: '4th field (en-passant square) is invalid.',
+      5: '3rd field (castling availability) is invalid.',
+      6: '2nd field (side to move) is invalid.',
+      7: "1st field (piece positions) does not contain 8 '/'-delimited rows.",
+      8: '1st field (piece positions) is invalid [consecutive numbers].',
+      9: '1st field (piece positions) is invalid [invalid piece].',
+      10: '1st field (piece positions) is invalid [row too large].',
+      11: 'Illegal en-passant square'
+    }
+
+    /* 1st criterion: 6 space-seperated fields? */
+    var tokens = fen.split(/\s+/)
+    if (tokens.length !== 6) {
+      return { valid: false, error_number: 1, error: errors[1] }
+    }
+
+    /* 2nd criterion: move number field is a integer value > 0? */
+    if (isNaN(tokens[5]) || parseInt(tokens[5], 10) <= 0) {
+      return { valid: false, error_number: 2, error: errors[2] }
+    }
+
+    /* 3rd criterion: half move counter is an integer >= 0? */
+    if (isNaN(tokens[4]) || parseInt(tokens[4], 10) < 0) {
+      return { valid: false, error_number: 3, error: errors[3] }
+    }
+
+    /* 4th criterion: 4th field is a valid e.p.-string? */
+    if (!/^(-|[abcdefgh][36])$/.test(tokens[3])) {
+      return { valid: false, error_number: 4, error: errors[4] }
+    }
+
+    /* 5th criterion: 3th field is a valid castle-string? */
+    if (!/^(KQ?k?q?|Qk?q?|kq?|q|-)$/.test(tokens[2])) {
+      return { valid: false, error_number: 5, error: errors[5] }
+    }
+
+    /* 6th criterion: 2nd field is "w" (white) or "b" (black)? */
+    if (!/^(w|b)$/.test(tokens[1])) {
+      return { valid: false, error_number: 6, error: errors[6] }
+    }
+
+    /* 7th criterion: 1st field contains 8 rows? */
+    var rows = tokens[0].split('/')
+    if (rows.length !== 8) {
+      return { valid: false, error_number: 7, error: errors[7] }
+    }
+
+    /* 8th criterion: every row is valid? */
+    for (var i = 0; i < rows.length; i++) {
+      /* check for right sum of fields AND not two numbers in succession */
+      var sum_fields = 0
+      var previous_was_number = false
+
+      for (var k = 0; k < rows[i].length; k++) {
+        if (!isNaN(rows[i][k])) {
+          if (previous_was_number) {
+            return { valid: false, error_number: 8, error: errors[8] }
+          }
+          sum_fields += parseInt(rows[i][k], 10)
+          previous_was_number = true
+        } else {
+          if (!/^[prnbqkPRNBQK]$/.test(rows[i][k])) {
+            return { valid: false, error_number: 9, error: errors[9] }
+          }
+          sum_fields += 1
+          previous_was_number = false
+        }
+      }
+      if (sum_fields !== 8) {
+        return { valid: false, error_number: 10, error: errors[10] }
+      }
+    }
+
+    if (
+      (tokens[3][1] == '3' && tokens[1] == 'w') ||
+      (tokens[3][1] == '6' && tokens[1] == 'b')
+    ) {
+      return { valid: false, error_number: 11, error: errors[11] }
+    }
+
+    /* everything's okay! */
+    return { valid: true, error_number: 0, error: errors[0] }
+  }
+
+  function generate_fen() {
+    var empty = 0
+    var fen = ''
+
+    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+      if (board[i] == null) {
+        empty++
+      } else {
+        if (empty > 0) {
+          fen += empty
+          empty = 0
+        }
+        var color = board[i].color
+        var piece = board[i].type
+
+        fen += color === WHITE ? piece.toUpperCase() : piece.toLowerCase()
+      }
+
+      if ((i + 1) & 0x88) {
+        if (empty > 0) {
+          fen += empty
+        }
+
+        if (i !== SQUARES.h1) {
+          fen += '/'
+        }
+
+        empty = 0
+        i += 8
+      }
+    }
+
+    var cflags = ''
+    if (castling[WHITE] & BITS.KSIDE_CASTLE) {
+      cflags += 'K'
+    }
+    if (castling[WHITE] & BITS.QSIDE_CASTLE) {
+      cflags += 'Q'
+    }
+    if (castling[BLACK] & BITS.KSIDE_CASTLE) {
+      cflags += 'k'
+    }
+    if (castling[BLACK] & BITS.QSIDE_CASTLE) {
+      cflags += 'q'
+    }
+
+    /* do we have an empty castling flag? */
+    cflags = cflags || '-'
+    var epflags = ep_square === EMPTY ? '-' : algebraic(ep_square)
+
+    return [fen, turn, cflags, epflags, half_moves, move_number].join(' ')
+  }
+
+  function set_header(args) {
+    for (var i = 0; i < args.length; i += 2) {
+      if (typeof args[i] === 'string' && typeof args[i + 1] === 'string') {
+        header[args[i]] = args[i + 1]
+      }
+    }
+    return header
+  }
+
+  /* called when the initial board setup is changed with put() or remove().
+   * modifies the SetUp and FEN properties of the header object.  if the FEN is
+   * equal to the default position, the SetUp and FEN are deleted
+   * the setup is only updated if history.length is zero, ie moves haven't been
+   * made.
+   */
+  function update_setup(fen) {
+    if (history.length > 0) return
+
+    if (fen !== DEFAULT_POSITION) {
+      header['SetUp'] = '1'
+      header['FEN'] = fen
+    } else {
+      delete header['SetUp']
+      delete header['FEN']
+    }
+  }
+
+  function get(square) {
+    var piece = board[SQUARES[square]]
+    return piece ? { type: piece.type, color: piece.color } : null
+  }
+
+  function put(piece, square) {
+    /* check for valid piece object */
+    if (!('type' in piece && 'color' in piece)) {
+      return false
+    }
+
+    /* check for piece */
+    if (SYMBOLS.indexOf(piece.type.toLowerCase()) === -1) {
+      return false
+    }
+
+    /* check for valid square */
+    if (!(square in SQUARES)) {
+      return false
+    }
+
+    var sq = SQUARES[square]
+
+    /* don't let the user place more than one king */
+    if (
+      piece.type == KING &&
+      !(kings[piece.color] == EMPTY || kings[piece.color] == sq)
+    ) {
+      return false
+    }
+
+    board[sq] = { type: piece.type, color: piece.color }
+    if (piece.type === KING) {
+      kings[piece.color] = sq
+    }
+
+    update_setup(generate_fen())
+
+    return true
+  }
+
+  function remove(square) {
+    var piece = get(square)
+    board[SQUARES[square]] = null
+    if (piece && piece.type === KING) {
+      kings[piece.color] = EMPTY
+    }
+
+    update_setup(generate_fen())
+
+    return piece
+  }
+
+  function build_move(board, from, to, flags, promotion) {
+    var move = {
+      color: turn,
+      from: from,
+      to: to,
+      flags: flags,
+      piece: board[from].type
+    }
+
+    if (promotion) {
+      move.flags |= BITS.PROMOTION
+      move.promotion = promotion
+    }
+
+    if (board[to]) {
+      move.captured = board[to].type
+    } else if (flags & BITS.EP_CAPTURE) {
+      move.captured = PAWN
+    }
+    return move
+  }
+
+  function generate_moves(options) {
+    function add_move(board, moves, from, to, flags) {
+      /* if pawn promotion */
+      if (
+        board[from].type === PAWN &&
+        (rank(to) === RANK_8 || rank(to) === RANK_1)
+      ) {
+        var pieces = [QUEEN, ROOK, BISHOP, KNIGHT]
+        for (var i = 0, len = pieces.length; i < len; i++) {
+          moves.push(build_move(board, from, to, flags, pieces[i]))
+        }
+      } else {
+        moves.push(build_move(board, from, to, flags))
+      }
+    }
+
+    var moves = []
+    var us = turn
+    var them = swap_color(us)
+    var second_rank = { b: RANK_7, w: RANK_2 }
+
+    var first_sq = SQUARES.a8
+    var last_sq = SQUARES.h1
+    var single_square = false
+
+    /* do we want legal moves? */
+    var legal =
+      typeof options !== 'undefined' && 'legal' in options
+        ? options.legal
+        : true
+
+    /* are we generating moves for a single square? */
+    if (typeof options !== 'undefined' && 'square' in options) {
+      if (options.square in SQUARES) {
+        first_sq = last_sq = SQUARES[options.square]
+        single_square = true
+      } else {
+        /* invalid square */
+        return []
+      }
+    }
+
+    for (var i = first_sq; i <= last_sq; i++) {
+      /* did we run off the end of the board */
+      if (i & 0x88) {
+        i += 7
+        continue
+      }
+
+      var piece = board[i]
+      if (piece == null || piece.color !== us) {
+        continue
+      }
+
+      if (piece.type === PAWN) {
+        /* single square, non-capturing */
+        var square = i + PAWN_OFFSETS[us][0]
+        if (board[square] == null) {
+          add_move(board, moves, i, square, BITS.NORMAL)
+
+          /* double square */
+          var square = i + PAWN_OFFSETS[us][1]
+          if (second_rank[us] === rank(i) && board[square] == null) {
+            add_move(board, moves, i, square, BITS.BIG_PAWN)
+          }
+        }
+
+        /* pawn captures */
+        for (j = 2; j < 4; j++) {
+          var square = i + PAWN_OFFSETS[us][j]
+          if (square & 0x88) continue
+
+          if (board[square] != null && board[square].color === them) {
+            add_move(board, moves, i, square, BITS.CAPTURE)
+          } else if (square === ep_square) {
+            add_move(board, moves, i, ep_square, BITS.EP_CAPTURE)
+          }
+        }
+      } else {
+        for (var j = 0, len = PIECE_OFFSETS[piece.type].length; j < len; j++) {
+          var offset = PIECE_OFFSETS[piece.type][j]
+          var square = i
+
+          while (true) {
+            square += offset
+            if (square & 0x88) break
+
+            if (board[square] == null) {
+              add_move(board, moves, i, square, BITS.NORMAL)
+            } else {
+              if (board[square].color === us) break
+              add_move(board, moves, i, square, BITS.CAPTURE)
+              break
+            }
+
+            /* break, if knight or king */
+            if (piece.type === 'n' || piece.type === 'k') break
+          }
+        }
+      }
+    }
+
+    /* check for castling if: a) we're generating all moves, or b) we're doing
+     * single square move generation on the king's square
+     */
+    if (!single_square || last_sq === kings[us]) {
+      /* king-side castling */
+      if (castling[us] & BITS.KSIDE_CASTLE) {
+        var castling_from = kings[us]
+        var castling_to = castling_from + 2
+
+        if (
+          board[castling_from + 1] == null &&
+          board[castling_to] == null &&
+          !attacked(them, kings[us]) &&
+          !attacked(them, castling_from + 1) &&
+          !attacked(them, castling_to)
+        ) {
+          add_move(board, moves, kings[us], castling_to, BITS.KSIDE_CASTLE)
+        }
+      }
+
+      /* queen-side castling */
+      if (castling[us] & BITS.QSIDE_CASTLE) {
+        var castling_from = kings[us]
+        var castling_to = castling_from - 2
+
+        if (
+          board[castling_from - 1] == null &&
+          board[castling_from - 2] == null &&
+          board[castling_from - 3] == null &&
+          !attacked(them, kings[us]) &&
+          !attacked(them, castling_from - 1) &&
+          !attacked(them, castling_to)
+        ) {
+          add_move(board, moves, kings[us], castling_to, BITS.QSIDE_CASTLE)
+        }
+      }
+    }
+
+    /* return all pseudo-legal moves (this includes moves that allow the king
+     * to be captured)
+     */
+    if (!legal) {
+      return moves
+    }
+
+    /* filter out illegal moves */
+    var legal_moves = []
+    for (var i = 0, len = moves.length; i < len; i++) {
+      make_move(moves[i])
+      if (!king_attacked(us)) {
+        legal_moves.push(moves[i])
+      }
+      undo_move()
+    }
+
+    return legal_moves
+  }
+
+  /* convert a move from 0x88 coordinates to Standard Algebraic Notation
+   * (SAN)
+   *
+   * @param {boolean} sloppy Use the sloppy SAN generator to work around over
+   * disambiguation bugs in Fritz and Chessbase.  See below:
+   *
+   * r1bqkbnr/ppp2ppp/2n5/1B1pP3/4P3/8/PPPP2PP/RNBQK1NR b KQkq - 2 4
+   * 4. ... Nge7 is overly disambiguated because the knight on c6 is pinned
+   * 4. ... Ne7 is technically the valid SAN
+   */
+  function move_to_san(move, sloppy) {
+    var output = ''
+
+    if (move.flags & BITS.KSIDE_CASTLE) {
+      output = 'O-O'
+    } else if (move.flags & BITS.QSIDE_CASTLE) {
+      output = 'O-O-O'
+    } else {
+      var disambiguator = get_disambiguator(move, sloppy)
+
+      if (move.piece !== PAWN) {
+        output += move.piece.toUpperCase() + disambiguator
+      }
+
+      if (move.flags & (BITS.CAPTURE | BITS.EP_CAPTURE)) {
+        if (move.piece === PAWN) {
+          output += algebraic(move.from)[0]
+        }
+        output += 'x'
+      }
+
+      output += algebraic(move.to)
+
+      if (move.flags & BITS.PROMOTION) {
+        output += '=' + move.promotion.toUpperCase()
+      }
+    }
+
+    make_move(move)
+    if (in_check()) {
+      if (in_checkmate()) {
+        output += '#'
+      } else {
+        output += '+'
+      }
+    }
+    undo_move()
+
+    return output
+  }
+
+  // parses all of the decorators out of a SAN string
+  function stripped_san(move) {
+    return move.replace(/=/, '').replace(/[+#]?[?!]*$/, '')
+  }
+
+  function attacked(color, square) {
+    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+      /* did we run off the end of the board */
+      if (i & 0x88) {
+        i += 7
+        continue
+      }
+
+      /* if empty square or wrong color */
+      if (board[i] == null || board[i].color !== color) continue
+
+      var piece = board[i]
+      var difference = i - square
+      var index = difference + 119
+
+      if (ATTACKS[index] & (1 << SHIFTS[piece.type])) {
+        if (piece.type === PAWN) {
+          if (difference > 0) {
+            if (piece.color === WHITE) return true
+          } else {
+            if (piece.color === BLACK) return true
+          }
+          continue
+        }
+
+        /* if the piece is a knight or a king */
+        if (piece.type === 'n' || piece.type === 'k') return true
+
+        var offset = RAYS[index]
+        var j = i + offset
+
+        var blocked = false
+        while (j !== square) {
+          if (board[j] != null) {
+            blocked = true
+            break
+          }
+          j += offset
+        }
+
+        if (!blocked) return true
+      }
+    }
+
+    return false
+  }
+
+  function king_attacked(color) {
+    return attacked(swap_color(color), kings[color])
+  }
+
+  function in_check() {
+    return king_attacked(turn)
+  }
+
+  function in_checkmate() {
+    return in_check() && generate_moves().length === 0
+  }
+
+  function in_stalemate() {
+    return !in_check() && generate_moves().length === 0
+  }
+
+  function insufficient_material() {
+    var pieces = {}
+    var bishops = []
+    var num_pieces = 0
+    var sq_color = 0
+
+    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+      sq_color = (sq_color + 1) % 2
+      if (i & 0x88) {
+        i += 7
+        continue
+      }
+
+      var piece = board[i]
+      if (piece) {
+        pieces[piece.type] = piece.type in pieces ? pieces[piece.type] + 1 : 1
+        if (piece.type === BISHOP) {
+          bishops.push(sq_color)
+        }
+        num_pieces++
+      }
+    }
+
+    /* k vs. k */
+    if (num_pieces === 2) {
+      return true
+    } else if (
+      /* k vs. kn .... or .... k vs. kb */
+      num_pieces === 3 &&
+      (pieces[BISHOP] === 1 || pieces[KNIGHT] === 1)
+    ) {
+      return true
+    } else if (num_pieces === pieces[BISHOP] + 2) {
+      /* kb vs. kb where any number of bishops are all on the same color */
+      var sum = 0
+      var len = bishops.length
+      for (var i = 0; i < len; i++) {
+        sum += bishops[i]
+      }
+      if (sum === 0 || sum === len) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  function in_threefold_repetition() {
+    /* TODO: while this function is fine for casual use, a better
+     * implementation would use a Zobrist key (instead of FEN). the
+     * Zobrist key would be maintained in the make_move/undo_move functions,
+     * avoiding the costly that we do below.
+     */
+    var moves = []
+    var positions = {}
+    var repetition = false
+
+    while (true) {
+      var move = undo_move()
+      if (!move) break
+      moves.push(move)
+    }
+
+    while (true) {
+      /* remove the last two fields in the FEN string, they're not needed
+       * when checking for draw by rep */
+      var fen = generate_fen()
+        .split(' ')
+        .slice(0, 4)
+        .join(' ')
+
+      /* has the position occurred three or move times */
+      positions[fen] = fen in positions ? positions[fen] + 1 : 1
+      if (positions[fen] >= 3) {
+        repetition = true
+      }
+
+      if (!moves.length) {
+        break
+      }
+      make_move(moves.pop())
+    }
+
+    return repetition
+  }
+
+  function push(move) {
+    history.push({
+      move: move,
+      kings: { b: kings.b, w: kings.w },
+      turn: turn,
+      castling: { b: castling.b, w: castling.w },
+      ep_square: ep_square,
+      half_moves: half_moves,
+      move_number: move_number
+    })
+  }
+
+  function make_move(move) {
+    var us = turn
+    var them = swap_color(us)
+    push(move)
+
+    board[move.to] = board[move.from]
+    board[move.from] = null
+
+    /* if ep capture, remove the captured pawn */
+    if (move.flags & BITS.EP_CAPTURE) {
+      if (turn === BLACK) {
+        board[move.to - 16] = null
+      } else {
+        board[move.to + 16] = null
+      }
+    }
+
+    /* if pawn promotion, replace with new piece */
+    if (move.flags & BITS.PROMOTION) {
+      board[move.to] = { type: move.promotion, color: us }
+    }
+
+    /* if we moved the king */
+    if (board[move.to].type === KING) {
+      kings[board[move.to].color] = move.to
+
+      /* if we castled, move the rook next to the king */
+      if (move.flags & BITS.KSIDE_CASTLE) {
+        var castling_to = move.to - 1
+        var castling_from = move.to + 1
+        board[castling_to] = board[castling_from]
+        board[castling_from] = null
+      } else if (move.flags & BITS.QSIDE_CASTLE) {
+        var castling_to = move.to + 1
+        var castling_from = move.to - 2
+        board[castling_to] = board[castling_from]
+        board[castling_from] = null
+      }
+
+      /* turn off castling */
+      castling[us] = ''
+    }
+
+    /* turn off castling if we move a rook */
+    if (castling[us]) {
+      for (var i = 0, len = ROOKS[us].length; i < len; i++) {
+        if (
+          move.from === ROOKS[us][i].square &&
+          castling[us] & ROOKS[us][i].flag
+        ) {
+          castling[us] ^= ROOKS[us][i].flag
+          break
+        }
+      }
+    }
+
+    /* turn off castling if we capture a rook */
+    if (castling[them]) {
+      for (var i = 0, len = ROOKS[them].length; i < len; i++) {
+        if (
+          move.to === ROOKS[them][i].square &&
+          castling[them] & ROOKS[them][i].flag
+        ) {
+          castling[them] ^= ROOKS[them][i].flag
+          break
+        }
+      }
+    }
+
+    /* if big pawn move, update the en passant square */
+    if (move.flags & BITS.BIG_PAWN) {
+      if (turn === 'b') {
+        ep_square = move.to - 16
+      } else {
+        ep_square = move.to + 16
+      }
+    } else {
+      ep_square = EMPTY
+    }
+
+    /* reset the 50 move counter if a pawn is moved or a piece is captured */
+    if (move.piece === PAWN) {
+      half_moves = 0
+    } else if (move.flags & (BITS.CAPTURE | BITS.EP_CAPTURE)) {
+      half_moves = 0
+    } else {
+      half_moves++
+    }
+
+    if (turn === BLACK) {
+      move_number++
+    }
+    turn = swap_color(turn)
+  }
+
+  function undo_move() {
+    var old = history.pop()
+    if (old == null) {
+      return null
+    }
+
+    var move = old.move
+    kings = old.kings
+    turn = old.turn
+    castling = old.castling
+    ep_square = old.ep_square
+    half_moves = old.half_moves
+    move_number = old.move_number
+
+    var us = turn
+    var them = swap_color(turn)
+
+    board[move.from] = board[move.to]
+    board[move.from].type = move.piece // to undo any promotions
+    board[move.to] = null
+
+    if (move.flags & BITS.CAPTURE) {
+      board[move.to] = { type: move.captured, color: them }
+    } else if (move.flags & BITS.EP_CAPTURE) {
+      var index
+      if (us === BLACK) {
+        index = move.to - 16
+      } else {
+        index = move.to + 16
+      }
+      board[index] = { type: PAWN, color: them }
+    }
+
+    if (move.flags & (BITS.KSIDE_CASTLE | BITS.QSIDE_CASTLE)) {
+      var castling_to, castling_from
+      if (move.flags & BITS.KSIDE_CASTLE) {
+        castling_to = move.to + 1
+        castling_from = move.to - 1
+      } else if (move.flags & BITS.QSIDE_CASTLE) {
+        castling_to = move.to - 2
+        castling_from = move.to + 1
+      }
+
+      board[castling_to] = board[castling_from]
+      board[castling_from] = null
+    }
+
+    return move
+  }
+
+  /* this function is used to uniquely identify ambiguous moves */
+  function get_disambiguator(move, sloppy) {
+    var moves = generate_moves({ legal: !sloppy })
+
+    var from = move.from
+    var to = move.to
+    var piece = move.piece
+
+    var ambiguities = 0
+    var same_rank = 0
+    var same_file = 0
+
+    for (var i = 0, len = moves.length; i < len; i++) {
+      var ambig_from = moves[i].from
+      var ambig_to = moves[i].to
+      var ambig_piece = moves[i].piece
+
+      /* if a move of the same piece type ends on the same to square, we'll
+       * need to add a disambiguator to the algebraic notation
+       */
+      if (piece === ambig_piece && from !== ambig_from && to === ambig_to) {
+        ambiguities++
+
+        if (rank(from) === rank(ambig_from)) {
+          same_rank++
+        }
+
+        if (file(from) === file(ambig_from)) {
+          same_file++
+        }
+      }
+    }
+
+    if (ambiguities > 0) {
+      /* if there exists a similar moving piece on the same rank and file as
+       * the move in question, use the square as the disambiguator
+       */
+      if (same_rank > 0 && same_file > 0) {
+        return algebraic(from)
+      } else if (same_file > 0) {
+        /* if the moving piece rests on the same file, use the rank symbol as the
+         * disambiguator
+         */
+        return algebraic(from).charAt(1)
+      } else {
+        /* else use the file symbol */
+        return algebraic(from).charAt(0)
+      }
+    }
+
+    return ''
+  }
+
+  function ascii() {
+    var s = '   +------------------------+\n'
+    for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+      /* display the rank */
+      if (file(i) === 0) {
+        s += ' ' + '87654321'[rank(i)] + ' |'
+      }
+
+      /* empty piece */
+      if (board[i] == null) {
+        s += ' . '
+      } else {
+        var piece = board[i].type
+        var color = board[i].color
+        var symbol = color === WHITE ? piece.toUpperCase() : piece.toLowerCase()
+        s += ' ' + symbol + ' '
+      }
+
+      if ((i + 1) & 0x88) {
+        s += '|\n'
+        i += 8
+      }
+    }
+    s += '   +------------------------+\n'
+    s += '     a  b  c  d  e  f  g  h\n'
+
+    return s
+  }
+
+  // convert a move from Standard Algebraic Notation (SAN) to 0x88 coordinates
+  function move_from_san(move, sloppy) {
+    // strip off any move decorations: e.g Nf3+?!
+    var clean_move = stripped_san(move)
+
+    // if we're using the sloppy parser run a regex to grab piece, to, and from
+    // this should parse invalid SAN like: Pe2-e4, Rc1c4, Qf3xf7
+    if (sloppy) {
+      var matches = clean_move.match(
+        /([pnbrqkPNBRQK])?([a-h][1-8])x?-?([a-h][1-8])([qrbnQRBN])?/
+      )
+      if (matches) {
+        var piece = matches[1]
+        var from = matches[2]
+        var to = matches[3]
+        var promotion = matches[4]
+      }
+    }
+
+    var moves = generate_moves()
+    for (var i = 0, len = moves.length; i < len; i++) {
+      // try the strict parser first, then the sloppy parser if requested
+      // by the user
+      if (
+        clean_move === stripped_san(move_to_san(moves[i])) ||
+        (sloppy && clean_move === stripped_san(move_to_san(moves[i], true)))
+      ) {
+        return moves[i]
+      } else {
+        if (
+          matches &&
+          (!piece || piece.toLowerCase() == moves[i].piece) &&
+          SQUARES[from] == moves[i].from &&
+          SQUARES[to] == moves[i].to &&
+          (!promotion || promotion.toLowerCase() == moves[i].promotion)
+        ) {
+          return moves[i]
+        }
+      }
+    }
+
+    return null
+  }
+
+  /*****************************************************************************
+   * UTILITY FUNCTIONS
+   ****************************************************************************/
+  function rank(i) {
+    return i >> 4
+  }
+
+  function file(i) {
+    return i & 15
+  }
+
+  function algebraic(i) {
+    var f = file(i),
+      r = rank(i)
+    return 'abcdefgh'.substring(f, f + 1) + '87654321'.substring(r, r + 1)
+  }
+
+  function swap_color(c) {
+    return c === WHITE ? BLACK : WHITE
+  }
+
+  function is_digit(c) {
+    return '0123456789'.indexOf(c) !== -1
+  }
+
+  /* pretty = external move object */
+  function make_pretty(ugly_move) {
+    var move = clone(ugly_move)
+    move.san = move_to_san(move, false)
+    move.to = algebraic(move.to)
+    move.from = algebraic(move.from)
+
+    var flags = ''
+
+    for (var flag in BITS) {
+      if (BITS[flag] & move.flags) {
+        flags += FLAGS[flag]
+      }
+    }
+    move.flags = flags
+
+    return move
+  }
+
+  function clone(obj) {
+    var dupe = obj instanceof Array ? [] : {}
+
+    for (var property in obj) {
+      if (typeof property === 'object') {
+        dupe[property] = clone(obj[property])
+      } else {
+        dupe[property] = obj[property]
+      }
+    }
+
+    return dupe
+  }
+
+  function trim(str) {
+    return str.replace(/^\s+|\s+$/g, '')
+  }
+
+  /*****************************************************************************
+   * DEBUGGING UTILITIES
+   ****************************************************************************/
+  function perft(depth) {
+    var moves = generate_moves({ legal: false })
+    var nodes = 0
+    var color = turn
+
+    for (var i = 0, len = moves.length; i < len; i++) {
+      make_move(moves[i])
+      if (!king_attacked(color)) {
+        if (depth - 1 > 0) {
+          var child_nodes = perft(depth - 1)
+          nodes += child_nodes
+        } else {
+          nodes++
+        }
+      }
+      undo_move()
+    }
+
+    return nodes
+  }
+
+  return {
+    /***************************************************************************
+     * PUBLIC CONSTANTS (is there a better way to do this?)
+     **************************************************************************/
+    WHITE: WHITE,
+    BLACK: BLACK,
+    PAWN: PAWN,
+    KNIGHT: KNIGHT,
+    BISHOP: BISHOP,
+    ROOK: ROOK,
+    QUEEN: QUEEN,
+    KING: KING,
+    SQUARES: (function() {
+      /* from the ECMA-262 spec (section 12.6.4):
+       * "The mechanics of enumerating the properties ... is
+       * implementation dependent"
+       * so: for (var sq in SQUARES) { keys.push(sq); } might not be
+       * ordered correctly
+       */
+      var keys = []
+      for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+        if (i & 0x88) {
+          i += 7
+          continue
+        }
+        keys.push(algebraic(i))
+      }
+      return keys
+    })(),
+    FLAGS: FLAGS,
+
+    /***************************************************************************
+     * PUBLIC API
+     **************************************************************************/
+    load: function(fen) {
+      return load(fen)
+    },
+
+    reset: function() {
+      return reset()
+    },
+
+    moves: function(options) {
+      /* The internal representation of a chess move is in 0x88 format, and
+       * not meant to be human-readable.  The code below converts the 0x88
+       * square coordinates to algebraic coordinates.  It also prunes an
+       * unnecessary move keys resulting from a verbose call.
+       */
+
+      var ugly_moves = generate_moves(options)
+      var moves = []
+
+      for (var i = 0, len = ugly_moves.length; i < len; i++) {
+        /* does the user want a full move object (most likely not), or just
+         * SAN
+         */
+        if (
+          typeof options !== 'undefined' &&
+          'verbose' in options &&
+          options.verbose
+        ) {
+          moves.push(make_pretty(ugly_moves[i]))
+        } else {
+          moves.push(move_to_san(ugly_moves[i], false))
+        }
+      }
+
+      return moves
+    },
+
+    in_check: function() {
+      return in_check()
+    },
+
+    in_checkmate: function() {
+      return in_checkmate()
+    },
+
+    in_stalemate: function() {
+      return in_stalemate()
+    },
+
+    in_draw: function() {
+      return (
+        half_moves >= 100 ||
+        in_stalemate() ||
+        insufficient_material() ||
+        in_threefold_repetition()
+      )
+    },
+
+    insufficient_material: function() {
+      return insufficient_material()
+    },
+
+    in_threefold_repetition: function() {
+      return in_threefold_repetition()
+    },
+
+    game_over: function() {
+      return (
+        half_moves >= 100 ||
+        in_checkmate() ||
+        in_stalemate() ||
+        insufficient_material() ||
+        in_threefold_repetition()
+      )
+    },
+
+    validate_fen: function(fen) {
+      return validate_fen(fen)
+    },
+
+    fen: function() {
+      return generate_fen()
+    },
+
+    board: function() {
+      var output = [],
+        row = []
+
+      for (var i = SQUARES.a8; i <= SQUARES.h1; i++) {
+        if (board[i] == null) {
+          row.push(null)
+        } else {
+          row.push({ type: board[i].type, color: board[i].color })
+        }
+        if ((i + 1) & 0x88) {
+          output.push(row)
+          row = []
+          i += 8
+        }
+      }
+
+      return output
+    },
+
+    pgn: function(options) {
+      /* using the specification from http://www.chessclub.com/help/PGN-spec
+       * example for html usage: .pgn({ max_width: 72, newline_char: "<br />" })
+       */
+      var newline =
+        typeof options === 'object' && typeof options.newline_char === 'string'
+          ? options.newline_char
+          : '\n'
+      var max_width =
+        typeof options === 'object' && typeof options.max_width === 'number'
+          ? options.max_width
+          : 0
+      var result = []
+      var header_exists = false
+
+      /* add the PGN header headerrmation */
+      for (var i in header) {
+        /* TODO: order of enumerated properties in header object is not
+         * guaranteed, see ECMA-262 spec (section 12.6.4)
+         */
+        result.push('[' + i + ' "' + header[i] + '"]' + newline)
+        header_exists = true
+      }
+
+      if (header_exists && history.length) {
+        result.push(newline)
+      }
+
+      /* pop all of history onto reversed_history */
+      var reversed_history = []
+      while (history.length > 0) {
+        reversed_history.push(undo_move())
+      }
+
+      var moves = []
+      var move_string = ''
+
+      /* build the list of moves.  a move_string looks like: "3. e3 e6" */
+      while (reversed_history.length > 0) {
+        var move = reversed_history.pop()
+
+        /* if the position started with black to move, start PGN with 1. ... */
+        if (!history.length && move.color === 'b') {
+          move_string = move_number + '. ...'
+        } else if (move.color === 'w') {
+          /* store the previous generated move_string if we have one */
+          if (move_string.length) {
+            moves.push(move_string)
+          }
+          move_string = move_number + '.'
+        }
+
+        move_string = move_string + ' ' + move_to_san(move, false)
+        make_move(move)
+      }
+
+      /* are there any other leftover moves? */
+      if (move_string.length) {
+        moves.push(move_string)
+      }
+
+      /* is there a result? */
+      if (typeof header.Result !== 'undefined') {
+        moves.push(header.Result)
+      }
+
+      /* history should be back to what is was before we started generating PGN,
+       * so join together moves
+       */
+      if (max_width === 0) {
+        return result.join('') + moves.join(' ')
+      }
+
+      /* wrap the PGN output at max_width */
+      var current_width = 0
+      for (var i = 0; i < moves.length; i++) {
+        /* if the current move will push past max_width */
+        if (current_width + moves[i].length > max_width && i !== 0) {
+          /* don't end the line with whitespace */
+          if (result[result.length - 1] === ' ') {
+            result.pop()
+          }
+
+          result.push(newline)
+          current_width = 0
+        } else if (i !== 0) {
+          result.push(' ')
+          current_width++
+        }
+        result.push(moves[i])
+        current_width += moves[i].length
+      }
+
+      return result.join('')
+    },
+
+    load_pgn: function(pgn, options) {
+      // allow the user to specify the sloppy move parser to work around over
+      // disambiguation bugs in Fritz and Chessbase
+      var sloppy =
+        typeof options !== 'undefined' && 'sloppy' in options
+          ? options.sloppy
+          : false
+
+      function mask(str) {
+        return str.replace(/\\/g, '\\')
+      }
+
+      function has_keys(object) {
+        for (var key in object) {
+          return true
+        }
+        return false
+      }
+
+      function parse_pgn_header(header, options) {
+        var newline_char =
+          typeof options === 'object' &&
+          typeof options.newline_char === 'string'
+            ? options.newline_char
+            : '\r?\n'
+        var header_obj = {}
+        var headers = header.split(new RegExp(mask(newline_char)))
+        var key = ''
+        var value = ''
+
+        for (var i = 0; i < headers.length; i++) {
+          key = headers[i].replace(/^\[([A-Z][A-Za-z]*)\s.*\]$/, '$1')
+          value = headers[i].replace(/^\[[A-Za-z]+\s"(.*)"\]$/, '$1')
+          if (trim(key).length > 0) {
+            header_obj[key] = value
+          }
+        }
+
+        return header_obj
+      }
+
+      var newline_char =
+        typeof options === 'object' && typeof options.newline_char === 'string'
+          ? options.newline_char
+          : '\r?\n'
+
+      // RegExp to split header. Takes advantage of the fact that header and movetext
+      // will always have a blank line between them (ie, two newline_char's).
+      // With default newline_char, will equal: /^(\[((?:\r?\n)|.)*\])(?:\r?\n){2}/
+      var header_regex = new RegExp(
+        '^(\\[((?:' +
+          mask(newline_char) +
+          ')|.)*\\])' +
+          '(?:' +
+          mask(newline_char) +
+          '){2}'
+      )
+
+      // If no header given, begin with moves.
+      var header_string = header_regex.test(pgn)
+        ? header_regex.exec(pgn)[1]
+        : ''
+
+      // Put the board in the starting position
+      reset()
+
+      /* parse PGN header */
+      var headers = parse_pgn_header(header_string, options)
+      for (var key in headers) {
+        set_header([key, headers[key]])
+      }
+
+      /* load the starting position indicated by [Setup '1'] and
+       * [FEN position] */
+      if (headers['SetUp'] === '1') {
+        if (!('FEN' in headers && load(headers['FEN'], true))) {
+          // second argument to load: don't clear the headers
+          return false
+        }
+      }
+
+      /* delete header to get the moves */
+      var ms = pgn
+        .replace(header_string, '')
+        .replace(new RegExp(mask(newline_char), 'g'), ' ')
+
+      /* delete comments */
+      ms = ms.replace(/(\{[^}]+\})+?/g, '')
+
+      /* delete recursive annotation variations */
+      var rav_regex = /(\([^\(\)]+\))+?/g
+      while (rav_regex.test(ms)) {
+        ms = ms.replace(rav_regex, '')
+      }
+
+      /* delete move numbers */
+      ms = ms.replace(/\d+\.(\.\.)?/g, '')
+
+      /* delete ... indicating black to move */
+      ms = ms.replace(/\.\.\./g, '')
+
+      /* delete numeric annotation glyphs */
+      ms = ms.replace(/\$\d+/g, '')
+
+      /* trim and get array of moves */
+      var moves = trim(ms).split(new RegExp(/\s+/))
+
+      /* delete empty entries */
+      moves = moves
+        .join(',')
+        .replace(/,,+/g, ',')
+        .split(',')
+      var move = ''
+
+      for (var half_move = 0; half_move < moves.length - 1; half_move++) {
+        move = move_from_san(moves[half_move], sloppy)
+
+        /* move not possible! (don't clear the board to examine to show the
+         * latest valid position)
+         */
+        if (move == null) {
+          return false
+        } else {
+          make_move(move)
+        }
+      }
+
+      /* examine last move */
+      move = moves[moves.length - 1]
+      if (POSSIBLE_RESULTS.indexOf(move) > -1) {
+        if (has_keys(header) && typeof header.Result === 'undefined') {
+          set_header(['Result', move])
+        }
+      } else {
+        move = move_from_san(move, sloppy)
+        if (move == null) {
+          return false
+        } else {
+          make_move(move)
+        }
+      }
+      return true
+    },
+
+    header: function() {
+      return set_header(arguments)
+    },
+
+    ascii: function() {
+      return ascii()
+    },
+
+    turn: function() {
+      return turn
+    },
+
+    move: function(move, options) {
+      /* The move function can be called with in the following parameters:
+       *
+       * .move('Nxb7')      <- where 'move' is a case-sensitive SAN string
+       *
+       * .move({ from: 'h7', <- where the 'move' is a move object (additional
+       *         to :'h8',      fields are ignored)
+       *         promotion: 'q',
+       *      })
+       */
+
+      // allow the user to specify the sloppy move parser to work around over
+      // disambiguation bugs in Fritz and Chessbase
+      var sloppy =
+        typeof options !== 'undefined' && 'sloppy' in options
+          ? options.sloppy
+          : false
+
+      var move_obj = null
+
+      if (typeof move === 'string') {
+        move_obj = move_from_san(move, sloppy)
+      } else if (typeof move === 'object') {
+        var moves = generate_moves()
+
+        /* convert the pretty move object to an ugly move object */
+        for (var i = 0, len = moves.length; i < len; i++) {
+          if (
+            move.from === algebraic(moves[i].from) &&
+            move.to === algebraic(moves[i].to) &&
+            (!('promotion' in moves[i]) ||
+              move.promotion === moves[i].promotion)
+          ) {
+            move_obj = moves[i]
+            break
+          }
+        }
+      }
+
+      /* failed to find move */
+      if (!move_obj) {
+        return null
+      }
+
+      /* need to make a copy of move because we can't generate SAN after the
+       * move is made
+       */
+      var pretty_move = make_pretty(move_obj)
+
+      make_move(move_obj)
+
+      return pretty_move
+    },
+
+    undo: function() {
+      var move = undo_move()
+      return move ? make_pretty(move) : null
+    },
+
+    clear: function() {
+      return clear()
+    },
+
+    put: function(piece, square) {
+      return put(piece, square)
+    },
+
+    get: function(square) {
+      return get(square)
+    },
+
+    remove: function(square) {
+      return remove(square)
+    },
+
+    perft: function(depth) {
+      return perft(depth)
+    },
+
+    square_color: function(square) {
+      if (square in SQUARES) {
+        var sq_0x88 = SQUARES[square]
+        return (rank(sq_0x88) + file(sq_0x88)) % 2 === 0 ? 'light' : 'dark'
+      }
+
+      return null
+    },
+
+    history: function(options) {
+      var reversed_history = []
+      var move_history = []
+      var verbose =
+        typeof options !== 'undefined' &&
+        'verbose' in options &&
+        options.verbose
+
+      while (history.length > 0) {
+        reversed_history.push(undo_move())
+      }
+
+      while (reversed_history.length > 0) {
+        var move = reversed_history.pop()
+        if (verbose) {
+          move_history.push(make_pretty(move))
+        } else {
+          move_history.push(move_to_san(move))
+        }
+        make_move(move)
+      }
+
+      return move_history
+    }
+  }
+}
+
 // --- Module: copilot\cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
@@ -29021,7 +30781,7 @@ function logAIRequest(nk, userId, requestType, data) {
 }
 
 // Register RPCs
-function __ModuleInit_36(ctx, logger, nk, initializer) {
+function __ModuleInit_37(ctx, logger, nk, initializer) {
     logger.info("Cricket AI Integration Module loaded");
 
     __rpc_cricket_create_ai_note = __rpc_cricket_create_ai_note || (rpcCreateAINote);
@@ -29597,7 +31357,7 @@ function calculateStreakDays(records) {
 }
 
 // Register RPCs
-function __ModuleInit_37(ctx, logger, nk, initializer) {
+function __ModuleInit_38(ctx, logger, nk, initializer) {
     logger.info("Cricket Daily Challenges Module loaded");
 
     __rpc_cricket_get_daily_challenges = __rpc_cricket_get_daily_challenges || (rpcGetDailyChallenges);
@@ -30271,7 +32031,7 @@ function validateCoinSource(nk, userId, source, requestedAmount) {
 }
 
 // Register RPCs
-function __ModuleInit_38(ctx, logger, nk, initializer) {
+function __ModuleInit_39(ctx, logger, nk, initializer) {
     logger.info("Cricket Economy Module loaded");
 
     __rpc_cricket_get_wallet = __rpc_cricket_get_wallet || (rpcGetWallet);
@@ -30880,7 +32640,7 @@ function getTimeUntilNextDay() {
 }
 
 // Register RPCs
-function __ModuleInit_39(ctx, logger, nk, initializer) {
+function __ModuleInit_40(ctx, logger, nk, initializer) {
     logger.info("Cricket Engagement Module loaded");
 
     __rpc_cricket_track_engagement = __rpc_cricket_track_engagement || (rpcTrackEngagement);
@@ -31638,7 +33398,7 @@ function getActiveFlashDrops(nk, matchId) {
 }
 
 // Register RPCs
-function __ModuleInit_40(ctx, logger, nk, initializer) {
+function __ModuleInit_41(ctx, logger, nk, initializer) {
     logger.info("Cricket Live Match Module loaded");
 
     __rpc_cricket_load_schedules = __rpc_cricket_load_schedules || (rpcLoadSchedules);
@@ -32282,7 +34042,7 @@ function getUserDisplayName(nk, userId) {
 }
 
 // Register RPCs
-function __ModuleInit_41(ctx, logger, nk, initializer) {
+function __ModuleInit_42(ctx, logger, nk, initializer) {
     logger.info("Cricket Predictions Module loaded");
 
     // Register RPCs
@@ -33146,7 +34906,7 @@ function getRewardMessage(triggerType, reward) {
 }
 
 // Register RPCs
-function __ModuleInit_42(ctx, logger, nk, initializer) {
+function __ModuleInit_43(ctx, logger, nk, initializer) {
     logger.info("Cricket Retention Module loaded");
 
     __rpc_cricket_process_daily_login = __rpc_cricket_process_daily_login || (rpcProcessDailyLogin);
@@ -33759,7 +35519,7 @@ function getAvailableRewards(userPass) {
 }
 
 // Register RPCs
-function __ModuleInit_43(ctx, logger, nk, initializer) {
+function __ModuleInit_44(ctx, logger, nk, initializer) {
     logger.info("Cricket Season Pass Module loaded");
 
     __rpc_cricket_get_season_pass = __rpc_cricket_get_season_pass || (rpcGetSeasonPassStatus);
@@ -34708,7 +36468,7 @@ function storeTriviaHistory(nk, userId, session) {
 }
 
 // Register RPCs
-function __ModuleInit_44(ctx, logger, nk, initializer) {
+function __ModuleInit_45(ctx, logger, nk, initializer) {
     logger.info("Cricket Trivia Module loaded");
 
     __rpc_cricket_start_trivia = __rpc_cricket_start_trivia || (rpcStartTriviaSession);
@@ -35970,7 +37730,7 @@ function rpcGetCommunityPredictions(ctx, logger, nk, payload) {
 // which then drops the ENTIRE JS runtime (every other module fails to
 // register too). Register each RPC with an explicit named handler so the
 // AST walker can resolve the key statically.
-function __ModuleInit_46(ctx, logger, nk, initializer) {
+function __ModuleInit_47(ctx, logger, nk, initializer) {
     __rpc_cricket_submit_prediction = __rpc_cricket_submit_prediction || (rpcSubmitPrediction);
     __rpc_cricket_add_trivia_boost = __rpc_cricket_add_trivia_boost || (rpcAddTriviaBoost);
     __rpc_cricket_lock_predictions = __rpc_cricket_lock_predictions || (rpcLockMatchPredictions);
@@ -37152,7 +38912,7 @@ function rpcDailyProgressClaim(ctx, logger, nk, payload) {
 // Registration — postbuild.js renames InitModule → __ModuleInit_N and wires the
 // literal registerRpc calls into the master InitModule (see daily_rewards.js).
 // ============================================================================
-function __ModuleInit_49(ctx, logger, nk, initializer) {
+function __ModuleInit_50(ctx, logger, nk, initializer) {
     __rpc_daily_progress_check = __rpc_daily_progress_check || (rpcDailyProgressCheck);
     __rpc_daily_progress_claim = __rpc_daily_progress_claim || (rpcDailyProgressClaim);
     logger.info("[DailyProgress] Platform registered: 2 RPCs (check, claim)");
@@ -37272,7 +39032,7 @@ function rpcDailyRewardGetCalendar(ctx, logger, nk, payload) {
 // postbuild.js renames this InitModule -> __ModuleInit_N (never executes) and
 // uses the literal registerRpc call below to wire __rpc_daily_reward_get_calendar
 // into the master InitModule. See daily_rewards.js for the full mechanism.
-function __ModuleInit_50(ctx, logger, nk, initializer) {
+function __ModuleInit_51(ctx, logger, nk, initializer) {
     __rpc_daily_reward_get_calendar = __rpc_daily_reward_get_calendar || (rpcDailyRewardGetCalendar);
     logger.info("[DailyRewardCalendar] Module InitModule registered: 1 RPC");
 }
@@ -38004,7 +39764,7 @@ function rpcDailyRewardsClaim(ctx, logger, nk, payload) {
 // Before this block existed, daily_rewards_get_status / daily_rewards_claim
 // were silently served by the stale TS LegacyDailyRewards copy (wrong response
 // envelope -> Unity always saw streak 0; root cause of QVBF_51).
-function __ModuleInit_51(ctx, logger, nk, initializer) {
+function __ModuleInit_52(ctx, logger, nk, initializer) {
     __rpc_daily_rewards_get_status = __rpc_daily_rewards_get_status || (rpcDailyRewardsGetStatus);
     __rpc_daily_rewards_claim = __rpc_daily_rewards_claim || (rpcDailyRewardsClaim);
     __rpc_daily_rewards_get_history = __rpc_daily_rewards_get_history || (rpcDailyRewardsGetHistory);
@@ -39020,7 +40780,7 @@ function rpcAnalyticsPlayConsole(ctx, logger, nk, payload) {
 // ─── Registration ─────────────────────────────────────────
 // postbuild.js scans for initializer.registerRpc() calls
 
-function __ModuleInit_53(ctx, logger, nk, initializer) {
+function __ModuleInit_54(ctx, logger, nk, initializer) {
     __rpc_analytics_appodeal = __rpc_analytics_appodeal || (rpcAnalyticsAppodeal);
     __rpc_analytics_apple_appstore = __rpc_analytics_apple_appstore || (rpcAnalyticsAppleAppstore);
     __rpc_apple_appstore_import = __rpc_apple_appstore_import || (rpcAppleImport);
@@ -39412,7 +41172,7 @@ function rpcExternalPollStatus(ctx, logger, nk, payload) {
 
 // ─── Registration ─────────────────────────────────────────
 
-function __ModuleInit_54(ctx, logger, nk, initializer) {
+function __ModuleInit_55(ctx, logger, nk, initializer) {
     __rpc_external_poll_appodeal = __rpc_external_poll_appodeal || (rpcExternalPollAppodeal);
     __rpc_external_poll_appstore = __rpc_external_poll_appstore || (rpcExternalPollAppstore);
     __rpc_external_poll_ugs = __rpc_external_poll_ugs || (rpcExternalPollUgs);
@@ -40407,7 +42167,7 @@ function rpcFriendStreakRepair(ctx, logger, nk, payload) {
 // Registers all 5 friend-streak RPCs. Existing 3 (get_state, record_contribution,
 // send_nudge) are also registered by legacy_runtime.js; postbuild's `||` guard
 // + module-first concat order means our handler wins.
-function __ModuleInit_56(ctx, logger, nk, initializer) {
+function __ModuleInit_57(ctx, logger, nk, initializer) {
     __rpc_friend_streak_get_state = __rpc_friend_streak_get_state || (rpcFriendStreakGetState);
     __rpc_friend_streak_record_contribution = __rpc_friend_streak_record_contribution || (rpcFriendStreakRecordContribution);
     __rpc_friend_streak_send_nudge = __rpc_friend_streak_send_nudge || (rpcFriendStreakSendNudge);
@@ -41497,7 +43257,7 @@ function rpcFriendsChallengeUserDeprecated(ctx, logger, nk, payload) {
     return rpcSendFriendChallenge(ctx, logger, nk, payload);
 }
 
-function __ModuleInit_57(ctx, logger, nk, initializer) {
+function __ModuleInit_58(ctx, logger, nk, initializer) {
     __rpc_send_friend_challenge = __rpc_send_friend_challenge || (rpcSendFriendChallenge);
     __rpc_friends_challenge_user = __rpc_friends_challenge_user || (rpcFriendsChallengeUserDeprecated); // field-only deprecated alias
     __rpc_accept_friend_challenge = __rpc_accept_friend_challenge || (rpcAcceptFriendChallenge);
@@ -42917,7 +44677,7 @@ function rpcFriendsListPendingInvites(ctx, logger, nk, payload) {
 // assignment, then replays it at module-load time. The legacy
 // registrations for these same RPC ids in legacy_runtime.js have been
 // commented out so this module wins the "first to set the stub" race.
-function __ModuleInit_58(ctx, logger, nk, initializer) {
+function __ModuleInit_59(ctx, logger, nk, initializer) {
     __rpc_send_friend_invite = __rpc_send_friend_invite || (rpcFriendsSendInvite);
     __rpc_accept_friend_invite = __rpc_accept_friend_invite || (rpcFriendsAcceptInvite);
     __rpc_decline_friend_invite = __rpc_decline_friend_invite || (rpcFriendsDeclineInvite);
@@ -43698,7 +45458,7 @@ function rpcFriendInviteWithReward(ctx, logger, nk, payload) {
 // ============================================================================
 // Module Init — register Friends Extras RPCs
 // ============================================================================
-function __ModuleInit_60(ctx, logger, nk, initializer) {
+function __ModuleInit_61(ctx, logger, nk, initializer) {
     __rpc_friends_get_online_count = __rpc_friends_get_online_count || (rpcFriendsGetOnlineCount);
     __rpc_social_pressure_get_today_summary = __rpc_social_pressure_get_today_summary || (rpcSocialPressureGetTodaySummary);
     __rpc_friend_battle_create = __rpc_friend_battle_create || (rpcFriendBattleCreate);
@@ -46294,7 +48054,7 @@ function groupAfterLeaveHook(ctx, logger, nk, data, request) {
  * in src/main.ts (the TS __OriginalInitModule, which IS executed) pointing at
  * the global groupAfterJoinHook / groupAfterLeaveHook functions above.
  */
-function __ModuleInit_63(ctx, logger, nk, initializer) {
+function __ModuleInit_64(ctx, logger, nk, initializer) {
     __rpc_get_group_details = __rpc_get_group_details || (rpcGetGroupDetails);
     __rpc_log_group_activity = __rpc_log_group_activity || (rpcLogGroupActivity);
     __rpc_create_quizverse_group = __rpc_create_quizverse_group || (rpcCreateQuizverseGroup);
@@ -47493,7 +49253,7 @@ function rpcIvxQuestClaim(ctx, logger, nk, payload) {
 
 // ── Module init ───────────────────────────────────────────────────
 
-function __ModuleInit_68(ctx, logger, nk, initializer) {
+function __ModuleInit_69(ctx, logger, nk, initializer) {
     __rpc_ivx_quest_config = __rpc_ivx_quest_config || (rpcIvxQuestConfig);
     __rpc_ivx_quest_get = __rpc_ivx_quest_get || (rpcIvxQuestGet);
     __rpc_ivx_quest_progress = __rpc_ivx_quest_progress || (rpcIvxQuestProgress);
@@ -47689,7 +49449,7 @@ var rpcQuizverseLapBadgeSync = function(ctx, logger, nk, payload) {
     }
 };
 
-function __ModuleInit_69(ctx, logger, nk, initializer) {
+function __ModuleInit_70(ctx, logger, nk, initializer) {
     try {
         __rpc_quizverse_lap_badge_event = __rpc_quizverse_lap_badge_event || (rpcQuizverseLapBadgeEvent);
         logger.info("[LAP-Badges] Registered RPC: quizverse_lap_badge_event");
@@ -48020,7 +49780,7 @@ var rpcQuizverseLapGamificationUpsert = function (ctx, logger, nk, payload) {
   }
 };
 
-function __ModuleInit_70(ctx, logger, nk, initializer) {
+function __ModuleInit_71(ctx, logger, nk, initializer) {
   try {
     initializer.registerRpc(
       "quizverse_lap_gamification_get",
@@ -48459,7 +50219,7 @@ var rpcQuizverseLapLibraryStats = function (ctx, logger, nk, payload) {
   }
 };
 
-function __ModuleInit_71(ctx, logger, nk, initializer) {
+function __ModuleInit_72(ctx, logger, nk, initializer) {
   // Direct registerRpc calls required — postbuild AST walker does not detect loops/helpers.
   try {
     __rpc_quizverse_lap_library_save = __rpc_quizverse_lap_library_save || (rpcQuizverseLapLibrarySave);
@@ -48841,7 +50601,7 @@ var rpcQuizverseLapMissionsUpsert = function (ctx, logger, nk, payload) {
   }
 };
 
-function __ModuleInit_72(ctx, logger, nk, initializer) {
+function __ModuleInit_73(ctx, logger, nk, initializer) {
   try {
     initializer.registerRpc(
       "quizverse_lap_missions_get",
@@ -49087,7 +50847,7 @@ var rpcQuizverseLapRecentsReplace = function (ctx, logger, nk, payload) {
   }
 };
 
-function __ModuleInit_73(ctx, logger, nk, initializer) {
+function __ModuleInit_74(ctx, logger, nk, initializer) {
   // Direct single-line registerRpc — postbuild AST walker requires this form.
   try {
     __rpc_quizverse_lap_recents_get = __rpc_quizverse_lap_recents_get || (rpcQuizverseLapRecentsGet);
@@ -51762,7 +53522,7 @@ function rpcLtWidgetRender(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_78(ctx, logger, nk, initializer) {
+function __ModuleInit_79(ctx, logger, nk, initializer) {
     __rpc_lt_home_widgets_get = __rpc_lt_home_widgets_get || (rpcLtHomeWidgetsGet);
     __rpc_lt_home_widgets_set = __rpc_lt_home_widgets_set || (rpcLtHomeWidgetsSet);
     __rpc_lt_widget_render = __rpc_lt_widget_render || (rpcLtWidgetRender);
@@ -52122,7 +53882,7 @@ function rpcLtPricingGet(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_79(ctx, logger, nk, initializer) {
+function __ModuleInit_80(ctx, logger, nk, initializer) {
     __rpc_lt_daily_quote = __rpc_lt_daily_quote || (rpcLtDailyQuote);
     __rpc_lt_pep_talk = __rpc_lt_pep_talk || (rpcLtPepTalk);
     __rpc_lt_pricing_get = __rpc_lt_pricing_get || (rpcLtPricingGet);
@@ -52331,7 +54091,7 @@ function rpcLtRemindersSet(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_80(ctx, logger, nk, initializer) {
+function __ModuleInit_81(ctx, logger, nk, initializer) {
     __rpc_lt_reminders_get = __rpc_lt_reminders_get || (rpcLtRemindersGet);
     __rpc_lt_reminders_add = __rpc_lt_reminders_add || (rpcLtRemindersAdd);
     __rpc_lt_reminders_set = __rpc_lt_reminders_set || (rpcLtRemindersSet);
@@ -52681,7 +54441,7 @@ function rpcLtReviewDue(ctx, logger, nk, payload) {
 // MODULE INIT
 // ============================================================================
 
-function __ModuleInit_81(ctx, logger, nk, initializer) {
+function __ModuleInit_82(ctx, logger, nk, initializer) {
     __rpc_lt_review_get = __rpc_lt_review_get || (rpcLtReviewGet);
     __rpc_lt_review_set = __rpc_lt_review_set || (rpcLtReviewSet);
     __rpc_lt_review_add = __rpc_lt_review_add || (rpcLtReviewAdd);
@@ -55354,7 +57114,7 @@ function rpcReleaseMultiplayerLock(ctx, logger, nk, payload) {
     });
 }
 
-function __ModuleInit_86(ctx, logger, nk, initializer) {
+function __ModuleInit_87(ctx, logger, nk, initializer) {
     __rpc_rpc_acquire_multiplayer_lock = __rpc_rpc_acquire_multiplayer_lock || (rpcAcquireMultiplayerLock);
     __rpc_rpc_heartbeat_multiplayer_lock = __rpc_rpc_heartbeat_multiplayer_lock || (rpcHeartbeatMultiplayerLock);
     __rpc_rpc_release_multiplayer_lock = __rpc_rpc_release_multiplayer_lock || (rpcReleaseMultiplayerLock);
@@ -57414,7 +59174,7 @@ function oeSeedDefaultOffers(nk, logger) {
     if (seeded > 0) logger.info("[offer_engine] Seeded " + seeded + " default offer(s) into catalog.");
 }
 
-function __ModuleInit_90(ctx, logger, nk, initializer) {
+function __ModuleInit_91(ctx, logger, nk, initializer) {
     // Player-facing
     __rpc_offer_get_eligible = __rpc_offer_get_eligible || (rpcOfferGetEligible);
     __rpc_offer_record_view = __rpc_offer_record_view || (rpcOfferRecordView);
@@ -63631,7 +65391,7 @@ function rpcQuizverseBackfillPlayerSummaries(ctx, logger, nk, payload) {
 // version wins at the global scope when the guarded `||` assignments are
 // replayed (modules first, legacy fallback second).
 // ============================================================================
-function __ModuleInit_101(ctx, logger, nk, initializer) {
+function __ModuleInit_102(ctx, logger, nk, initializer) {
     __rpc_quiz_submit_result = __rpc_quiz_submit_result || (rpcQuizSubmitResult);
     __rpc_quiz_get_history = __rpc_quiz_get_history || (rpcQuizGetHistory);
     __rpc_quiz_get_stats = __rpc_quiz_get_stats || (rpcQuizGetStats);
@@ -64633,7 +66393,7 @@ function rpcQuizverseTriviaNight(ctx, logger, nk, payload) {
 // to both — which left quizverse_knowledge_map as RPC 404 in production.
 // Match smart_review.js: one InitModule, one direct registerRpc per id.
 
-function __ModuleInit_102(ctx, logger, nk, initializer) {
+function __ModuleInit_103(ctx, logger, nk, initializer) {
     __rpc_quizverse_knowledge_map = __rpc_quizverse_knowledge_map || (rpcQuizverseKnowledgeMap);
     __rpc_quizverse_streak_quiz = __rpc_quizverse_streak_quiz || (rpcQuizverseStreakQuiz);
     __rpc_quizverse_adaptive_difficulty = __rpc_quizverse_adaptive_difficulty || (rpcQuizverseAdaptiveDifficulty);
@@ -65146,7 +66906,7 @@ function registerQuizverseSeenRPCs(initializer, logger) {
 //   3) Replay those assignments at IIFE/global scope so every Goja VM has them
 //   4) Emit `initializer.registerRpc("<id>", __rpc_<id>)` inside the master InitModule
 // ============================================================================
-function __ModuleInit_103(ctx, logger, nk, initializer) {
+function __ModuleInit_104(ctx, logger, nk, initializer) {
     __rpc_quizverse_seen_get = __rpc_quizverse_seen_get || (rpcQuizverseSeenGet);
     __rpc_quizverse_seen_merge = __rpc_quizverse_seen_merge || (rpcQuizverseSeenMerge);
     __rpc_quizverse_seen_purge = __rpc_quizverse_seen_purge || (rpcQuizverseSeenPurge);
@@ -68690,7 +70450,7 @@ function isAdmin(ctx, nk) {
 }
 
 // Register RPCs
-function __ModuleInit_109(ctx, logger, nk, initializer) {
+function __ModuleInit_110(ctx, logger, nk, initializer) {
     logger.info('Initializing S3 Assets module...');
 
     const config = getAwsConfig(ctx);
@@ -68887,7 +70647,7 @@ function rpcSatoriFlagsGetAll(ctx, logger, nk, payload) {
 }
 
 // ── Module init ───────────────────────────────────────────
-function __ModuleInit_110(ctx, logger, nk, initializer) {
+function __ModuleInit_111(ctx, logger, nk, initializer) {
     __rpc_satori_event = __rpc_satori_event || (rpcSatoriEvent);
     __rpc_satori_events_batch = __rpc_satori_events_batch || (rpcSatoriEventsBatch);
     __rpc_satori_identity_get = __rpc_satori_identity_get || (rpcSatoriIdentityGet);
@@ -69944,7 +71704,7 @@ function rpcSatoriFlush(ctx, logger, nk, payload) {
     });
 }
 
-function __ModuleInit_111(ctx, logger, nk, initializer) {
+function __ModuleInit_112(ctx, logger, nk, initializer) {
     __rpc_satori_diag = __rpc_satori_diag || (rpcSatoriDiag);
     __rpc_satori_flush = __rpc_satori_flush || (rpcSatoriFlush);
     if (logger && logger.info) {
@@ -70064,7 +71824,7 @@ var _dep_hiro_friend_quests_contribute = null;
 var _dep_hiro_friend_battles_challenge = null;
 var _dep_hiro_friends_add              = null;
 
-function __ModuleInit_112(ctx, logger, nk, initializer) {
+function __ModuleInit_113(ctx, logger, nk, initializer) {
     _dep_hiro_friends_list             = _sdkDeprecatedAlias("hiro_friends_list", __rpc_friends_list);
     _dep_hiro_friends_remove           = _sdkDeprecatedAlias("hiro_friends_remove", __rpc_friends_remove);
     _dep_hiro_friends_block            = _sdkDeprecatedAlias("hiro_friends_block", __rpc_friends_block);
@@ -70901,7 +72661,7 @@ function rpcSmartReviewGetForecast(ctx, logger, nk, payload) {
 // legacy_runtime.js, the module-level handler wins — even if legacy still
 // has its own registration for `smart_review_get_cards` /
 // `smart_review_rate_card`, our handler is what actually fires.
-function __ModuleInit_113(ctx, logger, nk, initializer) {
+function __ModuleInit_114(ctx, logger, nk, initializer) {
     __rpc_smart_review_get_cards = __rpc_smart_review_get_cards || (rpcSmartReviewGetCards);
     __rpc_smart_review_rate_card = __rpc_smart_review_rate_card || (rpcSmartReviewRateCard);
     __rpc_smart_review_add_card = __rpc_smart_review_add_card || (rpcSmartReviewAddCard);
@@ -71946,7 +73706,7 @@ function rpcVisualPathSkipDayWithAd(ctx, logger, nk, payload) {
 // ============================================================================
 // Module Init — register Visual Path RPCs
 // ============================================================================
-function __ModuleInit_116(ctx, logger, nk, initializer) {
+function __ModuleInit_117(ctx, logger, nk, initializer) {
     __rpc_visual_path_get_state = __rpc_visual_path_get_state || (rpcVisualPathGetState);
     __rpc_visual_path_get_schedule = __rpc_visual_path_get_schedule || (rpcVisualPathGetSchedule);
     __rpc_visual_path_skip_day_with_ad = __rpc_visual_path_skip_day_with_ad || (rpcVisualPathSkipDayWithAd);
@@ -72642,7 +74402,7 @@ function rpcWalletGetBalances(ctx, logger, nk, payload) {
     });
 }
 
-function __ModuleInit_117(ctx, logger, nk, initializer) {
+function __ModuleInit_118(ctx, logger, nk, initializer) {
     __rpc_tutorx_check_allowance = __rpc_tutorx_check_allowance || (rpcTutorXCheckAllowance);
     __rpc_tutorx_record_usage = __rpc_tutorx_record_usage || (rpcTutorXRecordUsage);
 }
@@ -72987,12 +74747,13 @@ function updateGameWalletBalance(nk, logger, deviceId, gameId, amountToAdd, user
 
 // --- Module: zz_kiosk_arcade_handlers.js ---
 /**
- * Kiosk arcade authoritative match — cluster-routable joystick mailbox.
+ * Kiosk arcade authoritative match — joystick mailbox on one Nakama node.
  *
- * Relayed matches (socket.createMatch) live in ONE Nakama replica's memory.
- * Join from another replica returns "Match not found". This handler is
- * created with nk.matchCreate so the match id is "uuid.node" and other
- * nodes forward the join.
+ * Open-source Nakama keeps the handler in that node's memory. JoinAttempt
+ * returns not found when node != this replica. The match id is "uuid.node"
+ * so the phone can drop its socket and retry until it lands on the owner.
+ * Unique --name values (nk-<pod suffix>) identify the owner. They do not
+ * forward the join.
  *
  * The TV is still the referee: READY, Spark/Bolt split, 10s reconnect, pay
  * freeze. This match only broadcasts opcodes 1–8. It does not simulate
@@ -73004,7 +74765,7 @@ function updateGameWalletBalance(nk, logger, deviceId, gameId, amountToAdd, user
 var KIOSK_ARCADE_TICK_HZ = 20;
 var KIOSK_ARCADE_HOST_GRACE_TICKS = 90 * KIOSK_ARCADE_TICK_HZ;
 var KIOSK_ARCADE_PHONE_GRACE_TICKS = 10 * KIOSK_ARCADE_TICK_HZ;
-var KIOSK_ARCADE_EMPTY_TTL_TICKS = 30 * KIOSK_ARCADE_TICK_HZ;
+var KIOSK_ARCADE_EMPTY_TTL_TICKS = 90 * KIOSK_ARCADE_TICK_HZ;
 var KIOSK_ARCADE_CREATE_WINDOW_MS = 60000;
 var KIOSK_ARCADE_CREATE_MAX = 8;
 var KIOSK_ARCADE_QUIZVERSE_ID = "126bf539";
@@ -73306,7 +75067,7 @@ function rpcKioskArcadeCreate(ctx, logger, nk, payload) {
   });
 }
 
-function __ModuleInit_119(ctx, logger, nk, initializer) {
+function __ModuleInit_120(ctx, logger, nk, initializer) {
   __rpc_kiosk_arcade_create = __rpc_kiosk_arcade_create || (rpcKioskArcadeCreate);
 }
 
@@ -73369,6 +75130,9 @@ function mpKernelEnsureGenerators(nk, logger) {
   }
   try { QuizVersePlugin.registerGenerators(nk); } catch (e) {
     try { logger.warn("[MpKernel] quizverse generator bootstrap failed: " + (e && e.message ? e.message : String(e))); } catch (_) {}
+  }
+  try { ChessPlugin.registerGenerators(); } catch (e) {
+    try { logger.warn("[MpKernel] chess generator bootstrap failed: " + (e && e.message ? e.message : String(e))); } catch (_) {}
   }
   __mpKernelGeneratorsReady = true;
 }
@@ -99736,6 +101500,12 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[QuizVerse] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
     }
+    try {
+        ChessPlugin.register(initializer);
+    }
+    catch (err) {
+        logger.error("[Chess] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- QuizVerse Nakama-Only Migration plugin ----
     // Registers the migration bridge RPCs (P0 live, P1/P2 deprecated-stub,
     // P3-P8 scaffolded) that bridge old Unity client calls to the new server
@@ -109713,6 +111483,354 @@ var FriendsPresenceShared;
     }
     FriendsPresenceShared.loadOnlineMap = loadOnlineMap;
 })(FriendsPresenceShared || (FriendsPresenceShared = {}));
+// Chess plugin — standard chess on the IVX AsyncTurnMatch template.
+//
+// The server is the only thing that knows the rules. Clients (the kiosk
+// cabinet glass and the two phones that scanned its QR) render a board and
+// post {from, to}; every legality question is answered here. A phone that
+// posts an illegal move, moves out of turn, or moves a piece that is not its
+// colour is simply ignored by the template.
+//
+// So that the clients never need a rule engine of their own, each TURN_END
+// broadcast carries the legal-move map for whoever is on move next. The
+// phones highlight straight from that map.
+//
+// Mounted from src/main.ts AFTER MpKernelModule.mount() so the async-turn
+// template's generator registry exists. Generators are also (re-)registered
+// lazily per Goja VM from zz_mp_kernel_handlers.js — pooled VMs never run
+// InitModule, so registration there is what actually serves live matches.
+var ChessGame;
+(function (ChessGame) {
+    ChessGame.GENERATOR_ID = "chess:standard";
+    // Result strings use PGN convention so exported games are portable.
+    ChessGame.RESULT_WHITE = "1-0";
+    ChessGame.RESULT_BLACK = "0-1";
+    ChessGame.RESULT_DRAW = "1/2-1/2";
+    var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    // Rebuild the full game by replaying SAN from the start position. ~40 moves
+    // of replay at a 1 Hz tick is far cheaper than getting draw detection wrong.
+    function rebuild(state) {
+        var g = new Chess(state.start_fen || START_FEN);
+        for (var i = 0; i < state.moves.length; i++) {
+            if (!g.move(state.moves[i])) {
+                // Should be unreachable: every entry was produced by this engine.
+                // Fall back to the cached position so a corrupt tail cannot brick a
+                // live match — draw detection degrades, the game stays playable.
+                return new Chess(state.fen || state.start_fen || START_FEN);
+            }
+        }
+        return g;
+    }
+    function seatOf(state, userId) {
+        if (userId && userId === state.white)
+            return "w";
+        if (userId && userId === state.black)
+            return "b";
+        return "";
+    }
+    function actorForTurn(state, turn) {
+        return turn === "w" ? state.white : state.black;
+    }
+    function bothSeated(state) {
+        return !!state.white && !!state.black;
+    }
+    // Legal destination squares grouped by origin square, for the side to move.
+    //
+    // Deduplicated by destination: the engine reports a promotion as four moves
+    // (queen, rook, bishop, knight) that all land on the same square, which
+    // would draw the same target four times. The client wants one target
+    // carrying a "you will have to choose a piece" flag, and sends the choice
+    // back with the move.
+    function legalMap(g) {
+        var out = {};
+        var verbose = g.moves({ verbose: true });
+        for (var i = 0; i < verbose.length; i++) {
+            var mv = verbose[i];
+            if (!out[mv.from])
+                out[mv.from] = [];
+            var squares = out[mv.from];
+            var seen = false;
+            for (var j = 0; j < squares.length; j++) {
+                if (squares[j].to === mv.to) {
+                    if (mv.promotion)
+                        squares[j].promo = true;
+                    seen = true;
+                    break;
+                }
+            }
+            if (!seen)
+                squares.push({ to: mv.to, promo: !!mv.promotion });
+        }
+        return out;
+    }
+    ChessGame.legalMap = legalMap;
+    // Classify a finished position. Returns "" while the game is still live.
+    function endReason(g) {
+        if (!g.game_over())
+            return "";
+        if (g.in_checkmate())
+            return "checkmate";
+        if (g.in_stalemate())
+            return "stalemate";
+        if (g.insufficient_material())
+            return "insufficient_material";
+        if (g.in_threefold_repetition())
+            return "threefold_repetition";
+        // in_draw() is true here and the three specific draws are ruled out, so
+        // the only remaining cause is the fifty-move rule.
+        if (g.in_draw())
+            return "fifty_move";
+        return "game_over";
+    }
+    function freshState(initParams) {
+        var startFen = (initParams && initParams.start_fen) || START_FEN;
+        return {
+            start_fen: startFen,
+            moves: [],
+            fen: startFen,
+            white: (initParams && initParams.white_user_id) || "",
+            black: (initParams && initParams.black_user_id) || "",
+            spectator: (initParams && initParams.spectator_user_id) || "",
+            result: "",
+            end_reason: "",
+            started_unix_ms: Date.now()
+        };
+    }
+    ChessGame.freshState = freshState;
+    // Everything a client needs to draw the board and know what it may do.
+    function publicView(state, g) {
+        var over = !!state.result;
+        return {
+            fen: state.fen,
+            turn: over ? "" : g.turn(),
+            moves: state.moves,
+            ply: state.moves.length,
+            white: state.white,
+            black: state.black,
+            in_check: !over && g.in_check(),
+            result: state.result,
+            end_reason: state.end_reason,
+            legal: over ? {} : legalMap(g)
+        };
+    }
+    ChessGame.GENERATOR = {
+        generatorId: ChessGame.GENERATOR_ID,
+        initState: function (initParams, persisted) {
+            var state = persisted && persisted.moves
+                ? persisted
+                : freshState(initParams);
+            // A resumed game keeps its seats; a fresh one has none until the phones
+            // scan in, and must not hand anybody the move before both are present.
+            if (persisted && initParams && initParams.spectator_user_id) {
+                state.spectator = initParams.spectator_user_id;
+            }
+            var g = rebuild(state);
+            var ended = !!state.result;
+            var winner = "";
+            if (state.result === ChessGame.RESULT_WHITE)
+                winner = state.white;
+            else if (state.result === ChessGame.RESULT_BLACK)
+                winner = state.black;
+            return {
+                state: state,
+                actor: (ended || !bothSeated(state)) ? "" : actorForTurn(state, g.turn()),
+                ended: ended,
+                winner_user_id: winner
+            };
+        },
+        onActorJoin: function (rawState, userId, _actors) {
+            var state = rawState;
+            if (!userId || userId === state.spectator)
+                return null;
+            // Already seated — this is a reconnect, not a new player.
+            if (seatOf(state, userId))
+                return null;
+            var color;
+            if (!state.white) {
+                state.white = userId;
+                color = "w";
+            }
+            else if (!state.black) {
+                state.black = userId;
+                color = "b";
+            }
+            else {
+                return null; // Both seats taken; this presence spectates.
+            }
+            var g = rebuild(state);
+            var ready = bothSeated(state);
+            var nextActor = ready ? actorForTurn(state, g.turn()) : "";
+            return {
+                state: state,
+                actor: nextActor,
+                // The template only emits TURN_START to the presence whose turn it is,
+                // and the player who sat down first is not that presence when the
+                // second one arrives. SEAT_ASSIGNED goes to everyone and carries the
+                // whole picture, so both phones and the glass can start from it.
+                seat_payload: {
+                    user_id: userId,
+                    color: color,
+                    both_seated: ready,
+                    next_actor: nextActor,
+                    state: publicView(state, g)
+                }
+            };
+        },
+        applyMove: function (rawState, userId, payload) {
+            var state = rawState;
+            if (state.result)
+                return null;
+            if (!bothSeated(state))
+                return null;
+            var color = seatOf(state, userId);
+            if (!color)
+                return null;
+            var g = rebuild(state);
+            if (g.turn() !== color)
+                return null;
+            var from = payload && payload.from ? String(payload.from) : "";
+            var to = payload && payload.to ? String(payload.to) : "";
+            if (!from || !to)
+                return null;
+            var request = { from: from, to: to };
+            // Only forward a promotion when one was asked for; chess.js rejects the
+            // field on moves that cannot promote.
+            if (payload && payload.promotion) {
+                request.promotion = String(payload.promotion).toLowerCase();
+            }
+            var mv = g.move(request);
+            if (!mv)
+                return null;
+            state.moves.push(mv.san);
+            state.fen = g.fen();
+            var reason = endReason(g);
+            var ended = !!reason;
+            var winner = "";
+            if (ended) {
+                state.end_reason = reason;
+                if (reason === "checkmate") {
+                    state.result = color === "w" ? ChessGame.RESULT_WHITE : ChessGame.RESULT_BLACK;
+                    winner = userId;
+                }
+                else {
+                    state.result = ChessGame.RESULT_DRAW;
+                }
+            }
+            return {
+                state: state,
+                actor: ended ? "" : actorForTurn(state, g.turn()),
+                ended: ended,
+                winner_user_id: winner,
+                broadcast_payload: {
+                    move: {
+                        san: mv.san,
+                        from: mv.from,
+                        to: mv.to,
+                        color: mv.color,
+                        piece: mv.piece,
+                        captured: mv.captured || "",
+                        promotion: mv.promotion || "",
+                        // castle / en-passant flags, so the board can animate the rook
+                        // and clear the captured pawn without re-deriving them.
+                        flags: mv.flags
+                    },
+                    state: publicView(state, g)
+                }
+            };
+        },
+        buildResult: function (rawState, _actors, _winnerUserId, ended) {
+            var state = rawState;
+            return {
+                result: state.result,
+                end_reason: state.end_reason,
+                ply: state.moves.length,
+                pgn_moves: state.moves.join(" "),
+                final_fen: state.fen,
+                white_user_id: state.white,
+                black_user_id: state.black,
+                completed: ended
+            };
+        }
+    };
+})(ChessGame || (ChessGame = {}));
+var ChessPlugin;
+(function (ChessPlugin) {
+    // Kept for adapter introspection only. The registerRpc() call below must
+    // pass a literal string: Nakama's Goja AST walker resolves the handler by
+    // source name and cannot follow a namespaced property lookup. See the same
+    // note in QuizVersePlugin.
+    ChessPlugin.RPC_CREATE_MATCH = "chess_create_match";
+    function nakamaError(msg, code) {
+        return { message: msg, code: code };
+    }
+    // The cabinet calls this, then prints two QRs pointing at the returned
+    // match. Seats are claimed on join, in scan order: first phone is White.
+    function rpcCreateMatch(ctx, logger, nk, payload) {
+        var raw;
+        try {
+            raw = JSON.parse(payload || "{}");
+        }
+        catch (e) {
+            throw nakamaError("bad json", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        // A distinct async game id per cabinet session, so a glass reboot
+        // rehydrates the board instead of resuming somebody else's game.
+        var gameId = (raw.game_id && String(raw.game_id)) || ("chess_" + nk.uuidv4());
+        // Kiosk default: a walk-up player who wanders off must not pin the
+        // cabinet for a week, which is what the template's async default implies.
+        var moveTimeoutMs = (typeof raw.move_timeout_ms === "number" && raw.move_timeout_ms > 0)
+            ? raw.move_timeout_ms
+            : 5 * 60 * 1000;
+        var templateInit = {
+            generator_id: ChessGame.GENERATOR_ID,
+            game_id: gameId,
+            game_label: "chess",
+            move_timeout_ms: moveTimeoutMs,
+            max_match_duration_ms: (typeof raw.max_match_duration_ms === "number")
+                ? raw.max_match_duration_ms
+                : 60 * 60 * 1000,
+            // The glass joins to watch; it must never be dealt a colour.
+            spectator_user_id: ctx.userId || ""
+        };
+        var matchId;
+        try {
+            matchId = nk.matchCreate(MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1, {
+                game_id: "chess",
+                region: raw.region || "",
+                template_init: templateInit,
+                creator_user_id: ctx.userId || ""
+            });
+        }
+        catch (err) {
+            logger.warn("[Chess] matchCreate failed: " + (err && err.message ? err.message : String(err)));
+            throw nakamaError("matchCreate failed", 13 /* nkruntime.Codes.INTERNAL */);
+        }
+        return JSON.stringify({
+            match_id: matchId,
+            template_id: MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1,
+            game_id: "chess",
+            async_game_id: gameId,
+            spectator_user_id: ctx.userId || "",
+            move_timeout_ms: moveTimeoutMs,
+            server_unix_ms: Date.now()
+        });
+    }
+    ChessPlugin.rpcCreateMatch = rpcCreateMatch;
+    // Idempotent — registerGenerator overwrites by id. Called once per Goja VM
+    // from zz_mp_kernel_handlers.js, because the pooled VMs that serve live
+    // matches never run InitModule.
+    function registerGenerators() {
+        MpKernelAsyncTurn.registerGenerator(ChessGame.GENERATOR);
+    }
+    ChessPlugin.registerGenerators = registerGenerators;
+    // Single-arg on purpose so postbuild's autoInvokeRegister re-runs it on
+    // every pooled VM; the body must contain only registerRpc calls.
+    function register(initializer) {
+        __rpc_chess_create_match = rpcCreateMatch;
+    }
+    ChessPlugin.register = register;
+    register();
+})(ChessPlugin || (ChessPlugin = {}));
 // analytics_cron.ts — Daily expired qv_question_packs cleanup job.
 //
 // ── Purpose ───────────────────────────────────────────────────────────────────
@@ -142579,7 +144697,9 @@ var LegacyLeaderboards;
                     return true;
             }
             catch (_) { /* proceed to create */ }
-            nk.leaderboardCreate(leaderboardId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, resetSchedule || "", metadata || {});
+            // enableRanks=true: without it Nakama skips rank tracking on the board
+            // and rankCount/owner ranks stay empty for every reader.
+            nk.leaderboardCreate(leaderboardId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, resetSchedule || "", metadata || {}, true);
             logger.info("[LegacyLeaderboards] Created: " + leaderboardId);
             return true;
         }
@@ -142679,7 +144799,7 @@ var LegacyLeaderboards;
             var globalId = "leaderboard_global";
             if (!existingIds[globalId]) {
                 try {
-                    nk.leaderboardCreate(globalId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "0 0 * * 0", { scope: "global", desc: "Global Ecosystem Leaderboard" });
+                    nk.leaderboardCreate(globalId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "0 0 * * 0", { scope: "global", desc: "Global Ecosystem Leaderboard" }, true);
                     created.push(globalId);
                     existingRecords.push({ leaderboardId: globalId, scope: "global", createdAt: new Date().toISOString() });
                 }
@@ -142706,7 +144826,7 @@ var LegacyLeaderboards;
                         desc: "Leaderboard for " + (game.gameTitle || game.name || "Untitled"),
                         gameId: gid,
                         scope: "game"
-                    });
+                    }, true);
                     created.push(lbId);
                     existingRecords.push({ leaderboardId: lbId, gameId: gid, scope: "game", createdAt: new Date().toISOString() });
                 }
@@ -142729,12 +144849,15 @@ var LegacyLeaderboards;
             for (var i = 0; i < PERIODS.length; i++) {
                 var period = PERIODS[i];
                 var gid = "leaderboard_global_" + period;
+                var gExists = false;
                 try {
-                    nk.leaderboardsGetId([gid]);
+                    var gRows = nk.leaderboardsGetId([gid]);
+                    gExists = !!(gRows && gRows.length > 0);
                 }
-                catch (_) {
+                catch (_) { /* missing → create below */ }
+                if (!gExists) {
                     try {
-                        nk.leaderboardCreate(gid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[period], { scope: "global", timePeriod: period });
+                        nk.leaderboardCreate(gid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[period], { scope: "global", timePeriod: period }, true);
                         allLeaderboards.push({ leaderboardId: gid, period: period, scope: "global" });
                     }
                     catch (e) {
@@ -142750,22 +144873,25 @@ var LegacyLeaderboards;
                 for (var k = 0; k < PERIODS.length; k++) {
                     var p = PERIODS[k];
                     var lid = "leaderboard_" + gameId + "_" + p;
+                    var exists = false;
                     try {
-                        nk.leaderboardsGetId([lid]);
+                        var rows = nk.leaderboardsGetId([lid]);
+                        exists = !!(rows && rows.length > 0);
                     }
-                    catch (_) {
-                        try {
-                            nk.leaderboardCreate(lid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[p], {
-                                gameId: gameId,
-                                gameTitle: game.gameTitle || game.name,
-                                scope: "game",
-                                timePeriod: p
-                            });
-                            allLeaderboards.push({ leaderboardId: lid, period: p, gameId: gameId });
-                        }
-                        catch (e) {
-                            logger.warn("[LegacyLeaderboards] create " + lid + ": " + e.message);
-                        }
+                    catch (_) { /* missing → create below */ }
+                    if (exists)
+                        continue;
+                    try {
+                        nk.leaderboardCreate(lid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[p], {
+                            gameId: gameId,
+                            gameTitle: game.gameTitle || game.name,
+                            scope: "game",
+                            timePeriod: p
+                        }, true);
+                        allLeaderboards.push({ leaderboardId: lid, period: p, gameId: gameId });
+                    }
+                    catch (e) {
+                        logger.warn("[LegacyLeaderboards] create " + lid + ": " + e.message);
                     }
                 }
             }
@@ -142815,6 +144941,14 @@ var LegacyLeaderboards;
             for (var i = 0; i < PERIODS.length; i++) {
                 var period = PERIODS[i];
                 var lbId = "leaderboard_" + gameId + "_" + period;
+                // Self-heal: create missing boards on first submit. Without this a
+                // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
+                // boards and every score silently lands in errors[] — the RPC still
+                // returns success, so the client believes the write happened.
+                if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
+                    errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
+                    continue;
+                }
                 try {
                     nk.leaderboardRecordWrite(lbId, userId, username, score, subscore, metadata);
                     results.push({ leaderboardId: lbId, period: period, scope: "game", success: true });
@@ -142826,6 +144960,10 @@ var LegacyLeaderboards;
             for (var j = 0; j < PERIODS.length; j++) {
                 var p = PERIODS[j];
                 var gid = "leaderboard_global_" + p;
+                if (!ensureLeaderboardExists(nk, logger, gid, RESET_SCHEDULES[p], { scope: "global", timePeriod: p })) {
+                    errors.push({ leaderboardId: gid, period: p, error: "leaderboard unavailable" });
+                    continue;
+                }
                 try {
                     nk.leaderboardRecordWrite(gid, userId, username, score, subscore, metadata);
                     results.push({ leaderboardId: gid, period: p, scope: "global", success: true });
@@ -154741,7 +156879,8 @@ var MpKernelAsyncTurn;
         TURN_END: 0x5002, // server -> all      : authoritative move applied
         NOTIFY_OPPONENT: 0x5003, // server -> all      : echoed for UI badge
         FORFEIT: 0x5004, // client -> server   : I quit this game
-        RESIGN: 0x5005 // client -> server   : I resign (loss recorded)
+        RESIGN: 0x5005, // client -> server   : I resign (loss recorded)
+        SEAT_ASSIGNED: 0x5006 // server -> all      : generator seated a player
     };
     MpKernelAsyncTurn.DefaultInit = {
         // The persistent game id. SAME id across sessions; not the match_id.
@@ -154854,7 +156993,7 @@ var MpKernelAsyncTurn;
             // also want to view (read-only); the generator decides who can move.
             return { state: ks, accept: true };
         },
-        onJoin: function (_ctx, _logger, _nk, dispatcher, _tick, state, presences) {
+        onJoin: function (_ctx, _logger, nk, dispatcher, _tick, state, presences) {
             var ks = state;
             var matchId = (_ctx.matchId) || "";
             for (var i = 0; i < presences.length; i++) {
@@ -154862,6 +157001,26 @@ var MpKernelAsyncTurn;
                 ks.online[p.userId] = true;
                 if (ks.actors.indexOf(p.userId) < 0)
                     ks.actors.push(p.userId);
+                if (!ks.ended && ks.generator && ks.generator.onActorJoin) {
+                    var seated = ks.generator.onActorJoin(ks.state, p.userId, ks.actors);
+                    if (seated) {
+                        ks.state = seated.state;
+                        if (typeof seated.actor === "string")
+                            ks.current_actor = seated.actor;
+                        if (seated.seat_payload) {
+                            broadcastTemplate(ks, dispatcher, matchId, MpKernelAsyncTurn.Op.SEAT_ASSIGNED, seated.seat_payload);
+                        }
+                        if (ks.game_id)
+                            persist(nk, ks.game_id, {
+                                actors: ks.actors,
+                                gen_state: ks.state,
+                                last_move_unix_ms: ks.last_move_unix_ms,
+                                started_unix_ms: ks.started_unix_ms,
+                                ended: ks.ended,
+                                winner_user_id: ks.winner_user_id
+                            });
+                    }
+                }
                 // If it's their turn, immediately send TURN_START so client
                 // can render move UI without waiting for next loop tick.
                 if (!ks.ended && ks.current_actor === p.userId) {
@@ -197941,133 +200100,133 @@ function InitModule(ctx, logger, nk, initializer) {
   try { __ModuleInit_28(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (chatbox/chatbox.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_36(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_37(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_ai_integration.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_37(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_38(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_daily_challenges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_38(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_39(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_economy.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_39(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_40(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_engagement.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_40(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_41(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_live_match.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_41(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_42(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_predictions.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_42(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_43(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_retention.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_43(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_44(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_season_pass.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_44(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_45(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket/cricket_trivia.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_46(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_47(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (cricket_worldcup/predictions.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_49(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_50(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (daily_rewards/daily_progress.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_50(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_51(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (daily_rewards/daily_reward_calendar.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_51(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_52(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (daily_rewards/daily_rewards.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_53(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_54(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (external_analytics/external_analytics.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_54(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_55(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (external_pollers/external_pollers.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_56(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_57(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (friend_streaks/friend_streaks.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_57(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_58(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (friends/friend_challenges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_58(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_59(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (friends/friend_invites.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_60(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_61(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (friends/friends_extras.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_63(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_64(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (groups/groups.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_68(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_69(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (ivx_quest/ivx_quest.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_69(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_70(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (lap-badges/lap-badges.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_70(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_71(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (lap-gamification/lap-gamification.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_71(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_72(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (lap-library/lap-library.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_72(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_73(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (lap-missions/lap-missions.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_73(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_74(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (lap-recents/lap-recents.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_78(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_79(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (learner_home_widgets/learner_home_widgets.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_79(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_80(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (learner_quotes/learner_quotes.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_80(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_81(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (learner_reminders/learner_reminders.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_81(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_82(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (learner_review/learner_review.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_86(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_87(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (multiplayer/multiplayer_locks.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_90(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_91(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (offer_engine/offer_engine.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_101(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_102(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (quiz_results/quiz_results.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_102(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_103(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (quizverse_depth/quizverse_depth.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_103(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_104(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (quizverse_seen/quizverse_seen.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_109(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_110(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (s3_assets/s3_assets.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_110(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_111(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (satori_compat/satori_compat.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_111(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_112(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (satori_direct/satori_direct.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_112(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_113(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (sdk_aliases/sdk_aliases.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_113(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_114(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (smart_review/smart_review.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_116(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_117(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (visual_path/visual_path.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_117(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_118(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (wallet/wallet.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
-  try { __ModuleInit_119(ctx, logger, nk, initializer); } catch(__miErr) {
+  try { __ModuleInit_120(ctx, logger, nk, initializer); } catch(__miErr) {
     try { logger.error("[Postbuild] Module init failed (zz_kiosk_arcade_handlers.js): " + (__miErr && __miErr.message ? __miErr.message : String(__miErr))); } catch(_) {}
   }
   logger.info("[Postbuild] Invoked 65 module init functions (__ModuleInit_N)");
@@ -198198,6 +200357,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("ivx_set_player_presence", __rpc_ivx_set_player_presence); } catch(e) {}
   try { initializer.registerRpc("ivx_get_cross_game_messages", __rpc_ivx_get_cross_game_messages); } catch(e) {}
   try { initializer.registerRpc("ivx_mark_message_read", __rpc_ivx_mark_message_read); } catch(e) {}
+  try { initializer.registerRpc("chess_create_match", __rpc_chess_create_match); } catch(e) {}
   try { initializer.registerRpc("quizverse_pack_cleanup_tick", __rpc_quizverse_pack_cleanup_tick); } catch(e) {}
   try { initializer.registerRpc("quizverse_blog_embed_create", __rpc_quizverse_blog_embed_create); } catch(e) {}
   try { initializer.registerRpc("quizverse_blog_embed_get", __rpc_quizverse_blog_embed_get); } catch(e) {}
@@ -199580,5 +201740,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1340 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
+  logger.info("[Postbuild] Registered " + 1341 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
 }
