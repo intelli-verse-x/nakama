@@ -1116,6 +1116,35 @@ var output = sections.join('\n');
   console.log('[postbuild] Self-check OK: all ' + defined.size + ' __ModuleInit_N functions are invoked from InitModule');
 })();
 
+// ── 6d. Self-check: every plugin mounted in src/ must exist in the bundle ──
+//
+// Guards against the stale-bundle regression found in 2026-09: main.ts called
+// ChessPlugin.register(initializer) but the committed bundle had no ChessPlugin
+// at all (chess sources landed in 054c7ee42 without a rebuild), so every boot
+// logged "[Chess] plugin failed to mount" and chess_create_match silently never
+// registered. A mount whose namespace is absent means tsc dropped the source,
+// postbuild skipped the module file, or a merge dropped the definition — all of
+// which must fail the build here, loudly, instead of surfacing as a missing RPC
+// in production. Dockerfile.production runs this script without `|| true`, so a
+// failure blocks the image build.
+(function verifyMountedPluginsExist() {
+  var mountRe = /(\w+)\.(?:register|mount)\(initializer/g;
+  var mounts = new Set();
+  var mm;
+  while ((mm = mountRe.exec(buildContent)) !== null) mounts.add(mm[1]);
+  var missing = [];
+  mounts.forEach(function(ns) {
+    var defRe = new RegExp('(^|\\n)\\s*var ' + ns + '[\\s;=]');
+    if (!defRe.test(output)) missing.push(ns);
+  });
+  if (missing.length > 0) {
+    console.error('[postbuild] FATAL: ' + missing.length + ' plugin(s) mounted in src/ are missing from the merged bundle: ' + missing.join(', '));
+    console.error('[postbuild] Their register() calls would throw at Nakama startup and their RPCs would never exist. Aborting build.');
+    process.exit(1);
+  }
+  console.log('[postbuild] Self-check OK: all ' + mounts.size + ' plugins mounted in src/ are present in the bundle');
+})();
+
 fs.writeFileSync(OUTPUT_FILE, output, 'utf8');
 
 // ── 7. Summary ───────────────────────────────────────────────────
