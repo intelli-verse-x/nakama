@@ -4,6 +4,14 @@ nakama-server
 local.yml
 .firecrawl/
 
+# Local agent / IDE / graphify artifacts — never ship these.
+.cursor/
+.claude/
+.beads/
+.agents/
+_archived_docs/
+graphify-out/
+
 # Analytics dashboard: source is web/analytics-dashboard/index.html only.
 # Dockerfile.production copies it to console/ui/dist/analytics.html before go build.
 console/ui/dist/analytics.html
