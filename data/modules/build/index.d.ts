@@ -791,6 +791,39 @@ declare namespace FriendsPresenceShared {
         [id: string]: boolean;
     };
 }
+declare var Chess: any;
+declare namespace ChessGame {
+    var GENERATOR_ID: string;
+    var RESULT_WHITE: string;
+    var RESULT_BLACK: string;
+    var RESULT_DRAW: string;
+    interface ILegalMove {
+        to: string;
+        promo: boolean;
+    }
+    interface IChessState {
+        start_fen: string;
+        moves: string[];
+        fen: string;
+        white: string;
+        black: string;
+        spectator: string;
+        result: string;
+        end_reason: string;
+        started_unix_ms: number;
+    }
+    function legalMap(g: any): {
+        [from: string]: ILegalMove[];
+    };
+    function freshState(initParams: any): IChessState;
+    var GENERATOR: MpKernelAsyncTurn.IAsyncTurnGenerator;
+}
+declare namespace ChessPlugin {
+    var RPC_CREATE_MATCH: string;
+    function rpcCreateMatch(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    function registerGenerators(): void;
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QvAnalyticsCron {
     function register(initializer: nkruntime.Initializer): void;
 }
@@ -2928,6 +2961,7 @@ declare namespace MpKernelAsyncTurn {
         NOTIFY_OPPONENT: number;
         FORFEIT: number;
         RESIGN: number;
+        SEAT_ASSIGNED: number;
     };
     var DefaultInit: {
         game_id: string;
@@ -2945,6 +2979,11 @@ declare namespace MpKernelAsyncTurn {
             ended: boolean;
             winner_user_id?: string;
         };
+        onActorJoin?(state: any, userId: string, actors: string[]): {
+            state: any;
+            actor: string;
+            seat_payload?: any;
+        } | null;
         applyMove(state: any, userId: string, payload: any): {
             state: any;
             actor: string;

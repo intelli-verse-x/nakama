@@ -85,6 +85,12 @@ function InitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[QuizVerse] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
     }
+    try {
+        ChessPlugin.register(initializer);
+    }
+    catch (err) {
+        logger.error("[Chess] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- QuizVerse Nakama-Only Migration plugin ----
     // Registers the migration bridge RPCs (P0 live, P1/P2 deprecated-stub,
     // P3-P8 scaffolded) that bridge old Unity client calls to the new server
@@ -10041,6 +10047,353 @@ var FriendsPresenceShared;
     }
     FriendsPresenceShared.loadOnlineMap = loadOnlineMap;
 })(FriendsPresenceShared || (FriendsPresenceShared = {}));
+// Chess plugin — standard chess on the IVX AsyncTurnMatch template.
+//
+// The server is the only thing that knows the rules. Clients (the kiosk
+// cabinet glass and the two phones that scanned its QR) render a board and
+// post {from, to}; every legality question is answered here. A phone that
+// posts an illegal move, moves out of turn, or moves a piece that is not its
+// colour is simply ignored by the template.
+//
+// So that the clients never need a rule engine of their own, each TURN_END
+// broadcast carries the legal-move map for whoever is on move next. The
+// phones highlight straight from that map.
+//
+// Mounted from src/main.ts AFTER MpKernelModule.mount() so the async-turn
+// template's generator registry exists. Generators are also (re-)registered
+// lazily per Goja VM from zz_mp_kernel_handlers.js — pooled VMs never run
+// InitModule, so registration there is what actually serves live matches.
+var ChessGame;
+(function (ChessGame) {
+    ChessGame.GENERATOR_ID = "chess:standard";
+    // Result strings use PGN convention so exported games are portable.
+    ChessGame.RESULT_WHITE = "1-0";
+    ChessGame.RESULT_BLACK = "0-1";
+    ChessGame.RESULT_DRAW = "1/2-1/2";
+    var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    // Rebuild the full game by replaying SAN from the start position. ~40 moves
+    // of replay at a 1 Hz tick is far cheaper than getting draw detection wrong.
+    function rebuild(state) {
+        var g = new Chess(state.start_fen || START_FEN);
+        for (var i = 0; i < state.moves.length; i++) {
+            if (!g.move(state.moves[i])) {
+                // Should be unreachable: every entry was produced by this engine.
+                // Fall back to the cached position so a corrupt tail cannot brick a
+                // live match — draw detection degrades, the game stays playable.
+                return new Chess(state.fen || state.start_fen || START_FEN);
+            }
+        }
+        return g;
+    }
+    function seatOf(state, userId) {
+        if (userId && userId === state.white)
+            return "w";
+        if (userId && userId === state.black)
+            return "b";
+        return "";
+    }
+    function actorForTurn(state, turn) {
+        return turn === "w" ? state.white : state.black;
+    }
+    function bothSeated(state) {
+        return !!state.white && !!state.black;
+    }
+    // Legal destination squares grouped by origin square, for the side to move.
+    //
+    // Deduplicated by destination: the engine reports a promotion as four moves
+    // (queen, rook, bishop, knight) that all land on the same square, which
+    // would draw the same target four times. The client wants one target
+    // carrying a "you will have to choose a piece" flag, and sends the choice
+    // back with the move.
+    function legalMap(g) {
+        var out = {};
+        var verbose = g.moves({ verbose: true });
+        for (var i = 0; i < verbose.length; i++) {
+            var mv = verbose[i];
+            if (!out[mv.from])
+                out[mv.from] = [];
+            var squares = out[mv.from];
+            var seen = false;
+            for (var j = 0; j < squares.length; j++) {
+                if (squares[j].to === mv.to) {
+                    if (mv.promotion)
+                        squares[j].promo = true;
+                    seen = true;
+                    break;
+                }
+            }
+            if (!seen)
+                squares.push({ to: mv.to, promo: !!mv.promotion });
+        }
+        return out;
+    }
+    ChessGame.legalMap = legalMap;
+    // Classify a finished position. Returns "" while the game is still live.
+    function endReason(g) {
+        if (!g.game_over())
+            return "";
+        if (g.in_checkmate())
+            return "checkmate";
+        if (g.in_stalemate())
+            return "stalemate";
+        if (g.insufficient_material())
+            return "insufficient_material";
+        if (g.in_threefold_repetition())
+            return "threefold_repetition";
+        // in_draw() is true here and the three specific draws are ruled out, so
+        // the only remaining cause is the fifty-move rule.
+        if (g.in_draw())
+            return "fifty_move";
+        return "game_over";
+    }
+    function freshState(initParams) {
+        var startFen = (initParams && initParams.start_fen) || START_FEN;
+        return {
+            start_fen: startFen,
+            moves: [],
+            fen: startFen,
+            white: (initParams && initParams.white_user_id) || "",
+            black: (initParams && initParams.black_user_id) || "",
+            spectator: (initParams && initParams.spectator_user_id) || "",
+            result: "",
+            end_reason: "",
+            started_unix_ms: Date.now()
+        };
+    }
+    ChessGame.freshState = freshState;
+    // Everything a client needs to draw the board and know what it may do.
+    function publicView(state, g) {
+        var over = !!state.result;
+        return {
+            fen: state.fen,
+            turn: over ? "" : g.turn(),
+            moves: state.moves,
+            ply: state.moves.length,
+            white: state.white,
+            black: state.black,
+            in_check: !over && g.in_check(),
+            result: state.result,
+            end_reason: state.end_reason,
+            legal: over ? {} : legalMap(g)
+        };
+    }
+    ChessGame.GENERATOR = {
+        generatorId: ChessGame.GENERATOR_ID,
+        initState: function (initParams, persisted) {
+            var state = persisted && persisted.moves
+                ? persisted
+                : freshState(initParams);
+            // A resumed game keeps its seats; a fresh one has none until the phones
+            // scan in, and must not hand anybody the move before both are present.
+            if (persisted && initParams && initParams.spectator_user_id) {
+                state.spectator = initParams.spectator_user_id;
+            }
+            var g = rebuild(state);
+            var ended = !!state.result;
+            var winner = "";
+            if (state.result === ChessGame.RESULT_WHITE)
+                winner = state.white;
+            else if (state.result === ChessGame.RESULT_BLACK)
+                winner = state.black;
+            return {
+                state: state,
+                actor: (ended || !bothSeated(state)) ? "" : actorForTurn(state, g.turn()),
+                ended: ended,
+                winner_user_id: winner
+            };
+        },
+        onActorJoin: function (rawState, userId, _actors) {
+            var state = rawState;
+            if (!userId || userId === state.spectator)
+                return null;
+            // Already seated — this is a reconnect, not a new player.
+            if (seatOf(state, userId))
+                return null;
+            var color;
+            if (!state.white) {
+                state.white = userId;
+                color = "w";
+            }
+            else if (!state.black) {
+                state.black = userId;
+                color = "b";
+            }
+            else {
+                return null; // Both seats taken; this presence spectates.
+            }
+            var g = rebuild(state);
+            var ready = bothSeated(state);
+            var nextActor = ready ? actorForTurn(state, g.turn()) : "";
+            return {
+                state: state,
+                actor: nextActor,
+                // The template only emits TURN_START to the presence whose turn it is,
+                // and the player who sat down first is not that presence when the
+                // second one arrives. SEAT_ASSIGNED goes to everyone and carries the
+                // whole picture, so both phones and the glass can start from it.
+                seat_payload: {
+                    user_id: userId,
+                    color: color,
+                    both_seated: ready,
+                    next_actor: nextActor,
+                    state: publicView(state, g)
+                }
+            };
+        },
+        applyMove: function (rawState, userId, payload) {
+            var state = rawState;
+            if (state.result)
+                return null;
+            if (!bothSeated(state))
+                return null;
+            var color = seatOf(state, userId);
+            if (!color)
+                return null;
+            var g = rebuild(state);
+            if (g.turn() !== color)
+                return null;
+            var from = payload && payload.from ? String(payload.from) : "";
+            var to = payload && payload.to ? String(payload.to) : "";
+            if (!from || !to)
+                return null;
+            var request = { from: from, to: to };
+            // Only forward a promotion when one was asked for; chess.js rejects the
+            // field on moves that cannot promote.
+            if (payload && payload.promotion) {
+                request.promotion = String(payload.promotion).toLowerCase();
+            }
+            var mv = g.move(request);
+            if (!mv)
+                return null;
+            state.moves.push(mv.san);
+            state.fen = g.fen();
+            var reason = endReason(g);
+            var ended = !!reason;
+            var winner = "";
+            if (ended) {
+                state.end_reason = reason;
+                if (reason === "checkmate") {
+                    state.result = color === "w" ? ChessGame.RESULT_WHITE : ChessGame.RESULT_BLACK;
+                    winner = userId;
+                }
+                else {
+                    state.result = ChessGame.RESULT_DRAW;
+                }
+            }
+            return {
+                state: state,
+                actor: ended ? "" : actorForTurn(state, g.turn()),
+                ended: ended,
+                winner_user_id: winner,
+                broadcast_payload: {
+                    move: {
+                        san: mv.san,
+                        from: mv.from,
+                        to: mv.to,
+                        color: mv.color,
+                        piece: mv.piece,
+                        captured: mv.captured || "",
+                        promotion: mv.promotion || "",
+                        // castle / en-passant flags, so the board can animate the rook
+                        // and clear the captured pawn without re-deriving them.
+                        flags: mv.flags
+                    },
+                    state: publicView(state, g)
+                }
+            };
+        },
+        buildResult: function (rawState, _actors, _winnerUserId, ended) {
+            var state = rawState;
+            return {
+                result: state.result,
+                end_reason: state.end_reason,
+                ply: state.moves.length,
+                pgn_moves: state.moves.join(" "),
+                final_fen: state.fen,
+                white_user_id: state.white,
+                black_user_id: state.black,
+                completed: ended
+            };
+        }
+    };
+})(ChessGame || (ChessGame = {}));
+var ChessPlugin;
+(function (ChessPlugin) {
+    // Kept for adapter introspection only. The registerRpc() call below must
+    // pass a literal string: Nakama's Goja AST walker resolves the handler by
+    // source name and cannot follow a namespaced property lookup. See the same
+    // note in QuizVersePlugin.
+    ChessPlugin.RPC_CREATE_MATCH = "chess_create_match";
+    function nakamaError(msg, code) {
+        return { message: msg, code: code };
+    }
+    // The cabinet calls this, then prints two QRs pointing at the returned
+    // match. Seats are claimed on join, in scan order: first phone is White.
+    function rpcCreateMatch(ctx, logger, nk, payload) {
+        var raw;
+        try {
+            raw = JSON.parse(payload || "{}");
+        }
+        catch (e) {
+            throw nakamaError("bad json", 3 /* nkruntime.Codes.INVALID_ARGUMENT */);
+        }
+        // A distinct async game id per cabinet session, so a glass reboot
+        // rehydrates the board instead of resuming somebody else's game.
+        var gameId = (raw.game_id && String(raw.game_id)) || ("chess_" + nk.uuidv4());
+        // Kiosk default: a walk-up player who wanders off must not pin the
+        // cabinet for a week, which is what the template's async default implies.
+        var moveTimeoutMs = (typeof raw.move_timeout_ms === "number" && raw.move_timeout_ms > 0)
+            ? raw.move_timeout_ms
+            : 5 * 60 * 1000;
+        var templateInit = {
+            generator_id: ChessGame.GENERATOR_ID,
+            game_id: gameId,
+            game_label: "chess",
+            move_timeout_ms: moveTimeoutMs,
+            max_match_duration_ms: (typeof raw.max_match_duration_ms === "number")
+                ? raw.max_match_duration_ms
+                : 60 * 60 * 1000,
+            // The glass joins to watch; it must never be dealt a colour.
+            spectator_user_id: ctx.userId || ""
+        };
+        var matchId;
+        try {
+            matchId = nk.matchCreate(MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1, {
+                game_id: "chess",
+                region: raw.region || "",
+                template_init: templateInit,
+                creator_user_id: ctx.userId || ""
+            });
+        }
+        catch (err) {
+            logger.warn("[Chess] matchCreate failed: " + (err && err.message ? err.message : String(err)));
+            throw nakamaError("matchCreate failed", 13 /* nkruntime.Codes.INTERNAL */);
+        }
+        return JSON.stringify({
+            match_id: matchId,
+            template_id: MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1,
+            game_id: "chess",
+            async_game_id: gameId,
+            spectator_user_id: ctx.userId || "",
+            move_timeout_ms: moveTimeoutMs,
+            server_unix_ms: Date.now()
+        });
+    }
+    ChessPlugin.rpcCreateMatch = rpcCreateMatch;
+    // Idempotent — registerGenerator overwrites by id. Called once per Goja VM
+    // from zz_mp_kernel_handlers.js, because the pooled VMs that serve live
+    // matches never run InitModule.
+    function registerGenerators() {
+        MpKernelAsyncTurn.registerGenerator(ChessGame.GENERATOR);
+    }
+    ChessPlugin.registerGenerators = registerGenerators;
+    // Single-arg on purpose so postbuild's autoInvokeRegister re-runs it on
+    // every pooled VM; the body must contain only registerRpc calls.
+    function register(initializer) {
+        initializer.registerRpc("chess_create_match", rpcCreateMatch);
+    }
+    ChessPlugin.register = register;
+})(ChessPlugin || (ChessPlugin = {}));
 // analytics_cron.ts — Daily expired qv_question_packs cleanup job.
 //
 // ── Purpose ───────────────────────────────────────────────────────────────────
@@ -42848,7 +43201,9 @@ var LegacyLeaderboards;
                     return true;
             }
             catch (_) { /* proceed to create */ }
-            nk.leaderboardCreate(leaderboardId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, resetSchedule || "", metadata || {});
+            // enableRanks=true: without it Nakama skips rank tracking on the board
+            // and rankCount/owner ranks stay empty for every reader.
+            nk.leaderboardCreate(leaderboardId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, resetSchedule || "", metadata || {}, true);
             logger.info("[LegacyLeaderboards] Created: " + leaderboardId);
             return true;
         }
@@ -42948,7 +43303,7 @@ var LegacyLeaderboards;
             var globalId = "leaderboard_global";
             if (!existingIds[globalId]) {
                 try {
-                    nk.leaderboardCreate(globalId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "0 0 * * 0", { scope: "global", desc: "Global Ecosystem Leaderboard" });
+                    nk.leaderboardCreate(globalId, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, "0 0 * * 0", { scope: "global", desc: "Global Ecosystem Leaderboard" }, true);
                     created.push(globalId);
                     existingRecords.push({ leaderboardId: globalId, scope: "global", createdAt: new Date().toISOString() });
                 }
@@ -42975,7 +43330,7 @@ var LegacyLeaderboards;
                         desc: "Leaderboard for " + (game.gameTitle || game.name || "Untitled"),
                         gameId: gid,
                         scope: "game"
-                    });
+                    }, true);
                     created.push(lbId);
                     existingRecords.push({ leaderboardId: lbId, gameId: gid, scope: "game", createdAt: new Date().toISOString() });
                 }
@@ -42998,12 +43353,15 @@ var LegacyLeaderboards;
             for (var i = 0; i < PERIODS.length; i++) {
                 var period = PERIODS[i];
                 var gid = "leaderboard_global_" + period;
+                var gExists = false;
                 try {
-                    nk.leaderboardsGetId([gid]);
+                    var gRows = nk.leaderboardsGetId([gid]);
+                    gExists = !!(gRows && gRows.length > 0);
                 }
-                catch (_) {
+                catch (_) { /* missing → create below */ }
+                if (!gExists) {
                     try {
-                        nk.leaderboardCreate(gid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[period], { scope: "global", timePeriod: period });
+                        nk.leaderboardCreate(gid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[period], { scope: "global", timePeriod: period }, true);
                         allLeaderboards.push({ leaderboardId: gid, period: period, scope: "global" });
                     }
                     catch (e) {
@@ -43019,22 +43377,25 @@ var LegacyLeaderboards;
                 for (var k = 0; k < PERIODS.length; k++) {
                     var p = PERIODS[k];
                     var lid = "leaderboard_" + gameId + "_" + p;
+                    var exists = false;
                     try {
-                        nk.leaderboardsGetId([lid]);
+                        var rows = nk.leaderboardsGetId([lid]);
+                        exists = !!(rows && rows.length > 0);
                     }
-                    catch (_) {
-                        try {
-                            nk.leaderboardCreate(lid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[p], {
-                                gameId: gameId,
-                                gameTitle: game.gameTitle || game.name,
-                                scope: "game",
-                                timePeriod: p
-                            });
-                            allLeaderboards.push({ leaderboardId: lid, period: p, gameId: gameId });
-                        }
-                        catch (e) {
-                            logger.warn("[LegacyLeaderboards] create " + lid + ": " + e.message);
-                        }
+                    catch (_) { /* missing → create below */ }
+                    if (exists)
+                        continue;
+                    try {
+                        nk.leaderboardCreate(lid, true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, RESET_SCHEDULES[p], {
+                            gameId: gameId,
+                            gameTitle: game.gameTitle || game.name,
+                            scope: "game",
+                            timePeriod: p
+                        }, true);
+                        allLeaderboards.push({ leaderboardId: lid, period: p, gameId: gameId });
+                    }
+                    catch (e) {
+                        logger.warn("[LegacyLeaderboards] create " + lid + ": " + e.message);
                     }
                 }
             }
@@ -43084,6 +43445,14 @@ var LegacyLeaderboards;
             for (var i = 0; i < PERIODS.length; i++) {
                 var period = PERIODS[i];
                 var lbId = "leaderboard_" + gameId + "_" + period;
+                // Self-heal: create missing boards on first submit. Without this a
+                // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
+                // boards and every score silently lands in errors[] — the RPC still
+                // returns success, so the client believes the write happened.
+                if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
+                    errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
+                    continue;
+                }
                 try {
                     nk.leaderboardRecordWrite(lbId, userId, username, score, subscore, metadata);
                     results.push({ leaderboardId: lbId, period: period, scope: "game", success: true });
@@ -43095,6 +43464,10 @@ var LegacyLeaderboards;
             for (var j = 0; j < PERIODS.length; j++) {
                 var p = PERIODS[j];
                 var gid = "leaderboard_global_" + p;
+                if (!ensureLeaderboardExists(nk, logger, gid, RESET_SCHEDULES[p], { scope: "global", timePeriod: p })) {
+                    errors.push({ leaderboardId: gid, period: p, error: "leaderboard unavailable" });
+                    continue;
+                }
                 try {
                     nk.leaderboardRecordWrite(gid, userId, username, score, subscore, metadata);
                     results.push({ leaderboardId: gid, period: p, scope: "global", success: true });
@@ -54988,7 +55361,8 @@ var MpKernelAsyncTurn;
         TURN_END: 0x5002, // server -> all      : authoritative move applied
         NOTIFY_OPPONENT: 0x5003, // server -> all      : echoed for UI badge
         FORFEIT: 0x5004, // client -> server   : I quit this game
-        RESIGN: 0x5005 // client -> server   : I resign (loss recorded)
+        RESIGN: 0x5005, // client -> server   : I resign (loss recorded)
+        SEAT_ASSIGNED: 0x5006 // server -> all      : generator seated a player
     };
     MpKernelAsyncTurn.DefaultInit = {
         // The persistent game id. SAME id across sessions; not the match_id.
@@ -55101,7 +55475,7 @@ var MpKernelAsyncTurn;
             // also want to view (read-only); the generator decides who can move.
             return { state: ks, accept: true };
         },
-        onJoin: function (_ctx, _logger, _nk, dispatcher, _tick, state, presences) {
+        onJoin: function (_ctx, _logger, nk, dispatcher, _tick, state, presences) {
             var ks = state;
             var matchId = (_ctx.matchId) || "";
             for (var i = 0; i < presences.length; i++) {
@@ -55109,6 +55483,26 @@ var MpKernelAsyncTurn;
                 ks.online[p.userId] = true;
                 if (ks.actors.indexOf(p.userId) < 0)
                     ks.actors.push(p.userId);
+                if (!ks.ended && ks.generator && ks.generator.onActorJoin) {
+                    var seated = ks.generator.onActorJoin(ks.state, p.userId, ks.actors);
+                    if (seated) {
+                        ks.state = seated.state;
+                        if (typeof seated.actor === "string")
+                            ks.current_actor = seated.actor;
+                        if (seated.seat_payload) {
+                            broadcastTemplate(ks, dispatcher, matchId, MpKernelAsyncTurn.Op.SEAT_ASSIGNED, seated.seat_payload);
+                        }
+                        if (ks.game_id)
+                            persist(nk, ks.game_id, {
+                                actors: ks.actors,
+                                gen_state: ks.state,
+                                last_move_unix_ms: ks.last_move_unix_ms,
+                                started_unix_ms: ks.started_unix_ms,
+                                ended: ks.ended,
+                                winner_user_id: ks.winner_user_id
+                            });
+                    }
+                }
                 // If it's their turn, immediately send TURN_START so client
                 // can render move UI without waiting for next loop tick.
                 if (!ks.ended && ks.current_actor === p.userId) {
