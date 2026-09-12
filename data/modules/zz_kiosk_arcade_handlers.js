@@ -40,7 +40,13 @@ function kioskArcadeJoinCap(game) {
 
 function kioskArcadeOpcodeOk(op) {
   var n = Number(op);
-  return n >= 1 && n <= 8;
+  if (n >= 1 && n <= 8) return true;
+  /* Kernel async-turn band (mirrors KioskXSDK.OP / MpKernelAsyncTurn.Op):
+     chess SEAT_ASSIGNED (0x5006) must cross the mailbox explicitly — today
+     phones only learn seats as a side effect of the op-8 state broadcast.
+     The band is reserved for the server-ruled template, so relay titles
+     (ops 1-10) can never collide with it. */
+  return n >= 0x5000 && n <= 0x5006;
 }
 
 function kioskArcadeMeta(metadata, presence) {

@@ -132,6 +132,29 @@ test("mailbox broadcasts opcodes 1-8 and ignores the rest", function () {
   assert.equal(seen[3].op, 8);
 });
 
+test("mailbox relays the chess kernel band 0x5000-0x5006 and nothing past it", function () {
+  var started = init("chess", "tv");
+  var state = join(started.state, ["tv", "spark"], 1).state;
+  var seen = [];
+  var dispatcher = {
+    broadcastMessage: function (op, data, _to, sender) {
+      seen.push({ op: op, sender: sender });
+    }
+  };
+  var nk = { walletUpdate: function () { throw new Error("RESULT must not mint"); } };
+  var messages = [
+    { opCode: 0x5000, data: "turn-start", sender: presence("tv") },
+    { opCode: 0x5006, data: "seat", sender: presence("tv") },
+    { opCode: 0x5007, data: "past-the-band", sender: presence("tv") },
+    { opCode: 0x4FFF, data: "below-the-band", sender: presence("spark") }
+  ];
+  var out = g.kioskArcadeMatchLoop({}, logger(), nk, dispatcher, 2, state, messages);
+  assert.ok(out.state);
+  assert.equal(seen.length, 2);
+  assert.equal(seen[0].op, 0x5000);
+  assert.equal(seen[1].op, 0x5006);
+});
+
 test("platformer: host + two phones; third rejected", function () {
   var started = init("platformer", "tv");
   var state = started.state;
