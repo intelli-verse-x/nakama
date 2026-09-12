@@ -43496,6 +43496,15 @@ var LegacyLeaderboards;
             var limit = parseInt(String(data.limit)) || 10;
             var cursor = data.cursor || "";
             var ownerIds = data.ownerIds || null;
+            // Self-heal on read, symmetric with rpcSubmitScoreToTimePeriods: a board
+            // that no score has landed on yet must return an empty record set, not an
+            // error — otherwise every fresh game id reads as a broken leaderboard
+            // until the first submit creates the board.
+            ensureLeaderboardExists(nk, logger, leaderboardId, RESET_SCHEDULES[period], {
+                scope: data.scope === "global" ? "global" : "game",
+                gameId: data.gameId || "",
+                timePeriod: period
+            });
             var result = nk.leaderboardRecordsList(leaderboardId, ownerIds, limit, cursor, 0);
             return RpcHelpers.successResponse({
                 leaderboardId: leaderboardId,
