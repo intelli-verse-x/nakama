@@ -899,6 +899,98 @@ namespace LegacyWallet {
     }
   }
 
+  /**
+   * Server-to-server arcade wallet grant for Kiosk-X cabinets.
+   * Called with console http_key only (no session). Amount was already
+   * decided and budget-capped by the kiosk server; this RPC moves the coins
+   * and records a durable grantId so retries never double-mint.
+   */
+  export function rpcKioskxArcadeWalletGrant(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
+    try {
+      // Session callers must not mint for arbitrary users. http_key RPCs have
+      // an empty ctx.userId and are the only trusted path.
+      if (ctx.userId) {
+        return RpcHelpers.errorResponse("http_key only");
+      }
+      var data = RpcHelpers.parseRpcPayload(payload);
+      var userId = String(data.userId || "").trim();
+      var gameId = String(data.gameId || "").trim();
+      var grantId = String(data.grantId || "").trim().slice(0, 120);
+      var coins = Math.floor(Number(data.coins || 0));
+      var xp = Math.floor(Number(data.xp || 0));
+      if (!userId || !gameId || !grantId) {
+        return RpcHelpers.errorResponse("userId, gameId and grantId required");
+      }
+      if (!isFinite(coins) || coins < 0 || coins > 3) {
+        return RpcHelpers.errorResponse("coins out of range");
+      }
+      if (!isFinite(xp) || xp < 0 || xp > 20) {
+        return RpcHelpers.errorResponse("xp out of range");
+      }
+      if (coins <= 0 && xp <= 0) {
+        return RpcHelpers.successResponse({
+          grantId: grantId,
+          coins: 0,
+          xp: 0,
+          idempotent: false,
+          skipped: "zero"
+        });
+      }
+
+      var prior = Storage.readSystemJson<any>(nk, Constants.WALLETS_COLLECTION, "arcade_grant_" + grantId);
+      if (prior && prior.grantId === grantId) {
+        return RpcHelpers.successResponse({
+          grantId: grantId,
+          coins: prior.coins || 0,
+          xp: prior.xp || 0,
+          gameBalance: prior.gameBalance,
+          xpBalance: prior.xpBalance,
+          idempotent: true
+        });
+      }
+
+      var gameWallet = WalletHelpers.getGameWallet(nk, userId, gameId);
+      var globalWallet = getGlobalWallet(nk, userId);
+      if (coins > 0) {
+        if (gameWallet.currencies.game === undefined) gameWallet.currencies.game = 0;
+        if (gameWallet.currencies.tokens === undefined) gameWallet.currencies.tokens = gameWallet.currencies.game;
+        gameWallet.currencies.game += coins;
+        gameWallet.currencies.tokens = gameWallet.currencies.game;
+        WalletHelpers.saveGameWallet(nk, gameWallet);
+      }
+      if (xp > 0) {
+        if (globalWallet.currencies.xp === undefined) globalWallet.currencies.xp = 0;
+        globalWallet.currencies.xp += xp;
+        saveGlobalWallet(nk, userId, globalWallet);
+      }
+
+      var gameBalance = gameWallet.currencies.game || 0;
+      var xpBalance = globalWallet.currencies.xp || 0;
+      Storage.writeSystemJson(nk, Constants.WALLETS_COLLECTION, "arcade_grant_" + grantId, {
+        grantId: grantId,
+        userId: userId,
+        gameId: gameId,
+        coins: coins,
+        xp: xp,
+        source: String(data.source || "").slice(0, 120),
+        gameBalance: gameBalance,
+        xpBalance: xpBalance,
+        at: new Date().toISOString()
+      });
+
+      return RpcHelpers.successResponse({
+        grantId: grantId,
+        coins: coins,
+        xp: xp,
+        gameBalance: gameBalance,
+        xpBalance: xpBalance,
+        idempotent: false
+      });
+    } catch (e: any) {
+      return RpcHelpers.errorResponse(e.message || "kioskx_arcade_wallet_grant failed");
+    }
+  }
+
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("get_user_wallet", rpcGetUserWallet);
     initializer.registerRpc("link_wallet_to_game", rpcLinkWalletToGame);
@@ -922,5 +1014,6 @@ namespace LegacyWallet {
     initializer.registerRpc("create_or_get_wallet", rpcCreateOrGetWallet);
     initializer.registerRpc("calculate_score_reward", rpcCalculateScoreReward);
     initializer.registerRpc("update_game_reward_config", rpcUpdateGameRewardConfig);
+    initializer.registerRpc("kioskx_arcade_wallet_grant", rpcKioskxArcadeWalletGrant);
   }
 }

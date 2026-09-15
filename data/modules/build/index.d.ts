@@ -1941,6 +1941,13 @@ declare namespace LegacyWallet {
     function rpcCreateOrGetWallet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcCalculateScoreReward(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcUpdateGameRewardConfig(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
+    /**
+     * Server-to-server arcade wallet grant for Kiosk-X cabinets.
+     * Called with console http_key only (no session). Amount was already
+     * decided and budget-capped by the kiosk server; this RPC moves the coins
+     * and records a durable grantId so retries never double-mint.
+     */
+    function rpcKioskxArcadeWalletGrant(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function register(initializer: nkruntime.Initializer): void;
 }
 /**
