@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
+import {createHash} from 'node:crypto';
 const source = fs.readFileSync(new URL('../src/legacy/wallet.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, {compilerOptions:{target:ts.ScriptTarget.ES5}}).outputText;
 const ctx = {Constants:{WALLETS_COLLECTION:'wallets',SYSTEM_USER_ID:'system'},
@@ -12,6 +13,7 @@ const key = r => `${r.userId}/${r.key}`;
 let db, calls, failBefore, lostResponse, interfere;
 function reset(){db=new Map();calls=0;failBefore=false;lostResponse=false;interfere=null;}
 const nk={
+ sha256Hash:s=>createHash('sha256').update(s).digest('hex'),
  storageRead:req=>req.flatMap(r=>db.has(key(r))?[structuredClone({...db.get(key(r)),...r})]:[]),
  storageWrite:req=>{
   calls++;
@@ -46,3 +48,13 @@ reset();interfere=()=>assert.equal(grant({...award,grantId:'other-round'}).succe
 assert.equal(grant().success,true);assert.equal(balance(),4);
 assert.equal(db.get('player/global_player').value.currencies.xp,6);
 console.log('PASS competing distinct awards preserve both balance changes');
+
+reset();const longId='round-'.repeat(30);
+assert.equal(grant({...award,grantId:longId}).success,true);
+assert.equal(grant({...award,grantId:longId+'different'}).success,true);
+assert.equal(balance(),4);
+assert([...db.keys()].every(k=>k.split('/')[1].length<=128));
+console.log('PASS long round IDs are distinct and storage keys stay bounded');
+reset();db.set('system/arcade_grant_round-one',{value:{...award,gameBalance:2,xpBalance:3},version:'old'});
+assert.equal(grant().data.idempotent,true);assert.equal(calls,0);
+console.log('PASS pre-upgrade receipts never remint');

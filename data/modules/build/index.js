@@ -50868,7 +50868,7 @@ var LegacyWallet;
             var grantId = String(data.grantId || "").trim();
             var coins = Math.floor(Number(data.coins || 0));
             var xp = Math.floor(Number(data.xp || 0));
-            if (!userId || !gameId || !grantId || grantId.length > 120) {
+            if (!userId || !gameId || !grantId || grantId.length > 256) {
                 return RpcHelpers.errorResponse("userId, gameId and grantId required");
             }
             if (!isFinite(coins) || coins < 0 || coins > 3) {
@@ -50891,12 +50891,14 @@ var LegacyWallet;
             // prevents two workers from minting the same grant.
             var gameKey = "wallet_" + userId + "_" + gameId;
             var globalKey = "global_" + userId;
-            var receiptKey = "arcade_grant_" + grantId;
+            var receiptKey = "arcade_grant_v2_" + nk.sha256Hash(grantId);
+            var legacyKey = "arcade_grant_" + grantId.slice(0, 120);
             for (var attempt = 0; attempt < 3; attempt++) {
                 var objects = nk.storageRead([
                     { collection: Constants.WALLETS_COLLECTION, key: gameKey, userId: userId },
                     { collection: Constants.WALLETS_COLLECTION, key: globalKey, userId: userId },
-                    { collection: Constants.WALLETS_COLLECTION, key: receiptKey, userId: Constants.SYSTEM_USER_ID }
+                    { collection: Constants.WALLETS_COLLECTION, key: receiptKey, userId: Constants.SYSTEM_USER_ID },
+                    { collection: Constants.WALLETS_COLLECTION, key: legacyKey, userId: Constants.SYSTEM_USER_ID }
                 ]);
                 var gameObject = null;
                 var globalObject = null;
@@ -50906,11 +50908,11 @@ var LegacyWallet;
                         gameObject = objects[i];
                     else if (objects[i].key === globalKey)
                         globalObject = objects[i];
-                    else if (objects[i].key === receiptKey)
+                    else if (objects[i].key === receiptKey || objects[i].key === legacyKey)
                         receipt = objects[i].value;
                 }
                 if (receipt) {
-                    if (receipt.userId !== userId || receipt.gameId !== gameId ||
+                    if (receipt.grantId !== grantId || receipt.userId !== userId || receipt.gameId !== gameId ||
                         receipt.coins !== coins || receipt.xp !== xp) {
                         return RpcHelpers.errorResponse("grantId conflicts with an existing award");
                     }
