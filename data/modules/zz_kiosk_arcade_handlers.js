@@ -70,6 +70,7 @@ function kioskArcadeGraceTicks(role) {
 function kioskArcadeSeatHeld(seat, tick) {
   if (!seat || seat.observer) return false;
   if (seat.present) return true;
+  if (seat.pendingUntil && tick < seat.pendingUntil) return true;
   var left = seat.leftTick || 0;
   if (!left) return false;
   return tick - left < kioskArcadeGraceTicks(seat.role);
@@ -224,8 +225,14 @@ function kioskArcadeMatchJoinAttempt(ctx, logger, nk, dispatcher, tick, state, p
   var cap = kioskArcadeJoinCap(state.game);
   if (kioskArcadeOccupied(state, tick) >= cap) {
     logger.info("[kiosk-arcade] reject join game=" + state.game + " cap=" + cap + " user=" + userId);
-    return { state: state, accept: false };
+    return { state: state, accept: false, rejectMessage: "Room full — wait for a player to leave, then retry." };
   }
+  if (!userId) return { state: state, accept: false, rejectMessage: "Player identity required" };
+  // JoinAttempt and Join are separate callbacks: reserve now so a burst of
+  // simultaneous attempts cannot all observe the same last free seat.
+  seats[userId] = { role: userId === state.hostUserId ? "host" : "phone",
+    present: false, leftTick: 0, observer: false, pitOrdinal: 0,
+    pendingUntil: tick + KIOSK_ARCADE_PHONE_GRACE_TICKS };
   return { state: state, accept: true };
 }
 
@@ -250,6 +257,8 @@ function kioskArcadeMatchJoin(ctx, logger, nk, dispatcher, tick, state, presence
         kioskArcadeAssignPhone(state, userId);
       }
     } else {
+      if (existing.pendingUntil && !isHost) kioskArcadeAssignPhone(state, userId);
+      existing.pendingUntil = 0;
       existing.present = true;
       existing.leftTick = 0;
       if (isHost) existing.role = "host";

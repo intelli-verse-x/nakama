@@ -915,10 +915,10 @@ namespace LegacyWallet {
       var data = RpcHelpers.parseRpcPayload(payload);
       var userId = String(data.userId || "").trim();
       var gameId = String(data.gameId || "").trim();
-      var grantId = String(data.grantId || "").trim().slice(0, 120);
+      var grantId = String(data.grantId || "").trim();
       var coins = Math.floor(Number(data.coins || 0));
       var xp = Math.floor(Number(data.xp || 0));
-      if (!userId || !gameId || !grantId) {
+      if (!userId || !gameId || !grantId || grantId.length > 120) {
         return RpcHelpers.errorResponse("userId, gameId and grantId required");
       }
       if (!isFinite(coins) || coins < 0 || coins > 3) {
@@ -937,55 +937,71 @@ namespace LegacyWallet {
         });
       }
 
-      var prior = Storage.readSystemJson<any>(nk, Constants.WALLETS_COLLECTION, "arcade_grant_" + grantId);
-      if (prior && prior.grantId === grantId) {
-        return RpcHelpers.successResponse({
-          grantId: grantId,
-          coins: prior.coins || 0,
-          xp: prior.xp || 0,
-          gameBalance: prior.gameBalance,
-          xpBalance: prior.xpBalance,
-          idempotent: true
-        });
+      // Balance changes and the receipt are one storage transaction. Versions
+      // prevent two grants from overwriting one another; create-only receipt
+      // prevents two workers from minting the same grant.
+      var gameKey = "wallet_" + userId + "_" + gameId;
+      var globalKey = "global_" + userId;
+      var receiptKey = "arcade_grant_" + grantId;
+      for (var attempt = 0; attempt < 3; attempt++) {
+        var objects = nk.storageRead([
+          { collection: Constants.WALLETS_COLLECTION, key: gameKey, userId: userId },
+          { collection: Constants.WALLETS_COLLECTION, key: globalKey, userId: userId },
+          { collection: Constants.WALLETS_COLLECTION, key: receiptKey, userId: Constants.SYSTEM_USER_ID }
+        ]);
+        var gameObject: any = null;
+        var globalObject: any = null;
+        var receipt: any = null;
+        for (var i = 0; i < objects.length; i++) {
+          if (objects[i].key === gameKey) gameObject = objects[i];
+          else if (objects[i].key === globalKey) globalObject = objects[i];
+          else if (objects[i].key === receiptKey) receipt = objects[i].value;
+        }
+        if (receipt) {
+          if (receipt.userId !== userId || receipt.gameId !== gameId ||
+              receipt.coins !== coins || receipt.xp !== xp) {
+            return RpcHelpers.errorResponse("grantId conflicts with an existing award");
+          }
+          return RpcHelpers.successResponse({ grantId: grantId, coins: coins, xp: xp,
+            gameBalance: receipt.gameBalance, xpBalance: receipt.xpBalance, idempotent: true });
+        }
+        var gameWallet = gameObject ? gameObject.value :
+          { userId: userId, gameId: gameId, currencies: { game: 0, tokens: 0, xp: 0 }, items: {} };
+        var globalWallet = globalObject ? globalObject.value :
+          { userId: userId, currencies: { global: 0, xut: 0, xp: 0 }, items: {} };
+        var gameBalance = Number(gameWallet.currencies.game !== undefined ?
+          gameWallet.currencies.game : gameWallet.currencies.tokens || 0) + coins;
+        var xpBalance = Number(globalWallet.currencies.xp || 0) + xp;
+        if (!isFinite(gameBalance) || !isFinite(xpBalance)) {
+          return RpcHelpers.errorResponse("invalid stored wallet balance");
+        }
+        gameWallet.currencies.game = gameBalance;
+        gameWallet.currencies.tokens = gameBalance;
+        globalWallet.currencies.xp = xpBalance;
+        var writes: nkruntime.StorageWriteRequest[] = [{
+          collection: Constants.WALLETS_COLLECTION, key: receiptKey, userId: Constants.SYSTEM_USER_ID,
+          value: { grantId: grantId, userId: userId, gameId: gameId, coins: coins, xp: xp,
+            source: String(data.source || "").slice(0, 120), gameBalance: gameBalance,
+            xpBalance: xpBalance, at: new Date().toISOString() },
+          permissionRead: 0, permissionWrite: 0, version: "*"
+        }];
+        if (coins > 0) writes.push({ collection: Constants.WALLETS_COLLECTION, key: gameKey,
+          userId: userId, value: gameWallet, permissionRead: 1, permissionWrite: 0,
+          version: gameObject ? gameObject.version : "*" });
+        if (xp > 0) writes.push({ collection: Constants.WALLETS_COLLECTION, key: globalKey,
+          userId: userId, value: globalWallet, permissionRead: 1, permissionWrite: 0,
+          version: globalObject ? globalObject.version : "*" });
+        try {
+          nk.storageWrite(writes);
+          return RpcHelpers.successResponse({ grantId: grantId, coins: coins, xp: xp,
+            gameBalance: gameBalance, xpBalance: xpBalance, idempotent: false });
+        } catch (writeError) {
+          if (attempt === 2) throw writeError;
+          // Re-read after conflict or an ambiguous response. A committed receipt
+          // returns the original result; an uncommitted batch can safely retry.
+        }
       }
-
-      var gameWallet = WalletHelpers.getGameWallet(nk, userId, gameId);
-      var globalWallet = getGlobalWallet(nk, userId);
-      if (coins > 0) {
-        if (gameWallet.currencies.game === undefined) gameWallet.currencies.game = 0;
-        if (gameWallet.currencies.tokens === undefined) gameWallet.currencies.tokens = gameWallet.currencies.game;
-        gameWallet.currencies.game += coins;
-        gameWallet.currencies.tokens = gameWallet.currencies.game;
-        WalletHelpers.saveGameWallet(nk, gameWallet);
-      }
-      if (xp > 0) {
-        if (globalWallet.currencies.xp === undefined) globalWallet.currencies.xp = 0;
-        globalWallet.currencies.xp += xp;
-        saveGlobalWallet(nk, userId, globalWallet);
-      }
-
-      var gameBalance = gameWallet.currencies.game || 0;
-      var xpBalance = globalWallet.currencies.xp || 0;
-      Storage.writeSystemJson(nk, Constants.WALLETS_COLLECTION, "arcade_grant_" + grantId, {
-        grantId: grantId,
-        userId: userId,
-        gameId: gameId,
-        coins: coins,
-        xp: xp,
-        source: String(data.source || "").slice(0, 120),
-        gameBalance: gameBalance,
-        xpBalance: xpBalance,
-        at: new Date().toISOString()
-      });
-
-      return RpcHelpers.successResponse({
-        grantId: grantId,
-        coins: coins,
-        xp: xp,
-        gameBalance: gameBalance,
-        xpBalance: xpBalance,
-        idempotent: false
-      });
+      return RpcHelpers.errorResponse("wallet temporarily busy; retry this grantId");
     } catch (e: any) {
       return RpcHelpers.errorResponse(e.message || "kioskx_arcade_wallet_grant failed");
     }

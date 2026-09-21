@@ -277,6 +277,31 @@ test("InitModule registers the RPC id", function () {
   assert.deepEqual(ids, ["kiosk_arcade_create"]);
 });
 
+test("100 pending attempts cannot oversubscribe the last seat", function () {
+  ["golfx", "platformer", "racing", "chess", "snakewars"].forEach(function (game) {
+    var state = init(game).state;
+    join(state, ["tv"]);
+    var admitted = [];
+    for (var i = 0; i < 100; i++) {
+      var result = joinAttempt(state, "burst-" + i, 2);
+      if (result.accept) admitted.push("burst-" + i);
+      else assert.ok(result.rejectMessage.indexOf("Room full") >= 0);
+    }
+    assert.strictEqual(admitted.length, g.kioskArcadeJoinCap(game) - 1);
+    join(state, admitted, 3);
+    assert.strictEqual(g.kioskArcadeOccupied(state, 3), g.kioskArcadeJoinCap(game));
+  });
+});
+
+test("an abandoned admission reservation expires without evicting active players", function () {
+  var state = init("golfx").state;
+  join(state, ["tv"]);
+  assert.strictEqual(joinAttempt(state, "lost", 2).accept, true);
+  assert.strictEqual(joinAttempt(state, "next", 3).accept, false);
+  assert.strictEqual(joinAttempt(state, "next", 203).accept, true);
+  assert.strictEqual(state.seats.tv.present, true);
+});
+
 if (failed) {
   console.log("\n" + failed + " failed");
   process.exit(1);
