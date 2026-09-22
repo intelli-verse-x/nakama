@@ -55,7 +55,7 @@
       <tr><td>Bracket internal</td><td><code>http://bracket.aicart.svc.cluster.local:8400</code></td><td><code>BRACKET_SERVICE_JWT</code> (Authorization: Bearer)</td></tr>
     </tbody>
   </table>
-  <p><strong>Server key (HTTP key):</strong> <code>TjJU2n07lAJ6HIGG7BQrARp6cbm2IKIeag1uGXjb</code> — read-only RPCs (<code>tournament_list</code>, <code>tournament_get</code>, the <code>nakama_js_health</code> probe). Never use this for mutating calls in clients; do those over an authenticated session.</p>
+  <p><strong>Server key (HTTP key):</strong> read from your own secret store — <code>kubectl -n aicart get secret nakama-secret -o jsonpath='{.data.http_key}' | base64 -d</code> — and export it as <code>NAKAMA_HTTP_KEY</code>. Used for read-only RPCs (<code>tournament_list</code>, <code>tournament_get</code>, the <code>nakama_js_health</code> probe). Never use this for mutating calls in clients; do those over an authenticated session.</p>
 </section>
 
 <!-- ─────────────────── Web (Next.js) ─────────────────── -->
@@ -106,7 +106,9 @@ import { rpc } from "@/lib/nakama/web-client";
 export default async function Page() {
   // Server-side fetch for fast first paint (uses the http_key, read-only)
   const r = await fetch(
-    "https://nakama.intelli-verse-x.ai/v2/rpc/tournament_list?http_key=TjJU2n07lAJ6HIGG7BQrARp6cbm2IKIeag1uGXjb&unwrap",
+    // Server-side only. Must NOT be a NEXT_PUBLIC_ name: that would inline the
+    // key into the client bundle and publish it to every visitor.
+    `https://nakama.intelli-verse-x.ai/v2/rpc/tournament_list?http_key=${process.env.NAKAMA_HTTP_KEY}&unwrap`,
     { next: { revalidate: 30 } } // 30-second ISR
   );
   const data = await r.json();
