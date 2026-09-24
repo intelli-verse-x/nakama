@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-09-15T12:18:10.416Z
+// Generated: 2026-09-24T11:35:45.888Z
 // RPC Count: 1342
 // ============================================================
 
@@ -172525,6 +172525,38 @@ var SatoriAudiences;
                 rule: {
                     combinator: "and",
                     filters: [{ property: "total_spend", operator: "gt", value: "0" }]
+                },
+                createdAt: 0,
+                updatedAt: 0
+            };
+        }
+        if (!audiences["lapsed_players"]) {
+            audiences["lapsed_players"] = {
+                id: "lapsed_players",
+                name: "Lapsed Players",
+                description: "Played at least once and last seen 3 or more days ago",
+                rule: {
+                    combinator: "and",
+                    filters: [
+                        { property: "last_seen_days_ago", operator: "gte", value: "3" },
+                        { property: "session_count", operator: "gte", value: "1" }
+                    ]
+                },
+                createdAt: 0,
+                updatedAt: 0
+            };
+        }
+        if (!audiences["at_risk_players"]) {
+            audiences["at_risk_players"] = {
+                id: "at_risk_players",
+                name: "At-Risk Players",
+                description: "Played often and last seen 2 or more days ago",
+                rule: {
+                    combinator: "and",
+                    filters: [
+                        { property: "last_seen_days_ago", operator: "gte", value: "2" },
+                        { property: "session_count", operator: "gte", value: "5" }
+                    ]
                 },
                 createdAt: 0,
                 updatedAt: 0
