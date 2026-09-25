@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-09-25T13:47:10.953Z
+// Generated: 2026-09-25T16:49:05.653Z
 // RPC Count: 1344
 // ============================================================
 
@@ -189312,7 +189312,9 @@ var SocialGroupSurface;
 (function (SocialGroupSurface) {
     var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
     var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    var WEEK_CACHE_MS = 45 * 1000;
     var MAX_COVER_LEN = 2048;
+    var WEEK_CACHE_COLLECTION = "ivx_social_week_cache";
     function groupActivityCollection(groupId) {
         return "group_activity_" + groupId;
     }
@@ -189373,7 +189375,26 @@ var SocialGroupSurface;
             var groupId = typeof data.groupId === "string" ? data.groupId : "";
             if (!groupId)
                 return RpcHelpers.errorResponse("groupId required");
-            var since = Date.now() - WEEK_MS;
+            var now = Date.now();
+            var cached = nk.storageRead([{
+                    collection: WEEK_CACHE_COLLECTION,
+                    key: groupId,
+                    userId: SYSTEM_USER_ID
+                }]);
+            if (cached && cached.length > 0 && cached[0].value) {
+                var hit = cached[0].value;
+                var age = now - (parseInt(hit.cachedAt, 10) || 0);
+                if (age >= 0 && age < WEEK_CACHE_MS) {
+                    return RpcHelpers.successResponse({
+                        groupId: groupId,
+                        quizzes: hit.quizzes || 0,
+                        debates: hit.debates || 0,
+                        weeklyXp: hit.weeklyXp || 0,
+                        windowDays: 7
+                    });
+                }
+            }
+            var since = now - WEEK_MS;
             var quizzes = 0;
             var debates = 0;
             var weeklyXp = 0;
@@ -189402,6 +189423,22 @@ var SocialGroupSurface;
                     break;
                 cursor = listed.cursor;
             }
+            try {
+                nk.storageWrite([{
+                        collection: WEEK_CACHE_COLLECTION,
+                        key: groupId,
+                        userId: SYSTEM_USER_ID,
+                        value: {
+                            quizzes: quizzes,
+                            debates: debates,
+                            weeklyXp: weeklyXp,
+                            cachedAt: now
+                        },
+                        permissionRead: 0,
+                        permissionWrite: 0
+                    }]);
+            }
+            catch (_) { }
             return RpcHelpers.successResponse({
                 groupId: groupId,
                 quizzes: quizzes,
