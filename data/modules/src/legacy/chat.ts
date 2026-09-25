@@ -1,3 +1,9 @@
+// Channel DM handlers. ivx_social_dm_* must bind these, not the storage
+// RPC of the same name in legacy_runtime.js.
+declare var rpcIvxChannelDmSend: any;
+declare var rpcIvxChannelDmHistory: any;
+declare var rpcIvxChannelDmMarkRead: any;
+
 namespace LegacyChat {
 
   // Max characters of the message we surface in the push body preview.
@@ -878,6 +884,9 @@ namespace LegacyChat {
 
     initializer.registerRpc("send_group_chat_message", rpcSendGroupChatMessage);
     initializer.registerRpc("send_direct_message", rpcSendDirectMessage);
+    rpcIvxChannelDmSend = rpcSendDirectMessage;
+    rpcIvxChannelDmHistory = rpcGetDirectMessageHistory;
+    rpcIvxChannelDmMarkRead = rpcMarkDirectMessagesRead;
     initializer.registerRpc("send_chat_room_message", rpcSendChatRoomMessage);
     // Delivers queued offline challenge messages; Unity calls this once per session.
     // withCleanAuthError: live-server smoke test (2026-07-09) found this + the two

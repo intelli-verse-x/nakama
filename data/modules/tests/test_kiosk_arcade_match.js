@@ -106,7 +106,7 @@ test("label carries machineNo + Arcadian UUID, never QuizVerse", function () {
   assert.ok(racing.label.indexOf("91616e25-fe7b-483b-9bbb-383df7d696a5") >= 0);
 });
 
-test("mailbox broadcasts opcodes 1-8 and ignores the rest", function () {
+test("mailbox broadcasts opcodes 1-10 and ignores the rest", function () {
   var started = init("platformer", "tv");
   var state = join(started.state, ["tv", "spark", "bolt"], 1).state;
   var seen = [];
@@ -121,15 +121,20 @@ test("mailbox broadcasts opcodes 1-8 and ignores the rest", function () {
     { opCode: 4, data: "result", sender: presence("tv") },
     { opCode: 7, data: "ready", sender: presence("bolt") },
     { opCode: 8, data: "state", sender: presence("tv") },
+    { opCode: 9, data: "session", sender: presence("tv") },
+    { opCode: 10, data: "closed", sender: presence("tv") },
+    { opCode: 11, data: "past-session", sender: presence("spark") },
     { opCode: 99, data: "nope", sender: presence("spark") }
   ];
   var out = g.kioskArcadeMatchLoop({}, logger(), nk, dispatcher, 2, state, messages);
   assert.ok(out.state);
-  assert.equal(seen.length, 4);
+  assert.equal(seen.length, 6);
   assert.equal(seen[0].op, 1);
   assert.equal(seen[1].op, 4);
   assert.equal(seen[2].op, 7);
   assert.equal(seen[3].op, 8);
+  assert.equal(seen[4].op, 9);
+  assert.equal(seen[5].op, 10);
 });
 
 test("mailbox relays the chess kernel band 0x5000-0x5006 and nothing past it", function () {
@@ -165,6 +170,25 @@ test("platformer: host + two phones; third rejected", function () {
   assert.equal(joinAttempt(state, "bolt", 3).accept, true);
   state = join(state, ["bolt"], 3).state;
   assert.equal(joinAttempt(state, "third", 4).accept, false);
+});
+
+test("snakewars: host + four phones; a fifth phone waits", function () {
+  var started = init("snakewars", "tv");
+  var state = join(started.state, ["tv"], 1).state;
+  assert.equal(g.kioskArcadeJoinCap("snakewars"), 5);
+  var phones = ["p1", "p2", "p3", "p4"];
+  var i;
+  for (i = 0; i < phones.length; i++) {
+    assert.equal(joinAttempt(state, phones[i], i + 2).accept, true);
+    state = join(state, [phones[i]], i + 2).state;
+  }
+  var fifth = joinAttempt(state, "p5", 8);
+  assert.equal(fifth.accept, false);
+  state = leave(state, ["p4"], 10).state;
+  /* Phone grace is 10s (200 ticks). The seat is still held, so p5 waits. */
+  assert.equal(joinAttempt(state, "p5", 11).accept, false);
+  assert.equal(joinAttempt(state, "p4", 12).accept, true);
+  assert.equal(joinAttempt(state, "p5", 10 + (10 * 20)).accept, true);
 });
 
 test("golfx: host + one phone; second phone rejected", function () {
