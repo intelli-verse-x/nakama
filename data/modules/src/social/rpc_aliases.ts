@@ -43,15 +43,20 @@ declare var rpcFriendInviteWithReward: any;
 declare var rpcSendDirectMessage: any;            // DM module
 declare var rpcGetDirectMessageHistory: any;
 declare var rpcMarkDirectMessagesRead: any;
-declare var rpcIvxChannelDmSend: any;             // legacy/chat.ts channel DM
-declare var rpcIvxChannelDmHistory: any;
-declare var rpcIvxChannelDmMarkRead: any;
 
 namespace SocialRpcAliases {
 
   var API_VERSION = 1;
 
   interface AliasDef { newId: string; handler: () => any; }
+
+  // legacy/chat.ts publishes these on globalThis. A bare identifier would be
+  // a ReferenceError in Goja because `declare var` emits no binding.
+  function channelDmHandler(name: string): any {
+    var g: any = (typeof globalThis !== "undefined") ? globalThis : null;
+    var fn = g ? g[name] : null;
+    return typeof fn === "function" ? fn : null;
+  }
 
   // typeof-guarded accessors — evaluated at CALL time, so bundle load order
   // can never break registration.
@@ -75,9 +80,9 @@ namespace SocialRpcAliases {
     { newId: "ivx_social_friends_online_count", handler: function () { return typeof rpcFriendsGetOnlineCount !== "undefined" ? rpcFriendsGetOnlineCount : null; } },
     { newId: "ivx_social_battle_create",       handler: function () { return typeof rpcFriendBattleCreate !== "undefined" ? rpcFriendBattleCreate : null; } },
     { newId: "ivx_social_invite_with_reward",  handler: function () { return typeof rpcFriendInviteWithReward !== "undefined" ? rpcFriendInviteWithReward : null; } },
-    { newId: "ivx_social_dm_send",             handler: function () { return typeof rpcIvxChannelDmSend !== "undefined" ? rpcIvxChannelDmSend : null; } },
-    { newId: "ivx_social_dm_history",          handler: function () { return typeof rpcIvxChannelDmHistory !== "undefined" ? rpcIvxChannelDmHistory : null; } },
-    { newId: "ivx_social_dm_mark_read",        handler: function () { return typeof rpcIvxChannelDmMarkRead !== "undefined" ? rpcIvxChannelDmMarkRead : null; } }
+    { newId: "ivx_social_dm_send",             handler: function () { return channelDmHandler("rpcIvxChannelDmSend"); } },
+    { newId: "ivx_social_dm_history",          handler: function () { return channelDmHandler("rpcIvxChannelDmHistory"); } },
+    { newId: "ivx_social_dm_mark_read",        handler: function () { return channelDmHandler("rpcIvxChannelDmMarkRead"); } }
   ];
 
   /**

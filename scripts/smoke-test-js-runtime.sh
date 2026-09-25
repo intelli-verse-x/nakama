@@ -47,6 +47,9 @@ assert_logs_clean() {
     if echo "$LOGS" | grep -qF "Failed to load JavaScript files"; then
         fail "boot logs contain 'Failed to load JavaScript files' — JS runtime did not start"
     fi
+    if echo "$LOGS" | grep -qF "Failed to eval JavaScript modules"; then
+        fail "boot logs contain 'Failed to eval JavaScript modules' — JS compiled but a runtime ReferenceError dropped every RPC"
+    fi
     if echo "$LOGS" | grep -qF '"Found runtime modules","count":1'; then
         # Only the Go plugin loaded — JS bundle silently dropped.
         fail "boot logs show only 1 runtime module loaded (Go plugin only) — no JS modules registered"

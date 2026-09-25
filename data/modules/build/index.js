@@ -41288,6 +41288,10 @@ var LegacyAnalytics;
     }
     LegacyAnalytics.register = register;
 })(LegacyAnalytics || (LegacyAnalytics = {}));
+// Channel DM handlers. ivx_social_dm_* must bind these, not the storage
+// RPC of the same name in legacy_runtime.js. Published on globalThis from
+// register() — a bare `declare var` is erased by tsc, and assigning that
+// name throws ReferenceError in Goja and drops the whole JS runtime.
 var LegacyChat;
 (function (LegacyChat) {
     // Max characters of the message we surface in the push body preview.
@@ -42121,9 +42125,13 @@ var LegacyChat;
         }
         initializer.registerRpc("send_group_chat_message", rpcSendGroupChatMessage);
         initializer.registerRpc("send_direct_message", rpcSendDirectMessage);
-        rpcIvxChannelDmSend = rpcSendDirectMessage;
-        rpcIvxChannelDmHistory = rpcGetDirectMessageHistory;
-        rpcIvxChannelDmMarkRead = rpcMarkDirectMessagesRead;
+        // postbuild calls register() while the bundle is still evaluating.
+        // A bare assignment here is a ReferenceError (declare var emits nothing)
+        // and Nakama then starts with zero JS RPCs.
+        var channelDmGlobal = (typeof globalThis !== "undefined") ? globalThis : {};
+        channelDmGlobal.rpcIvxChannelDmSend = rpcSendDirectMessage;
+        channelDmGlobal.rpcIvxChannelDmHistory = rpcGetDirectMessageHistory;
+        channelDmGlobal.rpcIvxChannelDmMarkRead = rpcMarkDirectMessagesRead;
         initializer.registerRpc("send_chat_room_message", rpcSendChatRoomMessage);
         // Delivers queued offline challenge messages; Unity calls this once per session.
         // withCleanAuthError: live-server smoke test (2026-07-09) found this + the two
@@ -89354,6 +89362,13 @@ var SocialReports;
 var SocialRpcAliases;
 (function (SocialRpcAliases) {
     var API_VERSION = 1;
+    // legacy/chat.ts publishes these on globalThis. A bare identifier would be
+    // a ReferenceError in Goja because `declare var` emits no binding.
+    function channelDmHandler(name) {
+        var g = (typeof globalThis !== "undefined") ? globalThis : null;
+        var fn = g ? g[name] : null;
+        return typeof fn === "function" ? fn : null;
+    }
     // typeof-guarded accessors — evaluated at CALL time, so bundle load order
     // can never break registration.
     var ALIASES = [
@@ -89376,9 +89391,9 @@ var SocialRpcAliases;
         { newId: "ivx_social_friends_online_count", handler: function () { return typeof rpcFriendsGetOnlineCount !== "undefined" ? rpcFriendsGetOnlineCount : null; } },
         { newId: "ivx_social_battle_create", handler: function () { return typeof rpcFriendBattleCreate !== "undefined" ? rpcFriendBattleCreate : null; } },
         { newId: "ivx_social_invite_with_reward", handler: function () { return typeof rpcFriendInviteWithReward !== "undefined" ? rpcFriendInviteWithReward : null; } },
-        { newId: "ivx_social_dm_send", handler: function () { return typeof rpcIvxChannelDmSend !== "undefined" ? rpcIvxChannelDmSend : null; } },
-        { newId: "ivx_social_dm_history", handler: function () { return typeof rpcIvxChannelDmHistory !== "undefined" ? rpcIvxChannelDmHistory : null; } },
-        { newId: "ivx_social_dm_mark_read", handler: function () { return typeof rpcIvxChannelDmMarkRead !== "undefined" ? rpcIvxChannelDmMarkRead : null; } }
+        { newId: "ivx_social_dm_send", handler: function () { return channelDmHandler("rpcIvxChannelDmSend"); } },
+        { newId: "ivx_social_dm_history", handler: function () { return channelDmHandler("rpcIvxChannelDmHistory"); } },
+        { newId: "ivx_social_dm_mark_read", handler: function () { return channelDmHandler("rpcIvxChannelDmMarkRead"); } }
     ];
     /**
      * Translate a legacy response (flat `{success, ...fields}` OR nested

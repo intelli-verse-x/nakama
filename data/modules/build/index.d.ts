@@ -1667,9 +1667,6 @@ declare namespace LegacyAnalyticsRetention {
 declare namespace LegacyAnalytics {
     function register(initializer: nkruntime.Initializer): void;
 }
-declare var rpcIvxChannelDmSend: any;
-declare var rpcIvxChannelDmHistory: any;
-declare var rpcIvxChannelDmMarkRead: any;
 declare namespace LegacyChat {
     function afterChannelMessageSend(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, output: nkruntime.EnvelopeChannelMessageSend | null, input: nkruntime.EnvelopeChannelMessageSend): void;
     function flushFailedChatPushes(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): void;
@@ -5288,9 +5285,6 @@ declare var rpcFriendInviteWithReward: any;
 declare var rpcSendDirectMessage: any;
 declare var rpcGetDirectMessageHistory: any;
 declare var rpcMarkDirectMessagesRead: any;
-declare var rpcIvxChannelDmSend: any;
-declare var rpcIvxChannelDmHistory: any;
-declare var rpcIvxChannelDmMarkRead: any;
 declare namespace SocialRpcAliases {
     function register(initializer: nkruntime.Initializer): void;
 }
