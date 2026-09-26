@@ -4457,6 +4457,7 @@ declare namespace SatoriExperiments {
         gameId: string;
         trackedQuestIds: string[];
     } | null;
+    function recordKioskPayStep(nk: nkruntime.Nakama, logger: nkruntime.Logger, data: any): void;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace SatoriFeatureFlags {

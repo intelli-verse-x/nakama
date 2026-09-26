@@ -43059,6 +43059,7 @@ var LegacyGiftCards;
     function register(initializer) {
         initializer.registerRpc("game_gift_card_list", rpcList);
         initializer.registerRpc("game_gift_card_purchase", rpcPurchase);
+        initializer.registerRpc("quests_redeem_gift", rpcPurchase);
         initializer.registerRpc("game_gift_card_sync_catalog", rpcSyncCatalog);
         initializer.registerRpc("game_gift_card_get_purchases", rpcGetPurchases);
     }
@@ -64959,6 +64960,7 @@ var QuestEngine;
             };
         }
         initializer.registerRpc("quest_engine_get", auth(rpcQuestEngineGet));
+        initializer.registerRpc("quests_quest_feed", auth(rpcQuestEngineGet));
         initializer.registerRpc("quest_engine_record_event", auth(rpcQuestEngineRecordEvent));
         initializer.registerRpc("quest_engine_claim_reward", auth(rpcQuestEngineClaimReward));
         initializer.registerRpc("quest_engine_admin_save_config", rpcQuestEngineAdminSaveConfig);
@@ -74076,10 +74078,45 @@ var SatoriExperiments;
         var resp = variant ? { id: variantKey(variant), name: variant.name, config: variant.config || variant.data || {} } : null;
         return RpcHelpers.successResponse({ variant: resp });
     }
+    var KIOSK_ARCADE_IDS = {
+        "9bbd1886-d779-4543-ba75-d8ef0113bf99": true,
+        "620f954b-94b5-4048-8b86-4762011ed4d7": true,
+        "ba003fe4-8888-48bc-8c2a-d27c17b93b39": true,
+        "279e154b-0549-470e-ad41-76dddd78b99e": true,
+        "91616e25-fe7b-483b-9bbb-383df7d696a5": true
+    };
+    // Kiosk pay is not a quest step. recordQuestFunnelStep drops anything
+    // except exposed/started/claimed and rewrites a blank game id to QuizVerse.
+    function recordKioskPayStep(nk, logger, data) {
+        if (!data)
+            return;
+        var step = data.step ? String(data.step) : "";
+        var gameId = data.gameId || data.game_id ? String(data.gameId || data.game_id) : "";
+        if (step !== "saw_pay_screen" && step !== "paid") {
+            logger.warn("[kiosk-pay] ignored step");
+            return;
+        }
+        if (!KIOSK_ARCADE_IDS[gameId])
+            return;
+        var userId = data.userId ? String(data.userId) : "";
+        if (!userId)
+            return;
+        var key = "kiosk_pay_" + gameId + "_" + step;
+        var doc = Storage.readSystemJson(nk, "kiosk_pay_steps", key) || { count: 0 };
+        doc.count = (doc.count || 0) + 1;
+        Storage.writeSystemJson(nk, "kiosk_pay_steps", key, doc);
+    }
+    SatoriExperiments.recordKioskPayStep = recordKioskPayStep;
+    function rpcKioskPayStep(ctx, logger, nk, payload) {
+        var data = RpcHelpers.parseRpcPayload(payload);
+        recordKioskPayStep(nk, logger, data);
+        return RpcHelpers.successResponse({ ok: true });
+    }
     function register(initializer) {
         initializer.registerRpc("satori_experiments_get", rpcGet);
         initializer.registerRpc("satori_experiments_get_variant", rpcGetVariant);
         initializer.registerRpc("satori_experiments_get_all", rpcGet);
+        initializer.registerRpc("satori_kiosk_pay_step", rpcKioskPayStep);
     }
     SatoriExperiments.register = register;
 })(SatoriExperiments || (SatoriExperiments = {}));
