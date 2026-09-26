@@ -1,3 +1,8 @@
+// Channel DM handlers. ivx_social_dm_* must bind these, not the storage
+// RPC of the same name in legacy_runtime.js. Published on globalThis from
+// register() — a bare `declare var` is erased by tsc, and assigning that
+// name throws ReferenceError in Goja and drops the whole JS runtime.
+
 namespace LegacyChat {
 
   // Max characters of the message we surface in the push body preview.
@@ -878,6 +883,13 @@ namespace LegacyChat {
 
     initializer.registerRpc("send_group_chat_message", rpcSendGroupChatMessage);
     initializer.registerRpc("send_direct_message", rpcSendDirectMessage);
+    // postbuild calls register() while the bundle is still evaluating.
+    // A bare assignment here is a ReferenceError (declare var emits nothing)
+    // and Nakama then starts with zero JS RPCs.
+    var channelDmGlobal: any = (typeof globalThis !== "undefined") ? globalThis : {};
+    channelDmGlobal.rpcIvxChannelDmSend = rpcSendDirectMessage;
+    channelDmGlobal.rpcIvxChannelDmHistory = rpcGetDirectMessageHistory;
+    channelDmGlobal.rpcIvxChannelDmMarkRead = rpcMarkDirectMessagesRead;
     initializer.registerRpc("send_chat_room_message", rpcSendChatRoomMessage);
     // Delivers queued offline challenge messages; Unity calls this once per session.
     // withCleanAuthError: live-server smoke test (2026-07-09) found this + the two

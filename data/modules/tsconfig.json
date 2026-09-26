@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
+    "rootDir": "./src",
     "outFile": "./build/index.js",
+    "ignoreDeprecations": "6.0",
     "target": "es5",
     "strict": true,
     "strictNullChecks": false,

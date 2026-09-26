@@ -32,9 +32,13 @@ function kioskArcadeTitleId(game) {
 }
 
 function kioskArcadeJoinCap(game) {
+  /* Counts every seat, including the glass. SnakeWars is 4 phones, so the
+     room is host + 4. A cap of 3 made the third phone wait until someone
+     left (KIBF_103). Chess stays host + 2. GolfX is two clubs: host + 2. */
   if (game === "platformer") return 3;
   if (game === "racing") return 3;
-  if (game === "golfx") return 2;
+  if (game === "golfx") return 3;
+  if (game === "snakewars") return 5;
   return 3;
 }
 
@@ -224,7 +228,7 @@ function kioskArcadeMatchJoinAttempt(ctx, logger, nk, dispatcher, tick, state, p
   var cap = kioskArcadeJoinCap(state.game);
   if (kioskArcadeOccupied(state, tick) >= cap) {
     logger.info("[kiosk-arcade] reject join game=" + state.game + " cap=" + cap + " user=" + userId);
-    return { state: state, accept: false };
+    return { state: state, accept: false, rejectMessage: "This glass is full" };
   }
   return { state: state, accept: true };
 }

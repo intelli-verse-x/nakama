@@ -453,6 +453,7 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     // ── Social Layer v2 features (doc §8.2, §7.3, §7.4, §14A) ──────────────
     logger.info("[SocialV2] Registering presence v2, group links, group search, friends feed...");
     SocialPresenceV2.register(initializer);
+    SocialGroupSurface.register(initializer);
     SocialGroupLinks.register(initializer);
     SocialGroupSearch.register(initializer);
     SocialFriendsFeed.register(initializer);

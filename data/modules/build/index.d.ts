@@ -5223,6 +5223,9 @@ declare namespace SocialGroupLinks {
 declare namespace SocialGroupSearch {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace SocialGroupSurface {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace SocialLeagues {
     /** Weekly rollover — promotions/demotions for LAST week's pools. */
     function weeklyLeagueTick(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama): any;

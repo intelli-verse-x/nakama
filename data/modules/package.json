@@ -14,7 +14,7 @@
     "eval:quest-ab": "node tests/quest_ab_overlay_live_rpc.mjs"
   },
   "devDependencies": {
-    "typescript": "^5.5.0"
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "nakama-common": "https://github.com/heroiclabs/nakama-common"

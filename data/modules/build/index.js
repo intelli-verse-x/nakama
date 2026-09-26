@@ -423,6 +423,7 @@ function InitModule(ctx, logger, nk, initializer) {
         // ── Social Layer v2 features (doc §8.2, §7.3, §7.4, §14A) ──────────────
         logger.info("[SocialV2] Registering presence v2, group links, group search, friends feed...");
         SocialPresenceV2.register(initializer);
+        SocialGroupSurface.register(initializer);
         SocialGroupLinks.register(initializer);
         SocialGroupSearch.register(initializer);
         SocialFriendsFeed.register(initializer);
@@ -41287,6 +41288,10 @@ var LegacyAnalytics;
     }
     LegacyAnalytics.register = register;
 })(LegacyAnalytics || (LegacyAnalytics = {}));
+// Channel DM handlers. ivx_social_dm_* must bind these, not the storage
+// RPC of the same name in legacy_runtime.js. Published on globalThis from
+// register() — a bare `declare var` is erased by tsc, and assigning that
+// name throws ReferenceError in Goja and drops the whole JS runtime.
 var LegacyChat;
 (function (LegacyChat) {
     // Max characters of the message we surface in the push body preview.
@@ -42120,6 +42125,13 @@ var LegacyChat;
         }
         initializer.registerRpc("send_group_chat_message", rpcSendGroupChatMessage);
         initializer.registerRpc("send_direct_message", rpcSendDirectMessage);
+        // postbuild calls register() while the bundle is still evaluating.
+        // A bare assignment here is a ReferenceError (declare var emits nothing)
+        // and Nakama then starts with zero JS RPCs.
+        var channelDmGlobal = (typeof globalThis !== "undefined") ? globalThis : {};
+        channelDmGlobal.rpcIvxChannelDmSend = rpcSendDirectMessage;
+        channelDmGlobal.rpcIvxChannelDmHistory = rpcGetDirectMessageHistory;
+        channelDmGlobal.rpcIvxChannelDmMarkRead = rpcMarkDirectMessagesRead;
         initializer.registerRpc("send_chat_room_message", rpcSendChatRoomMessage);
         // Delivers queued offline challenge messages; Unity calls this once per session.
         // withCleanAuthError: live-server smoke test (2026-07-09) found this + the two
@@ -70993,6 +71005,38 @@ var SatoriAudiences;
                 updatedAt: 0
             };
         }
+        if (!audiences["lapsed_players"]) {
+            audiences["lapsed_players"] = {
+                id: "lapsed_players",
+                name: "Lapsed Players",
+                description: "Played at least once and last seen 3 or more days ago",
+                rule: {
+                    combinator: "and",
+                    filters: [
+                        { property: "last_seen_days_ago", operator: "gte", value: "3" },
+                        { property: "session_count", operator: "gte", value: "1" }
+                    ]
+                },
+                createdAt: 0,
+                updatedAt: 0
+            };
+        }
+        if (!audiences["at_risk_players"]) {
+            audiences["at_risk_players"] = {
+                id: "at_risk_players",
+                name: "At-Risk Players",
+                description: "Played often and last seen 2 or more days ago",
+                rule: {
+                    combinator: "and",
+                    filters: [
+                        { property: "last_seen_days_ago", operator: "gte", value: "2" },
+                        { property: "session_count", operator: "gte", value: "5" }
+                    ]
+                },
+                createdAt: 0,
+                updatedAt: 0
+            };
+        }
         return audiences;
     }
     function isInAudience(nk, userId, audienceId, gameId) {
@@ -87681,6 +87725,158 @@ var SocialGroupSearch;
     }
     SocialGroupSearch.register = register;
 })(SocialGroupSearch || (SocialGroupSearch = {}));
+// Generic group surface RPCs (any game). Cover is a URL stored on the
+// Nakama group avatar — the runtime has no file bucket. Week stats count
+// real rows in group_activity_<groupId> from the last 7 days.
+var SocialGroupSurface;
+(function (SocialGroupSurface) {
+    var SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
+    var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    var WEEK_CACHE_MS = 45 * 1000;
+    var MAX_COVER_LEN = 2048;
+    var WEEK_CACHE_COLLECTION = "ivx_social_week_cache";
+    function groupActivityCollection(groupId) {
+        return "group_activity_" + groupId;
+    }
+    function isMember(nk, userId, groupId) {
+        var cursor = "";
+        for (var page = 0; page < 5; page++) {
+            var list = nk.userGroupsList(userId, 100, undefined, cursor);
+            var rows = list && list.userGroups ? list.userGroups : [];
+            for (var i = 0; i < rows.length; i++) {
+                var ug = rows[i];
+                if (ug && ug.group && ug.group.id === groupId && ug.state !== 3)
+                    return true;
+            }
+            if (!list || !list.cursor)
+                break;
+            cursor = list.cursor;
+        }
+        return false;
+    }
+    // ivx_social_group_cover_set { groupId, avatarUrl }
+    // avatarUrl must be an https URL. Members only.
+    function rpcGroupCoverSet(ctx, logger, nk, payload) {
+        try {
+            var userId = RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var groupId = typeof data.groupId === "string" ? data.groupId : "";
+            var avatarUrl = typeof data.avatarUrl === "string" ? data.avatarUrl.trim() : "";
+            if (!groupId)
+                return RpcHelpers.errorResponse("groupId required");
+            if (avatarUrl.length < 12 || avatarUrl.length > MAX_COVER_LEN || avatarUrl.indexOf("https://") !== 0) {
+                return RpcHelpers.errorResponse("avatarUrl must be an https URL");
+            }
+            if (!isMember(nk, userId, groupId)) {
+                return RpcHelpers.errorResponse("Only group members can set the cover");
+            }
+            var groups = nk.groupsGetId([groupId]);
+            if (!groups || groups.length === 0)
+                return RpcHelpers.errorResponse("group not found");
+            var group = groups[0];
+            var meta = typeof group.metadata === "string"
+                ? group.metadata
+                : JSON.stringify(group.metadata || {});
+            // Same argument order as groups.js rpcLogGroupActivity (this runtime's
+            // JS binding). nakama-common's d.ts lists a different order.
+            nk.groupUpdate(groupId, userId, group.name, group.description, avatarUrl, group.langTag, meta, group.open, group.maxCount);
+            return RpcHelpers.successResponse({ groupId: groupId, avatarUrl: avatarUrl });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to set cover");
+        }
+    }
+    // ivx_social_group_week_stats { groupId }
+    // quizzes / debates / weeklyXp come only from logged activity rows.
+    function rpcGroupWeekStats(ctx, logger, nk, payload) {
+        try {
+            RpcHelpers.requireUserId(ctx);
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var groupId = typeof data.groupId === "string" ? data.groupId : "";
+            if (!groupId)
+                return RpcHelpers.errorResponse("groupId required");
+            var now = Date.now();
+            var cached = nk.storageRead([{
+                    collection: WEEK_CACHE_COLLECTION,
+                    key: groupId,
+                    userId: SYSTEM_USER_ID
+                }]);
+            if (cached && cached.length > 0 && cached[0].value) {
+                var hit = cached[0].value;
+                var age = now - (parseInt(hit.cachedAt, 10) || 0);
+                if (age >= 0 && age < WEEK_CACHE_MS) {
+                    return RpcHelpers.successResponse({
+                        groupId: groupId,
+                        quizzes: hit.quizzes || 0,
+                        debates: hit.debates || 0,
+                        weeklyXp: hit.weeklyXp || 0,
+                        windowDays: 7
+                    });
+                }
+            }
+            var since = now - WEEK_MS;
+            var quizzes = 0;
+            var debates = 0;
+            var weeklyXp = 0;
+            var cursor = "";
+            var collection = groupActivityCollection(groupId);
+            for (var page = 0; page < 5; page++) {
+                var listed = nk.storageList(SYSTEM_USER_ID, collection, 100, cursor);
+                var objects = listed && listed.objects ? listed.objects : [];
+                for (var i = 0; i < objects.length; i++) {
+                    var value = objects[i] && objects[i].value ? objects[i].value : null;
+                    if (!value)
+                        continue;
+                    var ts = Date.parse(value.timestamp || "");
+                    if (isNaN(ts) || ts < since)
+                        continue;
+                    var action = (typeof value.action === "string" ? value.action : "").toLowerCase();
+                    if (action.indexOf("quiz") >= 0)
+                        quizzes++;
+                    if (action.indexOf("debate") >= 0)
+                        debates++;
+                    var xp = parseInt(value.xp_earned, 10);
+                    if (!isNaN(xp) && xp > 0)
+                        weeklyXp += xp;
+                }
+                if (!listed || !listed.cursor)
+                    break;
+                cursor = listed.cursor;
+            }
+            try {
+                nk.storageWrite([{
+                        collection: WEEK_CACHE_COLLECTION,
+                        key: groupId,
+                        userId: SYSTEM_USER_ID,
+                        value: {
+                            quizzes: quizzes,
+                            debates: debates,
+                            weeklyXp: weeklyXp,
+                            cachedAt: now
+                        },
+                        permissionRead: 0,
+                        permissionWrite: 0
+                    }]);
+            }
+            catch (_) { }
+            return RpcHelpers.successResponse({
+                groupId: groupId,
+                quizzes: quizzes,
+                debates: debates,
+                weeklyXp: weeklyXp,
+                windowDays: 7
+            });
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse((e && e.message) || "Failed to read week stats");
+        }
+    }
+    function register(initializer) {
+        initializer.registerRpc("ivx_social_group_cover_set", rpcGroupCoverSet);
+        initializer.registerRpc("ivx_social_group_week_stats", rpcGroupWeekStats);
+    }
+    SocialGroupSurface.register = register;
+})(SocialGroupSurface || (SocialGroupSurface = {}));
 // leagues.ts — Duolingo-style weekly Leagues (Q-11, doc §17.5 / §F.2 rank #2).
 //
 // THE MECHANIC: every player sits in a ≤30-person pool within a 10-tier
@@ -89203,6 +89399,13 @@ var SocialReports;
 var SocialRpcAliases;
 (function (SocialRpcAliases) {
     var API_VERSION = 1;
+    // legacy/chat.ts publishes these on globalThis. A bare identifier would be
+    // a ReferenceError in Goja because `declare var` emits no binding.
+    function channelDmHandler(name) {
+        var g = (typeof globalThis !== "undefined") ? globalThis : null;
+        var fn = g ? g[name] : null;
+        return typeof fn === "function" ? fn : null;
+    }
     // typeof-guarded accessors — evaluated at CALL time, so bundle load order
     // can never break registration.
     var ALIASES = [
@@ -89225,9 +89428,9 @@ var SocialRpcAliases;
         { newId: "ivx_social_friends_online_count", handler: function () { return typeof rpcFriendsGetOnlineCount !== "undefined" ? rpcFriendsGetOnlineCount : null; } },
         { newId: "ivx_social_battle_create", handler: function () { return typeof rpcFriendBattleCreate !== "undefined" ? rpcFriendBattleCreate : null; } },
         { newId: "ivx_social_invite_with_reward", handler: function () { return typeof rpcFriendInviteWithReward !== "undefined" ? rpcFriendInviteWithReward : null; } },
-        { newId: "ivx_social_dm_send", handler: function () { return typeof rpcSendDirectMessage !== "undefined" ? rpcSendDirectMessage : null; } },
-        { newId: "ivx_social_dm_history", handler: function () { return typeof rpcGetDirectMessageHistory !== "undefined" ? rpcGetDirectMessageHistory : null; } },
-        { newId: "ivx_social_dm_mark_read", handler: function () { return typeof rpcMarkDirectMessagesRead !== "undefined" ? rpcMarkDirectMessagesRead : null; } }
+        { newId: "ivx_social_dm_send", handler: function () { return channelDmHandler("rpcIvxChannelDmSend"); } },
+        { newId: "ivx_social_dm_history", handler: function () { return channelDmHandler("rpcIvxChannelDmHistory"); } },
+        { newId: "ivx_social_dm_mark_read", handler: function () { return channelDmHandler("rpcIvxChannelDmMarkRead"); } }
     ];
     /**
      * Translate a legacy response (flat `{success, ...fields}` OR nested
