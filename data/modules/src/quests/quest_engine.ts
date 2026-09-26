@@ -1574,6 +1574,7 @@ namespace QuestEngine {
       };
     }
     initializer.registerRpc("quest_engine_get",               auth(rpcQuestEngineGet));
+    initializer.registerRpc("quests_quest_feed",              auth(rpcQuestEngineGet));
     initializer.registerRpc("quest_engine_record_event",      auth(rpcQuestEngineRecordEvent));
     initializer.registerRpc("quest_engine_claim_reward",      auth(rpcQuestEngineClaimReward));
     initializer.registerRpc("quest_engine_admin_save_config", rpcQuestEngineAdminSaveConfig);

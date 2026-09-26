@@ -147,6 +147,7 @@ namespace LegacyGiftCards {
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("game_gift_card_list", rpcList);
     initializer.registerRpc("game_gift_card_purchase", rpcPurchase);
+    initializer.registerRpc("quests_redeem_gift", rpcPurchase);
     initializer.registerRpc("game_gift_card_sync_catalog", rpcSyncCatalog);
     initializer.registerRpc("game_gift_card_get_purchases", rpcGetPurchases);
   }
