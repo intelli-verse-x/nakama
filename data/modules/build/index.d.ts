@@ -827,6 +827,25 @@ declare namespace ChessPlugin {
 declare namespace QvAnalyticsCron {
     function register(initializer: nkruntime.Initializer): void;
 }
+/**
+ * QuizVerse Arcade — server-authoritative run completion.
+ *
+ * quizverse_arcade_complete {gameId, score, subscore?, runId}
+ *   → {ok:true, coins, xp, duplicate, capped}
+ *   → {ok:false, error: invalid_game|invalid_score|invalid_run_id|busy|internal}
+ *
+ * The client only reports the score; rewards are computed here
+ * (coins = floor(score/1000)×5, xp = floor(score/1000)×10), scores above the
+ * per-game ceiling are rejected, each runId pays out once, and payouts are
+ * capped per game per UTC day.
+ */
+declare namespace QuizVerseArcade {
+    function rewardsForScore(score: number): {
+        coins: number;
+        xp: number;
+    };
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace BlogEmbed {
     function register(initializer: nkruntime.Initializer): void;
 }
@@ -1696,6 +1715,11 @@ declare namespace LegacyGroups {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyLeaderboards {
+    /** Writes a score to the game's daily/weekly/monthly/alltime boards. */
+    function writeGameTimePeriodScores(nk: nkruntime.Nakama, logger: nkruntime.Logger, gameId: string, userId: string, username: string, score: number, subscore: number, metadata: any): {
+        results: any[];
+        errors: any[];
+    };
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyMultiGame {
@@ -1919,6 +1943,8 @@ declare namespace LegacyWallet {
         newBalance: number;
         error?: string;
     };
+    /** Server-side XP credit to the global wallet (same bucket as wallet_update_game_wallet currency "xp"). */
+    function addGlobalXp(nk: nkruntime.Nakama, userId: string, amount: number): number;
     function rpcGetUserWallet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcLinkWalletToGame(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function rpcGetWalletRegistry(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;

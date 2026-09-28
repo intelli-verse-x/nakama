@@ -112,6 +112,13 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QuizVerseMigration] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- QuizVerse Arcade: server-authoritative run rewards ----
+  try {
+    QuizVerseArcade.register(initializer);
+  } catch (err: any) {
+    logger.error("[QuizVerseArcade] plugin failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- QuizVerse Remote Config (quizverse_get_config + quizverse_admin_stats) ----
   // quizverse_get_config  — server-driven topic catalogue, feature flags, language
   //   support matrix, client_min_version. Called once on startup; zero auth required;

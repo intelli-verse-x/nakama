@@ -221,6 +221,31 @@ namespace LegacyLeaderboards {
     }
   }
 
+  /** Writes a score to the game's daily/weekly/monthly/alltime boards. */
+  export function writeGameTimePeriodScores(nk: nkruntime.Nakama, logger: nkruntime.Logger, gameId: string, userId: string, username: string, score: number, subscore: number, metadata: any): { results: any[]; errors: any[] } {
+    var results: any[] = [];
+    var errors: any[] = [];
+    for (var i = 0; i < PERIODS.length; i++) {
+      var period = PERIODS[i];
+      var lbId = "leaderboard_" + gameId + "_" + period;
+      // Self-heal: create missing boards on first submit. Without this a
+      // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
+      // boards and every score silently lands in errors[] — the RPC still
+      // returns success, so the client believes the write happened.
+      if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
+        errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
+        continue;
+      }
+      try {
+        nk.leaderboardRecordWrite(lbId, userId, username, score, subscore, metadata);
+        results.push({ leaderboardId: lbId, period: period, scope: "game", success: true });
+      } catch (e: any) {
+        errors.push({ leaderboardId: lbId, period: period, error: e.message });
+      }
+    }
+    return { results: results, errors: errors };
+  }
+
   function rpcSubmitScoreToTimePeriods(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
     try {
       if (!ctx.userId) return RpcHelpers.errorResponse("Authentication required");
@@ -246,27 +271,9 @@ namespace LegacyLeaderboards {
         }
       } catch (_) { }
       if (!username) username = ctx.username || userId;
-      var results: any[] = [];
-      var errors: any[] = [];
-
-      for (var i = 0; i < PERIODS.length; i++) {
-        var period = PERIODS[i];
-        var lbId = "leaderboard_" + gameId + "_" + period;
-        // Self-heal: create missing boards on first submit. Without this a
-        // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
-        // boards and every score silently lands in errors[] — the RPC still
-        // returns success, so the client believes the write happened.
-        if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
-          errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
-          continue;
-        }
-        try {
-          nk.leaderboardRecordWrite(lbId, userId, username, score, subscore, metadata);
-          results.push({ leaderboardId: lbId, period: period, scope: "game", success: true });
-        } catch (e: any) {
-          errors.push({ leaderboardId: lbId, period: period, error: e.message });
-        }
-      }
+      var gameWrite = writeGameTimePeriodScores(nk, logger, gameId, userId, username, score, subscore, metadata);
+      var results: any[] = gameWrite.results;
+      var errors: any[] = gameWrite.errors;
       for (var j = 0; j < PERIODS.length; j++) {
         var p = PERIODS[j];
         var gid = "leaderboard_global_" + p;

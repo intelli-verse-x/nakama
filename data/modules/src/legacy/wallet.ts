@@ -102,6 +102,18 @@ namespace LegacyWallet {
     }
   }
 
+  /** Server-side XP credit to the global wallet (same bucket as wallet_update_game_wallet currency "xp"). */
+  export function addGlobalXp(nk: nkruntime.Nakama, userId: string, amount: number): number {
+    var amt = Math.floor(Number(amount || 0));
+    var globalWallet = getGlobalWallet(nk, userId);
+    if (globalWallet.currencies.xp === undefined) globalWallet.currencies.xp = 0;
+    if (amt > 0) {
+      globalWallet.currencies.xp += amt;
+      saveGlobalWallet(nk, userId, globalWallet);
+    }
+    return globalWallet.currencies.xp;
+  }
+
   // ---- RPC implementations ----
 
   export function rpcGetUserWallet(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string {
