@@ -1,6 +1,6 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-09-28T12:16:13.504Z
+// Generated: 2026-09-29T08:02:18.193Z
 // RPC Count: 1348
 // ============================================================
 
@@ -52126,6 +52126,15 @@ function rpcSubmitScoreToTimePeriods(ctx, logger, nk, payload) {
 
         var userId = ctx.userId;
         var username = ctx.username || userId;
+        var displayRaw = "";
+        if (metadata && (metadata.player || metadata.name)) {
+            displayRaw = String(metadata.player || metadata.name);
+        }
+        displayRaw = displayRaw.replace(/[\u0000-\u001F\u007F]/g, "").replace(/^\s+|\s+$/g, "");
+        if (displayRaw) {
+            if (displayRaw.length > 20) displayRaw = displayRaw.substring(0, 20);
+            username = displayRaw;
+        }
 
         // Add submission metadata with gameId (UUID)
         metadata.submittedAt = new Date().toISOString();
@@ -83386,6 +83395,15 @@ function __legacy_rpcSubmitScoreToTimePeriods(ctx, logger, nk, payload) {
 
         var userId = ctx.userId;
         var username = ctx.username || userId;
+        var displayRaw = "";
+        if (metadata && (metadata.player || metadata.name)) {
+            displayRaw = String(metadata.player || metadata.name);
+        }
+        displayRaw = displayRaw.replace(/[\u0000-\u001F\u007F]/g, "").replace(/^\s+|\s+$/g, "");
+        if (displayRaw) {
+            if (displayRaw.length > 20) displayRaw = displayRaw.substring(0, 20);
+            username = displayRaw;
+        }
 
         // Add submission metadata
         metadata.submittedAt = new Date().toISOString();
@@ -145107,8 +145125,8 @@ var LegacyLeaderboards;
             var lbId = "leaderboard_" + gameId + "_" + period;
             // Self-heal: create missing boards on first submit. Without this a
             // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
-            // boards and every score silently lands in errors[] — the RPC still
-            // returns success, so the client believes the write happened.
+            // boards and every score lands in errors[]. The RPC reports success
+            // only when every game-period write succeeded.
             if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
                 errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
                 continue;
@@ -145142,15 +145160,26 @@ var LegacyLeaderboards;
             metadata.source = "submit_score_to_time_periods";
             var userId = ctx.userId;
             var username = "";
-            try {
-                var tpUsers = nk.usersGetId([userId]);
-                if (tpUsers && tpUsers.length > 0) {
-                    username = tpUsers[0].displayName || tpUsers[0].username || ctx.username || "";
-                }
+            var displayRaw = "";
+            if (metadata && (metadata.player || metadata.name)) {
+                displayRaw = String(metadata.player || metadata.name).replace(/[\u0000-\u001F\u007F]/g, "").replace(/^\s+|\s+$/g, "");
+                if (displayRaw.length > 20)
+                    displayRaw = displayRaw.substring(0, 20);
             }
-            catch (_) { }
-            if (!username)
-                username = ctx.username || userId;
+            if (displayRaw) {
+                username = displayRaw;
+            }
+            else {
+                try {
+                    var tpUsers = nk.usersGetId([userId]);
+                    if (tpUsers && tpUsers.length > 0) {
+                        username = tpUsers[0].displayName || tpUsers[0].username || ctx.username || "";
+                    }
+                }
+                catch (_) { }
+                if (!username)
+                    username = ctx.username || userId;
+            }
             var gameWrite = writeGameTimePeriodScores(nk, logger, gameId, userId, username, score, subscore, metadata);
             var results = gameWrite.results;
             var errors = gameWrite.errors;
@@ -145168,6 +145197,18 @@ var LegacyLeaderboards;
                 catch (e) {
                     errors.push({ leaderboardId: gid, period: p, error: e.message });
                 }
+            }
+            // Game boards are what the cabinet reads. A global-board miss must not
+            // hide a successful game write, and a failed game write must not come
+            // back as success:true — the client would skip the retry and the glass
+            // would keep the previous All-time row. best+desc makes the retry safe:
+            // the same owner keeps one row, and a lower score does not replace it.
+            if (gameWrite.errors.length > 0) {
+                return JSON.stringify({
+                    success: false,
+                    error: "game leaderboard write failed",
+                    data: { gameId: gameId, score: score, userId: userId, results: results, errors: errors }
+                });
             }
             return RpcHelpers.successResponse({ gameId: gameId, score: score, userId: userId, results: results, errors: errors });
         }

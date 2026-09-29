@@ -506,6 +506,15 @@ function rpcSubmitScoreToTimePeriods(ctx, logger, nk, payload) {
 
         var userId = ctx.userId;
         var username = ctx.username || userId;
+        var displayRaw = "";
+        if (metadata && (metadata.player || metadata.name)) {
+            displayRaw = String(metadata.player || metadata.name);
+        }
+        displayRaw = displayRaw.replace(/[\u0000-\u001F\u007F]/g, "").replace(/^\s+|\s+$/g, "");
+        if (displayRaw) {
+            if (displayRaw.length > 20) displayRaw = displayRaw.substring(0, 20);
+            username = displayRaw;
+        }
 
         // Add submission metadata with gameId (UUID)
         metadata.submittedAt = new Date().toISOString();

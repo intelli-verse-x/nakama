@@ -230,8 +230,8 @@ namespace LegacyLeaderboards {
       var lbId = "leaderboard_" + gameId + "_" + period;
       // Self-heal: create missing boards on first submit. Without this a
       // new game UUID (e.g. a freshly-onboarded kiosk arcade title) has no
-      // boards and every score silently lands in errors[] — the RPC still
-      // returns success, so the client believes the write happened.
+      // boards and every score lands in errors[]. The RPC reports success
+      // only when every game-period write succeeded.
       if (!ensureLeaderboardExists(nk, logger, lbId, RESET_SCHEDULES[period], { scope: "game", gameId: gameId, timePeriod: period })) {
         errors.push({ leaderboardId: lbId, period: period, error: "leaderboard unavailable" });
         continue;
@@ -264,13 +264,22 @@ namespace LegacyLeaderboards {
 
       var userId = ctx.userId;
       var username = "";
-      try {
-        var tpUsers = nk.usersGetId([userId]);
-        if (tpUsers && tpUsers.length > 0) {
-          username = (tpUsers[0] as any).displayName || tpUsers[0].username || ctx.username || "";
-        }
-      } catch (_) { }
-      if (!username) username = ctx.username || userId;
+      var displayRaw = "";
+      if (metadata && (metadata.player || metadata.name)) {
+        displayRaw = String(metadata.player || metadata.name).replace(/[\u0000-\u001F\u007F]/g, "").replace(/^\s+|\s+$/g, "");
+        if (displayRaw.length > 20) displayRaw = displayRaw.substring(0, 20);
+      }
+      if (displayRaw) {
+        username = displayRaw;
+      } else {
+        try {
+          var tpUsers = nk.usersGetId([userId]);
+          if (tpUsers && tpUsers.length > 0) {
+            username = (tpUsers[0] as any).displayName || tpUsers[0].username || ctx.username || "";
+          }
+        } catch (_) { }
+        if (!username) username = ctx.username || userId;
+      }
       var gameWrite = writeGameTimePeriodScores(nk, logger, gameId, userId, username, score, subscore, metadata);
       var results: any[] = gameWrite.results;
       var errors: any[] = gameWrite.errors;
@@ -289,6 +298,18 @@ namespace LegacyLeaderboards {
         }
       }
 
+      // Game boards are what the cabinet reads. A global-board miss must not
+      // hide a successful game write, and a failed game write must not come
+      // back as success:true — the client would skip the retry and the glass
+      // would keep the previous All-time row. best+desc makes the retry safe:
+      // the same owner keeps one row, and a lower score does not replace it.
+      if (gameWrite.errors.length > 0) {
+        return JSON.stringify({
+          success: false,
+          error: "game leaderboard write failed",
+          data: { gameId: gameId, score: score, userId: userId, results: results, errors: errors }
+        });
+      }
       return RpcHelpers.successResponse({ gameId: gameId, score: score, userId: userId, results: results, errors: errors });
     } catch (err: any) {
       return RpcHelpers.errorResponse(err.message || "Failed to submit score");
