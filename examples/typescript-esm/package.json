@@ -5,7 +5,7 @@
   "type": "module",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "node init && tsc",
     "watch": "tsc --watch",
     "clean": "rm -rf build",
     "prebuild": "npm run clean",
