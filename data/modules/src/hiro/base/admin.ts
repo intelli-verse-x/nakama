@@ -2802,7 +2802,27 @@ namespace AdminConsole {
     // ---- Daily missions (client uses daily_missions_*; server uses *_mission_reward / get_daily_missions) ----
     initializer.registerRpc("daily_missions_get",             delegate("__rpc_get_daily_missions"));
     initializer.registerRpc("daily_missions_claim",           delegate("__rpc_claim_mission_reward"));
-    initializer.registerRpc("daily_missions_update_progress", softStub({ success: true, updated: false, note: "progress is auto-tracked server-side" }));
+    initializer.registerRpc("daily_missions_update_progress", function (ctx, logger, nk, payload) {
+      var fn = g["__rpc_submit_mission_progress"];
+      if (typeof fn !== "function") {
+        return JSON.stringify({ success: false, updated: false });
+      }
+      var raw = fn(ctx, logger, nk, payload);
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.success) {
+          parsed.updated = true;
+          return JSON.stringify(parsed);
+        }
+        return JSON.stringify({
+          success: false,
+          updated: false,
+          error: parsed && (parsed.error || parsed.message),
+        });
+      } catch (e) {
+        return JSON.stringify({ success: false, updated: false });
+      }
+    });
 
     // ---- Daily rewards ----
     initializer.registerRpc("daily_rewards_get_state",    delegate("__rpc_daily_rewards_get_status"));

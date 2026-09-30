@@ -65,6 +65,14 @@ namespace QuestEventBridge {
     return EVENT_MAP[eventName] || "custom_event";
   }
 
+  function questEventUrl(base: string): string {
+    var b = (base || "http://localhost:3001").replace(/\/$/, "");
+    if (b.length >= 4 && b.substring(b.length - 4) === "/api") {
+      return b + "/game-bridge/s2s/quest-event";
+    }
+    return b + "/api/game-bridge/s2s/quest-event";
+  }
+
   function rpcQuestGameEvent(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -93,19 +101,20 @@ namespace QuestEventBridge {
       }
 
       var body = JSON.stringify({
+        userId:       userId,
         nakamaGameId: gameId,
         eventType:    eventType,
         eventName:    eventName,
         data:         eventData,
       });
 
-      // HMAC-SHA256 of the body — matches NakamaS2sGuard expectation
+      // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
       var sig = (nk.hmacSha256Hash(webhookSecret, body) as unknown) as string;
 
-      var url = questsApiUrl.replace(/\/$/, "") + "/game-bridge/s2s/quest-event";
+      var url = questEventUrl(questsApiUrl);
 
       try {
-        nk.httpRequest(
+        var resp: any = nk.httpRequest(
           url,
           "post",
           {
@@ -118,6 +127,10 @@ namespace QuestEventBridge {
           body,
           5000,
         );
+        if (resp && typeof resp.code === "number" && resp.code >= 400) {
+          logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
+          return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", status: resp.code });
+        }
         logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
       } catch (httpErr: any) {
         // Non-fatal: quest sync failure must never break the game session
