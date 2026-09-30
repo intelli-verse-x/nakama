@@ -4,7 +4,7 @@
   "description": "AWS Lambda that renders QuizVerse tournament certificate PDFs + OG images on demand and uploads them to S3. Triggered by the certificate_get RPC's lazy materialisation path.",
   "main": "dist/handler.js",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "node init && tsc -p .",
     "package": "npm run build && cd dist && zip -r ../tournament_certificate.zip . && cd .. && zip -r tournament_certificate.zip node_modules/pdf-lib node_modules/sharp node_modules/@aws-sdk/client-s3 package.json"
   },
   "engines": {
