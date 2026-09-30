@@ -857,6 +857,7 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     var v2WarningsCount = 0;
     var errors = [];
     var acceptedEventNames = [];
+    var acceptedForQuests = [];
     var resolvedGameId = null;
 
     for (var i = 0; i < inbound.length; i++) {
@@ -882,6 +883,7 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
             }
             accepted++;
             acceptedEventNames.push(normalized.eventName || (inbound[i] && inbound[i].eventName) || "unknown");
+            acceptedForQuests.push(normalized);
             // Capture the resolved (canonical UUID) gameId from the first accepted event
             if (!resolvedGameId && normalized.gameId) resolvedGameId = normalized.gameId;
         }
@@ -914,6 +916,10 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
             abAutoRunIfNeeded(ctx, nk, logger);
         }
     } catch (e) { /* swallow */ }
+
+    try {
+        forwardAcceptedQuestEvents(ctx, logger, nk, acceptedForQuests);
+    } catch (e) { /* quest sync must never fail analytics ingest */ }
 
     // Satori identity sync (Phase 8) is NO LONGER piggybacked here.
     //
@@ -2003,6 +2009,84 @@ function rpcAnalyticsEventsToday(ctx, logger, nk, payload) {
         events_rejected:       rec.events_rejected || 0,
         log_calls:             rec.log_calls       || 0
     });
+}
+
+var QUEST_BRIDGE_EVENT_MAP = {
+    "match_complete": "match_result",
+    "multiplayer_win": "match_result",
+    "score_submit": "score_update",
+    "quiz_complete": "score_update",
+    "quiz_accuracy": "score_update",
+    "level_up": "level_reached",
+    "season_pass_xp": "level_reached",
+    "collection_unlock": "level_reached",
+    "achievement_unlock": "achievement_completed",
+    "mission_complete": "mission_completed",
+    "daily_login": "mission_completed",
+    "weekly_goal_complete": "mission_completed",
+    "session_end": "playtime_update",
+    "playtime_update": "playtime_update",
+    "streak_continue": "playtime_update",
+    "item_purchase": "purchase_made",
+    "currency_earn": "custom_event",
+    "friend_challenge": "custom_event",
+    "referral_signup": "custom_event",
+    "ad_watched": "custom_event",
+    "receipt_scanned": "custom_event",
+    "tournament_join": "custom_event",
+    "tournament_win": "custom_event",
+    "weekly_goal_complete_bonus": "custom_event"
+};
+
+function questsEconomyQuestEventUrl(base) {
+    var b = (base || "http://localhost:3001").replace(/\/$/, "");
+    if (b.length >= 4 && b.substring(b.length - 4) === "/api") {
+        return b + "/game-bridge/s2s/quest-event";
+    }
+    return b + "/api/game-bridge/s2s/quest-event";
+}
+
+function forwardAcceptedQuestEvents(ctx, logger, nk, events) {
+    if (!events || !events.length || !ctx || !ctx.userId) return;
+    var secret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+    if (!secret) return;
+    var base = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+    var questEventUrl = questsEconomyQuestEventUrl(base);
+    for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        var name = ev.eventName || "";
+        var eventType = QUEST_BRIDGE_EVENT_MAP[name];
+        if (!eventType || !ev.gameId) continue;
+        var body = JSON.stringify({
+            userId: ctx.userId,
+            nakamaGameId: ev.gameId,
+            eventType: eventType,
+            eventName: name,
+            data: ev.eventData || {},
+            clientEventId: ev.clientEventId || undefined
+        });
+        try {
+            var sig = nk.hmacSha256Hash(secret, body);
+            var resp = nk.httpRequest(
+                questEventUrl,
+                "post",
+                {
+                    "Content-Type": "application/json",
+                    "X-Source": "nakama-rpc",
+                    "X-Webhook-Signature": sig,
+                    "X-User-Id": ctx.userId,
+                    "X-Game-Id": ev.gameId
+                },
+                body,
+                5000
+            );
+            if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                logger.warn("[analytics] quest forward HTTP " + resp.code + " event=" + name);
+            }
+        } catch (httpErr) {
+            logger.warn("[analytics] quest forward failed: " + ((httpErr && httpErr.message) || httpErr));
+        }
+    }
 }
 
 // Registration - postbuild.js scans for this

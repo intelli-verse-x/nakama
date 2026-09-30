@@ -29897,7 +29897,28 @@ var AdminConsole;
         // ---- Daily missions (client uses daily_missions_*; server uses *_mission_reward / get_daily_missions) ----
         initializer.registerRpc("daily_missions_get", delegate("__rpc_get_daily_missions"));
         initializer.registerRpc("daily_missions_claim", delegate("__rpc_claim_mission_reward"));
-        initializer.registerRpc("daily_missions_update_progress", softStub({ success: true, updated: false, note: "progress is auto-tracked server-side" }));
+        initializer.registerRpc("daily_missions_update_progress", function (ctx, logger, nk, payload) {
+            var fn = g["__rpc_submit_mission_progress"];
+            if (typeof fn !== "function") {
+                return JSON.stringify({ success: false, updated: false });
+            }
+            var raw = fn(ctx, logger, nk, payload);
+            try {
+                var parsed = JSON.parse(raw);
+                if (parsed && parsed.success) {
+                    parsed.updated = true;
+                    return JSON.stringify(parsed);
+                }
+                return JSON.stringify({
+                    success: false,
+                    updated: false,
+                    error: parsed && (parsed.error || parsed.message),
+                });
+            }
+            catch (e) {
+                return JSON.stringify({ success: false, updated: false });
+            }
+        });
         // ---- Daily rewards ----
         initializer.registerRpc("daily_rewards_get_state", delegate("__rpc_daily_rewards_get_status"));
         initializer.registerRpc("daily_rewards_get_calendar", delegate("__rpc_daily_rewards_get_status"));
@@ -49544,6 +49565,13 @@ var QuestEventBridge;
     function mapEventType(eventName) {
         return EVENT_MAP[eventName] || "custom_event";
     }
+    function questEventUrl(base) {
+        var b = (base || "http://localhost:3001").replace(/\/$/, "");
+        if (b.length >= 4 && b.substring(b.length - 4) === "/api") {
+            return b + "/game-bridge/s2s/quest-event";
+        }
+        return b + "/api/game-bridge/s2s/quest-event";
+    }
     function rpcQuestGameEvent(ctx, logger, nk, payload) {
         try {
             var userId = RpcHelpers.requireUserId(ctx);
@@ -49563,22 +49591,27 @@ var QuestEventBridge;
                 return RpcHelpers.successResponse({ forwarded: false, reason: "webhook_secret_not_configured" });
             }
             var body = JSON.stringify({
+                userId: userId,
                 nakamaGameId: gameId,
                 eventType: eventType,
                 eventName: eventName,
                 data: eventData,
             });
-            // HMAC-SHA256 of the body — matches NakamaS2sGuard expectation
+            // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
             var sig = nk.hmacSha256Hash(webhookSecret, body);
-            var url = questsApiUrl.replace(/\/$/, "") + "/game-bridge/s2s/quest-event";
+            var url = questEventUrl(questsApiUrl);
             try {
-                nk.httpRequest(url, "post", {
+                var resp = nk.httpRequest(url, "post", {
                     "Content-Type": "application/json",
                     "X-Source": "nakama-rpc",
                     "X-Webhook-Signature": sig,
                     "X-User-Id": userId,
                     "X-Game-Id": gameId,
                 }, body, 5000);
+                if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                    logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
+                    return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", status: resp.code });
+                }
                 logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
             }
             catch (httpErr) {
