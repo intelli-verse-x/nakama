@@ -129,8 +129,9 @@ services:
       # Dashboard / admin auth
       - ADMIN_USERNAME=${ADMIN_USERNAME:-}
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
-      # Hardcoded fallback matches AA_FALLBACK_DASHBOARD_SECRET in analytics_admin.js
-      - DASHBOARD_SECRET=${DASHBOARD_SECRET:-2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8}
+      # F10 (2026-08-07): no baked default. Set DASHBOARD_SECRET in your local
+      # .env; when unset the admin/shared-secret paths fail closed.
+      - DASHBOARD_SECRET=${DASHBOARD_SECRET:-}
       # Phase-2 feature flags (default ON; set to "false" to disable)
       - ROLLUP_ENABLED=${ROLLUP_ENABLED:-true}
       - EXTERNAL_POLLERS_ENABLED=${EXTERNAL_POLLERS_ENABLED:-true}
@@ -256,9 +257,9 @@ services:
       nakama:
         condition: service_healthy
     environment:
-      # DASHBOARD_SECRET: hardcoded fallback matches AA_FALLBACK_DASHBOARD_SECRET
-      # in analytics_admin.js. Override by setting DASHBOARD_SECRET in .env.
-      - DASHBOARD_SECRET=${DASHBOARD_SECRET:-2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8}
+      # F10 (2026-08-07): no baked default. Set DASHBOARD_SECRET in your local
+      # .env; the cron sidecar's shared-secret calls fail closed when unset.
+      - DASHBOARD_SECRET=${DASHBOARD_SECRET:-}
       - NAKAMA_URL=http://nakama:7350
       - HTTP_KEY=defaultkey
       - ROLLUP_HOUR_UTC=1        # daily rollup at this hour UTC
