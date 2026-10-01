@@ -5,7 +5,7 @@
 # rolls it forward with `kubectl set image` (CodeBuild and CodePipeline no
 # longer exist in account 803881282303). Applying a full spec from here would
 # silently revert whatever else the cluster carries, including the live
-# ROLLOUT_NONCE and the PATHA_INDEX_JS_URL command wrapper.
+# ROLLOUT_NONCE and the shell command wrapper.
 #
 #   kubectl -n aicart patch deployment intelliverse-nakama \
 #     --patch-file deploy/recorder-asr-shim/nakama-sidecar-patch.yaml
