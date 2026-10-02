@@ -1709,6 +1709,7 @@ declare namespace LegacyGameRegistry {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyGiftCards {
+    function purchaseGiftCard(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, payload: string): string;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyGroups {
@@ -1876,9 +1877,16 @@ declare namespace LegacyPush {
     export {};
 }
 declare namespace QuestEventBridge {
+    function forwardNamedEvent(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, gameId: string, eventName: string, eventData: any): {
+        [key: string]: any;
+    };
+    function forwardLeaderboardRank(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkruntime.Nakama, gameId: string, leaderboardId: string, rank: number): void;
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyQuestsEconomyBridge {
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace QuestxBridge {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace LegacyQuiz {

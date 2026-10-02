@@ -85,7 +85,12 @@ namespace LegacyMultiGame {
     if (data.score === undefined) throw new Error("score required");
     var lbId = gId + "_leaderboard";
     try { nk.leaderboardCreate(lbId, false, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST); } catch (_) { }
-    nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, nkruntime.OverrideOperator.BEST);
+    var record: any = nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, nkruntime.OverrideOperator.BEST);
+    try {
+      QuestEventBridge.forwardLeaderboardRank(ctx, logger, nk, gId, lbId, record && record.rank);
+    } catch (lbErr: any) {
+      logger.warn("[MultiGame] leaderboard quest forward failed: " + (lbErr && lbErr.message ? lbErr.message : String(lbErr)));
+    }
     EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: gId, score: data.score });
     return { success: true };
   }
