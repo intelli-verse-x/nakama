@@ -144,6 +144,15 @@ namespace LegacyGiftCards {
     }
   }
 
+  export function purchaseGiftCard(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    payload: string,
+  ): string {
+    return rpcPurchase(ctx, logger, nk, payload);
+  }
+
   export function register(initializer: nkruntime.Initializer): void {
     initializer.registerRpc("game_gift_card_list", rpcList);
     initializer.registerRpc("game_gift_card_purchase", rpcPurchase);
