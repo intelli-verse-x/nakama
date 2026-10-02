@@ -2,12 +2,12 @@
   "name": "nakama-web-platform",
   "private": true,
   "scripts": {
-    "dev:admin": "pnpm --filter @nakama/admin dev",
-    "dev:player": "pnpm --filter @nakama/player dev",
-    "dev": "pnpm -r --parallel dev",
-    "build:admin": "pnpm --filter @nakama/admin build",
-    "build:player": "pnpm --filter @nakama/player build",
-    "build": "pnpm -r build",
+    "dev:admin": "node init && pnpm --filter @nakama/admin dev",
+    "dev:player": "node init && pnpm --filter @nakama/player dev",
+    "dev": "node init && pnpm -r --parallel dev",
+    "build:admin": "node init && pnpm --filter @nakama/admin build",
+    "build:player": "node init && pnpm --filter @nakama/player build",
+    "build": "node init && pnpm -r build",
     "lint": "pnpm -r lint",
     "preview:admin": "pnpm --filter @nakama/admin preview",
     "preview:player": "pnpm --filter @nakama/player preview"
