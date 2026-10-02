@@ -59,6 +59,8 @@ namespace QuestEventBridge {
     "tournament_join":     "custom_event",
     "tournament_win":      "custom_event",
     "weekly_goal_complete_bonus": "custom_event",
+    "leaderboard_rank":    "leaderboard_rank",
+    "leaderboard_update":  "leaderboard_rank",
   };
 
   function mapEventType(eventName: string): string {
@@ -73,6 +75,101 @@ namespace QuestEventBridge {
     return b + "/api/game-bridge/s2s/quest-event";
   }
 
+  function forwardQuestEvent(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    gameId: string,
+    eventName: string,
+    eventData: any,
+  ): { [key: string]: any } {
+    var userId = RpcHelpers.requireUserId(ctx);
+    var eventType = mapEventType(eventName);
+    var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+    var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+
+    if (!webhookSecret) {
+      logger.warn("[QuestEventBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
+      return { forwarded: false, reason: "webhook_secret_not_configured" };
+    }
+
+    var body = JSON.stringify({
+      userId:       userId,
+      nakamaGameId: gameId,
+      eventType:    eventType,
+      eventName:    eventName,
+      data:         eventData || {},
+    });
+
+    // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
+    var sig = (nk.hmacSha256Hash(webhookSecret, body) as unknown) as string;
+    var url = questEventUrl(questsApiUrl);
+
+    try {
+      var resp: any = nk.httpRequest(
+        url,
+        "post",
+        {
+          "Content-Type":       "application/json",
+          "X-Source":           "nakama-rpc",
+          "X-Webhook-Signature": sig,
+          "X-User-Id":          userId,
+          "X-Game-Id":          gameId,
+        },
+        body,
+        5000,
+      );
+      if (resp && typeof resp.code === "number" && resp.code >= 400) {
+        logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
+        return { forwarded: false, reason: "http_error", status: resp.code };
+      }
+      logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
+    } catch (httpErr: any) {
+      // Non-fatal: quest sync failure must never break the game session
+      logger.warn("[QuestEventBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
+      return { forwarded: false, reason: "http_error", error: httpErr.message };
+    }
+
+    return {
+      forwarded:  true,
+      eventType:  eventType,
+      eventName:  eventName,
+      userId:     userId,
+      gameId:     gameId,
+    };
+  }
+
+  export function forwardNamedEvent(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    gameId: string,
+    eventName: string,
+    eventData: any,
+  ): { [key: string]: any } {
+    return forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData);
+  }
+
+  export function forwardLeaderboardRank(
+    ctx: nkruntime.Context,
+    logger: nkruntime.Logger,
+    nk: nkruntime.Nakama,
+    gameId: string,
+    leaderboardId: string,
+    rank: number,
+  ): void {
+    try {
+      if (!gameId || !leaderboardId) return;
+      if (typeof rank !== "number" || rank < 1 || Math.floor(rank) !== rank) return;
+      forwardQuestEvent(ctx, logger, nk, gameId, "leaderboard_rank", {
+        rank: rank,
+        leaderboardId: leaderboardId,
+      });
+    } catch (e: any) {
+      logger.warn("[QuestEventBridge] leaderboard forward failed: " + (e && e.message ? e.message : String(e)));
+    }
+  }
+
   function rpcQuestGameEvent(
     ctx: nkruntime.Context,
     logger: nkruntime.Logger,
@@ -80,7 +177,7 @@ namespace QuestEventBridge {
     payload: string,
   ): string {
     try {
-      var userId = RpcHelpers.requireUserId(ctx);
+      RpcHelpers.requireUserId(ctx);
       var data = RpcHelpers.parseRpcPayload(payload);
 
       var gameId = data.gameId || data.game_id;
@@ -90,61 +187,8 @@ namespace QuestEventBridge {
       if (!gameId) return RpcHelpers.errorResponse("gameId required");
       if (!eventName) return RpcHelpers.errorResponse("eventName required");
 
-      var eventType = mapEventType(eventName);
-
-      var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
-      var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
-
-      if (!webhookSecret) {
-        logger.warn("[QuestEventBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
-        return RpcHelpers.successResponse({ forwarded: false, reason: "webhook_secret_not_configured" });
-      }
-
-      var body = JSON.stringify({
-        userId:       userId,
-        nakamaGameId: gameId,
-        eventType:    eventType,
-        eventName:    eventName,
-        data:         eventData,
-      });
-
-      // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
-      var sig = (nk.hmacSha256Hash(webhookSecret, body) as unknown) as string;
-
-      var url = questEventUrl(questsApiUrl);
-
-      try {
-        var resp: any = nk.httpRequest(
-          url,
-          "post",
-          {
-            "Content-Type":       "application/json",
-            "X-Source":           "nakama-rpc",
-            "X-Webhook-Signature": sig,
-            "X-User-Id":          userId,
-            "X-Game-Id":          gameId,
-          },
-          body,
-          5000,
-        );
-        if (resp && typeof resp.code === "number" && resp.code >= 400) {
-          logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
-          return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", status: resp.code });
-        }
-        logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
-      } catch (httpErr: any) {
-        // Non-fatal: quest sync failure must never break the game session
-        logger.warn("[QuestEventBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
-        return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", error: httpErr.message });
-      }
-
-      return RpcHelpers.successResponse({
-        forwarded:  true,
-        eventType:  eventType,
-        eventName:  eventName,
-        userId:     userId,
-        gameId:     gameId,
-      });
+      var result = forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData);
+      return RpcHelpers.successResponse(result);
     } catch (e: any) {
       return RpcHelpers.errorResponse("quest_game_event failed: " + (e.message || String(e)));
     }
