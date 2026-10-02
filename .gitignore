@@ -343,7 +343,6 @@ bh_unicode_properties.cache
 GitHub.sublime-settings
 
 ### VisualStudioCode ###
-.vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
 *.code-workspace
@@ -789,7 +788,6 @@ CLAUDE.local.md
 GEMINI.md
 
 # Local secrets — never commit
-.env
 
 # LMS integration local dev environment (keys, LMS stacks, fixtures)
 .lms-dev/
@@ -806,3 +804,4 @@ data/modules/build-tests/
 # Local compose overrides (e.g. Cockroach UI port vs kiosk-x :8080)
 docker-compose.override.yml
 
+config.bat

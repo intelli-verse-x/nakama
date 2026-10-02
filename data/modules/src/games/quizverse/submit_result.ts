@@ -251,6 +251,7 @@ namespace QvSubmitResult {
   // ── Task 2.4 — leaderboard ────────────────────────────────────────────────
 
   function submitLeaderboard(
+    ctx:      nkruntime.Context,
     nk:       nkruntime.Nakama,
     logger:   nkruntime.Logger,
     userId:   string,
@@ -266,18 +267,26 @@ namespace QvSubmitResult {
     if (gameId) boards.push("leaderboard_" + gameId);
 
     for (var bi = 0; bi < boards.length; bi++) {
+      var written: any = null;
       try {
-        nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
+        written = nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
       } catch (e: any) {
         // Leaderboard may not exist yet — create it then retry
         try {
           // Global board never resets; per-topic and per-game boards reset daily
           var resetSched = (boards[bi] === LB_GLOBAL) ? LB_RESET_ALLTIME : LB_RESET_DAILY;
           nk.leaderboardCreate(boards[bi], true, nkruntime.SortOrder.DESCENDING, nkruntime.Operator.BEST, resetSched);
-          nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
+          written = nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
         } catch (e2: any) {
           logger.warn("[QvSubmit] leaderboard " + boards[bi] + " failed: " + (e2 && e2.message));
         }
+      }
+      if (!written) continue;
+      try {
+        var questGameId = gameId || "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+        QuestEventBridge.forwardLeaderboardRank(ctx, logger, nk, questGameId, boards[bi], written.rank);
+      } catch (fwd: any) {
+        logger.warn("[QvSubmit] leaderboard quest forward failed: " + (fwd && fwd.message));
       }
     }
   }
@@ -684,7 +693,7 @@ namespace QvSubmitResult {
     }
 
     // ── Task 2.4 — leaderboard (non-critical) ─────────────────────────────
-    submitLeaderboard(nk, logger, userId, username, gameId, topic, totalScore);
+    submitLeaderboard(ctx, nk, logger, userId, username, gameId, topic, totalScore);
 
     // ── Task 2.5 — KB performance write (non-critical) ────────────────────
     updateKbOcc(nk, logger, userId, topic, correct, total, totalScore);

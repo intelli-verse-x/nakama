@@ -528,6 +528,9 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.info("[Legacy] Registering gift cards RPCs...");
     LegacyGiftCards.register(initializer);
 
+    logger.info("[Legacy] Registering QuestX bridge RPCs...");
+    QuestxBridge.register(initializer);
+
     logger.info("[Legacy] Registering coupons RPCs...");
     LegacyCoupons.register(initializer);
 
