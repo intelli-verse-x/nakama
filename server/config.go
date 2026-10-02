@@ -755,8 +755,8 @@ type SessionConfig struct {
 	TokenExpirySec        int64  `yaml:"token_expiry_sec" json:"token_expiry_sec" usage:"Token expiry in seconds."`
 	RefreshEncryptionKey  string `yaml:"refresh_encryption_key" json:"refresh_encryption_key" usage:"The encryption key used to produce the client refresh token."`
 	RefreshTokenExpirySec int64  `yaml:"refresh_token_expiry_sec" json:"refresh_token_expiry_sec" usage:"Refresh token expiry in seconds."`
-	SingleSocket          bool   `yaml:"single_socket" json:"single_socket" usage:"Only allow one socket per user. Older sessions are disconnected. Default false."`
-	SingleMatch           bool   `yaml:"single_match" json:"single_match" usage:"Only allow one match per user. Older matches receive a leave. Requires single socket to enable. Default false."`
+	SingleSocket          bool   `yaml:"single_socket" json:"single_socket" usage:"Only allow one socket per user. Older sessions are disconnected. Default true."`
+	SingleMatch           bool   `yaml:"single_match" json:"single_match" usage:"Only allow one match per user. Older matches receive a leave. Requires single socket to enable. Default true."`
 	SingleParty           bool   `yaml:"single_party" json:"single_party" usage:"Only allow one party per user. Older parties receive a leave. Requires single socket to enable. Default false."`
 	SingleSession         bool   `yaml:"single_session" json:"single_session" usage:"Only allow one session token per user. Older session tokens are invalidated in the session cache. Default false."`
 }
@@ -805,9 +805,9 @@ func (cfg *SessionConfig) Clone() *SessionConfig {
 func NewSessionConfig() *SessionConfig {
 	return &SessionConfig{
 		EncryptionKey:         "defaultencryptionkey",
-		TokenExpirySec:        60,
+		TokenExpirySec:        43200,
 		RefreshEncryptionKey:  "defaultrefreshencryptionkey",
-		RefreshTokenExpirySec: 3600,
+		RefreshTokenExpirySec: 2592000,
 		SingleSocket:          true,
 		SingleMatch:           true,
 		SingleParty:           true,
