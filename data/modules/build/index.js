@@ -485,6 +485,8 @@ function InitModule(ctx, logger, nk, initializer) {
         LegacyAnalyticsRetention.register(initializer);
         logger.info("[Legacy] Registering gift cards RPCs...");
         LegacyGiftCards.register(initializer);
+        logger.info("[Legacy] Registering QuestX bridge RPCs...");
+        QuestxBridge.register(initializer);
         logger.info("[Legacy] Registering coupons RPCs...");
         LegacyCoupons.register(initializer);
         logger.info("[Legacy] All legacy RPCs registered successfully");
@@ -25629,7 +25631,7 @@ var QvSubmitResult;
         nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic, pack_id: packId }, true);
     }
     // ── Task 2.4 — leaderboard ────────────────────────────────────────────────
-    function submitLeaderboard(nk, logger, userId, username, gameId, topic, score) {
+    function submitLeaderboard(ctx, nk, logger, userId, username, gameId, topic, score) {
         if (score <= 0)
             return;
         var boards = [LB_GLOBAL];
@@ -25639,8 +25641,9 @@ var QvSubmitResult;
         if (gameId)
             boards.push("leaderboard_" + gameId);
         for (var bi = 0; bi < boards.length; bi++) {
+            var written = null;
             try {
-                nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
+                written = nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
             }
             catch (e) {
                 // Leaderboard may not exist yet — create it then retry
@@ -25648,11 +25651,20 @@ var QvSubmitResult;
                     // Global board never resets; per-topic and per-game boards reset daily
                     var resetSched = (boards[bi] === LB_GLOBAL) ? LB_RESET_ALLTIME : LB_RESET_DAILY;
                     nk.leaderboardCreate(boards[bi], true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, resetSched);
-                    nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
+                    written = nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
                 }
                 catch (e2) {
                     logger.warn("[QvSubmit] leaderboard " + boards[bi] + " failed: " + (e2 && e2.message));
                 }
+            }
+            if (!written)
+                continue;
+            try {
+                var questGameId = gameId || "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+                QuestEventBridge.forwardLeaderboardRank(ctx, logger, nk, questGameId, boards[bi], written.rank);
+            }
+            catch (fwd) {
+                logger.warn("[QvSubmit] leaderboard quest forward failed: " + (fwd && fwd.message));
             }
         }
     }
@@ -26022,7 +26034,7 @@ var QvSubmitResult;
             logger.warn("[QvSubmit] inflight delete failed: " + (e && e.message));
         }
         // ── Task 2.4 — leaderboard (non-critical) ─────────────────────────────
-        submitLeaderboard(nk, logger, userId, username, gameId, topic, totalScore);
+        submitLeaderboard(ctx, nk, logger, userId, username, gameId, topic, totalScore);
         // ── Task 2.5 — KB performance write (non-critical) ────────────────────
         updateKbOcc(nk, logger, userId, topic, correct, total, totalScore);
         // ── Task 2.5 — analytics: fire legacy quiz_submit_result ──────────────
@@ -43235,6 +43247,10 @@ var LegacyGiftCards;
             return RpcHelpers.errorResponse(e.message);
         }
     }
+    function purchaseGiftCard(ctx, logger, nk, payload) {
+        return rpcPurchase(ctx, logger, nk, payload);
+    }
+    LegacyGiftCards.purchaseGiftCard = purchaseGiftCard;
     function register(initializer) {
         initializer.registerRpc("game_gift_card_list", rpcList);
         initializer.registerRpc("game_gift_card_purchase", rpcPurchase);
@@ -44016,7 +44032,13 @@ var LegacyMultiGame;
             nk.leaderboardCreate(lbId, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */);
         }
         catch (_) { }
-        nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, "best" /* nkruntime.OverrideOperator.BEST */);
+        var record = nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, "best" /* nkruntime.OverrideOperator.BEST */);
+        try {
+            QuestEventBridge.forwardLeaderboardRank(ctx, logger, nk, gId, lbId, record && record.rank);
+        }
+        catch (lbErr) {
+            logger.warn("[MultiGame] leaderboard quest forward failed: " + (lbErr && lbErr.message ? lbErr.message : String(lbErr)));
+        }
         EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: gId, score: data.score });
         return { success: true };
     }
@@ -49561,6 +49583,8 @@ var QuestEventBridge;
         "tournament_join": "custom_event",
         "tournament_win": "custom_event",
         "weekly_goal_complete_bonus": "custom_event",
+        "leaderboard_rank": "leaderboard_rank",
+        "leaderboard_update": "leaderboard_rank",
     };
     function mapEventType(eventName) {
         return EVENT_MAP[eventName] || "custom_event";
@@ -49572,9 +49596,75 @@ var QuestEventBridge;
         }
         return b + "/api/game-bridge/s2s/quest-event";
     }
+    function forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var eventType = mapEventType(eventName);
+        var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+        var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+        if (!webhookSecret) {
+            logger.warn("[QuestEventBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
+            return { forwarded: false, reason: "webhook_secret_not_configured" };
+        }
+        var body = JSON.stringify({
+            userId: userId,
+            nakamaGameId: gameId,
+            eventType: eventType,
+            eventName: eventName,
+            data: eventData || {},
+        });
+        // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
+        var sig = nk.hmacSha256Hash(webhookSecret, body);
+        var url = questEventUrl(questsApiUrl);
+        try {
+            var resp = nk.httpRequest(url, "post", {
+                "Content-Type": "application/json",
+                "X-Source": "nakama-rpc",
+                "X-Webhook-Signature": sig,
+                "X-User-Id": userId,
+                "X-Game-Id": gameId,
+            }, body, 5000);
+            if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
+                return { forwarded: false, reason: "http_error", status: resp.code };
+            }
+            logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
+        }
+        catch (httpErr) {
+            // Non-fatal: quest sync failure must never break the game session
+            logger.warn("[QuestEventBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
+            return { forwarded: false, reason: "http_error", error: httpErr.message };
+        }
+        return {
+            forwarded: true,
+            eventType: eventType,
+            eventName: eventName,
+            userId: userId,
+            gameId: gameId,
+        };
+    }
+    function forwardNamedEvent(ctx, logger, nk, gameId, eventName, eventData) {
+        return forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData);
+    }
+    QuestEventBridge.forwardNamedEvent = forwardNamedEvent;
+    function forwardLeaderboardRank(ctx, logger, nk, gameId, leaderboardId, rank) {
+        try {
+            if (!gameId || !leaderboardId)
+                return;
+            if (typeof rank !== "number" || rank < 1 || Math.floor(rank) !== rank)
+                return;
+            forwardQuestEvent(ctx, logger, nk, gameId, "leaderboard_rank", {
+                rank: rank,
+                leaderboardId: leaderboardId,
+            });
+        }
+        catch (e) {
+            logger.warn("[QuestEventBridge] leaderboard forward failed: " + (e && e.message ? e.message : String(e)));
+        }
+    }
+    QuestEventBridge.forwardLeaderboardRank = forwardLeaderboardRank;
     function rpcQuestGameEvent(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
+            RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
             var gameId = data.gameId || data.game_id;
             var eventName = data.eventName || data.event_name || data.name;
@@ -49583,49 +49673,8 @@ var QuestEventBridge;
                 return RpcHelpers.errorResponse("gameId required");
             if (!eventName)
                 return RpcHelpers.errorResponse("eventName required");
-            var eventType = mapEventType(eventName);
-            var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
-            var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
-            if (!webhookSecret) {
-                logger.warn("[QuestEventBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
-                return RpcHelpers.successResponse({ forwarded: false, reason: "webhook_secret_not_configured" });
-            }
-            var body = JSON.stringify({
-                userId: userId,
-                nakamaGameId: gameId,
-                eventType: eventType,
-                eventName: eventName,
-                data: eventData,
-            });
-            // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
-            var sig = nk.hmacSha256Hash(webhookSecret, body);
-            var url = questEventUrl(questsApiUrl);
-            try {
-                var resp = nk.httpRequest(url, "post", {
-                    "Content-Type": "application/json",
-                    "X-Source": "nakama-rpc",
-                    "X-Webhook-Signature": sig,
-                    "X-User-Id": userId,
-                    "X-Game-Id": gameId,
-                }, body, 5000);
-                if (resp && typeof resp.code === "number" && resp.code >= 400) {
-                    logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
-                    return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", status: resp.code });
-                }
-                logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
-            }
-            catch (httpErr) {
-                // Non-fatal: quest sync failure must never break the game session
-                logger.warn("[QuestEventBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
-                return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", error: httpErr.message });
-            }
-            return RpcHelpers.successResponse({
-                forwarded: true,
-                eventType: eventType,
-                eventName: eventName,
-                userId: userId,
-                gameId: gameId,
-            });
+            var result = forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData);
+            return RpcHelpers.successResponse(result);
         }
         catch (e) {
             return RpcHelpers.errorResponse("quest_game_event failed: " + (e.message || String(e)));
@@ -49749,6 +49798,154 @@ var LegacyQuestsEconomyBridge;
     }
     LegacyQuestsEconomyBridge.register = register;
 })(LegacyQuestsEconomyBridge || (LegacyQuestsEconomyBridge = {}));
+// QuestX S2S bridge. Does not replace quest_engine, daily_missions, or quests_redeem_gift.
+var QuestxBridge;
+(function (QuestxBridge) {
+    function apiUrl(base, path) {
+        var b = (base || "http://localhost:3001").replace(/\/$/, "");
+        if (b.length >= 4 && b.substring(b.length - 4) === "/api")
+            return b + path;
+        return b + "/api" + path;
+    }
+    function postSigned(ctx, logger, nk, path, bodyObj) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+        var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+        if (!webhookSecret) {
+            logger.warn("[QuestxBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
+            return { forwarded: false, reason: "webhook_secret_not_configured" };
+        }
+        bodyObj.userId = userId;
+        var body = JSON.stringify(bodyObj);
+        var sig = nk.hmacSha256Hash(webhookSecret, body);
+        var gameId = bodyObj.nakamaGameId || "";
+        try {
+            var resp = nk.httpRequest(apiUrl(questsApiUrl, path), "post", {
+                "Content-Type": "application/json",
+                "X-Source": "nakama-rpc",
+                "X-Webhook-Signature": sig,
+                "X-User-Id": userId,
+                "X-Game-Id": gameId,
+            }, body, 5000);
+            if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                logger.warn("[QuestxBridge] HTTP " + resp.code + " path=" + path);
+                return { forwarded: false, reason: "http_error", status: resp.code, body: resp.body };
+            }
+            var parsed = {};
+            try {
+                parsed = resp && resp.body ? JSON.parse(resp.body) : {};
+            }
+            catch (_) {
+                parsed = { raw: resp && resp.body };
+            }
+            parsed.forwarded = true;
+            return parsed;
+        }
+        catch (httpErr) {
+            logger.warn("[QuestxBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
+            return { forwarded: false, reason: "http_error", error: httpErr.message };
+        }
+    }
+    function gameIdOf(data) {
+        return data.gameId || data.game_id || data.nakamaGameId || "";
+    }
+    function rpcLogEvent(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            var eventName = data.eventName || data.event_name || data.name;
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            if (!eventName)
+                return RpcHelpers.errorResponse("eventName required");
+            var result = QuestEventBridge.forwardNamedEvent(ctx, logger, nk, gameId, eventName, data.eventData || data.data || {});
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("questx_log_event failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcSubmitProgress(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            var eventName = data.eventName || data.event_name || data.name;
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            if (!eventName)
+                return RpcHelpers.errorResponse("eventName required");
+            var result = QuestEventBridge.forwardNamedEvent(ctx, logger, nk, gameId, eventName, data.eventData || data.data || {});
+            if (!result.forwarded)
+                return RpcHelpers.errorResponse(result.reason || "quest sync failed");
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("questx_submit_progress failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcFeed(ctx, logger, nk, payload) {
+        return readFeed(ctx, logger, nk, payload, "/game-bridge/s2s/quest-feed", "questx_quest_feed");
+    }
+    function rpcDaily(ctx, logger, nk, payload) {
+        return readFeed(ctx, logger, nk, payload, "/game-bridge/s2s/daily-missions", "questx_daily_missions");
+    }
+    function readFeed(ctx, logger, nk, payload, path, name) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            var result = postSigned(ctx, logger, nk, path, { nakamaGameId: gameId });
+            if (!result.forwarded)
+                return RpcHelpers.errorResponse(result.reason || "quest sync failed");
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse(name + " failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcClaim(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            var result = postSigned(ctx, logger, nk, "/game-bridge/s2s/quest-claim", {
+                nakamaGameId: gameId,
+                kind: data.kind || "coins",
+                questId: data.questId || data.quest_id,
+                cardId: data.cardId || data.card_id,
+                rewardId: data.rewardId || data.reward_id,
+                name: data.name,
+                line1: data.line1,
+                line2: data.line2,
+                city: data.city,
+                state: data.state,
+                zip: data.zip,
+                country: data.country,
+                phone: data.phone,
+            });
+            if (!result.forwarded)
+                return RpcHelpers.errorResponse(result.reason || "quest claim failed");
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("questx_claim_reward failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcRedeem(ctx, logger, nk, payload) {
+        return LegacyGiftCards.purchaseGiftCard(ctx, logger, nk, payload);
+    }
+    function register(initializer) {
+        initializer.registerRpc("questx_log_event", rpcLogEvent);
+        initializer.registerRpc("questx_submit_progress", rpcSubmitProgress);
+        initializer.registerRpc("questx_quest_feed", rpcFeed);
+        initializer.registerRpc("questx_daily_missions", rpcDaily);
+        initializer.registerRpc("questx_claim_reward", rpcClaim);
+        initializer.registerRpc("questx_redeem_gift_card", rpcRedeem);
+    }
+    QuestxBridge.register = register;
+})(QuestxBridge || (QuestxBridge = {}));
 var LegacyQuiz;
 (function (LegacyQuiz) {
     function getStats(nk, userId) {
