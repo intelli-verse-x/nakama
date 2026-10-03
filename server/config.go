@@ -805,6 +805,7 @@ func (cfg *SessionConfig) Clone() *SessionConfig {
 func NewSessionConfig() *SessionConfig {
 	return &SessionConfig{
 		EncryptionKey:         "defaultencryptionkey",
+		// 12h access, 30d refresh. A 60s token closed cabinet sockets mid-game.
 		TokenExpirySec:        43200,
 		RefreshEncryptionKey:  "defaultrefreshencryptionkey",
 		RefreshTokenExpirySec: 2592000,
