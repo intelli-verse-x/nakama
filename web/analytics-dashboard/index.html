@@ -4012,7 +4012,7 @@ select { color-scheme: dark; }
         const CONFIG = {
             serverUrl: 'https://nakama-rest.intelli-verse-x.ai',
             serverKey: 'defaultkey',
-            bootstrapSecret: '2074ff0e9dea8fb3c8162a0301b6ea06bbb938187b89a0b6789ea583f25d34c8',
+            bootstrapSecret: '__DASHBOARD_SECRET__',
             nakamaConsoleUrl: 'https://nakama-rest.intelli-verse-x.ai',
             adminTokenStorageKey: 'ivx_admin_token_v2',
             games: {
@@ -4277,10 +4277,11 @@ select { color-scheme: dark; }
             // so the dashboard UI can be previewed without a running backend.
             const isLocalFile = location.protocol === 'file:';
             if (isLocalFile) {
-                const LOCAL_USER = 'ivx-admin';
-                const LOCAL_PASS = 'e200d2640355cdb433f72e9c4e034ee0b2c13bae';
-                if (username !== LOCAL_USER || password !== LOCAL_PASS) {
-                    errEl.textContent = `Local mode — use ivx-admin / (see analytics_admin.js)`;
+                // F10 (2026-08-07): the hardcoded offline-preview password is
+                // deleted. Offline preview now accepts any non-empty credentials —
+                // it grants a local-only token and never reaches a real backend.
+                if (!username || !password) {
+                    errEl.textContent = `Local preview — enter any non-empty username and password`;
                     errEl.classList.add('show');
                     document.getElementById('adminPassword').value = '';
                     return;
