@@ -10500,6 +10500,9 @@ var ChessPlugin;
         var moveTimeoutMs = (typeof raw.move_timeout_ms === "number" && raw.move_timeout_ms > 0)
             ? raw.move_timeout_ms
             : 5 * 60 * 1000;
+        // The cabinet omits as_player and stays the spectator. A phone that wants
+        // a seat sends as_player:true, then joins the match and sits in scan order.
+        var asPlayer = raw.as_player === true;
         var templateInit = {
             generator_id: ChessGame.GENERATOR_ID,
             game_id: gameId,
@@ -10509,12 +10512,14 @@ var ChessPlugin;
                 ? raw.max_match_duration_ms
                 : 60 * 60 * 1000,
             // The glass joins to watch; it must never be dealt a colour.
-            spectator_user_id: ctx.userId || ""
+            spectator_user_id: asPlayer ? "" : (ctx.userId || "")
         };
         var matchId;
         try {
+            // Phone tables carry their own label game_id so a phone listing open
+            // tables (size 1, label.game_id:chess_phone) never sits at a kiosk.
             matchId = nk.matchCreate(MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1, {
-                game_id: "chess",
+                game_id: asPlayer ? "chess_phone" : "chess",
                 region: raw.region || "",
                 template_init: templateInit,
                 creator_user_id: ctx.userId || ""
@@ -10529,7 +10534,8 @@ var ChessPlugin;
             template_id: MpKernelModule.TEMPLATE_IDS.ASYNC_TURN_V1,
             game_id: "chess",
             async_game_id: gameId,
-            spectator_user_id: ctx.userId || "",
+            spectator_user_id: asPlayer ? "" : (ctx.userId || ""),
+            as_player: asPlayer,
             move_timeout_ms: moveTimeoutMs,
             server_unix_ms: Date.now()
         });
