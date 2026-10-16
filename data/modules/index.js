@@ -1,7 +1,7 @@
 // ============================================================
 // Nakama Runtime Module — Merged by postbuild.js v2
-// Generated: 2026-09-29T08:02:18.193Z
-// RPC Count: 1348
+// Generated: 2026-10-16T11:35:44.709Z
+// RPC Count: 1355
 // ============================================================
 
 // --- Video Quiz catalog (seed-video-quiz-catalog.js) ---
@@ -81,6 +81,7 @@ var __rpc_insights_aggregator_tick;
 var __rpc_pending_bundles_drain;
 var __rpc_personalization_get;
 var __rpc_personalization_get_for_mode;
+var __rpc_privacy_erase_game;
 var __rpc_privacy_erase_user;
 var __rpc_privacy_erase_discord;
 var __rpc_consent_upsert;
@@ -514,6 +515,12 @@ var __rpc_game_to_global_convert;
 var __rpc_game_to_global_preview;
 var __rpc_conversion_ratio_set;
 var __rpc_conversion_ratio_get;
+var __rpc_questx_log_event;
+var __rpc_questx_submit_progress;
+var __rpc_questx_quest_feed;
+var __rpc_questx_daily_missions;
+var __rpc_questx_claim_reward;
+var __rpc_questx_redeem_gift_card;
 var __rpc_quiz_submit_result;
 var __rpc_quiz_get_history;
 var __rpc_quiz_get_stats;
@@ -1362,7 +1369,7 @@ var __rpc_visual_path_skip_day_with_ad;
 var __rpc_kiosk_arcade_create;
 
 // --- TS-owned RPC IDs (auto-generated, replaces former hand-maintained _tsRpcList) ---
-var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"chess_create_match":true,"quizverse_pack_cleanup_tick":true,"quizverse_arcade_complete":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"quests_redeem_gift":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"kioskx_arcade_wallet_grant":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quests_quest_feed":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_undo_promote":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_kiosk_pay_step":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_social_group_cover_set":true,"ivx_social_group_week_stats":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
+var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"quizverse_aahaa_fact_pack":true,"quizverse_aahaa_profile_set":true,"quizverse_aahaa_generate_all":true,"quizverse_aahaa_validate":true,"quizverse_aahaa_catalog":true,"ai_pipeline_weekly_recap":true,"ai_pipeline_monthly_recap":true,"ai_pipeline_motion_graphics":true,"ai_pipeline_poll":true,"ai_pipeline_complete":true,"analytics_avatar_comparison":true,"analytics_avatar_comparison_recent":true,"crash_log_append":true,"xsell_pick":true,"xsell_record":true,"insights_aggregator_tick":true,"pending_bundles_drain":true,"personalization_get":true,"personalization_get_for_mode":true,"privacy_erase_game":true,"privacy_erase_user":true,"privacy_erase_discord":true,"consent_upsert":true,"consent_invalidate":true,"product_changelog_append":true,"conv_message_capture":true,"conv_my_list":true,"conv_user_purge":true,"conv_pending_cta_set":true,"conv_pending_cta_get":true,"conv_pending_cta_clear":true,"cricket_auction_create_room":true,"cricket_auction_get_room":true,"cricket_auction_place_bid":true,"cricket_auction_next_player":true,"cricket_auction_get_events":true,"cricket_director_start_session":true,"cricket_director_save_session":true,"cricket_director_end_session":true,"cricket_director_get_session":true,"cricket_director_list_history":true,"fantasy_league_create":true,"fantasy_league_join":true,"fantasy_league_leave":true,"fantasy_league_leaderboard":true,"fantasy_league_my_leagues":true,"fantasy_league_info":true,"fantasy_league_list":true,"fantasy_scoring_process":true,"fantasy_scoring_finalize":true,"fantasy_scoring_get_points":true,"fantasy_scoring_live":true,"fantasy_event_leaderboard":true,"fantasy_team_create":true,"fantasy_team_get":true,"fantasy_team_update_captain":true,"fantasy_match_xi_select":true,"fantasy_match_xi_get":true,"fantasy_match_deadline_set":true,"fantasy_catalog_sync":true,"fantasy_catalog_get":true,"fantasy_transfer":true,"fantasy_transfer_window":true,"fantasy_transfer_history":true,"intelliverse_find_friends":true,"ivx_social_friend_search":true,"intelliverse_find_nearby_players":true,"ivx_social_friend_nearby":true,"friends_list":true,"ivx_social_friends_list":true,"list_blocked_users":true,"ivx_social_friends_blocked":true,"ivx_set_player_presence":true,"ivx_get_cross_game_messages":true,"ivx_mark_message_read":true,"chess_create_match":true,"quizverse_pack_cleanup_tick":true,"quizverse_arcade_complete":true,"quizverse_blog_embed_create":true,"quizverse_blog_embed_get":true,"quizverse_embed_quiz_complete":true,"quizverse_embed_claim_pending":true,"quizverse_blog_quiz_reward":true,"quizverse_brain_prompt_evaluate":true,"quizverse_brain_prompt_commit":true,"quizverse_cache_refresh_tick":true,"compatibility_create_session":true,"compatibility_join_session":true,"compatibility_get_session":true,"compatibility_submit_answers":true,"compatibility_calculate":true,"quizverse_get_questions":true,"quizverse_abandon_pack":true,"quizverse_answer_reveal":true,"quizverse_get_review":true,"quizverse_growth_snapshot":true,"quizverse_create_match":true,"quizverse_load_pack":true,"quizverse_list_packs":true,"quizverse_live_banner_check":true,"quizverse_get_player_context":true,"quizverse_request_questions":true,"quiz_submit_result_v2":true,"quizverse_ai_generate_questions":true,"quizverse_ai_grade_subjective":true,"quizverse_ai_notes_create":true,"quizverse_ai_stt_transcribe":true,"quizverse_fetch_external_quiz":true,"quizverse_mp_request_pack":true,"auth_signup":true,"auth_login":true,"auth_social_login":true,"auth_refresh":true,"auth_userinfo":true,"quizverse_geo_lookup":true,"quizverse_tts_synthesize":true,"quizverse_fetch_lichess_puzzle":true,"quizverse_sudoku_generate":true,"xpromo_get_apps":true,"webview_token_issue":true,"asset_catalog_get":true,"quizverse_weekly_fetch":true,"quizverse_analytics_fanout":true,"quizverse_livekit_token_mint":true,"quizverse_words_daily_seed":true,"quizverse_words_duel_get":true,"quizverse_words_duel_submit":true,"quizverse_words_duel_leaderboard":true,"quizverse_party_play_quota":true,"quizverse_get_personalized_quests":true,"quizverse_prewarm_tick":true,"quizverse_warm_topic":true,"quizverse_product_metrics":true,"quizverse_get_config":true,"quizverse_admin_stats":true,"quizverse_submit_result":true,"quizverse_hermes_brief_get":true,"quizverse_hermes_brief_generate":true,"quizverse_hermes_parent_recap":true,"quizverse_hermes_nightly_tick":true,"hiro_achievements_list":true,"hiro_achievements_progress":true,"hiro_achievements_claim":true,"hiro_auctions_list":true,"hiro_auctions_create":true,"hiro_auctions_bid":true,"hiro_auctions_resolve":true,"admin_config_get":true,"admin_config_set":true,"admin_config_delete":true,"admin_satori_config_get":true,"admin_satori_config_set":true,"admin_bulk_export":true,"admin_bulk_import":true,"admin_cache_invalidate":true,"admin_user_data_get":true,"admin_user_data_set":true,"admin_user_data_delete":true,"admin_accounts_list":true,"admin_account_get":true,"admin_account_ban":true,"admin_account_unban":true,"admin_account_delete":true,"admin_matches_list":true,"admin_tournaments_list":true,"admin_tournament_create":true,"admin_tournament_records_list":true,"admin_tournament_records_around_owner":true,"admin_tournament_record_write":true,"admin_player_inspect":true,"admin_user_search":true,"admin_wallet_view":true,"admin_wallet_grant":true,"admin_wallet_reset":true,"admin_inventory_grant":true,"admin_mailbox_send":true,"admin_satori_audiences_list":true,"admin_satori_flags_list":true,"admin_satori_experiments_list":true,"admin_satori_messages_list":true,"admin_satori_live_events_list":true,"admin_flag_toggle":true,"admin_live_event_schedule":true,"creator_live_event_publish":true,"admin_creator_event_get":true,"admin_creator_event_stats":true,"admin_creator_event_end":true,"admin_creator_events_list":true,"admin_creator_events_backfill_prizes":true,"admin_prize_fulfillments_list":true,"admin_prize_fulfillment_settle":true,"admin_prize_backfill_emails":true,"admin_experiment_setup":true,"admin_satori_message_broadcast":true,"quizverse_game_intelligence_report":true,"admin_events_timeline":true,"satori_events_timeline":true,"satori_config_get":true,"satori_config_set":true,"satori_flags_toggle":true,"satori_live_event_schedule":true,"satori_experiment_setup":true,"admin_storage_list":true,"admin_storage_write":true,"gift_claims_list":true,"admin_gift_claim_update":true,"admin_health_check":true,"daily_missions_get":true,"daily_missions_claim":true,"daily_missions_update_progress":true,"daily_rewards_get_state":true,"daily_rewards_get_calendar":true,"fortune_wheel_get_config":true,"hiro_ad_revenue_get_config":true,"hiro_ad_revenue_record_impression":true,"hiro_appointment_get":true,"hiro_appointment_claim":true,"hiro_daily_content_get":true,"hiro_daily_content_claim":true,"hiro_friend_battle_get":true,"hiro_friend_battle_send":true,"hiro_friend_battle_accept":true,"hiro_friend_battle_submit":true,"hiro_friend_quest_get":true,"hiro_friend_quest_progress":true,"hiro_friend_quest_accept":true,"hiro_friend_streak_get":true,"hiro_friend_streak_interact":true,"hiro_friend_streak_claim_milestone":true,"hiro_iap_trigger_evaluate":true,"hiro_iap_trigger_dismiss":true,"hiro_iap_trigger_convert":true,"hiro_offerwall_get":true,"hiro_offerwall_complete":true,"hiro_retention_claim_comeback":true,"hiro_retention_complete_onboarding":true,"hiro_retention_heartbeat":true,"hiro_session_booster_get":true,"hiro_session_booster_activate":true,"hiro_session_booster_claim_free":true,"hiro_smart_ad_timer_can_show":true,"hiro_smart_ad_timer_get":true,"hiro_smart_ad_timer_record":true,"hiro_social_pressure_get":true,"hiro_spin_wheel_get":true,"hiro_spin_wheel_spin":true,"hiro_streak_shield_get":true,"hiro_streak_shield_activate":true,"hiro_streak_shield_replenish":true,"hiro_iap_validate":true,"hiro_iap_history":true,"battlepass_get":true,"battlepass_record_event":true,"battlepass_unlock_premium":true,"hiro_challenges_create":true,"hiro_challenges_join":true,"hiro_challenges_submit":true,"hiro_challenges_claim":true,"hiro_challenges_list":true,"hiro_economy_donation_request":true,"hiro_economy_donation_give":true,"hiro_economy_donation_claim":true,"hiro_economy_rewarded_video":true,"hiro_economy_spend":true,"hiro_energy_get":true,"hiro_energy_spend":true,"hiro_energy_refill":true,"hiro_energy_add_modifier":true,"hiro_event_lb_list":true,"hiro_event_lb_submit":true,"hiro_event_lb_claim":true,"hiro_event_lb_get":true,"hiro_event_leaderboards_list":true,"hiro_event_leaderboards_submit":true,"hiro_event_leaderboards_claim":true,"hiro_event_leaderboards_get":true,"hiro_incentives_referral_code":true,"hiro_incentives_apply_referral":true,"hiro_incentives_return_bonus":true,"hiro_incentives_list":true,"hiro_incentives_claim":true,"hiro_inventory_list":true,"hiro_inventory_grant":true,"hiro_inventory_consume":true,"hiro_inventory_update":true,"hiro_leaderboards_list":true,"hiro_leaderboards_submit":true,"hiro_leaderboards_records":true,"hiro_mailbox_list":true,"hiro_mailbox_claim":true,"hiro_mailbox_claim_all":true,"hiro_mailbox_delete":true,"hiro_personalizer_set_override":true,"hiro_personalizer_remove_override":true,"hiro_personalizer_get_overrides":true,"hiro_personalizer_preview":true,"hiro_progression_get":true,"hiro_progression_add_xp":true,"creator_event_rewards_get":true,"creator_event_rewards_create":true,"hiro_reward_bucket_get":true,"hiro_reward_bucket_progress":true,"hiro_reward_bucket_unlock":true,"hiro_stats_get":true,"hiro_stats_update":true,"hiro_store_list":true,"hiro_store_purchase":true,"hiro_streaks_get":true,"hiro_streaks_update":true,"hiro_streaks_claim":true,"hiro_streaks_list":true,"hiro_teams_get":true,"hiro_teams_stats":true,"hiro_teams_wallet_get":true,"hiro_teams_wallet_update":true,"hiro_teams_achievements":true,"hiro_tutorials_get":true,"hiro_tutorials_advance":true,"hiro_unlockables_get":true,"hiro_unlockables_start":true,"hiro_unlockables_claim":true,"hiro_unlockables_buy_slot":true,"hiro_unlockables_list":true,"quizverse_get_entitlements":true,"quizverse_rc_sync":true,"quizverse_videos_status":true,"quizverse_videos_consume":true,"quizverse_videos_refund":true,"quizverse_videos_grant":true,"quizverse_lap_note_quota":true,"admin_revenuecat_dashboard":true,"account_merge_ghost_to_cognito":true,"identity_resolve":true,"identity_resolve_or_ghost_create":true,"identity_link":true,"identity_unlink":true,"identity_list_mine":true,"quizverse_merge_guest_to_account":true,"qv_kb_user_dump":true,"qv_kb_user_summary":true,"qv_kb_user_kind":true,"lt_score_predict":true,"lt_exam_countdown_get":true,"lt_exam_countdown_set":true,"lt_exam_countdown_clear":true,"lt_countdown_visit":true,"lt_study_log_log":true,"lt_study_log_heatmap":true,"lt_clip_save":true,"lt_clips_list":true,"lt_clip_delete":true,"lt_exam_calendar_get":true,"lt_gpa_compute":true,"lt_gpa_save":true,"lt_gpa_get":true,"lt_school_search":true,"lt_school_get_detail":true,"lt_school_set_user_school":true,"lt_school_get_user_school":true,"lt_school_freetext_submit":true,"lt_chat_quota_check":true,"lt_chat_quota_consume":true,"lt_learner_state_get":true,"lt_learner_insights_get":true,"lt_learner_soft_cta_check":true,"analytics_cohort_retention":true,"analytics_track_retention_event":true,"analytics_arpu":true,"analytics_track_revenue":true,"send_group_chat_message":true,"send_direct_message":true,"send_chat_room_message":true,"quizverse_deliver_pending_chat_messages":true,"get_group_chat_history":true,"get_direct_message_history":true,"get_chat_room_history":true,"mark_direct_messages_read":true,"mark_group_messages_read":true,"get_unread_counts":true,"game_coupon_list":true,"game_coupon_redeem":true,"game_coupon_sync_catalog":true,"friends_block":true,"friends_unblock":true,"friends_remove":true,"game_entry_validate":true,"game_entry_complete":true,"game_entry_get_status":true,"get_game_registry":true,"get_game_by_id":true,"sync_game_registry":true,"register_game":true,"delete_game":true,"game_gift_card_list":true,"game_gift_card_purchase":true,"quests_redeem_gift":true,"game_gift_card_sync_catalog":true,"game_gift_card_get_purchases":true,"create_game_group":true,"update_group_xp":true,"get_group_wallet":true,"update_group_wallet":true,"get_user_groups":true,"create_all_leaderboards_persistent":true,"create_time_period_leaderboards":true,"submit_score_to_time_periods":true,"get_time_period_leaderboard":true,"submit_score_and_sync":true,"get_all_leaderboards":true,"submit_leaderboard_score":true,"get_leaderboard":true,"quizverse_get_quiz_categories":true,"lasttolive_get_weapon_stats":true,"get_player_portfolio":true,"rpc_update_player_metadata":true,"rpc_change_username":true,"get_player_metadata":true,"admin_delete_player_metadata":true,"check_geo_and_update_profile":true,"create_or_sync_user":true,"push_alerts_status":true,"push_alerts_test":true,"push_register_token":true,"push_send_event":true,"push_get_endpoints":true,"push_flush_pending":true,"notif_cron_daily_quiz":true,"notif_cron_premium_daily_quiz":true,"notif_cron_survey_push":true,"notif_cron_weekly_quiz":true,"notif_cron_idle_winback":true,"notif_cron_streak_warning":true,"notif_cron_motivation":true,"notif_cron_reminders":true,"notif_cron_review":true,"notif_cron_chess_daily_puzzle":true,"notif_cron_holiday_event":true,"notif_cron_boardgame_weekly":true,"reward_joke":true,"reward_yoda":true,"reward_advice":true,"reward_quote":true,"notif_friend_request_sent":true,"notif_friend_challenge":true,"quest_game_event":true,"intellidraws_list":true,"intellidraws_winners":true,"intellidraws_enter":true,"intellidraws_past":true,"game_to_global_convert":true,"game_to_global_preview":true,"conversion_ratio_set":true,"conversion_ratio_get":true,"questx_log_event":true,"questx_submit_progress":true,"questx_quest_feed":true,"questx_daily_missions":true,"questx_claim_reward":true,"questx_redeem_gift_card":true,"quiz_submit_result":true,"quiz_get_history":true,"quiz_get_stats":true,"quiz_check_daily_completion":true,"get_user_wallet":true,"link_wallet_to_game":true,"get_wallet_registry":true,"wallet_get_all":true,"wallet_update_global":true,"wallet_update_game_wallet":true,"wallet_transfer_between_game_wallets":true,"wallet_get_balances":true,"wallet_convert_preview":true,"wallet_convert_to_global":true,"wallet_conversion_rate":true,"global_to_game_convert":true,"global_wallet_balance":true,"global_wallet_earn":true,"global_wallet_spend":true,"global_wallet_history":true,"create_player_wallet":true,"update_wallet_balance":true,"get_wallet_balance":true,"create_or_get_wallet":true,"calculate_score_reward":true,"update_game_reward_config":true,"kioskx_arcade_wallet_grant":true,"n8n_pack_state_emit":true,"n8n_pack_state_query":true,"n8n_pack_state_list_ready":true,"n8n_pack_state_reset":true,"lms_platform_upsert":true,"lms_platform_list":true,"lms_platform_delete":true,"lms_launch_session":true,"lms_deeplink_bind":true,"lms_attempt_complete":true,"lms_grade_push":true,"lms_import_pack":true,"lms_link_status":true,"mp_agent_spawn":true,"mp_agent_despawn":true,"mp_agent_list_personas":true,"mp_agent_speak":true,"mp_create_match":true,"mp_read_match_result":true,"mp_list_templates":true,"mp_interest_size":true,"mp_mod_get_params":true,"mp_mod_set_params":true,"mp_mod_appeal":true,"mp_voice_token":true,"onboarding_events_batch":true,"onboarding_identity_link":true,"onboarding_funnel_screens":true,"onboarding_funnel_analytics":true,"onboarding_user_journey":true,"brain_coins_get":true,"brain_coins_earn":true,"brain_coins_redeem_request":true,"brain_coins_redemption_settle":true,"wallet_sync_guest_to_account":true,"quest_engine_get":true,"quests_quest_feed":true,"quest_engine_record_event":true,"quest_engine_claim_reward":true,"quest_engine_admin_save_config":true,"quest_engine_admin_get_config":true,"reward_catalog_admin_save":true,"reward_catalog_admin_get":true,"reward_catalog_get":true,"reward_delivery_list_mine":true,"reward_delivery_set_email":true,"qv_agent_ping":true,"qv_agent_memory_write":true,"qv_agent_memory_read":true,"qv_agent_get_my_rank":true,"qv_agent_global_leaderboard_top10":true,"qv_agent_analyze_quiz_performance":true,"qv_agent_generate_trivia":true,"qv_agent_public_activity":true,"recorder_asr_open":true,"recorder_asr_push":true,"recorder_asr_close":true,"recorder_asr_purge":true,"recorder_asr_gc":true,"quizverse_research_consent":true,"quizverse_research_assignment_get":true,"quizverse_research_diagnostic_submit":true,"quizverse_research_survey_submit":true,"quizverse_research_waitlist_join":true,"quizverse_research_export":true,"router_wallet_get":true,"router_wallet_credit":true,"router_wallet_debit":true,"router_wallet_hold":true,"router_wallet_settle":true,"router_wallet_transfer":true,"router_wallet_history":true,"nakama_analytics_tick":true,"nakama_analytics_status":true,"nakama_analytics_recent":true,"nakama_analytics_summary":true,"nakama_analytics_top_slow":true,"nakama_analytics_top_errors":true,"nakama_analytics_force_post":true,"satori_direct_status":true,"satori_direct_toggle":true,"satori_audiences_estimate":true,"satori_audiences_get_memberships":true,"satori_audiences_compute":true,"satori_audiences_list":true,"satori_dashboard_summary":true,"satori_game_metrics":true,"satori_event_catalog":true,"satori_segments_explore":true,"satori_datalake_config":true,"satori_datalake_upsert_target":true,"satori_datalake_delete_target":true,"satori_datalake_set_enabled":true,"satori_datalake_set_retention":true,"satori_datalake_manual_export":true,"satori_event":true,"satori_events_batch":true,"satori_event_external":true,"satori_events_batch_external":true,"satori_events_tail":true,"satori_events_search":true,"satori_event_errors":true,"satori_experiments_results":true,"satori_experiments_declare_winner":true,"satori_experiments_undo_promote":true,"satori_experiments_get":true,"satori_experiments_get_variant":true,"satori_experiments_get_all":true,"satori_kiosk_pay_step":true,"satori_flags_get":true,"satori_flags_get_all":true,"satori_flags_set":true,"satori_funnels_list":true,"satori_funnels_save":true,"satori_funnels_delete":true,"satori_funnels_compute":true,"satori_identity_get":true,"satori_identity_update_properties":true,"satori_identity_inspect":true,"creator_event_list":true,"creator_event_get":true,"creator_event_clock":true,"creator_event_join":true,"creator_event_abandon":true,"creator_event_can_play":true,"creator_event_submit":true,"creator_event_leaderboard":true,"creator_event_results":true,"creator_event_claim":true,"creator_event_create":true,"creator_event_publish":true,"creator_event_end":true,"creator_event_auto_end_sweep":true,"creator_event_cancel":true,"creator_event_update_promo":true,"creator_event_fund_pool":true,"creator_event_spa_claim":true,"creator_event_spa_join":true,"creator_event_spa_save_delivery":true,"creator_event_spa_end_queue":true,"creator_event_spa_auto_end_sweep":true,"creator_event_fulfillments_list":true,"creator_event_fulfillment_get":true,"creator_event_fulfillment_settle":true,"quizverse_prize_catalog_get":true,"admin_prize_catalog_set":true,"satori_live_events_list":true,"satori_live_events_join":true,"satori_live_events_claim":true,"fantasy_auto_join_live_event":true,"weekly_champions_calculate":true,"weekly_champions_results":true,"weekly_champions_claim":true,"weekly_champions_my_streak":true,"satori_messages_list":true,"satori_messages_read":true,"satori_messages_delete":true,"satori_messages_broadcast":true,"satori_message_broadcast":true,"satori_metrics_query":true,"satori_metrics_define":true,"satori_metrics_delete":true,"satori_metrics_set_alert":true,"satori_metrics_prometheus":true,"satori_metrics_get":true,"satori_metrics_series":true,"satori_metrics_alerts":true,"satori_reports_list":true,"satori_reports_save":true,"satori_reports_delete":true,"satori_retention_compute":true,"satori_taxonomy_schemas":true,"satori_taxonomy_upsert":true,"satori_taxonomy_delete":true,"satori_taxonomy_validate":true,"satori_taxonomy_strict_mode":true,"satori_timeline":true,"video_feed_list":true,"video_feed_add":true,"video_feed_remove":true,"video_feed_track":true,"satori_webhooks_list":true,"satori_webhooks_upsert":true,"satori_webhooks_delete":true,"satori_webhooks_test":true,"quizverse_seedq_get_staged":true,"quizverse_seedq_consume_set":true,"quizverse_seedq_review":true,"quizverse_seedq_focus_tracks":true,"quizverse_seedq_sources":true,"quizverse_seedq_ingest":true,"quizverse_seedq_ingest_tick":true,"quizverse_seedq_pool_stats":true,"quizverse_seedq_asset_job":true,"quizverse_seedq_provenance":true,"ad_revenue_record":true,"fortune_wheel_ad_spin":true,"fortune_wheel_skip_cooldown":true,"country_tier_get":true,"nakama_js_health":true,"storage_write":true,"storage_read":true,"quizverse_web_ad_reward":true,"ivx_app_config_get":true,"ivx_app_registry_upsert":true,"ivx_duo_quest_create":true,"ivx_duo_quest_accept":true,"ivx_duo_quest_status":true,"ivx_social_quiz_social_proof":true,"ivx_social_group_streak_status":true,"ivx_social_friend_recommendations":true,"ivx_social_starter_groups":true,"ivx_social_starter_groups_set":true,"ivx_social_contact_hash_register":true,"ivx_social_contacts_match":true,"ivx_social_fanout_tick":true,"ivx_social_friends_feed":true,"ivx_social_feed_privacy_set":true,"ivx_social_feed_privacy_get":true,"ivx_social_gift_currency":true,"ivx_social_gift_item":true,"ivx_social_gift_history":true,"ivx_social_group_invite_link":true,"ivx_social_group_join_by_code":true,"ivx_social_group_search":true,"ivx_social_group_cover_set":true,"ivx_social_group_week_stats":true,"ivx_league_get":true,"ivx_social_maintenance_tick":true,"ivx_social_onboarding_state":true,"ivx_social_presence_set":true,"ivx_social_presence_bulk_get":true,"ivx_social_pressure_summary":true,"ivx_social_report":true,"ivx_social_reports_list":true,"ivx_social_invite_send":true,"ivx_social_invite_accept":true,"ivx_social_invite_decline":true,"ivx_social_invite_cancel":true,"ivx_social_invites_pending":true,"ivx_social_challenge_send":true,"ivx_social_challenge_accept":true,"ivx_social_challenge_decline":true,"ivx_social_challenge_cancel":true,"ivx_social_challenges_pending":true,"ivx_social_spectate":true,"ivx_social_streak_get":true,"ivx_social_streak_record":true,"ivx_social_streak_nudge":true,"ivx_social_streak_broken_log":true,"ivx_social_streak_repair":true,"ivx_social_friends_online_count":true,"ivx_social_battle_create":true,"ivx_social_invite_with_reward":true,"ivx_social_dm_send":true,"ivx_social_dm_history":true,"ivx_social_dm_mark_read":true,"tournament_cron_tick":true,"tournament_cron_pregen":true,"tournament_list":true,"tournament_get":true,"tournament_caller_status":true,"kyc_profile_sync":true,"kyc_verification_status_sync":true,"tournament_bracket_state":true,"tournament_pre_enroll":true,"tournament_enter":true,"tournament_submit_pack_result":true,"tournament_submit_picks":true,"tournament_status_get":true,"tournament_leaderboard_top":true,"tournament_leaderboard_around_me":true,"tournament_leaderboard_friends":true,"tournament_leaderboard_country":true,"tournament_leaderboard_tier_league":true,"tournament_leaderboard_activity_feed":true,"tournament_claim_cert":true,"tournament_claim_certificate":true,"certificate_get":true,"tournament_content_get_pack":true,"tournament_get_pick_n_questions":true,"tournament_video_get_url":true,"learning_track_video_url":true,"learning_track_get":true,"learning_track_progress_get":true,"learning_video_record_watch":true,"learning_check_submit":true,"tournament_learning_check_submit":true,"tournament_referral_get_mine":true,"referral_my_code":true,"referral_lookup":true,"referral_leaderboard_top":true,"referral_pre_enroll_with_code":true,"tournament_admin_create":true,"tournament_content_request_generation":true,"tournament_settle":true,"tournament_eliminate_round":true,"tournament_referral_settle_topN":true,"tournament_bracket_seed_topN":true,"tournament_bracket_advance_round":true,"tournament_intent_quiz_get":true,"tournament_spectator_subscribe":true,"tournament_social_proof_recent":true,"tournament_levers_health":true,"tournament_intent_quiz_submit":true,"tournament_intent_quiz_get_recommendation":true,"tournament_streak_check_in":true,"tournament_streak_get":true,"tournament_track_detail_view":true,"tournament_pick_doubleup":true,"tournament_levers_cron_tick":true,"tournament_cohort_retention":true,"tournament_funnel_metrics_get":true,"tournament_welcome_pack_claim":true,"tournament_welcome_pack_status":true,"tournament_daily_quests_get":true,"tournament_daily_quests_record":true,"tournament_funnel_metrics_record":true,"tournament_referral_2sided_record":true,"tutorx_xp_get":true,"tutorx_xp_add":true,"tutorx_streak_touch":true,"tutorx_quest_claim":true,"tutorx_studyplan_get":true,"tutorx_studyplan_toggle":true,"user_model_get":true,"user_model_signal_ingest":true,"user_model_consent_set":true,"world_template_upsert":true,"world_trivia_pack_upsert":true,"world_story_upsert":true,"world_story_get":true,"world_session_start":true,"world_session_get":true,"world_checkpoint_reach":true,"world_answer_submit":true,"world_object_found":true,"world_session_finish":true,"world_session_abandon":true,"world_leaderboard_get":true,"kb_enrichment_run_for_user":true,"kb_enrichment_tick":true,"kb_enrichment_register_user":true,"wow_moments_select":true,"wow_moments_react":true,"wow_moments_state_get":true,"lasttolive_update_user_profile":true,"lasttolive_grant_currency":true,"lasttolive_spend_currency":true,"lasttolive_validate_purchase":true,"lasttolive_list_inventory":true,"lasttolive_grant_item":true,"lasttolive_consume_item":true,"lasttolive_submit_score":true,"lasttolive_get_leaderboard":true,"lasttolive_join_or_create_match":true,"lasttolive_claim_daily_reward":true,"lasttolive_get_item_catalog":true,"lasttolive_search_items":true,"lasttolive_refresh_server_cache":true,"lasttolive_guild_create":true,"lasttolive_guild_join":true,"lasttolive_guild_leave":true,"lasttolive_guild_list":true,"lasttolive_send_channel_message":true,"lasttolive_log_event":true,"lasttolive_track_session_start":true,"lasttolive_track_session_end":true,"lasttolive_get_server_config":true,"lasttolive_admin_grant_item":true,"quizverse_update_user_profile":true,"quizverse_grant_currency":true,"quizverse_spend_currency":true,"quizverse_validate_purchase":true,"quizverse_list_inventory":true,"quizverse_grant_item":true,"quizverse_consume_item":true,"quizverse_submit_score":true,"quizverse_get_leaderboard":true,"quizverse_join_or_create_match":true,"quizverse_claim_daily_reward":true,"quizverse_get_item_catalog":true,"quizverse_search_items":true,"quizverse_refresh_server_cache":true,"quizverse_guild_create":true,"quizverse_guild_join":true,"quizverse_guild_leave":true,"quizverse_guild_list":true,"quizverse_send_channel_message":true,"quizverse_log_event":true,"quizverse_track_session_start":true,"quizverse_track_session_end":true,"quizverse_get_server_config":true,"quizverse_admin_grant_item":true};
 
 // --- Discovered Modules (124 files) ---
 
@@ -1370,7 +1377,7 @@ var __TS_OWNED_RPCS = {"quizverse_aahaa_get":true,"quizverse_aahaa_react":true,"
 ﻿
 
 
-// --- Module: achievements\achievements.js ---
+// --- Module: achievements/achievements.js ---
 /**
  * Achievement System for Multi-Game Platform
  * Supports per-game achievements with unlock tracking and rewards
@@ -1959,7 +1966,7 @@ var rpcAchievementsBulkCreate = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: ai_player\ai_player.js ---
+// --- Module: ai_player/ai_player.js ---
 // ai_player.js - Player-Facing AI Features powered by LLM
 // Supports: Claude (Anthropic), OpenAI (GPT), xAI (Grok), Qwen3 (local vLLM)
 // RPCs: ai_coach_advice, ai_match_recap, ai_player_journey, ai_rival_taunt,
@@ -2771,7 +2778,7 @@ function __ModuleInit_2(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\admin\analytics_admin.js ---
+// --- Module: analytics/admin/analytics_admin.js ---
 // analytics_admin.js — Admin-only RPCs for the Analytics Dashboard.
 //
 // Registers:
@@ -3517,7 +3524,7 @@ function __ModuleInit_3(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\analytics.js ---
+// --- Module: analytics/analytics.js ---
 // analytics.js - Analytics System (Per gameId UUID)
 
 var SYSTEM_USER = "00000000-0000-0000-0000-000000000000";
@@ -4377,6 +4384,7 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
     var v2WarningsCount = 0;
     var errors = [];
     var acceptedEventNames = [];
+    var acceptedForQuests = [];
     var resolvedGameId = null;
 
     for (var i = 0; i < inbound.length; i++) {
@@ -4402,6 +4410,7 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
             }
             accepted++;
             acceptedEventNames.push(normalized.eventName || (inbound[i] && inbound[i].eventName) || "unknown");
+            acceptedForQuests.push(normalized);
             // Capture the resolved (canonical UUID) gameId from the first accepted event
             if (!resolvedGameId && normalized.gameId) resolvedGameId = normalized.gameId;
         }
@@ -4434,6 +4443,10 @@ function rpcAnalyticsLogEvent(ctx, logger, nk, payload) {
             abAutoRunIfNeeded(ctx, nk, logger);
         }
     } catch (e) { /* swallow */ }
+
+    try {
+        forwardAcceptedQuestEvents(ctx, logger, nk, acceptedForQuests);
+    } catch (e) { /* quest sync must never fail analytics ingest */ }
 
     // Satori identity sync (Phase 8) is NO LONGER piggybacked here.
     //
@@ -5525,6 +5538,84 @@ function rpcAnalyticsEventsToday(ctx, logger, nk, payload) {
     });
 }
 
+var QUEST_BRIDGE_EVENT_MAP = {
+    "match_complete": "match_result",
+    "multiplayer_win": "match_result",
+    "score_submit": "score_update",
+    "quiz_complete": "score_update",
+    "quiz_accuracy": "score_update",
+    "level_up": "level_reached",
+    "season_pass_xp": "level_reached",
+    "collection_unlock": "level_reached",
+    "achievement_unlock": "achievement_completed",
+    "mission_complete": "mission_completed",
+    "daily_login": "mission_completed",
+    "weekly_goal_complete": "mission_completed",
+    "session_end": "playtime_update",
+    "playtime_update": "playtime_update",
+    "streak_continue": "playtime_update",
+    "item_purchase": "purchase_made",
+    "currency_earn": "custom_event",
+    "friend_challenge": "custom_event",
+    "referral_signup": "custom_event",
+    "ad_watched": "custom_event",
+    "receipt_scanned": "custom_event",
+    "tournament_join": "custom_event",
+    "tournament_win": "custom_event",
+    "weekly_goal_complete_bonus": "custom_event"
+};
+
+function questsEconomyQuestEventUrl(base) {
+    var b = (base || "http://localhost:3001").replace(/\/$/, "");
+    if (b.length >= 4 && b.substring(b.length - 4) === "/api") {
+        return b + "/game-bridge/s2s/quest-event";
+    }
+    return b + "/api/game-bridge/s2s/quest-event";
+}
+
+function forwardAcceptedQuestEvents(ctx, logger, nk, events) {
+    if (!events || !events.length || !ctx || !ctx.userId) return;
+    var secret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+    if (!secret) return;
+    var base = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+    var questEventUrl = questsEconomyQuestEventUrl(base);
+    for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        var name = ev.eventName || "";
+        var eventType = QUEST_BRIDGE_EVENT_MAP[name];
+        if (!eventType || !ev.gameId) continue;
+        var body = JSON.stringify({
+            userId: ctx.userId,
+            nakamaGameId: ev.gameId,
+            eventType: eventType,
+            eventName: name,
+            data: ev.eventData || {},
+            clientEventId: ev.clientEventId || undefined
+        });
+        try {
+            var sig = nk.hmacSha256Hash(secret, body);
+            var resp = nk.httpRequest(
+                questEventUrl,
+                "post",
+                {
+                    "Content-Type": "application/json",
+                    "X-Source": "nakama-rpc",
+                    "X-Webhook-Signature": sig,
+                    "X-User-Id": ctx.userId,
+                    "X-Game-Id": ev.gameId
+                },
+                body,
+                5000
+            );
+            if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                logger.warn("[analytics] quest forward HTTP " + resp.code + " event=" + name);
+            }
+        } catch (httpErr) {
+            logger.warn("[analytics] quest forward failed: " + ((httpErr && httpErr.message) || httpErr));
+        }
+    }
+}
+
 // Registration - postbuild.js scans for this
 function __ModuleInit_4(ctx, logger, nk, initializer) {
     __rpc_analytics_log_event = __rpc_analytics_log_event || (rpcAnalyticsLogEvent);
@@ -5535,7 +5626,7 @@ function __ModuleInit_4(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\backfill\analytics_backfill.js ---
+// --- Module: analytics/backfill/analytics_backfill.js ---
 // analytics_backfill.js — historical-data backfill into BOTH dashboards.
 //
 // Why this exists:
@@ -6667,7 +6758,7 @@ function __ModuleInit_5(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\dropoff\analytics_dropoff.js ---
+// --- Module: analytics/dropoff/analytics_dropoff.js ---
 /**
  * Analytics Dropoff Module — drop-off funnel, churn signals, per-question
  * abandonment, and screen-exit heatmap for the dashboard.
@@ -7243,7 +7334,7 @@ function __ModuleInit_6(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\extended\analytics_extended.js ---
+// --- Module: analytics/extended/analytics_extended.js ---
 /**
  * Analytics Extended Module
  * Implements 14 analytics RPCs for the dashboard.
@@ -10515,7 +10606,7 @@ function __ModuleInit_7(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\firecrawl\analytics_firecrawl.js ---
+// --- Module: analytics/firecrawl/analytics_firecrawl.js ---
 // analytics_firecrawl.js — Phase 7 (2026-05) Firecrawl External Intelligence.
 //
 // Goal: add market/content intelligence (not player telemetry) by calling
@@ -11254,7 +11345,7 @@ function __ModuleInit_8(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\hardening\analytics_hardening.js ---
+// --- Module: analytics/hardening/analytics_hardening.js ---
 // analytics_hardening.js — Phase 8 (2026-05) Enforcement + Hardening.
 //
 // Goal: move from warning mode to production enforcement, add observable
@@ -11882,7 +11973,7 @@ function __ModuleInit_9(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\history\analytics_history.js ---
+// --- Module: analytics/history/analytics_history.js ---
 // analytics_history.js — Phase 6 (2026-05) long-tail analytics.
 //
 // "Don't wipe anything, show everything" — the user's stance on data
@@ -12828,7 +12919,7 @@ function __ModuleInit_10(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\modes\analytics_modes.js ---
+// --- Module: analytics/modes/analytics_modes.js ---
 /**
  * Analytics Modes Module — per-quiz-mode breakdown for the dashboard.
  *
@@ -13430,7 +13521,7 @@ function __ModuleInit_11(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\ops\analytics_ops.js ---
+// --- Module: analytics/ops/analytics_ops.js ---
 // analytics_ops.js — Phase 2.4 data-quality + ops tooling for analytics.
 //
 // Registered RPCs (all admin-gated):
@@ -14073,7 +14164,7 @@ function __ModuleInit_12(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\player_analytics_store.js ---
+// --- Module: analytics/player_analytics_store.js ---
 // player_analytics_store.js — Unified per-player per-game analytics storage
 //
 // Collection: game_player_analytics
@@ -14754,7 +14845,7 @@ function gpaPurgePlayer(nk, logger, userId) {
 }
 
 
-// --- Module: analytics\player_profile\analytics_player_profile.js ---
+// --- Module: analytics/player_profile/analytics_player_profile.js ---
 // analytics_player_profile.js
 // Per-player analytics snapshot — backs the AnalyticsManager.GetPlayerAnalyticsProfile
 // client call. Reads the player's first_seen marker, lifetime event counters from
@@ -15543,7 +15634,7 @@ function __ModuleInit_14(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\read_models\analytics_read_models.js ---
+// --- Module: analytics/read_models/analytics_read_models.js ---
 // analytics_read_models.js — Phase 4 (2026-05) dashboard read models.
 //
 // Provides four admin-gated read RPCs that serve dashboard tabs from
@@ -16185,7 +16276,7 @@ function __ModuleInit_15(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\recap_signals\recap_signals.js ---
+// --- Module: analytics/recap_signals/recap_signals.js ---
 // analytics/recap_signals/recap_signals.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Typed recap-signal capture: small, focused event surface that fuels
@@ -16488,7 +16579,7 @@ function __ModuleInit_16(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\retention_curves\analytics_retention_curves.js ---
+// --- Module: analytics/retention_curves/analytics_retention_curves.js ---
 // analytics_retention_curves.js — Reads cohort docs produced by analytics_rollup
 // and returns retention curves & heatmap data shaped for the dashboard.
 //
@@ -16742,7 +16833,7 @@ function __ModuleInit_17(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\rollup\analytics_rollup.js ---
+// --- Module: analytics/rollup/analytics_rollup.js ---
 // analytics_rollup.js — Phase 2.1 nightly rollup + backfill.
 //
 // Problem it solves:
@@ -19752,7 +19843,7 @@ function __ModuleInit_18(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\satori_identity\analytics_satori_identity.js ---
+// --- Module: analytics/satori_identity/analytics_satori_identity.js ---
 // analytics_satori_identity.js — Phase 5 (2026-05) Satori identity sync.
 //
 // Goal: use analytics as truth, Satori as targeting/delivery.
@@ -20586,7 +20677,7 @@ function __ModuleInit_19(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\segments\analytics_segments.js ---
+// --- Module: analytics/segments/analytics_segments.js ---
 // analytics_segments.js — Phase 5 (2026-05) Satori live-ops segments.
 //
 // Satori's "audiences" are rule-based groups of identities matching some
@@ -21175,7 +21266,7 @@ function __ModuleInit_20(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\tracking_plan\analytics_tracking_plan.js ---
+// --- Module: analytics/tracking_plan/analytics_tracking_plan.js ---
 // analytics_tracking_plan.js — Phase 2: Schema v2 contract + data quality RPCs
 //
 // Provides two public helpers used by analytics.js (bundled at global scope by postbuild.js):
@@ -21610,7 +21701,7 @@ function __ModuleInit_21(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: analytics\v2\analytics_v2.js ---
+// --- Module: analytics/v2/analytics_v2.js ---
 // analytics_v2.js - Advanced Analytics RPCs for Nakama
 // Self-contained, ES5 compatible, no imports/exports
 //
@@ -22628,7 +22719,7 @@ function rpcAnalyticsV2LogError(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: badges\badge_definitions.js ---
+// --- Module: badges/badge_definitions.js ---
 /**
  * QuizVerse Badge Definitions — all 207 badges from the game manifest.
  * S3 icon_url: full https URLs — Unity loads them directly via UnityWebRequest.
@@ -22912,7 +23003,7 @@ var QUIZVERSE_BADGE_DEFINITIONS = {
 };
 
 
-// --- Module: badges\badge_seed_definitions.js ---
+// --- Module: badges/badge_seed_definitions.js ---
 // badge_seed_definitions.js - Seed data for Legendary + Seasonal badges
 // Run once via admin RPC or directly call badges_bulk_create
 // Spec: MRS §12 Legendary (3 Phase-6 remaining) + §13 Seasonal (5)
@@ -23055,7 +23146,7 @@ var LEGENDARY_AND_SEASONAL_BADGES = {
 // Example: nk.rpc("badges_bulk_create", JSON.stringify(LEGENDARY_AND_SEASONAL_BADGES))
 
 
-// --- Module: badges\badges.js ---
+// --- Module: badges/badges.js ---
 /**
  * Badge & Collectable System for Multi-Game Platform
  * Supports per-game badges and collectables with player tracking
@@ -24731,7 +24822,7 @@ if (typeof module !== 'undefined') {
 }
 
 
-// --- Module: characters\characters.js ---
+// --- Module: characters/characters.js ---
 // characters.js - Character System for QuizVerse v3.0
 // RPCs: character_get_state, character_unlock, character_set_active
 
@@ -25385,7 +25476,7 @@ function quizverseCharactersAutoUnlock(nk, logger, userId, gameId, badgeIds) {
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
 
-// --- Module: chat_moderation\chat_moderation.js ---
+// --- Module: chat_moderation/chat_moderation.js ---
 // chat_moderation.js - Chat Moderation Pipeline
 // Storage collection: chat_reports, chat_filter_config
 // RPCs: chat_filter_message (public), chat_report_message (public),
@@ -25918,7 +26009,7 @@ function __ModuleInit_27(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chatbox\chatbox.js ---
+// --- Module: chatbox/chatbox.js ---
 // chatbox.js - QuizVerse AI ChatBox + Knowledge Base Triad RPCs
 // Nakama V8 JavaScript runtime (Goja). No ES modules.
 //
@@ -27262,7 +27353,7 @@ function __ModuleInit_28(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: chess\chess-engine-vendor.js ---
+// --- Module: chess/chess-engine-vendor.js ---
 ﻿// Vendored: chess.js v0.10.3 (BSD-2-Clause) — https://github.com/jhlywa/chess.js
 //
 // WHY THE OLD VERSION: chess.js >= 1.0 ships as compiled TypeScript using
@@ -29021,7 +29112,7 @@ var Chess = function(fen) {
   }
 }
 
-// --- Module: copilot\cognito_wallet_mapper.js ---
+// --- Module: copilot/cognito_wallet_mapper.js ---
 // cognito_wallet_mapper.js - Core RPC functions for Cognito ↔ Wallet mapping
 
 /**
@@ -29253,7 +29344,7 @@ function getWalletRegistry(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_aggregate.js ---
+// --- Module: copilot/leaderboard_aggregate.js ---
 // leaderboard_aggregate.js - Aggregate scores across all game leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -29365,7 +29456,7 @@ function rpcSubmitScoreWithAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_friends.js ---
+// --- Module: copilot/leaderboard_friends.js ---
 // leaderboard_friends.js - Friend-specific leaderboard features
 // ES5 compatible for Nakama goja runtime
 
@@ -29542,7 +29633,7 @@ function rpcGetFriendLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\leaderboard_sync.js ---
+// --- Module: copilot/leaderboard_sync.js ---
 // leaderboard_sync.js - Score synchronization between per-game and global leaderboards
 // ES5 compatible for Nakama goja runtime
 
@@ -29617,7 +29708,7 @@ function rpcSubmitScoreSync(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: copilot\utils.js ---
+// --- Module: copilot/utils.js ---
 // utils.js - Shared helper functions for copilot leaderboard modules
 // ES5 compatible for Nakama goja runtime
 
@@ -29703,7 +29794,7 @@ var utils = {
 };
 
 
-// --- Module: copilot\wallet_registry.js ---
+// --- Module: copilot/wallet_registry.js ---
 // wallet_registry.js - CRUD operations for global wallet registry
 
 /**
@@ -29858,7 +29949,7 @@ function getAllWallets(nk, logger, limit) {
 }
 
 
-// --- Module: copilot\wallet_utils.js ---
+// --- Module: copilot/wallet_utils.js ---
 // wallet_utils.js - Helper utilities for Cognito JWT handling and validation
 
 /**
@@ -29964,7 +30055,7 @@ function handleWalletError(logger, operation, error) {
 
 
 
-// --- Module: cricket\cricket_ai_integration.js ---
+// --- Module: cricket/cricket_ai_integration.js ---
 /**
  * Cricket AI Integration Module
  * 
@@ -30805,7 +30896,7 @@ function __ModuleInit_37(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_daily_challenges.js ---
+// --- Module: cricket/cricket_daily_challenges.js ---
 /**
  * Cricket Daily Challenges Module
  * 
@@ -31380,7 +31471,7 @@ function __ModuleInit_38(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_economy.js ---
+// --- Module: cricket/cricket_economy.js ---
 /**
  * Cricket Economy Module
  * 
@@ -32057,7 +32148,7 @@ function __ModuleInit_39(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_engagement.js ---
+// --- Module: cricket/cricket_engagement.js ---
 /**
  * Cricket Engagement Module
  * 
@@ -32664,7 +32755,7 @@ function __ModuleInit_40(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_live_match.js ---
+// --- Module: cricket/cricket_live_match.js ---
 /**
  * Cricket Live Match Module
  * 
@@ -33424,7 +33515,7 @@ function __ModuleInit_41(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_predictions.js ---
+// --- Module: cricket/cricket_predictions.js ---
 /**
  * Cricket Predictions Module
  * 
@@ -34091,7 +34182,7 @@ function __ModuleInit_42(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_retention.js ---
+// --- Module: cricket/cricket_retention.js ---
 /**
  * Cricket Retention Module
  * 
@@ -34929,7 +35020,7 @@ function __ModuleInit_43(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_season_pass.js ---
+// --- Module: cricket/cricket_season_pass.js ---
 /**
  * Cricket Season Pass Module
  * 
@@ -35541,7 +35632,7 @@ function __ModuleInit_44(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket\cricket_trivia.js ---
+// --- Module: cricket/cricket_trivia.js ---
 /**
  * Cricket Trivia Module
  * 
@@ -36491,7 +36582,7 @@ function __ModuleInit_45(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\engagement.js ---
+// --- Module: cricket_worldcup/engagement.js ---
 /**
  * Cricket Engagement Module for Nakama
  * 
@@ -37160,7 +37251,7 @@ function initCricketEngagementModule(ctx, logger, nk, initializer) {
 
 
 
-// --- Module: cricket_worldcup\predictions.js ---
+// --- Module: cricket_worldcup/predictions.js ---
 /**
  * Cricket Prediction System - Nakama Server Module
  * Handles match predictions, trivia boosts, and point calculations
@@ -37750,7 +37841,7 @@ function __ModuleInit_47(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: cross_game\cross_game.js ---
+// --- Module: cross_game/cross_game.js ---
 // cross_game.js - Cross-game RPCs for multi-game ecosystem features
 // Compatible with Nakama V8 JavaScript runtime (no ES modules)
 
@@ -38241,7 +38332,7 @@ function registerCrossGameRPCs(initializer, logger) {
 }
 
 
-// --- Module: daily_missions\daily_missions.js ---
+// --- Module: daily_missions/daily_missions.js ---
 // daily_missions.js - Daily Missions System (Per gameId UUID)
 
 /**
@@ -38620,7 +38711,7 @@ function rpcClaimMissionReward(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: daily_rewards\daily_progress.js ---
+// --- Module: daily_rewards/daily_progress.js ---
 // daily_progress.js — DAILY PROGRESSION PLATFORM (consolidated surface)
 //
 // This module is the OFFICIAL client-facing surface for daily login rewards,
@@ -38926,7 +39017,7 @@ function __ModuleInit_50(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_reward_calendar.js ---
+// --- Module: daily_rewards/daily_reward_calendar.js ---
 // daily_reward_calendar.js - 30-Day Daily Reward Calendar View
 // Extends the daily rewards system with a full calendar preview
 // RPC: daily_reward_get_calendar
@@ -39045,7 +39136,7 @@ function __ModuleInit_51(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: daily_rewards\daily_rewards.js ---
+// --- Module: daily_rewards/daily_rewards.js ---
 // daily_rewards.js - Daily Rewards & Streak System (Per gameId UUID)
 
 /**
@@ -39778,7 +39869,7 @@ function __ModuleInit_52(ctx, logger, nk, initializer) {
     logger.info("[DailyRewards] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: event_pipeline\event_pipeline.js ---
+// --- Module: event_pipeline/event_pipeline.js ---
 // event_pipeline.js - Unified event ingestion and reward-pending checks
 // Compatible with Nakama JavaScript runtime (no ES modules)
 
@@ -40176,7 +40267,7 @@ function rpcRewardsPending(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: external_analytics\external_analytics.js ---
+// --- Module: external_analytics/external_analytics.js ---
 /**
  * External Analytics Integration Module
  * Fetches analytics data from Appodeal, Apple App Store Connect, and Unity.
@@ -40799,7 +40890,7 @@ function __ModuleInit_54(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: external_pollers\external_pollers.js ---
+// --- Module: external_pollers/external_pollers.js ---
 // external_pollers.js — Phase 2.2 scheduled external-provider pollers.
 //
 // Solves: Revenue tabs (Appodeal / Apple App Store / Unity Gaming Services)
@@ -41189,7 +41280,7 @@ function __ModuleInit_55(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: fortune_wheel\fortune_wheel.js ---
+// --- Module: fortune_wheel/fortune_wheel.js ---
 /**
  * fortune_wheel.js — Fortune Wheel Backend V2 (every 3 days)
  * RPCs: fortune_wheel_get_state, fortune_wheel_spin
@@ -41571,7 +41662,7 @@ function grantReward(nk, userId, rewardType, amount, logger) {
 }
 
 
-// --- Module: friend_streaks\friend_streaks.js ---
+// --- Module: friend_streaks/friend_streaks.js ---
 // friend_streaks.js - Bilateral Friend Streak System for QuizVerse v3.0
 // RPCs: friend_streak_get_state, friend_streak_record_contribution, friend_streak_send_nudge
 // Spec: MRS §29-§31 — Snapchat-style bilateral daily streaks
@@ -42186,7 +42277,7 @@ function __ModuleInit_57(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_challenges.js ---
+// --- Module: friends/friend_challenges.js ---
 // ============================================================================
 // friend_challenges.js - Canonical Friend Challenge Lifecycle RPCs
 // ============================================================================
@@ -43279,7 +43370,7 @@ function __ModuleInit_58(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friend_invites.js ---
+// --- Module: friends/friend_invites.js ---
 // ============================================================================
 // friend_invites.js - Canonical Friend Invite RPCs (Split-Brain Fix)
 // ============================================================================
@@ -44697,7 +44788,7 @@ function __ModuleInit_59(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\friends.js ---
+// --- Module: friends/friends.js ---
 // ============================================================================
 // friends.js — Helper-only module (Phase-4 C2 cleanup)
 // ============================================================================
@@ -44917,7 +45008,7 @@ function sendChallengeChatMessage(nk, logger, senderId, receiverId, senderName, 
 }
 
 
-// --- Module: friends\friends_extras.js ---
+// --- Module: friends/friends_extras.js ---
 // ============================================================================
 // friends_extras.js — Social Pressure / Online Count / Battle / Invite-Reward
 // ============================================================================
@@ -45476,7 +45567,7 @@ function __ModuleInit_61(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: friends\notification_codes.js ---
+// --- Module: friends/notification_codes.js ---
 // ============================================================================
 // notification_codes.js - Canonical Friends Notification Constants
 // ============================================================================
@@ -45795,7 +45886,7 @@ function sendFriendsNotification(ctx, nk, logger, subjectKey, userId, payload, s
 }
 
 
-// --- Module: game_metrics\game_metrics.js ---
+// --- Module: game_metrics/game_metrics.js ---
 // game_metrics.js — Universal game metrics capture, query, and aggregation
 //
 // Collections:
@@ -46176,7 +46267,7 @@ function rpcGameMetricsAggregate(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: groups\groups.js ---
+// --- Module: groups/groups.js ---
 // groups.js - Groups/Clans/Guilds system for multi-game backend
 // Provides comprehensive group management with roles, shared wallets, and group challenges
 
@@ -48223,7 +48314,7 @@ function updateNakamaUsername(nk, logger, userId, username) {
 }
 
 
-// --- Module: infrastructure\batch_operations.js ---
+// --- Module: infrastructure/batch_operations.js ---
 /**
  * Batch Operations for Multi-Game Platform
  * Execute multiple RPCs in a single call for improved performance
@@ -48485,7 +48576,7 @@ var rpcBatchAchievementProgress = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: infrastructure\caching.js ---
+// --- Module: infrastructure/caching.js ---
 /**
  * Caching Layer for Multi-Game Platform
  * Improve performance for frequently accessed data
@@ -48723,7 +48814,7 @@ var rpcCacheClear = function(ctx, logger, nk, payload) {
 // setInterval(cacheCleanup, 300000);
 
 
-// --- Module: infrastructure\rate_limiting.js ---
+// --- Module: infrastructure/rate_limiting.js ---
 /**
  * Rate Limiting System for Multi-Game Platform
  * Prevent RPC abuse and spam
@@ -48901,7 +48992,7 @@ var withPresetRateLimit = function(rpcFunction, rpcName, preset) {
 // initializer.registerRpc("submit_score", withPresetRateLimit(rpcSubmitScore, "submit_score", "WRITE"));
 
 
-// --- Module: ivx_quest\ivx_quest.js ---
+// --- Module: ivx_quest/ivx_quest.js ---
 // data/modules/ivx_quest/ivx_quest.js
 //
 // IVX cross-game quest layer (distinct from QuizVerse's friend_quest_*).
@@ -49269,7 +49360,7 @@ function __ModuleInit_69(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-badges\lap-badges.js ---
+// --- Module: lap-badges/lap-badges.js ---
 /**
  * QuizVerse Link & Play Badge Event Bridge
  *
@@ -49475,7 +49566,7 @@ function __ModuleInit_70(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-gamification\lap-gamification.js ---
+// --- Module: lap-gamification/lap-gamification.js ---
 /**
  * QuizVerse Link & Play — gamification (XP / streak / client badges).
  *
@@ -49810,7 +49901,7 @@ function __ModuleInit_71(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-library\lap-library.js ---
+// --- Module: lap-library/lap-library.js ---
 /**
  * QuizVerse Link & Play — saved learn artifacts (server-authoritative).
  *
@@ -50274,7 +50365,7 @@ function __ModuleInit_72(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-missions\lap-missions.js ---
+// --- Module: lap-missions/lap-missions.js ---
 /**
  * QuizVerse Link & Play — daily / weekly missions sync.
  *
@@ -50631,7 +50722,7 @@ function __ModuleInit_73(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lap-recents\lap-recents.js ---
+// --- Module: lap-recents/lap-recents.js ---
 /**
  * QuizVerse Link & Play — recent notes index (cross-surface sync).
  *
@@ -50878,7 +50969,7 @@ function __ModuleInit_74(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: lasttolive_depth\lasttolive_depth.js ---
+// --- Module: lasttolive_depth/lasttolive_depth.js ---
 // lasttolive_depth.js - Deep LastToLive RPCs: Weapon Mastery, Nemesis, Bounties, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -52611,7 +52702,7 @@ function scheduledSyncGameRegistry(ctx, logger, nk) {
 // No ES module exports - Nakama V8 runtime uses global function registration
 
 
-// --- Module: leagues\leagues.js ---
+// --- Module: leagues/leagues.js ---
 // leagues.js - Weekly League System for QuizVerse v3.0
 // Provides tier-based competitive ranking with weekly promotion/demotion
 // RPCs: league_get_state, league_submit_points, league_process_season, league_get_leaderboard
@@ -53244,7 +53335,7 @@ function rpcLeagueGetLeaderboard(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: learner_home_widgets\learner_home_widgets.js ---
+// --- Module: learner_home_widgets/learner_home_widgets.js ---
 // learner_home_widgets.js — Per-user Home-screen widget configs for TutorX
 // Nakama V8 JavaScript runtime (Goja ES5 — no ES modules, no Node built-ins).
 //
@@ -53546,7 +53637,7 @@ function __ModuleInit_79(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_quotes\learner_quotes.js ---
+// --- Module: learner_quotes/learner_quotes.js ---
 // learner_quotes.js — Daily LLM-personalized "confidence boost" quotes for TutorX
 // (Goja ES5, no Node built-ins, no global-scope state).
 //
@@ -53906,7 +53997,7 @@ function __ModuleInit_80(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_reminders\learner_reminders.js ---
+// --- Module: learner_reminders/learner_reminders.js ---
 // learner_reminders.js — Per-user study reminders for TutorX (Goja ES5, no Node built-ins).
 //
 // Lets a learner create study reminders (one-off or recurring: daily / weekdays /
@@ -54115,7 +54206,7 @@ function __ModuleInit_81(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: learner_review\learner_review.js ---
+// --- Module: learner_review/learner_review.js ---
 // learner_review.js — First-class spaced-repetition review queue for TutorX
 // (Goja ES5, no Node built-ins, all RPC fns at global scope).
 //
@@ -54467,7 +54558,7 @@ function __ModuleInit_82(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: live_ops\live_ops.js ---
+// --- Module: live_ops/live_ops.js ---
 // Live Ops module for Nakama game server
 // Flash events, mystery boxes, daily spotlights, streaks, comeback rewards, lucky draws, happy hour
 
@@ -55100,7 +55191,7 @@ var rpcHappyHourStatus = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: manifest\manifest.js ---
+// --- Module: manifest/manifest.js ---
 // manifest.js - Asset Manifest Version Check for QuizVerse v3.0
 // RPC: manifest_get_version
 
@@ -55212,7 +55303,7 @@ function rpcManifestGetVersion(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: matchmaking\matchmaking.js ---
+// --- Module: matchmaking/matchmaking.js ---
 /**
  * Matchmaking System for Multi-Game Platform
  * Supports skill-based matching, party queues, and game modes
@@ -56928,7 +57019,7 @@ __rpc_lasttolive_save_player_data = __rpc_lasttolive_save_player_data || (lastto
 __rpc_lasttolive_load_player_data = __rpc_lasttolive_load_player_data || (lasttoliveLoadPlayerData);
 
 
-// --- Module: multiplayer\multiplayer_locks.js ---
+// --- Module: multiplayer/multiplayer_locks.js ---
 // multiplayer_locks.js — Multiplayer Account Lock System (QVVBS189)
 
 var LOCK_COLLECTION = "multiplayer_locks";
@@ -57137,7 +57228,7 @@ function __ModuleInit_87(ctx, logger, nk, initializer) {
     logger.info("[MultiplayerLock] Module InitModule registered: 3 RPCs");
 }
 
-// --- Module: multiplayer_account_lock\multiplayer_account_lock.js ---
+// --- Module: multiplayer_account_lock/multiplayer_account_lock.js ---
 /**
  * ============================================================================
  * multiplayer_account_lock.js — Server-Authoritative Multiplayer Account Lock
@@ -57592,7 +57683,7 @@ var __rpc_multiplayer_lock_heartbeat;
 var __rpc_multiplayer_lock_check;
 
 
-// --- Module: notifications\notification_gate.js ---
+// --- Module: notifications/notification_gate.js ---
 // notification_gate.js - Notification Budget Gate for QuizVerse v3.0
 // RPC: notification_gate_get_state
 
@@ -57752,7 +57843,7 @@ function rpcNotifGateGetState(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: notifications\notification_inbox.js ---
+// --- Module: notifications/notification_inbox.js ---
 // notification_inbox.js - Notification Inbox System for QuizVerse v3.0
 // RPCs: list_notification_inbox, mark_notifications_read
 // Nakama is the source of truth for all notification state.
@@ -58290,7 +58381,7 @@ function rpcMarkNotificationsRead(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: offer_engine\offer_engine.js ---
+// --- Module: offer_engine/offer_engine.js ---
 // offer_engine.js — Phase 6 (2026-05) Personalized Offer Engine.
 //
 // Goal: deliver measurable offers without over-targeting players.
@@ -59209,7 +59300,7 @@ function __ModuleInit_91(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: onboarding\ob_analytics_emit.js ---
+// --- Module: onboarding/ob_analytics_emit.js ---
 /**
  * Server-side ob_* analytics for Unity onboarding hooks (D1/D7, welcome bonus, streak shield).
  * Writes to qv_onboarding_events — same lake as web onboarding_events_batch.
@@ -59261,7 +59352,7 @@ function obAnalyticsEmitEvent(nk, nakamaUserId, eventName, data) {
 }
 
 
-// --- Module: onboarding\onboarding.js ---
+// --- Module: onboarding/onboarding.js ---
 ﻿/**
  * Nakama Onboarding Module
  * Handles user onboarding state, preferences, and first-session hooks
@@ -60353,7 +60444,7 @@ function updateSessionStats(nk, logger, userId, stats) {
 
 
 
-// --- Module: personalization\personalization.js ---
+// --- Module: personalization/personalization.js ---
 // Personalization module for Nakama game server
 // Smart missions and recommendations based on player behavior
 
@@ -60960,7 +61051,7 @@ var rpcGetSmartRecommendations = function (ctx, logger, nk, payload) {
 };
 
 
-// --- Module: player\player_full_profile.js ---
+// --- Module: player/player_full_profile.js ---
 // player_full_profile.js - Aggregate Player Profile for QuizVerse v3.0
 // RPC: player_get_full_profile
 
@@ -61175,7 +61266,7 @@ function rpcPlayerGetFullProfile(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: player_gifts\player_gifts.js ---
+// --- Module: player_gifts/player_gifts.js ---
 // player_gifts.js - Player-to-Player Gifting System
 // Storage collection: player_gifts
 // RPCs: gift_send, gift_claim, gift_inbox
@@ -62052,7 +62143,7 @@ function rpcGetLeaderboard(ctx, logger, nk, payload) {
 // These will be registered in the main index.js
 
 
-// --- Module: progression\mastery_system.js ---
+// --- Module: progression/mastery_system.js ---
 /**
  * Prestige & Category Mastery System
  * Rewards deep engagement with specific categories and long-term progression
@@ -62388,7 +62479,7 @@ module.exports = {
 
 
 
-// --- Module: progression\progressive_unlocks.js ---
+// --- Module: progression/progressive_unlocks.js ---
 /**
  * Progressive Content Unlocks Module
  * Unlocks game features over the first 7 days to maintain engagement
@@ -64250,7 +64341,7 @@ function rpcIntelliDrawsPast(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: quiz_results\quiz_results.js ---
+// --- Module: quiz_results/quiz_results.js ---
 // quiz_results.js - Quiz Results Tracking & Analytics System
 // Stores ALL quiz results from ALL game modes for analytics, history, and leaderboards
 //
@@ -65428,7 +65519,7 @@ function __ModuleInit_102(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_depth\quizverse_depth.js ---
+// --- Module: quizverse_depth/quizverse_depth.js ---
 // quizverse_depth.js - Deep QuizVerse RPCs: Knowledge Maps, Streaks, Adaptive Difficulty, and more
 // Nakama V8 JavaScript runtime (No ES Modules)
 
@@ -66424,7 +66515,7 @@ function __ModuleInit_103(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: quizverse_seen\quizverse_seen.js ---
+// --- Module: quizverse_seen/quizverse_seen.js ---
 // quizverse_seen.js - Per-user "seen question" ledger for zero-repetition quiz delivery
 // Nakama V8 JavaScript runtime (No ES Modules)
 // Collection: qv_seen | Key: {scope_slug}_{topic_slug} | User-owned
@@ -66932,7 +67023,7 @@ function __ModuleInit_104(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: retention\collections.js ---
+// --- Module: retention/collections.js ---
 // collections.js - Collection & Prestige System for D30 Retention
 // Provides long-term collectible goals and prestige progression
 
@@ -67446,7 +67537,7 @@ function rpcCollectionsAddMasteryXP(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\retention_v2.js ---
+// --- Module: retention/retention_v2.js ---
 // retention_v2.js - Streak Repair & Wager System for QuizVerse v3.0
 // Extends existing retention module with 2 new RPCs (does NOT modify existing retention RPCs)
 // RPCs: streak_repair, streak_wager
@@ -67941,7 +68032,7 @@ function rpcStreakWager(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\season_pass.js ---
+// --- Module: retention/season_pass.js ---
 // season_pass.js - Season Pass / Battle Pass System for D7/D30 Retention
 // Provides 30-day season with free and premium tracks
 
@@ -68603,7 +68694,7 @@ function rpcSeasonPassPurchasePremium(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: retention\winback.js ---
+// --- Module: retention/winback.js ---
 // winback.js - Win-back System for Churned Users
 // Re-engages users who haven't played in 7+ days
 
@@ -69164,7 +69255,7 @@ function rpcWinbackScheduleReengagement(ctx, logger, nk, payload) {
 }
 
 
-// --- Module: rewarded_ads\rewarded_ads.js ---
+// --- Module: rewarded_ads/rewarded_ads.js ---
 // rewarded_ads.js - Server-validated Rewarded Ad System
 // Enforces user-triggered rewarded ads via token-based validation
 // Prevents auto-shown rewards, duplicate claims, and replay attacks
@@ -70065,7 +70156,7 @@ var rewardedAdsModule = {
 };
 
 
-// --- Module: s3_assets\s3_assets.js ---
+// --- Module: s3_assets/s3_assets.js ---
 ﻿/**
  * s3_assets.js - AWS S3 Asset Management Module for Nakama
  * 
@@ -70488,7 +70579,7 @@ function __ModuleInit_110(ctx, logger, nk, initializer) {
 !InitModule && InitModule;
 
 
-// --- Module: satori_compat\satori_compat.js ---
+// --- Module: satori_compat/satori_compat.js ---
 // satori_compat.js — Unity client compatibility shim for Satori RPCs.
 //
 // The Unity QuizVerse client (Assets/_QuizVerse/Scripts/Analytics/Satori/) calls
@@ -70675,7 +70766,7 @@ function __ModuleInit_111(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: satori_direct\satori_direct.js ---
+// --- Module: satori_direct/satori_direct.js ---
 // satori_direct.js — pure-JS Satori HTTP client (v2 — verified wire contract).
 //
 // Why this exists:
@@ -71731,7 +71822,7 @@ function __ModuleInit_112(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: sdk_aliases\sdk_aliases.js ---
+// --- Module: sdk_aliases/sdk_aliases.js ---
 // data/modules/sdk_aliases/sdk_aliases.js
 //
 // Closes 28 of the 36 standalone-SDK gaps documented in
@@ -71893,7 +71984,7 @@ function __ModuleInit_113(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: smart_review\smart_review.js ---
+// --- Module: smart_review/smart_review.js ---
 // smart_review.js - Spaced Repetition (SM-2) Review System for QuizVerse v3.0
 // RPCs: smart_review_get_cards, smart_review_rate_card
 
@@ -72691,7 +72782,7 @@ function __ModuleInit_114(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: tournaments\tournaments.js ---
+// --- Module: tournaments/tournaments.js ---
 /**
  * Tournament System for Multi-Game Platform
  * Supports scheduled tournaments with brackets and prizes
@@ -73244,7 +73335,7 @@ var rpcTournamentClaimRewards = function(ctx, logger, nk, payload) {
 };
 
 
-// --- Module: tutorx\tutorx_coin_gate.js ---
+// --- Module: tutorx/tutorx_coin_gate.js ---
 // tutorx_coin_gate.js — per-service TutorX AI coin pricing (mirrors TutorX SPA catalog)
 
 var TUTORX_SERVICE_CATALOG = {
@@ -73381,7 +73472,7 @@ function tutorxWriteUsage(nk, collection, userId, today, usage) {
 }
 
 
-// --- Module: visual_path\visual_path.js ---
+// --- Module: visual_path/visual_path.js ---
 // ============================================================================
 // visual_path.js — Visual Path / Milestone System
 // ============================================================================
@@ -73732,7 +73823,7 @@ function __ModuleInit_117(ctx, logger, nk, initializer) {
 }
 
 
-// --- Module: wallet\wallet.js ---
+// --- Module: wallet/wallet.js ---
 // wallet.js - Enhanced Wallet System (Global + Per-Game Sub-Wallets)
 
 /**
@@ -101935,6 +102026,8 @@ function __OriginalInitModule(ctx, logger, nk, initializer) {
         LegacyAnalyticsRetention.register(initializer);
         logger.info("[Legacy] Registering gift cards RPCs...");
         LegacyGiftCards.register(initializer);
+        logger.info("[Legacy] Registering QuestX bridge RPCs...");
+        QuestxBridge.register(initializer);
         logger.info("[Legacy] Registering coupons RPCs...");
         LegacyCoupons.register(initializer);
         logger.info("[Legacy] All legacy RPCs registered successfully");
@@ -106811,7 +106904,8 @@ var QvPersonalization;
 //   consent_upsert          → /consent/upsert  (called on every consent flip)
 //   consent_invalidate      → /consent/invalidate (drops the cache key)
 //
-// All four are admin-only — the SDK never invokes these directly. They
+// Legacy forwarding RPCs are also used by clients. Erasure binds the player
+// subject to the authenticated session. Other callers historically include:
 // are called by:
 //   - Nakama-internal account-deletion handler (bound to the user's
 //     /v2/account DELETE webhook)
@@ -106849,7 +106943,10 @@ var QvPrivacy;
         if (!base)
             return null;
         var ts = String(Date.now());
-        var sig = computeHmac(ctx, nk, ts, path, body, logger);
+        var basePath = base.replace(/^https?:\/\/[^/]+/, "");
+        var sig = computeHmac(ctx, nk, ts, basePath + path, body, logger);
+        if (!sig)
+            return null;
         try {
             var resp = nk.httpRequest(base + path, "post", {
                 "Content-Type": "application/json",
@@ -106864,7 +106961,7 @@ var QvPrivacy;
             return resp.body || "";
         }
         catch (e) {
-            logger.warn("[QvPrivacy] post " + path + " threw: " + ((e && e.message) ? e.message : String(e)));
+            logger.warn("[QvPrivacy] post failed");
             return null;
         }
     }
@@ -106876,18 +106973,158 @@ var QvPrivacy;
         catch (e) {
             return JSON.stringify({ ok: false, error: "invalid_json" });
         }
-        if (!data.game_id || !data.user_id) {
+        if (!data || !data.game_id || !data.user_id) {
             return JSON.stringify({ ok: false, error: "missing_required_fields" });
         }
+        if (!ctx.userId)
+            return JSON.stringify({ ok: false, error: "unauthenticated" });
+        if (data.user_id !== ctx.userId)
+            return JSON.stringify({ ok: false, error: "subject_mismatch" });
+        if (!isQuizverse(data.game_id))
+            return JSON.stringify({ ok: false, error: "unsupported_game" });
         var body = JSON.stringify({
-            gameId: data.game_id,
-            userId: data.user_id,
-            reason: data.reason || "user_request",
+            gameId: "quizverse",
+            userId: ctx.userId,
+            reason: typeof data.reason === "string" ? data.reason.slice(0, 64) : "user_request",
         });
         var resp = postJson(ctx, nk, logger, "/privacy/erase", body);
         if (resp == null)
             return JSON.stringify({ ok: false, error: "ai_svc_unavailable" });
-        return resp;
+        try {
+            var result = JSON.parse(resp);
+            if (result.ok === true && result.cacheErasureVerified === true)
+                return resp;
+        }
+        catch (_) { }
+        return JSON.stringify({ ok: false, error: "ai_erasure_unverified", retryable: true });
+    }
+    // Explicit adapter aliases; no caller-selected collection or shared identity deletion.
+    function isQuizverse(gameId) {
+        return gameId === "126bf539-dae2-4bcf-964d-316c0fa1f92b" ||
+            gameId === "quizverse" || gameId === "quiz-verse";
+    }
+    function eraseQuizverseStorage(nk, userId) {
+        var aliases = ["126bf539-dae2-4bcf-964d-316c0fa1f92b", "quizverse", "quiz-verse"];
+        // Each collection below uses Constants.gameKey; unprefixed default keys are retained.
+        var scoped = ["hiro_achievements", "hiro_inventory", "hiro_progression", "hiro_energy",
+            "hiro_stats", "hiro_streaks", "hiro_tutorials", "hiro_unlockables", "hiro_mailbox"];
+        var collections = scoped.slice();
+        collections.push("qv_quests", "game_inventory");
+        var ownedStart = collections.length;
+        collections.push("qv_onboarding_profiles");
+        for (var a = 0; a < aliases.length; a++) {
+            // quizverse_depth writers: single-player, owner-scoped data only.
+            var suffixes = ["_quiz_history", "_streak_quizzes", "_adaptive_difficulty", "_daily_puzzles", "_study_progress"];
+            for (var s = 0; s < suffixes.length; s++)
+                collections.push(aliases[a] + suffixes[s]);
+        }
+        for (var c = 0; c < collections.length; c++) {
+            var cursor;
+            var pages = 0;
+            do {
+                var page = nk.storageList(userId, collections[c], 100, cursor);
+                var deletes = [];
+                for (var i = 0; i < page.objects.length; i++) {
+                    var row = page.objects[i];
+                    var owned = c >= ownedStart;
+                    for (var j = 0; j < aliases.length; j++) {
+                        if (c < scoped.length && row.key.indexOf(aliases[j] + ":") === 0)
+                            owned = true;
+                        if ((collections[c] === "qv_quests" || collections[c] === "game_inventory") && row.key === aliases[j] + "_" + userId)
+                            owned = true;
+                    }
+                    if (owned)
+                        deletes.push({ collection: collections[c], key: row.key, userId: userId, version: row.version });
+                }
+                if (deletes.length)
+                    nk.storageDelete(deletes);
+                cursor = page.cursor;
+                if (++pages >= 100 && cursor)
+                    throw new Error("storage_batch_limit");
+            } while (cursor);
+        }
+    }
+    function eraseQuizverseLeaderboards(nk, userId) {
+        // quizverse_depth daily-puzzle writer uses exactly these game aliases.
+        // Existing boards only: absent boards are already erased, not an error.
+        var ids = ["quizverse_leaderboard", "126bf539-dae2-4bcf-964d-316c0fa1f92b_daily_puzzle_leaderboard",
+            "quizverse_daily_puzzle_leaderboard", "quiz-verse_daily_puzzle_leaderboard"];
+        var boards = nk.leaderboardsGetId(ids);
+        for (var i = 0; i < boards.length; i++)
+            nk.leaderboardRecordDelete(boards[i].id, userId);
+    }
+    function rpcEraseGame(ctx, logger, nk, payload) {
+        if (!ctx.userId)
+            return JSON.stringify({ ok: false, error: "unauthenticated" });
+        var data;
+        try {
+            data = JSON.parse(payload || "{}");
+        }
+        catch (_) {
+            return JSON.stringify({ ok: false, error: "invalid_json" });
+        }
+        if (!data || typeof data !== "object" || Array.isArray(data))
+            return JSON.stringify({ ok: false, error: "invalid_payload" });
+        if (data.confirmUserId !== ctx.userId)
+            return JSON.stringify({ ok: false, error: "confirmation_mismatch" });
+        if (!isQuizverse(data.gameId))
+            return JSON.stringify({ ok: false, error: "unsupported_game" });
+        if (data.reason !== undefined && typeof data.reason !== "string")
+            return JSON.stringify({ ok: false, error: "invalid_reason" });
+        // Server-only CAS lease survives runtime/process loss. All following erasures
+        // are idempotent, so an expired lease or partial result can safely be retried.
+        var key = { collection: "privacy_game_erasure", key: "quizverse", userId: ctx.userId };
+        var claimVersion;
+        try {
+            var prior = nk.storageRead([key]);
+            if (prior.length && prior[0].value.leaseUntil > Date.now()) {
+                return JSON.stringify({ ok: false, status: "in_progress", retryable: true, retryAfterSeconds: 120 });
+            }
+            var claim = nk.storageWrite([{
+                    collection: key.collection, key: key.key, userId: key.userId,
+                    version: prior.length ? prior[0].version : "*", permissionRead: 0, permissionWrite: 0,
+                    value: { status: "in_progress", leaseUntil: Date.now() + 120000 }
+                }]);
+            claimVersion = claim[0].version;
+        }
+        catch (_) {
+            return JSON.stringify({ ok: false, error: "claim_unavailable", retryable: true });
+        }
+        var subsystems = { ai: "failed", storage: "failed", leaderboards: "failed" };
+        var response = postJson(ctx, nk, logger, "/privacy/erase", JSON.stringify({
+            gameId: "quizverse", userId: ctx.userId, reason: (data.reason || "user_request").slice(0, 64)
+        }));
+        try {
+            var ai = response && JSON.parse(response);
+            if (ai && ai.ok === true && ai.cacheErasureVerified === true)
+                subsystems.ai = "erased";
+        }
+        catch (_) { }
+        try {
+            eraseQuizverseStorage(nk, ctx.userId);
+            subsystems.storage = "erased";
+        }
+        catch (_) { }
+        try {
+            eraseQuizverseLeaderboards(nk, ctx.userId);
+            subsystems.leaderboards = "erased";
+        }
+        catch (_) { }
+        var ok = subsystems.ai === "erased" && subsystems.storage === "erased" && subsystems.leaderboards === "erased";
+        var result = { ok: ok, status: ok ? "completed" : "partial", retryable: !ok,
+            gameId: "quizverse", scope: "audited_game_data", subsystems: subsystems,
+            retained: ["shared_identity", "cognito", "wallets_and_financial_records", "discord",
+                "legacy_unscoped_progress_and_profile", "shared_social_and_multiplayer_records", "historical_leaderboard_records", "system_owned_onboarding_analytics"] };
+        try {
+            nk.storageWrite([{ collection: key.collection, key: key.key, userId: key.userId,
+                    version: claimVersion, permissionRead: 0, permissionWrite: 0,
+                    value: { status: result.status, leaseUntil: 0, result: result } }]);
+        }
+        catch (_) {
+            return JSON.stringify({ ok: false, status: "partial", error: "receipt_unavailable",
+                retryable: true, retryAfterSeconds: 120, subsystems: subsystems });
+        }
+        return JSON.stringify(result);
     }
     function rpcEraseDiscord(ctx, logger, nk, payload) {
         var data;
@@ -106958,6 +107195,7 @@ var QvPrivacy;
         return resp;
     }
     function register(initializer) {
+        __rpc_privacy_erase_game = rpcEraseGame;
         __rpc_privacy_erase_user = rpcEraseUser;
         __rpc_privacy_erase_discord = rpcEraseDiscord;
         __rpc_consent_upsert = rpcConsentUpsert;
@@ -127117,7 +127355,7 @@ var QvSubmitResult;
         nk.walletUpdate(userId, changeset, { reason: "quiz_complete:" + topic, pack_id: packId }, true);
     }
     // ── Task 2.4 — leaderboard ────────────────────────────────────────────────
-    function submitLeaderboard(nk, logger, userId, username, gameId, topic, score) {
+    function submitLeaderboard(ctx, nk, logger, userId, username, gameId, topic, score) {
         if (score <= 0)
             return;
         var boards = [LB_GLOBAL];
@@ -127127,8 +127365,9 @@ var QvSubmitResult;
         if (gameId)
             boards.push("leaderboard_" + gameId);
         for (var bi = 0; bi < boards.length; bi++) {
+            var written = null;
             try {
-                nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
+                written = nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
             }
             catch (e) {
                 // Leaderboard may not exist yet — create it then retry
@@ -127136,11 +127375,20 @@ var QvSubmitResult;
                     // Global board never resets; per-topic and per-game boards reset daily
                     var resetSched = (boards[bi] === LB_GLOBAL) ? LB_RESET_ALLTIME : LB_RESET_DAILY;
                     nk.leaderboardCreate(boards[bi], true, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, resetSched);
-                    nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
+                    written = nk.leaderboardRecordWrite(boards[bi], userId, username, score, 0, null, null);
                 }
                 catch (e2) {
                     logger.warn("[QvSubmit] leaderboard " + boards[bi] + " failed: " + (e2 && e2.message));
                 }
+            }
+            if (!written)
+                continue;
+            try {
+                var questGameId = gameId || "126bf539-dae2-4bcf-964d-316c0fa1f92b";
+                QuestEventBridge.forwardLeaderboardRank(ctx, logger, nk, questGameId, boards[bi], written.rank);
+            }
+            catch (fwd) {
+                logger.warn("[QvSubmit] leaderboard quest forward failed: " + (fwd && fwd.message));
             }
         }
     }
@@ -127510,7 +127758,7 @@ var QvSubmitResult;
             logger.warn("[QvSubmit] inflight delete failed: " + (e && e.message));
         }
         // ── Task 2.4 — leaderboard (non-critical) ─────────────────────────────
-        submitLeaderboard(nk, logger, userId, username, gameId, topic, totalScore);
+        submitLeaderboard(ctx, nk, logger, userId, username, gameId, topic, totalScore);
         // ── Task 2.5 — KB performance write (non-critical) ────────────────────
         updateKbOcc(nk, logger, userId, topic, correct, total, totalScore);
         // ── Task 2.5 — analytics: fire legacy quiz_submit_result ──────────────
@@ -131389,7 +131637,28 @@ var AdminConsole;
         // ---- Daily missions (client uses daily_missions_*; server uses *_mission_reward / get_daily_missions) ----
         __rpc_daily_missions_get = delegate("__rpc_get_daily_missions");
         __rpc_daily_missions_claim = delegate("__rpc_claim_mission_reward");
-        __rpc_daily_missions_update_progress = softStub({ success: true, updated: false, note: "progress is auto-tracked server-side" });
+        __rpc_daily_missions_update_progress = function (ctx, logger, nk, payload) {
+            var fn = g["__rpc_submit_mission_progress"];
+            if (typeof fn !== "function") {
+                return JSON.stringify({ success: false, updated: false });
+            }
+            var raw = fn(ctx, logger, nk, payload);
+            try {
+                var parsed = JSON.parse(raw);
+                if (parsed && parsed.success) {
+                    parsed.updated = true;
+                    return JSON.stringify(parsed);
+                }
+                return JSON.stringify({
+                    success: false,
+                    updated: false,
+                    error: parsed && (parsed.error || parsed.message),
+                });
+            }
+            catch (e) {
+                return JSON.stringify({ success: false, updated: false });
+            }
+        };
         // ---- Daily rewards ----
         __rpc_daily_rewards_get_state = delegate("__rpc_daily_rewards_get_status");
         __rpc_daily_rewards_get_calendar = delegate("__rpc_daily_rewards_get_status");
@@ -144744,6 +145013,10 @@ var LegacyGiftCards;
             return RpcHelpers.errorResponse(e.message);
         }
     }
+    function purchaseGiftCard(ctx, logger, nk, payload) {
+        return rpcPurchase(ctx, logger, nk, payload);
+    }
+    LegacyGiftCards.purchaseGiftCard = purchaseGiftCard;
     function register(initializer) {
         __rpc_game_gift_card_list = rpcList;
         __rpc_game_gift_card_purchase = rpcPurchase;
@@ -145528,7 +145801,13 @@ var LegacyMultiGame;
             nk.leaderboardCreate(lbId, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */);
         }
         catch (_) { }
-        nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, "best" /* nkruntime.OverrideOperator.BEST */);
+        var record = nk.leaderboardRecordWrite(lbId, userId, ctx.username || "", data.score, data.subscore || 0, data.metadata || {}, "best" /* nkruntime.OverrideOperator.BEST */);
+        try {
+            QuestEventBridge.forwardLeaderboardRank(ctx, logger, nk, gId, lbId, record && record.rank);
+        }
+        catch (lbErr) {
+            logger.warn("[MultiGame] leaderboard quest forward failed: " + (lbErr && lbErr.message ? lbErr.message : String(lbErr)));
+        }
         EventBus.emit(nk, logger, ctx, EventBus.Events.SCORE_SUBMITTED, { userId: userId, gameId: gId, score: data.score });
         return { success: true };
     }
@@ -151087,13 +151366,88 @@ var QuestEventBridge;
         "tournament_join": "custom_event",
         "tournament_win": "custom_event",
         "weekly_goal_complete_bonus": "custom_event",
+        "leaderboard_rank": "leaderboard_rank",
+        "leaderboard_update": "leaderboard_rank",
     };
     function mapEventType(eventName) {
         return EVENT_MAP[eventName] || "custom_event";
     }
+    function questEventUrl(base) {
+        var b = (base || "http://localhost:3001").replace(/\/$/, "");
+        if (b.length >= 4 && b.substring(b.length - 4) === "/api") {
+            return b + "/game-bridge/s2s/quest-event";
+        }
+        return b + "/api/game-bridge/s2s/quest-event";
+    }
+    function forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var eventType = mapEventType(eventName);
+        var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+        var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+        if (!webhookSecret) {
+            logger.warn("[QuestEventBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
+            return { forwarded: false, reason: "webhook_secret_not_configured" };
+        }
+        var body = JSON.stringify({
+            userId: userId,
+            nakamaGameId: gameId,
+            eventType: eventType,
+            eventName: eventName,
+            data: eventData || {},
+        });
+        // HMAC-SHA256 of the exact body — NakamaS2sGuard checks raw bytes first.
+        var sig = nk.hmacSha256Hash(webhookSecret, body);
+        var url = questEventUrl(questsApiUrl);
+        try {
+            var resp = nk.httpRequest(url, "post", {
+                "Content-Type": "application/json",
+                "X-Source": "nakama-rpc",
+                "X-Webhook-Signature": sig,
+                "X-User-Id": userId,
+                "X-Game-Id": gameId,
+            }, body, 5000);
+            if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                logger.warn("[QuestEventBridge] HTTP " + resp.code + " event=" + eventName);
+                return { forwarded: false, reason: "http_error", status: resp.code };
+            }
+            logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
+        }
+        catch (httpErr) {
+            // Non-fatal: quest sync failure must never break the game session
+            logger.warn("[QuestEventBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
+            return { forwarded: false, reason: "http_error", error: httpErr.message };
+        }
+        return {
+            forwarded: true,
+            eventType: eventType,
+            eventName: eventName,
+            userId: userId,
+            gameId: gameId,
+        };
+    }
+    function forwardNamedEvent(ctx, logger, nk, gameId, eventName, eventData) {
+        return forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData);
+    }
+    QuestEventBridge.forwardNamedEvent = forwardNamedEvent;
+    function forwardLeaderboardRank(ctx, logger, nk, gameId, leaderboardId, rank) {
+        try {
+            if (!gameId || !leaderboardId)
+                return;
+            if (typeof rank !== "number" || rank < 1 || Math.floor(rank) !== rank)
+                return;
+            forwardQuestEvent(ctx, logger, nk, gameId, "leaderboard_rank", {
+                rank: rank,
+                leaderboardId: leaderboardId,
+            });
+        }
+        catch (e) {
+            logger.warn("[QuestEventBridge] leaderboard forward failed: " + (e && e.message ? e.message : String(e)));
+        }
+    }
+    QuestEventBridge.forwardLeaderboardRank = forwardLeaderboardRank;
     function rpcQuestGameEvent(ctx, logger, nk, payload) {
         try {
-            var userId = RpcHelpers.requireUserId(ctx);
+            RpcHelpers.requireUserId(ctx);
             var data = RpcHelpers.parseRpcPayload(payload);
             var gameId = data.gameId || data.game_id;
             var eventName = data.eventName || data.event_name || data.name;
@@ -151102,44 +151456,8 @@ var QuestEventBridge;
                 return RpcHelpers.errorResponse("gameId required");
             if (!eventName)
                 return RpcHelpers.errorResponse("eventName required");
-            var eventType = mapEventType(eventName);
-            var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
-            var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
-            if (!webhookSecret) {
-                logger.warn("[QuestEventBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
-                return RpcHelpers.successResponse({ forwarded: false, reason: "webhook_secret_not_configured" });
-            }
-            var body = JSON.stringify({
-                nakamaGameId: gameId,
-                eventType: eventType,
-                eventName: eventName,
-                data: eventData,
-            });
-            // HMAC-SHA256 of the body — matches NakamaS2sGuard expectation
-            var sig = nk.hmacSha256Hash(webhookSecret, body);
-            var url = questsApiUrl.replace(/\/$/, "") + "/game-bridge/s2s/quest-event";
-            try {
-                nk.httpRequest(url, "post", {
-                    "Content-Type": "application/json",
-                    "X-Source": "nakama-rpc",
-                    "X-Webhook-Signature": sig,
-                    "X-User-Id": userId,
-                    "X-Game-Id": gameId,
-                }, body, 5000);
-                logger.debug("[QuestEventBridge] forwarded event=" + eventName + " type=" + eventType + " user=" + userId + " game=" + gameId);
-            }
-            catch (httpErr) {
-                // Non-fatal: quest sync failure must never break the game session
-                logger.warn("[QuestEventBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
-                return RpcHelpers.successResponse({ forwarded: false, reason: "http_error", error: httpErr.message });
-            }
-            return RpcHelpers.successResponse({
-                forwarded: true,
-                eventType: eventType,
-                eventName: eventName,
-                userId: userId,
-                gameId: gameId,
-            });
+            var result = forwardQuestEvent(ctx, logger, nk, gameId, eventName, eventData);
+            return RpcHelpers.successResponse(result);
         }
         catch (e) {
             return RpcHelpers.errorResponse("quest_game_event failed: " + (e.message || String(e)));
@@ -151265,6 +151583,155 @@ var LegacyQuestsEconomyBridge;
     LegacyQuestsEconomyBridge.register = register;
     register();
 })(LegacyQuestsEconomyBridge || (LegacyQuestsEconomyBridge = {}));
+// QuestX S2S bridge. Does not replace quest_engine, daily_missions, or quests_redeem_gift.
+var QuestxBridge;
+(function (QuestxBridge) {
+    function apiUrl(base, path) {
+        var b = (base || "http://localhost:3001").replace(/\/$/, "");
+        if (b.length >= 4 && b.substring(b.length - 4) === "/api")
+            return b + path;
+        return b + "/api" + path;
+    }
+    function postSigned(ctx, logger, nk, path, bodyObj) {
+        var userId = RpcHelpers.requireUserId(ctx);
+        var questsApiUrl = (ctx.env && ctx.env["QUESTS_ECONOMY_API_URL"]) || "http://localhost:3001";
+        var webhookSecret = (ctx.env && ctx.env["NAKAMA_WEBHOOK_SECRET"]) || "";
+        if (!webhookSecret) {
+            logger.warn("[QuestxBridge] NAKAMA_WEBHOOK_SECRET not set — skipping quest sync");
+            return { forwarded: false, reason: "webhook_secret_not_configured" };
+        }
+        bodyObj.userId = userId;
+        var body = JSON.stringify(bodyObj);
+        var sig = nk.hmacSha256Hash(webhookSecret, body);
+        var gameId = bodyObj.nakamaGameId || "";
+        try {
+            var resp = nk.httpRequest(apiUrl(questsApiUrl, path), "post", {
+                "Content-Type": "application/json",
+                "X-Source": "nakama-rpc",
+                "X-Webhook-Signature": sig,
+                "X-User-Id": userId,
+                "X-Game-Id": gameId,
+            }, body, 5000);
+            if (resp && typeof resp.code === "number" && resp.code >= 400) {
+                logger.warn("[QuestxBridge] HTTP " + resp.code + " path=" + path);
+                return { forwarded: false, reason: "http_error", status: resp.code, body: resp.body };
+            }
+            var parsed = {};
+            try {
+                parsed = resp && resp.body ? JSON.parse(resp.body) : {};
+            }
+            catch (_) {
+                parsed = { raw: resp && resp.body };
+            }
+            parsed.forwarded = true;
+            return parsed;
+        }
+        catch (httpErr) {
+            logger.warn("[QuestxBridge] HTTP call failed: " + (httpErr.message || String(httpErr)));
+            return { forwarded: false, reason: "http_error", error: httpErr.message };
+        }
+    }
+    function gameIdOf(data) {
+        return data.gameId || data.game_id || data.nakamaGameId || "";
+    }
+    function rpcLogEvent(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            var eventName = data.eventName || data.event_name || data.name;
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            if (!eventName)
+                return RpcHelpers.errorResponse("eventName required");
+            var result = QuestEventBridge.forwardNamedEvent(ctx, logger, nk, gameId, eventName, data.eventData || data.data || {});
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("questx_log_event failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcSubmitProgress(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            var eventName = data.eventName || data.event_name || data.name;
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            if (!eventName)
+                return RpcHelpers.errorResponse("eventName required");
+            var result = QuestEventBridge.forwardNamedEvent(ctx, logger, nk, gameId, eventName, data.eventData || data.data || {});
+            if (!result.forwarded)
+                return RpcHelpers.errorResponse(result.reason || "quest sync failed");
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("questx_submit_progress failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcFeed(ctx, logger, nk, payload) {
+        return readFeed(ctx, logger, nk, payload, "/game-bridge/s2s/quest-feed", "questx_quest_feed");
+    }
+    function rpcDaily(ctx, logger, nk, payload) {
+        return readFeed(ctx, logger, nk, payload, "/game-bridge/s2s/daily-missions", "questx_daily_missions");
+    }
+    function readFeed(ctx, logger, nk, payload, path, name) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            var result = postSigned(ctx, logger, nk, path, { nakamaGameId: gameId });
+            if (!result.forwarded)
+                return RpcHelpers.errorResponse(result.reason || "quest sync failed");
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse(name + " failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcClaim(ctx, logger, nk, payload) {
+        try {
+            var data = RpcHelpers.parseRpcPayload(payload);
+            var gameId = gameIdOf(data);
+            if (!gameId)
+                return RpcHelpers.errorResponse("gameId required");
+            var result = postSigned(ctx, logger, nk, "/game-bridge/s2s/quest-claim", {
+                nakamaGameId: gameId,
+                kind: data.kind || "coins",
+                questId: data.questId || data.quest_id,
+                cardId: data.cardId || data.card_id,
+                rewardId: data.rewardId || data.reward_id,
+                name: data.name,
+                line1: data.line1,
+                line2: data.line2,
+                city: data.city,
+                state: data.state,
+                zip: data.zip,
+                country: data.country,
+                phone: data.phone,
+            });
+            if (!result.forwarded)
+                return RpcHelpers.errorResponse(result.reason || "quest claim failed");
+            return RpcHelpers.successResponse(result);
+        }
+        catch (e) {
+            return RpcHelpers.errorResponse("questx_claim_reward failed: " + (e.message || String(e)));
+        }
+    }
+    function rpcRedeem(ctx, logger, nk, payload) {
+        return LegacyGiftCards.purchaseGiftCard(ctx, logger, nk, payload);
+    }
+    function register(initializer) {
+        __rpc_questx_log_event = rpcLogEvent;
+        __rpc_questx_submit_progress = rpcSubmitProgress;
+        __rpc_questx_quest_feed = rpcFeed;
+        __rpc_questx_daily_missions = rpcDaily;
+        __rpc_questx_claim_reward = rpcClaim;
+        __rpc_questx_redeem_gift_card = rpcRedeem;
+    }
+    QuestxBridge.register = register;
+    register();
+})(QuestxBridge || (QuestxBridge = {}));
 var LegacyQuiz;
 (function (LegacyQuiz) {
     function getStats(nk, userId) {
@@ -200883,6 +201350,7 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("pending_bundles_drain", __rpc_pending_bundles_drain); } catch(e) {}
   try { initializer.registerRpc("personalization_get", __rpc_personalization_get); } catch(e) {}
   try { initializer.registerRpc("personalization_get_for_mode", __rpc_personalization_get_for_mode); } catch(e) {}
+  try { initializer.registerRpc("privacy_erase_game", __rpc_privacy_erase_game); } catch(e) {}
   try { initializer.registerRpc("privacy_erase_user", __rpc_privacy_erase_user); } catch(e) {}
   try { initializer.registerRpc("privacy_erase_discord", __rpc_privacy_erase_discord); } catch(e) {}
   try { initializer.registerRpc("consent_upsert", __rpc_consent_upsert); } catch(e) {}
@@ -201316,6 +201784,12 @@ function InitModule(ctx, logger, nk, initializer) {
   try { initializer.registerRpc("game_to_global_preview", __rpc_game_to_global_preview); } catch(e) {}
   try { initializer.registerRpc("conversion_ratio_set", __rpc_conversion_ratio_set); } catch(e) {}
   try { initializer.registerRpc("conversion_ratio_get", __rpc_conversion_ratio_get); } catch(e) {}
+  try { initializer.registerRpc("questx_log_event", __rpc_questx_log_event); } catch(e) {}
+  try { initializer.registerRpc("questx_submit_progress", __rpc_questx_submit_progress); } catch(e) {}
+  try { initializer.registerRpc("questx_quest_feed", __rpc_questx_quest_feed); } catch(e) {}
+  try { initializer.registerRpc("questx_daily_missions", __rpc_questx_daily_missions); } catch(e) {}
+  try { initializer.registerRpc("questx_claim_reward", __rpc_questx_claim_reward); } catch(e) {}
+  try { initializer.registerRpc("questx_redeem_gift_card", __rpc_questx_redeem_gift_card); } catch(e) {}
   try { initializer.registerRpc("quiz_submit_result", __rpc_quiz_submit_result); } catch(e) {}
   try { initializer.registerRpc("quiz_get_history", __rpc_quiz_get_history); } catch(e) {}
   try { initializer.registerRpc("quiz_get_stats", __rpc_quiz_get_stats); } catch(e) {}
@@ -202328,5 +202802,5 @@ function InitModule(ctx, logger, nk, initializer) {
   } catch(e) {
     try { logger.error("[Postbuild] registerAfterLeaveGroup failed: " + (e && e.message ? e.message : String(e))); } catch(_) {}
   }
-  logger.info("[Postbuild] Registered " + 1348 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
+  logger.info("[Postbuild] Registered " + 1355 + " RPCs via AST-compatible wrapper (2 aliases applied, 10 match handlers)");
 }
