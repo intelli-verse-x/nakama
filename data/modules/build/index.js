@@ -219,6 +219,14 @@ function InitModule(ctx, logger, nk, initializer) {
     catch (err) {
         logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
     }
+    // ---- Link & Play per-note progress (best quiz %, cards, lesson memory) ----
+    try {
+        QvLapProgress.register(initializer);
+        logger.info("[QvLapProgress] quizverse_lap_submit_progress + quizverse_lap_get_progress + quizverse_lap_note_leaderboard registered");
+    }
+    catch (err) {
+        logger.error("[QvLapProgress] failed to mount: " + (err && err.message ? err.message : String(err)));
+    }
     // ---- Party & Trivia server-authoritative daily play quota (QVBF_345) ----
     try {
         QvPartyPlayQuota.register(initializer);
@@ -679,6 +687,22 @@ function InitModule(ctx, logger, nk, initializer) {
         }
         catch (err) {
             logger.error("[ConvCapture] failed to register: " + (err && err.message ? err.message : String(err)));
+        }
+        // Curio Builder: per-user folders (builder_folders_sync: get / save / purge).
+        try {
+            BuilderFolders.register(initializer);
+            logger.info("[BuilderFolders] builder_folders_sync registered");
+        }
+        catch (err) {
+            logger.error("[BuilderFolders] failed to register: " + (err && err.message ? err.message : String(err)));
+        }
+        // Curio meeting review: submit / get / refine (user) and complete (server).
+        try {
+            MeetingReview.register(initializer);
+            logger.info("[MeetingReview] meeting_review_* RPCs registered");
+        }
+        catch (err) {
+            logger.error("[MeetingReview] failed to register: " + (err && err.message ? err.message : String(err)));
         }
         // User Model (PLAN-USER_INTELLIGENCE_LOOP.md PR-5). Read derived
         // attributes + ingest the 25-event behavioural signal taxonomy +
@@ -5810,6 +5834,156 @@ var QvProductChangelog;
     }
     QvProductChangelog.register = register;
 })(QvProductChangelog || (QvProductChangelog = {}));
+// =============================================================================
+// Builder folders — per-user project / client folders for Curio Builder.
+//
+// One RPC, `builder_folders_sync`, with three ops:
+//   get   → returns the caller's folders and the storage version
+//   save  → replaces the folder list; optimistic concurrency via `version`
+//   purge → deletes the caller's folder list (delete-all / unpair path)
+//
+// Owner-only: ctx.userId is the only key used, the object is readable by its
+// owner and writable only by the server (permissionWrite 0). Clients never
+// write storage directly.
+// =============================================================================
+var BuilderFolders;
+(function (BuilderFolders) {
+    var COLLECTION = "builder_folders";
+    var KEY = "workspace";
+    var MAX_PAYLOAD_CHARS = 65536;
+    var MAX_FOLDERS = 50;
+    var MAX_NOTES_PER_FOLDER = 500;
+    var MAX_NAME_CHARS = 60;
+    var MAX_ID_CHARS = 128;
+    var ALLOWED_KINDS = { project: true, client: true };
+    var ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+    function validateFolder(raw, seenIds) {
+        if (!raw || typeof raw !== "object")
+            return { error: "folder must be an object" };
+        var id = typeof raw.id === "string" ? raw.id : "";
+        if (!id || id.length > MAX_ID_CHARS || !ID_PATTERN.test(id)) {
+            return { error: "folder id must be 1-128 letters, digits, '_' or '-'" };
+        }
+        if (seenIds[id])
+            return { error: "duplicate folder id: " + id };
+        var name = typeof raw.name === "string" ? raw.name.trim() : "";
+        if (!name || name.length > MAX_NAME_CHARS) {
+            return { error: "folder name must be 1-60 characters" };
+        }
+        var kind = typeof raw.kind === "string" ? raw.kind.toLowerCase() : "";
+        if (!ALLOWED_KINDS[kind])
+            return { error: "folder kind must be project or client" };
+        var notes = raw.noteIds === undefined || raw.noteIds === null ? [] : raw.noteIds;
+        if (!Array.isArray(notes))
+            return { error: "noteIds must be an array" };
+        if (notes.length > MAX_NOTES_PER_FOLDER) {
+            return { error: "a folder holds at most " + MAX_NOTES_PER_FOLDER + " notes" };
+        }
+        var noteIds = [];
+        var seenNotes = {};
+        for (var i = 0; i < notes.length; i++) {
+            var n = notes[i];
+            if (typeof n !== "string" || !n || n.length > MAX_ID_CHARS) {
+                return { error: "each noteId must be a 1-128 character string" };
+            }
+            if (seenNotes[n])
+                continue;
+            seenNotes[n] = true;
+            noteIds.push(n);
+        }
+        seenIds[id] = true;
+        return { folder: { id: id, name: name, kind: kind, noteIds: noteIds } };
+    }
+    function readWorkspace(nk, userId) {
+        var rows = nk.storageRead([{ collection: COLLECTION, key: KEY, userId: userId }]);
+        if (!rows || rows.length === 0)
+            return { folders: [], version: "", updatedAt: "" };
+        var row = rows[0];
+        var value = row.value || {};
+        return {
+            folders: Array.isArray(value.folders) ? value.folders : [],
+            version: row.version || "",
+            updatedAt: value.updatedAt || "",
+        };
+    }
+    function rpcBuilderFoldersSync(ctx, logger, nk, payload) {
+        try {
+            if (!ctx.userId) {
+                return RpcHelpers.errorResponse("User ID is required", 401);
+            }
+            var userId = ctx.userId;
+            if (payload && payload.length > MAX_PAYLOAD_CHARS) {
+                return RpcHelpers.errorResponse("payload too large", 413);
+            }
+            var data = RpcHelpers.parseRpcPayload(payload) || {};
+            var op = typeof data.op === "string" ? data.op : "get";
+            if (op === "get") {
+                var current = readWorkspace(nk, userId);
+                return RpcHelpers.successResponse({
+                    folders: current.folders,
+                    version: current.version,
+                    updatedAt: current.updatedAt,
+                });
+            }
+            if (op === "purge") {
+                nk.storageDelete([{ collection: COLLECTION, key: KEY, userId: userId }]);
+                return RpcHelpers.successResponse({ purged: true });
+            }
+            if (op !== "save") {
+                return RpcHelpers.errorResponse("op must be get, save or purge", 400);
+            }
+            if (!Array.isArray(data.folders)) {
+                return RpcHelpers.errorResponse("folders must be an array", 400);
+            }
+            if (data.folders.length > MAX_FOLDERS) {
+                return RpcHelpers.errorResponse("at most " + MAX_FOLDERS + " folders", 400);
+            }
+            var seenIds = {};
+            var folders = [];
+            for (var i = 0; i < data.folders.length; i++) {
+                var result = validateFolder(data.folders[i], seenIds);
+                if (result.error)
+                    return RpcHelpers.errorResponse(result.error, 400);
+                folders.push(result.folder);
+            }
+            var before = readWorkspace(nk, userId);
+            if (typeof data.version === "string" && data.version !== before.version) {
+                return RpcHelpers.errorResponse("folders changed on another device; reload and retry", 409);
+            }
+            var updatedAt = new Date().toISOString();
+            try {
+                var acks = nk.storageWrite([{
+                        collection: COLLECTION,
+                        key: KEY,
+                        userId: userId,
+                        value: { folders: folders, updatedAt: updatedAt },
+                        version: before.version || "*",
+                        permissionRead: 1,
+                        permissionWrite: 0,
+                    }]);
+                var newVersion = acks && acks.length > 0 ? acks[0].version : "";
+                return RpcHelpers.successResponse({
+                    folders: folders,
+                    version: newVersion,
+                    updatedAt: updatedAt,
+                });
+            }
+            catch (writeErr) {
+                logger.warn("[BuilderFolders] version conflict for " + userId + ": " + (writeErr && writeErr.message ? writeErr.message : String(writeErr)));
+                return RpcHelpers.errorResponse("folders changed on another device; reload and retry", 409);
+            }
+        }
+        catch (err) {
+            var msg = err && err.message ? err.message : String(err);
+            logger.error("[BuilderFolders] sync failed: " + msg);
+            return RpcHelpers.errorResponse("builder_folders_sync failed", 500);
+        }
+    }
+    function register(initializer) {
+        initializer.registerRpc("builder_folders_sync", rpcBuilderFoldersSync);
+    }
+    BuilderFolders.register = register;
+})(BuilderFolders || (BuilderFolders = {}));
 // =============================================================================
 // Conversation → User KB capture
 //
@@ -34661,6 +34835,313 @@ var QvLapNoteQuota;
     }
     QvLapNoteQuota.register = register;
 })(QvLapNoteQuota || (QvLapNoteQuota = {}));
+// ---------------------------------------------------------------------------
+// lap-progress.ts — per-note Link & Play learning progress.
+//
+//   quizverse_lap_submit_progress  { noteId, activity, score?, count?, xpEarned?, event? }
+//   quizverse_lap_get_progress     { noteId } | { noteIds: [...] }
+//   quizverse_lap_note_leaderboard { noteId, limit? }
+//
+// One storage object per (user, note). Scores only ever go up. `event` adds a
+// quiz / chat / card line to the note's memory (newest first, capped).
+// Owner-read, server-write: clients never write the collection directly.
+// The response carries `progress` at the top level (web lap-api.ts reads it
+// there) and mirrors it under `data` like other RpcHelpers responses.
+//
+// Per-note class board: a quiz score also writes the caller's BEST score to
+// the `lap_note_<note>` leaderboard (weekly, Monday 00:00 UTC). The board is
+// created lazily on first submit; board ids are sanitised because note ids may
+// carry characters Nakama's leaderboard id grammar rejects. A leaderboard
+// failure never fails the progress write.
+// ---------------------------------------------------------------------------
+var QvLapProgress;
+(function (QvLapProgress) {
+    var COLLECTION = "qv_lap_progress";
+    var OCC_MAX_RETRIES = 4;
+    var MAX_NOTE_IDS = 100;
+    var MAX_ID_CHARS = 128;
+    var MAX_LINE_CHARS = 120;
+    var MAX_MEMORY = 40;
+    var ID_PATTERN = /^[A-Za-z0-9_.:-]+$/;
+    var EVENT_KINDS = { quiz: true, chat: true, card: true };
+    // Per-note class board.
+    var NOTE_BOARD_PREFIX = "lap_note_";
+    var BOARD_RESET = "0 0 * * 1"; // weekly, Monday 00:00 UTC
+    var DEFAULT_BOARD_LIMIT = 5;
+    var MAX_BOARD_LIMIT = 25;
+    var MAX_BOARD_ID_CHARS = 120;
+    // Nakama leaderboard ids accept only [A-Za-z0-9_.-].
+    var BOARD_ID_SAFE = /[A-Za-z0-9_.-]/;
+    var ensuredBoards = {};
+    function validNoteId(raw) {
+        var id = typeof raw === "string" ? raw.trim() : "";
+        if (!id || id.length > MAX_ID_CHARS || !ID_PATTERN.test(id))
+            return "";
+        return id;
+    }
+    function clampScore(raw) {
+        var n = Number(raw);
+        if (isNaN(n))
+            return -1;
+        return Math.max(0, Math.min(100, Math.round(n)));
+    }
+    function clampCount(raw) {
+        var n = Number(raw);
+        if (isNaN(n))
+            return -1;
+        return Math.max(0, Math.min(10000, Math.round(n)));
+    }
+    function readEvent(raw) {
+        if (!raw || typeof raw !== "object")
+            return null;
+        var kind = String(raw.kind || "").toLowerCase();
+        if (!EVENT_KINDS[kind])
+            return null;
+        var line = String(raw.line || "").trim();
+        if (!line)
+            return null;
+        if (line.length > MAX_LINE_CHARS)
+            line = line.slice(0, MAX_LINE_CHARS);
+        var atMs = new Date(String(raw.at || "")).getTime();
+        var at = isNaN(atMs) ? new Date().toISOString() : new Date(atMs).toISOString();
+        return { kind: kind, line: line, at: at };
+    }
+    function toProgress(value) {
+        var v = value || {};
+        var memory = [];
+        if (Array.isArray(v.memory)) {
+            for (var i = 0; i < v.memory.length && memory.length < MAX_MEMORY; i++) {
+                var e = readEvent(v.memory[i]);
+                if (e)
+                    memory.push(e);
+            }
+        }
+        return {
+            quizBestScore: Math.max(0, clampScore(v.quizBestScore)),
+            flashcardKnewIt: Math.max(0, clampCount(v.flashcardKnewIt)),
+            memory: memory,
+            updatedAt: String(v.updatedAt || ""),
+        };
+    }
+    function reply(progress) {
+        return JSON.stringify({ success: true, progress: progress, data: { progress: progress } });
+    }
+    // ── Per-note class board ──────────────────────────────────────────────────
+    /** FNV-1a, 8 hex chars — keeps sanitised board ids collision-free. */
+    function fnv1a(raw) {
+        var h = 2166136261;
+        for (var i = 0; i < raw.length; i++) {
+            h ^= raw.charCodeAt(i);
+            h = (h * 16777619) >>> 0;
+        }
+        var hex = h.toString(16);
+        while (hex.length < 8)
+            hex = "0" + hex;
+        return hex;
+    }
+    /**
+     * `echo:pack-1` is a legal note id but `:` is not legal in a leaderboard id.
+     * Sanitising alone would collapse `a:b` and `a_b` onto one board, so any
+     * rewritten id carries a hash of the original.
+     */
+    function boardIdForNote(noteId) {
+        var safe = "";
+        var clean = true;
+        for (var i = 0; i < noteId.length; i++) {
+            var ch = noteId.charAt(i);
+            if (BOARD_ID_SAFE.test(ch)) {
+                safe += ch;
+            }
+            else {
+                safe += "_";
+                clean = false;
+            }
+        }
+        var id = NOTE_BOARD_PREFIX + safe;
+        if (!clean)
+            id += "-" + fnv1a(noteId);
+        if (id.length > MAX_BOARD_ID_CHARS) {
+            id = id.slice(0, MAX_BOARD_ID_CHARS - 9) + "-" + fnv1a(noteId);
+        }
+        return id;
+    }
+    /** Idempotent create: "already exists" is the expected failure. */
+    function ensureNoteBoard(nk, logger, noteId) {
+        var id = boardIdForNote(noteId);
+        if (ensuredBoards[id])
+            return id;
+        try {
+            nk.leaderboardCreate(id, false, "descending" /* nkruntime.SortOrder.DESCENDING */, "best" /* nkruntime.Operator.BEST */, BOARD_RESET, { kind: "lap_note", noteId: noteId });
+        }
+        catch (err) {
+            // Already created, or a concurrent submit won the race.
+            logger.debug("[QvLapProgress] board ensure %s: %s", id, (err && err.message ? err.message : String(err)));
+        }
+        ensuredBoards[id] = true;
+        return id;
+    }
+    /** BEST-operator write; `score` is the 0-100 quiz percentage. */
+    function writeNoteBoard(nk, logger, noteId, userId, username, score) {
+        try {
+            var boardId = ensureNoteBoard(nk, logger, noteId);
+            nk.leaderboardRecordWrite(boardId, userId, username || "", score, 0, { noteId: noteId });
+        }
+        catch (err) {
+            // The progress object is already durable — the board must not undo it.
+            logger.warn("[QvLapProgress] board write failed note=%s user=%s err=%s", noteId, userId, (err && err.message ? err.message : String(err)));
+        }
+    }
+    function boardRows(list, myId) {
+        var out = [];
+        var records = (list && list.records) || [];
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            var owner = String(r.ownerId || "");
+            if (!owner)
+                continue;
+            var score = Number(r.score || 0);
+            out.push({
+                userId: owner,
+                displayName: String(r.username || ""),
+                rank: r.rank ? Number(r.rank) : i + 1,
+                xp: score,
+                score: score,
+                isMe: owner === myId,
+            });
+        }
+        return out;
+    }
+    /**
+     * Top `limit` classmates plus the caller's own row when it falls outside
+     * that window (so the UI can always say "you are #N").
+     */
+    function rpcNoteLeaderboard(ctx, logger, nk, payload) {
+        if (!ctx.userId)
+            return RpcHelpers.errorResponse("User ID is required", 401);
+        var data = RpcHelpers.parseRpcPayload(payload) || {};
+        var noteId = validNoteId(data.noteId);
+        if (!noteId)
+            return RpcHelpers.errorResponse("noteId must be 1-128 id characters", 400);
+        var limit = Number(data.limit);
+        if (isNaN(limit))
+            limit = DEFAULT_BOARD_LIMIT;
+        limit = Math.max(1, Math.min(MAX_BOARD_LIMIT, Math.round(limit)));
+        var boardId = boardIdForNote(noteId);
+        var top = [];
+        var mine = [];
+        try {
+            top = boardRows(nk.leaderboardRecordsList(boardId, [], limit, ""), ctx.userId);
+            var ownList = nk.leaderboardRecordsList(boardId, [ctx.userId], 1, "");
+            mine = boardRows(ownList, ctx.userId);
+        }
+        catch (err) {
+            // No board yet = nobody in this class has scored here.
+            logger.debug("[QvLapProgress] board read %s: %s", boardId, (err && err.message ? err.message : String(err)));
+            return JSON.stringify({ success: true, records: [], data: { records: [] } });
+        }
+        var merged = top.concat(mine);
+        merged.sort(function (a, b) { return a.rank - b.rank; });
+        var rows = [];
+        var seen = {};
+        for (var i = 0; i < merged.length; i++) {
+            var row = merged[i];
+            if (seen[row.userId])
+                continue;
+            seen[row.userId] = true;
+            rows.push(row);
+        }
+        if (rows.length > limit + 1)
+            rows.length = limit + 1;
+        return JSON.stringify({ success: true, records: rows, data: { records: rows } });
+    }
+    function rpcSubmitProgress(ctx, logger, nk, payload) {
+        if (!ctx.userId)
+            return RpcHelpers.errorResponse("User ID is required", 401);
+        var userId = ctx.userId;
+        var data = RpcHelpers.parseRpcPayload(payload) || {};
+        var noteId = validNoteId(data.noteId);
+        if (!noteId)
+            return RpcHelpers.errorResponse("noteId must be 1-128 id characters", 400);
+        var activity = String(data.activity || "").toLowerCase();
+        var score = activity === "quiz" ? clampScore(data.score) : -1;
+        var isFlash = activity === "flash" || activity === "flashcard" || activity === "flashcards";
+        var count = isFlash ? clampCount(data.count) : -1;
+        var event = readEvent(data.event);
+        if (score < 0 && count < 0 && !event) {
+            return RpcHelpers.errorResponse("nothing to record: send a quiz score, a flashcard count, or an event", 400);
+        }
+        var lastErr = null;
+        for (var attempt = 0; attempt < OCC_MAX_RETRIES; attempt++) {
+            var rows = nk.storageRead([{ collection: COLLECTION, key: noteId, userId: userId }]);
+            var exists = !!(rows && rows.length > 0);
+            var progress = toProgress(exists ? rows[0].value : null);
+            if (score >= 0)
+                progress.quizBestScore = Math.max(progress.quizBestScore, score);
+            if (count >= 0)
+                progress.flashcardKnewIt = Math.max(progress.flashcardKnewIt, count);
+            if (event) {
+                progress.memory.unshift(event);
+                if (progress.memory.length > MAX_MEMORY)
+                    progress.memory.length = MAX_MEMORY;
+            }
+            progress.updatedAt = new Date().toISOString();
+            try {
+                nk.storageWrite([{
+                        collection: COLLECTION,
+                        key: noteId,
+                        userId: userId,
+                        value: progress,
+                        version: exists ? rows[0].version : "*",
+                        permissionRead: 1,
+                        permissionWrite: 0,
+                    }]);
+                if (score >= 0) {
+                    writeNoteBoard(nk, logger, noteId, userId, ctx.username || "", score);
+                }
+                return reply(progress);
+            }
+            catch (err) {
+                lastErr = err;
+            }
+        }
+        logger.error("[QvLapProgress] OCC exhausted user=" + userId + " note=" + noteId +
+            " err=" + (lastErr && lastErr.message ? lastErr.message : String(lastErr)));
+        return RpcHelpers.errorResponse("progress changed on another device; retry", 409);
+    }
+    function rpcGetProgress(ctx, logger, nk, payload) {
+        if (!ctx.userId)
+            return RpcHelpers.errorResponse("User ID is required", 401);
+        var userId = ctx.userId;
+        var data = RpcHelpers.parseRpcPayload(payload) || {};
+        var raw = Array.isArray(data.noteIds) ? data.noteIds : [data.noteId];
+        if (raw.length > MAX_NOTE_IDS) {
+            return RpcHelpers.errorResponse("at most " + MAX_NOTE_IDS + " noteIds", 400);
+        }
+        var reads = [];
+        var seen = {};
+        for (var i = 0; i < raw.length; i++) {
+            var id = validNoteId(raw[i]);
+            if (!id || seen[id])
+                continue;
+            seen[id] = true;
+            reads.push({ collection: COLLECTION, key: id, userId: userId });
+        }
+        if (reads.length === 0)
+            return RpcHelpers.errorResponse("noteId or noteIds required", 400);
+        var map = {};
+        var rows = nk.storageRead(reads);
+        for (var r = 0; r < (rows ? rows.length : 0); r++) {
+            map[rows[r].key] = toProgress(rows[r].value);
+        }
+        return reply(map);
+    }
+    function register(initializer) {
+        initializer.registerRpc("quizverse_lap_submit_progress", rpcSubmitProgress);
+        initializer.registerRpc("quizverse_lap_get_progress", rpcGetProgress);
+        initializer.registerRpc("quizverse_lap_note_leaderboard", rpcNoteLeaderboard);
+    }
+    QvLapProgress.register = register;
+})(QvLapProgress || (QvLapProgress = {}));
 // =============================================================================
 // RPC: admin_revenuecat_dashboard
 //
@@ -53176,6 +53657,442 @@ var LmsBridge;
     }
     LmsBridge.register = register;
 })(LmsBridge || (LmsBridge = {}));
+// =============================================================================
+// Meeting review — autonomous post-meeting pipeline for Curio.
+//
+// Flow
+// ────
+//   device uploads a meeting transcript
+//     → meeting_review_submit (user)      creates job, forwards to AI svc
+//     → AI svc builds summary, decisions, actions, bullets, email draft
+//     → meeting_review_complete (server)  stores result, sends push(es)
+//     → user opens the push, reviews, asks for changes
+//     → meeting_review_refine (user)      same job kind, parent link
+//
+// Rules
+// ─────
+//   • Every decision, action and bullet must carry a quote. No quote, dropped.
+//   • Nothing is sent anywhere. Email is a draft; the app sends it on a tap.
+//   • The job record is owner-readable and server-writable only.
+//   • Per-user daily quota stops a runaway client from burning AI credits.
+//
+// RPCs (4)
+// ────────
+//   meeting_review_submit   (user)   start a review job
+//   meeting_review_get      (user)   read own job + result
+//   meeting_review_refine   (user)   ask for a change on a finished job
+//   meeting_review_complete (server) AI svc → Nakama when a job terminates
+// =============================================================================
+var MeetingReview;
+(function (MeetingReview) {
+    // ── Constants ──────────────────────────────────────────────────────────────
+    var SERVICE_NAME = "nakama";
+    var ROUTE_SUBMIT = "/meeting-review/from-nakama/jobs/submit";
+    var ROUTE_REFINE = "/meeting-review/from-nakama/jobs/refine";
+    var REQUEST_TIMEOUT_MS = 8000;
+    var JOBS_COLLECTION = "meeting_review_jobs";
+    var QUOTA_COLLECTION = "meeting_review_quota";
+    var DAILY_JOB_LIMIT = 20;
+    var READY_CODE = 1320; // "Review your quick meeting"
+    var EMAIL_READY_CODE = 1321; // "Email is ready, review it"
+    var MAX_TRANSCRIPT_CHARS = 60000;
+    var MAX_TITLE_CHARS = 120;
+    var MAX_INSTRUCTION_CHARS = 500;
+    var MAX_ID_CHARS = 128;
+    var MAX_DECISIONS = 12;
+    var MAX_ACTIONS = 12;
+    var MAX_BULLETS = 5;
+    var MAX_QUOTE_CHARS = 400;
+    var ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function aiSvcBase(ctx, logger) {
+        var base = (ctx.env && ctx.env["IVX_AI_SVC_BASE_URL"]) || "";
+        if (!base) {
+            logger.warn("[MeetingReview] IVX_AI_SVC_BASE_URL unset");
+            return null;
+        }
+        return base.replace(/\/$/, "");
+    }
+    function extractUrlPath(absUrl) {
+        var schemeIdx = absUrl.indexOf("://");
+        if (schemeIdx === -1)
+            return absUrl;
+        var afterScheme = absUrl.substring(schemeIdx + 3);
+        var slashIdx = afterScheme.indexOf("/");
+        if (slashIdx === -1)
+            return "";
+        return afterScheme.substring(slashIdx);
+    }
+    function sign(ctx, nk, ts, path, body, logger) {
+        var secret = (ctx.env && ctx.env["IVX_INSIGHTS_SHARED_SECRET"]) || "";
+        if (!secret) {
+            logger.warn("[MeetingReview] IVX_INSIGHTS_SHARED_SECRET unset");
+            return "";
+        }
+        try {
+            var raw = nk.hmacSha256Hash(ts + ":" + path + ":" + body, secret);
+            return nk.base16Encode(raw, false).toLowerCase();
+        }
+        catch (e) {
+            logger.warn("[MeetingReview] hmac failed: " + ((e && e.message) ? e.message : String(e)));
+            return "";
+        }
+    }
+    /** Signed POST to the AI svc. Returns HTTP code, or 0 on transport failure. */
+    function postToAi(ctx, nk, logger, route, payload) {
+        var base = aiSvcBase(ctx, logger);
+        if (!base)
+            return 0;
+        var bodyString = JSON.stringify(payload);
+        var ts = String(Date.now());
+        var sig = sign(ctx, nk, ts, extractUrlPath(base) + route, bodyString, logger);
+        try {
+            var resp = nk.httpRequest(base + route, "post", {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "X-IVX-Service": SERVICE_NAME,
+                "X-IVX-Timestamp": ts,
+                "X-IVX-Signature": sig,
+            }, bodyString, REQUEST_TIMEOUT_MS);
+            return resp ? resp.code : 0;
+        }
+        catch (e) {
+            logger.warn("[MeetingReview] AI post threw: " + ((e && e.message) ? e.message : String(e)));
+            return 0;
+        }
+    }
+    function envelope(ok, data, error, code) {
+        if (ok)
+            return JSON.stringify({ success: true, data: data });
+        return JSON.stringify({ success: false, error: error || "error", code: code || 0 });
+    }
+    function cleanStr(v, max) {
+        if (typeof v !== "string")
+            return "";
+        var t = v.trim();
+        return t.length > max ? t.substring(0, max) : t;
+    }
+    function isValidId(v) {
+        return v.length > 0 && v.length <= MAX_ID_CHARS && ID_PATTERN.test(v);
+    }
+    function dayKey() {
+        return new Date().toISOString().substring(0, 10);
+    }
+    /** Reserves one job against today's quota. False when the cap is reached. */
+    function reserveQuota(nk, userId) {
+        var key = dayKey();
+        var rows = nk.storageRead([{ collection: QUOTA_COLLECTION, key: key, userId: userId }]);
+        var count = 0;
+        var version = "*";
+        if (rows && rows.length > 0) {
+            count = rows[0].value.count || 0;
+            version = rows[0].version || "*";
+        }
+        if (count >= DAILY_JOB_LIMIT)
+            return false;
+        try {
+            nk.storageWrite([{
+                    collection: QUOTA_COLLECTION,
+                    key: key,
+                    userId: userId,
+                    value: { count: count + 1 },
+                    version: version,
+                    permissionRead: 1,
+                    permissionWrite: 0,
+                }]);
+            return true;
+        }
+        catch (_) {
+            return false; // lost a race: fail closed
+        }
+    }
+    function writeJob(nk, userId, jobId, record) {
+        nk.storageWrite([{
+                collection: JOBS_COLLECTION,
+                key: jobId,
+                userId: userId,
+                value: record,
+                permissionRead: 1,
+                permissionWrite: 0,
+            }]);
+    }
+    function readJob(nk, userId, jobId) {
+        var rows = nk.storageRead([{ collection: JOBS_COLLECTION, key: jobId, userId: userId }]);
+        if (!rows || rows.length === 0)
+            return null;
+        return rows[0].value;
+    }
+    /** Keeps only items that carry a quote. Caps length and count. */
+    function sourcedItems(raw, max, textKey) {
+        var out = [];
+        if (!raw || typeof raw.length !== "number")
+            return out;
+        for (var i = 0; i < raw.length && out.length < max; i++) {
+            var item = raw[i];
+            if (!item || typeof item !== "object")
+                continue;
+            var text = cleanStr(item[textKey], 300);
+            var quote = cleanStr(item.quote, MAX_QUOTE_CHARS);
+            if (!text || !quote)
+                continue; // no source line, no card
+            out.push({
+                text: text,
+                quote: quote,
+                owner: cleanStr(item.owner, 80) || null,
+                why: cleanStr(item.why, 300) || null,
+            });
+        }
+        return out;
+    }
+    function sanitizeResult(raw) {
+        if (!raw || typeof raw !== "object")
+            return null;
+        var email = null;
+        if (raw.emailDraft && typeof raw.emailDraft === "object") {
+            var to = cleanStr(raw.emailDraft.to, 200);
+            var subject = cleanStr(raw.emailDraft.subject, 200);
+            var body = cleanStr(raw.emailDraft.body, 8000);
+            if (subject && body)
+                email = { to: to, subject: subject, body: body };
+        }
+        var bullets = [];
+        if (raw.bullets && typeof raw.bullets.length === "number") {
+            for (var i = 0; i < raw.bullets.length && bullets.length < MAX_BULLETS; i++) {
+                var b = raw.bullets[i];
+                var text = cleanStr(b && b.text, 300);
+                var q = cleanStr(b && b.quote, MAX_QUOTE_CHARS);
+                if (text && q)
+                    bullets.push(text);
+            }
+        }
+        return {
+            summary: cleanStr(raw.summary, 1000),
+            bullets: bullets,
+            decisions: sourcedItems(raw.decisions, MAX_DECISIONS, "text"),
+            actions: sourcedItems(raw.actions, MAX_ACTIONS, "text"),
+            emailDraft: email,
+        };
+    }
+    // ── RPC: meeting_review_submit (user) ──────────────────────────────────────
+    function rpcSubmit(ctx, logger, nk, payload) {
+        try {
+            if (!ctx.userId)
+                return envelope(false, null, "User ID is required", 401);
+            var data;
+            try {
+                data = JSON.parse(payload || "{}");
+            }
+            catch (_) {
+                return envelope(false, null, "Invalid JSON", 400);
+            }
+            var sessionId = cleanStr(data.sessionId, MAX_ID_CHARS);
+            if (!isValidId(sessionId))
+                return envelope(false, null, "sessionId is invalid", 400);
+            var transcript = cleanStr(data.transcript, MAX_TRANSCRIPT_CHARS);
+            if (!transcript)
+                return envelope(false, null, "transcript is required", 400);
+            var title = cleanStr(data.title, MAX_TITLE_CHARS);
+            if (!reserveQuota(nk, ctx.userId)) {
+                return envelope(false, null, "Daily meeting review limit reached", 429);
+            }
+            var jobId = "mr_" + nk.uuidv4();
+            var now = new Date().toISOString();
+            writeJob(nk, ctx.userId, jobId, {
+                jobId: jobId, kind: "meeting_review", sessionId: sessionId, title: title,
+                transcript: transcript, status: "queued", parentJobId: null, result: null,
+                errorMessage: null, createdAt: now, updatedAt: now,
+            });
+            var code = postToAi(ctx, nk, logger, ROUTE_SUBMIT, {
+                cognitoSub: ctx.userId,
+                jobId: jobId,
+                sessionId: sessionId,
+                title: title,
+                transcript: transcript,
+            });
+            if (code < 200 || code >= 300) {
+                var failed = readJob(nk, ctx.userId, jobId) || {};
+                failed.status = "failed";
+                failed.errorMessage = code === 0 ? "ai_unreachable" : "ai_http_" + code;
+                failed.updatedAt = new Date().toISOString();
+                writeJob(nk, ctx.userId, jobId, failed);
+                return envelope(false, { jobId: jobId }, failed.errorMessage, 503);
+            }
+            return envelope(true, { jobId: jobId, status: "queued" });
+        }
+        catch (err) {
+            logger.error("[MeetingReview] submit failed: " + (err && err.message ? err.message : String(err)));
+            return envelope(false, null, "meeting_review_submit failed", 500);
+        }
+    }
+    // ── RPC: meeting_review_get (user) ─────────────────────────────────────────
+    function rpcGet(ctx, logger, nk, payload) {
+        try {
+            if (!ctx.userId)
+                return envelope(false, null, "User ID is required", 401);
+            var data = JSON.parse(payload || "{}");
+            var jobId = cleanStr(data.jobId, MAX_ID_CHARS);
+            if (!isValidId(jobId))
+                return envelope(false, null, "jobId is invalid", 400);
+            var job = readJob(nk, ctx.userId, jobId);
+            if (!job)
+                return envelope(false, null, "Not found", 404);
+            return envelope(true, job);
+        }
+        catch (err) {
+            logger.error("[MeetingReview] get failed: " + (err && err.message ? err.message : String(err)));
+            return envelope(false, null, "meeting_review_get failed", 500);
+        }
+    }
+    // ── RPC: meeting_review_refine (user) ──────────────────────────────────────
+    function rpcRefine(ctx, logger, nk, payload) {
+        try {
+            if (!ctx.userId)
+                return envelope(false, null, "User ID is required", 401);
+            var data;
+            try {
+                data = JSON.parse(payload || "{}");
+            }
+            catch (_) {
+                return envelope(false, null, "Invalid JSON", 400);
+            }
+            var parentId = cleanStr(data.jobId, MAX_ID_CHARS);
+            if (!isValidId(parentId))
+                return envelope(false, null, "jobId is invalid", 400);
+            var instruction = cleanStr(data.instruction, MAX_INSTRUCTION_CHARS);
+            if (!instruction)
+                return envelope(false, null, "instruction is required", 400);
+            var parent = readJob(nk, ctx.userId, parentId);
+            if (!parent)
+                return envelope(false, null, "Not found", 404);
+            if (parent.status !== "ready")
+                return envelope(false, null, "Job is not ready yet", 409);
+            if (!reserveQuota(nk, ctx.userId)) {
+                return envelope(false, null, "Daily meeting review limit reached", 429);
+            }
+            var jobId = "mr_" + nk.uuidv4();
+            var now = new Date().toISOString();
+            writeJob(nk, ctx.userId, jobId, {
+                jobId: jobId, kind: "meeting_review_refine", sessionId: parent.sessionId,
+                title: parent.title, transcript: parent.transcript, status: "queued",
+                parentJobId: parentId, result: null, errorMessage: null,
+                createdAt: now, updatedAt: now,
+            });
+            var code = postToAi(ctx, nk, logger, ROUTE_REFINE, {
+                cognitoSub: ctx.userId,
+                jobId: jobId,
+                parentJobId: parentId,
+                transcript: parent.transcript || "",
+                previousResult: parent.result,
+                instruction: instruction,
+            });
+            if (code < 200 || code >= 300) {
+                var failed = readJob(nk, ctx.userId, jobId) || {};
+                failed.status = "failed";
+                failed.errorMessage = code === 0 ? "ai_unreachable" : "ai_http_" + code;
+                failed.updatedAt = new Date().toISOString();
+                writeJob(nk, ctx.userId, jobId, failed);
+                return envelope(false, { jobId: jobId }, failed.errorMessage, 503);
+            }
+            return envelope(true, { jobId: jobId, status: "queued" });
+        }
+        catch (err) {
+            logger.error("[MeetingReview] refine failed: " + (err && err.message ? err.message : String(err)));
+            return envelope(false, null, "meeting_review_refine failed", 500);
+        }
+    }
+    // ── RPC: meeting_review_complete (server only) ─────────────────────────────
+    function rpcComplete(ctx, logger, nk, payload) {
+        try {
+            if (ctx.userId && ctx.userId.length > 0) {
+                return envelope(false, null, "meeting_review_complete is service-only", 403);
+            }
+            var data;
+            try {
+                data = JSON.parse(payload || "{}");
+            }
+            catch (_) {
+                return envelope(false, null, "Invalid JSON", 400);
+            }
+            var userId = cleanStr(data.userId, 100);
+            var jobId = cleanStr(data.jobId, MAX_ID_CHARS);
+            var status = cleanStr(data.status, 20);
+            if (!userId || !isValidId(jobId))
+                return envelope(false, null, "userId and jobId are required", 400);
+            if (status !== "ready" && status !== "failed") {
+                return envelope(false, null, "status must be ready or failed", 400);
+            }
+            // The user may have been deleted while the job ran. Nothing to deliver.
+            try {
+                var exists = nk.usersGetId([userId]);
+                if (!exists || exists.length === 0) {
+                    logger.warn("[MeetingReview] user %s gone — skipping job %s", userId, jobId);
+                    return envelope(true, { delivered: false, skipped: "user_deleted" });
+                }
+            }
+            catch (_) { /* probe failure is not proof of deletion */ }
+            var job = readJob(nk, userId, jobId) || {
+                jobId: jobId, kind: "meeting_review", sessionId: "", title: "",
+                parentJobId: null, createdAt: new Date().toISOString(),
+            };
+            job.status = status;
+            job.updatedAt = new Date().toISOString();
+            if (status === "ready") {
+                job.result = sanitizeResult(data.result);
+                job.errorMessage = null;
+            }
+            else {
+                job.result = null;
+                job.errorMessage = cleanStr(data.errorMessage, 300) || "job_failed";
+            }
+            writeJob(nk, userId, jobId, job);
+            if (status !== "ready") {
+                return envelope(true, { delivered: false });
+            }
+            var pushes = 0;
+            try {
+                nk.notificationsSend([{
+                        userId: userId,
+                        code: READY_CODE,
+                        subject: "Review your quick meeting",
+                        content: { type: "meeting_review_ready", jobId: jobId, sessionId: job.sessionId },
+                        persistent: true,
+                    }]);
+                pushes++;
+            }
+            catch (e) {
+                logger.warn("[MeetingReview] ready push failed: " + ((e && e.message) || String(e)));
+            }
+            if (job.result && job.result.emailDraft) {
+                try {
+                    nk.notificationsSend([{
+                            userId: userId,
+                            code: EMAIL_READY_CODE,
+                            subject: "Email is ready, review it",
+                            content: { type: "meeting_email_ready", jobId: jobId, sessionId: job.sessionId },
+                            persistent: true,
+                        }]);
+                    pushes++;
+                }
+                catch (e) {
+                    logger.warn("[MeetingReview] email push failed: " + ((e && e.message) || String(e)));
+                }
+            }
+            return envelope(true, { delivered: pushes > 0, pushes: pushes });
+        }
+        catch (err) {
+            logger.error("[MeetingReview] complete failed: " + (err && err.message ? err.message : String(err)));
+            return envelope(false, null, "meeting_review_complete failed", 500);
+        }
+    }
+    // ── Registration ───────────────────────────────────────────────────────────
+    function register(initializer) {
+        initializer.registerRpc("meeting_review_submit", rpcSubmit);
+        initializer.registerRpc("meeting_review_get", rpcGet);
+        initializer.registerRpc("meeting_review_refine", rpcRefine);
+        initializer.registerRpc("meeting_review_complete", rpcComplete);
+    }
+    MeetingReview.register = register;
+})(MeetingReview || (MeetingReview = {}));
 // IIVXAgent — first-class AI-agent kernel service.
 //
 // Wire contract: schemas/multiplayer/services/agent.proto. Agents appear

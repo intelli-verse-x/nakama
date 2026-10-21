@@ -17,6 +17,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "nakama-common": "https://github.com/heroiclabs/nakama-common"
+    "nakama-common": "file:vendor/nakama-common"
   }
 }
+

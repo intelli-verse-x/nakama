@@ -227,6 +227,14 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
     logger.error("[QvLapNoteQuota] failed to mount: " + (err && err.message ? err.message : String(err)));
   }
 
+  // ---- Link & Play per-note progress (best quiz %, cards, lesson memory) ----
+  try {
+    QvLapProgress.register(initializer);
+    logger.info("[QvLapProgress] quizverse_lap_submit_progress + quizverse_lap_get_progress + quizverse_lap_note_leaderboard registered");
+  } catch (err: any) {
+    logger.error("[QvLapProgress] failed to mount: " + (err && err.message ? err.message : String(err)));
+  }
+
   // ---- Party & Trivia server-authoritative daily play quota (QVBF_345) ----
   try {
     QvPartyPlayQuota.register(initializer);
@@ -750,6 +758,22 @@ function InitModule(ctx: nkruntime.Context, logger: nkruntime.Logger, nk: nkrunt
       logger.info("[ConvCapture] conv_message_capture, conv_my_list, conv_user_purge registered");
     } catch (err: any) {
       logger.error("[ConvCapture] failed to register: " + (err && err.message ? err.message : String(err)));
+    }
+
+    // Curio Builder: per-user folders (builder_folders_sync: get / save / purge).
+    try {
+      BuilderFolders.register(initializer);
+      logger.info("[BuilderFolders] builder_folders_sync registered");
+    } catch (err: any) {
+      logger.error("[BuilderFolders] failed to register: " + (err && err.message ? err.message : String(err)));
+    }
+
+    // Curio meeting review: submit / get / refine (user) and complete (server).
+    try {
+      MeetingReview.register(initializer);
+      logger.info("[MeetingReview] meeting_review_* RPCs registered");
+    } catch (err: any) {
+      logger.error("[MeetingReview] failed to register: " + (err && err.message ? err.message : String(err)));
     }
 
     // User Model (PLAN-USER_INTELLIGENCE_LOOP.md PR-5). Read derived

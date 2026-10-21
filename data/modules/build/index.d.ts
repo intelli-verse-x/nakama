@@ -316,6 +316,9 @@ declare namespace QvProductChangelog {
     var ALLOWED_KINDS: string[];
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace BuilderFolders {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace ConvCapture {
     function register(initializer: nkruntime.Initializer): void;
 }
@@ -1451,6 +1454,9 @@ declare namespace QvExplainerVideos {
 declare namespace QvLapNoteQuota {
     function register(initializer: nkruntime.Initializer): void;
 }
+declare namespace QvLapProgress {
+    function register(initializer: nkruntime.Initializer): void;
+}
 declare namespace QuizVerseRevenueCatAdmin {
     function register(initializer: nkruntime.Initializer): void;
 }
@@ -2068,6 +2074,9 @@ declare namespace N8nPackStatePlugin {
 }
 declare namespace LmsBridge {
     var MODULE_VERSION: string;
+    function register(initializer: nkruntime.Initializer): void;
+}
+declare namespace MeetingReview {
     function register(initializer: nkruntime.Initializer): void;
 }
 declare namespace MpKernelAgent {
