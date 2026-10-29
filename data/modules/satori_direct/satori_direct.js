@@ -54,14 +54,17 @@
 //   https://heroiclabs.com/docs/satori/guides/server-events/  — wire format
 //   https://heroiclabs.com/docs/satori/concepts/performance-monitoring/understand-events/ — core event taxonomy
 
-// ─── Hardcoded credentials ─────────────────────────────────────────────
+// ─── Satori configuration ─────────────────────────────────────────────────────
 //
-// These are the QuizVerse Satori "dev" project. To rotate, edit the values
-// below and ship a new image — no env-var or k8s changes needed.
+// The QuizVerse Satori project endpoint and key name below are not secret
+// and act as defaults only; both are overridable from the environment.
+//
+// SATORI_API_KEY is a credential and is NOT stored here. It is read from
+// the environment only — see sdSecret() below. Rotating it is now a
+// Secret update plus a pod restart; no code change or image rebuild.
+
 var SD_URL          = "https://quizverse-satori-dev-8bf5.us-east1-b.satoricloud.io";
 var SD_API_KEY_NAME = "SATORIAPIKEY";
-var SD_API_KEY      = "f6554c37-e40f-490f-b730-acaf6ecabe4c";
-var SD_SIGNING_KEY  = "a939cfcc-5ef2-456a-b009-cca2dcc907d2";  // unused in v2; kept for backward compat with code that still references it
 var SD_TIMEOUT_MS   = 1000;     // lowered from 4000 (2026-06-14): this publish runs INLINE on the
                                 // analytics_log_event hot path. Auth is cached ~25 min, so steady
                                 // state is one sub-second publish per call; a 1 s ceiling keeps a
@@ -160,21 +163,12 @@ var SD_BATCH_SWEEP_MS    = 10000;    // every 10s do a global sweep
 // values once and Satori dedupes the upsert.
 var SD_IDENT_SENT = {};
 
-// Hardcoded-FIRST for the SATORI_* keys (env is IGNORED for them). Earlier
-// env-first behaviour failed in prod when the cluster had stale SATORI_*
-// env vars set — those values shadowed the new hardcoded constants and
-// Satori HTTP calls returned 401/403. Per the explicit "fuck security for
-// once, hardcode it" directive (chat 2026-05-10), the constants at the top
-// of this file are the source of truth.
-var SD_HARDCODED_KEYS = {
-    "SATORI_URL":             true,
-    "SATORI_API_KEY_NAME":    true,
-    "SATORI_API_KEY":         true,
-    "SATORI_SIGNING_KEY":     true,
-    "SATORI_HTTP_TIMEOUT_MS": true
-};
+// Env is authoritative for every SATORI_* key. A hardcoded-FIRST gate used
+// to sit here and returned the in-file constant without ever consulting
+// ctx.env, which is why editing the cluster Secret could not rotate the
+// credential. Stale-env shadowing (the original reason for the gate) is now
+// handled by keeping exactly one source of truth: the Secret.
 function sdResolve(ctx, key, fallback) {
-    if (SD_HARDCODED_KEYS[key]) return fallback;
     if (ctx && ctx.env && ctx.env[key]) {
         var v = String(ctx.env[key]).trim();
         if (v.length > 0) return v;
@@ -182,10 +176,19 @@ function sdResolve(ctx, key, fallback) {
     return fallback;
 }
 
+// Credentials are environment-only: no literal fallback, ever. An unset
+// value yields "", Satori answers 401, and sdSelfCheck /
+// satori_direct_status surface it. That fail-closed outcome is deliberate:
+// a literal fallback is exactly what let the previous attempt at this fix
+// be defeated.
+function sdSecret(ctx, key) {
+    return sdResolve(ctx, key, "");
+}
+
 // ─── Common HTTP helpers ───────────────────────────────────────────────
 
 function sdBasicAuthHeader(ctx, nk) {
-    var apiKey = sdResolve(ctx, "SATORI_API_KEY", SD_API_KEY);
+    var apiKey = sdSecret(ctx, "SATORI_API_KEY");
     return "Basic " + nk.base64Encode(apiKey + ":");
 }
 
@@ -922,7 +925,7 @@ function rpcSatoriDiag(ctx, logger, nk, payload) {
     var ev = sdSelfCheck(ctx, nk, logger);
     var auth = sdAuthenticate(ctx, nk, logger, sysId);
 
-    var apiKey = sdResolve(ctx, "SATORI_API_KEY", SD_API_KEY);
+    var apiKey = sdSecret(ctx, "SATORI_API_KEY");
     var keyName = sdResolve(ctx, "SATORI_API_KEY_NAME", SD_API_KEY_NAME);
     function fp(s) {
         if (!s) return null;
