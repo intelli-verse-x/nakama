@@ -75,7 +75,8 @@ gmat-weekly                  classic       PRE_ENROLL       20000        0    50
   <p>These use the server <code>http_key</code>. Safe to run from anywhere.</p>
 
   <h3 id="r1">1.1 Health probe</h3>
-<pre><code>HTTP_KEY=TjJU2n07lAJ6HIGG7BQrARp6cbm2IKIeag1uGXjb
+<pre><code># Read the key from the cluster secret; never paste it into a doc.
+HTTP_KEY=$(kubectl -n aicart get secret nakama-secret -o jsonpath='{.data.http_key}' | base64 -d)
 NAKAMA=https://nakama.intelli-verse-x.ai
 
 curl -sS "$NAKAMA/v2/rpc/nakama_js_health?http_key=$HTTP_KEY&amp;unwrap" | jq
