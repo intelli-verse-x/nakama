@@ -225,27 +225,26 @@ kubectl -n aicart patch deployment intelliverse-nakama \
 It was wrong twice over, and both were verified against the live cluster on
 2026-08-29.
 
-*Wrong 1 — `args` is not a flag list here.* The live container is:
+*Wrong 1 — `args` is not a flag list here.* The container is:
 
 ```yaml
 command: ["/bin/sh", "-c"]
 args:
   - |
-    set -e; if [ -n "$PATHA_INDEX_JS_URL" ]; then echo "[patha-hotfix] downloading index.js";
-    curl -fsSL "$PATHA_INDEX_JS_URL" -o /nakama/data/modules/index.js;
-    BYTES=$(wc -c </nakama/data/modules/index.js); echo "[patha-hotfix] applied $BYTES bytes";
-    if [ "$BYTES" -lt 8800000 ]; then echo "[patha-hotfix] file too small — abort"; exit 1; fi;
-    fi; exec /nakama/nakama --config /nakama/config/config.yaml
+    set -e; exec /nakama/nakama --config /nakama/config/config.yaml
 ```
 
-`args` is a **single-element list holding one shell script** — the
-`PATHA_INDEX_JS_URL` hotfix wrapper. Appending `--runtime.env` to it does not
-pass a flag to the Nakama binary; it passes positional parameters to `sh -c`,
-which the script never reads. The flags are **silently ignored**. No error, no
-outage, and the feature stays inert while looking configured. Anything that
-must reach the binary has to go *inside* that script string, ahead of the
-`exec` — and rewriting args[0] risks destroying the hotfix wrapper, which is
-the only sub-minute lever available during a Sev-1.
+`args` is a **single-element list holding one shell script**. Appending
+`--runtime.env` to it does not pass a flag to the Nakama binary; it passes
+positional parameters to `sh -c`, which the script never reads. The flags are
+**silently ignored**. No error, no outage, and the feature stays inert while
+looking configured. Anything that must reach the binary has to go *inside* that
+script string, ahead of the `exec`.
+
+> Until INC-2026-08-29 this wrapper also carried a `PATHA_INDEX_JS_URL`
+> remote-download branch that overwrote the module bundle from an arbitrary URL.
+> It was removed as an unsigned remote-code path; module changes now ship only
+> via an image build and `kubectl set image`. Do not reintroduce it.
 
 *Wrong 2 — that is not how this cluster passes runtime env anyway.* The live
 container carries **no** `--runtime.env` flags at all. `ctx.env` is populated
