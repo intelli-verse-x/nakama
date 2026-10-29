@@ -62,11 +62,11 @@ function resolveUserId(nk, data, ctx) {
     if (data.device_id) {
         try {
             var users = nk.usersGetId([data.device_id]);
-            if (users && users.length > 0) return users[0].id;
+            if (users && users.length > 0 && users[0].userId) return users[0].userId;
         } catch (_) { /* fall through */ }
         try {
             var auth = nk.authenticateDevice(data.device_id, null, false);
-            if (auth && auth.id) return auth.id;
+            if (auth && auth.userId) return auth.userId;
         } catch (_) { /* fall through */ }
     }
     return ctx.userId || SYSTEM_USER_ID;
